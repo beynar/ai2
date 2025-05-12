@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+@plugin "./lib/tailwind/theme" {
+	default: true;
+	eas: true;
+}
+
+@plugin "./lib/tailwind" {
+}
