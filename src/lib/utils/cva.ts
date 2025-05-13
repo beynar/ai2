@@ -38,31 +38,26 @@ export const setComponentTheme =
 
 const getKeys = (obj: any) => Object.keys(obj);
 
-const isNotPrototypeKey = (value: string) => {
-	return value !== 'constructor' && value !== 'prototype' && value !== '__proto__';
-};
-
 const mergeObject = (source: Record<string, any>, target: Record<string, any>) => {
 	const result = { ...source };
 	const targetKeys = getKeys(target);
 
 	let i, il, key;
 	for (i = 0, il = targetKeys.length; i < il; ++i) {
-		if (isNotPrototypeKey((key = targetKeys[i]))) {
-			const isString = typeof target[key] === 'string';
-			if (isString) {
-				Object.assign(result, {
-					[key]: target[key]
-				});
-			} else {
-				Object.assign(result, {
-					[key]: mergeObject(source[key] || {}, target[key] || {})
-				});
-			}
+		key = targetKeys[i];
+		if (typeof target[key] === 'string') {
+			Object.assign(result, {
+				[key]: target[key]
+			});
+		} else if (typeof target[key] === 'object') {
+			Object.assign(result, {
+				[key]: mergeObject(source[key] || {}, target[key] || {})
+			});
 		}
 	}
 	return result;
 };
+
 export const useComponentTheme =
 	<T extends ComponentTheme>(
 		component: string,
@@ -75,6 +70,7 @@ export const useComponentTheme =
 			return defaultTheme;
 		}
 		let composedTheme = { ...defaultTheme };
+		console.log({ customTheme });
 		for (const key in customTheme) {
 			// @ts-ignore
 			const { base = '', ...variants } = customTheme[key];

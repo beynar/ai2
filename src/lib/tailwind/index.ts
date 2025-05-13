@@ -92,6 +92,9 @@ export default plugin.withOptions((options) => {
 				// TODO add option to disable border or not based on color-scheme
 				// '--light-raised-border': 'var(--current-border, var(--color-surface-lighter))'
 				'--light-raised-border': 'transparent'
+			},
+			':has([data-badge])': {
+				position: 'relative'
 			}
 		});
 

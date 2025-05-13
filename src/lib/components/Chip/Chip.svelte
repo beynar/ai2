@@ -28,6 +28,12 @@
 
 	const classes = $derived(useChipTheme(theme));
 	const as = $derived(href ? 'a' : onclick || onenter || onleave ? 'button' : 'div');
+
+	function tooltip(content: string) {
+		return (node: HTMLElement) => {
+			console.log(node, content);
+		};
+	}
 </script>
 
 <svelte:element
