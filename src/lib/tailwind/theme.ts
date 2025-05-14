@@ -1,6 +1,8 @@
 import plugin, { type ThemeConfig } from 'tailwindcss/plugin.js';
 import type { TypeScale } from './typeScale.js';
 import { generateColorPalette, toTailwindCssTheme, type ColorTheme } from './colors.js';
+import { radius } from './radius.js';
+import { spacing } from './spacing.js';
 
 export type ThemeOptions = Partial<{
 	name: string;
@@ -16,36 +18,9 @@ export type ThemeOptions = Partial<{
 	'raised-with-border'?: boolean;
 	scale?: TypeScale;
 	prefersDark?: boolean;
+	radius?: number;
 }> &
 	ColorTheme;
-
-// export default plugin.withOptions<ThemeOptions>((theme = {}) => {
-// 	return ({ addBase, addComponents, addUtilities, theme: t }) => {
-// 		console.log('hello yo');
-
-// 		addBase({
-// 			body: {
-// 				backgroundColor: 'red',
-// 				color: '#000'
-// 			},
-// 			'@layer theme': {
-// 				':root': {
-// 					'--color-danger': 'oklch(.558 .288 302.321)'
-// 				}
-// 			}
-// 		});
-
-// 		return {
-// 			theme: {
-// 				extend: {
-// 					colors: {
-// 						'--color-danger': 'oklch(.558 .288 302.321)'
-// 					}
-// 				}
-// 			}
-// 		} satisfies ThemeConfig;
-// 	};
-// });
 
 export default plugin.withOptions<ThemeOptions>(
 	(theme = {}) => {
@@ -69,10 +44,12 @@ export default plugin.withOptions<ThemeOptions>(
 			}
 		};
 	},
-	() => ({
+	(options) => ({
 		theme: {
 			extend: {
-				colors: toTailwindCssTheme()
+				colors: toTailwindCssTheme(),
+				radius: radius(options?.radius),
+				spacing: spacing(options?.spacing)
 			}
 		}
 	})

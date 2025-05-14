@@ -3,7 +3,7 @@ import { mix, toHex, hasBadContrast } from 'color2k';
 import { darken, lighten, saturate, formatCSS } from 'colorizr';
 
 const readableColorIsBlack = (color: string) => {
-	const badContrast = hasBadContrast('#FFFFFF', 'readable', color);
+	const badContrast = hasBadContrast('#FAFAFA', 'readable', color);
 	return badContrast;
 };
 
@@ -282,7 +282,7 @@ export const tailwindColors = {
 		'950': '#500724'
 	},
 	rose: {
-		'50': '#fff1f2',
+		'50': '#fafafa1f2',
 		'100': '#ffe4e6',
 		'200': '#fecdd3',
 		'300': '#fda4af',
@@ -369,7 +369,7 @@ const defaultColorsLight = {
 	warning: '#f5a623',
 	info: '#50e3c2',
 	surface: '#fafafa',
-	contrast: '#050505'
+	contrast: '#242524'
 } as const;
 const defaultColorsDark = {
 	primary: '#6366f1',
@@ -378,8 +378,8 @@ const defaultColorsDark = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	surface: '#fafafa',
-	contrast: '#050505'
+	surface: '#242524',
+	contrast: '#fafafa'
 } as const;
 
 type ColorThemeOption = {
@@ -441,35 +441,34 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 	const shades = (color: ColorRecord) => {
 		const baseColor = adjustColor(color.DEFAULT as string);
 		return {
-			dark: color.dark || darken(baseColor, 0.1),
+			dark: color.dark || darken(baseColor, 15),
 			DEFAULT: color.DEFAULT,
-			light: color.light || lighten(baseColor, 0.1),
-			lighter: color.lighter || lighten(baseColor, 0.25),
-			muted: color.muted || mix(baseColor, isDark ? '#000' : '#fff', 0.9),
-			fg: color.fg || readableColorIsBlack(baseColor) ? '#000' : '#fff'
+			light: color.light || lighten(baseColor, 15),
+			lighter: color.lighter || lighten(baseColor, 25),
+			muted: color.muted || mix(baseColor, isDark ? '#242524' : '#fafafa', 0.95),
+			fg: color.fg || readableColorIsBlack(baseColor) ? '#242524' : '#fafafa'
 		};
 	};
 
 	const generateWhiteShade = (color: ColorRecord) => {
 		return {
-			dark: color.dark || darken(color.DEFAULT, 0.035),
 			DEFAULT: color.DEFAULT,
-			light: color.light || lighten(color.DEFAULT, 1),
-			lighter: color.lighter || darken(color.DEFAULT, 1),
-			muted: color.muted || darken(color.DEFAULT, 2.5),
-			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#000' : '#FFF'
+			dark: color.dark || lighten(color.DEFAULT, 10),
+			light: color.light || darken(color.DEFAULT, 15),
+			lighter: color.lighter || darken(color.DEFAULT, 25),
+			muted: color.muted || darken(color.DEFAULT, 45),
+			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#242524' : '#FAFAFA'
 		};
 	};
 
 	const generateBlackShade = (color: ColorRecord) => {
-		console.log(readableColorIsBlack(color.DEFAULT), color.fg);
 		return {
 			DEFAULT: color.DEFAULT,
-			dark: color.dark || darken(color.DEFAULT, 0.05),
-			light: color.light || lighten(color.DEFAULT, 0.05),
-			lighter: color.lighter || lighten(color.DEFAULT, 0.2),
-			muted: color.muted || lighten(color.DEFAULT, 0.4),
-			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#000' : '#FFF'
+			dark: color.dark || darken(color.DEFAULT, 10),
+			light: color.light || lighten(color.DEFAULT, 15),
+			lighter: color.lighter || lighten(color.DEFAULT, 25),
+			muted: color.muted || lighten(color.DEFAULT, 45),
+			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#242524' : '#FAFAFA'
 		};
 	};
 

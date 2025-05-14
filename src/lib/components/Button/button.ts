@@ -38,7 +38,7 @@ export type ButtonProps<Payload extends Record<string, any> | undefined = undefi
 >;
 
 const defaultButton = cva({
-	base: 'rounded-md cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem] active:scale-[0.99]',
+	base: 'rounded cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem] active:scale-[0.99]',
 	variants: {
 		size: {
 			normal: 'px-4 py-2 h-9 gap-2',

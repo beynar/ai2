@@ -21,7 +21,7 @@ export type ChipProps = WithSlot<
 >;
 
 const defaultChip = cva({
-	base: 'rounded-full w-fit flex justify-center items-center inline-flex whitespace-nowrap',
+	base: 'rounded-large w-fit justify-center items-center inline-flex whitespace-nowrap',
 	variants: {
 		size: {
 			normal: 'px-2 py-1 text-xs leading-4 gap-1',

@@ -2,7 +2,8 @@
 
 @plugin "./lib/tailwind/theme" {
 	default: true;
-	eas: true;
+	radius: normal;
+	spacing: large;
 }
 
 @plugin "./lib/tailwind" {

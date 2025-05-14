@@ -5,16 +5,6 @@
 	import Badge from '$lib/components/Badge/Badge.svelte';
 </script>
 
-<h1>Welcome to your library project</h1>
-<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>
-<p>
-	Visit <a href="https://svelte.dev/docs/kit" class="text-danger sm:text-2xl">svelte.dev/docs/kit</a
-	> to read the documentation
-</p>
-
-<button class="text-color-light/20 ring ring-indigo-500/20" data-color="primary">Hello</button>
-<button class="text-danger/20 ring ring-indigo-500 ring-offset-amber-200">Hello</button>
-
 <button data-color="danger" class="bg-color"> eaz </button>
 
 <div class="bg-primary/20 m-10 size-20 shadow"></div>
@@ -31,6 +21,8 @@
 		class="bg-primary text-color-light p-2">{text}</button
 	>
 {/snippet}
+
+<div class="bg-primary/20 size-20 rounded p-1">hello</div>
 
 <!--  -->
 <Button color="secondary">Hello</Button>
