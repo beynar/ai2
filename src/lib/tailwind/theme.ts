@@ -2,19 +2,20 @@ import plugin, { type ThemeConfig } from 'tailwindcss/plugin.js';
 import type { TypeScale } from './typeScale.js';
 import { generateColorPalette, toTailwindCssTheme, type ColorTheme } from './colors.js';
 
-type ThemeOptions = Partial<{
+export type ThemeOptions = Partial<{
 	name: string;
 	default: boolean;
 	luminance?: number;
 	saturation?: number;
 	colorScheme?: 'light' | 'dark';
-	primaryTintIntensity?: number;
-	radiusInertElements: number;
-	radiusInteractiveElements: number;
-	spacing: number;
-	borderWidth: number;
-	scale: TypeScale;
-	prefersDark: boolean;
+	'primary-tint-intensity'?: number;
+	'radius-inert-elements'?: number;
+	'radius-interactive-elements'?: number;
+	spacing?: number;
+	'border-width'?: number;
+	'raised-with-border'?: boolean;
+	scale?: TypeScale;
+	prefersDark?: boolean;
 }> &
 	ColorTheme;
 

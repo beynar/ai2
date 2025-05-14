@@ -8,6 +8,9 @@ export type BadgeProps = {
 	position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 	size?: Sizes;
 	variant?: 'soft' | 'solid' | 'outline';
+	/**
+	 * The class name of the badge. First element that the component outputs in the DOM.
+	 */
 	class?: string;
 	children?: Slot;
 	theme?: InferComponentTheme<typeof badgeTheme>;
@@ -50,6 +53,12 @@ const defaultBadge = cva({
 		position: 'topRight'
 	}
 });
+
+export const badgeStructure = `
+<Badge>
+	<Children />
+</Badge>
+`;
 
 export const badgeTheme = {
 	badge: defaultBadge

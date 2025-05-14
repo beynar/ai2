@@ -27,6 +27,10 @@ export type AvatarProps<I> = {
 	 * The loading state of the avatar. Can be bind to a state in order to show a loading spinner or simply react to the loading state
 	 * @default 'waiting'
 	 */
+	/**
+	 * The class name of the avatar. First element that the component outputs in the DOM.
+	 */
+	class?: string;
 	loadingState?: LoadingState;
 	prefix?: Slot<{ name: string; avatar?: string }>;
 	suffix?: Slot<{ name: string; avatar?: string }>;
@@ -34,6 +38,10 @@ export type AvatarProps<I> = {
 };
 
 export type AvatarGroupProps<I extends object> = Omit<AvatarProps<I>, 'user'> & {
+	/**
+	 * The class name of the avatar group. First element that the component outputs in the DOM.
+	 */
+	class?: string;
 	max?: number;
 	avatar?: Snippet<[{ user: I; index: number; avatarProps: Omit<AvatarProps<I>, 'user'> }]>;
 	remainingCount?: Snippet<[{ users: I[]; remaining: number }]>;
@@ -137,6 +145,24 @@ const defaultAvatarGroupCount = cva({
 		size: 'normal'
 	}
 });
+
+export const avatarStructure = `
+<Avatar>
+	<AvatarImage />
+	<AvatarPrefix  behind the image/>
+	<AvatarSuffix absolute />
+	<AvatarInitials absolute />
+</Avatar>
+`;
+
+export const avatarGroupStructure = `
+<AvatarGroup>
+	<Avatar />
+	<Avatar />
+	<Avatar />
+	<AvatarGroupCount />
+</AvatarGroup>
+`;
 
 export const avatarTheme = {
 	avatar: defaultAvatar,

@@ -28,7 +28,9 @@ export type InferComponentTheme<T extends ComponentTheme> = Partial<{
 	[K in keyof T]: T[K] extends ReturnType<typeof cva>
 		? CustomTheme<VariantProps<T[K]>> & { base?: string }
 		: never;
-}>;
+}> & {
+	override?: boolean;
+};
 
 export const setComponentTheme =
 	<T extends ComponentTheme>(component: string) =>
@@ -63,20 +65,31 @@ export const useComponentTheme =
 		component: string,
 		defaultTheme: T
 	): ((theme?: InferComponentTheme<T>) => T) =>
-	(theme?: InferComponentTheme<T>) => {
-		const themeContext = getContext(`${component}Theme`);
-		const customTheme = mergeObject(themeContext || {}, theme || {});
-		if (!Object.keys(customTheme).length) {
-			return defaultTheme;
+	({ override, ...theme }: InferComponentTheme<T> = {}) => {
+		if (override) {
+			let overidedTheme = {};
+			for (const key in theme) {
+				// @ts-ignore
+				const { base = '', ...variants } = customTheme[key];
+				Object.assign(theme, {
+					[key]: cva({ base, variants })
+				});
+			}
+			return overidedTheme as T;
+		} else {
+			const themeContext = getContext(`${component}Theme`);
+			const customTheme = mergeObject(themeContext || {}, theme || {});
+			if (!Object.keys(customTheme).length) {
+				return defaultTheme;
+			}
+			let composedTheme = { ...defaultTheme };
+			for (const key in customTheme) {
+				// @ts-ignore
+				const { base = '', ...variants } = customTheme[key];
+				Object.assign(composedTheme, {
+					[key]: compose(defaultTheme[key], cva({ base, variants }))
+				});
+			}
+			return composedTheme;
 		}
-		let composedTheme = { ...defaultTheme };
-		console.log({ customTheme });
-		for (const key in customTheme) {
-			// @ts-ignore
-			const { base = '', ...variants } = customTheme[key];
-			Object.assign(composedTheme, {
-				[key]: compose(defaultTheme[key], cva({ base, variants }))
-			});
-		}
-		return composedTheme;
 	};

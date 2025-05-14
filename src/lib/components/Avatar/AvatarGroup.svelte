@@ -9,13 +9,21 @@
 	import type { AvatarGroupProps } from './avatar.js';
 	import Avatar from './Avatar.svelte';
 
-	let { users, max, remainingCount, avatar, theme, size, ...rest }: AvatarGroupProps<Item> =
-		$props();
+	let {
+		users,
+		max,
+		class: className,
+		remainingCount,
+		avatar,
+		theme,
+		size,
+		...rest
+	}: AvatarGroupProps<Item> = $props();
 
 	const classes = $derived(useAvatarGroupTheme(theme));
 </script>
 
-<div data-size={size || 'normal'} class={classes.avatarGroup({ size })}>
+<div data-size={size || 'normal'} class={classes.avatarGroup({ size, className })}>
 	{#each users.slice(0, max) as user, index}
 		{#if avatar}
 			{@render avatar({ user, index, avatarProps: rest })}

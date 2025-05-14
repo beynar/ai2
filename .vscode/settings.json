@@ -1,9 +1,3 @@
 {
-	"typescript.tsdk": "node_modules/typescript/lib",
-
-	"tailwindCSS.experimental.classRegex": [
-		["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]?([^\"'`]+)[\"'`]?"],
-		["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-		["[a-zA-Z]+Theme\\s*=\\s*{[^}]*['\"](.*?)['\"]", "(.*)"]
-	]
+	"tailwindCSS.classFunctions": ["cva", "cx"]
 }

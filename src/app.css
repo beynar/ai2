@@ -6,4 +6,7 @@
 }
 
 @plugin "./lib/tailwind" {
+	default: true;
+	eas: true;
+	raised-with-border: true;
 }

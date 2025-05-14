@@ -1,6 +1,6 @@
 import plugin from 'tailwindcss/plugin';
 import { colors, variants } from './colors.js';
-
+import type { ThemeOptions } from './theme.js';
 const dataColors = colors.reduce((acc, color) => {
 	acc[`[data-color="${color}"]`] = variants.reduce(
 		(acc, variant) => {
@@ -17,7 +17,7 @@ const dataColors = colors.reduce((acc, color) => {
 	return acc;
 }, {} as any);
 
-export default plugin.withOptions((options) => {
+export default plugin.withOptions<ThemeOptions>((options) => {
 	return ({ addBase, addComponents, matchUtilities, addUtilities, theme }) => {
 		addBase({
 			...dataColors
@@ -89,9 +89,10 @@ export default plugin.withOptions((options) => {
 				'--dark-raised-shadow': 'none'
 			},
 			'[data-color-scheme="light"]': {
-				// TODO add option to disable border or not based on color-scheme
 				// '--light-raised-border': 'var(--current-border, var(--color-surface-lighter))'
-				'--light-raised-border': 'transparent'
+				'--light-raised-border': options?.['raised-with-border']
+					? '1px solid var(--current-border, var(--color-surface-lighter))'
+					: '0px'
 			},
 			':has([data-badge])': {
 				position: 'relative'
@@ -104,8 +105,9 @@ export default plugin.withOptions((options) => {
 					if (value !== 'none') {
 						const valueWithoutRgb = value.replace(/rgb\((.*?)\)/g, 'var(--tw-shadow-color)');
 						return {
-							border:
-								'1px solid var(--light-raised-border, var(--current-border, var(--color-surface-lighter)))',
+							border: 'var(--light-raised-border)',
+							// border:
+							// 	'1px solid var(--light-raised-border, var(--current-border, var(--color-surface-lighter)))',
 							'--tw-shadow': value as string,
 							'--tw-shadow-colored': valueWithoutRgb as string,
 							// 'box-shadow': `var(--dark-raised-shadow, var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow))`,

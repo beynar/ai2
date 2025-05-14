@@ -16,6 +16,7 @@
 		suffix,
 		prefix,
 		delay = 0,
+		class: className,
 		theme
 	}: AvatarProps<Item> = $props();
 
@@ -43,7 +44,7 @@
 	);
 </script>
 
-<div data-avatar class={classes.avatar({ size })} data-size={size}>
+<div data-avatar class={classes.avatar({ size, className })} data-size={size}>
 	<Slot payload={user} render={prefix} class={classes.avatarPrefix({ size })} />
 	{#if user.avatar}
 		<img use:complete src={user.avatar} alt={user.name} class={classes.avatarImage({ size })} />

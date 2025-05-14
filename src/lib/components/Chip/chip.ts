@@ -79,6 +79,14 @@ const defaultChipSuffix = cva({
 	}
 });
 
+export const chipStructure = `
+<Chip>
+	<Prefix />
+	<Children />
+	<Suffix />
+</Chip>
+`;
+
 export const chipTheme = {
 	chip: defaultChip,
 	prefix: defaultChipPrefix,

@@ -19,6 +19,9 @@ export type ButtonPrimitiveProps<Payload extends Record<string, any> | undefined
 			onclick?: ((payload: Payload | undefined) => void) | null | undefined;
 			onenter?: ((payload: Payload | undefined) => void) | null | undefined;
 			onleave?: ((payload: Payload | undefined) => void) | null | undefined;
+			/**
+			 * The class name of the button. First element that the component outputs in the DOM.
+			 */
 			class?: string;
 			target?: string;
 			rel?: string;
@@ -114,6 +117,13 @@ const defaultButtonSuffix = cva({
 	}
 });
 
+export const buttonStructure = `
+<Button>
+	<Prefix />
+	<Children />
+	<Suffix />
+</Button>
+`;
 export const buttonTheme = {
 	button: defaultButton,
 	prefix: defaultButtonPrefix,
