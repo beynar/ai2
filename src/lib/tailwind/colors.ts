@@ -455,7 +455,7 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || lighten(color.DEFAULT, 10),
 			light: color.light || darken(color.DEFAULT, 15),
-			lighter: color.lighter || darken(color.DEFAULT, 25),
+			lighter: color.lighter || darken(color.DEFAULT, 5),
 			muted: color.muted || darken(color.DEFAULT, 45),
 			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#242524' : '#FAFAFA'
 		};

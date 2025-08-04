@@ -1,32 +1,35 @@
 import type { Sizes, Colors } from '$lib/types/theme.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import type { WithAttachments } from '$lib/types/props.js';
 
-export type ChipProps = WithSlot<
-	{
-		class?: string;
-		color?: Colors;
-		size?: Sizes;
-		variant?: 'solid' | 'outline' | 'soft';
-		href?: string;
-		target?: string;
-		rel?: string;
-		onclick?: (event: MouseEvent) => void;
-		onenter?: (event: MouseEvent) => void;
-		onleave?: (event: MouseEvent) => void;
-		theme?: InferComponentTheme<typeof chipTheme>;
-	},
-	'children' | 'suffix' | 'prefix',
-	undefined
+export type ChipProps = WithAttachments<
+	WithSlot<
+		{
+			class?: string;
+			color?: Colors;
+			size?: Sizes;
+			variant?: 'solid' | 'outline' | 'soft';
+			href?: string;
+			target?: string;
+			rel?: string;
+			onclick?: (event: MouseEvent) => void;
+			onenter?: (event: MouseEvent) => void;
+			onleave?: (event: MouseEvent) => void;
+			theme?: InferComponentTheme<typeof chipTheme>;
+		},
+		'children' | 'suffix' | 'prefix',
+		undefined
+	>
 >;
 
 const defaultChip = cva({
-	base: 'rounded-large w-fit justify-center items-center inline-flex whitespace-nowrap',
+	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex whitespace-nowrap',
 	variants: {
 		size: {
-			normal: 'px-2 py-1 text-xs leading-4 gap-1',
-			large: 'px-2.5 py-1.5 text-base leading-5 gap-2',
-			small: 'px-1.5 py-1 text-[10px] leading-[10px] gap-1'
+			small: 'px-1 h-4 text-[10px]  gap-1',
+			normal: 'px-1.5 h-5 text-xs gap-1',
+			large: 'px-2 h-6 text-sm  gap-1.5'
 		},
 		color: {
 			primary: 'bg-primary text-primary-fg',
@@ -39,16 +42,28 @@ const defaultChip = cva({
 			info: 'bg-info text-info-fg'
 		},
 		variant: {
-			solid: 'text-color-fg',
+			solid: 'text-color-fg bg-color',
 			outline: 'bg-opacity-0 text-color border-color border',
-			soft: 'bg-color/20 text-color'
+			soft: 'bg-color-muted text-color'
 		}
 	},
 	defaultVariants: {
 		color: 'primary',
 		variant: 'solid',
-		size: 'normal'
-	}
+		size: 'small'
+	},
+	compoundVariants: [
+		{
+			color: 'surface',
+			variant: 'outline',
+			class: 'border-surface-lighter text-contrast'
+		},
+		{
+			color: 'surface',
+			variant: 'soft',
+			class: 'bg-surface-lighter text-color-fg'
+		}
+	]
 });
 
 const defaultChipPrefix = cva({

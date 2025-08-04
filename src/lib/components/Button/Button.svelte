@@ -8,6 +8,8 @@
 <script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
 	import { loader } from '$lib/actions/loader.js';
 	import Slot from '../Slot/Slot.svelte';
+	import type { Attachment } from 'svelte/attachments';
+	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	let {
 		as,
@@ -32,7 +34,9 @@
 		disabled = false,
 		theme,
 		rel,
-		target
+		target,
+		childrenProps,
+		...attachments
 	}: ButtonPrimitiveProps<Payload> = $props();
 
 	const isSquared = $derived(
@@ -56,22 +60,30 @@
 	data-size={size}
 	data-full-width={fullWidth}
 	data-disabled={disabled}
+	{disabled}
 	class={classes.button({ color, squared: isSquared, variant, size, loading, disabled, className })}
 	use:loader={{ loading }}
 	onclick={onclick &&
 		(() => {
-			onclick(payload);
+			if (!disabled) {
+				onclick(payload);
+			}
 		})}
 	onpointerenter={onenter &&
 		(() => {
-			onenter(payload);
+			if (!disabled) {
+				onenter(payload);
+			}
 		})}
 	onpointerleave={onleave &&
 		(() => {
-			onleave(payload);
+			if (!disabled) {
+				onleave(payload);
+			}
 		})}
+	{...attachments}
 >
 	<Slot {payload} render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot {payload} render={children} />
+	<Slot {payload} render={children} props={childrenProps} />
 	<Slot {payload} render={suffix} class={classes.suffix({ size })} props={suffixProps} />
 </svelte:element>

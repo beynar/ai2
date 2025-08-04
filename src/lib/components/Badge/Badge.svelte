@@ -16,7 +16,8 @@
 		variant = 'solid',
 		class: className,
 		children,
-		theme
+		theme,
+		...attachments
 	}: BadgeProps = $props();
 
 	const classes = $derived(useBadgeTheme(theme));
@@ -29,6 +30,7 @@
 	data-size={size}
 	data-variant={variant}
 	class={classes.badge({ className, color, size, variant, position })}
+	{...attachments}
 >
 	<Slot render={children} />
 </div>

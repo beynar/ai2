@@ -1,6 +1,7 @@
 import { cva } from 'cva';
+import type { WithAttachments } from '$lib/types/props.js';
 
-export type HeadingProps = {
+export type HeadingProps = WithAttachments<{
 	class?: string;
 	children?: any;
 	size?: `h${1 | 2 | 3 | 4 | 5 | 6}`;
@@ -11,7 +12,7 @@ export type HeadingProps = {
 	balanced?: boolean;
 	underline?: boolean;
 	muted?: boolean;
-};
+}>;
 
 export const heading = cva({
 	base: 'ui-heading',

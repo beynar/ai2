@@ -1,8 +1,14 @@
 <script lang="ts">
 	import Component from './Component.svelte';
-	import Button, { setButtonTheme } from '$lib/components/button/Button.svelte';
+	import Button, { setButtonTheme } from '$lib/components/Button/Button.svelte';
 	import Chip from '$lib/components/Chip/Chip.svelte';
 	import Badge from '$lib/components/Badge/Badge.svelte';
+
+	// setButtonTheme({
+	// 	button: {
+	// 		base: 'rounded-full'
+	// 	}
+	// });
 </script>
 
 <button data-color="danger" class="bg-color"> eaz </button>
@@ -26,7 +32,8 @@
 
 <!--  -->
 <Button color="secondary">Hello</Button>
-<Button color="danger">Hello</Button>
+<Button color="secondary">Hello</Button>
+<!-- <Button color="danger">Hello</Button>
 <Button color="success">Hello</Button>
 <Button color="warning">Hello</Button>
 <Button color="info">Hello</Button>
@@ -119,4 +126,4 @@
 			<Badge color="success" size="small" position="bottomRight">1</Badge>
 		</Badge>
 	</Badge>
-</div>
+</div> -->

@@ -23,7 +23,9 @@
 		href,
 		theme,
 		prefixProps,
-		suffixProps
+		suffixProps,
+		childrenProps,
+		...attachments
 	}: ChipProps = $props();
 
 	const classes = $derived(useChipTheme(theme));
@@ -47,8 +49,9 @@
 	{href}
 	{onclick}
 	class={classes.chip({ color, variant, size, className })}
+	{...attachments}
 >
 	<Slot render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot render={children} />
+	<Slot render={children} props={childrenProps} />
 	<Slot render={suffix} class={classes.suffix({ size })} props={suffixProps} />
 </svelte:element>

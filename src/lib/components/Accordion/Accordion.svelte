@@ -24,7 +24,18 @@
 		splitted,
 		size,
 		class: className,
-		theme
+		theme,
+		actionsProps,
+		iconProps,
+		titleProps,
+		descriptionProps,
+		contentProps,
+		actions,
+		title,
+		description,
+		content,
+		transitions,
+		...attachments
 	}: AccordionProps<Item> = $props();
 
 	const id = $props.id();
@@ -92,6 +103,7 @@
 	data-variant={variant}
 	data-size={size}
 	class={classes.accordion({ variant, size, splitted, className })}
+	{...attachments}
 >
 	{#each itemsWithId as accordionItem}
 		{@const item = accordion.getItem(accordionItem)}

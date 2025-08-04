@@ -40,7 +40,13 @@ export const setComponentTheme =
 
 const getKeys = (obj: any) => Object.keys(obj);
 
-const mergeObject = (source: Record<string, any>, target: Record<string, any>) => {
+const mergeObject = (
+	source: Record<string, any> | null | undefined,
+	target: Record<string, any>
+) => {
+	if (!source) {
+		return target;
+	}
 	const result = { ...source };
 	const targetKeys = getKeys(target);
 
@@ -66,8 +72,11 @@ export const useComponentTheme =
 		defaultTheme: T
 	): ((theme?: InferComponentTheme<T>) => T) =>
 	({ override, ...theme }: InferComponentTheme<T> = {}) => {
+		if (!theme) {
+			return defaultTheme;
+		}
 		if (override) {
-			let overidedTheme = {};
+			let overridedTheme = {};
 			for (const key in theme) {
 				// @ts-ignore
 				const { base = '', ...variants } = customTheme[key];
@@ -75,10 +84,11 @@ export const useComponentTheme =
 					[key]: cva({ base, variants })
 				});
 			}
-			return overidedTheme as T;
+			return overridedTheme as T;
 		} else {
-			const themeContext = getContext(`${component}Theme`);
-			const customTheme = mergeObject(themeContext || {}, theme || {});
+			const themeContext = getContext<Record<string, any> | null | undefined>(`${component}Theme`);
+
+			const customTheme = mergeObject(themeContext, theme);
 			if (!Object.keys(customTheme).length) {
 				return defaultTheme;
 			}

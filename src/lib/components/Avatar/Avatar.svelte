@@ -17,7 +17,8 @@
 		prefix,
 		delay = 0,
 		class: className,
-		theme
+		theme,
+		...attachments
 	}: AvatarProps<Item> = $props();
 
 	const complete = (image: HTMLImageElement) => {
@@ -44,7 +45,7 @@
 	);
 </script>
 
-<div data-avatar class={classes.avatar({ size, className })} data-size={size}>
+<div data-avatar class={classes.avatar({ size, className })} data-size={size} {...attachments}>
 	<Slot payload={user} render={prefix} class={classes.avatarPrefix({ size })} />
 	{#if user.avatar}
 		<img use:complete src={user.avatar} alt={user.name} class={classes.avatarImage({ size })} />

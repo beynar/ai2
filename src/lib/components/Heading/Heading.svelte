@@ -1,8 +1,5 @@
-<script lang="ts" module>
-	import type { HeadingProps } from './headings.js';
-</script>
-
 <script lang="ts">
+	import type { HeadingProps } from '$lib/components/Heading/headings.js';
 	let {
 		class: className = '',
 		underline = false,
@@ -14,13 +11,12 @@
 		balanced = true,
 		align = 'left',
 		muted = false,
-		...rest
+		...attachments
 	}: HeadingProps = $props();
 </script>
 
 <svelte:element
 	this={as || size || 'h2'}
-	{...rest}
 	data-level={size}
 	data-underline={underline}
 	data-balanced={balanced}
@@ -29,6 +25,7 @@
 	data-align={align}
 	data-weight={weight}
 	class={`${className}`}
+	{...attachments}
 >
 	{#if children}
 		{@render children()}

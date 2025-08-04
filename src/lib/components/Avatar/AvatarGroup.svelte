@@ -17,18 +17,33 @@
 		avatar,
 		theme,
 		size,
-		...rest
+		delay,
+		loadingState,
+		prefix,
+		suffix,
+		...attachments
 	}: AvatarGroupProps<Item> = $props();
 
 	const classes = $derived(useAvatarGroupTheme(theme));
 </script>
 
-<div data-size={size || 'normal'} class={classes.avatarGroup({ size, className })}>
+<div data-size={size || 'normal'} class={classes.avatarGroup({ size, className })} {...attachments}>
 	{#each users.slice(0, max) as user, index}
 		{#if avatar}
-			{@render avatar({ user, index, avatarProps: rest })}
+			{@render avatar({
+				user,
+				index,
+				avatarProps: {
+					delay,
+					size,
+					loadingState,
+					prefix,
+					suffix,
+					theme
+				}
+			})}
 		{:else}
-			<Avatar {...rest} {user} {size} />
+			<Avatar {delay} {size} {loadingState} {prefix} {suffix} {theme} {user} />
 		{/if}
 	{/each}
 	{#if max && users.length > max}

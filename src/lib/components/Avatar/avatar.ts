@@ -2,9 +2,10 @@ import type { Snippet } from 'svelte';
 import type { Sizes } from '../../types/index.js';
 import type { Slot } from '../Slot/slot.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import type { WithAttachments, WithoutAttachments } from '$lib/types/props.js';
 type LoadingState = 'waiting' | 'loading' | 'errored' | 'success';
 
-export type AvatarProps<I> = {
+export type AvatarProps<I> = WithAttachments<{
 	/**
 	 * The size of the avatar.
 	 * @default 'normal'
@@ -35,19 +36,20 @@ export type AvatarProps<I> = {
 	prefix?: Slot<{ name: string; avatar?: string }>;
 	suffix?: Slot<{ name: string; avatar?: string }>;
 	theme?: InferComponentTheme<typeof avatarTheme>;
-};
+}>;
 
-export type AvatarGroupProps<I extends object> = Omit<AvatarProps<I>, 'user'> & {
-	/**
-	 * The class name of the avatar group. First element that the component outputs in the DOM.
-	 */
-	class?: string;
-	max?: number;
-	avatar?: Snippet<[{ user: I; index: number; avatarProps: Omit<AvatarProps<I>, 'user'> }]>;
-	remainingCount?: Snippet<[{ users: I[]; remaining: number }]>;
-	users: Pick<AvatarProps<I>, 'user'>['user'][];
-	theme?: InferComponentTheme<typeof avatarGroupTheme>;
-};
+export type AvatarGroupProps<I extends object> = WithoutAttachments<Omit<AvatarProps<I>, 'user'>> &
+	WithAttachments<{
+		/**
+		 * The class name of the avatar group. First element that the component outputs in the DOM.
+		 */
+		class?: string;
+		max?: number;
+		avatar?: Snippet<[{ user: I; index: number; avatarProps: Omit<AvatarProps<I>, 'user'> }]>;
+		remainingCount?: Snippet<[{ users: I[]; remaining: number }]>;
+		users: Pick<AvatarProps<I>, 'user'>['user'][];
+		theme?: InferComponentTheme<typeof avatarGroupTheme>;
+	}>;
 
 const defaultAvatar = cva({
 	base: 'relative items-center border border-surface-lighter text-contrast aspect-ratio-1 rounded-full',
@@ -106,7 +108,7 @@ const defaultAvatarSuffix = cva({
 });
 
 const defaultAvatarInitials = cva({
-	base: 'absolute bg-surface-muted bottom-0 w-full h-full text-center left-0 rounded-full flex items-center justify-center uppercase font-bold text-sm',
+	base: 'absolute bg-surface-lighter bottom-0 w-full h-full text-center left-0 rounded-full flex items-center justify-center uppercase font-bold text-sm',
 	variants: {
 		size: {
 			normal: 'text-sm',
@@ -133,7 +135,7 @@ const defaultAvatarGroup = cva({
 	}
 });
 const defaultAvatarGroupCount = cva({
-	base: 'bg-surface-muted border-contrast text-contrast text-center rounded-full flex items-center justify-center uppercase font-bold border  ml-[-0.75rem] z-[+1]',
+	base: 'bg-surface-lighter border-contrast text-contrast text-center rounded-full flex items-center justify-center uppercase font-bold  ml-[-0.75rem] z-[+1]',
 	variants: {
 		size: {
 			normal: 'size-8 text-sm',
