@@ -13,7 +13,7 @@ export type ChipProps = WithAttachments<
 			href?: string;
 			target?: string;
 			rel?: string;
-			onclick?: (event: MouseEvent) => void;
+			onClick?: (event: MouseEvent) => void;
 			onenter?: (event: MouseEvent) => void;
 			onleave?: (event: MouseEvent) => void;
 			theme?: InferComponentTheme<typeof chipTheme>;

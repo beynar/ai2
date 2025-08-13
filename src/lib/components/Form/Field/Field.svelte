@@ -1,101 +1,97 @@
+<script lang="ts" module>
+	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+	import { fieldTheme } from './field.js';
+	export const setFieldTheme = setComponentTheme<typeof fieldTheme>('field');
+	export const useFieldTheme = useComponentTheme('field', fieldTheme);
+</script>
+
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import { type FieldState } from './useField.svelte.js';
-	import type { InputType, BaseFieldProps } from './field.js';
+	import type { InputType, FieldProps } from './field.js';
 	type Type = $$Generic<InputType>;
 
 	let {
 		class: className = '',
 		children,
-		label,
-		labelClass = '',
+		errorsContainer,
+		errorsContainerProps,
 		description,
-		descriptionClass = '',
 		helper,
-		helperClass,
 		actions,
-		actionsClass = '',
-		headerClass = '',
-		errors,
 		error,
-		errorsClass = '',
-		errorClass = '',
-		inputContainerClass = '',
 		suffix,
 		suffixProps,
 		labelProps,
+		label,
 		prefix,
 		prefixProps,
-		prefixClass = '',
-		suffixClass = '',
 		helperProps,
 		errorProps,
 		actionsProps,
 		descriptionProps,
 		footer,
-		footerClass = '',
 		footerProps,
 		header,
 		headerProps,
-		as = 'div',
-		node = $bindable(),
-		action = (_node: HTMLElement, _field: FieldState<Type>) => {
-			//
-		},
-		attrs = {}
+		size,
+		theme,
+		field
 	}: FieldProps<Type> = $props();
 
-	const field = getContext<FieldState<Type>>('field');
-	const allErrors = $derived(field.errors.concat(errors || []));
+	const classes = $derived(useFieldTheme(theme));
 </script>
 
-<div class="ui-field {className}" bind:this={node}>
+<div class={classes.field({ className })} bind:this={field.node}>
 	{#if label || actions || header}
-		<Slot render={header} payload={field} class="ui-field-header {headerClass}" props={headerProps}>
+		<Slot
+			render={header}
+			payload={field}
+			class={classes.header({ size, required: field.required })}
+			props={headerProps}
+		>
 			<Slot
 				as="label"
 				attrs={{ for: field.id }}
-				class="ui-field-label {labelClass}"
+				class={classes.label({ size })}
 				render={label}
 				props={labelProps}
 			/>
 			<Slot
-				class="ui-field-actions {actionsClass}"
+				class={classes.actions({ size })}
 				render={actions}
 				payload={field}
 				props={actionsProps}
 			/>
 		</Slot>
 	{/if}
-	<svelte:element
-		this={as}
-		class="ui-field-input-container {inputContainerClass}"
-		use:action={field}
-		{...attrs}
-	>
-		<Slot render={prefix} props={prefixProps} payload={field} class={prefixClass} />
+	<div class={classes.inputContainer({ size })}>
+		<Slot render={prefix} props={prefixProps} payload={field} class={classes.prefix({ size })} />
 		{@render children()}
-		<Slot render={suffix} props={suffixProps} payload={field} class={suffixClass} />
-	</svelte:element>
+		<Slot render={suffix} props={suffixProps} payload={field} class={classes.suffix({ size })} />
+	</div>
 	{#if description || helper || footer}
-		<Slot render={footer} payload={field} class="ui-field-footer {footerClass}" props={footerProps}>
+		<Slot render={footer} payload={field} class={classes.footer({ size })} props={footerProps}>
 			<Slot
-				class="ui-field-description {descriptionClass}"
+				class={classes.description({ size })}
 				render={description}
 				payload={field}
 				props={descriptionProps}
 			/>
-			<Slot class="ui-field-helper {helperClass}" render={helper} props={helperProps} />
+			<Slot class={classes.helper({ size })} render={helper} props={helperProps} />
 		</Slot>
 	{/if}
-	{#if allErrors.length > 0}
-		<ul class="ui-field-errors {errorsClass}">
-			{#each allErrors as err}
-				<Slot render={error} class="ui-field-error {errorClass}" payload={field} props={errorProps}>
+	{#if field.hasError && Array.isArray(field.errors)}
+		<Slot
+			render={errorsContainer}
+			payload={field}
+			class={classes.errorsContainer({ size })}
+			props={errorsContainerProps}
+		>
+			{#each field.errors as err}
+				<Slot render={error} class={classes.error({ size })} payload={field} props={errorProps}>
 					{err}
 				</Slot>
 			{/each}
-		</ul>
+		</Slot>
 	{/if}
 </div>

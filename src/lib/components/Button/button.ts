@@ -18,7 +18,7 @@ export type ButtonPrimitiveProps<Payload extends Record<string, any> | undefined
 				size?: Sizes;
 				fullWidth?: boolean;
 				disabled?: boolean;
-				onclick?: ((payload: Payload | undefined) => void) | null | undefined;
+				onClick?: ((payload: Payload | undefined) => void) | null | undefined;
 				onenter?: ((payload: Payload | undefined) => void) | null | undefined;
 				onleave?: ((payload: Payload | undefined) => void) | null | undefined;
 				/**
@@ -98,12 +98,12 @@ const defaultButton = cva({
 });
 
 const defaultButtonPrefix = cva({
-	base: 'w-6 h-6',
+	base: 'max-w-6 max-h-6',
 	variants: {
 		size: {
-			normal: 'w-6 h-6',
-			large: 'w-7 h-7',
-			small: 'w-4 h-4'
+			normal: 'max-w-6 max-h-6',
+			large: 'max-w-7 max-h-7',
+			small: 'max-w-4 max-h-4'
 		}
 	},
 	defaultVariants: {
@@ -112,12 +112,12 @@ const defaultButtonPrefix = cva({
 });
 
 const defaultButtonSuffix = cva({
-	base: 'w-6 h-6',
+	base: 'max-w-6 max-h-6',
 	variants: {
 		size: {
-			normal: 'w-6 h-6',
-			large: 'w-7 h-7',
-			small: 'w-4 h-4'
+			normal: 'max-w-6 max-h-6',
+			large: 'max-w-7 max-h-7',
+			small: 'max-w-4 max-h-4'
 		}
 	},
 	defaultVariants: {

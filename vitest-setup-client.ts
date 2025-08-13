@@ -8,7 +8,7 @@ Object.defineProperty(window, 'matchMedia', {
 	value: vi.fn().mockImplementation((query) => ({
 		matches: false,
 		media: query,
-		onchange: null,
+		onChange: null,
 		addEventListener: vi.fn(),
 		removeEventListener: vi.fn(),
 		dispatchEvent: vi.fn()

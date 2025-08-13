@@ -77,7 +77,7 @@ export const useComponentTheme =
 		}
 		if (override) {
 			let overridedTheme = {};
-			for (const key in theme) {
+			for (const key in defaultTheme) {
 				// @ts-ignore
 				const { base = '', ...variants } = customTheme[key];
 				Object.assign(theme, {

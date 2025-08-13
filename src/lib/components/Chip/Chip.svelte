@@ -13,7 +13,7 @@
 		children,
 		size = 'normal',
 		class: className = '',
-		onclick,
+		onClick,
 		onenter,
 		onleave,
 		suffix,
@@ -29,13 +29,7 @@
 	}: ChipProps = $props();
 
 	const classes = $derived(useChipTheme(theme));
-	const as = $derived(href ? 'a' : onclick || onenter || onleave ? 'button' : 'div');
-
-	function tooltip(content: string) {
-		return (node: HTMLElement) => {
-			console.log(node, content);
-		};
-	}
+	const as = $derived(href ? 'a' : onClick || onenter || onleave ? 'button' : 'div');
 </script>
 
 <svelte:element
@@ -47,7 +41,7 @@
 	{rel}
 	{target}
 	{href}
-	{onclick}
+	onclick={onClick}
 	class={classes.chip({ color, variant, size, className })}
 	{...attachments}
 >

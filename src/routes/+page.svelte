@@ -21,7 +21,7 @@
 
 {#snippet Test({ text }: { text: string })}
 	<button
-		onclick={() => {
+		onClick={() => {
 			console.log({ Test, Component });
 		}}
 		class="bg-primary text-color-light p-2">{text}</button

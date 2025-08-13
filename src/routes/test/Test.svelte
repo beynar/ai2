@@ -1,66 +1,42 @@
 <script lang="ts" module>
-	import { watch } from 'runed';
 	import Button from '$lib/components/Button/Button.svelte';
-	import { watchIcon } from '$lib/components/Icons/watch.js';
-	import { untrack } from 'svelte';
+	import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 
-	const linked = (a: () => any, b: () => any) => {
-		$effect(() => {
-			const newValue = b();
-			untrack(() => {
-				let oldValue = a();
-				if (newValue !== oldValue) {
-					console.log('newValue', newValue);
-					oldValue = newValue;
-				}
-			});
-		});
-	};
-
-	class BindableStateClass<P extends Record<string, any>> {
-		props: P;
-
-		constructor(props: P) {
-			this.props = props;
-			Object.entries(props).forEach(([key, value]) => {
-				Object.defineProperty(this, key, {
-					get: () => this.props[key as keyof P],
-					set: (newValue) => {
-						console.log('set', key, newValue);
-						this.props[key as keyof P] = newValue;
-					}
-				});
-			});
-		}
-	}
-
-	// Type helper to create a properly typed bindable state class
-	type TypedBindableStateClass<P extends Record<string, any>> = new (
-		props: P
-	) => BindableStateClass<P> & P;
-
-	const createBindableStateClass = <P extends Record<string, any>>() => {
-		return class extends BindableStateClass<P> {
-			constructor(props: P) {
-				super(props);
-			}
-		} as TypedBindableStateClass<P>;
-	};
-
-	class Test extends createBindableStateClass<{ name: string; age: number }>() {
-		constructor(props: { name: string; age: number }) {
-			super(props);
-		}
-	}
+	class Test extends createBindableStateClass<{
+		name: string;
+		age: number;
+		test: boolean;
+		record: {
+			test: boolean;
+		};
+	}>() {}
 </script>
 
 <script lang="ts">
+	const getSet = <T extends Record<string, any>>(obj: T) => {
+		return Object.entries(obj).reduce((acc, [key, value]) => {
+			Object.defineProperty(acc, key, {
+				get: () => value,
+				set: (newValue) => {
+					value = newValue;
+				},
+				enumerable: true
+			});
+			return acc;
+		}, {} as T);
+	};
 	let {
 		name = $bindable(),
-		age = $bindable()
+		age = $bindable(),
+		record = $bindable({
+			test: true
+		})
 	}: {
 		name: string;
 		age: number;
+		record: {
+			test: boolean;
+		};
 	} = $props();
 
 	const test = new Test({
@@ -76,10 +52,12 @@
 		},
 		set age(value: number) {
 			age = value;
-		}
+		},
+		test: true,
+		...makeGetters({
+			record
+		})
 	});
-
-	console.log(test);
 </script>
 
 <div>
@@ -87,16 +65,29 @@
 	<div class="flex gap-2">
 		<Button
 			size="small"
-			onclick={() => {
-				test.name = test.name === 'Jane' ? 'John' : 'Jane';
+			onClick={() => {
+				console.log('record.test', test, {
+					...makeGetters({
+						record
+					})
+				});
+				record.test = record.test === true ? false : true;
 			}}
 		>
-			Update component name
+			Update component record.test to {!record.test}
+		</Button>
+		<Button
+			size="small"
+			onClick={() => {
+				test.record.test = test.record.test === true ? false : true;
+			}}
+		>
+			Update class record.test to {!test.record.test}
 		</Button>
 
 		<Button
 			size="small"
-			onclick={() => {
+			onClick={() => {
 				test.age++;
 			}}
 		>

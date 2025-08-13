@@ -1,6 +1,9 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { InferComponentTheme } from '$lib/utils/cva.js';
 import { cva } from 'cva';
+import type { Snippet } from 'svelte';
+import type { FieldState } from './fieldState.svelte.js';
+import type { Sizes } from '$lib/types/theme.js';
 
 export type TextInputType =
 	| 'text'
@@ -59,26 +62,25 @@ export type FieldValue<T extends InputType> = T extends 'file'
 												? [Date, Date]
 												: never;
 
-export type BaseFieldProps<T extends InputType> = WithSlot<
+export type InputProps<T extends InputType> = WithSlot<
 	{
-		id?: string;
-		attrs?: Record<string, string | boolean>;
-		type: T;
-		as?: string;
-		name: string;
-		label: string;
-		placeholder?: string;
+		name?: string;
 		required?: boolean;
 		disabled?: boolean;
+		size?: Sizes;
 		readonly?: boolean;
 		visible?: boolean;
+		// schema?: any;
+		onValidate?: (value: FieldValue<T>) => string[] | boolean;
+		onChange?: (value: FieldValue<T>) => void;
+		attrs?: Record<string, string | boolean>;
 		class?: string;
-		errors?: string[] | boolean;
-		schema?: any;
-		validate?: (value: FieldValue<T>) => string[] | boolean;
-		onchange?: (value: FieldValue<T>) => void;
 		theme?: InferComponentTheme<typeof fieldTheme>;
+		value?: FieldValue<T>;
+		errors?: string[] | boolean;
+		focused?: boolean;
 	},
+	| 'header'
 	| 'label'
 	| 'suffix'
 	| 'prefix'
@@ -91,23 +93,41 @@ export type BaseFieldProps<T extends InputType> = WithSlot<
 	| 'errorsContainer'
 >;
 
+export type FieldProps<T extends InputType> = Omit<
+	InputProps<T>,
+	'type' | 'name' | 'required' | 'disabled' | 'readonly' | 'visible' | 'onValidate' | 'onChange'
+> & {
+	children: Snippet;
+	field: FieldState<T>;
+};
+
 const defaultField = cva({
-	base: 'flex flex-col gap-2'
+	base: 'flex flex-col gap-2',
+	variants: {
+		hasError: {
+			true: 'text-danger!',
+			false: ''
+		}
+	}
 });
 
 const defaultFieldHeader = cva({
-	base: 'flex items-center gap-2',
+	base: 'flex items-center gap-2 relative',
 	variants: {
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
 			large: 'gap-3'
+		},
+		required: {
+			true: 'before:content-["*"] before:text-danger before:mr-1 before:text-sm  before:font-bold before:absolute before:right-0 before:top-0',
+			false: ''
 		}
 	}
 });
 
 const defaultFieldLabel = cva({
-	base: 'text-sm font-medium',
+	base: 'text-contrast-light text-sm',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -118,7 +138,7 @@ const defaultFieldLabel = cva({
 });
 
 const defaultFieldActions = cva({
-	base: 'flex items-center gap-2',
+	base: 'flex items-start gap-2',
 	variants: {
 		size: {
 			small: 'gap-1',
@@ -129,7 +149,7 @@ const defaultFieldActions = cva({
 });
 
 const defaultFieldErrorsContainer = cva({
-	base: 'text-sm text-red-500',
+	base: 'grid gap-1',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -140,7 +160,7 @@ const defaultFieldErrorsContainer = cva({
 });
 
 const defaultFieldError = cva({
-	base: 'text-sm text-danger',
+	base: 'text-danger text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -151,6 +171,27 @@ const defaultFieldError = cva({
 });
 
 const defaultFieldInputContainer = cva({
+	base: 'flex-1 gap-2 flex justify-between w-full items-center p-1',
+	variants: {
+		size: {
+			small: 'gap-1',
+			normal: 'gap-2',
+			large: 'gap-3'
+		}
+	}
+});
+
+const defaultFieldPrefix = cva({
+	base: 'flex items-center gap-2',
+	variants: {
+		size: {
+			small: 'gap-1',
+			normal: 'gap-2',
+			large: 'gap-3'
+		}
+	}
+});
+const defaultFieldSuffix = cva({
 	base: 'flex items-center gap-2',
 	variants: {
 		size: {
@@ -161,14 +202,18 @@ const defaultFieldInputContainer = cva({
 	}
 });
 
-const defaultFieldPrefix = cva({});
-const defaultFieldSuffix = cva({});
-
 const defaultFieldFooter = cva({
-	base: 'flex items-center gap-2'
+	base: 'flex items-start gap-2 justify-between',
+	variants: {
+		size: {
+			small: 'gap-1',
+			normal: 'gap-2',
+			large: 'gap-3'
+		}
+	}
 });
 const defaultFieldDescription = cva({
-	base: 'text-sm text-contrast-secondary',
+	base: 'text-contrast-muted text-xs leading-3 flex-1',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -178,7 +223,7 @@ const defaultFieldDescription = cva({
 	}
 });
 const defaultFieldHelper = cva({
-	base: 'text-sm text-contrast-secondary',
+	base: 'text-contrast-muted text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -242,15 +287,15 @@ These snippets will receive the fieldState as argument.
 
 export const fieldTheme = {
 	field: defaultField,
-	fieldHeader: defaultFieldHeader,
-	fieldLabel: defaultFieldLabel,
-	fieldActions: defaultFieldActions,
-	fieldErrorsContainer: defaultFieldErrorsContainer,
-	fieldError: defaultFieldError,
-	fieldInputContainer: defaultFieldInputContainer,
-	fieldPrefix: defaultFieldPrefix,
-	fieldSuffix: defaultFieldSuffix,
-	fieldFooter: defaultFieldFooter,
-	fieldDescription: defaultFieldDescription,
-	fieldHelper: defaultFieldHelper
+	header: defaultFieldHeader,
+	label: defaultFieldLabel,
+	actions: defaultFieldActions,
+	errorsContainer: defaultFieldErrorsContainer,
+	error: defaultFieldError,
+	inputContainer: defaultFieldInputContainer,
+	prefix: defaultFieldPrefix,
+	suffix: defaultFieldSuffix,
+	footer: defaultFieldFooter,
+	description: defaultFieldDescription,
+	helper: defaultFieldHelper
 };

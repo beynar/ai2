@@ -10,7 +10,7 @@
 <div class="flex gap-2">
 	<Button
 		size="small"
-		onclick={() => {
+		onClick={() => {
 			name = name === 'Jane' ? 'John' : 'Jane';
 		}}
 	>
@@ -19,7 +19,7 @@
 
 	<Button
 		size="small"
-		onclick={() => {
+		onClick={() => {
 			age++;
 		}}
 	>

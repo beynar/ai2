@@ -8,14 +8,12 @@
 <script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
 	import { loader } from '$lib/actions/loader.js';
 	import Slot from '../Slot/Slot.svelte';
-	import type { Attachment } from 'svelte/attachments';
-	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	let {
 		as,
 		payload,
 		loading = false,
-		onclick = null,
+		onClick = null,
 		prefixProps,
 		onenter = null,
 		onleave = null,
@@ -63,10 +61,10 @@
 	{disabled}
 	class={classes.button({ color, squared: isSquared, variant, size, loading, disabled, className })}
 	use:loader={{ loading }}
-	onclick={onclick &&
+	onclick={onClick &&
 		(() => {
 			if (!disabled) {
-				onclick(payload);
+				onClick(payload);
 			}
 		})}
 	onpointerenter={onenter &&

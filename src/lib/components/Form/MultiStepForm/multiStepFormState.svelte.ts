@@ -1,0 +1,104 @@
+import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
+import type { Snippet } from 'svelte';
+import type { FormState } from '../Form/formState.svelte.js';
+import type { FormStep } from './multiStepForm.js';
+import type { MergedMultiStepFormInputs } from './multiStepForm.js';
+import { createBindableStateClass } from '$lib/utils/state.svelte.js';
+import type { InferFormValue } from '../Form/form.js';
+import { step } from './MultiStepForm.svelte';
+import { setContext } from 'svelte';
+export class MultiStepFormState<
+	I extends FormStep[] = FormStep[]
+> extends createBindableStateClass<{
+	steps: FormStep[];
+	onSubmit: (value: InferFormValue<MergedMultiStepFormInputs<any>>) => Promise<void> | void;
+}>() {
+	forms = $state<FormState[]>([]);
+	stepper = $state<StepperState<FormStep>>();
+	loading = $state(false);
+	isLastStep = $derived(this.stepper?.activeStep === this.steps.length - 1);
+	constructor(opts: {
+		steps: I;
+		onSubmit: (value: InferFormValue<MergedMultiStepFormInputs<I>>) => Promise<void> | void;
+	}) {
+		super(opts);
+		setContext('multiStepForm', this);
+	}
+	progress = $derived({
+		value: (((this.stepper?.activeStep || 0) + 1) / this.steps.length) * 100
+	});
+
+	meterSteps = $derived(
+		this.steps.map(
+			(step, index) =>
+				({
+					label: step.title,
+					start: (index / this.steps.length) * 100,
+					end: ((index + 1) / this.steps.length) * 100,
+					color: index === this.stepper?.activeStep ? 'success' : 'info'
+				}) as any
+		)
+	);
+
+	stepsSnippets = $derived(
+		this.steps.reduce(
+			(acc, _step, index) => {
+				Object.assign(acc, {
+					[`step${index + 1}`]: step
+				});
+				return acc;
+			},
+			{} as Record<
+				`step${number}`,
+				Snippet<
+					[
+						{
+							stepper: StepperState<I>;
+							item: I;
+							index: number;
+						}
+					]
+				>
+			>
+		)
+	);
+
+	addForm(form: FormState) {
+		this.forms.push(form);
+	}
+
+	async submit() {
+		let hasError = false;
+		const value = this.forms.reduce(
+			(acc, form, index) => {
+				if (index <= this.stepper?.activeStep!) {
+					const value = form.validate();
+					if (value) {
+						Object.assign(acc, value);
+					} else {
+						hasError = true;
+					}
+				}
+
+				return acc;
+			},
+			{} as InferFormValue<MergedMultiStepFormInputs<I>>
+		);
+		if (this.stepper?.activeStep !== this.steps.length - 1 && !hasError) {
+			this.stepper?.next();
+		} else {
+			if (this.onSubmit) {
+				const maybePromise = this.onSubmit(value as InferFormValue<MergedMultiStepFormInputs<I>>);
+				if (maybePromise instanceof Promise) {
+					this.loading = true;
+					await maybePromise;
+					this.loading = false;
+				}
+			}
+		}
+		if (hasError) {
+			return false;
+		}
+		return value;
+	}
+}

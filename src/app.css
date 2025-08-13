@@ -1,13 +1,29 @@
 @import 'tailwindcss';
 
-@plugin "./lib/tailwind/theme" {
+@plugin "../dist/tailwind/index" {
+	default: true;
+	eas: true;
+	raised-with-border: true;
+}
+
+@plugin "../dist/tailwind/theme" {
 	default: true;
 	radius: normal;
 	spacing: large;
 }
 
-@plugin "./lib/tailwind" {
-	default: true;
-	eas: true;
-	raised-with-border: true;
+meter {
+	background: none !important;
+	appearance: none !important;
+	-webkit-appearance: none !important;
+}
+
+::-moz-meter-bar {
+	-moz-appearance: none !important;
+}
+
+::-moz-meter-optimum::-moz-meter-bar,
+::-moz-meter-sub-optimum::-moz-meter-bar,
+::-moz-meter-sub-sub-optimum::-moz-meter-bar {
+	background: none !important;
 }
