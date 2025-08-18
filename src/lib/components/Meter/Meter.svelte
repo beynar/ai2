@@ -97,11 +97,16 @@
 	</div>
 {/snippet}
 
+{#snippet headerSnippet()}
+	<Slot class={classes.label({ size })} render={label} props={labelProps} />
+	<Slot class={classes.helper({ size })} props={helperProps} render={helper} />
+{/snippet}
 <div data-size={size} class={classes.meter({ size, className })}>
-	<Slot props={headerProps} class={classes.header({ size })} render={header}>
-		<Slot class={classes.label({ size })} render={label} props={labelProps} />
-		<Slot class={classes.helper({ size })} props={helperProps} render={helper} />
-	</Slot>
+	<Slot
+		props={headerProps}
+		class={classes.header({ size })}
+		render={header ? header : label || helper ? headerSnippet : undefined}
+	/>
 	<div class={classes.track({ size })}>
 		{#if steps}
 			{#each steps as step, i}
@@ -117,7 +122,7 @@
 					style:width={width + '%'}
 				>
 					<Slot
-						class={classes.stepLabel({ size, position: step.position })}
+						class={classes.stepLabel({ size, position: step.position || 'top' })}
 						render={step.label}
 						props={step}
 					/>

@@ -7,11 +7,18 @@ import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 import type { InferFormValue } from '../Form/form.js';
 import { step } from './MultiStepForm.svelte';
 import { setContext } from 'svelte';
+import type { Colors } from '$lib/types/theme.js';
 export class MultiStepFormState<
 	I extends FormStep[] = FormStep[]
 > extends createBindableStateClass<{
 	steps: FormStep[];
-	onSubmit: (value: InferFormValue<MergedMultiStepFormInputs<any>>) => Promise<void> | void;
+	onSubmitForm?: (value: InferFormValue<MergedMultiStepFormInputs<any>>) => Promise<void> | void;
+	onSubmitStep?: (
+		value: InferFormValue<MergedMultiStepFormInputs<any>>,
+		step: FormStep,
+		index: number
+	) => Promise<void | boolean> | void | boolean;
+	meterColor?: Colors;
 }>() {
 	forms = $state<FormState[]>([]);
 	stepper = $state<StepperState<FormStep>>();
@@ -19,23 +26,30 @@ export class MultiStepFormState<
 	isLastStep = $derived(this.stepper?.activeStep === this.steps.length - 1);
 	constructor(opts: {
 		steps: I;
-		onSubmit: (value: InferFormValue<MergedMultiStepFormInputs<I>>) => Promise<void> | void;
+		onSubmitForm?: (value: InferFormValue<MergedMultiStepFormInputs<I>>) => Promise<void> | void;
+		onSubmitStep?: (
+			value: InferFormValue<MergedMultiStepFormInputs<any>>,
+			step: I[number],
+			index: number
+		) => Promise<void | boolean> | void | boolean;
+		meterColor?: Colors;
 	}) {
 		super(opts);
 		setContext('multiStepForm', this);
 	}
 	progress = $derived({
-		value: (((this.stepper?.activeStep || 0) + 1) / this.steps.length) * 100
+		value: (((this.stepper?.activeStep || 0) + 1) / this.steps.length) * 100,
+		color: this.meterColor || 'info'
 	});
 
 	meterSteps = $derived(
 		this.steps.map(
 			(step, index) =>
 				({
-					label: step.title,
+					label: ``,
 					start: (index / this.steps.length) * 100,
 					end: ((index + 1) / this.steps.length) * 100,
-					color: index === this.stepper?.activeStep ? 'success' : 'info'
+					color: this.meterColor || 'info'
 				}) as any
 		)
 	);
@@ -85,10 +99,29 @@ export class MultiStepFormState<
 			{} as InferFormValue<MergedMultiStepFormInputs<I>>
 		);
 		if (this.stepper?.activeStep !== this.steps.length - 1 && !hasError) {
-			this.stepper?.next();
+			if (this.onSubmitStep) {
+				let shouldContinue = this.onSubmitStep(
+					value as InferFormValue<MergedMultiStepFormInputs<I>>,
+					this.steps[this.stepper?.activeStep!],
+					this.stepper?.activeStep!
+				);
+				if (shouldContinue instanceof Promise) {
+					this.loading = true;
+					shouldContinue = await shouldContinue;
+					this.loading = false;
+					if (shouldContinue !== false) {
+						this.stepper?.next();
+					}
+				}
+			} else {
+				// Automatic continue to the next step if no onSubmitStep is provided.
+				this.stepper?.next();
+			}
 		} else {
-			if (this.onSubmit) {
-				const maybePromise = this.onSubmit(value as InferFormValue<MergedMultiStepFormInputs<I>>);
+			if (this.onSubmitForm) {
+				const maybePromise = this.onSubmitForm(
+					value as InferFormValue<MergedMultiStepFormInputs<I>>
+				);
 				if (maybePromise instanceof Promise) {
 					this.loading = true;
 					await maybePromise;

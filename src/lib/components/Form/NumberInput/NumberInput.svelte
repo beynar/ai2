@@ -1,14 +1,14 @@
 <script lang="ts" module>
 	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { textInputTheme } from '$lib/components/Form/TextInput/textInput.js';
-	export const setTextInputTheme = setComponentTheme<typeof textInputTheme>('textInput');
-	export const useTextInputTheme = useComponentTheme('textInput', textInputTheme);
+	import { numberInputTheme } from '$lib/components/Form/NumberInput/numberInput.js';
+	export const setNumberInputTheme = setComponentTheme<typeof numberInputTheme>('numberInput');
+	export const useNumberInputTheme = useComponentTheme('numberInput', numberInputTheme);
 </script>
 
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { TextInputProps } from '$lib/components/Form/TextInput/textInput.js';
+	import type { NumberInputProps } from '$lib/components/Form/NumberInput/numberInput.js';
 
 	let {
 		value = $bindable(null),
@@ -22,10 +22,15 @@
 		onValidate,
 		readonly,
 		visible,
+		min,
+		max,
+		step,
 		...rest
-	}: TextInputProps = $props();
+	}: NumberInputProps = $props();
 
 	const id = $props.id();
+
+	// Create validation function that combines user validation with min/max constraints
 
 	const field = createFieldState({
 		id,
@@ -58,13 +63,29 @@
 		},
 		required,
 		name,
-		onValidate,
+		onValidate: (val: number | null) => {
+			console.log('onValidate', val, onValidate?.(val));
+			if (typeof val === 'number') {
+				if (min && val < min) {
+					console.log('check min', val, 'min', min);
+					return true;
+				}
+				if (max && val > max) {
+					console.log('check max', val, 'max', max);
+					return true;
+				}
+
+				return onValidate?.(val) || false;
+			}
+
+			return false;
+		},
 		readonly,
 		visible,
-		type: 'text'
+		type: 'number'
 	});
 
-	const classes = $derived(useTextInputTheme(theme));
+	const classes = $derived(useNumberInputTheme(theme));
 </script>
 
 <Field
@@ -80,12 +101,15 @@
 >
 	<input
 		data-1p-ignore
-		type="text"
+		type="number"
 		{id}
 		name={field.name}
 		bind:value={field.value}
 		bind:this={field.node}
 		{placeholder}
+		{min}
+		{max}
+		{step}
 		class={classes.input()}
 	/>
 </Field>

@@ -2,9 +2,12 @@ import { cva } from 'cva';
 import type { InputProps } from '../Field/field.js';
 import type { InferComponentTheme } from '$lib/utils/cva.js';
 
-export type TextInputProps = InputProps<'text'> & {
+export type NumberInputProps = InputProps<'number'> & {
 	placeholder?: string;
-	theme?: InferComponentTheme<typeof textInputTheme> & InputProps<'text'>['theme'];
+	min?: number;
+	max?: number;
+	step?: number;
+	theme?: InferComponentTheme<typeof numberInputTheme> & InputProps<'number'>['theme'];
 };
 
 const defaultInput = cva({
@@ -29,7 +32,7 @@ const defaultInputContainer = cva({
 	}
 });
 
-const textInputStructure = `
+const numberInputStructure = `
 <Field>
     ...otherFieldElements
         <InputParent>
@@ -41,7 +44,7 @@ const textInputStructure = `
 </Field>
 `;
 
-export const textInputTheme = {
+export const numberInputTheme = {
 	input: defaultInput,
 	inputContainer: defaultInputContainer
 };

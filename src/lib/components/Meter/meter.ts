@@ -180,9 +180,9 @@ const defaultMeterStepLabel = cva({
 			large: 'text-sm'
 		},
 		position: {
-			top: 'top-0 left-1/2 -translate-x-1/2 -translate-y-full',
-			center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-			bottom: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full'
+			top: 'top-0 left-1/2 -translate-x-1/2 ',
+			center: 'top-1/2 left-1/2 -translate-x-1/2 ',
+			bottom: 'bottom-0 left-1/2 -translate-x-1/2'
 		}
 	},
 	defaultVariants: {

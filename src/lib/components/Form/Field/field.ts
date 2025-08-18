@@ -20,7 +20,7 @@ export type DateInputType = 'datetime' | 'date';
 export type TimeInputType = 'time';
 export type BooleanInputType = 'switch' | 'checkbox';
 export type SingleOptionInputType = 'select' | 'radio';
-export type MultipleChoiceInputType = 'checkboxes' | 'radios';
+export type MultipleChoiceInputType = 'checkboxes';
 export type FileInputType = 'file' | 'files';
 export type CalendarInputType = 'calendar' | 'calendar-range';
 
@@ -76,7 +76,7 @@ export type InputProps<T extends InputType> = WithSlot<
 		attrs?: Record<string, string | boolean>;
 		class?: string;
 		theme?: InferComponentTheme<typeof fieldTheme>;
-		value?: FieldValue<T>;
+		value?: FieldValue<T> | null;
 		errors?: string[] | boolean;
 		focused?: boolean;
 	},
@@ -97,6 +97,7 @@ export type FieldProps<T extends InputType> = Omit<
 	InputProps<T>,
 	'type' | 'name' | 'required' | 'disabled' | 'readonly' | 'visible' | 'onValidate' | 'onChange'
 > & {
+	as?: string;
 	children: Snippet;
 	field: FieldState<T>;
 };
@@ -105,7 +106,7 @@ const defaultField = cva({
 	base: 'flex flex-col gap-2',
 	variants: {
 		hasError: {
-			true: 'text-danger!',
+			true: 'text-danger',
 			false: ''
 		}
 	}
@@ -120,7 +121,11 @@ const defaultFieldHeader = cva({
 			large: 'gap-3'
 		},
 		required: {
-			true: 'before:content-["*"] before:text-danger before:mr-1 before:text-sm  before:font-bold before:absolute before:right-0 before:top-0',
+			// true: 'before:content-["*"] before:text-danger before:mr-1 before:text-sm  before:font-bold before:absolute before:right-0 before:top-0',
+			false: ''
+		},
+		hasError: {
+			true: 'text-danger',
 			false: ''
 		}
 	}
@@ -133,6 +138,14 @@ const defaultFieldLabel = cva({
 			small: 'text-xs',
 			normal: 'text-sm',
 			large: 'text-base'
+		},
+		hasError: {
+			true: 'text-danger',
+			false: ''
+		},
+		required: {
+			true: 'relative before:content-["*"] before:text-danger before:text-sm  before:font-bold before:absolute before:-right-2 before:top-0',
+			false: ''
 		}
 	}
 });
@@ -171,12 +184,16 @@ const defaultFieldError = cva({
 });
 
 const defaultFieldInputContainer = cva({
-	base: 'flex-1 gap-2 flex justify-between w-full items-center p-1',
+	base: 'flex-1 gap-2 flex justify-between w-full items-center',
 	variants: {
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
 			large: 'gap-3'
+		},
+		hasError: {
+			true: '!border-danger !border !ring-danger',
+			false: ''
 		}
 	}
 });

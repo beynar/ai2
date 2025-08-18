@@ -1,6 +1,6 @@
 {
 	"name": "svelai",
-	"version": "0.0.3",
+	"version": "0.0.8",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -95,6 +95,16 @@
 		"./tailwind-theme": {
 			"types": "./dist/tailwind/theme.d.ts",
 			"default": "./dist/tailwind/theme.js"
+		},
+		"./MultiStepForm": {
+			"types": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts",
+			"svelte": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte",
+			"default": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte"
+		},
+		"./TextArea": {
+			"types": "./dist/components/Form/TextArea/TextArea.svelte.d.ts",
+			"svelte": "./dist/components/Form/TextArea/TextArea.svelte",
+			"default": "./dist/components/Form/TextArea/TextArea.svelte"
 		}
 	},
 	"typesVersion": {
@@ -107,6 +117,12 @@
 			],
 			"./tailwind-theme": [
 				"./dist/tailwind/theme.d.ts"
+			],
+			"./MultiStepForm": [
+				"./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts"
+			],
+			"./TextArea": [
+				"./dist/components/Form/TextArea/TextArea.svelte.d.ts"
 			]
 		}
 	}

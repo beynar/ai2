@@ -11,7 +11,7 @@
 	import type { SelectProps } from '$lib/components/Form/Select/select.js';
 
 	let {
-		value = $bindable(''),
+		value = $bindable(null),
 		errors = $bindable([]),
 		focused = $bindable(false),
 		required = false,
@@ -34,7 +34,7 @@
 		get value() {
 			return value;
 		},
-		set value(v: string) {
+		set value(v) {
 			value = v;
 		},
 		get errors() {
@@ -49,8 +49,8 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			onChange?.(v);
+		get onChange() {
+			return onChange;
 		},
 		get disabled() {
 			return disabled;
@@ -58,7 +58,9 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
+		get required() {
+			return required;
+		},
 		name,
 		onValidate,
 		readonly,
@@ -88,8 +90,8 @@
 		{placeholder}
 		class={classes.input()}
 	>
-		{#if placeholder}
-			<option value="">{placeholder}</option>
+		{#if placeholder && !value}
+			<option value="" disabled hidden>{placeholder}</option>
 		{/if}
 		{#each options || [] as option}
 			<option value={option.value}>{option.label}</option>

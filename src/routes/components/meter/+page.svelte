@@ -6,7 +6,7 @@
 	let value2 = $state(20);
 
 	$effect(() => {
-		// return;
+		return;
 		const interval = setInterval(() => {
 			if (value < 100) {
 				value = value + 10;

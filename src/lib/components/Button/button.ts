@@ -76,6 +76,9 @@ const defaultButton = cva({
 		squared: {
 			true: 'p-1 aspect-square',
 			false: null
+		},
+		fullWidth: {
+			true: '!w-full flex-1 max-w-full'
 		}
 	},
 	defaultVariants: {

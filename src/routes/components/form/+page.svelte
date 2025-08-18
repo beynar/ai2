@@ -1,9 +1,11 @@
 <script lang="ts">
+	import Button from '$lib/components/Button/Button.svelte';
 	import MultiStepForm from '$lib/components/Form/MultiStepForm/MultiStepForm.svelte';
 	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.js';
+	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 
-	let items = $state(<const>[
+	let items = $state<FormStep[]>(<const>[
 		{
 			title: 'step 1',
 			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
@@ -14,8 +16,11 @@
 					placeholder: 'Name'
 				},
 				age: {
-					type: 'text',
+					type: 'number',
 					label: 'Age',
+					max: 100,
+					min: 18,
+					step: 10,
 					placeholder: 'Age',
 					required: true
 				},
@@ -23,6 +28,65 @@
 					type: 'text',
 					label: 'Email',
 					placeholder: 'Email'
+				},
+				radiosCard: {
+					type: 'select',
+					label: 'Radios',
+					placeholder: 'Radios',
+					options: [
+						{
+							label: 'Option 1',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						}
+					]
+				},
+				radiosNormal: {
+					type: 'radio',
+					label: 'Radios',
+					mode: 'normal',
+					options: [
+						{
+							label: 'Option 1',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						},
+						{
+							label: 'Option 3',
+							value: 'option3'
+						}
+					]
+				},
+				checkboxes: {
+					type: 'checkboxes',
+					label: 'Radios',
+					mode: 'normal',
+					options: [
+						{
+							label: 'Option 1',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						},
+						{
+							label: 'Option 3',
+							value: 'option3'
+						}
+					]
+				},
+				switch: {
+					type: 'switch',
+					label: 'Switch',
+					placeholder: 'Switch',
+					description: 'Switch description'
 				}
 			}
 		},
@@ -43,7 +107,7 @@
 			}
 		},
 		{
-			title: 'step 3',
+			// title: 'step 3',
 			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 			inputs: {
 				company: {
@@ -73,16 +137,29 @@
 				}
 			}
 		}
-	]) satisfies FormStep[];
+	]);
+
+	let showFooter = $state(false);
 </script>
+
+{#snippet footer({ payload: form }: { payload: MultiStepFormState<typeof items> })}
+	<div class="raised w-full rounded-lg p-4">
+		<Button fullWidth onClick={() => (showFooter = false)}>Submit caca</Button>
+	</div>
+{/snippet}
 
 <ComponentCard title="Accordion Classic" class="flex !items-start ">
 	<div class="my-10 grid w-[800px] gap-10">
 		<MultiStepForm
+			footer={showFooter ? footer : undefined}
 			steps={items}
-			onSubmit={(values) => {
-				console.log(values.name);
-			}}
-		/>
+			onSubmitForm={(values) => {}}
+		></MultiStepForm>
 	</div>
 </ComponentCard>
+
+{#if !showFooter}
+	<div class="raised w-full rounded-lg p-4">
+		<Button fullWidth onClick={() => (showFooter = true)}>Submit caca</Button>
+	</div>
+{/if}

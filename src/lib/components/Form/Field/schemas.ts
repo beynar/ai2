@@ -66,7 +66,6 @@ export const schemas: {
 
 		// Multiple choice input types
 		checkboxes: v.array(v.string()),
-		radios: v.array(v.string()),
 
 		// File input types
 		file: v.instance(File),
@@ -108,7 +107,6 @@ export const schemas: {
 
 		// Multiple choice input types
 		checkboxes: optional(emptyArrayNull(v.array(v.string()))),
-		radios: optional(emptyArrayNull(v.array(v.string()))),
 
 		// File input types
 		file: optional(v.instance(File)),

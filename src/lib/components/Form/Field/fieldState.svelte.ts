@@ -18,7 +18,7 @@ type FieldStateStaticOptions<T extends InputType> = {
 };
 
 type FieldStateBindableOptions<T extends InputType> = {
-	value: FieldValue<T>;
+	value?: FieldValue<T> | null;
 	errors: string[] | boolean;
 	focused: boolean;
 };
@@ -61,7 +61,7 @@ export const createFieldState = <T extends InputType>(
 			});
 		}
 
-		private checkSchema(value: FieldValue<T>) {
+		private checkSchema(value?: FieldValue<T> | null) {
 			let schema = schemas[this.required ? 'required' : 'optional'][this.type];
 			const result = v.safeParse(schema, value);
 			return result;
@@ -80,9 +80,10 @@ export const createFieldState = <T extends InputType>(
 			}
 
 			if (this.onValidate) {
-				this.errors = this.onValidate(value as FieldValue<T>) || !!this.errors;
+				this.errors = this.onValidate(value as FieldValue<T>);
+				console.log('validate', this.errors);
 			}
-
+			console.log('validate', [this.hasError, parseResult.output]);
 			return [this.hasError, parseResult.output];
 		};
 	}

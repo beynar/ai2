@@ -35,24 +35,32 @@
 		headerProps,
 		size,
 		theme,
-		field
+		field,
+		as = 'div',
+		attrs
 	}: FieldProps<Type> = $props();
 
 	const classes = $derived(useFieldTheme(theme));
 </script>
 
-<div class={classes.field({ className })} bind:this={field.node}>
+<svelte:element
+	this={as}
+	id={field.id}
+	class={classes.field({ className, hasError: field.hasError })}
+	bind:this={field.node}
+	{...attrs}
+>
 	{#if label || actions || header}
 		<Slot
 			render={header}
 			payload={field}
-			class={classes.header({ size, required: field.required })}
+			class={classes.header({ size, required: field.required, hasError: field.hasError })}
 			props={headerProps}
 		>
 			<Slot
 				as="label"
 				attrs={{ for: field.id }}
-				class={classes.label({ size })}
+				class={classes.label({ size, hasError: field.hasError, required: field.required })}
 				render={label}
 				props={labelProps}
 			/>
@@ -64,7 +72,7 @@
 			/>
 		</Slot>
 	{/if}
-	<div class={classes.inputContainer({ size })}>
+	<div class={classes.inputContainer({ size, hasError: field.hasError })}>
 		<Slot render={prefix} props={prefixProps} payload={field} class={classes.prefix({ size })} />
 		{@render children()}
 		<Slot render={suffix} props={suffixProps} payload={field} class={classes.suffix({ size })} />
@@ -94,4 +102,4 @@
 			{/each}
 		</Slot>
 	{/if}
-</div>
+</svelte:element>

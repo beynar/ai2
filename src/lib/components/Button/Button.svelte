@@ -51,15 +51,18 @@
 	{rel}
 	{target}
 	bind:this={ref}
-	data-squared={isSquared}
-	data-loading={loading}
 	data-color={color}
-	data-variant={variant}
-	data-size={size}
-	data-full-width={fullWidth}
-	data-disabled={disabled}
 	{disabled}
-	class={classes.button({ color, squared: isSquared, variant, size, loading, disabled, className })}
+	class={classes.button({
+		color,
+		squared: isSquared,
+		variant,
+		size,
+		loading,
+		disabled,
+		className,
+		fullWidth
+	})}
 	use:loader={{ loading }}
 	onclick={onClick &&
 		(() => {

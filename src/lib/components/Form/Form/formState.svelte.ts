@@ -9,10 +9,7 @@ import type {
 } from './form.js';
 import type { MultiStepFormState } from '../MultiStepForm/multiStepFormState.svelte.js';
 
-export class FormState<
-	I extends FormInputs = FormInputs,
-	S extends FormSubmitHandler<I> = FormSubmitHandler<I>
-> {
+export class FormState<I extends FormInputs = FormInputs> {
 	fields = $state<FieldState<any>[]>([]);
 	loading = $state(false);
 	hasError = $state(false);
@@ -26,7 +23,7 @@ export class FormState<
 	};
 	value = $derived.by(this.getValue);
 
-	constructor(private opts: FormProps<I, S>) {}
+	constructor(private opts: FormProps<I>) {}
 
 	validate = () => {
 		let firstErroredNode: HTMLElement | null = null;
@@ -78,17 +75,14 @@ export class FormState<
 		});
 	};
 }
-export const useForm = <I extends FormInputs, S extends FormSubmitHandler<I>>(
-	opts: FormProps<I, S>
-) => {
+export const useForm = <I extends FormInputs>(opts: FormProps<I>) => {
 	const form = new FormState(opts);
 	setContext('form', form);
 
 	// If the form is inside a multistep form, we need to return the form from the context.
 	const multiStepFormContext = getContext<MultiStepFormState>('multiStepForm');
 	if (multiStepFormContext) {
-		console.log({ multiStepFormContext });
-		multiStepFormContext.addForm(form as FormState<FormInputs, FormSubmitHandler<FormInputs>>);
+		multiStepFormContext.addForm(form as FormState<FormInputs>);
 	}
-	return form as FormState<I, S>;
+	return form as FormState<I>;
 };
