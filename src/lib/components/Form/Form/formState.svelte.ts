@@ -40,6 +40,7 @@ export class FormState<I extends FormInputs = FormInputs> {
 		if (firstErroredNode) {
 			(firstErroredNode as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}
+
 		if (hasError) {
 			return false;
 		} else {

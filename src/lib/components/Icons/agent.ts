@@ -1,0 +1,131 @@
+
+export const agent = `
+# Icon System
+
+This component library includes 1513 icons from Phosphor Icons, each available in multiple variants. All icons are SVG-based and fully customizable.
+
+## Available Variants
+
+Each icon typically includes these variants:
+- **Icon** (regular) - Standard weight
+- **IconBold** - Bold weight  
+- **IconDuotone** - Two-tone style
+- **IconFill** - Filled style
+- **IconLight** - Light weight
+- **IconThin** - Thin weight
+
+## Usage
+
+### Import Individual Icons
+\`\`\`typescript
+import { homeIcon, homeIconBold, homeIconFill } from '$lib/components/Icons';
+\`\`\`
+
+### Barrel Import (Not Recommended)
+\`\`\`typescript
+import * as Icons from '$lib/components/Icons';
+
+// Use specific icons
+const HomeIcon = Icons.homeIcon;
+\`\`\`
+
+## Icon Component Usage
+
+Icons are functions that return SVG snippets. Use them in Svelte components:
+
+\`\`\`svelte
+<script>
+  import { homeIcon, settingsIconBold } from '$lib/components/Icons';
+</script>
+
+<!-- Direct SVG rendering -->
+{@render homeIcon()}
+
+<!-- With custom props -->
+{@render settingsIconBold({ size: 32, color: '#3b82f6' })}
+
+<!-- With CSS classes -->
+<div class="w-6 h-6 text-blue-500">
+  {@render settingsIconBold()}
+</div>
+\`\`\`
+
+## Icon Props
+
+Icons accept the following props:
+- **size**: number (default: 24) - Size in pixels
+- **color**: string (default: 'currentColor') - Icon color  
+- **mirrored**: boolean (default: false) - Flip the icon horizontally
+- Any standard SVG attributes (class, style, etc.)
+
+\`\`\`svelte
+<!-- Examples -->
+{@render homeIcon()}                                    <!-- Default -->
+{@render homeIcon({ size: 48 })}                        <!-- Large -->
+{@render homeIcon({ color: '#ef4444' })}                <!-- Custom color -->
+{@render arrowRightIcon({ mirrored: true })}            <!-- Mirrored -->
+{@render settingsIcon({ size: 32, class: 'animate-spin' })} <!-- With class -->
+\`\`\`
+
+## Available Icons
+
+This library includes 1513 icons. Each icon has 6 variants: regular, bold, duotone, fill, light, and thin.
+
+### Icon List
+
+`acorn`, `addressBook`, `addressBookTabs`, `airplane`, `airplaneInFlight`, `airplaneLanding`, `airplaneTakeoff`, `airplaneTaxiing`, `airplaneTilt`, `airplay`, `airTrafficControl`, `alarm`, `alien`, `alignBottom`, `alignBottomSimple`, `alignCenterHorizontal`, `alignCenterHorizontalSimple`, `alignCenterVertical`, `alignCenterVerticalSimple`, `alignLeft`, `alignLeftSimple`, `alignRight`, `alignRightSimple`, `alignTop`, `alignTopSimple`, `amazonLogo`, `ambulance`, `anchor`, `anchorSimple`, `androidLogo`, `angle`, `angularLogo`, `aperture`, `appleLogo`, `applePodcastsLogo`, `approximateEquals`, `appStoreLogo`, `appWindow`, `archive`, `armchair`, `arrowArcLeft`, `arrowArcRight`, `arrowBendDoubleUpLeft`, `arrowBendDoubleUpRight`, `arrowBendDownLeft`, `arrowBendDownRight`, `arrowBendLeftDown`, `arrowBendLeftUp`, `arrowBendRightDown`, `arrowBendRightUp`, `arrowBendUpLeft`, `arrowBendUpRight`, `arrowCircleDown`, `arrowCircleDownLeft`, `arrowCircleDownRight`, `arrowCircleLeft`, `arrowCircleRight`, `arrowCircleUp`, `arrowCircleUpLeft`, `arrowCircleUpRight`, `arrowClockwise`, `arrowCounterClockwise`, `arrowDown`, `arrowDownLeft`, `arrowDownRight`, `arrowElbowDownLeft`, `arrowElbowDownRight`, `arrowElbowLeft`, `arrowElbowLeftDown`, `arrowElbowLeftUp`, `arrowElbowRight`, `arrowElbowRightDown`, `arrowElbowRightUp`, `arrowElbowUpLeft`, `arrowElbowUpRight`, `arrowFatDown`, `arrowFatLeft`, `arrowFatLineDown`, `arrowFatLineLeft`, `arrowFatLineRight`, `arrowFatLinesDown`, `arrowFatLinesLeft`, `arrowFatLinesRight`, `arrowFatLinesUp`, `arrowFatLineUp`, `arrowFatRight`, `arrowFatUp`, `arrowLeft`, `arrowLineDown`, `arrowLineDownLeft`, `arrowLineDownRight`, `arrowLineLeft`, `arrowLineRight`, `arrowLineUp`, `arrowLineUpLeft`, `arrowLineUpRight`, `arrowRight`, `arrowsClockwise`, `arrowsCounterClockwise`, `arrowsDownUp`, `arrowsHorizontal`, `arrowsIn`, `arrowsInCardinal`, `arrowsInLineHorizontal`, `arrowsInLineVertical`, `arrowsInSimple`, `arrowsLeftRight`, `arrowsMerge`, `arrowsOut`, `arrowsOutCardinal`, `arrowsOutLineHorizontal`, `arrowsOutLineVertical`, `arrowsOutSimple`, `arrowSquareDown`, `arrowSquareDownLeft`, `arrowSquareDownRight`, `arrowSquareIn`, `arrowSquareLeft`, `arrowSquareOut`, `arrowSquareRight`, `arrowSquareUp`, `arrowSquareUpLeft`, `arrowSquareUpRight`, `arrowsSplit`, `arrowsVertical`, `arrowUDownLeft`, `arrowUDownRight`, `arrowULeftDown`, `arrowULeftUp`, `arrowUp`, `arrowUpLeft`, `arrowUpRight`, `arrowURightDown`, `arrowURightUp`, `arrowUUpLeft`, `arrowUUpRight`, `article`, `articleMedium`, `articleNyTimes`, `asclepius`, `asterisk`, `asteriskSimple`, `at`, `atom`, `avocado`, `axe`, `baby`, `babyCarriage`, `backpack`, `backspace`, `bag`, `bagSimple`, `balloon`, `bandaids`, `bank`, `barbell`, `barcode`, `barn`, `barricade`, `baseball`, `baseballCap`, `baseballHelmet`, `basket`, `basketball`, `bathtub`, `batteryCharging`, `batteryChargingVertical`, `batteryEmpty`, `batteryFull`, `batteryHigh`, `batteryLow`, `batteryMedium`, `batteryPlus`, `batteryPlusVertical`, `batteryVerticalEmpty`, `batteryVerticalFull`, `batteryVerticalHigh`, `batteryVerticalLow`, `batteryVerticalMedium`, `batteryWarning`, `batteryWarningVertical`, `beachBall`, `beanie`, `bed`, `beerBottle`, `beerStein`, `behanceLogo`, `bell`, `bellRinging`, `bellSimple`, `bellSimpleRinging`, `bellSimpleSlash`, `bellSimpleZ`, `bellSlash`, `bellZ`, `belt`, `bezierCurve`, `bicycle`, `binary`, `binoculars`, `biohazard`, `bird`, `blueprint`, `bluetooth`, `bluetoothConnected`, `bluetoothSlash`, `bluetoothX`, `boat`, `bomb`, `bone`, `book`, `bookBookmark`, `bookmark`, `bookmarks`, `bookmarkSimple`, `bookmarksSimple`, `bookOpen`, `bookOpenText`, `bookOpenUser`, `books`, `bookUser`, `boot`, `boules`, `boundingBox`, `bowlFood`, `bowlingBall`, `bowlSteam`, `boxArrowDown`, `boxArrowUp`, `boxingGlove`, `bracketsAngle`, `bracketsCurly`, `bracketsRound`, `bracketsSquare`, `brain`, `brandy`, `bread`, `bridge`, `briefcase`, `briefcaseMetal`, `broadcast`, `broom`, `browser`, `browsers`, `bug`, `bugBeetle`, `bugDroid`, `building`, `buildingApartment`, `buildingOffice`, `buildings`, `bulldozer`, `bus`, `butterfly`, `cableCar`, `cactus`, `cake`, `calculator`, `calendar`, `calendarBlank`, `calendarCheck`, `calendarDot`, `calendarDots`, `calendarHeart`, `calendarMinus`, `calendarPlus`, `calendarSlash`, `calendarStar`, `calendarX`, `callBell`, `camera`, `cameraPlus`, `cameraRotate`, `cameraSlash`, `campfire`, `car`, `carBattery`, `cardholder`, `cards`, `cardsThree`, `caretCircleDoubleDown`, `caretCircleDoubleLeft`, `caretCircleDoubleRight`, `caretCircleDoubleUp`, `caretCircleDown`, `caretCircleLeft`, `caretCircleRight`, `caretCircleUp`, `caretCircleUpDown`, `caretDoubleDown`, `caretDoubleLeft`, `caretDoubleRight`, `caretDoubleUp`, `caretDown`, `caretLeft`, `caretLineDown`, `caretLineLeft`, `caretLineRight`, `caretLineUp`, `caretRight`, `caretUp`, `caretUpDown`, `carProfile`, `carrot`, `carSimple`, `cashRegister`, `cassetteTape`, `castleTurret`, `cat`, `cellSignalFull`, `cellSignalHigh`, `cellSignalLow`, `cellSignalMedium`, `cellSignalNone`, `cellSignalSlash`, `cellSignalX`, `cellTower`, `certificate`, `chair`, `chalkboard`, `chalkboardSimple`, `chalkboardTeacher`, `champagne`, `chargingStation`, `chartBar`, `chartBarHorizontal`, `chartDonut`, `chartLine`, `chartLineDown`, `chartLineUp`, `chartPie`, `chartPieSlice`, `chartPolar`, `chartScatter`, `chat`, `chatCentered`, `chatCenteredDots`, `chatCenteredSlash`, `chatCenteredText`, `chatCircle`, `chatCircleDots`, `chatCircleSlash`, `chatCircleText`, `chatDots`, `chats`, `chatsCircle`, `chatSlash`, `chatsTeardrop`, `chatTeardrop`, `chatTeardropDots`, `chatTeardropSlash`, `chatTeardropText`, `chatText`, `check`, `checkCircle`, `checkerboard`, `checkFat`, `checks`, `checkSquare`, `checkSquareOffset`, `cheers`, `cheese`, `chefHat`, `cherries`, `church`, `cigarette`, `cigaretteSlash`, `circle`, `circleDashed`, `circleHalf`, `circleHalfTilt`, `circleNotch`, `circlesFour`, `circlesThree`, `circlesThreePlus`, `circuitry`, `city`, `clipboard`, `clipboardText`, `clock`, `clockAfternoon`, `clockClockwise`, `clockCountdown`, `clockCounterClockwise`, `clockUser`, `closedCaptioning`, `cloud`, `cloudArrowDown`, `cloudArrowUp`, `cloudCheck`, `cloudFog`, `cloudLightning`, `cloudMoon`, `cloudRain`, `cloudSlash`, `cloudSnow`, `cloudSun`, `cloudWarning`, `cloudX`, `clover`, `club`, `coatHanger`, `codaLogo`, `code`, `codeBlock`, `codepenLogo`, `codesandboxLogo`, `codeSimple`, `coffee`, `coffeeBean`, `coin`, `coins`, `coinVertical`, `columns`, `columnsPlusLeft`, `columnsPlusRight`, `command`, `compass`, `compassRose`, `compassTool`, `computerTower`, `confetti`, `contactlessPayment`, `control`, `cookie`, `cookingPot`, `copy`, `copyleft`, `copyright`, `copySimple`, `cornersIn`, `cornersOut`, `couch`, `courtBasketball`, `cow`, `cowboyHat`, `cpu`, `crane`, `craneTower`, `creditCard`, `cricket`, `crop`, `cross`, `crosshair`, `crosshairSimple`, `crown`, `crownCross`, `crownSimple`, `cube`, `cubeFocus`, `cubeTransparent`, `currencyBtc`, `currencyCircleDollar`, `currencyCny`, `currencyDollar`, `currencyDollarSimple`, `currencyEth`, `currencyEur`, `currencyGbp`, `currencyInr`, `currencyJpy`, `currencyKrw`, `currencyKzt`, `currencyNgn`, `currencyRub`, `cursor`, `cursorClick`, `cursorText`, `cylinder`, `database`, `desk`, `desktop`, `desktopTower`, `detective`, `deviceMobile`, `deviceMobileCamera`, `deviceMobileSlash`, `deviceMobileSpeaker`, `deviceRotate`, `devices`, `deviceTablet`, `deviceTabletCamera`, `deviceTabletSpeaker`, `devToLogo`, `diamond`, `diamondsFour`, `diceFive`, `diceFour`, `diceOne`, `diceSix`, `diceThree`, `diceTwo`, `disc`, `discoBall`, `discordLogo`, `divide`, `dna`, `dog`, `door`, `doorOpen`, `dot`, `dotOutline`, `dotsNine`, `dotsSix`, `dotsSixVertical`, `dotsThree`, `dotsThreeCircle`, `dotsThreeCircleVertical`, `dotsThreeOutline`, `dotsThreeOutlineVertical`, `dotsThreeVertical`, `download`, `downloadSimple`, `dress`, `dresser`, `dribbbleLogo`, `drone`, `drop`, `dropboxLogo`, `dropHalf`, `dropHalfBottom`, `dropSimple`, `dropSlash`, `ear`, `earSlash`, `egg`, `eggCrack`, `eject`, `ejectSimple`, `elevator`, `empty`, `engine`, `envelope`, `envelopeOpen`, `envelopeSimple`, `envelopeSimpleOpen`, `equalizer`, `equals`, `eraser`, `escalatorDown`, `escalatorUp`, `exam`, `exclamationMark`, `exclude`, `excludeSquare`, `export`, `eye`, `eyeClosed`, `eyedropper`, `eyedropperSample`, `eyeglasses`, `eyes`, `eyeSlash`, `facebookLogo`, `faceMask`, `factory`, `faders`, `fadersHorizontal`, `falloutShelter`, `fan`, `farm`, `fastForward`, `fastForwardCircle`, `feather`, `fediverseLogo`, `figmaLogo`, `file`, `fileArchive`, `fileArrowDown`, `fileArrowUp`, `fileAudio`, `fileC`, `fileCloud`, `fileCode`, `fileCpp`, `fileCSharp`, `fileCss`, `fileCsv`, `fileDashed`, `fileDoc`, `fileHtml`, `fileImage`, `fileIni`, `fileJpg`, `fileJs`, `fileJsx`, `fileLock`, `fileMagnifyingGlass`, `fileMd`, `fileMinus`, `filePdf`, `filePlus`, `filePng`, `filePpt`, `filePy`, `fileRs`, `files`, `fileSql`, `fileSvg`, `fileText`, `fileTs`, `fileTsx`, `fileTxt`, `fileVideo`, `fileVue`, `fileX`, `fileXls`, `fileZip`, `filmReel`, `filmScript`, `filmSlate`, `filmStrip`, `fingerprint`, `fingerprintSimple`, `finnTheHuman`, `fire`, `fireExtinguisher`, `fireSimple`, `fireTruck`, `firstAid`, `firstAidKit`, `fish`, `fishSimple`, `flag`, `flagBanner`, `flagBannerFold`, `flagCheckered`, `flagPennant`, `flame`, `flashlight`, `flask`, `flipHorizontal`, `flipVertical`, `floppyDisk`, `floppyDiskBack`, `flowArrow`, `flower`, `flowerLotus`, `flowerTulip`, `flyingSaucer`, `folder`, `folderDashed`, `folderLock`, `folderMinus`, `folderOpen`, `folderPlus`, `folders`, `folderSimple`, `folderSimpleDashed`, `folderSimpleLock`, `folderSimpleMinus`, `folderSimplePlus`, `folderSimpleStar`, `folderSimpleUser`, `folderStar`, `folderUser`, `football`, `footballHelmet`, `footprints`, `forkKnife`, `fourK`, `frameCorners`, `framerLogo`, `function`, `funnel`, `funnelSimple`, `funnelSimpleX`, `funnelX`, `gameController`, `garage`, `gasCan`, `gasPump`, `gauge`, `gavel`, `gear`, `gearFine`, `gearSix`, `genderFemale`, `genderIntersex`, `genderMale`, `genderNeuter`, `genderNonbinary`, `genderTransgender`, `ghost`, `gif`, `gift`, `gitBranch`, `gitCommit`, `gitDiff`, `gitFork`, `githubLogo`, `gitlabLogo`, `gitlabLogoSimple`, `gitMerge`, `gitPullRequest`, `globe`, `globeHemisphereEast`, `globeHemisphereWest`, `globeSimple`, `globeSimpleX`, `globeStand`, `globeX`, `goggles`, `golf`, `goodreadsLogo`, `googleCardboardLogo`, `googleChromeLogo`, `googleDriveLogo`, `googleLogo`, `googlePhotosLogo`, `googlePlayLogo`, `googlePodcastsLogo`, `gps`, `gpsFix`, `gpsSlash`, `gradient`, `graduationCap`, `grains`, `grainsSlash`, `graph`, `graphicsCard`, `greaterThan`, `greaterThanOrEqual`, `gridFour`, `gridNine`, `guitar`, `hairDryer`, `hamburger`, `hammer`, `hand`, `handArrowDown`, `handArrowUp`, `handbag`, `handbagSimple`, `handCoins`, `handDeposit`, `handEye`, `handFist`, `handGrabbing`, `handHeart`, `handPalm`, `handPeace`, `handPointing`, `handsClapping`, `handshake`, `handSoap`, `handsPraying`, `handSwipeLeft`, `handSwipeRight`, `handTap`, `handWaving`, `handWithdraw`, `hardDrive`, `hardDrives`, `hardHat`, `hash`, `hashStraight`, `headCircuit`, `headlights`, `headphones`, `headset`, `heart`, `heartbeat`, `heartBreak`, `heartHalf`, `heartStraight`, `heartStraightBreak`, `hexagon`, `highDefinition`, `highHeel`, `highlighter`, `highlighterCircle`, `hockey`, `hoodie`, `horse`, `hospital`, `hourglass`, `hourglassHigh`, `hourglassLow`, `hourglassMedium`, `hourglassSimple`, `hourglassSimpleHigh`, `hourglassSimpleLow`, `hourglassSimpleMedium`, `house`, `houseLine`, `houseSimple`, `hurricane`, `iceCream`, `identificationBadge`, `identificationCard`, `image`, `imageBroken`, `images`, `imageSquare`, `imagesSquare`, `infinity`, `info`, `instagramLogo`, `intersect`, `intersection`, `intersectSquare`, `intersectThree`, `invoice`, `island`, `jar`, `jarLabel`, `jeep`, `joystick`, `kanban`, `key`, `keyboard`, `keyhole`, `keyReturn`, `knife`, `ladder`, `ladderSimple`, `lamp`, `lampPendant`, `laptop`, `lasso`, `lastfmLogo`, `layout`, `leaf`, `lectern`, `lego`, `legoSmiley`, `lessThan`, `lessThanOrEqual`, `letterCircleH`, `letterCircleP`, `letterCircleV`, `lifebuoy`, `lightbulb`, `lightbulbFilament`, `lighthouse`, `lightning`, `lightningA`, `lightningSlash`, `lineSegment`, `lineSegments`, `lineVertical`, `link`, `linkBreak`, `linkedinLogo`, `linkSimple`, `linkSimpleBreak`, `linkSimpleHorizontal`, `linkSimpleHorizontalBreak`, `linktreeLogo`, `linuxLogo`, `list`, `listBullets`, `listChecks`, `listDashes`, `listHeart`, `listMagnifyingGlass`, `listNumbers`, `listPlus`, `listStar`, `lock`, `lockers`, `lockKey`, `lockKeyOpen`, `lockLaminated`, `lockLaminatedOpen`, `lockOpen`, `lockSimple`, `lockSimpleOpen`, `log`, `magicWand`, `magnet`, `magnetStraight`, `magnifyingGlass`, `magnifyingGlassMinus`, `magnifyingGlassPlus`, `mailbox`, `mapPin`, `mapPinArea`, `mapPinLine`, `mapPinPlus`, `mapPinSimple`, `mapPinSimpleArea`, `mapPinSimpleLine`, `mapTrifold`, `markdownLogo`, `markerCircle`, `martini`, `maskHappy`, `maskSad`, `mastodonLogo`, `mathOperations`, `matrixLogo`, `medal`, `medalMilitary`, `mediumLogo`, `megaphone`, `megaphoneSimple`, `memberOf`, `memory`, `messengerLogo`, `metaLogo`, `meteor`, `metronome`, `microphone`, `microphoneSlash`, `microphoneStage`, `microscope`, `microsoftExcelLogo`, `microsoftOutlookLogo`, `microsoftPowerpointLogo`, `microsoftTeamsLogo`, `microsoftWordLogo`, `minus`, `minusCircle`, `minusSquare`, `money`, `moneyWavy`, `monitor`, `monitorArrowUp`, `monitorPlay`, `moon`, `moonStars`, `moped`, `mopedFront`, `mosque`, `motorcycle`, `mountains`, `mouse`, `mouseLeftClick`, `mouseMiddleClick`, `mouseRightClick`, `mouseScroll`, `mouseSimple`, `musicNote`, `musicNotes`, `musicNoteSimple`, `musicNotesMinus`, `musicNotesPlus`, `musicNotesSimple`, `navigationArrow`, `needle`, `network`, `networkSlash`, `networkX`, `newspaper`, `newspaperClipping`, `notches`, `note`, `noteBlank`, `notebook`, `notepad`, `notePencil`, `notEquals`, `notification`, `notionLogo`, `notMemberOf`, `notSubsetOf`, `notSupersetOf`, `nuclearPlant`, `numberCircleEight`, `numberCircleFive`, `numberCircleFour`, `numberCircleNine`, `numberCircleOne`, `numberCircleSeven`, `numberCircleSix`, `numberCircleThree`, `numberCircleTwo`, `numberCircleZero`, `numberEight`, `numberFive`, `numberFour`, `numberNine`, `numberOne`, `numberSeven`, `numberSix`, `numberSquareEight`, `numberSquareFive`, `numberSquareFour`, `numberSquareNine`, `numberSquareOne`, `numberSquareSeven`, `numberSquareSix`, `numberSquareThree`, `numberSquareTwo`, `numberSquareZero`, `numberThree`, `numberTwo`, `numberZero`, `numpad`, `nut`, `nyTimesLogo`, `octagon`, `officeChair`, `onigiri`, `openAiLogo`, `option`, `orange`, `orangeSlice`, `oven`, `package`, `paintBrush`, `paintBrushBroad`, `paintBrushHousehold`, `paintBucket`, `paintRoller`, `palette`, `panorama`, `pants`, `paperclip`, `paperclipHorizontal`, `paperPlane`, `paperPlaneRight`, `paperPlaneTilt`, `parachute`, `paragraph`, `parallelogram`, `park`, `password`, `path`, `patreonLogo`, `pause`, `pauseCircle`, `pawPrint`, `paypalLogo`, `peace`, `pen`, `pencil`, `pencilCircle`, `pencilLine`, `pencilRuler`, `pencilSimple`, `pencilSimpleLine`, `pencilSimpleSlash`, `pencilSlash`, `penNib`, `penNibStraight`, `pentagon`, `pentagram`, `pepper`, `percent`, `person`, `personArmsSpread`, `personSimple`, `personSimpleBike`, `personSimpleCircle`, `personSimpleHike`, `personSimpleRun`, `personSimpleSki`, `personSimpleSnowboard`, `personSimpleSwim`, `personSimpleTaiChi`, `personSimpleThrow`, `personSimpleWalk`, `perspective`, `phone`, `phoneCall`, `phoneDisconnect`, `phoneIncoming`, `phoneList`, `phoneOutgoing`, `phonePause`, `phonePlus`, `phoneSlash`, `phoneTransfer`, `phoneX`, `phosphorLogo`, `pi`, `pianoKeys`, `picnicTable`, `pictureInPicture`, `piggyBank`, `pill`, `pingPong`, `pinterestLogo`, `pintGlass`, `pinwheel`, `pipe`, `pipeWrench`, `pixLogo`, `pizza`, `placeholder`, `planet`, `plant`, `play`, `playCircle`, `playlist`, `playPause`, `plug`, `plugCharging`, `plugs`, `plugsConnected`, `plus`, `plusCircle`, `plusMinus`, `plusSquare`, `pokerChip`, `policeCar`, `polygon`, `popcorn`, `popsicle`, `pottedPlant`, `power`, `prescription`, `presentation`, `presentationChart`, `printer`, `prohibit`, `prohibitInset`, `projectorScreen`, `projectorScreenChart`, `pulse`, `pushPin`, `pushPinSimple`, `pushPinSimpleSlash`, `pushPinSlash`, `puzzlePiece`, `qrCode`, `question`, `questionMark`, `queue`, `quotes`, `rabbit`, `racquet`, `radical`, `radio`, `radioactive`, `radioButton`, `rainbow`, `rainbowCloud`, `ranking`, `readCvLogo`, `receipt`, `receiptX`, `record`, `rectangle`, `rectangleDashed`, `recycle`, `redditLogo`, `repeat`, `repeatOnce`, `replitLogo`, `resize`, `rewind`, `rewindCircle`, `roadHorizon`, `robot`, `rocket`, `rocketLaunch`, `rows`, `rowsPlusBottom`, `rowsPlusTop`, `rss`, `rssSimple`, `rug`, `ruler`, `sailboat`, `scales`, `scan`, `scanSmiley`, `scissors`, `scooter`, `screencast`, `screwdriver`, `scribble`, `scribbleLoop`, `scroll`, `seal`, `sealCheck`, `sealPercent`, `sealQuestion`, `sealWarning`, `seat`, `seatbelt`, `securityCamera`, `selection`, `selectionAll`, `selectionBackground`, `selectionForeground`, `selectionInverse`, `selectionPlus`, `selectionSlash`, `shapes`, `share`, `shareFat`, `shareNetwork`, `shield`, `shieldCheck`, `shieldCheckered`, `shieldChevron`, `shieldPlus`, `shieldSlash`, `shieldStar`, `shieldWarning`, `shippingContainer`, `shirtFolded`, `shootingStar`, `shoppingBag`, `shoppingBagOpen`, `shoppingCart`, `shoppingCartSimple`, `shovel`, `shower`, `shrimp`, `shuffle`, `shuffleAngular`, `shuffleSimple`, `sidebar`, `sidebarSimple`, `sigma`, `signature`, `signIn`, `signOut`, `signpost`, `simCard`, `siren`, `sketchLogo`, `skipBack`, `skipBackCircle`, `skipForward`, `skipForwardCircle`, `skull`, `skypeLogo`, `slackLogo`, `sliders`, `slidersHorizontal`, `slideshow`, `smiley`, `smileyAngry`, `smileyBlank`, `smileyMeh`, `smileyMelting`, `smileyNervous`, `smileySad`, `smileySticker`, `smileyWink`, `smileyXEyes`, `snapchatLogo`, `sneaker`, `sneakerMove`, `snowflake`, `soccerBall`, `sock`, `solarPanel`, `solarRoof`, `sortAscending`, `sortDescending`, `soundcloudLogo`, `spade`, `sparkle`, `speakerHifi`, `speakerHigh`, `speakerLow`, `speakerNone`, `speakerSimpleHigh`, `speakerSimpleLow`, `speakerSimpleNone`, `speakerSimpleSlash`, `speakerSimpleX`, `speakerSlash`, `speakerX`, `speedometer`, `sphere`, `spinner`, `spinnerBall`, `spinnerGap`, `spiral`, `splitHorizontal`, `splitVertical`, `spotifyLogo`, `sprayBottle`, `square`, `squareHalf`, `squareHalfBottom`, `squareLogo`, `squaresFour`, `squareSplitHorizontal`, `squareSplitVertical`, `stack`, `stackMinus`, `stackOverflowLogo`, `stackPlus`, `stackSimple`, `stairs`, `stamp`, `standardDefinition`, `star`, `starAndCrescent`, `starFour`, `starHalf`, `starOfDavid`, `steamLogo`, `steeringWheel`, `steps`, `stethoscope`, `sticker`, `stool`, `stop`, `stopCircle`, `storefront`, `strategy`, `stripeLogo`, `student`, `subsetOf`, `subsetProperOf`, `subtitles`, `subtitlesSlash`, `subtract`, `subtractSquare`, `subway`, `suitcase`, `suitcaseRolling`, `suitcaseSimple`, `sun`, `sunDim`, `sunglasses`, `sunHorizon`, `supersetOf`, `supersetProperOf`, `swap`, `swatches`, `swimmingPool`, `sword`, `synagogue`, `syringe`, `table`, `tabs`, `tag`, `tagChevron`, `tagSimple`, `target`, `taxi`, `teaBag`, `telegramLogo`, `television`, `televisionSimple`, `tennisBall`, `tent`, `terminal`, `terminalWindow`, `testTube`, `textAa`, `textAlignCenter`, `textAlignJustify`, `textAlignLeft`, `textAlignRight`, `textAUnderline`, `textB`, `textbox`, `textColumns`, `textH`, `textHFive`, `textHFour`, `textHOne`, `textHSix`, `textHThree`, `textHTwo`, `textIndent`, `textItalic`, `textOutdent`, `textStrikethrough`, `textSubscript`, `textSuperscript`, `textT`, `textTSlash`, `textUnderline`, `thermometer`, `thermometerCold`, `thermometerHot`, `thermometerSimple`, `threadsLogo`, `threeD`, `thumbsDown`, `thumbsUp`, `ticket`, `tidalLogo`, `tiktokLogo`, `tilde`, `timer`, `tipi`, `tipJar`, `tire`, `toggleLeft`, `toggleRight`, `toilet`, `toiletPaper`, `toolbox`, `tooth`, `tornado`, `tote`, `toteSimple`, `towel`, `tractor`, `trademark`, `trademarkRegistered`, `trafficCone`, `trafficSign`, `trafficSignal`, `train`, `trainRegional`, `trainSimple`, `tram`, `translate`, `trash`, `trashSimple`, `tray`, `trayArrowDown`, `trayArrowUp`, `treasureChest`, `tree`, `treeEvergreen`, `treePalm`, `treeStructure`, `treeView`, `trendDown`, `trendUp`, `triangle`, `triangleDashed`, `trolley`, `trolleySuitcase`, `trophy`, `truck`, `truckTrailer`, `tShirt`, `tumblrLogo`, `twitchLogo`, `twitterLogo`, `umbrella`, `umbrellaSimple`, `union`, `unite`, `uniteSquare`, `upload`, `uploadSimple`, `usb`, `user`, `userCheck`, `userCircle`, `userCircleCheck`, `userCircleDashed`, `userCircleGear`, `userCircleMinus`, `userCirclePlus`, `userFocus`, `userGear`, `userList`, `userMinus`, `userPlus`, `userRectangle`, `users`, `usersFour`, `userSound`, `userSquare`, `usersThree`, `userSwitch`, `van`, `vault`, `vectorThree`, `vectorTwo`, `vibrate`, `video`, `videoCamera`, `videoCameraSlash`, `videoConference`, `vignette`, `vinylRecord`, `virtualReality`, `virus`, `visor`, `voicemail`, `volleyball`, `wall`, `wallet`, `warehouse`, `warning`, `warningCircle`, `warningDiamond`, `warningOctagon`, `washingMachine`, `watch`, `waveform`, `waveformSlash`, `waves`, `waveSawtooth`, `waveSine`, `waveSquare`, `waveTriangle`, `webcam`, `webcamSlash`, `webhooksLogo`, `wechatLogo`, `whatsappLogo`, `wheelchair`, `wheelchairMotion`, `wifiHigh`, `wifiLow`, `wifiMedium`, `wifiNone`, `wifiSlash`, `wifiX`, `wind`, `windmill`, `windowsLogo`, `wine`, `wrench`, `x`, `xCircle`, `xLogo`, `xSquare`, `yarn`, `yinYang`, `youtubeLogo`
+
+## Icon Categories
+
+The icons cover these main categories:
+- **Interface**: Arrows, navigation, controls, UI elements
+- **Communication**: Chat, mail, phone, social media
+- **Media**: Play, pause, music, video controls  
+- **Files**: Documents, folders, file types
+- **Business**: Office, finance, charts, buildings
+- **Technology**: Devices, code, networks, software
+- **Nature**: Weather, plants, animals
+- **Transportation**: Cars, planes, transit
+- **Shopping**: Cart, payment, commerce
+- **User**: Profile, account, people
+- **System**: Settings, tools, configuration
+
+## Customization
+
+Icons inherit the current text color and can be styled with CSS:
+
+\`\`\`svelte
+<style>
+  .icon {
+    width: 24px;
+    height: 24px;
+    color: #3b82f6;
+  }
+  
+  .icon:hover {
+    color: #1d4ed8;
+  }
+</style>
+
+<div class="icon">
+  {@render homeIcon()}
+</div>
+\`\`\`
+
+## Best Practices
+
+1. **Consistent Sizing**: Use consistent icon sizes within the same interface
+2. **Semantic Usage**: Choose icons that clearly represent their function
+3. **Accessibility**: Provide alt text or aria-labels for important icons
+4. **Performance**: Import only the icons you need to reduce bundle size
+5. **Variants**: Use appropriate variants for visual hierarchy and emphasis
+
+## Notes
+
+- All icons are generated from Phosphor Icons
+- Icons are tree-shakeable when imported individually
+- Icons return Svelte snippets for optimal performance
+- Icons automatically inherit text color from parent elements
+- All icon files are TypeScript compatible
+- Use {@render iconName()} syntax in Svelte 5
+`;

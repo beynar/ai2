@@ -10,7 +10,8 @@
 		style = '',
 		attrs = {},
 		props = {},
-		as = 'div'
+		as = 'div',
+		renderIf = true
 	}: {
 		class?: string;
 		as?: string;
@@ -20,6 +21,7 @@
 		style?: string;
 		render?: Slot<Payload>;
 		props?: Record<string, any>;
+		renderIf?: boolean;
 	} = $props();
 </script>
 
@@ -31,21 +33,23 @@
 	{/if}
 {/snippet}
 
-<!-- If no class is pass, we assume that we don't want to wrap it inside a div -->
-{#if render}
-	{#if !className && render}
-		{@render slot()}
-	{:else if render}
-		<svelte:element this={as} {style} {...attrs} class={className}>
+{#if renderIf || render}
+	<!-- If no class is pass, we assume that we don't want to wrap it inside a div -->
+	{#if render}
+		{#if !className && render}
 			{@render slot()}
-		</svelte:element>
-	{/if}
-{:else if children}
-	{#if className}
-		<svelte:element this={as} {style} {...attrs} class={className}>
+		{:else if render}
+			<svelte:element this={as} {style} {...attrs} class={className}>
+				{@render slot()}
+			</svelte:element>
+		{/if}
+	{:else if children}
+		{#if className}
+			<svelte:element this={as} {style} {...attrs} class={className}>
+				{@render children()}
+			</svelte:element>
+		{:else}
 			{@render children()}
-		</svelte:element>
-	{:else}
-		{@render children()}
+		{/if}
 	{/if}
 {/if}

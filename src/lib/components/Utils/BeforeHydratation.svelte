@@ -1,48 +1,25 @@
 <script lang="ts">
-	type Func = (...args: any[]) => void;
-	type Execute = (Func | [Func, Record<string, string | number>])[];
+	type Execute = string[];
 	let {
-		execute = [],
-		stylize = []
+		scripts = [],
+		css = []
 	}: {
-		execute?: Execute;
-		stylize?: string[];
+		scripts?: string[];
+		css?: string[];
 	} = $props();
 </script>
 
 <svelte:head>
 	{@html `<s${'cript'}>
 		document.addEventListener('DOMContentLoaded', () => {
-        	${execute
-						.map((fn) => {
-							if (typeof fn === 'function') {
-								return `(${fn.toString()})();`;
-							} else {
-								let stringified = fn[0].toString();
-								const args = fn[1];
-
-								Object.entries(args).forEach(([key, value]) => {
-									let occurrences = [];
-									let index = stringified.indexOf(key);
-									while (index !== -1) {
-										occurrences.push(index);
-										index = stringified.indexOf(key, index + 1);
-									}
-									occurrences.shift();
-									occurrences.forEach((index) => {
-										stringified =
-											stringified.slice(0, index) +
-											`"${value}"` +
-											stringified.slice(index + key.length);
-									});
-								});
-								return `(${stringified})();`;
-							}
+        	${scripts
+						.map((script) => {
+							return `${script}`;
 						})
 						.join('\n')}
 		})
 	</s${'cript'}>`}
 	{@html `<s${'tyle'}>
-            ${stylize.join('\n\n')}
+            ${css.join('\n\n')}
         </s${'tyle'}>`}
 </svelte:head>

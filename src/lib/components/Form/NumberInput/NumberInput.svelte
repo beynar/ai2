@@ -63,22 +63,16 @@
 		},
 		required,
 		name,
-		onValidate: (val: number | null) => {
-			console.log('onValidate', val, onValidate?.(val));
+		onValidate: (val) => {
 			if (typeof val === 'number') {
 				if (min && val < min) {
-					console.log('check min', val, 'min', min);
 					return true;
 				}
 				if (max && val > max) {
-					console.log('check max', val, 'max', max);
 					return true;
 				}
-
-				return onValidate?.(val) || false;
 			}
-
-			return false;
+			return onValidate?.(val) || false;
 		},
 		readonly,
 		visible,

@@ -63,6 +63,7 @@
 		},
 		required,
 		onValidate,
+		name,
 		readonly,
 		visible,
 		type: 'radio'

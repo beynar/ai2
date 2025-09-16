@@ -1,15 +1,23 @@
 @import 'tailwindcss';
 
-@plugin "../dist/tailwind/index" {
+@plugin "./lib/tailwind/index" {
 	default: true;
 	eas: true;
 	raised-with-border: true;
 }
 
-@plugin "../dist/tailwind/theme" {
+@plugin "./lib/tailwind/theme" {
+	name: light;
 	default: true;
 	radius: normal;
 	spacing: large;
+	colorscheme: light;
+}
+@plugin "./lib/tailwind/theme" {
+	name: dark;
+	radius: normal;
+	spacing: large;
+	colorscheme: dark;
 }
 
 meter {

@@ -11,7 +11,7 @@ export type NumberInputProps = InputProps<'number'> & {
 };
 
 const defaultInput = cva({
-	base: 'py-1 outline-none flex-1 h-full w-full rounded bg-transparent leading-3 text-sm resize-none placeholder:text-contrast-muted autofill:text-contrast-light',
+	base: 'py-1 outline-none flex-1 h-full w-full rounded bg-transparent leading-3 text-sm resize-none placeholder:text-contrast-muted autofill:text-contrast-muted',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -22,7 +22,7 @@ const defaultInput = cva({
 });
 
 const defaultInputContainer = cva({
-	base: 'px-2 bg-surface-light border border-surface-lighter rounded text-contrast-light w-full focus-within:ring-1 focus-within:ring-contrast focus-within:ring-opacity-50 ring-0 transition-all p-1',
+	base: 'px-2 bg-surface-light border border-contrast-muted rounded text-contrast-light w-full focus-within:ring-1 focus-within:ring-contrast focus-within:ring-opacity-50 ring-0 transition-all p-1',
 	variants: {
 		size: {
 			small: 'h-4',

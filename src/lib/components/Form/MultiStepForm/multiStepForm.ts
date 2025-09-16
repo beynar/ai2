@@ -58,7 +58,7 @@ export type MergedMultiStepFormInputs<I extends FormStep[]> =
 		: never;
 
 export const defaultMultiStep = cva({
-	base: 'flex flex-col gap-4 relative p-2'
+	base: 'flex flex-col relative p-2 bg-surface'
 	// variants: {
 	// size: {
 	// 	small: 'gap-2',

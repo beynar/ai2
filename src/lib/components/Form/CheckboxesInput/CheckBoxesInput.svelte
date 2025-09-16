@@ -64,6 +64,7 @@
 		},
 		required,
 		onValidate,
+		name,
 		readonly,
 		visible,
 		type: 'checkboxes'

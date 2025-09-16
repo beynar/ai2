@@ -1,8 +1,9 @@
 import plugin, { type ThemeConfig } from 'tailwindcss/plugin.js';
-import type { TypeScale } from './typeScale.js';
+import { getTypeScale, type TypeScale } from './typeScale.js';
 import { generateColorPalette, toTailwindCssTheme, type ColorTheme } from './colors.js';
 import { radius } from './radius.js';
 import { spacing } from './spacing.js';
+import type { Spinner } from './spinnner.js';
 
 export type ThemeOptions = Partial<{
 	name: string;
@@ -19,6 +20,7 @@ export type ThemeOptions = Partial<{
 	scale?: TypeScale;
 	prefersDark?: boolean;
 	radius?: number;
+	spinner?: Spinner;
 }> &
 	ColorTheme;
 
@@ -32,6 +34,8 @@ export default plugin.withOptions<ThemeOptions>(
 					...cssVariables
 				}
 			});
+
+			console.log(root);
 
 			if (theme.prefersDark) {
 				addBase({
@@ -49,7 +53,12 @@ export default plugin.withOptions<ThemeOptions>(
 			extend: {
 				colors: toTailwindCssTheme(),
 				radius: radius(options?.radius),
-				spacing: spacing(options?.spacing)
+				spacing: spacing(options?.spacing),
+				fontSize: getTypeScale({
+					baseMinPx: 14,
+					baseMaxPx: 16,
+					scale: 'majorThird'
+				})
 			}
 		}
 	})

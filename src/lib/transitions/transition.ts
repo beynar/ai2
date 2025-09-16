@@ -1,26 +1,22 @@
-import { use_theme } from '$lib/theme.svelte.js';
 import type { TransitionConfig } from 'svelte/transition';
 import { easingFunctions, type Easing } from './easingFunctions.js';
-import type { DialogType } from '$lib/Components/Dialog/dialog.types.js';
-import type { ToastPosition } from '$lib/Components/Toast/toast.js';
-import type { Placement } from '@floating-ui/dom';
+import { useTheme } from '$lib/components/Theme/theme.state.svelte.js';
 
 const split_css_unit = (value: string | number): [number, string] => {
 	const split = typeof value === 'string' && value.match(/^\s*(-?[\d.]+)([^\s]*)\s*$/);
 	return (split ? [parseFloat(split[1]), split[2] || 'px'] : [value, 'px']) as [number, string];
 };
 const resolveEasing = (easing?: Easing) => {
-	const theme = use_theme();
-	const baseEasing = theme.transitions.easing || 'cubicInOut';
-	return easingFunctions[easing || baseEasing];
+	const theme = useTheme();
+	return easingFunctions[easing || theme.transition.easing];
 };
 
 const resolveDuration = (duration?: number) => {
-	const theme = use_theme();
+	const theme = useTheme();
 	if (theme.preferReducesMotion) {
 		return 0;
 	}
-	return duration ?? (theme.transitions.duration || 200);
+	return duration ?? theme.transition.duration;
 };
 
 export type BaseTransitionParams = {
@@ -53,8 +49,7 @@ export type FSOProps =
 	| {
 			in?: FSOParams;
 			out?: FSOParams;
-	  }
-	| undefined;
+	  };
 
 const styleToString = (style: Record<string, number | string | undefined>): string => {
 	return Object.keys(style).reduce((str, key) => {
@@ -130,8 +125,9 @@ type BgFadeOptions = {
 };
 export function bgFade(node: HTMLElement, options: BgFadeOptions) {
 	const rgba = getComputedStyle(node).backgroundColor;
-	const [r, g, b, target_opacity] = rgba.match(/\d+(\.\d+)?/g)!.map(Number);
-
+	const [r = 255, g = 255, b = 255, target_opacity = 1] = rgba.match(/\d+(\.\d+)?/g)!.map(Number);
+	node.style.removeProperty('background-color');
+	console.log({ r, g, b, target_opacity });
 	const od = target_opacity * (1 - 0);
 	return {
 		delay: options.delay,
@@ -139,6 +135,7 @@ export function bgFade(node: HTMLElement, options: BgFadeOptions) {
 		easing: resolveEasing(options.easing),
 		css: (t: number, u: number) => {
 			const value = `background-color: rgba(${r},${g},${b},${target_opacity - od * u})`;
+			// console.log(value);
 			return value;
 		}
 	};
@@ -225,72 +222,3 @@ export const defaultFsoParams = Object.assign({}, defaultBaseTransitionParams, {
 export const defaultSlideTransitionParams = Object.assign(defaultFsoParams, {
 	axis: 'y' as const
 }) satisfies SlideTransitionParams;
-
-export const resolveTransitionParams = <T extends FSOProps | SlideTransitionProps>(
-	transitions?: T
-): {
-	inParams: T extends FSOProps ? FSOParams : SlideTransitionParams;
-	outParams: T extends FSOProps ? FSOParams : SlideTransitionParams;
-} => {
-	const inParams =
-		transitions && 'in' in transitions ? transitions.in || {} : ((transitions || {}) as T);
-	const outParams =
-		transitions && 'out' in transitions ? transitions.out || {} : ((transitions || {}) as T);
-	return {
-		inParams,
-		outParams
-	} as {
-		inParams: T extends FSOProps ? FSOParams : SlideTransitionParams;
-		outParams: T extends FSOProps ? FSOParams : SlideTransitionParams;
-	};
-};
-
-export type TypedTransitionProps<Ty extends string, Tr extends 'slide' | 'fso'> = {
-	[K in Ty]?: Tr extends 'slide' ? SlideTransitionProps : FSOProps;
-};
-
-export const resolveTypedTransitionParams = <
-	C extends 'dialog' | 'toast' | 'popover',
-	Tr extends 'slide' | 'fso',
-	Ct extends C extends 'dialog' ? DialogType : C extends 'popover' ? Placement : ToastPosition
->(
-	component: C,
-	componentType: Ct,
-	transitionType: Tr,
-	override?: Tr extends 'slide' ? SlideTransitionProps : FSOProps
-): {
-	in: Tr extends 'slide' ? SlideTransitionParams : FSOParams;
-	out: Tr extends 'slide' ? SlideTransitionParams : FSOParams;
-} => {
-	const theme = use_theme();
-	const globalTransitionForComponent = (
-		component === 'dialog'
-			? theme.dialogTransitions
-			: component === 'popover'
-				? theme.popoverTransitions
-				: theme.toastTransitions
-	) as TypedTransitionProps<Ct, 'fso'>;
-
-	const base =
-		override ||
-		(globalTransitionForComponent
-			? globalTransitionForComponent[componentType] ||
-				(transitionType === 'slide' ? defaultSlideTransitionParams : defaultFsoParams)
-			: defaultFsoParams);
-
-	const params = structuredClone({
-		in: 'in' in base ? base.in : base,
-		out: 'out' in base ? base.out : base
-	}) as {
-		in: Tr extends 'slide' ? SlideTransitionParams : FSOParams;
-		out: Tr extends 'slide' ? SlideTransitionParams : FSOParams;
-	};
-
-	return params;
-};
-
-// I want
-// - transition for each type of dialogs to be set on the theme level
-// - transition to be reset on the dialog level when it's called in the template
-// - the in and out transition to be set separately
-// - the transition to be resolved nicely and dynamically based on the current type of the dialog

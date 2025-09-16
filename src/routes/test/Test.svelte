@@ -1,6 +1,6 @@
 <script lang="ts" module>
 	import Button from '$lib/components/Button/Button.svelte';
-	import { createBindableStateClass } from '$lib/utils/state.svelte.js';
+	import { createBindableStateClass, bind } from '$lib/utils/state.svelte.js';
 
 	class Test extends createBindableStateClass<{
 		name: string;
@@ -47,30 +47,26 @@
 			name = value;
 		},
 		get age() {
-			console.log('set age');
 			return age;
 		},
 		set age(value: number) {
 			age = value;
 		},
-		test: true,
-		...makeGetters({
-			record
-		})
+		get record() {
+			return record;
+		},
+		test: true
 	});
+
+	const bp = $state();
 </script>
 
-<div>
+<div class="flex flex-col gap-2">
 	<h1>Component value</h1>
 	<div class="flex gap-2">
 		<Button
 			size="small"
 			onClick={() => {
-				console.log('record.test', test, {
-					...makeGetters({
-						record
-					})
-				});
 				record.test = record.test === true ? false : true;
 			}}
 		>

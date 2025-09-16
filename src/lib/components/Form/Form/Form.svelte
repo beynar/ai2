@@ -26,10 +26,12 @@
 		title,
 		titleProps,
 		description,
-		descriptionProps
+		descriptionProps,
+		children,
+		form = $bindable()
 	}: FormProps<I> = $props();
 
-	const form = useForm({
+	form = useForm({
 		inputs,
 		onSubmit,
 		value
@@ -103,5 +105,5 @@
 			<p>Input type not supported</p>
 		{/if} -->
 	{/each}
-	<!-- {@render children?.(form)} -->
+	{@render children?.(form)}
 </div>

@@ -77,13 +77,13 @@ export const createFieldState = <T extends InputType>(
 
 			if (!parseResult.success && parseResult.issues.length > 0) {
 				this.errors = true;
+				return [this.hasError, parseResult.output];
 			}
 
 			if (this.onValidate) {
 				this.errors = this.onValidate(value as FieldValue<T>);
-				console.log('validate', this.errors);
 			}
-			console.log('validate', [this.hasError, parseResult.output]);
+
 			return [this.hasError, parseResult.output];
 		};
 	}

@@ -1,69 +1,13 @@
-export const gettersAndSetters = <T extends Record<string, any>>(obj: T) => {
-	const gettersAndSetters = Object.entries(obj).reduce((acc, [key, value]) => {
-		Object.defineProperty(acc, key, {
-			get: () => value,
-			set: (newValue) => {
-				value = newValue;
-			},
-			enumerable: true
-		});
-		return acc;
-	}, {} as T);
-
-	// Assign
-};
-
-export const getters = <T extends Record<string, any>>(obj: T) => {
-	return Object.entries(obj).reduce((acc, [key, value]) => {
-		Object.defineProperty(acc, key, {
-			get: () => value,
-			enumerable: true
-		});
-		return acc;
-	}, {} as T);
+export const bind = (ref: Record<string, any>, props: Record<string, any>) => {
+	const descriptors = Object.getOwnPropertyDescriptors(props);
+	for (const key in descriptors) {
+		Object.defineProperty(ref, key, descriptors[key]);
+	}
 };
 
 class BindableStateClass<P extends Record<string, any>> {
-	private getBindableProps(props: P) {
-		return Object.entries(Object.getOwnPropertyDescriptors(props))
-			.filter(([_key, value]) => value.get && value.set)
-			.map(([key]) => key);
-	}
-
-	private getDynamicProps(props: P) {
-		return Object.entries(Object.getOwnPropertyDescriptors(props))
-			.filter(([_key, value]) => value.get && !value.set)
-			.map(([key]) => key);
-	}
-
-	private getStaticProps(props: P) {
-		return Object.entries(Object.getOwnPropertyDescriptors(props))
-			.filter(([key, value]) => !value.get && !value.set)
-			.map(([key]) => key);
-	}
-
 	constructor(props: P) {
-		// Define the bindable props of the class with a getter and a setter
-		this.getBindableProps(props).forEach((key) => {
-			Object.defineProperty(this, key, {
-				get: () => props[key as keyof P],
-				set: (newValue) => {
-					props[key as keyof P] = newValue;
-				}
-			});
-		});
-		this.getDynamicProps(props).forEach((key) => {
-			Object.defineProperty(this, key, {
-				get: () => props[key as keyof P]
-			});
-		});
-
-		// Only assign the static props to the class
-		this.getStaticProps(props).forEach((key) => {
-			Object.assign(this, {
-				[key]: props[key as keyof P]
-			});
-		});
+		bind(this, props);
 	}
 }
 

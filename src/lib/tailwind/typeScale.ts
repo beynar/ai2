@@ -1,9 +1,10 @@
-// https://github.com/AleksandrHovhannisyan/fluid-type-scale-calculator
+// Simplified fluid type scale utility
 
 export type TypeScale = Record<
 	'xs' | 's' | 'DEFAULT' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl',
 	string
 >;
+
 const scales = {
 	minorSecond: 1.067,
 	majorSecond: 1.125,
@@ -16,76 +17,108 @@ const scales = {
 } as const;
 
 type Scale = keyof typeof scales;
-export type BreakpointConfig = {
-	/** The font size (in pixels) at this breakpoint */
-	fontSize?: number;
-	/** The viewport width corresponding to this breakpoint. */
-	screenWidth?: number;
-	/** The modular type scale ratio to use at this breakpoint to scale the base font size up/down. */
-	ratio?: Scale;
-};
 
-/** Given a form state representing user input for the various parameters, returns
- * the corresponding type scale mapping each step to its min/max/preferred font sizes.
- */
+/** Simplified type scale configuration */
 type TypeScaleParams = {
-	/** The minimum (mobile) config, describing how the font size should behave when the viewport width is narrower than the desktop breakpoint. */
-	min?: BreakpointConfig;
-	/** The maximum (desktop) config, describing how the font size should behave when the viewport width is >= this breakpoint. */
-	max?: BreakpointConfig;
-
-	/** The pixel value of 1rem. */
+	/** Base font size minimum (mobile) in pixels */
+	baseMinPx?: number;
+	/** Base font size maximum (desktop) in pixels */
+	baseMaxPx?: number;
+	/** Minimum viewport width in pixels */
+	minViewport?: number;
+	/** Maximum viewport width in pixels */
+	maxViewport?: number;
+	/** Scale ratio for sizing up/down from base */
+	scale?: Scale;
+	/** The pixel value of 1rem */
 	remValueInPx?: number;
-	scale: Scale;
 };
 
-export const getTypeScale = (state: TypeScaleParams): TypeScale => {
-	const typeScaleSteps = {
-		all: ['xs', 's', 'DEFAULT', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'],
-		base: 'DEFAULT'
-	} as const;
+export const getTypeScale = (params: TypeScaleParams = {}): TypeScale => {
+	// Default values with improved mobile-first approach
+	const baseMinPx = params.baseMinPx ?? 16;
+	const baseMaxPx = params.baseMaxPx ?? 18;
+	const minViewport = params.minViewport ?? 375; // iPhone SE width
+	const maxViewport = params.maxViewport ?? 1440; // Common desktop breakpoint
+	const scale = params.scale ?? 'majorThird';
+	const remValueInPx = params.remValueInPx ?? 16;
 
-	/** Appends the correct unit to a unitless value. */
-	const withUnit = (unitlessValue: number) => `${unitlessValue}rem`;
+	const typeScaleSteps = ['xs', 's', 'DEFAULT', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'] as const;
+	const baseIndex = 2; // 'DEFAULT' is at index 2
 
-	/** Rounds the given value to a fixed number of decimal places, according to the user's specified value. */
-	const round = (val: number) => Number(val.toFixed(2));
+	/** Rounds to 3 decimal places for better precision */
+	const round = (val: number) => Number(val.toFixed(3));
 
-	/** If we're using rems, converts the pixel arg to rems. Else, keeps it in pixels. */
-	const convertToDesiredUnit = (px: number) => px / (state.remValueInPx || 16);
+	/** Converts pixels to rems */
+	const pxToRem = (px: number) => px / remValueInPx;
 
-	// Get the index of the base modular step to compute exponents relative to the base index (up/down)
-	const baseStepIndex = typeScaleSteps.all.indexOf(typeScaleSteps.base);
+	/** Creates a fluid clamp value */
+	const createFluidValue = (minPx: number, maxPx: number) => {
+		const minRem = round(pxToRem(minPx));
+		const maxRem = round(pxToRem(maxPx));
 
-	// Reshape the data so we map each step name to a config describing its fluid font sizing values.
-	// Do this on every render because it's essentially derived state; no need for a useEffect.
-	// Note that some state variables are not necessary for this calculation, but it's simple enough that it's not expensive.
-	return typeScaleSteps.all.reduce((steps, step, i) => {
-		const min = {
-			fontSize:
-				(state.min?.fontSize || 14) *
-				Math.pow(scales[state.min?.ratio || 'perfectFourth'], i - baseStepIndex),
-			breakpoint: state.min?.screenWidth
-		};
-		const max = {
-			fontSize:
-				(state.max?.fontSize || 16) *
-				Math.pow(scales[state.max?.ratio || 'perfectFourth'], i - baseStepIndex),
-			breakpoint: state.max?.screenWidth
-		};
-		const slope =
-			(max.fontSize - min.fontSize) / ((max.breakpoint || 1024) - (min.breakpoint || 640));
-		const slopeVw = `${round(slope * 100)}vw`;
-		const intercept = min.fontSize - slope * (min.breakpoint || 640);
-		const minV = withUnit(round(convertToDesiredUnit(min.fontSize)));
-		const maxV = withUnit(round(convertToDesiredUnit(max.fontSize)));
-		const preferred = `${slopeVw} + ${withUnit(round(convertToDesiredUnit(intercept)))}`;
-		const value = `clamp(${minV}, ${preferred}, ${maxV})`;
+		// Calculate the slope for the fluid scaling
+		const slope = (maxPx - minPx) / (maxViewport - minViewport);
+		const slopeVw = round(slope * 100);
+		const intercept = minPx - slope * minViewport;
+		const interceptRem = round(pxToRem(intercept));
 
-		Object.assign(steps, {
-			[step]: [value, `calc(${value} * 1.1)`]
-		});
-		return steps;
-		// NOTE: Using a Map instead of an object to preserve key insertion order.
-	}, {} as TypeScale);
+		return `clamp(${minRem}rem, ${slopeVw}vw + ${interceptRem}rem, ${maxRem}rem)`;
+	};
+
+	const result: Record<string, string> = {};
+	const ratio = scales[scale];
+
+	for (let i = 0; i < typeScaleSteps.length; i++) {
+		const step = typeScaleSteps[i];
+		const multiplier = Math.pow(ratio, i - baseIndex);
+
+		// Calculate min and max sizes for this step
+		const minSize = baseMinPx * multiplier;
+		const maxSize = baseMaxPx * multiplier;
+
+		// Ensure minimum readable sizes, especially for smaller text
+		const adjustedMinSize = i < baseIndex ? Math.max(minSize, 10) : minSize;
+		const adjustedMaxSize = i < baseIndex ? Math.max(maxSize, 12) : maxSize;
+
+		result[step] = createFluidValue(adjustedMinSize, adjustedMaxSize);
+	}
+
+	return result as TypeScale;
+};
+
+/** Preset configurations for common use cases */
+export const typeScalePresets = {
+	/** Compact scale - good for data-heavy interfaces */
+	compact: {
+		baseMinPx: 14,
+		baseMaxPx: 16,
+		scale: 'minorThird' as Scale
+	},
+	/** Default scale - balanced for most applications */
+	default: {
+		baseMinPx: 16,
+		baseMaxPx: 18,
+		scale: 'majorThird' as Scale
+	},
+	/** Comfortable scale - good for content-heavy sites */
+	comfortable: {
+		baseMinPx: 16,
+		baseMaxPx: 20,
+		scale: 'majorThird' as Scale
+	},
+	/** Large scale - good for marketing sites */
+	large: {
+		baseMinPx: 18,
+		baseMaxPx: 22,
+		scale: 'perfectFourth' as Scale
+	}
+} as const;
+
+/** Helper function to create a type scale from a preset */
+export const getTypeScaleFromPreset = (
+	preset: keyof typeof typeScalePresets,
+	overrides?: Partial<TypeScaleParams>
+) => {
+	return getTypeScale({ ...typeScalePresets[preset], ...overrides });
 };

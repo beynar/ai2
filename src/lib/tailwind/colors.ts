@@ -2,6 +2,12 @@
 import { mix, toHex, hasBadContrast } from 'color2k';
 import { darken, lighten, saturate, formatCSS } from 'colorizr';
 
+const isHex = (color: string): color is `#${string}` => {
+	if (!color) {
+		return false;
+	}
+	return color.startsWith('#');
+};
 const readableColorIsBlack = (color: string) => {
 	const badContrast = hasBadContrast('#FAFAFA', 'readable', color);
 	return badContrast;
@@ -311,12 +317,13 @@ export const tailwindColors = {
 
 export type ColorTheme = {
 	[K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'surface' | 'contrast'}${
-		| 'Light'
-		| 'Lighter'
-		| 'Dark'
-		| 'Muted'
-		| 'Fg'
-		| ''}`]?: string;
+		| 'light'
+		| 'lighter'
+		| 'dark'
+		| 'muted'
+		| 'fg'}`]?: string;
+} & {
+	[K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'surface' | 'contrast'}`]?: string;
 };
 
 export type TailwindColor = keyof typeof tailwindColors;
@@ -361,6 +368,9 @@ export const colors = [
 	'contrast'
 ] as const;
 
+const baseBlackColor = '#121212';
+const baseWhiteColor = '#FAFAFA';
+
 const defaultColorsLight = {
 	primary: '#6366f1',
 	secondary: '#6366f1',
@@ -368,8 +378,8 @@ const defaultColorsLight = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	surface: '#fafafa',
-	contrast: '#242524'
+	surface: baseWhiteColor,
+	contrast: baseBlackColor
 } as const;
 const defaultColorsDark = {
 	primary: '#6366f1',
@@ -378,25 +388,28 @@ const defaultColorsDark = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	surface: '#242524',
-	contrast: '#fafafa'
+	surface: baseBlackColor,
+	contrast: baseWhiteColor
 } as const;
 
 type ColorThemeOption = {
 	saturation?: number;
 	luminance?: number;
-	colorScheme?: 'dark' | 'light';
+	colorscheme?: 'dark' | 'light';
 } & ColorTheme;
 
 export const generateBaseColors = (theme: ColorThemeOption) => {
+	const isDark = theme.colorscheme === 'dark';
 	return colors.reduce(
 		(acc, color) => {
 			const isTailwindColor = theme[color] && theme[color] in tailwindColors;
-			const defaultColor = isTailwindColor
-				? tailwindColors[theme[color] as TailwindColor]['500']
-				: theme[color] || theme.colorScheme === 'dark'
-					? defaultColorsDark[color]
-					: defaultColorsLight[color];
+			const isHexColor = isHex(theme[color]);
+			let defaultColor = isHexColor
+				? theme[color]
+				: isTailwindColor
+					? tailwindColors[theme[color] as TailwindColor]['500']
+					: theme[color] ||
+						(theme.colorscheme === 'dark' ? defaultColorsDark[color] : defaultColorsLight[color]);
 
 			Object.assign(acc[color], {
 				DEFAULT: defaultColor
@@ -404,7 +417,7 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 
 			variants.forEach((variant) => {
 				Object.assign(acc[color as keyof typeof acc], {
-					[variant.toLowerCase()]: theme[`${color}${variant}`] || null
+					[variant.toLowerCase()]: theme[`${color}-${variant.toLowerCase()}`] || null
 				});
 			});
 
@@ -424,9 +437,9 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 };
 
 export const generateColorPalette = (opts: ColorThemeOption) => {
-	const { luminance, saturation, colorScheme } = opts;
+	const { luminance, saturation, colorscheme } = opts;
 	const colors = generateBaseColors(opts);
-	const isDark = colorScheme === 'dark';
+	const isDark = colorscheme === 'dark';
 
 	const adjustColor = (color: string) => {
 		if (luminance) {
@@ -435,40 +448,46 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		if (saturation) {
 			color = saturate(color, saturation);
 		}
+		console.log({ saturation });
 		return color;
 	};
 
 	const shades = (color: ColorRecord) => {
 		const baseColor = adjustColor(color.DEFAULT as string);
+
+		console.log({ baseColor, defaultColor: color.DEFAULT });
+
 		return {
-			dark: color.dark || darken(baseColor, 15),
 			DEFAULT: color.DEFAULT,
+			dark: color.dark || darken(baseColor, 15),
 			light: color.light || lighten(baseColor, 15),
 			lighter: color.lighter || lighten(baseColor, 25),
-			muted: color.muted || mix(baseColor, isDark ? '#242524' : '#fafafa', 0.95),
-			fg: color.fg || readableColorIsBlack(baseColor) ? '#242524' : '#fafafa'
+			muted: color.muted || mix(baseColor, isDark ? '#151615' : '#fafafa', 0.85),
+			fg: color.fg || (readableColorIsBlack(baseColor) ? '#151615' : '#fafafa')
 		};
 	};
 
 	const generateWhiteShade = (color: ColorRecord) => {
+		const baseColor = color.DEFAULT || (isDark ? baseWhiteColor : baseBlackColor);
 		return {
 			DEFAULT: color.DEFAULT,
-			dark: color.dark || lighten(color.DEFAULT, 10),
-			light: color.light || darken(color.DEFAULT, 3),
-			lighter: color.lighter || darken(color.DEFAULT, 6),
-			muted: color.muted || darken(color.DEFAULT, 45),
-			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#242524' : '#FAFAFA'
+			dark: color.dark || darken(baseColor, 2),
+			light: color.light || lighten(baseColor, 5),
+			lighter: color.lighter || lighten(baseColor, 25),
+			muted: color.muted || mix(baseColor, isDark ? '#151615' : baseWhiteColor, 0.85),
+			fg: color.fg || (readableColorIsBlack(baseColor) ? '#151615' : '#fafafa')
 		};
 	};
 
 	const generateBlackShade = (color: ColorRecord) => {
+		const baseColor = color.DEFAULT || (isDark ? baseBlackColor : baseWhiteColor);
 		return {
 			DEFAULT: color.DEFAULT,
-			dark: color.dark || darken(color.DEFAULT, 10),
-			light: color.light || lighten(color.DEFAULT, 15),
-			lighter: color.lighter || lighten(color.DEFAULT, 25),
-			muted: color.muted || lighten(color.DEFAULT, 45),
-			fg: color.fg || readableColorIsBlack(color.DEFAULT) ? '#242524' : '#FAFAFA'
+			dark: color.dark || darken(baseColor, 2),
+			light: color.light || lighten(baseColor, 5),
+			lighter: color.lighter || lighten(baseColor, 25),
+			muted: color.muted || mix(baseColor, isDark ? '#151615' : baseWhiteColor, 0.85),
+			fg: color.fg || (readableColorIsBlack(baseColor) ? '#151615' : '#FAFAFA')
 		};
 	};
 
@@ -497,7 +516,7 @@ const paletteToCssVariables = (colors: DeepNonNullable<Colors>) => {
 		Object.entries(value).forEach(([k, v]) => {
 			Object.assign(colorVariables, {
 				[k === 'DEFAULT' ? `--color-${key}` : `--color-${key}-${k}`]: formatCSS(
-					toHex(v) as `#${string}`,
+					isHex(v) ? v : (toHex(v) as `#${string}`),
 					{ format: 'oklab' }
 				)
 			});

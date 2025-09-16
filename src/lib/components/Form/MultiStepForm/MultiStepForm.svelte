@@ -55,15 +55,7 @@
 	const classes = $derived(useMultiStepFormTheme(baseTheme));
 </script>
 
-{#snippet step({
-	stepper,
-	item,
-	index
-}: {
-	stepper: StepperState<FormStep>;
-	item: FormStep;
-	index: number;
-})}
+{#snippet step({ item }: { stepper: StepperState<FormStep>; item: FormStep; index: number })}
 	<Form class="p-4" inputs={item.inputs} title={item.title} description={item.description} />
 {/snippet}
 

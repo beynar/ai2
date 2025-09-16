@@ -88,7 +88,7 @@ export class MultiStepFormState<
 				if (index <= this.stepper?.activeStep!) {
 					const value = form.validate();
 					if (value) {
-						Object.assign(acc, value);
+						return { ...acc, ...value };
 					} else {
 						hasError = true;
 					}
@@ -98,8 +98,9 @@ export class MultiStepFormState<
 			},
 			{} as InferFormValue<MergedMultiStepFormInputs<I>>
 		);
-		if (this.stepper?.activeStep !== this.steps.length - 1 && !hasError) {
-			if (this.onSubmitStep) {
+
+		if (this.stepper?.activeStep !== this.steps.length - 1) {
+			if (this.onSubmitStep && !hasError) {
 				let shouldContinue = this.onSubmitStep(
 					value as InferFormValue<MergedMultiStepFormInputs<I>>,
 					this.steps[this.stepper?.activeStep!],
@@ -113,11 +114,12 @@ export class MultiStepFormState<
 						this.stepper?.next();
 					}
 				}
-			} else {
+			} else if (!hasError) {
 				// Automatic continue to the next step if no onSubmitStep is provided.
 				this.stepper?.next();
 			}
-		} else {
+		} else if (this.stepper?.activeStep === this.steps.length - 1) {
+			console.log('submit form', this.stepper?.activeStep, this.steps.length - 1);
 			if (this.onSubmitForm) {
 				const maybePromise = this.onSubmitForm(
 					value as InferFormValue<MergedMultiStepFormInputs<I>>
@@ -128,10 +130,10 @@ export class MultiStepFormState<
 					this.loading = false;
 				}
 			}
-		}
-		if (hasError) {
+		} else if (hasError) {
 			return false;
 		}
+
 		return value;
 	}
 }

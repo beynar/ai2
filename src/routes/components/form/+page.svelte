@@ -48,6 +48,7 @@
 					type: 'radio',
 					label: 'Radios',
 					mode: 'normal',
+					required: true,
 					options: [
 						{
 							label: 'Option 1',
@@ -64,9 +65,10 @@
 					]
 				},
 				checkboxes: {
-					type: 'checkboxes',
+					type: 'radio',
 					label: 'Radios',
 					mode: 'normal',
+					required: true,
 					options: [
 						{
 							label: 'Option 1',
@@ -81,13 +83,12 @@
 							value: 'option3'
 						}
 					]
-				},
-				switch: {
-					type: 'switch',
-					label: 'Switch',
-					placeholder: 'Switch',
-					description: 'Switch description'
 				}
+				// switch: {
+				// 	type: 'switch',
+				// 	label: 'Switch',
+				// 	description: 'Switch description'
+				// }
 			}
 		},
 		{
@@ -153,7 +154,9 @@
 		<MultiStepForm
 			footer={showFooter ? footer : undefined}
 			steps={items}
-			onSubmitForm={(values) => {}}
+			onSubmitForm={(values) => {
+				console.log(values);
+			}}
 		></MultiStepForm>
 	</div>
 </ComponentCard>

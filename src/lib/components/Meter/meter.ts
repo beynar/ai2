@@ -139,13 +139,13 @@ const defaultMeterIndicator = cva({
 	base: 'absolute whitespace-nowrap w-fit rounded px-1 py-0.5 text-xs text-color mx-auto left-0 right-0',
 	variants: {
 		size: {
-			small: 'text-[10px]',
-			normal: 'text-xs',
-			large: 'text-sm'
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
 		},
 		position: {
-			top: '-top-4',
-			bottom: '-bottom-4'
+			top: '-top-5',
+			bottom: '-bottom-5'
 		}
 	},
 	defaultVariants: {
@@ -157,9 +157,9 @@ const defaultMeterStep = cva({
 	base: 'flex whitespace-nowrap items-center justify-between w-full text-xs absolute text-contrast-muted h-fit px-1.5 py-0.5',
 	variants: {
 		size: {
-			small: 'text-[10px] px-1 py-0',
-			normal: 'text-xs px-1.5 py-0.5',
-			large: 'text-sm px-2 py-1'
+			small: 'text-xs px-1 py-0',
+			normal: 'text-base px-1.5 py-0.5',
+			large: 'text-md px-2 py-1'
 		},
 		position: {
 			top: '-top-8',
@@ -175,9 +175,9 @@ const defaultMeterStepLabel = cva({
 	base: 'absolute whitespace-nowrap text-xs text-contrast-light',
 	variants: {
 		size: {
-			small: 'text-[10px]',
-			normal: 'text-xs',
-			large: 'text-sm'
+			small: 'text-sm',
+			normal: 'text-base',
+			large: 'text-md'
 		},
 		position: {
 			top: 'top-0 left-1/2 -translate-x-1/2 ',

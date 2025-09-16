@@ -1,4 +1,7 @@
 // import type { ComponentsSystem } from '../plugin/components.js';
+
+import type { Breakpoint } from '$lib/components/Theme/theme.js';
+
 // import type { Spinner } from '$lib/plugin/spinnner.js';
 export type Colors =
 	| 'primary'
@@ -64,10 +67,5 @@ export type DesignSystem = {
 };
 
 export type Sizes = 'small' | 'normal' | 'large';
-export type ResponsiveProps<T> =
-	| T
-	| Partial<{
-			[breakpoint in 'xs' | 'sm' | 'md' | 'lg' | 'xl']: T;
-	  }>;
 
 export type Easing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
