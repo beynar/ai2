@@ -10,8 +10,8 @@ const defaultSwitchToggle = cva({
 	base: 'relative inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-contrast focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
 	variants: {
 		checked: {
-			true: 'bg-contrast border-contrast shadow-sm',
-			false: 'bg-surface-lighter border-surface-lighter hover:bg-surface-light'
+			true: 'bg-contrast border-surface-muted shadow-sm',
+			false: 'bg-surface-lighter border-surface-muted hover:bg-surface-light'
 		},
 		size: {
 			small: 'h-[20px] w-[36px]',

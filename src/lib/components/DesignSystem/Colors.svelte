@@ -103,7 +103,7 @@
 				{#each colors as color (color)}
 					{@const name = color.split('-')[1]}
 					<div class="h-auto rounded-lg">
-						<div class={`h-2/3 w-full ${color} raised h-[100px] rounded-lg`}></div>
+						<div class={`w-full ${color} raised h-[100px] rounded-lg`}></div>
 						<div class="text-contrast p-2 text-center text-sm">
 							{color.replace('bg-', '').replace(`${color}-`, '')}
 						</div>
@@ -112,4 +112,21 @@
 			</div>
 		</div>
 	{/each}
+
+	<div class="grid gap-2">
+		{#each colorList.surface.colors as bgColor (bgColor)}
+			<Heading class="text-contrast">Contrast on surface {bgColor}</Heading>
+			<div class="grid grid-cols-2 gap-4 md:grid-cols-6">
+				{#each colorList.contrast.colors as color (color)}
+					<div class="h-auto rounded-lg">
+						<div
+							class={`${bgColor} text-${color.replace('bg-', '').replace(`${color}-`, '')} raised  flex h-[100px] w-full items-center justify-center rounded-lg`}
+						>
+							contrast-{color.replace('bg-', '').replace(`${color}-`, '')}
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/each}
+	</div>
 </div>

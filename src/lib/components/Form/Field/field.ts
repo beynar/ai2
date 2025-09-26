@@ -192,7 +192,7 @@ const defaultFieldInputContainer = cva({
 			large: 'gap-3'
 		},
 		hasError: {
-			true: '!border-danger !border !ring-danger',
+			true: '!ring-2 ring-offset-2 rounded !ring-danger',
 			false: ''
 		}
 	}

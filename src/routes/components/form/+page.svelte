@@ -51,7 +51,29 @@
 					required: true,
 					options: [
 						{
-							label: 'Option 1',
+							label:
+								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						},
+						{
+							label: 'Option 3',
+							value: 'option3'
+						}
+					]
+				},
+				cards: {
+					type: 'radio',
+					label: 'Radios',
+					mode: 'card',
+					required: true,
+					options: [
+						{
+							label:
+								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
 							value: 'option1'
 						},
 						{
@@ -65,13 +87,35 @@
 					]
 				},
 				checkboxes: {
-					type: 'radio',
+					type: 'checkboxes',
 					label: 'Radios',
 					mode: 'normal',
 					required: true,
 					options: [
 						{
-							label: 'Option 1',
+							label:
+								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						},
+						{
+							label: 'Option 3',
+							value: 'option3'
+						}
+					]
+				},
+				checkboxesCard: {
+					type: 'checkboxes',
+					label: 'Radios',
+					mode: 'card',
+					required: true,
+					options: [
+						{
+							label:
+								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
 							value: 'option1'
 						},
 						{

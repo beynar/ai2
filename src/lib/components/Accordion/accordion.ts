@@ -112,7 +112,7 @@ const defaultAccordionItem = cva({
 			large: ''
 		},
 		variant: {
-			classic: 'border-b border-surface-lighter last:border-0',
+			classic: 'border-b border-surface-muted last:border-0',
 			card: '',
 			outlined: ''
 		},

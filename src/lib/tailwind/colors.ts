@@ -462,8 +462,8 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 			dark: color.dark || darken(baseColor, 15),
 			light: color.light || lighten(baseColor, 15),
 			lighter: color.lighter || lighten(baseColor, 25),
-			muted: color.muted || mix(baseColor, isDark ? '#151615' : '#fafafa', 0.85),
-			fg: color.fg || (readableColorIsBlack(baseColor) ? '#151615' : '#fafafa')
+			muted: color.muted || mix(baseColor, isDark ? baseBlackColor : baseWhiteColor, 0.95),
+			fg: color.fg || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor)
 		};
 	};
 
@@ -474,8 +474,14 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 			dark: color.dark || darken(baseColor, 2),
 			light: color.light || lighten(baseColor, 5),
 			lighter: color.lighter || lighten(baseColor, 25),
-			muted: color.muted || mix(baseColor, isDark ? '#151615' : baseWhiteColor, 0.85),
-			fg: color.fg || (readableColorIsBlack(baseColor) ? '#151615' : '#fafafa')
+			muted:
+				color.muted ||
+				(!isDark
+					? // For surface on light theme
+						mix(baseColor, baseBlackColor, 0.2)
+					: // For contrast on dark themes
+						mix(baseColor, baseBlackColor, 0.5)),
+			fg: color.fg || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor)
 		};
 	};
 
@@ -486,8 +492,14 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 			dark: color.dark || darken(baseColor, 2),
 			light: color.light || lighten(baseColor, 5),
 			lighter: color.lighter || lighten(baseColor, 25),
-			muted: color.muted || mix(baseColor, isDark ? '#151615' : baseWhiteColor, 0.85),
-			fg: color.fg || (readableColorIsBlack(baseColor) ? '#151615' : '#FAFAFA')
+			muted:
+				color.muted ||
+				(isDark
+					? // For surface on dark theme
+						mix(baseColor, baseWhiteColor, 0.2)
+					: // For contrast on light themes
+						mix(baseColor, baseWhiteColor, 0.5)),
+			fg: color.fg || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor)
 		};
 	};
 

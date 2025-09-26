@@ -12,7 +12,7 @@
 	{#snippet children(theme: ThemeState)}
 		<div class="relative grid grid-cols-11">
 			<div
-				class="bg-surface border-contrast-muted sticky top-0 z-10 col-span-11 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"
+				class=" bg-surface border-surface-muted sticky top-0 z-50 col-span-11 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"
 			>
 				<div class="flex items-center gap-4">
 					<Button size="small" variant="link" href="/docs">Docs</Button>
@@ -33,7 +33,7 @@
 				</div>
 			</div>
 			<div
-				class="  border-contrast-muted scrollbar scrollbar-none bg-surface sticky top-[45px] left-0 col-span-2 grid max-h-[calc(100vh-45px)] overflow-auto border-r border-dashed px-2 py-10"
+				class="  border-surface-muted scrollbar scrollbar-none bg-surface sticky top-[45px] left-0 col-span-2 grid max-h-[calc(100vh-45px)] overflow-auto border-r border-dashed px-2 py-10"
 			>
 				<!-- <Separator orientation="horizontal">Getting started</Separator> -->
 				<Button size="small" variant="link" href="/">Introduction</Button>
@@ -75,6 +75,7 @@
 				<Button size="small" variant="link" href="/components/networkIndicator"
 					>Network indicator</Button
 				>
+				<Button size="small" variant="link" href="/components/loader">Loader</Button>
 				<Button size="small" variant="link" href="/components/dialog">Dialog</Button>
 				<Button size="small" variant="link" href="/components/megamenu">Megamenu</Button>
 				<Button size="small" variant="link" href="/components/contextmenu">Context menu</Button>
@@ -91,14 +92,6 @@
 
 				<Button size="small" variant="link" href="/components/kbd">KBD</Button>
 				<Button size="small" variant="link" href="/components/accordion">Accordion</Button>
-				<Button size="small" variant="link" href="/components/pageTransition"
-					>Page transition</Button
-				>
-				<Button size="small" variant="link" href="/components/tilt">Tilt</Button>
-				<Button size="small" variant="link" href="/components/globe">Globe</Button>
-				<Button size="small" variant="link" href="/components/glowingBorder">Glowing border</Button>
-				<Button size="small" variant="link" href="/components/custom-cursor">Custom cursor</Button>
-				<Button size="small" variant="link" href="/components/edges">Edges</Button>
 
 				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">Form</Separator> -->
 				<Button size="small" variant="link" href="/components/textarea">Textarea</Button>

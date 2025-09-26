@@ -52,7 +52,7 @@ export type AvatarGroupProps<I extends object> = WithoutAttachments<Omit<AvatarP
 	}>;
 
 const defaultAvatar = cva({
-	base: 'relative items-center border border-surface-lighter text-contrast aspect-ratio-1 rounded-full',
+	base: 'relative items-center border border-surface-muted text-contrast aspect-ratio-1 rounded-full',
 	variants: {
 		size: {
 			normal: 'size-8',
@@ -80,7 +80,7 @@ const defaultAvatarImage = cva({
 });
 
 const defaultAvatarPrefix = cva({
-	base: 'absolute bottom-[-0.25rem] rounded-full border border-surface-lighter p-[0.25rem] bg-surface size-4 left-[-0.25rem] aspect-square',
+	base: 'absolute bottom-[-0.25rem] rounded-full border border-surface-muted p-[0.25rem] bg-surface size-4 left-[-0.25rem] aspect-square',
 	variants: {
 		size: {
 			normal: 'size-4 right-[-0.3rem] bottom-[-0.2rem]',
@@ -94,7 +94,7 @@ const defaultAvatarPrefix = cva({
 });
 
 const defaultAvatarSuffix = cva({
-	base: 'absolute  rounded-full border border-surface-lighter p-[0.25rem] bg-surface aspect-square',
+	base: 'absolute  rounded-full border border-surface-muted p-[0.25rem] bg-surface aspect-square',
 	variants: {
 		size: {
 			normal: 'size-4 right-[-0.3rem] bottom-[-0.3rem]',
@@ -135,7 +135,7 @@ const defaultAvatarGroup = cva({
 	}
 });
 const defaultAvatarGroupCount = cva({
-	base: 'bg-surface-lighter border-contrast text-contrast text-center rounded-full flex items-center justify-center uppercase font-bold  ml-[-0.75rem] z-[+1]',
+	base: 'bg-surface-lighter border-surface-muted text-contrast text-center rounded-full flex items-center justify-center uppercase font-bold  ml-[-0.75rem] z-[+1]',
 	variants: {
 		size: {
 			normal: 'size-8 text-sm',

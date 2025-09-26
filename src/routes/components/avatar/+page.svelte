@@ -16,7 +16,7 @@
 
 <div class="grid gap-10">
 	<div
-		class="border-surface-lighter relative grid h-[400px] w-full max-w-[90vw] items-center rounded border"
+		class="border-surface-muted relative grid h-[400px] w-full max-w-[90vw] items-center rounded border"
 	>
 		<div class="flex items-center justify-center gap-4">
 			{#each sizes as size}
@@ -32,7 +32,7 @@
 
 	<div>
 		<div
-			class="border-surface-lighter relative grid h-[400px] w-full max-w-[90vw] items-center rounded border"
+			class="border-surface-muted relative grid h-[400px] w-full max-w-[90vw] items-center rounded border"
 		>
 			<div class="flex items-center justify-center gap-4">
 				{#each sizes as size}

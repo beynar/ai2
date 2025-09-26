@@ -28,7 +28,7 @@ export const useClickOutside = (props: ClickOutsideHandlerOptions) => {
 	};
 
 	return {
-		get attachment() {
+		get reference() {
 			return props.isActive
 				? (node: HTMLElement) => {
 						refs.add(node);
@@ -40,7 +40,6 @@ export const useClickOutside = (props: ClickOutsideHandlerOptions) => {
 							if (listener && refs.size === 0) {
 								listener();
 								listener = null;
-								console.log('clean up', listener);
 							}
 						};
 					}

@@ -5,6 +5,7 @@ import type { FormInputs, FormProps, InferFormValue } from '../Form/form.js';
 import type { FormState } from '../Form/formState.svelte.js';
 import type { MultiStepFormState } from './multiStepFormState.svelte.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import type { ButtonProps } from '$lib/components/Button/button.js';
 
 export type FormStep<I extends FormInputs = FormInputs> = {
 	title?: string;
@@ -43,6 +44,9 @@ export type MultiStepFormProps<I extends FormStep[] = FormStep[]> = WithSlot<
 		theme?: InferComponentTheme<typeof multiStepFormTheme> & {
 			form?: FormProps<any>['theme'];
 		};
+		previousButtonProps?: ButtonProps;
+		nextButtonProps?: ButtonProps;
+		submitButtonProps?: ButtonProps;
 	},
 	'footer' | 'header',
 	MultiStepFormState<I>
@@ -58,7 +62,7 @@ export type MergedMultiStepFormInputs<I extends FormStep[]> =
 		: never;
 
 export const defaultMultiStep = cva({
-	base: 'flex flex-col relative p-2 bg-surface'
+	base: 'flex flex-col relative p-2'
 	// variants: {
 	// size: {
 	// 	small: 'gap-2',

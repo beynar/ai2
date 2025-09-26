@@ -5,19 +5,21 @@
 		children,
 		title = 'title',
 		class: className = '',
-		description
+		description,
+		...attachments
 	}: {
 		children: Snippet;
 		description?: string;
 		class?: string;
 		title?: string;
+		[key: string]: any;
 	} = $props();
 	// import Heading from '$lib/Components/Typography/Heading.svelte';
 	// import Text from '$lib/Components/Typography/Text.svelte';
 	import type { Snippet } from 'svelte';
 </script>
 
-<div class="grid gap-10">
+<div {...attachments} class="grid gap-10">
 	<!-- <div>
 		<Heading>{title}</Heading>
 		{#if description}
@@ -25,7 +27,7 @@
 		{/if}
 	</div> -->
 	<div
-		class="border-surface-lighter relative flex min-h-[400px] w-full max-w-[90vw] items-center justify-center gap-4 rounded border {className}"
+		class="border-surface-muted relative flex min-h-[400px] w-full max-w-[90vw] items-center justify-center gap-4 rounded border {className}"
 	>
 		<!-- <Pattern
 			size={10}

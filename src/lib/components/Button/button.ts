@@ -90,7 +90,7 @@ const defaultButton = cva({
 		{
 			color: 'surface',
 			variant: 'outline',
-			class: 'border-surface-lighter text-contrast hover:bg-surface-lighter'
+			class: 'border-surface-muted text-contrast hover:bg-surface-lighter'
 		},
 		{
 			color: 'surface',

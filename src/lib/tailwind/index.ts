@@ -85,14 +85,15 @@ export default plugin.withOptions<ThemeOptions>(
 			// RAISED UTILITY
 			addBase({
 				'[data-color-scheme="dark"]': {
-					'--dark-raised-border': '1px solid var(--current-border, var(--color-surface-lighter))',
+					'--dark-raised-border': '1px solid var(--current-border, var(--color-surface-muted))',
 					'--dark-raised-shadow': 'none'
 				},
 				'[data-color-scheme="light"]': {
 					// '--light-raised-border': 'var(--current-border, var(--color-surface-lighter))'
-					'--light-raised-border': options?.['raised-with-border']
-						? '1px solid var(--current-border, var(--color-surface-lighter))'
-						: '0px'
+					'--light-raised-border':
+						options?.['raised-with-border'] !== false
+							? '1px solid var(--current-border, var(--color-surface-muted))'
+							: '0px'
 				},
 				':has([data-badge])': {
 					position: 'relative'

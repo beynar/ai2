@@ -17,7 +17,7 @@
 
 <div class="bg-secondary/20 raised-xl m-10 size-20"></div>
 
-<!-- <Component text="eaze" /> -->
+<p class="text-contrast-muted">hello</p>
 
 {#snippet Test({ text }: { text: string })}
 	<button

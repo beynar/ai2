@@ -57,7 +57,7 @@ const defaultBadge = cva({
 		{
 			color: 'surface',
 			variant: 'outline',
-			class: 'border-surface-lighter text-contrast'
+			class: 'border-surface-muted text-contrast'
 		},
 		{
 			color: 'surface',

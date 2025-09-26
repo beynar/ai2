@@ -37,7 +37,10 @@
 		footer,
 		footerProps,
 		header,
-		headerProps
+		headerProps,
+		nextButtonProps = {},
+		previousButtonProps = {},
+		submitButtonProps = {}
 	}: MultiStepFormProps<I> = $props();
 
 	let form = new MultiStepFormState({
@@ -87,6 +90,7 @@
 			prefix={arrowLeftIcon}
 			disabled={form.stepper?.activeStep === 0}
 			onClick={() => form.stepper?.previous()}
+			{...previousButtonProps}
 		>
 			{previousText}
 		</Button>
@@ -94,6 +98,7 @@
 			suffix={form.isLastStep ? arrowCircleUpIcon : arrowRightIcon}
 			disabled={form.loading}
 			onClick={() => form.submit()}
+			{...form.isLastStep ? submitButtonProps : nextButtonProps}
 		>
 			{form.isLastStep ? submitText : nextText}
 		</Button>

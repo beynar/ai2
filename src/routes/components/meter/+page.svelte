@@ -21,7 +21,7 @@
 
 <div class="grid gap-10">
 	<div
-		class="border-surface-lighter relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
+		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
 	>
 		<div class="grid gap-4">
 			<Meter

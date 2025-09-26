@@ -24,12 +24,12 @@ export type ChipProps = WithAttachments<
 >;
 
 const defaultChip = cva({
-	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex whitespace-nowrap',
+	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex',
 	variants: {
 		size: {
-			small: 'px-1 h-4 text-sm  gap-1',
-			normal: 'px-1.5 h-5 text-base gap-1',
-			large: 'px-2 h-6 text-md  gap-1.5'
+			small: 'px-1.5 py-0.5 min-h-4 text-sm  gap-1',
+			normal: 'px-2 py-0.5 min-h-5 text-base gap-1',
+			large: 'px-2.5 py-0.5 min-h-6 text-md  gap-1.5'
 		},
 		color: {
 			primary: 'bg-primary text-primary-fg',
@@ -56,7 +56,7 @@ const defaultChip = cva({
 		{
 			color: 'surface',
 			variant: 'outline',
-			class: 'border-surface-lighter text-contrast'
+			class: 'border-surface-muted text-contrast'
 		},
 		{
 			color: 'surface',

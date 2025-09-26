@@ -63,7 +63,7 @@ border-success, border-success-light, border-success-dark, border-success-muted,
 border-warning, border-warning-light, border-warning-dark, border-warning-muted, border-warning-fg
 border-info, border-info-light, border-info-dark, border-info-muted, border-info-fg
 border-surface, border-surface-light, border-surface-dark, border-surface-muted, border-surface-fg
-border-contrast, border-contrast-light, border-contrast-dark, border-contrast-muted, border-contrast-fg
+border-contrast, border-contrast-light, border-contrast-dark, border-surface-muted, border-contrast-fg
 ```
 
 ### **Advanced: Color Utilities with Data Attributes**
@@ -144,7 +144,7 @@ dc:; /* Targets direct children (& > *) */
 
 ```html
 <div class="bg-surface min-h-screen">
-	<div class="bg-surface-light p-6 rounded-lg raised-md border border-surface-lighter">
+	<div class="bg-surface-light p-6 rounded-lg raised-md border border-surface-muted">
 		<!-- Use contrast colors for text hierarchy on surface backgrounds -->
 		<h1 class="text-contrast font-bold text-2xl">Main Heading</h1>
 		<h2 class="text-contrast-dark font-semibold text-lg">Subheading</h2>

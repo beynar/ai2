@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
-	import { loader } from '$lib/actions/loader.js';
+	import { spinnerOverlay } from '$lib/attachments/spinnerOverlay.svelte.js';
 	import Slot from '../Slot/Slot.svelte';
 
 	let {
@@ -63,7 +63,7 @@
 		className,
 		fullWidth
 	})}
-	use:loader={{ loading }}
+	{@attach spinnerOverlay({ loading })}
 	onclick={onClick &&
 		(() => {
 			if (!disabled) {

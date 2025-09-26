@@ -1,10 +1,14 @@
 <script lang="ts" generics="const T extends string[]">
 	import type { Snippet } from 'svelte';
 	import BeforeHydratation from '../Utils/BeforeHydratation.svelte';
-	import { type SvelteThemeProps, SvelteTheme, Theme } from 'svelte-themes';
+	import { type SvelteThemeProps, Theme as SvelteTheme } from 'svelte-themes';
 	import { ThemeState } from './theme.state.svelte.js';
 	import { escapeForInlineScript, escapeJsString, MEDIA } from './helper.js';
+	import Tooltip from '../Tooltip/Tooltip.svelte';
 
+	type SvelaiThemeProps = SvelteThemeProps<T> & {
+		children: Snippet<[ThemeState]>;
+	};
 	let {
 		children,
 		forcedTheme = undefined,
@@ -17,9 +21,7 @@
 		attribute = 'data-theme',
 		value = undefined,
 		colorScheme
-	}: {
-		children: Snippet<[ThemeState]>;
-	} & SvelteThemeProps<T> = $props();
+	}: SvelaiThemeProps = $props();
 
 	const validatedDefaultTheme = (() => {
 		const defaultThemes = ['light', 'dark'];
@@ -32,7 +34,7 @@
 		// If defaultTheme is not in the themes array, fall back to first theme
 		return finalThemes.includes(defaultTheme) ? defaultTheme : finalThemes[0];
 	})();
-	const theme = new Theme({
+	const theme = new SvelteTheme({
 		get forcedTheme() {
 			return forcedTheme;
 		},
@@ -128,3 +130,5 @@ const setWindowDimensions = () => {
 </svelte:head>
 
 {@render children(sveltaiTheme)}
+
+<Tooltip />

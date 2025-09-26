@@ -26,10 +26,10 @@ const defaultRadioInput = cva({
 });
 
 const defaultRadioInputItem = cva({
-	base: 'transition-all relative grid items-center gap-1 pl-12 cursor-pointer w-full',
+	base: 'transition-all relative grid items-center  gap-1 pl-12 cursor-pointer w-full',
 	variants: {
 		mode: {
-			card: 'rounded raised py-2',
+			card: 'rounded bg-surface-light raised py-2',
 			normal: 'py-1'
 		},
 		checked: {
@@ -51,7 +51,7 @@ const defaultRadioInputItemLabel = cva({
 });
 
 const defaultRadioInputItemTrack = cva({
-	base: 'size-6 origin-center content-[""] bg-surface-lighter rounded-full absolute top-0 left-2 right-0 bottom-0 my-auto',
+	base: 'size-6 origin-center content-[""] bg-surface-light border border-surface-muted rounded-full absolute top-0 left-2 right-0 bottom-0 my-auto',
 	variants: {
 		checked: {
 			true: '',
@@ -87,7 +87,7 @@ const defaultRadioInputItemDescription = cva({
 });
 
 const defaultRadioInputContainer = cva({
-	base: 'grid gap-3 grid-cols-2',
+	base: 'grid gap-3 grid-cols-1 md:grid-cols-2 items-start',
 	variants: {
 		mode: {
 			card: '',

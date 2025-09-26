@@ -7,6 +7,8 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { on } from 'svelte/events';
 import type { FSOProps } from '$lib/transitions/transition.js';
 import type { Theme as SvelteTheme } from 'svelte-themes';
+import type { PopoverState } from '../Popover/popover.state.svelte.js';
+import type { TooltipProps } from '../Tooltip/tooltip.svelte.js';
 
 const events = ['scroll', 'pointerdown', 'keydown', 'keyup'] as const;
 type Events = (typeof events)[number];
@@ -26,7 +28,10 @@ interface ThemeOptions {}
 export interface ThemeState extends ThemeOptions {}
 
 export class ThemeState {
+	tooltip = $state<(TooltipProps & { ref: HTMLElement }) | null>(null);
+	lastTooltipClosed = $state<number | null>(null);
 	dialogs = $state<DialogState[]>([]);
+	popovers = $state<PopoverState[]>([]);
 	currentBreakpoint = $state<Breakpoint>('md');
 	preferReducesMotion = $state(false);
 	eventListeners = new SvelteMap<Events, SvelteSet<Function>>();
@@ -105,6 +110,12 @@ export class ThemeState {
 		this.dialogs.push(dialog);
 		return () => {
 			this.dialogs = this.dialogs.filter((d) => d.id !== dialog.id);
+		};
+	};
+	addPopover = (popover: PopoverState) => () => {
+		this.popovers.push(popover);
+		return () => {
+			this.popovers = this.popovers.filter((d) => d.id !== popover.id);
 		};
 	};
 

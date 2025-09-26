@@ -23,7 +23,7 @@ const defaultInput = cva({
 });
 
 const defaultInputContainer = cva({
-	base: 'px-2 bg-surface-light border border-surface-lighter rounded text-contrast-light w-full focus-within:ring-1 focus-within:ring-contrast focus-within:ring-opacity-50 ring-0 transition-all p-1',
+	base: 'px-2 bg-surface-light border border-surface-muted rounded text-contrast-light w-full focus-within:ring-1 focus-within:ring-contrast focus-within:ring-opacity-50 ring-0 transition-all p-1',
 	variants: {
 		size: {
 			small: 'h-4',

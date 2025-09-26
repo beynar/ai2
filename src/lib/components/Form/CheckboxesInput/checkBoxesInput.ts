@@ -29,7 +29,7 @@ const defaultCheckBoxesInputItem = cva({
 	base: 'transition-all relative grid items-center gap-1 pl-12 cursor-pointer w-full',
 	variants: {
 		mode: {
-			card: 'rounded raised py-2',
+			card: 'rounded bg-surface-light raised py-2',
 			normal: ''
 		},
 		checked: {
@@ -51,7 +51,7 @@ const defaultCheckBoxesInputItemLabel = cva({
 });
 
 const defaultCheckBoxesInputItemTrack = cva({
-	base: 'size-6 origin-center content-[""] bg-surface-lighter rounded absolute top-0 left-2 right-0 bottom-0 my-auto',
+	base: 'size-6 origin-center content-[""] bg-surface-light border border-surface-muted rounded absolute top-0 left-2 right-0 bottom-0 my-auto',
 	variants: {
 		checked: {
 			true: '',
@@ -89,7 +89,7 @@ const defaultCheckBoxesInputItemDescription = cva({
 });
 
 const defaultCheckBoxesInputContainer = cva({
-	base: 'grid gap-3 grid-cols-2',
+	base: 'grid gap-3 grid-cols-1 md:grid-cols-2 items-start',
 	variants: {
 		mode: {
 			card: '',
