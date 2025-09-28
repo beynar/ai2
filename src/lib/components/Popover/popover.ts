@@ -19,6 +19,7 @@ export type PopoverProps = WithAttachments<{
 	openOnClick?: boolean;
 	openOnHover?: boolean;
 	hoverDelay?: number;
+	directedTransition?: boolean;
 	transition?: ResponsiveProps<FSOProps>;
 	children?: Snippet<[PopoverState]>;
 	trigger?: Snippet<[PopoverState]> | (ButtonProps & { content?: string }) | false;

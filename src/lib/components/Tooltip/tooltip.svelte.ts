@@ -31,7 +31,6 @@ export const tooltip = (props: TooltipProps) => {
 			return true;
 		},
 		onMouseEnter: () => {
-			console.log('refElement', refElement);
 			if (refElement) {
 				theme.tooltip = { ...props, ref: refElement };
 			}
@@ -43,7 +42,7 @@ export const tooltip = (props: TooltipProps) => {
 		get delay() {
 			const lastTooltipClosed = theme.lastTooltipClosed;
 			const now = Date.now();
-			if (lastTooltipClosed && now - lastTooltipClosed < 600) {
+			if (lastTooltipClosed && now - lastTooltipClosed < (props.delay || 400)) {
 				return 0;
 			}
 			return props.delay || 400;

@@ -9,6 +9,7 @@ import type { FSOProps } from '$lib/transitions/transition.js';
 import type { Theme as SvelteTheme } from 'svelte-themes';
 import type { PopoverState } from '../Popover/popover.state.svelte.js';
 import type { TooltipProps } from '../Tooltip/tooltip.svelte.js';
+import type { HighlighterManager } from '../Code/highlighter.svelte.js';
 
 const events = ['scroll', 'pointerdown', 'keydown', 'keyup'] as const;
 type Events = (typeof events)[number];
@@ -28,6 +29,7 @@ interface ThemeOptions {}
 export interface ThemeState extends ThemeOptions {}
 
 export class ThemeState {
+	highlighter?: HighlighterManager;
 	tooltip = $state<(TooltipProps & { ref: HTMLElement }) | null>(null);
 	lastTooltipClosed = $state<number | null>(null);
 	dialogs = $state<DialogState[]>([]);

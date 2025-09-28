@@ -53,7 +53,7 @@
 	<Button
 		{@attach tooltip({
 			content: children,
-			position: 'top',
+			position: 'bottom',
 			offset: 5
 		})}
 	>

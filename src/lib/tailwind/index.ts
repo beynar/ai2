@@ -20,7 +20,7 @@ const dataColors = colors.reduce((acc, color) => {
 
 export default plugin.withOptions<ThemeOptions>(
 	(options) => {
-		return ({ addBase, addComponents, matchUtilities, addUtilities, theme }) => {
+		return ({ addBase, addComponents, matchUtilities, addUtilities, theme, addVariant }) => {
 			addBase({
 				...dataColors
 			});
@@ -42,7 +42,6 @@ export default plugin.withOptions<ThemeOptions>(
 					}
 				};
 
-			console.log(parseUtility('color'));
 			matchUtilities(
 				{
 					'text-color': parseUtility('color'),
@@ -103,6 +102,15 @@ export default plugin.withOptions<ThemeOptions>(
 			addComponents({
 				'.ui-spinner': getSpinner(options).style
 			});
+
+			addVariant('checked', ['&:checked', "&[data-checked='true']"]);
+			addVariant('not-checked', ['&:not(:checked)', "&[data-checked='false']"]);
+			addVariant('child', '& > *');
+			addVariant('first-child', '& > *:first-child');
+			addVariant('last-child', '& > *:last-child');
+			addVariant('not-first-child', '& > *:not(:first-child)');
+			addVariant('not-last-child', '& > *:not(:last-child)');
+			addVariant('not-first-not-last-child', '& > *:not(:first-child):not(:last-child)');
 
 			matchUtilities(
 				{

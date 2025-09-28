@@ -41,7 +41,7 @@ export type ButtonProps<Payload extends Record<string, any> | undefined = undefi
 >;
 
 const defaultButton = cva({
-	base: 'rounded cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem] active:scale-[0.99]',
+	base: 'rounded cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem]',
 	variants: {
 		size: {
 			small: 'px-2.5 text-sm leading-4 h-6 gap-1',
@@ -59,11 +59,11 @@ const defaultButton = cva({
 			info: 'bg-info text-info-fg'
 		},
 		variant: {
-			solid: 'bg-color text-color-fg hover:bg-color/90 active:bg-color/95',
-			outline: 'bg-color/0 border border-color hover:bg-color/10 text-color',
-			soft: 'text-color hover:bg-color/30  bg-color-muted',
-			ghost: 'text-color hover:bg-color-muted bg-color/0',
-			link: 'bg-transparent hover:bg-opacity-60 text-color hover:underline'
+			solid: 'bg-color text-color-fg hover:bg-color/90 active:bg-color/80',
+			outline: 'bg-color/0 border border-color hover:bg-color/10 text-color active:bg-color/20',
+			soft: 'text-color hover:bg-color/30  bg-color-muted active:bg-color/20',
+			ghost: 'text-color hover:bg-color-muted bg-color/0 active:bg-color-muted/70',
+			link: 'bg-transparent hover:bg-opacity-60 text-color hover:underline active:bg-color-muted/60'
 		},
 		loading: {
 			true: 'cursor-default pointer-events-none',
@@ -94,13 +94,33 @@ const defaultButton = cva({
 		},
 		{
 			color: 'surface',
+			variant: 'solid',
+			class: 'active:bg-surface-light'
+		},
+		{
+			color: 'surface',
 			variant: 'soft',
 			class: 'bg-surface-lighter text-color-fg hover:bg-surface-light'
 		},
 		{
 			color: 'contrast',
 			variant: 'ghost',
-			class: 'hover:bg-contrast-muted/20'
+			class: 'hover:bg-contrast-muted/20 active:bg-contrast-muted/20'
+		},
+		{
+			color: 'surface',
+			variant: 'ghost',
+			class: 'active:bg-surface-muted/10 text-surface-muted hover:bg-surface-muted/20'
+		},
+		{
+			color: 'contrast',
+			variant: 'link',
+			class: 'active:bg-contrast-muted/10 text-contrast'
+		},
+		{
+			color: 'surface',
+			variant: 'link',
+			class: 'active:bg-surface-muted/10 text-surface-muted'
 		}
 	]
 });

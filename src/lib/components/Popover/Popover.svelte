@@ -33,7 +33,8 @@
 		hoverDelay = 100,
 		closeOnEscape = true,
 		closeOnClickOutside = true,
-		closeOnMouseLeave = true,
+		closeOnMouseLeave = false,
+		directedTransition = true,
 		lockScroll = true,
 		class: className,
 		trigger
@@ -53,6 +54,9 @@
 		},
 		get transition() {
 			return transition;
+		},
+		get directedTransition() {
+			return directedTransition;
 		},
 		get position() {
 			return position;
