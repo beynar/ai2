@@ -21,6 +21,7 @@ const defaultCode = cva({
 const defaultCodeHeader = cva({
 	base: 'flex items-center justify-between bg-surface-muted px-2 py-1 text-contrast-muted text-xs'
 });
+
 const defaultCodeFooter = cva({
 	base: 'flex items-center justify-between bg-surface-muted px-2 py-1 text-contrast-muted text-xs'
 });
@@ -28,9 +29,11 @@ const defaultCodeFooter = cva({
 const defaultContainer = cva({
 	base: 'h-fit w-full bg-surface p-2 font-mono text-sm'
 });
+
 const defaultPre = cva({
 	base: 'overflow-x-auto font-mono p-0'
 });
+
 const defaultCodeLine = cva({
 	base: 'block'
 });

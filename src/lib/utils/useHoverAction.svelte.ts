@@ -3,7 +3,7 @@ import { on } from 'svelte/events';
 
 type HoverActionHandlerOptions = {
 	isActive: boolean;
-	onMouseEnter: () => void;
+	onMouseEnter?: () => void;
 	onMouseLeave?: () => void;
 	delay?: number;
 };
@@ -11,7 +11,7 @@ type Timeout = ReturnType<typeof setTimeout>;
 export const useHoverAction = (props: HoverActionHandlerOptions) => {
 	let timeouts = new Map<HTMLElement, Timeout>();
 	let offs = new Set<() => void>();
-
+	let isHovered = $state(false);
 	const wait = async (ref: HTMLElement) => {
 		return new Promise((resolve) => {
 			const timeout = setTimeout(() => {
@@ -29,10 +29,12 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 		}
 		if (props.delay) {
 			wait(this).then(() => {
-				props.isActive && props.onMouseEnter();
+				props.isActive && props.onMouseEnter?.();
+				isHovered = true;
 			});
 		} else {
-			props.isActive && props.onMouseEnter();
+			props.isActive && props.onMouseEnter?.();
+			isHovered = true;
 		}
 	}
 	function onMouseLeave(this: HTMLElement) {
@@ -41,6 +43,7 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 			timeouts.delete(this);
 		}
 		props.isActive && props.onMouseLeave?.();
+		isHovered = false;
 	}
 
 	const destroy = () => {
@@ -48,6 +51,7 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 		offs.clear();
 		timeouts.forEach((timeout) => clearTimeout(timeout));
 		timeouts.clear();
+		isHovered = false;
 	};
 	onDestroy(destroy);
 
@@ -73,6 +77,9 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 				};
 			};
 		},
-		destroy
+		destroy,
+		get isHovered() {
+			return isHovered;
+		}
 	};
 };

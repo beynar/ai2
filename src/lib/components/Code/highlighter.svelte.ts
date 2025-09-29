@@ -44,15 +44,7 @@ export class HighlighterManager {
 		return theme.name!;
 	};
 
-	load(theme: AnyTheme, language: AnyLanguage): void {
-		this.highlighter.loadThemeSync(theme);
-		this.highlighter.loadLanguageSync(language);
-	}
-
-	/**
-	 * Highlights code synchronously. Must call isReady() first.
-	 */
-	highlightCode(code: string, language?: AnyLanguage, theme: AnyTheme): ThemedToken[][] {
+	highlightCode(code: string, language: AnyLanguage | undefined, theme: AnyTheme): ThemedToken[][] {
 		const themeName = this.getThemeName(theme);
 		const languageName = language ? this.getLanguageName(language) : 'text';
 
