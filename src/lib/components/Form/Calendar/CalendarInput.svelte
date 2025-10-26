@@ -1,9 +1,8 @@
 <script lang="ts" module>
 	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { calendarInputTheme } from '$lib/components/Form/Calendar/calendarInput.js';
-	export const setCalendarInputTheme =
-		setComponentTheme<typeof calendarInputTheme>('calendarInput');
-	export const useCalendarInputTheme = useComponentTheme('calendarInput', calendarInputTheme);
+	import { calendarTheme } from '$lib/components/Form/Calendar/calendar.theme.js';
+	export const setCalendarInputTheme = setComponentTheme<typeof calendarTheme>('calendar');
+	export const useCalendarInputTheme = useComponentTheme('calendar', calendarTheme);
 </script>
 
 <script lang="ts">
@@ -31,11 +30,6 @@
 		view,
 		weekStartsOnMonday,
 		weekdayLength,
-		containerClass,
-		headerClass,
-		dayClass,
-		weekdayClass,
-		gridClass,
 		minDate,
 		maxDate,
 		cell,
@@ -83,25 +77,14 @@
 		visible,
 		type: (type || 'calendar') as T
 	});
-
-	const classes = $derived(useCalendarInputTheme(theme));
 </script>
 
-<Field
-	{field}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.container({ class: theme?.inputContainer?.base })
-		}
-	}}
-	{...rest}
->
+<Field {field} theme={theme?.field} {...rest}>
 	<CalendarPrimitive
 		onChange={(v: any) => {
 			field.value = v;
 		}}
+		theme={theme?.calendar}
 		value={field.value as any}
 		type={type || 'calendar'}
 		{disabledDates}
@@ -110,11 +93,6 @@
 		{view}
 		{weekStartsOnMonday}
 		{weekdayLength}
-		containerClass={classes.container({ class: containerClass })}
-		headerClass={classes.header({ class: headerClass })}
-		dayClass={classes.day({ class: dayClass })}
-		weekdayClass={classes.weekday({ class: weekdayClass })}
-		gridClass={classes.grid({ class: gridClass })}
 		{cell}
 		{buttons}
 		{header}

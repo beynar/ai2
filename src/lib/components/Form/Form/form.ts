@@ -14,6 +14,7 @@ import type { FormState as FS } from './formState.svelte.js';
 import type { PhoneInputProps } from '../PhoneInput/phoneInput.js';
 import type { CalendarInputProps } from '../Calendar/calendarInput.js';
 import type { DateInputProps } from '../DateInput/dateInput.js';
+import type { FileInputProps } from '../File/fileInput.js';
 export type MaybePromise<T> = T | Promise<T>;
 
 export type FormInputs = Record<string, FormInput>;
@@ -54,7 +55,13 @@ export type FormInput =
 	  } & CheckBoxesInputProps)
 	| ({
 			type: 'switch';
-	  } & SwitchInputProps);
+	  } & SwitchInputProps)
+	| ({
+			type: 'file';
+	  } & FileInputProps<'single'>)
+	| ({
+			type: 'files';
+	  } & FileInputProps<'multiple'>);
 // | ({
 // 		type: 'switch';
 //   } & SwitchInputProps)

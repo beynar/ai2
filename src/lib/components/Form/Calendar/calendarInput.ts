@@ -1,10 +1,10 @@
-import { cva } from 'cva';
-import type { InputProps } from '../Field/field.js';
+import type { fieldTheme, InputProps } from '../Field/field.js';
 import type { InferComponentTheme } from '$lib/utils/cva.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { ButtonProps } from '$lib/components/Button/button.js';
 import type { Snippet } from 'svelte';
 import type { Event, Cell, CalendarType } from './useCalendar.svelte.js';
+import type { calendarTheme } from './calendar.theme.js';
 
 // Re-export types and values from useCalendar
 export type { Event, Cell, CalendarType } from './useCalendar.svelte.js';
@@ -30,13 +30,10 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 		minDate?: Date;
 		maxDate?: Date;
 		view?: 'single' | 'double';
+		class?: string;
 		weekdayLength?: 'narrow' | 'short';
 		disabledDates?: (Date | [Date, Date])[];
-		containerClass?: string;
-		headerClass?: string;
-		dayClass?: string;
-		weekdayClass?: string;
-		gridClass?: string;
+		theme?: InferComponentTheme<typeof calendarTheme>;
 		cell?: Snippet<[import('./useCalendar.svelte.js').Cell]>;
 		buttons?:
 			| {
@@ -53,69 +50,9 @@ export type CalendarInputProps<T extends 'calendar' | 'calendar-range'> = Calend
 	any,
 	T
 > &
-	Omit<InputProps<T>, 'children' | 'type'> & {
-		theme?: InferComponentTheme<typeof calendarInputTheme> & InputProps<T>['theme'];
+	Omit<InputProps<T>, 'children' | 'type' | 'theme'> & {
+		theme?: {
+			calendar: InferComponentTheme<typeof calendarTheme>;
+			field: InferComponentTheme<typeof fieldTheme>;
+		};
 	};
-
-const defaultContainer = cva({
-	base: 'flex flex-col gap-4 p-4 rounded-lg bg-surface-light border border-surface-muted w-full'
-});
-
-const defaultHeader = cva({
-	base: 'flex items-center justify-between gap-2 font-semibold text-contrast px-2'
-});
-
-const defaultGrid = cva({
-	base: 'grid grid-cols-7 gap-1'
-});
-
-const defaultWeekday = cva({
-	base: 'text-center text-xs font-medium text-contrast-muted uppercase py-2'
-});
-
-const defaultDay = cva({
-	base: 'aspect-square flex items-center justify-center rounded-md text-sm transition-colors hover:bg-surface-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
-	variants: {
-		selected: {
-			true: 'bg-primary text-primary-contrast font-semibold hover:bg-primary-dark'
-		},
-		inMonth: {
-			true: 'text-contrast',
-			false: 'text-contrast-muted opacity-50'
-		},
-		inRange: {
-			true: 'bg-primary-light text-contrast'
-		},
-		today: {
-			true: 'ring-2 ring-primary ring-inset'
-		},
-		disabled: {
-			true: 'opacity-30 cursor-not-allowed hover:bg-transparent'
-		},
-		startOfRange: {
-			true: 'rounded-r-none'
-		},
-		endOfRange: {
-			true: 'rounded-l-none'
-		},
-		isPast: {
-			true: ''
-		}
-	},
-	compoundVariants: [
-		{
-			inRange: true,
-			startOfRange: false,
-			endOfRange: false,
-			class: 'rounded-none'
-		}
-	]
-});
-
-export const calendarInputTheme = {
-	container: defaultContainer,
-	header: defaultHeader,
-	grid: defaultGrid,
-	weekday: defaultWeekday,
-	day: defaultDay
-};

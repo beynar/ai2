@@ -99,6 +99,8 @@ export class MultiStepFormState<
 			{} as InferFormValue<MergedMultiStepFormInputs<I>>
 		);
 
+		console.log({ hasError });
+
 		if (this.stepper?.activeStep !== this.steps.length - 1) {
 			if (this.onSubmitStep && !hasError) {
 				let shouldContinue = this.onSubmitStep(

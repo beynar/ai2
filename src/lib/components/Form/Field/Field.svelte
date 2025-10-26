@@ -37,7 +37,8 @@
 		theme,
 		field,
 		as = 'div',
-		attrs
+		attrs,
+		...attachments
 	}: FieldProps<Type> = $props();
 
 	const classes = $derived(useFieldTheme(theme));
@@ -49,6 +50,7 @@
 	class={classes.field({ className, hasError: field.hasError })}
 	bind:this={field.node}
 	{...attrs}
+	{...attachments}
 >
 	{#if label || actions || header}
 		<Slot

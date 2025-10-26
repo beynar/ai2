@@ -20,6 +20,7 @@
 	import PhoneInput from '../PhoneInput/PhoneInput.svelte';
 	import CalendarInput from '../Calendar/CalendarInput.svelte';
 	import DateInput from '../DateInput/DateInput.svelte';
+	import FileInput from '../File/FileInput.svelte';
 	let {
 		inputs,
 		onSubmit,
@@ -88,6 +89,10 @@
 			<CalendarInput {...input} {name} />
 		{:else if input.type === 'date' || input.type === 'datetime'}
 			<DateInput {...input} {name} />
+		{:else if input.type === 'file'}
+			<FileInput {...input} {name} mode="single" />
+		{:else if input.type === 'files'}
+			<FileInput {...input} {name} mode="multiple" />
 		{:else}
 			<p>Input type not supported: {input.type}</p>
 		{/if}

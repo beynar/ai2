@@ -22,7 +22,9 @@
 				},
 				date: {
 					type: 'date',
-					label: 'Date'
+					label: 'Date',
+					format: 'dd/mm/yyyy',
+					placeholder: 'jj/mm/aaaa'
 				},
 				datetime: {
 					type: 'datetime',
@@ -35,6 +37,16 @@
 				calendarRange: {
 					type: 'calendar-range',
 					label: 'Calendar Range'
+				},
+				file: {
+					type: 'file',
+					label: 'File'
+				},
+				files: {
+					type: 'files',
+					label: 'Files',
+					description: 'Upload multiple files',
+					maxFiles: 3
 				}
 				// name: {
 				// 	type: 'text',
@@ -211,6 +223,8 @@
 	]);
 
 	let showFooter = $state(false);
+
+	let value = $state<any>({});
 </script>
 
 {#snippet footer({ payload: form }: { payload: MultiStepFormState<typeof items> })}

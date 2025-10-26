@@ -17,6 +17,7 @@ export interface Cell {
 	isInNextMonth: boolean;
 	isInRange: boolean;
 	isInPreviousMonth: boolean;
+	selected: boolean;
 	inMonth: boolean;
 	day: number;
 	date: Date;
@@ -24,6 +25,7 @@ export interface Cell {
 	events: Event[];
 	corner: string | null;
 	attributes: Record<string, any>;
+	disabled: boolean;
 }
 
 export interface Row<E extends Event> {
@@ -115,6 +117,7 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 		weekStartsOnMonday: boolean = this.weekStartsOnMonday,
 		isNextMonth: boolean = false
 	): Row<E>[] => {
+		console.log('get calendar rows', this.rangeStart);
 		const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 		const weeks = Math.ceil(daysInMonth / 7) + 1;
 		const daysInPreviousMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
@@ -189,19 +192,21 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 					this.disabledDatesMap.get(dateString) || isBeforeMinDate || isAfterMaxDate;
 
 				row.cells.push({
-					isStartOfRange,
-					isEndOfRange,
+					isStartOfRange: this.type === 'calendar-range' ? isStartOfRange : false,
+					isEndOfRange: this.type === 'calendar-range' ? isEndOfRange : false,
 					visible:
 						this.view === 'single' ? true : isNextMonth ? !isInPreviousMonth : !isInNextMonth,
 					isInNextMonth,
 					isInRange,
 					isInPreviousMonth,
+					selected: this.type === 'calendar' ? isStartOfRange : isStartOfRange || isEndOfRange,
 					inMonth,
 					day: cellDay,
 					date: cellDate,
 					isToday,
 					events,
 					corner,
+					disabled: !!isDisabled,
 					attributes: {
 						style: `grid-row-start:${2 + i}; grid-column-start:${j + 1};`,
 						'data-in-range': isInRange,
@@ -229,6 +234,7 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 	};
 
 	setRange = (start: Date | null, end?: Date | null): void => {
+		console.log('set range');
 		this.rangeStart = start;
 		this.rangeEnd = end || null;
 	};
@@ -298,6 +304,8 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 				}
 
 				const date = new Date(maybeCell.getAttribute('data-date')!);
+
+				console.log(date);
 
 				if (this.type === 'calendar') {
 					this.rangeStart = date;

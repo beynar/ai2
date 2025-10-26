@@ -13,6 +13,7 @@
 	import type { PhoneInputProps } from '$lib/components/Form/PhoneInput/phoneInput.js';
 	import { untrack } from 'svelte';
 	import fr from 'intl-tel-input/i18n/fr';
+	import { on } from 'svelte/events';
 
 	let {
 		value = $bindable(null),
@@ -93,12 +94,13 @@
 			iti = intlTelInput(node, {
 				strictMode: strict,
 				initialCountry: country as any,
-
+				allowPhonewords: false,
 				formatOnDisplay: true,
 				formatAsYouType: true,
 				separateDialCode: true,
 				allowDropdown: true,
 				nationalMode: true,
+
 				dropdownContainer: document.body,
 				i18n: {
 					...fr,
@@ -127,6 +129,14 @@
 		}
 	}}
 	{...rest}
+	{@attach (node: HTMLElement) => {
+		return on(node, 'click', () => {
+			const input = node.querySelector('input');
+			if (input) {
+				input.focus();
+			}
+		});
+	}}
 >
 	<input
 		data-1p-ignore

@@ -68,6 +68,7 @@
 		]
 	},
 	"dependencies": {
+		"@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
 		"@floating-ui/dom": "^1.7.4",
 		"@maskito/core": "^4.0.0",
 		"@maskito/kit": "^4.0.0",
@@ -77,6 +78,7 @@
 		"colorizr": "^3.0.8",
 		"cva": "1.0.0-beta.3",
 		"esm-env": "^1.2.2",
+		"file-selector": "^2.1.2",
 		"intl-tel-input": "^25.12.2",
 		"libphonenumber-js": "^1.12.25",
 		"melt": "^0.40.2",

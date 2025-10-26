@@ -15,8 +15,8 @@
 		loading = false,
 		onClick = null,
 		prefixProps,
-		onenter = null,
-		onleave = null,
+		onEnter = null,
+		onLeave = null,
 		suffixProps,
 		href,
 		squared,
@@ -70,16 +70,16 @@
 				onClick(payload);
 			}
 		})}
-	onpointerenter={onenter &&
+	onpointerenter={onEnter &&
 		(() => {
 			if (!disabled) {
-				onenter(payload);
+				onEnter(payload);
 			}
 		})}
-	onpointerleave={onleave &&
+	onpointerleave={onLeave &&
 		(() => {
 			if (!disabled) {
-				onleave(payload);
+				onLeave(payload);
 			}
 		})}
 	{...attachments}
