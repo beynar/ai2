@@ -38,18 +38,18 @@ The Slot type accepts:
 
 ### Render Snippet
 \`\`\`svelte
-<script>
-	let content = () => \`<strong>Bold Text</strong>\`;
-</script>
+{#snippet content()}
+	<strong>Bold Text</strong>
+{/snippet}
 
 <Slot render={content} />
 \`\`\`
 
 ### Render Snippet with Props
 \`\`\`svelte
-<script>
-	let greeting = (props) => \`<h1>Hello {props.name}!</h1>\`;
-</script>
+{#snippet greeting(props)}
+	<h1>Hello {props.name}!</h1>
+{/snippet}
 
 <Slot 
 	render={greeting} 

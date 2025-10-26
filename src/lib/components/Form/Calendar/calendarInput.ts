@@ -3,7 +3,7 @@ import type { InferComponentTheme } from '$lib/utils/cva.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { ButtonProps } from '$lib/components/Button/button.js';
 import type { Snippet } from 'svelte';
-import type { Event, Cell, CalendarType } from './useCalendar.svelte.js';
+import type { Event, CalendarType } from './useCalendar.svelte.js';
 import type { calendarTheme } from './calendar.theme.js';
 
 // Re-export types and values from useCalendar

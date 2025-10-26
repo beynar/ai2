@@ -24,7 +24,7 @@ export interface Cell {
 	isToday: boolean;
 	events: Event[];
 	corner: string | null;
-	attributes: Record<string, any>;
+	attributes: Record<string, string | number | boolean | undefined>;
 	disabled: boolean;
 }
 

@@ -1,203 +1,164 @@
 export const tooltipDescription = `
-# Tooltip Component
+# Tooltip Attachment
 
-The Tooltip component displays contextual information when hovering over or focusing on an element. It's a specialized Popover for brief, helpful text.
+The tooltip attachment displays contextual information when hovering over an element. Use the \`{@attach}\` directive to attach tooltips to any element.
 
 ## Basic Usage
 
 \`\`\`svelte
 <script>
-	import { useTheme } from '../Theme/theme.state.svelte.js';
-	
-	let buttonRef;
-	const theme = useTheme();
-	
-	function showTooltip() {
-		theme.showTooltip({
-			ref: buttonRef,
-			content: 'This is a tooltip',
-			position: 'top'
-		});
-	}
-	
-	function hideTooltip() {
-		theme.hideTooltip();
-	}
+	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 </script>
 
-<Button 
-	bind:ref={buttonRef}
-	onenter={showTooltip}
-	onleave={hideTooltip}
->
-	Hover me
-</Button>
-
-<Tooltip />
+<button {@attach tooltip({ content: 'Click to submit' })}>
+	Submit
+</button>
 \`\`\`
-
-## Theme API
-
-Use the theme's tooltip methods to show/hide tooltips:
-
-### showTooltip(config)
-- **ref**: HTMLElement (required) - Element to anchor tooltip to
-- **content**: string | Snippet (required) - Tooltip content
-- **position**: 'top' | 'bottom' | 'left' | 'right' (default: 'top')
-- **size**: 'small' | 'normal' | 'large' (default: 'normal')
-- **color**: Colors (default: 'surface')
-- **offset**: number - Distance from reference element
-- **class**: string - Additional CSS classes
-- **transition**: TransitionConfig - Custom transition
-
-### hideTooltip()
-Hides the currently visible tooltip
 
 ## Props
 
-### Styling Props
-- **theme**: ComponentTheme - Custom theme overrides
+- **content**: string | Snippet (required) - Tooltip content to display
+- **position**: Placement (default: 'top') - Tooltip position relative to element
+  - Options: 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end' | 'right-start' | 'right-end'
+- **size**: 'small' | 'normal' | 'large' (default: 'normal') - Visual size
+- **color**: Colors (default: 'surface') - Color theme
+- **delay**: number (default: 400) - Delay in ms before showing tooltip
+- **offset**: number - Distance from reference element in pixels
+- **class**: string - Additional CSS classes
+- **transition**: FSOProps - Custom transition configuration
+- **onOpen**: () => void - Callback when tooltip opens
+- **onClose**: () => void - Callback when tooltip closes
 
 ## Examples
 
-### Basic Tooltip
+### Basic Text Tooltip
 \`\`\`svelte
 <script>
-	const theme = useTheme();
-	let buttonRef;
+	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 </script>
 
-<Button 
-	bind:ref={buttonRef}
-	onenter={() => theme.showTooltip({
-		ref: buttonRef,
-		content: 'Click to submit'
-	})}
-	onleave={() => theme.hideTooltip()}
->
-	Submit
-</Button>
+<div {@attach tooltip({ content: 'This is helpful information' })}>
+	Hover me
+</div>
 \`\`\`
 
 ### Different Positions
 \`\`\`svelte
-<Button 
-	bind:ref={topRef}
-	onenter={() => theme.showTooltip({
-		ref: topRef,
-		content: 'Top tooltip',
-		position: 'top'
-	})}
-	onleave={() => theme.hideTooltip()}
->
+<button {@attach tooltip({ content: 'Top tooltip', position: 'top' })}>
 	Top
-</Button>
+</button>
 
-<Button 
-	bind:ref={bottomRef}
-	onenter={() => theme.showTooltip({
-		ref: bottomRef,
-		content: 'Bottom tooltip',
-		position: 'bottom'
-	})}
-	onleave={() => theme.hideTooltip()}
->
+<button {@attach tooltip({ content: 'Bottom tooltip', position: 'bottom' })}>
 	Bottom
-</Button>
-\`\`\`
+</button>
 
-### With Delay
-\`\`\`svelte
-<script>
-	let timeoutId;
-	
-	function showDelayed() {
-		timeoutId = setTimeout(() => {
-			theme.showTooltip({
-				ref: buttonRef,
-				content: 'Delayed tooltip'
-			});
-		}, 500);
-	}
-	
-	function hideDelayed() {
-		clearTimeout(timeoutId);
-		theme.hideTooltip();
-	}
-</script>
+<button {@attach tooltip({ content: 'Left tooltip', position: 'left' })}>
+	Left
+</button>
 
-<Button 
-	bind:ref={buttonRef}
-	onenter={showDelayed}
-	onleave={hideDelayed}
->
-	Hover for 500ms
-</Button>
-\`\`\`
-
-### Rich Content Tooltip
-\`\`\`svelte
-<Button 
-	bind:ref={buttonRef}
-	onenter={() => theme.showTooltip({
-		ref: buttonRef,
-		content: () => \`
-			<div class="p-2">
-				<strong>Pro Tip</strong>
-				<p class="text-sm">Use Ctrl+S to save</p>
-			</div>
-		\`
-	})}
-	onleave={() => theme.hideTooltip()}
->
-	Keyboard Shortcuts
-</Button>
-\`\`\`
-
-### Icon with Tooltip
-\`\`\`svelte
-<Icon 
-	name="info" 
-	bind:ref={iconRef}
-	onenter={() => theme.showTooltip({
-		ref: iconRef,
-		content: 'More information about this feature'
-	})}
-	onleave={() => theme.hideTooltip()}
-/>
+<button {@attach tooltip({ content: 'Right tooltip', position: 'right' })}>
+	Right
+</button>
 \`\`\`
 
 ### Different Colors
 \`\`\`svelte
-theme.showTooltip({
-	ref: buttonRef,
-	content: 'Success!',
-	color: 'success'
-})
+<button {@attach tooltip({ content: 'Success!', color: 'success' })}>
+	Success
+</button>
+
+<button {@attach tooltip({ content: 'Warning!', color: 'warning' })}>
+	Warning
+</button>
+
+<button {@attach tooltip({ content: 'Error!', color: 'danger' })}>
+	Error
+</button>
 \`\`\`
 
-## Usage Pattern
-
-The Tooltip component should be placed once in your app layout:
-
+### Custom Delay
 \`\`\`svelte
-<!-- +layout.svelte -->
+<button {@attach tooltip({ content: 'Quick tooltip', delay: 100 })}>
+	Quick (100ms)
+</button>
+
+<button {@attach tooltip({ content: 'Slow tooltip', delay: 1000 })}>
+	Slow (1000ms)
+</button>
+\`\`\`
+
+### Different Sizes
+\`\`\`svelte
+<button {@attach tooltip({ content: 'Small tooltip', size: 'small' })}>
+	Small
+</button>
+
+<button {@attach tooltip({ content: 'Normal tooltip', size: 'normal' })}>
+	Normal
+</button>
+
+<button {@attach tooltip({ content: 'Large tooltip', size: 'large' })}>
+	Large
+</button>
+\`\`\`
+
+### With Custom Offset
+\`\`\`svelte
+<button {@attach tooltip({ content: 'Far away', offset: 20 })}>
+	20px offset
+</button>
+\`\`\`
+
+### With Snippet Content
+\`\`\`svelte
 <script>
-	import { Theme } from '$lib/components/Theme';
-	import { Tooltip } from '$lib/components/Tooltip';
+	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 </script>
 
-<Theme>
-	<slot />
-	<Tooltip />
-</Theme>
+{#snippet richContent()}
+	<div class="p-2">
+		<strong>Pro Tip</strong>
+		<p class="text-sm">Use Ctrl+S to save</p>
+	</div>
+{/snippet}
+
+<button {@attach tooltip({ content: richContent })}>
+	Keyboard Shortcuts
+</button>
 \`\`\`
 
-Then use the theme API to show/hide tooltips throughout your app.
+### With Callbacks
+\`\`\`svelte
+<button {@attach tooltip({
+	content: 'Tracked tooltip',
+	onOpen: () => console.log('Tooltip opened'),
+	onClose: () => console.log('Tooltip closed')
+})}>
+	Track me
+</button>
+\`\`\`
+
+### On Icons
+\`\`\`svelte
+<svg 
+	{@attach tooltip({ content: 'More information' })}
+	class="w-4 h-4"
+>
+	<!-- icon paths -->
+</svg>
+\`\`\`
+
+### On Disabled Elements
+\`\`\`svelte
+<!-- Wrap disabled elements since they don't fire events -->
+<span {@attach tooltip({ content: 'Feature coming soon' })}>
+	<button disabled>Disabled Button</button>
+</span>
+\`\`\`
 
 ## Accessibility
 
-- Appears on both hover and focus
+- Automatically shows on hover and focus
 - Dismissed on mouse leave or blur
 - Non-interactive (cannot be clicked)
 - Uses appropriate ARIA attributes
@@ -205,8 +166,9 @@ Then use the theme API to show/hide tooltips throughout your app.
 
 ## Notes
 
-- Only one tooltip can be shown at a time
-- Automatically positions to stay in viewport
+- Only one tooltip shows at a time
+- Automatically positions to stay in viewport using Floating UI
+- Uses smart delay: subsequent tooltips show instantly if within 400ms of previous
 - Brief content only (use Popover for interactive content)
 - Tooltip is managed globally through theme state
 - Does not lock scroll or trap focus

@@ -88,7 +88,7 @@
 			render={indicator}
 			props={{ ...indicatorProps, value }}
 			children={showIndicatorAs ? indicatorContent : undefined}
-			payload={{ ...meter, percentage: spring.percentage }}
+			payload={{ ...meter, percentage: spring.percentage, min, max }}
 			attrs={{
 				'data-position': meter.position || 'top'
 			}}

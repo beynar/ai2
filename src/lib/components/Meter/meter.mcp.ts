@@ -31,7 +31,7 @@ The Meter component visualizes a measurement or progress along a known scale, wi
 - **description**: Snippet - Description text
 - **helper**: Snippet - Helper text
 - **header**: Snippet - Custom header
-- **indicator**: Snippet<Meter & { percentage: number }> - Custom indicator rendering
+- **indicator**: Snippet<Meter & { percentage: number, min: number, max: number }> - Custom indicator rendering
 
 ### Animation Props
 - **stiffness**: number - Spring animation stiffness
@@ -189,7 +189,7 @@ The Meter component visualizes a measurement or progress along a known scale, wi
 ### With Custom Indicator
 \`\`\`svelte
 <Meter value={{ value: 75 }}>
-	{#snippet indicator({ value, percentage })}
+	{#snippet indicator({ value, percentage, min, max })}
 		<div class="custom-indicator">
 			{value}/{max} ({percentage.toFixed(1)}%)
 		</div>

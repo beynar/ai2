@@ -1,4 +1,7 @@
-import { dropTargetForExternal, monitorForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter';
+import {
+	dropTargetForExternal,
+	monitorForExternal
+} from '@atlaskit/pragmatic-drag-and-drop/external/adapter';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { containsFiles, getFiles } from '@atlaskit/pragmatic-drag-and-drop/external/file';
 import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled';
@@ -33,6 +36,29 @@ export class FileDropzone {
 		return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
 	};
 
+	private matchesAccept(file: File): boolean {
+		if (!this.config || !this.config.types.length) return true;
+
+		return this.config.types.some((pattern) => {
+			// Handle empty pattern
+			if (!pattern) return true;
+
+			// Handle file extension patterns (e.g., ".jpg", ".pdf")
+			if (pattern.startsWith('.')) {
+				return file.name.toLowerCase().endsWith(pattern.toLowerCase());
+			}
+
+			// Handle MIME type wildcards (e.g., "image/*", "video/*")
+			if (pattern.endsWith('/*')) {
+				const baseType = pattern.slice(0, -2);
+				return file.type.startsWith(baseType + '/');
+			}
+
+			// Handle exact MIME type match (e.g., "image/jpeg")
+			return file.type === pattern;
+		});
+	}
+
 	constructor(opts: { config: FileDropzoneConfig }) {
 		this.config = opts.config;
 
@@ -53,9 +79,7 @@ export class FileDropzone {
 				if (!externalValue) {
 					return;
 				}
-				const externalValueAsArray = Array.isArray(externalValue)
-					? externalValue
-					: [externalValue];
+				const externalValueAsArray = Array.isArray(externalValue) ? externalValue : [externalValue];
 				if (
 					externalValueAsArray.length &&
 					(this.files.length !== externalValueAsArray.length ||
@@ -79,8 +103,16 @@ export class FileDropzone {
 
 	addNewFiles = (files: File[]): void => {
 		const newFiles = this.getValidFiles(files);
-		this.files.push(...newFiles);
-		// Pass all files (not just new ones) to maintain the full list in multiple mode
+
+		if (this.config?.mode === 'single') {
+			// In single mode, replace the files array with the first valid file
+			const maxFiles = this.config?.maxFiles || 1;
+			this.files = newFiles.slice(0, maxFiles);
+		} else {
+			// In multiple mode, append new files to existing list
+			this.files.push(...newFiles);
+		}
+
 		this.config?.onChange(this.files);
 	};
 
@@ -92,25 +124,22 @@ export class FileDropzone {
 
 	getValidFiles = (files: File[]): File[] => {
 		if (!this.config) return [];
-		
+
 		const remainingSlots = this.config.maxFiles - this.files.length;
-		
+
 		return (
 			files
 				.filter((file) => {
-					return (
-						this.config!.types.some((type) => file.type.match(type)) &&
-						file.size <= this.config!.maxSize
-					);
+					return this.matchesAccept(file) && file.size <= this.config!.maxSize;
 				})
-				// Remove duplicates within new files
-				.filter((file, _index, self) => {
-					return self.filter((f) => f.name === file.name).length === 1;
+				// Remove duplicates within new files (keep first occurrence by name+size)
+				.filter((file, index, self) => {
+					return self.findIndex((f) => f.name === file.name && f.size === file.size) === index;
 				})
 				// Remove files that already exist in the current file list
 				.filter((file) => {
-					return !this.files.some((existingFile) => 
-						existingFile.name === file.name && existingFile.size === file.size
+					return !this.files.some(
+						(existingFile) => existingFile.name === file.name && existingFile.size === file.size
 					);
 				})
 				.slice(0, remainingSlots)
@@ -120,15 +149,11 @@ export class FileDropzone {
 	onDragEnter = async (event: DragEvent): Promise<void> => {
 		if (!this.config) return;
 		const files = await fromEvent(event);
-		this.isValid = files.every((file: File | DataTransferItem) =>
-			this.config!.types.some((type) => (file as File).type.match(type))
-		);
+		this.isValid = files.every((file: File | DataTransferItem) => this.matchesAccept(file as File));
 	};
 
 	openFileSelector = (e: MouseEvent): void => {
-		const hasClickedAButton = e
-			.composedPath()
-			.some((node) => node instanceof HTMLButtonElement);
+		const hasClickedAButton = e.composedPath().some((node) => node instanceof HTMLButtonElement);
 		const hasClickedAnInput = e.composedPath().some((node) => node instanceof HTMLInputElement);
 		if (hasClickedAButton || hasClickedAnInput) {
 			return;
@@ -148,7 +173,7 @@ export class FileDropzone {
 				onDragLeave: () => {
 					this.state = 'potential';
 				},
-				onDrop: async ({ source }: { source: any }) => {
+				onDrop: async ({ source }) => {
 					const files = getFiles({ source });
 					if (!files.length) return;
 					this.addNewFiles(files);
@@ -187,11 +212,21 @@ export class FileDropzone {
 		event.stopPropagation();
 		const files = await fromEvent(event);
 		if (!files.length) return;
-		const newFiles = this.getValidFiles(files.filter((file: File | DataTransferItem): file is File => file instanceof File));
-		this.files.push(...newFiles);
-		// Pass all files (not just new ones) to maintain the full list in multiple mode
-		this.config?.onChange(this.files);
+		const newFiles = this.getValidFiles(
+			files.filter((file: File | DataTransferItem): file is File => file instanceof File)
+		);
 		
+		if (this.config?.mode === 'single') {
+			// In single mode, replace the files array with the first valid file
+			const maxFiles = this.config?.maxFiles || 1;
+			this.files = newFiles.slice(0, maxFiles);
+		} else {
+			// In multiple mode, append new files to existing list
+			this.files.push(...newFiles);
+		}
+		
+		this.config?.onChange(this.files);
+
 		// Reset input value so the same file can be selected again
 		if (this.inputElement) {
 			this.inputElement.value = '';

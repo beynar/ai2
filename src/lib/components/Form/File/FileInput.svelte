@@ -125,12 +125,10 @@
 		const currentFiles = dropzone.files;
 
 		return () => {
-			// Revoke URLs for files that are no longer in the list
+			// Revoke all URLs on unmount
 			previewCache.forEach((url, file) => {
-				if (!currentFiles.includes(file)) {
-					URL.revokeObjectURL(url);
-					previewCache.delete(file);
-				}
+				URL.revokeObjectURL(url);
+				previewCache.delete(file);
 			});
 		};
 	});

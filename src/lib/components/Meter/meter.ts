@@ -43,7 +43,7 @@ export type MeterProps<
 		never
 	>,
 	'indicator',
-	Meter<T> & { percentage: number }
+	Meter<T> & { percentage: number; min: number; max: number }
 >;
 
 const defaultMeter = cva({

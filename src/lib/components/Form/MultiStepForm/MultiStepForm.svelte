@@ -41,7 +41,8 @@
 		headerProps,
 		nextButtonProps = {},
 		previousButtonProps = {},
-		submitButtonProps = {}
+		submitButtonProps = {},
+		value = $bindable({})
 	}: MultiStepFormProps<I> = $props();
 
 	let form = new MultiStepFormState({

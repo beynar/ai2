@@ -212,8 +212,8 @@ The Button component is a flexible and customizable button element that supports
 ### Event Props
 
 - **onClick**: (payload?: Payload) => void - Click event handler
-- **onenter**: (payload?: Payload) => void - Pointer enter event handler
-- **onleave**: (payload?: Payload) => void - Pointer leave event handler
+- **onEnter**: (payload?: Payload) => void - Pointer enter event handler
+- **onLeave**: (payload?: Payload) => void - Pointer leave event handler
 
 ### Content Props (Slots)
 

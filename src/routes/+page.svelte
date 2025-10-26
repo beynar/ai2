@@ -3,6 +3,7 @@
 	import Button, { setButtonTheme } from '$lib/components/Button/Button.svelte';
 	import Chip from '$lib/components/Chip/Chip.svelte';
 	import Badge from '$lib/components/Badge/Badge.svelte';
+	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 
 	// setButtonTheme({
 	// 	button: {
@@ -28,7 +29,7 @@
 	>
 {/snippet}
 
-<div class="bg-primary/20 size-20 rounded p-1">hello</div>
+<div class="bg-primary/20 size-20 rounded p-1" {@attach tooltip({ content: 'hello' })}>hello</div>
 
 <!--  -->
 <Button color="secondary">Hello</Button>
