@@ -1,18 +1,17 @@
 import type { TransitionConfig } from 'svelte/transition';
 import { easingFunctions, type Easing } from './easingFunctions.js';
 import { useTheme } from '$lib/components/Theme/theme.state.svelte.js';
+import type { ThemeState } from '$lib/components/Theme/theme.state.svelte.js';
 
 const split_css_unit = (value: string | number): [number, string] => {
 	const split = typeof value === 'string' && value.match(/^\s*(-?[\d.]+)([^\s]*)\s*$/);
 	return (split ? [parseFloat(split[1]), split[2] || 'px'] : [value, 'px']) as [number, string];
 };
-const resolveEasing = (easing?: Easing) => {
-	const theme = useTheme();
+const resolveEasing = (easing: Easing | undefined, theme: ThemeState) => {
 	return easingFunctions[easing || theme.transition.easing];
 };
 
-const resolveDuration = (duration?: number) => {
-	const theme = useTheme();
+const resolveDuration = (duration: number | undefined, theme: ThemeState) => {
 	if (theme.preferReducesMotion) {
 		return 0;
 	}
@@ -88,33 +87,36 @@ const percentageToNumber = (
 	return (value / 100) * parentSize + delta;
 };
 
-export const fso = (node: HTMLElement, params: FSOParams): TransitionConfig => {
-	const style = getComputedStyle(node);
-	const target_opacity = +style.opacity;
-	const transform = style.transform === 'none' ? '' : style.transform;
-	const od = target_opacity * (1 - (params.opacity ?? 1));
+export const fso = () => {
+	const theme = useTheme();
+	return (node: HTMLElement, params: FSOParams): TransitionConfig => {
+		const style = getComputedStyle(node);
+		const target_opacity = +style.opacity;
+		const transform = style.transform === 'none' ? '' : style.transform;
+		const od = target_opacity * (1 - (params.opacity ?? 1));
 
-	return {
-		delay: params.delay,
-		duration: resolveDuration(params.duration),
-		easing: resolveEasing(params.easing),
-		css: (t: number, u: number) => {
-			const y = scaleConversion(
-				t,
-				[0, 1],
-				[percentageToNumber(node, params.y ?? 0, 'height') ?? 0, 0]
-			);
-			const x = scaleConversion(
-				t,
-				[0, 1],
-				[percentageToNumber(node, params.x ?? 0, 'width') ?? 0, 0]
-			);
-			const scale = scaleConversion(t, [0, 1], [params.scale ?? 1, 1]);
-			return styleToString({
-				transform: `${transform} translate3d(${x}px, ${y}px, 0) scale(${scale})`,
-				opacity: `${target_opacity - od * u}`
-			});
-		}
+		return {
+			delay: params.delay,
+			duration: resolveDuration(params.duration, theme),
+			easing: resolveEasing(params.easing, theme),
+			css: (t: number, u: number) => {
+				const y = scaleConversion(
+					t,
+					[0, 1],
+					[percentageToNumber(node, params.y ?? 0, 'height') ?? 0, 0]
+				);
+				const x = scaleConversion(
+					t,
+					[0, 1],
+					[percentageToNumber(node, params.x ?? 0, 'width') ?? 0, 0]
+				);
+				const scale = scaleConversion(t, [0, 1], [params.scale ?? 1, 1]);
+				return styleToString({
+					transform: `${transform} translate3d(${x}px, ${y}px, 0) scale(${scale})`,
+					opacity: `${target_opacity - od * u}`
+				});
+			}
+		};
 	};
 };
 
@@ -123,23 +125,26 @@ type BgFadeOptions = {
 	duration?: number;
 	easing?: Easing;
 };
-export function bgFade(node: HTMLElement, options: BgFadeOptions) {
-	const rgba = getComputedStyle(node).backgroundColor;
-	const [r = 255, g = 255, b = 255, target_opacity = 1] = rgba.match(/\d+(\.\d+)?/g)!.map(Number);
-	node.style.removeProperty('background-color');
-	console.log({ r, g, b, target_opacity });
-	const od = target_opacity * (1 - 0);
-	return {
-		delay: options.delay,
-		duration: resolveDuration(options.duration),
-		easing: resolveEasing(options.easing),
-		css: (t: number, u: number) => {
-			const value = `background-color: rgba(${r},${g},${b},${target_opacity - od * u})`;
-			// console.log(value);
-			return value;
-		}
+export const bgFade = () => {
+	const theme = useTheme();
+	return (node: HTMLElement, options: BgFadeOptions) => {
+		const rgba = getComputedStyle(node).backgroundColor;
+		const [r = 255, g = 255, b = 255, target_opacity = 1] = rgba.match(/\d+(\.\d+)?/g)!.map(Number);
+		node.style.removeProperty('background-color');
+		console.log({ r, g, b, target_opacity });
+		const od = target_opacity * (1 - 0);
+		return {
+			delay: options.delay,
+			duration: resolveDuration(options.duration, theme),
+			easing: resolveEasing(options.easing, theme),
+			css: (t: number, u: number) => {
+				const value = `background-color: rgba(${r},${g},${b},${target_opacity - od * u})`;
+				// console.log(value);
+				return value;
+			}
+		};
 	};
-}
+};
 
 export const slide = (
 	node: HTMLElement,
@@ -154,6 +159,7 @@ export const slide = (
 		opacity = 0.2
 	}: SlideTransitionParams = {}
 ) => {
+	const theme = useTheme();
 	const style = getComputedStyle(node);
 	const primary_property = axis === 'y' ? 'height' : 'width';
 	const primary_property_value = parseFloat(style[primary_property]);
@@ -183,8 +189,8 @@ export const slide = (
 
 	return {
 		delay,
-		duration: resolveDuration(duration),
-		easing: resolveEasing(easing),
+		duration: resolveDuration(duration, theme),
+		easing: resolveEasing(easing, theme),
 		css: (t: number, u: number) => {
 			return (
 				// 'z-index: -1;' +

@@ -113,13 +113,14 @@ export class MultiStepFormState<
 					if (shouldContinue !== false) {
 						this.stepper?.next();
 					}
+				} else if (shouldContinue !== false && !hasError) {
+					this.stepper?.next();
 				}
 			} else if (!hasError) {
 				// Automatic continue to the next step if no onSubmitStep is provided.
 				this.stepper?.next();
 			}
 		} else if (this.stepper?.activeStep === this.steps.length - 1) {
-			console.log('submit form', this.stepper?.activeStep, this.steps.length - 1);
 			if (this.onSubmitForm) {
 				const maybePromise = this.onSubmitForm(
 					value as InferFormValue<MergedMultiStepFormInputs<I>>
@@ -128,6 +129,10 @@ export class MultiStepFormState<
 					this.loading = true;
 					await maybePromise;
 					this.loading = false;
+				}
+
+				if (!hasError) {
+					return value;
 				}
 			}
 		} else if (hasError) {

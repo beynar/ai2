@@ -9,6 +9,7 @@
 	import type { MeterProps, Meter } from './meter.js';
 	import Slot from '../Slot/Slot.svelte';
 	import { useSpringState } from '$lib/utils/spring.svelte.js';
+	import { untrack } from 'svelte';
 
 	type T = $$Generic<Record<string, any> | undefined>;
 	type S = $$Generic<Record<string, any> | undefined>;

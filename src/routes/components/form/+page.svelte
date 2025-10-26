@@ -10,124 +10,150 @@
 			title: 'step 1',
 			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 			inputs: {
-				name: {
-					type: 'text',
-					label: 'Name',
-					placeholder: 'Name'
+				password: {
+					type: 'password',
+					label: 'Password',
+					placeholder: 'Password'
 				},
-				age: {
-					type: 'number',
-					label: 'Age',
-					max: 100,
-					min: 18,
-					step: 10,
-					placeholder: 'Age',
-					required: true
+				phone: {
+					type: 'phone',
+					label: 'Phone',
+					placeholder: 'Phone'
 				},
-				email: {
-					type: 'text',
-					label: 'Email',
-					placeholder: 'Email'
+				date: {
+					type: 'date',
+					label: 'Date'
 				},
-				radiosCard: {
-					type: 'select',
-					label: 'Radios',
-					placeholder: 'Radios',
-					options: [
-						{
-							label: 'Option 1',
-							value: 'option1'
-						},
-						{
-							label: 'Option 2',
-							value: 'option2'
-						}
-					]
+				datetime: {
+					type: 'datetime',
+					label: 'Datetime'
 				},
-				radiosNormal: {
-					type: 'radio',
-					label: 'Radios',
-					mode: 'normal',
-					required: true,
-					options: [
-						{
-							label:
-								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
-							value: 'option1'
-						},
-						{
-							label: 'Option 2',
-							value: 'option2'
-						},
-						{
-							label: 'Option 3',
-							value: 'option3'
-						}
-					]
+				calendar: {
+					type: 'calendar',
+					label: 'Calendar'
 				},
-				cards: {
-					type: 'radio',
-					label: 'Radios',
-					mode: 'card',
-					required: true,
-					options: [
-						{
-							label:
-								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
-							value: 'option1'
-						},
-						{
-							label: 'Option 2',
-							value: 'option2'
-						},
-						{
-							label: 'Option 3',
-							value: 'option3'
-						}
-					]
-				},
-				checkboxes: {
-					type: 'checkboxes',
-					label: 'Radios',
-					mode: 'normal',
-					required: true,
-					options: [
-						{
-							label:
-								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
-							value: 'option1'
-						},
-						{
-							label: 'Option 2',
-							value: 'option2'
-						},
-						{
-							label: 'Option 3',
-							value: 'option3'
-						}
-					]
-				},
-				checkboxesCard: {
-					type: 'checkboxes',
-					label: 'Radios',
-					mode: 'card',
-					required: true,
-					options: [
-						{
-							label:
-								'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
-							value: 'option1'
-						},
-						{
-							label: 'Option 2',
-							value: 'option2'
-						},
-						{
-							label: 'Option 3',
-							value: 'option3'
-						}
-					]
+				calendarRange: {
+					type: 'calendar-range',
+					label: 'Calendar Range'
 				}
+				// name: {
+				// 	type: 'text',
+				// 	label: 'Name',
+				// 	placeholder: 'Name'
+				// },
+				// age: {
+				// 	type: 'number',
+				// 	label: 'Age',
+				// 	max: 100,
+				// 	min: 18,
+				// 	step: 10,
+				// 	placeholder: 'Age',
+				// 	required: true
+				// },
+				// email: {
+				// 	type: 'text',
+				// 	label: 'Email',
+				// 	placeholder: 'Email'
+				// },
+				// radiosCard: {
+				// 	type: 'select',
+				// 	label: 'Radios',
+				// 	placeholder: 'Radios',
+				// 	options: [
+				// 		{
+				// 			label: 'Option 1',
+				// 			value: 'option1'
+				// 		},
+				// 		{
+				// 			label: 'Option 2',
+				// 			value: 'option2'
+				// 		}
+				// 	]
+				// },
+				// radiosNormal: {
+				// 	type: 'radio',
+				// 	label: 'Radios',
+				// 	mode: 'normal',
+				// 	required: true,
+				// 	options: [
+				// 		{
+				// 			label:
+				// 				'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
+				// 			value: 'option1'
+				// 		},
+				// 		{
+				// 			label: 'Option 2',
+				// 			value: 'option2'
+				// 		},
+				// 		{
+				// 			label: 'Option 3',
+				// 			value: 'option3'
+				// 		}
+				// 	]
+				// },
+				// cards: {
+				// 	type: 'radio',
+				// 	label: 'Radios',
+				// 	mode: 'card',
+				// 	required: true,
+				// 	options: [
+				// 		{
+				// 			label:
+				// 				'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
+				// 			value: 'option1'
+				// 		},
+				// 		{
+				// 			label: 'Option 2',
+				// 			value: 'option2'
+				// 		},
+				// 		{
+				// 			label: 'Option 3',
+				// 			value: 'option3'
+				// 		}
+				// 	]
+				// },
+				// checkboxes: {
+				// 	type: 'checkboxes',
+				// 	label: 'Radios',
+				// 	mode: 'normal',
+				// 	required: true,
+				// 	options: [
+				// 		{
+				// 			label:
+				// 				'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
+				// 			value: 'option1'
+				// 		},
+				// 		{
+				// 			label: 'Option 2',
+				// 			value: 'option2'
+				// 		},
+				// 		{
+				// 			label: 'Option 3',
+				// 			value: 'option3'
+				// 		}
+				// 	]
+				// },
+				// checkboxesCard: {
+				// 	type: 'checkboxes',
+				// 	label: 'Radios',
+				// 	mode: 'card',
+				// 	required: true,
+				// 	options: [
+				// 		{
+				// 			label:
+				// 				'Option 1 lore ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
+				// 			value: 'option1'
+				// 		},
+				// 		{
+				// 			label: 'Option 2',
+				// 			value: 'option2'
+				// 		},
+				// 		{
+				// 			label: 'Option 3',
+				// 			value: 'option3'
+				// 		}
+				// 	]
+				// }
 				// switch: {
 				// 	type: 'switch',
 				// 	label: 'Switch',
@@ -198,6 +224,9 @@
 		<MultiStepForm
 			footer={showFooter ? footer : undefined}
 			steps={items}
+			onSubmitStep={(values, step, index) => {
+				console.log(values, step, index);
+			}}
 			onSubmitForm={(values) => {
 				console.log(values);
 			}}

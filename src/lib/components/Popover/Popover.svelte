@@ -133,6 +133,8 @@
 	});
 
 	const classes = $derived(usePopoverTheme());
+
+	const in_out = fso();
 </script>
 
 {#if popover.isOpen && (popover.referenceElement || popover.externalRef)}
@@ -149,8 +151,8 @@
 			size: popover.computedSize,
 			className
 		})}
-		in:fso={popover.computedTransition.in}
-		out:fso={popover.computedTransition.out}
+		in:in_out={popover.computedTransition.in}
+		out:in_out={popover.computedTransition.out}
 		onintroend={() => {
 			popover.hasTransitioned = true;
 			onOpen?.(popover);

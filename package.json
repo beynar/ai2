@@ -1,188 +1,253 @@
 {
-	"name": "svelai",
-	"version": "0.0.24",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build && npm run prepack",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"prepack": "svelte-kit sync && svelte-package && publint",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint .",
-		"generate-icons": "node generate-icons.js",
-		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run && npm run test:e2e",
-		"test:e2e": "playwright test"
-	},
-	"files": [
-		"dist",
-		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
-	],
-	"sideEffects": [
-		"**/*.css"
-	],
-	"svelte": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"type": "module",
-	"peerDependencies": {
-		"svelte": "^5.0.0"
-	},
-	"devDependencies": {
-		"@eslint/compat": "^1.4.0",
-		"@eslint/js": "^9.36.0",
-		"@playwright/test": "^1.55.1",
-		"@sveltejs/adapter-auto": "^6.1.0",
-		"@sveltejs/kit": "^2.43.5",
-		"@sveltejs/package": "^2.5.4",
-		"@sveltejs/vite-plugin-svelte": "^6.2.1",
-		"@tailwindcss/vite": "^4.1.13",
-		"@testing-library/jest-dom": "^6.8.0",
-		"@testing-library/svelte": "^5.2.8",
-		"eslint": "^9.36.0",
-		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-svelte": "^3.12.4",
-		"globals": "^16.4.0",
-		"jsdom": "^27.0.0",
-		"prettier": "^3.6.2",
-		"prettier-plugin-svelte": "^3.4.0",
-		"prettier-plugin-tailwindcss": "^0.6.14",
-		"publint": "^0.3.13",
-		"svelte": "^5.39.6",
-		"svelte-check": "^4.3.2",
-		"tailwindcss": "^4.1.13",
-		"typescript": "^5.9.2",
-		"typescript-eslint": "^8.44.1",
-		"vite": "^7.1.7",
-		"vitest": "^3.2.4"
-	},
-	"keywords": [
-		"svelte"
-	],
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
-	},
-	"dependencies": {
-		"@floating-ui/dom": "^1.7.4",
-		"bits-ui": "^2.11.4",
-		"color2k": "^2.0.3",
-		"colorizr": "^3.0.8",
-		"cva": "1.0.0-beta.3",
-		"melt": "^0.40.2",
-		"runed": "^0.34.0",
-		"shiki": "^3.13.0",
-		"svelte-themes": "^2.0.10",
-		"tailwind-merge": "^3.3.1",
-		"type-fest": "^5.0.1",
-		"valibot": "^1.1.0"
-	},
-	"exports": {
-		"./package.json": "./package.json",
-		"./": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./Form": {
-			"types": "./dist/components/Form/Form/Form.svelte.d.ts",
-			"svelte": "./dist/components/Form/Form/Form.svelte",
-			"default": "./dist/components/Form/Form/Form.svelte"
-		},
-		"./tailwind-plugin": {
-			"types": "./dist/tailwind/index.d.ts",
-			"default": "./dist/tailwind/index.js"
-		},
-		"./tailwind-theme": {
-			"types": "./dist/tailwind/theme.d.ts",
-			"default": "./dist/tailwind/theme.js"
-		},
-		"./MultiStepForm": {
-			"types": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts",
-			"svelte": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte",
-			"default": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte"
-		},
-		"./TextArea": {
-			"types": "./dist/components/Form/TextArea/TextArea.svelte.d.ts",
-			"svelte": "./dist/components/Form/TextArea/TextArea.svelte",
-			"default": "./dist/components/Form/TextArea/TextArea.svelte"
-		},
-		"./Theme": {
-			"types": "./dist/components/Theme/Theme.svelte.d.ts",
-			"svelte": "./dist/components/Theme/Theme.svelte",
-			"default": "./dist/components/Theme/Theme.svelte"
-		},
-		"./Button": {
-			"types": "./dist/components/Button/Button.svelte.d.ts",
-			"svelte": "./dist/components/Button/Button.svelte",
-			"default": "./dist/components/Button/Button.svelte"
-		},
-		"./Chip": {
-			"types": "./dist/components/Chip/Chip.svelte.d.ts",
-			"svelte": "./dist/components/Chip/Chip.svelte",
-			"default": "./dist/components/Chip/Chip.svelte"
-		},
-		"./Badge": {
-			"types": "./dist/components/Badge/Badge.svelte.d.ts",
-			"svelte": "./dist/components/Badge/Badge.svelte",
-			"default": "./dist/components/Badge/Badge.svelte"
-		},
-		"./Meter": {
-			"types": "./dist/components/Meter/Meter.svelte.d.ts",
-			"svelte": "./dist/components/Meter/Meter.svelte",
-			"default": "./dist/components/Meter/Meter.svelte"
-		},
-		"./icons": {
-			"types": "./dist/components/Icons/index.d.ts",
-			"default": "./dist/components/Icons/index.js"
-		},
-		"./icons/*": {
-			"types": "./dist/components/Icons/*.d.ts",
-			"default": "./dist/components/Icons/*.js"
-		},
-		"./spinnerOverlay": {
-			"types": "./dist/attachments/spinnerOverlay.svelte.d.ts",
-			"svelte": "./dist/attachments/spinnerOverlay.svelte.js",
-			"default": "./dist/attachments/spinnerOverlay.svelte.js"
-		}
-	},
-	"typesVersion": {
-		"*": {
-			"./Form": [
-				"./dist/components/Form/Form/Form.svelte.d.ts"
-			],
-			"./tailwind-plugin": [
-				"./dist/tailwind/index.d.ts"
-			],
-			"./tailwind-theme": [
-				"./dist/tailwind/theme.d.ts"
-			],
-			"./MultiStepForm": [
-				"./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts"
-			],
-			"./TextArea": [
-				"./dist/components/Form/TextArea/TextArea.svelte.d.ts"
-			],
-			"./Theme": [
-				"./dist/components/Theme/Theme.svelte.d.ts"
-			],
-			"./Button": [
-				"./dist/components/Button/Button.svelte.d.ts"
-			],
-			"./Chip": [
-				"./dist/components/Chip/Chip.svelte.d.ts"
-			],
-			"./Badge": [
-				"./dist/components/Badge/Badge.svelte.d.ts"
-			],
-			"./Meter": [
-				"./dist/components/Meter/Meter.svelte.d.ts"
-			],
-			"./spinnerOverlay": [
-				"./dist/attachments/spinnerOverlay.svelte.d.ts"
-			]
-		}
-	}
+  "name": "svelai",
+  "version": "0.0.32",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build && npm run prepack",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "prepack": "svelte-kit sync && svelte-package && publint",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "format": "prettier --write .",
+    "lint": "prettier --check . && eslint .",
+    "generate-icons": "node generate-icons.js",
+    "test:unit": "vitest",
+    "test": "npm run test:unit -- --run && npm run test:e2e",
+    "test:e2e": "playwright test"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "svelte": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "peerDependencies": {
+    "@sveltejs/kit": "^2.43.5",
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1.4.0",
+    "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.55.1",
+    "@sveltejs/adapter-auto": "^6.1.0",
+    "@sveltejs/package": "^2.5.4",
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tailwindcss/vite": "^4.1.13",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/svelte": "^5.2.8",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.12.4",
+    "globals": "^16.4.0",
+    "jsdom": "^27.0.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-svelte": "^3.4.0",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "publint": "^0.3.13",
+    "svelte": "^5.39.6",
+    "svelte-check": "^4.3.2",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1",
+    "vite": "^7.1.7",
+    "vitest": "^3.2.4"
+  },
+  "keywords": [
+    "svelte"
+  ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "@floating-ui/dom": "^1.7.4",
+    "@maskito/core": "^4.0.0",
+    "@maskito/kit": "^4.0.0",
+    "@sveltejs/kit": "^2.43.5",
+    "bits-ui": "^2.11.4",
+    "color2k": "^2.0.3",
+    "colorizr": "^3.0.8",
+    "cva": "1.0.0-beta.3",
+    "esm-env": "^1.2.2",
+    "intl-tel-input": "^25.12.2",
+    "libphonenumber-js": "^1.12.25",
+    "melt": "^0.40.2",
+    "runed": "^0.34.0",
+    "shiki": "^3.13.0",
+    "svelte-themes": "^2.0.10",
+    "tailwind-merge": "^3.3.1",
+    "type-fest": "^5.0.1",
+    "valibot": "^1.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./Form": {
+      "types": "./dist/components/Form/Form/Form.svelte.d.ts",
+      "svelte": "./dist/components/Form/Form/Form.svelte",
+      "default": "./dist/components/Form/Form/Form.svelte"
+    },
+    "./Avatar": {
+      "types": "./dist/components/Avatar/Avatar.svelte.d.ts",
+      "svelte": "./dist/components/Avatar/Avatar.svelte",
+      "default": "./dist/components/Avatar/Avatar.svelte"
+    },
+    "./NumberInput": {
+      "types": "./dist/components/Form/NumberInput/NumberInput.svelte.d.ts",
+      "svelte": "./dist/components/Form/NumberInput/NumberInput.svelte",
+      "default": "./dist/components/Form/NumberInput/NumberInput.svelte"
+    },
+    "./Select": {
+      "types": "./dist/components/Form/Select/Select.svelte.d.ts",
+      "svelte": "./dist/components/Form/Select/Select.svelte",
+      "default": "./dist/components/Form/Select/Select.svelte"
+    },
+    "./tailwind-plugin": {
+      "types": "./dist/tailwind/index.d.ts",
+      "default": "./dist/tailwind/index.js"
+    },
+    "./tailwind-theme": {
+      "types": "./dist/tailwind/theme.d.ts",
+      "default": "./dist/tailwind/theme.js"
+    },
+    "./Stepper": {
+      "types": "./dist/components/Stepper/Stepper.svelte.d.ts",
+      "svelte": "./dist/components/Stepper/Stepper.svelte",
+      "default": "./dist/components/Stepper/Stepper.svelte"
+    },
+    "./MultiStepForm": {
+      "types": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts",
+      "svelte": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte",
+      "default": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte"
+    },
+    "./TextArea": {
+      "types": "./dist/components/Form/TextArea/TextArea.svelte.d.ts",
+      "svelte": "./dist/components/Form/TextArea/TextArea.svelte",
+      "default": "./dist/components/Form/TextArea/TextArea.svelte"
+    },
+    "./RadioInput": {
+      "types": "./dist/components/Form/RadioInput/RadioInput.svelte.d.ts",
+      "svelte": "./dist/components/Form/RadioInput/RadioInput.svelte",
+      "default": "./dist/components/Form/RadioInput/RadioInput.svelte"
+    },
+    "./CheckboxesInput": {
+      "types": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte.d.ts",
+      "svelte": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte",
+      "default": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte"
+    },
+    "./Theme": {
+      "types": "./dist/components/Theme/Theme.svelte.d.ts",
+      "svelte": "./dist/components/Theme/Theme.svelte",
+      "default": "./dist/components/Theme/Theme.svelte"
+    },
+    "./Button": {
+      "types": "./dist/components/Button/Button.svelte.d.ts",
+      "svelte": "./dist/components/Button/Button.svelte",
+      "default": "./dist/components/Button/Button.svelte"
+    },
+    "./Chip": {
+      "types": "./dist/components/Chip/Chip.svelte.d.ts",
+      "svelte": "./dist/components/Chip/Chip.svelte",
+      "default": "./dist/components/Chip/Chip.svelte"
+    },
+    "./Badge": {
+      "types": "./dist/components/Badge/Badge.svelte.d.ts",
+      "svelte": "./dist/components/Badge/Badge.svelte",
+      "default": "./dist/components/Badge/Badge.svelte"
+    },
+    "./Meter": {
+      "types": "./dist/components/Meter/Meter.svelte.d.ts",
+      "svelte": "./dist/components/Meter/Meter.svelte",
+      "default": "./dist/components/Meter/Meter.svelte"
+    },
+    "./icons/*": {
+      "types": "./dist/components/Icons/*.d.ts",
+      "default": "./dist/components/Icons/*.js"
+    },
+    "./spinnerOverlay": {
+      "types": "./dist/attachments/spinnerOverlay.svelte.d.ts",
+      "svelte": "./dist/attachments/spinnerOverlay.svelte.js",
+      "default": "./dist/attachments/spinnerOverlay.svelte.js"
+    },
+    "./Dialog": {
+      "types": "./dist/components/Dialog/Dialog.svelte.d.ts",
+      "svelte": "./dist/components/Dialog/Dialog.svelte",
+      "default": "./dist/components/Dialog/Dialog.svelte"
+    },
+    "./ScrollArea": {
+      "types": "./dist/components/ScrollArea/ScrollArea.svelte.d.ts",
+      "svelte": "./dist/components/ScrollArea/ScrollArea.svelte",
+      "default": "./dist/components/ScrollArea/ScrollArea.svelte"
+    },
+    "./Popover": {
+      "types": "./dist/components/Popover/Popover.svelte.d.ts",
+      "svelte": "./dist/components/Popover/Popover.svelte",
+      "default": "./dist/components/Popover/Popover.svelte"
+    },
+    "./Tooltip": {
+      "types": "./dist/components/Tooltip/tooltip.svelte.d.ts",
+      "svelte": "./dist/components/Tooltip/Tooltip.svelte",
+      "default": "./dist/components/Tooltip/Tooltip.svelte"
+    }
+  },
+  "typesVersion": {
+    "*": {
+      "./Form": [
+        "./dist/components/Form/Form/Form.svelte.d.ts"
+      ],
+      "./tailwind-plugin": [
+        "./dist/tailwind/index.d.ts"
+      ],
+      "./tailwind-theme": [
+        "./dist/tailwind/theme.d.ts"
+      ],
+      "./MultiStepForm": [
+        "./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts"
+      ],
+      "./Stepper": [
+        "./dist/components/Stepper/Stepper.svelte.d.ts"
+      ],
+      "./TextArea": [
+        "./dist/components/Form/TextArea/TextArea.svelte.d.ts"
+      ],
+      "./Theme": [
+        "./dist/components/Theme/Theme.svelte.d.ts"
+      ],
+      "./Button": [
+        "./dist/components/Button/Button.svelte.d.ts"
+      ],
+      "./Chip": [
+        "./dist/components/Chip/Chip.svelte.d.ts"
+      ],
+      "./Badge": [
+        "./dist/components/Badge/Badge.svelte.d.ts"
+      ],
+      "./Meter": [
+        "./dist/components/Meter/Meter.svelte.d.ts"
+      ],
+      "./spinnerOverlay": [
+        "./dist/attachments/spinnerOverlay.svelte.d.ts"
+      ],
+      "./Dialog": [
+        "./dist/components/Dialog/Dialog.svelte.d.ts"
+      ],
+      "./ScrollArea": [
+        "./dist/components/ScrollArea/ScrollArea.svelte.d.ts"
+      ],
+      "./Popover": [
+        "./dist/components/Popover/Popover.svelte.d.ts"
+      ]
+    }
+  }
 }

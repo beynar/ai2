@@ -11,11 +11,26 @@ import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { CheckBoxesInputProps } from '../CheckboxesInput/checkBoxesInput.js';
 import type { SwitchInputProps } from '../Switch/switch.js';
 import type { FormState as FS } from './formState.svelte.js';
+import type { PhoneInputProps } from '../PhoneInput/phoneInput.js';
+import type { CalendarInputProps } from '../Calendar/calendarInput.js';
+import type { DateInputProps } from '../DateInput/dateInput.js';
 export type MaybePromise<T> = T | Promise<T>;
 
 export type FormInputs = Record<string, FormInput>;
 
 export type FormInput =
+	| ({
+			type: 'phone';
+	  } & PhoneInputProps)
+	| ({
+			type: 'number';
+	  } & NumberInputProps)
+	| ({
+			type: 'calendar' | 'calendar-range';
+	  } & CalendarInputProps<'calendar' | 'calendar-range'>)
+	| ({
+			type: 'date' | 'datetime';
+	  } & DateInputProps)
 	| ({
 			type: 'text' | 'email' | 'url';
 	  } & TextInputProps)

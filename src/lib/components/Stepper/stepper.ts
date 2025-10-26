@@ -1,5 +1,4 @@
 import { cva } from '$lib/utils/cva.js';
-import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 import type { Snippet } from 'svelte';
 import type { StepperState } from './stepperState.svelte.js';
 

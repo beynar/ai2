@@ -1,4 +1,5 @@
 <script lang="ts" module>
+	import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
 	export { step };
 	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 	import { multiStepFormTheme } from './multiStepForm.js';
@@ -9,7 +10,7 @@
 
 <script lang="ts" generics="I extends FormStep[]">
 	import Stepper from '$lib/components/Stepper/Stepper.svelte';
-	import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
+
 	import { getContext, setContext, tick, type Snippet } from 'svelte';
 	import type { MultiStepFormProps } from './multiStepForm.js';
 	import type { FormStep } from './multiStepForm.js';

@@ -129,6 +129,9 @@
 	const classes = $derived(useDialogTheme());
 
 	const hasHeader = $derived(!!(title || description));
+
+	const in_out = fso();
+	const bg_fade = bgFade();
 </script>
 
 {#if dialog.isOpen}
@@ -144,7 +147,7 @@
 		})}
 		data-type={dialog.type}
 		data-size={size}
-		transition:bgFade={{
+		transition:bg_fade={{
 			duration: 200,
 			delay: 0,
 			easing: 'linear'
@@ -171,10 +174,10 @@
 		{/snippet}
 		<div
 			{@attach focusTrap.attachment}
-			{@attach clickOutside.attachment}
+			{@attach clickOutside.reference}
 			data-type={dialog.type}
-			in:fso={dialog.computedTransition.in}
-			out:fso={dialog.computedTransition.out}
+			in:in_out={dialog.computedTransition.in}
+			out:in_out={dialog.computedTransition.out}
 			onintroend={() => {
 				dialog.hasTransitioned = true;
 				onOpen?.(dialog);

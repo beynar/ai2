@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-
+	import { StepperState } from './stepperState.svelte.js';
+	export type { StepperState };
 	import { stepperTheme } from './stepper.js';
 	export const setStepperTheme = setComponentTheme<typeof stepperTheme>('stepper');
 	export const useStepperTheme = useComponentTheme('stepper', stepperTheme);
@@ -8,7 +9,6 @@
 
 <script lang="ts" generics="Item">
 	import { type StepperProps } from './stepper.js';
-	import { StepperState } from './stepperState.svelte.js';
 	let {
 		items = [],
 		activeStep = $bindable(0),
