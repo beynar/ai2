@@ -35,8 +35,6 @@ export default plugin.withOptions<ThemeOptions>(
 				}
 			});
 
-			console.log(root);
-
 			if (theme.prefersDark) {
 				addBase({
 					'@media (prefers-color-scheme: dark)': {

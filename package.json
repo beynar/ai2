@@ -1,6 +1,6 @@
 {
 	"name": "svelai",
-	"version": "0.0.24",
+	"version": "0.0.32",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -24,10 +24,12 @@
 	"sideEffects": [
 		"**/*.css"
 	],
+	"main": "./dist/index.js",
 	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"peerDependencies": {
+		"@sveltejs/kit": "^2.43.5",
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
@@ -35,7 +37,6 @@
 		"@eslint/js": "^9.36.0",
 		"@playwright/test": "^1.55.1",
 		"@sveltejs/adapter-auto": "^6.1.0",
-		"@sveltejs/kit": "^2.43.5",
 		"@sveltejs/package": "^2.5.4",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/vite": "^4.1.13",
@@ -68,10 +69,16 @@
 	},
 	"dependencies": {
 		"@floating-ui/dom": "^1.7.4",
+		"@maskito/core": "^4.0.0",
+		"@maskito/kit": "^4.0.0",
+		"@sveltejs/kit": "^2.43.5",
 		"bits-ui": "^2.11.4",
 		"color2k": "^2.0.3",
 		"colorizr": "^3.0.8",
 		"cva": "1.0.0-beta.3",
+		"esm-env": "^1.2.2",
+		"intl-tel-input": "^25.12.2",
+		"libphonenumber-js": "^1.12.25",
 		"melt": "^0.40.2",
 		"runed": "^0.34.0",
 		"shiki": "^3.13.0",
@@ -81,15 +88,30 @@
 		"valibot": "^1.1.0"
 	},
 	"exports": {
-		"./package.json": "./package.json",
-		"./": {
+		".": {
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
 		},
+		"./package.json": "./package.json",
 		"./Form": {
 			"types": "./dist/components/Form/Form/Form.svelte.d.ts",
 			"svelte": "./dist/components/Form/Form/Form.svelte",
 			"default": "./dist/components/Form/Form/Form.svelte"
+		},
+		"./Avatar": {
+			"types": "./dist/components/Avatar/Avatar.svelte.d.ts",
+			"svelte": "./dist/components/Avatar/Avatar.svelte",
+			"default": "./dist/components/Avatar/Avatar.svelte"
+		},
+		"./NumberInput": {
+			"types": "./dist/components/Form/NumberInput/NumberInput.svelte.d.ts",
+			"svelte": "./dist/components/Form/NumberInput/NumberInput.svelte",
+			"default": "./dist/components/Form/NumberInput/NumberInput.svelte"
+		},
+		"./Select": {
+			"types": "./dist/components/Form/Select/Select.svelte.d.ts",
+			"svelte": "./dist/components/Form/Select/Select.svelte",
+			"default": "./dist/components/Form/Select/Select.svelte"
 		},
 		"./tailwind-plugin": {
 			"types": "./dist/tailwind/index.d.ts",
@@ -98,6 +120,11 @@
 		"./tailwind-theme": {
 			"types": "./dist/tailwind/theme.d.ts",
 			"default": "./dist/tailwind/theme.js"
+		},
+		"./Stepper": {
+			"types": "./dist/components/Stepper/Stepper.svelte.d.ts",
+			"svelte": "./dist/components/Stepper/Stepper.svelte",
+			"default": "./dist/components/Stepper/Stepper.svelte"
 		},
 		"./MultiStepForm": {
 			"types": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts",
@@ -108,6 +135,16 @@
 			"types": "./dist/components/Form/TextArea/TextArea.svelte.d.ts",
 			"svelte": "./dist/components/Form/TextArea/TextArea.svelte",
 			"default": "./dist/components/Form/TextArea/TextArea.svelte"
+		},
+		"./RadioInput": {
+			"types": "./dist/components/Form/RadioInput/RadioInput.svelte.d.ts",
+			"svelte": "./dist/components/Form/RadioInput/RadioInput.svelte",
+			"default": "./dist/components/Form/RadioInput/RadioInput.svelte"
+		},
+		"./CheckboxesInput": {
+			"types": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte.d.ts",
+			"svelte": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte",
+			"default": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte"
 		},
 		"./Theme": {
 			"types": "./dist/components/Theme/Theme.svelte.d.ts",
@@ -134,10 +171,6 @@
 			"svelte": "./dist/components/Meter/Meter.svelte",
 			"default": "./dist/components/Meter/Meter.svelte"
 		},
-		"./icons": {
-			"types": "./dist/components/Icons/index.d.ts",
-			"default": "./dist/components/Icons/index.js"
-		},
 		"./icons/*": {
 			"types": "./dist/components/Icons/*.d.ts",
 			"default": "./dist/components/Icons/*.js"
@@ -146,6 +179,26 @@
 			"types": "./dist/attachments/spinnerOverlay.svelte.d.ts",
 			"svelte": "./dist/attachments/spinnerOverlay.svelte.js",
 			"default": "./dist/attachments/spinnerOverlay.svelte.js"
+		},
+		"./Dialog": {
+			"types": "./dist/components/Dialog/Dialog.svelte.d.ts",
+			"svelte": "./dist/components/Dialog/Dialog.svelte",
+			"default": "./dist/components/Dialog/Dialog.svelte"
+		},
+		"./ScrollArea": {
+			"types": "./dist/components/ScrollArea/ScrollArea.svelte.d.ts",
+			"svelte": "./dist/components/ScrollArea/ScrollArea.svelte",
+			"default": "./dist/components/ScrollArea/ScrollArea.svelte"
+		},
+		"./Popover": {
+			"types": "./dist/components/Popover/Popover.svelte.d.ts",
+			"svelte": "./dist/components/Popover/Popover.svelte",
+			"default": "./dist/components/Popover/Popover.svelte"
+		},
+		"./Tooltip": {
+			"types": "./dist/components/Tooltip/tooltip.svelte.d.ts",
+			"svelte": "./dist/components/Tooltip/Tooltip.svelte",
+			"default": "./dist/components/Tooltip/Tooltip.svelte"
 		}
 	},
 	"typesVersion": {
@@ -161,6 +214,9 @@
 			],
 			"./MultiStepForm": [
 				"./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts"
+			],
+			"./Stepper": [
+				"./dist/components/Stepper/Stepper.svelte.d.ts"
 			],
 			"./TextArea": [
 				"./dist/components/Form/TextArea/TextArea.svelte.d.ts"
@@ -182,6 +238,15 @@
 			],
 			"./spinnerOverlay": [
 				"./dist/attachments/spinnerOverlay.svelte.d.ts"
+			],
+			"./Dialog": [
+				"./dist/components/Dialog/Dialog.svelte.d.ts"
+			],
+			"./ScrollArea": [
+				"./dist/components/ScrollArea/ScrollArea.svelte.d.ts"
+			],
+			"./Popover": [
+				"./dist/components/Popover/Popover.svelte.d.ts"
 			]
 		}
 	}

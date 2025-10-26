@@ -2,7 +2,7 @@ import type { ReferenceElement } from '@floating-ui/dom';
 import { onDestroy, untrack } from 'svelte';
 import { useThrottle } from './useThrottle.svelte.js';
 import { on } from 'svelte/events';
-import { browser } from '$app/environment';
+import { BROWSER } from 'esm-env';
 
 type Point = {
 	x: number;
@@ -131,7 +131,7 @@ export const useSafeArea = (opts: {
 
 	const removeDebug = () => {
 		opts.debug &&
-			browser &&
+			BROWSER &&
 			document.querySelectorAll('#polygon')?.forEach((node) => node.remove());
 	};
 	const destroy = () => {

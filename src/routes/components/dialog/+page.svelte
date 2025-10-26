@@ -24,13 +24,15 @@
 					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
 					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
 					Lorem ips`;
+
+	let isOpen = $state(false);
 </script>
 
 <ComponentCard title="Accordion Classic" class="flex !items-start ">
 	<Dialog
 		title="Modal"
 		description="This is a modal dialog"
-		isOpen
+		bind:isOpen
 		trigger={{
 			content: 'modal',
 			color: 'danger'

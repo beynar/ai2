@@ -448,15 +448,12 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		if (saturation) {
 			color = saturate(color, saturation);
 		}
-		console.log({ saturation });
+
 		return color;
 	};
 
 	const shades = (color: ColorRecord) => {
 		const baseColor = adjustColor(color.DEFAULT as string);
-
-		console.log({ baseColor, defaultColor: color.DEFAULT });
-
 		return {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || darken(baseColor, 15),

@@ -16,6 +16,10 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import CheckBoxesInput from '../CheckboxesInput/CheckBoxesInput.svelte';
 	import Switch from '../Switch/Switch.svelte';
+	import PasswordInput from '../PasswordInput/Password.svelte';
+	import PhoneInput from '../PhoneInput/PhoneInput.svelte';
+	import CalendarInput from '../Calendar/CalendarInput.svelte';
+	import DateInput from '../DateInput/DateInput.svelte';
 	let {
 		inputs,
 		onSubmit,
@@ -76,6 +80,14 @@
 			<CheckBoxesInput {...input} {name} />
 		{:else if input.type === 'switch'}
 			<Switch {...input} {name} />
+		{:else if input.type === 'password'}
+			<PasswordInput {...input} {name} />
+		{:else if input.type === 'phone'}
+			<PhoneInput {...input} {name} />
+		{:else if input.type === 'calendar' || input.type === 'calendar-range'}
+			<CalendarInput {...input} {name} />
+		{:else if input.type === 'date' || input.type === 'datetime'}
+			<DateInput {...input} {name} />
 		{:else}
 			<p>Input type not supported: {input.type}</p>
 		{/if}

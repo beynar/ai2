@@ -60,7 +60,7 @@ export class StepperState<Item> extends createBindableStateClass<
 		});
 		node.scrollTo(0, 0);
 
-		const steps = document.querySelectorAll('[data-step]');
+		const steps = node.querySelectorAll('[data-step]');
 
 		const setOffsets = () => {
 			steps.forEach((step, i) => {
