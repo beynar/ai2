@@ -72,15 +72,6 @@
 
 	const classes = $derived(useDateInputTheme(theme));
 
-	$effect(() => {
-		const currentValue = value;
-		untrack(() => {
-			if (field.node) {
-				(field.node as HTMLInputElement).value = formatDate(currentValue);
-			}
-		});
-	});
-
 	const formatDate = (date: Date | null) => {
 		if (!date) return '';
 		const day = String(date.getDate()).padStart(2, '0');
@@ -150,10 +141,8 @@
 		if (value) {
 			input.value = formatDate(value);
 		}
-		return {
-			destroy: () => {
-				maskedElement.destroy();
-			}
+		return () => {
+			maskedElement.destroy();
 		};
 	};
 
@@ -186,7 +175,7 @@
 		bind:this={field.node}
 		{placeholder}
 		class={classes.input()}
-		use:maskAction
+		{@attach maskAction}
 		oninput={handleInput}
 	/>
 </Field>

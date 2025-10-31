@@ -4,12 +4,31 @@
 	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.js';
 	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import CheckBoxesInput from '$lib/components/Form/CheckboxesInput/CheckBoxesInput.svelte';
+	import TimeInput from '$lib/components/Form/TimeInput/TimeInput.svelte';
+	import { Form } from '$lib/index.js';
 
 	let items = $state<FormStep[]>(<const>[
 		{
 			title: 'step 1',
 			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 			inputs: {
+				time: {
+					type: 'time',
+					label: 'Time',
+					value: 1439,
+					format: 'HH:MM',
+					placeholder: 'HH:MM'
+				},
+				checkboxes: {
+					type: 'checkboxes',
+					label: 'CheckBoxes',
+					mode: 'card',
+					options: [
+						{ label: 'Option 1', value: 'option1' },
+						{ label: 'Option 2', value: 'option2' }
+					]
+				},
 				password: {
 					type: 'password',
 					label: 'Password',
@@ -19,6 +38,11 @@
 					type: 'phone',
 					label: 'Phone',
 					placeholder: 'Phone'
+				},
+				switch: {
+					type: 'switch',
+					label: 'Switch',
+					description: 'Switch description'
 				},
 				date: {
 					type: 'date',
@@ -47,7 +71,24 @@
 					label: 'Files',
 					description: 'Upload multiple files',
 					maxFiles: 3
+				},
+				select: {
+					placeholder: 'Select an option',
+					type: 'select',
+					label: 'Select',
+					description: 'Select an option',
+					options: [
+						{
+							label: 'Option 1',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						}
+					]
 				}
+
 				// name: {
 				// 	type: 'text',
 				// 	label: 'Name',
@@ -224,7 +265,8 @@
 
 	let showFooter = $state(false);
 
-	let value = $state<any>({});
+	let value = $state<any>(1439);
+	let formValue = $state<any>({});
 </script>
 
 {#snippet footer({ payload: form }: { payload: MultiStepFormState<typeof items> })}
@@ -233,9 +275,45 @@
 	</div>
 {/snippet}
 
+<div class="m-2 flex flex-col gap-4 p-10">
+	<!-- <TimeInput
+		as="minuteSinceMidnight"
+		value={1439}
+		label="Time"
+		format="HH:MM"
+		placeholder="HH:MM"
+	/> -->
+	{value}
+</div>
+
 <ComponentCard title="Accordion Classic" class="flex !items-start ">
 	<div class="my-10 grid w-[800px] gap-10">
-		<MultiStepForm
+		{JSON.stringify(formValue)}
+		<Form
+			value={{
+				time: 1439
+			}}
+			inputs={{
+				time: {
+					type: 'time',
+					label: 'Time',
+					value: 1439,
+					format: 'HH:MM',
+					as: 'minuteSinceMidnight',
+					placeholder: 'HH:MM'
+				}
+			}}
+		/>
+		stp
+		<CheckBoxesInput
+			label="CheckBoxes"
+			mode="card"
+			options={[
+				{ label: 'Option 1', value: 'option1' },
+				{ label: 'Option 2', value: 'option2' }
+			]}
+		/>
+		<!-- <MultiStepForm
 			footer={showFooter ? footer : undefined}
 			steps={items}
 			onSubmitStep={(values, step, index) => {
@@ -244,7 +322,7 @@
 			onSubmitForm={(values) => {
 				console.log(values);
 			}}
-		></MultiStepForm>
+		></MultiStepForm> -->
 	</div>
 </ComponentCard>
 

@@ -86,9 +86,9 @@
 	{#snippet prefix()}
 		<ToggleButton size="small" bind:checked={showPassword}>
 			{#if showPassword}
-				{@render eyeIcon({ size: 16 })}
+				{@render eyeIcon({})}
 			{:else}
-				{@render eyeClosedIcon({ size: 16 })}
+				{@render eyeClosedIcon({})}
 			{/if}
 		</ToggleButton>
 	{/snippet}

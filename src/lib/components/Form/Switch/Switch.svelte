@@ -94,6 +94,14 @@
 	}}
 	{...rest}
 >
+	<input
+		onchange={onclick}
+		name={field.id}
+		id={'input-' + field.id}
+		{value}
+		hidden
+		type="checkbox"
+	/>
 	<div
 		bind:this={field.node}
 		data-checked={!!value}
@@ -110,7 +118,7 @@
 		<Slot
 			as="label"
 			attrs={{
-				for: field.id
+				for: 'input-' + field.id
 			}}
 			render={label}
 			props={labelProps}

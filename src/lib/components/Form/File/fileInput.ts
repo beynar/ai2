@@ -5,7 +5,9 @@ import type { Snippet } from 'svelte';
 
 export type FileInputMode = 'single' | 'multiple';
 export type FileInputType<Mode extends FileInputMode> = Mode extends 'multiple' ? 'files' : 'file';
-export type FileInputValue<Mode extends FileInputMode> = Mode extends 'single' ? File | null : File[] | null;
+export type FileInputValue<Mode extends FileInputMode> = Mode extends 'single'
+	? File | null
+	: File[] | null;
 
 export type FileInputProps<Mode extends FileInputMode = 'single'> = Omit<
 	InputProps<FileInputType<Mode>>,
@@ -31,7 +33,7 @@ export type FileInputProps<Mode extends FileInputMode = 'single'> = Omit<
 };
 
 const defaultInputContainer = cva({
-	base: 'px-2 bg-surface-light border border-surface-muted rounded text-contrast w-full focus-within:ring-1 focus-within:ring-contrast focus-within:ring-opacity-50 ring-0 transition-all p-1 min-h-32 flex flex-col items-center justify-center cursor-pointer',
+	base: 'px-2 bg-surface-light border border-surface-muted rounded text-contrast w-full focus-within:ring-1 focus-within:ring-primary  ring-0 transition-all p-1 min-h-32 flex flex-col items-center justify-center cursor-pointer',
 	variants: {
 		size: {
 			small: 'min-h-24',

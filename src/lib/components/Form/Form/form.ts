@@ -8,18 +8,22 @@ import type { TextAreaProps } from '../TextArea/textArea.js';
 import type { SelectProps } from '../Select/select.js';
 import type { RadioInputProps } from '../RadioInput/radioInput.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
-import type { CheckBoxesInputProps } from '../CheckboxesInput/checkBoxesInput.js';
+import type { CheckBoxesInputProps } from '../CheckboxesInput/checkBoxesInput.def.js';
 import type { SwitchInputProps } from '../Switch/switch.js';
 import type { FormState as FS } from './formState.svelte.js';
 import type { PhoneInputProps } from '../PhoneInput/phoneInput.js';
 import type { CalendarInputProps } from '../Calendar/calendarInput.js';
 import type { DateInputProps } from '../DateInput/dateInput.js';
 import type { FileInputProps } from '../File/fileInput.js';
+import type { TimeInputProps } from '../TimeInput/timeInput.def.js';
 export type MaybePromise<T> = T | Promise<T>;
 
 export type FormInputs = Record<string, FormInput>;
 
 export type FormInput =
+	| ({
+			type: 'time';
+	  } & TimeInputProps)
 	| ({
 			type: 'phone';
 	  } & PhoneInputProps)

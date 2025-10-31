@@ -6,12 +6,25 @@ export type SwitchInputProps = InputProps<'switch'> & {
 	theme?: InferComponentTheme<typeof switchInputTheme> & InputProps<'switch'>['theme'];
 };
 
+//   :global(div[data-checked]) {
+//     background-color: var(--color-surface-muted);
+//   }
+//   :global(div[data-checked] > span) {
+//     border-color: var(--color-surface-muted);
+//     border-width: 1px;
+//   }
+//   :global(div[data-checked="true"]) {
+//     background-color: var(--color-primary-light);
+//   }
+//   :global(div[data-checked="true"] > span) {
+//     border-color: var(--color-primary);
+//   }
 const defaultSwitchToggle = cva({
-	base: 'relative inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-contrast focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
+	base: 'relative inline-flex shrink-0 border cursor-pointer items-center rounded-full transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-contrast focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
 	variants: {
 		checked: {
-			true: 'bg-contrast border-surface-muted shadow-sm',
-			false: 'bg-surface-lighter border-surface-muted hover:bg-surface-light'
+			true: 'bg-primary-light border-primary shadow-sm',
+			false: 'bg-surface-light border-surface-muted border '
 		},
 		size: {
 			small: 'h-[20px] w-[36px]',
@@ -29,8 +42,8 @@ const defaultSwitchThumb = cva({
 	base: 'pointer-events-none block rounded-full shadow-lg ring-0 transition-all duration-200 ease-in-out transform',
 	variants: {
 		checked: {
-			true: '',
-			false: ''
+			true: 'border-primary border bg-surface',
+			false: 'bg-surface-lighter border-surface-muted border'
 		},
 		size: {
 			small: 'h-4 w-4',
@@ -43,34 +56,34 @@ const defaultSwitchThumb = cva({
 		{
 			size: 'small',
 			checked: false,
-			class: 'translate-x-0 bg-surface'
+			class: '-translate-x-0.5'
 		},
 		{
 			size: 'small',
 			checked: true,
-			class: 'translate-x-4 bg-surface'
+			class: 'translate-x-4'
 		},
 		// Normal size translations
 		{
 			size: 'normal',
 			checked: false,
-			class: 'translate-x-0 bg-surface'
+			class: '-translate-x-0.5'
 		},
 		{
 			size: 'normal',
 			checked: true,
-			class: 'translate-x-5 bg-surface'
+			class: 'translate-x-5'
 		},
 		// Large size translations
 		{
 			size: 'large',
 			checked: false,
-			class: 'translate-x-0 bg-surface'
+			class: '-translate-x-0.5'
 		},
 		{
 			size: 'large',
 			checked: true,
-			class: 'translate-x-6 bg-surface'
+			class: 'translate-x-6'
 		}
 	]
 });

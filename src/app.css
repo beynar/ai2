@@ -3,7 +3,6 @@
 @plugin "./lib/tailwind/index" {
 	default: true;
 	eas: true;
-	raised-with-border: true;
 }
 
 @plugin "./lib/tailwind/theme" {

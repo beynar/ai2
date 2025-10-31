@@ -45,7 +45,7 @@ export type FieldValue<T extends InputType> = T extends 'file'
 			: T extends NumberInputType
 				? number
 				: T extends TimeInputType
-					? string
+					? number
 					: T extends TextInputType
 						? string
 						: T extends BooleanInputType

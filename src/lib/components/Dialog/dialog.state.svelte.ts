@@ -116,7 +116,7 @@ export class DialogState {
 	children = $state<DialogState[]>([]);
 	hasTransitioned = $state(false);
 	theme = useTheme();
-	element: HTMLElement | null = $state(null);
+	element: HTMLDialogElement | null = $state(null);
 
 	isLastOpen = $derived.by(() => {
 		const openedDialogs = this.theme.dialogs.filter((d) => d.isOpen);
@@ -159,6 +159,12 @@ export class DialogState {
 
 	close = () => {
 		this.isOpen = false;
+	};
+
+	attachment = (node: HTMLDialogElement) => {
+		return () => {
+			node.close();
+		};
 	};
 }
 

@@ -44,6 +44,17 @@ export default plugin.withOptions<ThemeOptions>(
 					}
 				});
 			}
+
+			console.log({ theme });
+
+			// RAISED UTILITY
+			if (theme['raised-with-border'] !== false) {
+				addBase({
+					[`html[data-theme="${theme.name}"]`]: {
+						'--raised-border': '1px solid var(--current-border, var(--color-surface-muted))'
+					}
+				});
+			}
 		};
 	},
 	(options) => ({

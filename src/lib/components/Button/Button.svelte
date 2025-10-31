@@ -21,7 +21,7 @@
 		href,
 		squared,
 		class: className,
-		color = 'contrast',
+		color = 'primary',
 		prefix,
 		suffix,
 		children,

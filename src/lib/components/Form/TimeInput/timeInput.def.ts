@@ -1,16 +1,15 @@
 import { cva } from 'cva';
 import type { InputProps } from '../Field/field.js';
 import type { InferComponentTheme } from '$lib/utils/cva.js';
-import type intlTelInput from 'intl-tel-input';
+import type { MaskitoTimeParams } from '@maskito/kit';
 
-export type PhoneInputProps = InputProps<'phone'> & {
+export type TimeInputProps = InputProps<'time'> & {
 	placeholder?: string;
-	country?: string;
-	strict?: boolean;
-	separator?: string;
-	searchPlaceholder?: string;
-	iti?: ReturnType<typeof intlTelInput>;
-	theme?: InferComponentTheme<typeof phoneInputTheme> & InputProps<'phone'>['theme'];
+	as?: 'minuteSinceMidnight' | 'secondSinceMidnight' | 'millisecondSinceMidnight';
+	format?: MaskitoTimeParams['mode'];
+	maxValues?: MaskitoTimeParams['timeSegmentMaxValues'];
+	minValues?: MaskitoTimeParams['timeSegmentMinValues'];
+	theme?: InferComponentTheme<typeof timeInputTheme> & InputProps<'time'>['theme'];
 };
 
 const defaultInput = cva({
@@ -35,7 +34,7 @@ const defaultInputContainer = cva({
 	}
 });
 
-export const phoneInputTheme = {
+export const timeInputTheme = {
 	input: defaultInput,
 	inputContainer: defaultInputContainer
 };

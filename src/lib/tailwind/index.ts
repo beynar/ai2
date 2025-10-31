@@ -81,24 +81,15 @@ export default plugin.withOptions<ThemeOptions>(
 				}
 			});
 
-			// RAISED UTILITY
 			addBase({
 				'[data-color-scheme="dark"]': {
 					'--dark-raised-border': '1px solid var(--current-border, var(--color-surface-muted))',
 					'--dark-raised-shadow': 'none'
 				},
-				'[data-color-scheme="light"]': {
-					// '--light-raised-border': 'var(--current-border, var(--color-surface-lighter))'
-					'--light-raised-border':
-						options?.['raised-with-border'] !== false
-							? '1px solid var(--current-border, var(--color-surface-muted))'
-							: '0px'
-				},
 				':has([data-badge])': {
 					position: 'relative'
 				}
 			});
-
 			addComponents({
 				'.ui-spinner': getSpinner(options).style
 			});
@@ -118,12 +109,9 @@ export default plugin.withOptions<ThemeOptions>(
 						if (value !== 'none') {
 							const valueWithoutRgb = value.replace(/rgb\((.*?)\)/g, 'var(--tw-shadow-color)');
 							return {
-								border: 'var(--light-raised-border)',
-								// border:
-								// 	'1px solid var(--light-raised-border, var(--current-border, var(--color-surface-lighter)))',
+								border: 'var(--raised-border)',
 								'--tw-shadow': value as string,
 								'--tw-shadow-colored': valueWithoutRgb as string,
-								// 'box-shadow': `var(--dark-raised-shadow, var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow))`,
 								'box-shadow':
 									'var(--dark-raised-shadow, var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow))'
 							};

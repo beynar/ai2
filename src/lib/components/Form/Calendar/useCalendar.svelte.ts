@@ -117,7 +117,6 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 		weekStartsOnMonday: boolean = this.weekStartsOnMonday,
 		isNextMonth: boolean = false
 	): Row<E>[] => {
-		console.log('get calendar rows', this.rangeStart);
 		const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 		const weeks = Math.ceil(daysInMonth / 7) + 1;
 		const daysInPreviousMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
@@ -234,7 +233,6 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 	};
 
 	setRange = (start: Date | null, end?: Date | null): void => {
-		console.log('set range');
 		this.rangeStart = start;
 		this.rangeEnd = end || null;
 	};

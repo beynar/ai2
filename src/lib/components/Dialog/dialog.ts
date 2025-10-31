@@ -37,12 +37,12 @@ export type DialogProps = WithSlot<
 >;
 
 export const defaultDialog = cva({
-	base: 'z-[+50] fixed left-0 flex bg-surface-fg/20 right-0 top-0 bottom-0 w-window isolate h-window p-4',
+	base: 'z-[+50] fixed py-4 left-0 flex bg-surface-fg/20 right-0 top-0 bottom-0 w-window isolate h-window p-4',
 	variants: {
 		size: {
-			small: '',
-			normal: '',
-			large: ''
+			small: 'max-w-screen max-h-screen',
+			normal: 'max-w-screen max-h-screen',
+			large: 'max-w-screen max-h-screen'
 		},
 		type: {
 			fullScreen: 'justify-center items-center',
@@ -50,7 +50,7 @@ export const defaultDialog = cva({
 			drawerLeft: 'justify-start',
 			drawerBottom: 'justify-center items-end',
 			drawerTop: 'justify-center items-start',
-			modal: 'justify-center items-center',
+			modal: 'justify-center',
 			alert: 'justify-center'
 		}
 	}

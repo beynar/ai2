@@ -23,6 +23,73 @@
 					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
 					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
 					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ips
+					
+					
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ips
+					
+					
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ips
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor
+					sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+					consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+					adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+					Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
 					Lorem ips`;
 
 	let isOpen = $state(false);
@@ -30,9 +97,10 @@
 
 <ComponentCard title="Accordion Classic" class="flex !items-start ">
 	<Dialog
+		closeOnEscape={false}
 		title="Modal"
 		description="This is a modal dialog"
-		bind:isOpen
+		isOpen
 		trigger={{
 			content: 'modal',
 			color: 'danger'
@@ -43,6 +111,35 @@
 			<h1>Hello</h1>
 			<p>{text}</p>
 		</div>
+	</Dialog>
+	<Dialog
+		title="Modal"
+		description="This is a modal dialog"
+		trigger={{
+			content: 'modal',
+			color: 'danger'
+		}}
+		type="modal"
+	>
+		Lorem ips Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum
+		dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+		consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing
+		elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+		Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit
+		amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+		adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+		Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem
+		ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+		consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing
+		elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+		Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit
+		amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur
+		adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+		Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem
+		ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
+		consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing
+		elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+		Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ips
 	</Dialog>
 	<Dialog
 		type="drawerRight"

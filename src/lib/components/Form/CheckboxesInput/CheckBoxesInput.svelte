@@ -1,6 +1,6 @@
 <script lang="ts" module>
 	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { checkBoxesInputTheme } from './checkBoxesInput.js';
+	import { checkBoxesInputTheme } from './checkBoxesInput.def.js';
 	export const setCheckBoxesInputTheme =
 		setComponentTheme<typeof checkBoxesInputTheme>('checkboxesInput');
 	export const useCheckBoxesInputTheme = useComponentTheme('checkboxesInput', checkBoxesInputTheme);
@@ -9,7 +9,7 @@
 <script lang="ts" generics="Option extends CheckBoxesOption">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { CheckBoxesOption, CheckBoxesInputProps } from './checkBoxesInput.js';
+	import type { CheckBoxesOption, CheckBoxesInputProps } from './checkBoxesInput.def.js';
 	import Slot from '../../Slot/Slot.svelte';
 	import { checkIcon } from '$lib/components/Icons/check.js';
 
@@ -63,7 +63,14 @@
 			disabled = v;
 		},
 		required,
-		onValidate,
+		onValidate: (value) => {
+			if (required) {
+				if (value.length === 0) {
+					return true;
+				}
+			}
+			return onValidate?.(value) || false;
+		},
 		name,
 		readonly,
 		visible,

@@ -21,6 +21,7 @@
 	import CalendarInput from '../Calendar/CalendarInput.svelte';
 	import DateInput from '../DateInput/DateInput.svelte';
 	import FileInput from '../File/FileInput.svelte';
+	import TimeInput from '../TimeInput/TimeInput.svelte';
 	let {
 		inputs,
 		onSubmit,
@@ -93,6 +94,8 @@
 			<FileInput {...input} {name} mode="single" />
 		{:else if input.type === 'files'}
 			<FileInput {...input} {name} mode="multiple" />
+		{:else if input.type === 'time'}
+			<TimeInput {...input} {name} />
 		{:else}
 			<p>Input type not supported: {input.type}</p>
 		{/if}

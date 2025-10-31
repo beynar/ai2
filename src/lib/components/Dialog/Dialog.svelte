@@ -91,13 +91,21 @@
 
 	useKeyDown({
 		get isActive() {
-			return (
-				closeOnEscape && closable && dialog.isOpen && (dialog.isLastOfStack || dialog.isLastOpen)
-			);
+			return dialog.isOpen;
 		},
 		keys: ['Escape'],
-		callback: () => {
-			dialog.close();
+		callback: (e) => {
+			if (dialog.isOpen) {
+				e.preventDefault();
+			}
+			if (
+				closeOnEscape &&
+				closable &&
+				dialog.isOpen &&
+				(dialog.isLastOfStack || dialog.isLastOpen)
+			) {
+				dialog.close();
+			}
 		}
 	});
 
@@ -136,7 +144,6 @@
 
 {#if dialog.isOpen}
 	<dialog
-		open={true}
 		id={dialog.id}
 		aria-modal={true}
 		aria-labelledby="{dialog.id}-label"
@@ -152,7 +159,11 @@
 			delay: 0,
 			easing: 'linear'
 		}}
+		onintrostart={() => {
+			dialog.element?.showModal?.();
+		}}
 		bind:this={dialog.element}
+		{@attach dialog.attachment}
 	>
 		{#snippet CLOSE_BUTTON()}
 			<Slot

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/Button/Button.svelte';
+	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 
 	let disabled = $state(false);
@@ -15,7 +16,7 @@
 				{#each colors as color}
 					<div class="flex items-center justify-center gap-4">
 						{#each sizes as size}
-							<Button {color} {size} {variant} {disabled}>
+							<Button prefix={eyeClosedIcon} {color} {size} {variant} {disabled}>
 								{variant} - {color} - {size}
 							</Button>
 						{/each}

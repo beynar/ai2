@@ -118,7 +118,6 @@
 	};
 </script>
 
-{field.value}
 <Field
 	{field}
 	theme={{

@@ -1,6 +1,5 @@
 import type { Slot } from '../../Slot/slot.js';
 import { cva } from '$lib/utils/cva.js';
-
 import type { FieldProps, InputProps } from '../Field/field.js';
 
 export type CheckBoxesOption = {
@@ -33,7 +32,7 @@ const defaultCheckBoxesInputItem = cva({
 			normal: ''
 		},
 		checked: {
-			true: '',
+			true: 'bg-primary-lighter/20',
 			false: ''
 		}
 	},
@@ -41,7 +40,7 @@ const defaultCheckBoxesInputItem = cva({
 		{
 			mode: 'card',
 			checked: true,
-			class: 'ring-2 ring-contrast'
+			class: 'ring-2 ring-primary'
 		}
 	]
 });
@@ -70,7 +69,7 @@ const defaultCheckBoxesInputItemThumb = cva({
 	`,
 	variants: {
 		checked: {
-			true: 'bg-contrast scale-[100%] opacity-100',
+			true: 'bg-primary scale-[100%] opacity-100',
 			false: ''
 		},
 		mode: {

@@ -54,7 +54,7 @@ export const schemas: {
 		date: v.date(),
 
 		// Time input type
-		time: v.string(),
+		time: v.number(),
 
 		// Boolean input types
 		switch: v.boolean(),
@@ -95,7 +95,7 @@ export const schemas: {
 		date: optional(v.date()),
 
 		// Time input type
-		time: optional(v.string()),
+		time: optional(v.number()),
 
 		// Boolean input types
 		switch: optional(v.boolean()),

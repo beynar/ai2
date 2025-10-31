@@ -91,7 +91,7 @@
 		class={classes.input()}
 	>
 		{#if placeholder && !value}
-			<option value="" disabled hidden>{placeholder}</option>
+			<option disabled hidden>{placeholder}</option>
 		{/if}
 		{#each options || [] as option}
 			<option value={option.value}>{option.label}</option>
