@@ -27,7 +27,7 @@ export class FileDropzone {
 	config = $state<FileDropzoneConfig | undefined>();
 	state = $state<FileDropzoneState>('idle');
 	isValid = $state<boolean>(false);
-
+	disabled = $state<boolean>(false);
 	formatSize = (bytes: number): string => {
 		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
 		if (bytes === 0) return '0 Byte';
@@ -59,9 +59,9 @@ export class FileDropzone {
 		});
 	}
 
-	constructor(opts: { config: FileDropzoneConfig }) {
+	constructor(opts: { config: FileDropzoneConfig; disabled?: boolean }) {
 		this.config = opts.config;
-
+		this.disabled = opts.disabled || false;
 		$effect(() => {
 			this.zoneElement?.setAttribute('data-state', this.state);
 		});
@@ -94,6 +94,7 @@ export class FileDropzone {
 	handleDrop = (event: DragEvent): void => {
 		event.preventDefault();
 		event.stopPropagation();
+		if (this.disabled) return;
 		this.state = 'idle';
 		const files = event.dataTransfer?.files;
 		if (files) {
@@ -102,6 +103,7 @@ export class FileDropzone {
 	};
 
 	addNewFiles = (files: File[]): void => {
+		if (this.disabled) return;
 		const newFiles = this.getValidFiles(files);
 
 		if (this.config?.mode === 'single') {
@@ -117,6 +119,7 @@ export class FileDropzone {
 	};
 
 	removeFile = (file: File): void => {
+		if (this.disabled) return;
 		this.files = this.files.filter((f) => f !== file);
 		// Trigger onChange with updated file list
 		this.config?.onChange(this.files);
@@ -147,7 +150,7 @@ export class FileDropzone {
 	};
 
 	onDragEnter = async (event: DragEvent): Promise<void> => {
-		if (!this.config) return;
+		if (!this.config || this.disabled) return;
 		const files = await fromEvent(event);
 		this.isValid = files.every((file: File | DataTransferItem) => this.matchesAccept(file as File));
 	};
@@ -215,7 +218,7 @@ export class FileDropzone {
 		const newFiles = this.getValidFiles(
 			files.filter((file: File | DataTransferItem): file is File => file instanceof File)
 		);
-		
+
 		if (this.config?.mode === 'single') {
 			// In single mode, replace the files array with the first valid file
 			const maxFiles = this.config?.maxFiles || 1;
@@ -224,7 +227,7 @@ export class FileDropzone {
 			// In multiple mode, append new files to existing list
 			this.files.push(...newFiles);
 		}
-		
+
 		this.config?.onChange(this.files);
 
 		// Reset input value so the same file can be selected again

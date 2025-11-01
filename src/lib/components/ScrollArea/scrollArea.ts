@@ -3,6 +3,7 @@ import type { Snippet } from 'svelte';
 
 export type ScrollAreaProps = {
 	type: 'auto' | 'always' | 'scroll' | 'hover';
+	scrollOnEdges?: boolean;
 	delay?: number;
 	children?: Snippet;
 	class?: string;

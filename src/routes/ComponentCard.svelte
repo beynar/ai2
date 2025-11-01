@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Heading from '$lib/Components/Heading/Heading.svelte';
 	// import Pattern from '$lib/Components/Patterns/Pattern.svelte';
 
 	let {
@@ -19,13 +20,10 @@
 	import type { Snippet } from 'svelte';
 </script>
 
-<div {...attachments} class="grid gap-10">
-	<!-- <div>
+<div {...attachments} class="my-10 grid gap-10">
+	<div class="-mb-22">
 		<Heading>{title}</Heading>
-		{#if description}
-			<Text>{description}</Text>
-		{/if}
-	</div> -->
+	</div>
 	<div
 		class="border-surface-muted relative flex min-h-[400px] w-full max-w-[90vw] items-center justify-center gap-4 rounded border {className}"
 	>

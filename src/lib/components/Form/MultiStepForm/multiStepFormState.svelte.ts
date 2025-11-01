@@ -5,7 +5,6 @@ import type { FormStep } from './multiStepForm.js';
 import type { MergedMultiStepFormInputs } from './multiStepForm.js';
 import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 import type { InferFormValue } from '../Form/form.js';
-import { step } from './MultiStepForm.svelte';
 import { setContext } from 'svelte';
 import type { Colors } from '$lib/types/theme.js';
 export class MultiStepFormState<
@@ -24,16 +23,19 @@ export class MultiStepFormState<
 	stepper = $state<StepperState<FormStep>>();
 	loading = $state(false);
 	isLastStep = $derived(this.stepper?.activeStep === this.steps.length - 1);
-	constructor(opts: {
-		steps: I;
-		onSubmitForm?: (value: InferFormValue<MergedMultiStepFormInputs<I>>) => Promise<void> | void;
-		onSubmitStep?: (
-			value: InferFormValue<MergedMultiStepFormInputs<any>>,
-			step: I[number],
-			index: number
-		) => Promise<void | boolean> | void | boolean;
-		meterColor?: Colors;
-	}) {
+	constructor(
+		opts: {
+			steps: I;
+			onSubmitForm?: (value: InferFormValue<MergedMultiStepFormInputs<I>>) => Promise<void> | void;
+			onSubmitStep?: (
+				value: InferFormValue<MergedMultiStepFormInputs<any>>,
+				step: I[number],
+				index: number
+			) => Promise<void | boolean> | void | boolean;
+			meterColor?: Colors;
+		},
+		private step: Snippet<[any]>
+	) {
 		super(opts);
 		setContext('multiStepForm', this);
 	}
@@ -58,7 +60,7 @@ export class MultiStepFormState<
 		this.steps.reduce(
 			(acc, _step, index) => {
 				Object.assign(acc, {
-					[`step${index + 1}`]: step
+					[`step${index + 1}`]: this.step
 				});
 				return acc;
 			},
@@ -98,8 +100,6 @@ export class MultiStepFormState<
 			},
 			{} as InferFormValue<MergedMultiStepFormInputs<I>>
 		);
-
-		console.log({ hasError });
 
 		if (this.stepper?.activeStep !== this.steps.length - 1) {
 			if (this.onSubmitStep && !hasError) {

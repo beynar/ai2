@@ -104,6 +104,8 @@
 		{min}
 		{max}
 		{step}
+		disabled={field.disabled}
+		readonly={field.readonly}
 		class={classes.input()}
 	/>
 </Field>

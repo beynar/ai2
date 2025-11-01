@@ -29,6 +29,7 @@ interface PopoverOptions
 	> {
 	isOpen: boolean;
 	externalRef?: HTMLElement | null;
+	fitTrigger?: boolean;
 }
 
 export interface PopoverState extends PopoverOptions {}
@@ -119,6 +120,12 @@ export class PopoverState {
 		if (!mount && !this.hasTransitioned) {
 			return;
 		}
+		if (this.fitTrigger) {
+			const { width } = this.referenceElement!.getBoundingClientRect();
+			node.style.width = `${width}px`;
+			node.style.maxWidth = `${width}px`;
+		}
+
 		const { x, y, strategy, placement, middlewareData } = await computePosition(
 			this.referenceElement!,
 			node,

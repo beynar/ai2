@@ -37,6 +37,7 @@
 		directedTransition = true,
 		lockScroll = true,
 		class: className,
+		fitTrigger = false,
 		trigger
 	}: PopoverProps = $props();
 
@@ -68,7 +69,9 @@
 		get externalRef() {
 			return ref;
 		},
-
+		get fitTrigger() {
+			return fitTrigger;
+		},
 		onClose,
 		onOpen
 	});
@@ -135,9 +138,11 @@
 	const classes = $derived(usePopoverTheme());
 
 	const in_out = fso();
+
+	const shouldShow = $derived(popover.isOpen && (popover.referenceElement || popover.externalRef));
 </script>
 
-{#if popover.isOpen && (popover.referenceElement || popover.externalRef)}
+{#if shouldShow}
 	<dialog
 		{@attach popover.dialog}
 		{@attach clickOutside.reference}

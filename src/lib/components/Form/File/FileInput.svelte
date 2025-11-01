@@ -84,6 +84,9 @@
 	const classes = $derived(useFileInputTheme(theme));
 
 	const dropzone = new FileDropzone({
+		get disabled() {
+			return field.disabled || field.readonly;
+		},
 		get config() {
 			return {
 				types,
@@ -122,8 +125,7 @@
 
 	// Cleanup object URLs when files are removed or component unmounts
 	$effect(() => {
-		const currentFiles = dropzone.files;
-
+		dropzone.files;
 		return () => {
 			// Revoke all URLs on unmount
 			previewCache.forEach((url, file) => {
@@ -156,6 +158,8 @@
 			accept={types.join(',')}
 			use:dropzone.input
 			type="file"
+			disabled={field.disabled}
+			readonly={field.readonly}
 		/>
 		{#if dropzone.files.length === 0}
 			<div class={classes.placeholder({ class: placeholderClass })}>

@@ -89,6 +89,7 @@
 		bind:this={field.node}
 		{placeholder}
 		class={classes.input()}
+		disabled={field.disabled}
 	>
 		{#if placeholder && !value}
 			<option disabled hidden>{placeholder}</option>

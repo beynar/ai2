@@ -83,6 +83,8 @@
 >
 	<textarea
 		maxlength={maxLength}
+		disabled={field.disabled}
+		readonly={field.readonly}
 		{rows}
 		data-1p-ignore
 		use:autosize={{ value: field.value }}

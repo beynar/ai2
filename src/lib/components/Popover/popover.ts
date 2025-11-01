@@ -28,15 +28,16 @@ export type PopoverProps = WithAttachments<{
 	closeOnMouseLeave?: boolean;
 	lockScroll?: boolean;
 	class?: string;
+	fitTrigger?: boolean;
 }>;
 
 export const defaultPopover = cva({
-	base: 'z-[+50] fixed bg-surface-light w-fit rounded-large raised isolate h-fit p-4',
+	base: 'z-[+50] fixed bg-surface-light w-fit rounded-large raised isolate h-fit ',
 	variants: {
 		size: {
-			small: 'max-w-xs w-full',
-			normal: 'max-w-sm w-full',
-			large: 'max-w-md w-full'
+			small: 'max-w-xs w-full p-2',
+			normal: 'max-w-sm w-full p-3',
+			large: 'max-w-md w-full p-4'
 		}
 	}
 });

@@ -23,6 +23,7 @@ import { selectDescription } from '$lib/components/Form/Select/select.mcp.js';
 import { switchDescription } from '$lib/components/Form/Switch/switch.mcp.js';
 import { textAreaDescription } from '$lib/components/Form/TextArea/textArea.mcp.js';
 import { textInputDescription } from '$lib/components/Form/TextInput/textInput.mcp.js';
+import { comboboxDescription } from '$lib/components/Form/Combobox/combobox.mcp.js';
 import { headingDescription } from '$lib/components/Heading/heading.mcp.js';
 import { meterDescription } from '$lib/components/Meter/meter.mcp.js';
 import { popoverDescription } from '$lib/components/Popover/popover.mcp.js';
@@ -62,6 +63,7 @@ const components = {
 	Switch: switchDescription,
 	TextArea: textAreaDescription,
 	TextInput: textInputDescription,
+	Combobox: comboboxDescription,
 	Heading: headingDescription,
 	Meter: meterDescription,
 	Popover: popoverDescription,

@@ -63,6 +63,7 @@ export const schemas: {
 		// Single option input types
 		select: v.string(),
 		radio: v.string(),
+		combobox: v.string(),
 
 		// Multiple choice input types
 		checkboxes: v.array(v.string()),
@@ -104,6 +105,7 @@ export const schemas: {
 		// Single option input types
 		select: optional(v.string()),
 		radio: optional(v.string()),
+		combobox: optional(v.string()),
 
 		// Multiple choice input types
 		checkboxes: optional(emptyArrayNull(v.array(v.string()))),

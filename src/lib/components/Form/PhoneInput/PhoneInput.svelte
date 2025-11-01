@@ -149,6 +149,8 @@
 		bind:this={field.node}
 		{placeholder}
 		class={classes.input()}
+		disabled={field.disabled}
+		readonly={field.readonly}
 	/>
 </Field>
 

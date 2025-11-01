@@ -100,6 +100,8 @@
 		id={'input-' + field.id}
 		{value}
 		hidden
+		disabled={field.disabled}
+		readonly={field.readonly}
 		type="checkbox"
 	/>
 	<div

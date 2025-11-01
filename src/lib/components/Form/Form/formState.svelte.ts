@@ -4,31 +4,77 @@ import type {
 	FormInputs,
 	FormProps,
 	FormSubmitHandler,
+	FormInput,
 	InferFormValue,
 	MaybePromise
 } from './form.js';
 import type { MultiStepFormState } from '../MultiStepForm/multiStepFormState.svelte.js';
+import { isFieldVisible } from './visibility.js';
 
 export class FormState<I extends FormInputs = FormInputs> {
 	fields = $state<FieldState<any>[]>([]);
 	loading = $state(false);
 	hasError = $state(false);
+	private inputs: I;
+	private opts: FormProps<I>;
+
 	getValue = () => {
+		// First, get raw values from all fields (without visibility filtering)
+		const rawValue = this.fields.reduce((acc, field) => {
+			Object.assign(acc, {
+				[field.name]: field.value
+			});
+			return acc;
+		}, {} as InferFormValue<I>);
+
+		// Then filter based on visibility in a single pass
+		return this.fields.reduce((acc, field) => {
+			if (this.isFieldVisible(field.name, rawValue)) {
+				Object.assign(acc, {
+					[field.name]: field.value
+				});
+			}
+			return acc;
+		}, {} as InferFormValue<I>);
+	};
+	value = $derived.by(this.getValue);
+
+	constructor(opts: FormProps<I>) {
+		this.opts = opts;
+		this.inputs = opts.inputs;
+	}
+
+	private isFieldVisible(fieldName: string, formValue?: InferFormValue<I>): boolean {
+		const input = this.inputs[fieldName];
+		if (!input) return true; // If input config not found, assume visible
+
+		// Check field's own visible property (boolean) first
+		const field = this.fields.find((f) => f.name === fieldName);
+		if (field && field.visible === false) {
+			return false;
+		}
+
+		// Then check input config visibility (boolean or function) using shared utility
+		const currentValue = formValue ?? this.getRawValue();
+		return isFieldVisible(input, currentValue);
+	}
+
+	private getRawValue(): InferFormValue<I> {
 		return this.fields.reduce((acc, field) => {
 			Object.assign(acc, {
 				[field.name]: field.value
 			});
 			return acc;
 		}, {} as InferFormValue<I>);
-	};
-	value = $derived.by(this.getValue);
-
-	constructor(private opts: FormProps<I>) {}
+	}
 
 	validate = () => {
 		let firstErroredNode: HTMLElement | null = null;
 		let hasError = false;
-		const validations = this.fields.map((field) => {
+		const rawValue = this.getRawValue();
+		// Only validate visible fields
+		const visibleFields = this.fields.filter((field) => this.isFieldVisible(field.name, rawValue));
+		const validations = visibleFields.map((field) => {
 			const [error, value] = field.validate();
 			if (error) {
 				hasError = true;
@@ -44,8 +90,9 @@ export class FormState<I extends FormInputs = FormInputs> {
 		if (hasError) {
 			return false;
 		} else {
+			// Only include visible fields in the result (already filtered above)
 			return validations.reduce((acc, [_, value], index) => {
-				const field = this.fields[index];
+				const field = visibleFields[index];
 				Object.assign(acc, {
 					[field.name]: value
 				});
@@ -71,9 +118,8 @@ export class FormState<I extends FormInputs = FormInputs> {
 	};
 
 	updateField = (field: FieldState<any>) => {
-		Object.assign(this.value, {
-			[field.name]: field.value
-		});
+		// No-op: value is now derived from fields, so it updates automatically
+		// This method is kept for compatibility but doesn't need to do anything
 	};
 }
 export const useForm = <I extends FormInputs>(opts: FormProps<I>) => {

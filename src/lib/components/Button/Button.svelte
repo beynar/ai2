@@ -34,6 +34,7 @@
 		rel,
 		target,
 		childrenProps,
+		label,
 		...attachments
 	}: ButtonPrimitiveProps<Payload> = $props();
 
@@ -46,6 +47,7 @@
 
 <svelte:element
 	this={as || href ? 'a' : 'button'}
+	aria-label={label}
 	role={as || href ? 'link' : 'button'}
 	{href}
 	{rel}

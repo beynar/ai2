@@ -98,6 +98,7 @@
 			<input
 				hidden
 				onchange={() => {
+					if (field.disabled || field.readonly) return;
 					field.value = option.value;
 				}}
 				style="transform: scale(0); opacity: 0; pointer-events: none; margin: -1px; position: absolute;"
@@ -106,6 +107,8 @@
 				name={field.name}
 				id={optionId}
 				value={option.value}
+				disabled={field.disabled}
+				readonly={field.readonly}
 			/>
 
 			<!-- Radio Button Track -->

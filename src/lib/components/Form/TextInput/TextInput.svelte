@@ -79,12 +79,15 @@
 	{...rest}
 >
 	<input
+		disabled={field.disabled}
+		readonly={field.readonly}
 		data-1p-ignore
 		type="text"
 		{id}
 		name={field.name}
 		bind:value={field.value}
 		bind:this={field.node}
+		bind:focused={field.focused}
 		{placeholder}
 		class={classes.input()}
 	/>

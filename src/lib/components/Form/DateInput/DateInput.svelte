@@ -174,6 +174,8 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
+		disabled={field.disabled}
+		readonly={field.readonly}
 		class={classes.input()}
 		{@attach maskAction}
 		oninput={handleInput}

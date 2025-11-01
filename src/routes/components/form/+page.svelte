@@ -267,6 +267,9 @@
 
 	let value = $state<any>(1439);
 	let formValue = $state<any>({});
+	let dynamicFormValue = $state<any>({});
+
+	let defaultValue = $state<string | null>(null);
 </script>
 
 {#snippet footer({ payload: form }: { payload: MultiStepFormState<typeof items> })}
@@ -286,43 +289,119 @@
 	{value}
 </div>
 
-<ComponentCard title="Accordion Classic" class="flex !items-start ">
+<ComponentCard title="Dynamic Field Visibility Example" class="flex !items-start">
 	<div class="my-10 grid w-[800px] gap-10">
-		{JSON.stringify(formValue)}
 		<Form
-			value={{
-				time: 1439
-			}}
+			bind:value={dynamicFormValue}
 			inputs={{
-				time: {
-					type: 'time',
-					label: 'Time',
-					value: 1439,
-					format: 'HH:MM',
-					as: 'minuteSinceMidnight',
-					placeholder: 'HH:MM'
+				newsletter: {
+					type: 'switch',
+					label: 'Subscribe to Newsletter',
+					description: 'Receive updates and promotions'
+				},
+				combobox: {
+					type: 'combobox',
+					label: 'Combobox',
+					placeholder: 'Select an option',
+					onChange: (value, option) => {},
+					options: [
+						{ label: 'Option 1', value: 'option1' },
+						{ label: 'Option 2', value: 'option2' }
+					]
+				},
+				// Dynamic visibility: show only when newsletter is true
+				emailPreference: {
+					type: 'select',
+					label: 'Email Preference',
+					required: true,
+					value: defaultValue,
+					placeholder: 'Select frequency',
+					options: [
+						{ label: 'Daily', value: 'daily' },
+						{ label: 'Weekly', value: 'weekly' },
+						{ label: 'Monthly', value: 'monthly' }
+					],
+					visible: (value) => value.combobox === 'option1'
 				}
 			}}
-		/>
-		stp
-		<CheckBoxesInput
-			label="CheckBoxes"
-			mode="card"
-			options={[
-				{ label: 'Option 1', value: 'option1' },
-				{ label: 'Option 2', value: 'option2' }
-			]}
-		/>
-		<!-- <MultiStepForm
-			footer={showFooter ? footer : undefined}
-			steps={items}
-			onSubmitStep={(values, step, index) => {
-				console.log(values, step, index);
+			onSubmit={(values) => {
+				console.log('Form submitted:', values);
 			}}
-			onSubmitForm={(values) => {
-				console.log(values);
+		/>
+		<Form
+			bind:value={dynamicFormValue}
+			inputs={{
+				userType: {
+					type: 'select',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				// Static visibility: always hidden
+				hiddenField: {
+					type: 'text',
+					label: 'This field is always hidden',
+					placeholder: 'Hidden field',
+					visible: false
+				},
+				// Dynamic visibility: show only when userType is 'business'
+				companyName: {
+					type: 'text',
+					label: 'Company Name',
+					placeholder: 'Enter company name',
+					visible: (value) => value.userType === 'business',
+					required: true
+				},
+				// Dynamic visibility: show only when userType is 'personal'
+				age: {
+					type: 'number',
+					label: 'Age',
+					placeholder: 'Enter your age',
+					min: 18,
+					max: 120,
+					visible: (value) => value.userType === 'personal'
+				},
+				newsletter: {
+					type: 'switch',
+					label: 'Subscribe to Newsletter',
+					description: 'Receive updates and promotions'
+				},
+				// Dynamic visibility: show only when newsletter is true
+				emailPreference: {
+					type: 'select',
+					label: 'Email Preference',
+					placeholder: 'Select frequency',
+					options: [
+						{ label: 'Daily', value: 'daily' },
+						{ label: 'Weekly', value: 'weekly' },
+						{ label: 'Monthly', value: 'monthly' }
+					],
+					visible: (value) => value.newsletter === true
+				},
+				// Dynamic visibility: show when userType is 'business' AND newsletter is true
+				businessNewsletter: {
+					type: 'text',
+					label: 'Business Newsletter Email',
+					placeholder: 'business@example.com',
+					visible: (value) => value.userType === 'business' && value.newsletter === true
+				},
+				// Static visibility: always visible
+				email: {
+					type: 'email',
+					label: 'Email Address',
+					placeholder: 'your@email.com',
+					required: true,
+					visible: true
+				}
 			}}
-		></MultiStepForm> -->
+			onSubmit={(values) => {
+				console.log('Form submitted:', values);
+			}}
+		/>
 	</div>
 </ComponentCard>
 

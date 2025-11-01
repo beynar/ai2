@@ -1,6 +1,5 @@
 <script lang="ts" module>
 	import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
-	export { step };
 	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 	import { multiStepFormTheme } from './multiStepForm.js';
 	export const setMultiStepFormTheme =
@@ -45,23 +44,32 @@
 		value = $bindable({})
 	}: MultiStepFormProps<I> = $props();
 
-	let form = new MultiStepFormState({
-		get steps() {
-			return steps;
+	let form = new MultiStepFormState(
+		{
+			get steps() {
+				return steps;
+			},
+			onSubmitForm,
+			onSubmitStep,
+			get meterColor() {
+				return meterColor;
+			}
 		},
-		onSubmitForm,
-		onSubmitStep,
-		get meterColor() {
-			return meterColor;
-		}
-	});
+		step
+	);
 
 	const { form: formTheme, ...baseTheme } = theme || {};
 	const classes = $derived(useMultiStepFormTheme(baseTheme));
 </script>
 
 {#snippet step({ item }: { stepper: StepperState<FormStep>; item: FormStep; index: number })}
-	<Form class="p-4" inputs={item.inputs} title={item.title} description={item.description} />
+	<Form
+		class="p-4"
+		inputs={item.inputs}
+		title={item.title}
+		description={item.description}
+		submitButton={null}
+	/>
 {/snippet}
 
 <div class={classes.multiStepForm({ className })}>

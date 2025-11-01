@@ -9,6 +9,7 @@ export type ButtonPrimitiveProps<Payload extends Record<string, any> | undefined
 		WithSlot<
 			{
 				payload?: Payload;
+				label?: string;
 				ref?: HTMLElement | null;
 				href?: string;
 				loading?: boolean;
