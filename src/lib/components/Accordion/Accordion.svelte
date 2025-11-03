@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { accordionTheme } from './accordion.js';
-	export const setAccordionTheme = setComponentTheme<typeof accordionTheme>('accordion');
-	export const useAccordionTheme = useComponentTheme('accordion', accordionTheme);
-</script>
-
 <script lang="ts" generics="Item extends Record<string, any>">
 	import { getters } from 'melt';
 	import { Accordion } from 'melt/builders';
-	import type { AccordionProps } from './accordion.js';
+	import type { AccordionProps } from './accordion.props.js';
+	import { useAccordionTheme } from './accordion.theme.js';
 	import Slot from '../Slot/Slot.svelte';
 	import { slide } from 'svelte/transition';
 

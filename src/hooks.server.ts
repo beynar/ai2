@@ -41,41 +41,41 @@ import { confirmationDescription } from '$lib/components/Confirmation/confirmati
 import { toastDescription } from '$lib/components/Toast/toast.mcp.js';
 
 const components = {
-	Accordion: accordionDescription,
-	Avatar: avatarDescription,
-	Badge: badgeDescription,
-	Button: buttonDescription,
-	ButtonGroup: buttonGroupDescription,
-	Chip: chipDescription,
-	Code: codeDescription,
-	Dialog: dialogDescription,
-	Calendar: calendarDescription,
-	DateInput: dateInputDescription,
-	FileInput: fileInputDescription,
-	Form: formDescription,
-	MultiStepForm: multiStepFormDescription,
-	NumberInput: numberInputDescription,
-	PasswordInput: passwordInputDescription,
-	PhoneInput: phoneInputDescription,
-	RadioInput: radioInputDescription,
-	CheckBoxesInput: checkboxesInputDescription,
-	Select: selectDescription,
-	Switch: switchDescription,
-	TextArea: textAreaDescription,
-	TextInput: textInputDescription,
-	Combobox: comboboxDescription,
-	Heading: headingDescription,
-	Meter: meterDescription,
-	Popover: popoverDescription,
-	ScrollArea: scrollAreaDescription,
-	Slot: slotDescription,
-	Stepper: stepperDescription,
-	Theme: themeDescription,
-	ToggleButton: toggleButtonDescription,
-	ToggleButtonGroup: toggleButtonGroupDescription,
-	Tooltip: tooltipDescription,
-	Confirmation: confirmationDescription,
-	Toast: toastDescription,
+	accordion: accordionDescription,
+	avatar: avatarDescription,
+	badge: badgeDescription,
+	button: buttonDescription,
+	'button-group': buttonGroupDescription,
+	chip: chipDescription,
+	code: codeDescription,
+	dialog: dialogDescription,
+	calendar: calendarDescription,
+	'date-input': dateInputDescription,
+	'file-input': fileInputDescription,
+	form: formDescription,
+	'multi-step-form': multiStepFormDescription,
+	'number-input': numberInputDescription,
+	'password-input': passwordInputDescription,
+	'phone-input': phoneInputDescription,
+	'radio-input': radioInputDescription,
+	'checkboxes-input': checkboxesInputDescription,
+	select: selectDescription,
+	switch: switchDescription,
+	'text-area': textAreaDescription,
+	'text-input': textInputDescription,
+	combobox: comboboxDescription,
+	heading: headingDescription,
+	meter: meterDescription,
+	popover: popoverDescription,
+	'scroll-area': scrollAreaDescription,
+	slot: slotDescription,
+	stepper: stepperDescription,
+	theme: themeDescription,
+	'toggle-button': toggleButtonDescription,
+	'toggle-button-group': toggleButtonGroupDescription,
+	tooltip: tooltipDescription,
+	confirmation: confirmationDescription,
+	toast: toastDescription,
 	icons: iconsDescription
 };
 
@@ -84,8 +84,11 @@ const handler = mcpHandler({
 		components: tool(`
 			svelai  is a component library for sveltekit. It provides a set of components that can be used to build web applications with a focus on configuration over markup.
 			Use this tool to get the documentation for a specific component.
-			You will have to know that most of the components should be imported like this svelai/[ComponentName]
-			When avaiable in props 
+			You will have to know that most of the components should be imported like this: 
+			import { ComponentName } from 'svelai/component-name' 
+			(using kebab-case for the package name, e.g., svelai/dialog and using PascalCase for the component name, e.g., Dialog)
+			
+			When available in props 
 			- most of the components are using the following color props : primary, secondary, success, warning, danger, info, surface, contrast.
 			- most of the components are using the following size props : small, medium, large.
 			- most of the components are using the following variant props : solid, outline, soft, ghost, link.

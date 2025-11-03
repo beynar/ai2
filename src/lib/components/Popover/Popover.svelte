@@ -1,16 +1,10 @@
-<script module lang="ts">
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { popoverTheme } from './popover.js';
-	export const setPopoverTheme = setComponentTheme<typeof popoverTheme>('popover');
-	export const usePopoverTheme = useComponentTheme('popover', popoverTheme);
-</script>
-
 <script lang="ts">
 	import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
 	import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 	import { useScrollLock } from '$lib/utils/useScrollLock.svelte.js';
-	import type { PopoverProps } from './popover.js';
+	import type { PopoverProps } from './popover.props.js';
+	import { usePopoverTheme } from './popover.theme.js';
 	import { PopoverState } from './popover.state.svelte.js';
 	import Button from '../Button/Button.svelte';
 	import { fso } from '$lib/transitions/transition.js';

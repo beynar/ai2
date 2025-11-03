@@ -1,6 +1,5 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
-import type { InferComponentTheme } from '$lib/utils/cva.js';
-import { cva } from 'cva';
+import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
 import type { Snippet } from 'svelte';
 import type { FieldState } from './fieldState.svelte.js';
 import type { Sizes } from '$lib/types/theme.js';
@@ -68,7 +67,6 @@ export type InputProps<T extends InputType> = WithSlot<
 		required?: boolean;
 		disabled?: boolean;
 		size?: Sizes;
-		readonly?: boolean;
 		visible?: boolean;
 		// schema?: any;
 		onValidate?: (value: FieldValue<T>) => string[] | boolean;
@@ -95,7 +93,7 @@ export type InputProps<T extends InputType> = WithSlot<
 
 export type FieldProps<T extends InputType> = Omit<
 	InputProps<T>,
-	'type' | 'name' | 'required' | 'disabled' | 'readonly' | 'visible' | 'onValidate' | 'onChange'
+	'type' | 'name' | 'required' | 'disabled' | 'visible' | 'onValidate' | 'onChange'
 > & {
 	as?: string;
 	children: Snippet;

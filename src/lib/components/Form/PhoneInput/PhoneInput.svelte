@@ -1,16 +1,10 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { phoneInputTheme } from '$lib/components/Form/PhoneInput/phoneInput.js';
-	export const setPhoneInputTheme = setComponentTheme<typeof phoneInputTheme>('phoneInput');
-	export const usePhoneInputTheme = useComponentTheme('phoneInput', phoneInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
 	import intlTelInput from 'intl-tel-input';
 	import 'intl-tel-input/build/css/intlTelInput.css';
-	import type { PhoneInputProps } from '$lib/components/Form/PhoneInput/phoneInput.js';
+	import type { PhoneInputProps } from './phoneInput.props.js';
+	import { usePhoneInputTheme } from './phoneInput.theme.js';
 	import { untrack } from 'svelte';
 	import fr from 'intl-tel-input/i18n/fr';
 	import { on } from 'svelte/events';
@@ -31,7 +25,6 @@
 		name,
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		...rest
 	}: PhoneInputProps = $props();
@@ -79,7 +72,6 @@
 			const isValid = country && iti?.isValidNumber();
 			return customErrors || (isValid ? [] : ['Invalid phone number']);
 		},
-		readonly,
 		visible,
 		type: 'phone'
 	});
@@ -124,7 +116,7 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
 		}
 	}}
 	{...rest}
@@ -148,9 +140,8 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled })}
 		disabled={field.disabled}
-		readonly={field.readonly}
 	/>
 </Field>
 

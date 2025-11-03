@@ -4,7 +4,7 @@ The toast function displays non-blocking notification messages to the user. It p
 
 **Usage:**
 \`\`\`typescript
-import { toast } from 'svelai/Toast';
+import { toast } from 'svelai/toast';
 
 // Basic toast with a color variant
 toast.success({

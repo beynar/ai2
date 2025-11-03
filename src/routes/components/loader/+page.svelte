@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { spinnerOverlay } from '$lib/attachments/spinnerOverlay.svelte.js';
-	import { Button } from '$lib/index.js';
+	import Button from '$lib/components/Button/Button.svelte';
+
 	import ComponentCard from '../../ComponentCard.svelte';
 
 	let loadingText = $state('Loading...');
@@ -26,26 +27,3 @@
 {/if}
 
 <Button fullWidth onClick={() => (show = !show)}>Show loader</Button>
-
-<!--
-<ComponentCard title="Accordion Outlined" class="flex !items-start">
-	<div class="w-[300px] my-10 grid gap-10">
-		<AccordionGroup {size} variant="outlined" openedIndices={openedIndex} {items} />
-		<AccordionGroup {size} variant="outlined" splitted openedIndices={openedIndex} {items} />
-
-	</div>
-</ComponentCard>
-
-<ComponentCard title="Accordion Card" class="flex !items-start">
-	<div class="w-[300px] my-10 grid gap-10">
-		<AccordionGroup {size} variant="card" openedIndices={openedIndex} {items} />
-		<AccordionGroup {size} variant="card" splitted openedIndices={openedIndex} {items} />
-		<Accordion
-			{size}
-			variant="card"
-			title="title"
-			description="description"
-			content="Lorem ipsum dolor, sit amet consectetur adipisicing elit."
-		/>
-	</div>
-</ComponentCard> -->

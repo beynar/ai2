@@ -1,15 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { passwordInputTheme } from '$lib/components/Form/PasswordInput/passwordInput.js';
-	export const setPasswordInputTheme =
-		setComponentTheme<typeof passwordInputTheme>('passwordInput');
-	export const usePasswordInputTheme = useComponentTheme('passwordInput', passwordInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { PasswordInputProps } from '$lib/components/Form/PasswordInput/passwordInput.js';
+	import type { PasswordInputProps } from './passwordInput.props.js';
+	import { usePasswordInputTheme } from './passwordInput.theme.js';
 	import ToggleButton from '$lib/components/ToggleButton/ToggleButton.svelte';
 	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { eyeIcon } from '$lib/components/Icons/eye.js';
@@ -24,7 +17,6 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		...rest
 	}: PasswordInputProps = $props();
@@ -64,7 +56,6 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'password'
 	});
@@ -78,7 +69,7 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
 		}
 	}}
 	{...rest}
@@ -100,6 +91,7 @@
 		bind:value={field.value}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled })}
+		disabled={field.disabled}
 	/>
 </Field>

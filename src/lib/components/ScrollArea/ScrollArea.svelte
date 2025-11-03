@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { scrollAreaTheme } from '$lib/components/ScrollArea/scrollArea.js';
-	export const setScrollAreaTheme = setComponentTheme<typeof scrollAreaTheme>('scrollArea');
-	export const useScrollAreaTheme = useComponentTheme('scrollArea', scrollAreaTheme);
-</script>
-
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { ScrollArea } from './scrollArea.svelte.js';
-	import type { ScrollAreaProps } from './scrollArea.ts';
+	import type { ScrollAreaProps } from './scrollArea.props.js';
+	import { useScrollAreaTheme } from './scrollArea.theme.js';
 	import { caretUpDownIcon } from '../Icons/caretUpDown.js';
 	import { caretUpIcon } from '../Icons/caretUp.js';
 	import { caretDownIcon } from '../Icons/caretDown.js';

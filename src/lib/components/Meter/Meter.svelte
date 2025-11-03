@@ -1,12 +1,6 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { meterTheme } from './meter.js';
-	export const setMeterTheme = setComponentTheme<typeof meterTheme>('meter');
-	export const useMeterTheme = useComponentTheme('meter', meterTheme);
-</script>
-
 <script lang="ts">
-	import type { MeterProps, Meter } from './meter.js';
+	import type { MeterProps, Meter } from './meter.props.js';
+	import { useMeterTheme } from './meter.theme.js';
 	import Slot from '../Slot/Slot.svelte';
 	import { useSpringState } from '$lib/utils/spring.svelte.js';
 	import { untrack } from 'svelte';

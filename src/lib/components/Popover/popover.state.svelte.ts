@@ -1,7 +1,7 @@
 import { bind } from '$lib/utils/state.svelte.js';
 import { getContext, mount, onMount, setContext } from 'svelte';
 import { useTheme } from '../Theme/theme.state.svelte.js';
-import type { PopoverProps } from './popover.js';
+import type { PopoverProps } from './popover.props.js';
 import {
 	autoPlacement,
 	computePosition,

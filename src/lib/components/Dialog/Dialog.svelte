@@ -1,40 +1,10 @@
-<script module lang="ts">
-	// declare global {
-	// 	interface Document {
-	// 		addEventListener<K extends keyof ModalTriggerEventMap>(
-	// 			type: K,
-	// 			listener: (this: Document, ev: ModalTriggerEventMap[K]) => void
-	// 		): void;
-	// 		dispatchEvent<K extends keyof ModalTriggerEventMap>(ev: ModalTriggerEventMap[K]): void;
-	// 		removeEventListener<K extends keyof ModalTriggerEventMap>(
-	// 			type: K,
-	// 			listener: (this: Document, ev: ModalTriggerEventMap[K]) => void
-	// 		): void;
-	// 	}
-	// }
-
-	// export const toggleDialog = (id: string, open: boolean) => {
-	// 	document.dispatchEvent(
-	// 		new CustomEvent('open_dialog', {
-	// 			detail: { id, open }
-	// 		})
-	// 	);
-	// };
-
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { dialogTheme } from './dialog.js';
-	export const setDialogTheme = setComponentTheme<typeof dialogTheme>('dialog');
-	export const useDialogTheme = useComponentTheme('dialog', dialogTheme);
-</script>
-
 <script lang="ts">
 	import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
 	import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
-
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 	import { useScrollLock } from '$lib/utils/useScrollLock.svelte.js';
-
-	import type { DialogProps } from './dialog.js';
+	import type { DialogProps } from './dialog.props.js';
+	import { useDialogTheme } from './dialog.theme.js';
 	import { DialogState } from './dialog.state.svelte.js';
 	import Slot from '../Slot/Slot.svelte';
 	import { xIcon } from '../Icons/x.js';

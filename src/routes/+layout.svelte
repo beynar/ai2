@@ -1,7 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-	import Button from '$lib/components/Button/Button.svelte';
-	import Chip from '$lib/components/Chip/Chip.svelte';
 	import { ThemeState, useTheme } from '$lib/components/Theme/theme.state.svelte.js';
 	import Theme from '$lib/components/Theme/Theme.svelte';
 	import { page } from '$app/state';

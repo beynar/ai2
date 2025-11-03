@@ -1,20 +1,9 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { formTheme } from './form.js';
-	export const setFormTheme = setComponentTheme<typeof formTheme>('form');
-	export const useFormTheme = useComponentTheme('form', formTheme);
-</script>
-
 <script lang="ts" generics="I extends FormInputs">
 	import TextInput from '../TextInput/TextInput.svelte';
 	import NumberInput from '../NumberInput/NumberInput.svelte';
-	import type {
-		FormInputs,
-		FormProps,
-		FormSubmitHandler,
-		FormInput,
-		InferFormValue
-	} from './form.js';
+	import type { FormInputs, FormSubmitHandler, FormInput, InferFormValue } from './form.js';
+	import type { FormProps } from './form.props.js';
+	import { useFormTheme } from './form.theme.js';
 	import { useForm } from './formState.svelte.js';
 	import { isFieldVisible, prepareInputProps } from './visibility.js';
 	import TextArea from '../TextArea/TextArea.svelte';
@@ -30,7 +19,7 @@
 	import DateInput from '../DateInput/DateInput.svelte';
 	import FileInput from '../File/FileInput.svelte';
 	import TimeInput from '../TimeInput/TimeInput.svelte';
-	import { Button } from '$lib/index.js';
+	import Button from '$lib/components/Button/Button.svelte';
 	let {
 		inputs,
 		onSubmit,

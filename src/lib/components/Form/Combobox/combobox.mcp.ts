@@ -7,7 +7,7 @@ A searchable dropdown component that supports both static arrays and async optio
 
 \`\`\`svelte
 <script>
-	import Combobox from '$lib/components/Form/Combobox/Combobox.svelte';
+	import { Combobox } from 'svelai/combobox';
 	let value = $state(null);
 	const options = [
 		{ value: 'us', label: 'United States', description: 'North America' },
@@ -62,7 +62,6 @@ A searchable dropdown component that supports both static arrays and async optio
 
 - **required**: \`boolean\` (default: \`false\`)
 - **disabled**: \`boolean\`
-- **readonly**: \`boolean\`
 - **size**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`)
 - **name**: \`string\`
 - **errors**: \`string[] | boolean\` (bindable)

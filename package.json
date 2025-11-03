@@ -1,6 +1,6 @@
 {
 	"name": "svelai",
-	"version": "0.0.47",
+	"version": "0.1.4",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -24,9 +24,6 @@
 	"sideEffects": [
 		"**/*.css"
 	],
-	"main": "./dist/index.js",
-	"svelte": "./dist/index.js",
-	"types": "./dist/index.d.ts",
 	"type": "module",
 	"peerDependencies": {
 		"@sveltejs/kit": "^2.43.5",
@@ -94,95 +91,91 @@
 		"valibot": "^1.1.0"
 	},
 	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
 		"./package.json": "./package.json",
-		"./Confirmation": {
+		"./confirmation": {
 			"types": "./dist/components/Confirmation/index.d.ts",
 			"svelte": "./dist/components/Confirmation/index.js",
 			"default": "./dist/components/Confirmation/index.js"
 		},
-		"./Toast": {
+		"./toast": {
 			"types": "./dist/components/Toast/index.d.ts",
 			"svelte": "./dist/components/Toast/index.js",
 			"default": "./dist/components/Toast/index.js"
 		},
-		"./Combobox": {
+		"./combobox": {
 			"types": "./dist/components/Form/Combobox/index.d.ts",
 			"svelte": "./dist/components/Form/Combobox/index.js",
 			"default": "./dist/components/Form/Combobox/index.js"
 		},
-		"./Form": {
-			"types": "./dist/components/Form/Form/Form.svelte.d.ts",
-			"svelte": "./dist/components/Form/Form/Form.svelte",
-			"default": "./dist/components/Form/Form/Form.svelte"
+		"./form": {
+			"types": "./dist/components/Form/Form/index.d.ts",
+			"svelte": "./dist/components/Form/Form/index.js",
+			"default": "./dist/components/Form/Form/index.js"
 		},
-		"./TimeInput": {
-			"types": "./dist/components/Form/TimeInput/TimeInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/TimeInput/TimeInput.svelte",
-			"default": "./dist/components/Form/TimeInput/TimeInput.svelte"
+		"./time-input": {
+			"types": "./dist/components/Form/TimeInput/index.d.ts",
+			"svelte": "./dist/components/Form/TimeInput/index.js",
+			"default": "./dist/components/Form/TimeInput/index.js"
 		},
-		"./Avatar": {
-			"types": "./dist/components/Avatar/Avatar.svelte.d.ts",
-			"svelte": "./dist/components/Avatar/Avatar.svelte",
-			"default": "./dist/components/Avatar/Avatar.svelte"
+		"./avatar": {
+			"types": "./dist/components/Avatar/index.d.ts",
+			"svelte": "./dist/components/Avatar/index.js",
+			"default": "./dist/components/Avatar/index.js"
 		},
-		"./NumberInput": {
-			"types": "./dist/components/Form/NumberInput/NumberInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/NumberInput/NumberInput.svelte",
-			"default": "./dist/components/Form/NumberInput/NumberInput.svelte"
+		"./number-input": {
+			"types": "./dist/components/Form/NumberInput/index.d.ts",
+			"svelte": "./dist/components/Form/NumberInput/index.js",
+			"default": "./dist/components/Form/NumberInput/index.js"
 		},
-		"./TextInput": {
-			"types": "./dist/components/Form/TextInput/TextInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/TextInput/TextInput.svelte",
-			"default": "./dist/components/Form/TextInput/TextInput.svelte"
+		"./text-input": {
+			"types": "./dist/components/Form/TextInput/index.d.ts",
+			"svelte": "./dist/components/Form/TextInput/index.js",
+			"default": "./dist/components/Form/TextInput/index.js"
 		},
-		"./PasswordInput": {
-			"types": "./dist/components/Form/PasswordInput/Password.svelte.d.ts",
-			"svelte": "./dist/components/Form/PasswordInput/Password.svelte",
-			"default": "./dist/components/Form/PasswordInput/Password.svelte"
+		"./password-input": {
+			"types": "./dist/components/Form/PasswordInput/index.d.ts",
+			"svelte": "./dist/components/Form/PasswordInput/index.js",
+			"default": "./dist/components/Form/PasswordInput/index.js"
 		},
-		"./ToggleButton": {
-			"types": "./dist/components/ToggleButton/ToggleButton.svelte.d.ts",
-			"svelte": "./dist/components/ToggleButton/ToggleButton.svelte",
-			"default": "./dist/components/ToggleButton/ToggleButton.svelte"
+		"./toggle-button": {
+			"types": "./dist/components/ToggleButton/index.d.ts",
+			"svelte": "./dist/components/ToggleButton/index.js",
+			"default": "./dist/components/ToggleButton/index.js"
 		},
-		"./ToggleButtonGroup": {
-			"types": "./dist/components/ToggleButtonGroup/ToggleButtonGroup.svelte.d.ts",
-			"svelte": "./dist/components/ToggleButtonGroup/ToggleButtonGroup.svelte",
-			"default": "./dist/components/ToggleButtonGroup/ToggleButtonGroup.svelte"
+		"./toggle-button-group": {
+			"types": "./dist/components/ToggleButtonGroup/index.d.ts",
+			"svelte": "./dist/components/ToggleButtonGroup/index.js",
+			"default": "./dist/components/ToggleButtonGroup/index.js"
 		},
-		"./Switch": {
-			"types": "./dist/components/Form/Switch/Switch.svelte.d.ts",
-			"svelte": "./dist/components/Form/Switch/Switch.svelte",
-			"default": "./dist/components/Form/Switch/Switch.svelte"
+		"./switch": {
+			"types": "./dist/components/Form/Switch/index.d.ts",
+			"svelte": "./dist/components/Form/Switch/index.js",
+			"default": "./dist/components/Form/Switch/index.js"
 		},
-		"./DateInput": {
-			"types": "./dist/components/Form/DateInput/DateInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/DateInput/DateInput.svelte",
-			"default": "./dist/components/Form/DateInput/DateInput.svelte"
+		"./date-input": {
+			"types": "./dist/components/Form/DateInput/index.d.ts",
+			"svelte": "./dist/components/Form/DateInput/index.js",
+			"default": "./dist/components/Form/DateInput/index.js"
 		},
-		"./FileInput": {
-			"types": "./dist/components/Form/File/FileInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/File/FileInput.svelte",
-			"default": "./dist/components/Form/File/FileInput.svelte"
+		"./file-input": {
+			"types": "./dist/components/Form/File/index.d.ts",
+			"svelte": "./dist/components/Form/File/index.js",
+			"default": "./dist/components/Form/File/index.js"
 		},
-		"./PhoneInput": {
-			"types": "./dist/components/Form/PhoneInput/PhoneInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/PhoneInput/PhoneInput.svelte",
-			"default": "./dist/components/Form/PhoneInput/PhoneInput.svelte"
+		"./phone-input": {
+			"types": "./dist/components/Form/PhoneInput/index.d.ts",
+			"svelte": "./dist/components/Form/PhoneInput/index.js",
+			"default": "./dist/components/Form/PhoneInput/index.js"
 		},
-		"./CalendarPrimitive": {
-			"types": "./dist/components/Form/Calendar/CalendarPrimitive.svelte.d.ts",
-			"svelte": "./dist/components/Form/Calendar/CalendarPrimitive.svelte",
-			"default": "./dist/components/Form/Calendar/CalendarPrimitive.svelte"
+		"./calendar-primitive": {
+			"types": "./dist/components/Form/Calendar/index.d.ts",
+			"svelte": "./dist/components/Form/Calendar/index.js",
+			"default": "./dist/components/Form/Calendar/index.js"
 		},
-		"./Select": {
-			"types": "./dist/components/Form/Select/Select.svelte.d.ts",
-			"svelte": "./dist/components/Form/Select/Select.svelte",
-			"default": "./dist/components/Form/Select/Select.svelte"
+		"./select": {
+			"types": "./dist/components/Form/Select/index.d.ts",
+			"svelte": "./dist/components/Form/Select/index.js",
+			"default": "./dist/components/Form/Select/index.js"
 		},
 		"./tailwind-plugin": {
 			"types": "./dist/tailwind/index.d.ts",
@@ -192,90 +185,110 @@
 			"types": "./dist/tailwind/theme.d.ts",
 			"default": "./dist/tailwind/theme.js"
 		},
-		"./Stepper": {
-			"types": "./dist/components/Stepper/Stepper.svelte.d.ts",
-			"svelte": "./dist/components/Stepper/Stepper.svelte",
-			"default": "./dist/components/Stepper/Stepper.svelte"
+		"./stepper": {
+			"types": "./dist/components/Stepper/index.d.ts",
+			"svelte": "./dist/components/Stepper/index.js",
+			"default": "./dist/components/Stepper/index.js"
 		},
-		"./MultiStepForm": {
-			"types": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts",
-			"svelte": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte",
-			"default": "./dist/components/Form/MultiStepForm/MultiStepForm.svelte"
+		"./multi-step-form": {
+			"types": "./dist/components/Form/MultiStepForm/index.d.ts",
+			"svelte": "./dist/components/Form/MultiStepForm/index.js",
+			"default": "./dist/components/Form/MultiStepForm/index.js"
 		},
-		"./TextArea": {
-			"types": "./dist/components/Form/TextArea/TextArea.svelte.d.ts",
-			"svelte": "./dist/components/Form/TextArea/TextArea.svelte",
-			"default": "./dist/components/Form/TextArea/TextArea.svelte"
+		"./text-area": {
+			"types": "./dist/components/Form/TextArea/index.d.ts",
+			"svelte": "./dist/components/Form/TextArea/index.js",
+			"default": "./dist/components/Form/TextArea/index.js"
 		},
-		"./RadioInput": {
-			"types": "./dist/components/Form/RadioInput/RadioInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/RadioInput/RadioInput.svelte",
-			"default": "./dist/components/Form/RadioInput/RadioInput.svelte"
+		"./radio-input": {
+			"types": "./dist/components/Form/RadioInput/index.d.ts",
+			"svelte": "./dist/components/Form/RadioInput/index.js",
+			"default": "./dist/components/Form/RadioInput/index.js"
 		},
-		"./CheckboxesInput": {
-			"types": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte.d.ts",
-			"svelte": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte",
-			"default": "./dist/components/Form/CheckboxesInput/CheckBoxesInput.svelte"
+		"./checkboxes-input": {
+			"types": "./dist/components/Form/CheckboxesInput/index.d.ts",
+			"svelte": "./dist/components/Form/CheckboxesInput/index.js",
+			"default": "./dist/components/Form/CheckboxesInput/index.js"
 		},
-		"./Theme": {
-			"types": "./dist/components/Theme/Theme.svelte.d.ts",
-			"svelte": "./dist/components/Theme/Theme.svelte",
-			"default": "./dist/components/Theme/Theme.svelte"
+		"./theme": {
+			"types": "./dist/components/Theme/index.d.ts",
+			"svelte": "./dist/components/Theme/index.js",
+			"default": "./dist/components/Theme/index.js"
 		},
-		"./Button": {
-			"types": "./dist/components/Button/Button.svelte.d.ts",
-			"svelte": "./dist/components/Button/Button.svelte",
-			"default": "./dist/components/Button/Button.svelte"
+		"./button": {
+			"types": "./dist/components/Button/index.d.ts",
+			"svelte": "./dist/components/Button/index.js",
+			"default": "./dist/components/Button/index.js"
 		},
-		"./Chip": {
-			"types": "./dist/components/Chip/Chip.svelte.d.ts",
-			"svelte": "./dist/components/Chip/Chip.svelte",
-			"default": "./dist/components/Chip/Chip.svelte"
+		"./chip": {
+			"types": "./dist/components/Chip/index.d.ts",
+			"svelte": "./dist/components/Chip/index.js",
+			"default": "./dist/components/Chip/index.js"
 		},
-		"./Badge": {
-			"types": "./dist/components/Badge/Badge.svelte.d.ts",
-			"svelte": "./dist/components/Badge/Badge.svelte",
-			"default": "./dist/components/Badge/Badge.svelte"
+		"./badge": {
+			"types": "./dist/components/Badge/index.d.ts",
+			"svelte": "./dist/components/Badge/index.js",
+			"default": "./dist/components/Badge/index.js"
 		},
-		"./Meter": {
-			"types": "./dist/components/Meter/Meter.svelte.d.ts",
-			"svelte": "./dist/components/Meter/Meter.svelte",
-			"default": "./dist/components/Meter/Meter.svelte"
+		"./meter": {
+			"types": "./dist/components/Meter/index.d.ts",
+			"svelte": "./dist/components/Meter/index.js",
+			"default": "./dist/components/Meter/index.js"
 		},
 		"./icons/*": {
 			"types": "./dist/components/Icons/*.d.ts",
 			"default": "./dist/components/Icons/*.js"
 		},
-		"./spinnerOverlay": {
+		"./spinner-overlay": {
 			"types": "./dist/attachments/spinnerOverlay.svelte.d.ts",
 			"svelte": "./dist/attachments/spinnerOverlay.svelte.js",
 			"default": "./dist/attachments/spinnerOverlay.svelte.js"
 		},
-		"./Dialog": {
-			"types": "./dist/components/Dialog/Dialog.svelte.d.ts",
-			"svelte": "./dist/components/Dialog/Dialog.svelte",
-			"default": "./dist/components/Dialog/Dialog.svelte"
+		"./dialog": {
+			"types": "./dist/components/Dialog/index.d.ts",
+			"svelte": "./dist/components/Dialog/index.js",
+			"default": "./dist/components/Dialog/index.js"
 		},
-		"./ScrollArea": {
-			"types": "./dist/components/ScrollArea/ScrollArea.svelte.d.ts",
-			"svelte": "./dist/components/ScrollArea/ScrollArea.svelte",
-			"default": "./dist/components/ScrollArea/ScrollArea.svelte"
+		"./scroll-area": {
+			"types": "./dist/components/ScrollArea/index.d.ts",
+			"svelte": "./dist/components/ScrollArea/index.js",
+			"default": "./dist/components/ScrollArea/index.js"
 		},
-		"./Popover": {
-			"types": "./dist/components/Popover/Popover.svelte.d.ts",
-			"svelte": "./dist/components/Popover/Popover.svelte",
-			"default": "./dist/components/Popover/Popover.svelte"
+		"./popover": {
+			"types": "./dist/components/Popover/index.d.ts",
+			"svelte": "./dist/components/Popover/index.js",
+			"default": "./dist/components/Popover/index.js"
 		},
-		"./Tooltip": {
-			"types": "./dist/components/Tooltip/tooltip.svelte.d.ts",
-			"svelte": "./dist/components/Tooltip/tooltip.svelte.js",
-			"default": "./dist/components/Tooltip/tooltip.svelte.js"
+		"./tooltip": {
+			"types": "./dist/components/Tooltip/index.d.ts",
+			"svelte": "./dist/components/Tooltip/index.js",
+			"default": "./dist/components/Tooltip/index.js"
+		},
+		"./accordion": {
+			"types": "./dist/components/Accordion/index.d.ts",
+			"svelte": "./dist/components/Accordion/index.js",
+			"default": "./dist/components/Accordion/index.js"
+		},
+		"./code": {
+			"types": "./dist/components/Code/index.d.ts",
+			"svelte": "./dist/components/Code/index.js",
+			"default": "./dist/components/Code/index.js"
+		},
+		"./button-group": {
+			"types": "./dist/components/ButtonGroup/index.d.ts",
+			"svelte": "./dist/components/ButtonGroup/index.js",
+			"default": "./dist/components/ButtonGroup/index.js"
+		},
+		"./heading": {
+			"types": "./dist/components/Heading/index.d.ts",
+			"svelte": "./dist/components/Heading/index.js",
+			"default": "./dist/components/Heading/index.js"
 		}
 	},
 	"typesVersion": {
 		"*": {
-			"./Form": [
-				"./dist/components/Form/Form/Form.svelte.d.ts"
+			"./form": [
+				"./dist/components/Form/Form/index.d.ts"
 			],
 			"./tailwind-plugin": [
 				"./dist/tailwind/index.d.ts"
@@ -283,41 +296,41 @@
 			"./tailwind-theme": [
 				"./dist/tailwind/theme.d.ts"
 			],
-			"./MultiStepForm": [
-				"./dist/components/Form/MultiStepForm/MultiStepForm.svelte.d.ts"
+			"./multi-step-form": [
+				"./dist/components/Form/MultiStepForm/index.d.ts"
 			],
-			"./Stepper": [
-				"./dist/components/Stepper/Stepper.svelte.d.ts"
+			"./stepper": [
+				"./dist/components/Stepper/index.d.ts"
 			],
-			"./TextArea": [
-				"./dist/components/Form/TextArea/TextArea.svelte.d.ts"
+			"./text-area": [
+				"./dist/components/Form/TextArea/index.d.ts"
 			],
-			"./Theme": [
+			"./theme": [
 				"./dist/components/Theme/Theme.svelte.d.ts"
 			],
-			"./Button": [
-				"./dist/components/Button/Button.svelte.d.ts"
+			"./button": [
+				"./dist/components/Button/index.d.ts"
 			],
-			"./Chip": [
-				"./dist/components/Chip/Chip.svelte.d.ts"
+			"./chip": [
+				"./dist/components/Chip/index.d.ts"
 			],
-			"./Badge": [
-				"./dist/components/Badge/Badge.svelte.d.ts"
+			"./badge": [
+				"./dist/components/Badge/index.d.ts"
 			],
-			"./Meter": [
-				"./dist/components/Meter/Meter.svelte.d.ts"
+			"./meter": [
+				"./dist/components/Meter/index.d.ts"
 			],
 			"./spinnerOverlay": [
 				"./dist/attachments/spinnerOverlay.svelte.d.ts"
 			],
-			"./Dialog": [
-				"./dist/components/Dialog/Dialog.svelte.d.ts"
+			"./dialog": [
+				"./dist/components/Dialog/index.d.ts"
 			],
-			"./ScrollArea": [
-				"./dist/components/ScrollArea/ScrollArea.svelte.d.ts"
+			"./scroll-area": [
+				"./dist/components/ScrollArea/index.d.ts"
 			],
-			"./Popover": [
-				"./dist/components/Popover/Popover.svelte.d.ts"
+			"./popover": [
+				"./dist/components/Popover/index.d.ts"
 			]
 		}
 	}

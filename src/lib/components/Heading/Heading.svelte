@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { HeadingProps } from '$lib/components/Heading/headings.js';
+	import type { HeadingProps } from './heading.props.js';
+	import { heading } from './heading.theme.js';
 	let {
 		class: className = '',
 		underline = false,

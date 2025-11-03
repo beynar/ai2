@@ -1,15 +1,9 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { calendarTheme } from '$lib/components/Form/Calendar/calendar.theme.js';
-	export const setCalendarInputTheme = setComponentTheme<typeof calendarTheme>('calendar');
-	export const useCalendarInputTheme = useComponentTheme('calendar', calendarTheme);
-</script>
-
 <script lang="ts">
-	import type { CalendarInputProps, CalendarType } from './calendarInput.js';
+	import type { CalendarInputProps, CalendarType } from './calendarInput.props.js';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
 	import CalendarPrimitive from './CalendarPrimitive.svelte';
+	import { useCalendarInputTheme } from './calendar.theme.js';
 
 	type T = $$Generic<CalendarType>;
 
@@ -23,7 +17,6 @@
 		name,
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		theme,
 		disabledDates,
@@ -73,7 +66,6 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: (type || 'calendar') as T
 	});

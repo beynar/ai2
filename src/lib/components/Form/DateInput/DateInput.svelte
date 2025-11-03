@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { dateInputTheme } from '$lib/components/Form/DateInput/dateInput.js';
-	export const setDateInputTheme = setComponentTheme<typeof dateInputTheme>('dateInput');
-	export const useDateInputTheme = useComponentTheme('dateInput', dateInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { DateInputProps } from '$lib/components/Form/DateInput/dateInput.js';
+	import type { DateInputProps } from './dateInput.props.js';
+	import { useDateInputTheme } from './dateInput.theme.js';
 	import { Maskito } from '@maskito/core';
 	import { maskitoDateOptionsGenerator } from '@maskito/kit';
 	import { untrack } from 'svelte';
@@ -26,7 +20,6 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		...rest
 	}: DateInputProps = $props();
@@ -65,7 +58,6 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'date'
 	});
@@ -161,7 +153,7 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
 		}
 	}}
 	{...rest}
@@ -175,8 +167,7 @@
 		bind:this={field.node}
 		{placeholder}
 		disabled={field.disabled}
-		readonly={field.readonly}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled })}
 		{@attach maskAction}
 		oninput={handleInput}
 	/>

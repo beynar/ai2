@@ -1,13 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { buttonTheme, type ButtonPrimitiveProps } from '$lib/components/Button/button.js';
-	export const setButtonTheme = setComponentTheme<typeof buttonTheme>('button');
-	export const useButtonTheme = useComponentTheme('button', buttonTheme);
-</script>
-
 <script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
 	import { spinnerOverlay } from '$lib/attachments/spinnerOverlay.svelte.js';
 	import Slot from '../Slot/Slot.svelte';
+	import type { ButtonPrimitiveProps } from './button.props.js';
+	import { useButtonTheme } from './button.theme.js';
 
 	let {
 		as,

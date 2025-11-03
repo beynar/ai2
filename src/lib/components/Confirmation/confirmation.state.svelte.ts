@@ -1,4 +1,4 @@
-import type { ButtonProps } from '../Button/button.js';
+import type { ButtonProps } from '../Button/index.js';
 import type { MaybePromise } from '../Form/Form/form.js';
 
 type Callback = (() => MaybePromise<any>) | undefined;

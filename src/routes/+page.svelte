@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Component from './Component.svelte';
-	import Button, { setButtonTheme } from '$lib/components/Button/Button.svelte';
-	import Chip from '$lib/components/Chip/Chip.svelte';
-	import Badge from '$lib/components/Badge/Badge.svelte';
+	import { Button, setButtonTheme } from '$lib/components/Button/index.js';
 	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 
 	// setButtonTheme({

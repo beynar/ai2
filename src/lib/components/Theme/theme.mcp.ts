@@ -8,7 +8,7 @@ The Theme component provides a global theming system and state management for UI
 \`\`\`svelte
 <!-- +layout.svelte -->
 <script>
-	import { Theme } from '$lib/components/Theme';
+	import { Theme } from 'svelai/theme';
 </script>
 
 <Theme>
@@ -22,7 +22,7 @@ Access theme state using the \`useTheme()\` hook:
 
 \`\`\`svelte
 <script>
-	import { useTheme } from '$lib/components/Theme/theme.state.svelte.js';
+	import { useTheme } from 'svelai/theme';
 	
 	const theme = useTheme();
 </script>
@@ -65,7 +65,7 @@ Access theme state using the \`useTheme()\` hook:
 ### Dark Mode Toggle
 \`\`\`svelte
 <script>
-	import { useTheme } from '$lib/components/Theme/theme.state.svelte.js';
+	import { useTheme } from 'svelai/theme';
 	
 	const theme = useTheme();
 	let colorScheme = $state('light');
@@ -95,7 +95,7 @@ Access theme state using the \`useTheme()\` hook:
 ### Custom Component Themes
 \`\`\`svelte
 <script>
-	import { setButtonTheme } from '$lib/components/Button';
+	import { setButtonTheme } from 'svelai/button';
 	
 	// Override button theme globally
 	setButtonTheme({
@@ -175,8 +175,8 @@ The theme system provides:
 Each component can be themed using its dedicated theme setter:
 
 \`\`\`svelte
-import { setButtonTheme } from '$lib/components/Button';
-import { setDialogTheme } from '$lib/components/Dialog';
+import { setButtonTheme } from 'svelai/button';
+import { setDialogTheme } from 'svelai/dialog';
 
 setButtonTheme({ /* custom theme */ });
 setDialogTheme({ /* custom theme */ });

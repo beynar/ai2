@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { textInputTheme } from '$lib/components/Form/TextInput/textInput.js';
-	export const setTextInputTheme = setComponentTheme<typeof textInputTheme>('textInput');
-	export const useTextInputTheme = useComponentTheme('textInput', textInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { TextInputProps } from '$lib/components/Form/TextInput/textInput.js';
+	import type { TextInputProps } from './textInput.props.js';
+	import { useTextInputTheme } from './textInput.theme.js';
 
 	let {
 		value = $bindable(null),
@@ -20,7 +14,6 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		...rest
 	}: TextInputProps = $props();
@@ -59,7 +52,6 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'text'
 	});
@@ -73,14 +65,13 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
 		}
 	}}
 	{...rest}
 >
 	<input
 		disabled={field.disabled}
-		readonly={field.readonly}
 		data-1p-ignore
 		type="text"
 		{id}
@@ -89,6 +80,6 @@
 		bind:this={field.node}
 		bind:focused={field.focused}
 		{placeholder}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled })}
 	/>
 </Field>

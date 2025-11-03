@@ -7,7 +7,7 @@ The tooltip attachment displays contextual information when hovering over an ele
 
 \`\`\`svelte
 <script>
-	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
+	import { tooltip } from 'svelai/tooltip';
 </script>
 
 <button {@attach tooltip({ content: 'Click to submit' })}>
@@ -34,7 +34,7 @@ The tooltip attachment displays contextual information when hovering over an ele
 ### Basic Text Tooltip
 \`\`\`svelte
 <script>
-	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
+	import { tooltip } from 'svelai/tooltip';
 </script>
 
 <div {@attach tooltip({ content: 'This is helpful information' })}>
@@ -112,7 +112,7 @@ The tooltip attachment displays contextual information when hovering over an ele
 ### With Snippet Content
 \`\`\`svelte
 <script>
-	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
+	import { tooltip } from 'svelai/tooltip';
 </script>
 
 {#snippet richContent()}

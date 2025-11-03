@@ -1,8 +1,7 @@
 import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
 import type { Snippet } from 'svelte';
 import type { FormState } from '../Form/formState.svelte.js';
-import type { FormStep } from './multiStepForm.js';
-import type { MergedMultiStepFormInputs } from './multiStepForm.js';
+import type { FormStep, MergedMultiStepFormInputs } from './multiStepForm.props.js';
 import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 import type { InferFormValue } from '../Form/form.js';
 import { setContext } from 'svelte';

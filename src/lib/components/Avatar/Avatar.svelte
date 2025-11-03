@@ -1,12 +1,6 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { avatarTheme } from './avatar.js';
-	export const setAvatarTheme = setComponentTheme<typeof avatarTheme>('avatar');
-	export const useAvatarTheme = useComponentTheme('avatar', avatarTheme);
-</script>
-
 <script lang="ts" generics="Item extends object">
-	import type { AvatarProps } from './avatar.js';
+	import type { AvatarProps } from './avatar.props.js';
+	import { useAvatarTheme } from './avatar.theme.js';
 	import Slot from '../Slot/Slot.svelte';
 
 	let {

@@ -1,6 +1,5 @@
-import { cva } from 'cva';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import type { InferComponentTheme } from '$lib/utils/cva.js';
+import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
 
 const defaultInput = cva({
 	base: 'py-1 outline-none flex-1 h-full w-full rounded bg-transparent leading-3 text-sm resize-none  autofill:text-contrast-light',

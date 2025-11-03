@@ -1,4 +1,6 @@
 import { cva } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import type { InferComponentTheme } from '$lib/utils/cva.js';
 
 const defaultContainer = cva({
 	base: 'flex flex-col gap-4 p-2 rounded-lg bg-surface-light border border-surface-muted w-full'
@@ -62,3 +64,9 @@ export const calendarTheme = {
 	weekday: defaultWeekday,
 	day: defaultDay
 };
+
+export type CalendarTheme = typeof calendarTheme;
+export type CalendarThemeProps = InferComponentTheme<CalendarTheme>;
+export const setCalendarInputTheme = setComponentTheme<CalendarTheme>('calendar');
+export const useCalendarInputTheme = useComponentTheme('calendar', calendarTheme);
+

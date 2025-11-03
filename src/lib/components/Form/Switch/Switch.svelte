@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { switchInputTheme } from '$lib/components/Form/Switch/switch.js';
-	export const setSwitchInputTheme = setComponentTheme<typeof switchInputTheme>('switchInput');
-	export const useSwitchInputTheme = useComponentTheme('switchInput', switchInputTheme);
-</script>
-
 <script lang="ts">
 	import Field, { useFieldTheme } from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { SwitchInputProps } from '$lib/components/Form/Switch/switch.js';
+	import type { SwitchInputProps } from './switch.props.js';
+	import { useSwitchInputTheme } from './switch.theme.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 
 	let {
@@ -20,7 +14,6 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		size = 'normal',
 		label,
@@ -62,7 +55,6 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'switch'
 	});
@@ -70,12 +62,12 @@
 	const classes = $derived(useSwitchInputTheme(theme));
 	const fieldClasses = $derived(useFieldTheme(theme));
 	const onclick = () => {
-		if (disabled || readonly) return;
+		if (disabled) return;
 		value = !value;
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
-		if (disabled || readonly) return;
+		if (disabled) return;
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
 			value = !value;
@@ -89,7 +81,11 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ size, class: theme?.inputContainer?.base })
+			base: classes.inputContainer({
+				size,
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled
+			})
 		}
 	}}
 	{...rest}
@@ -101,7 +97,6 @@
 		{value}
 		hidden
 		disabled={field.disabled}
-		readonly={field.readonly}
 		type="checkbox"
 	/>
 	<div

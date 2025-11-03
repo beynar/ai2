@@ -10,7 +10,6 @@ type FieldStateStaticOptions<T extends InputType> = {
 	name?: string;
 	required?: boolean;
 	disabled?: boolean;
-	readonly?: boolean;
 	visible?: boolean;
 	onValidate?: (value: FieldValue<T>) => string[] | boolean;
 	onChange?: (value: FieldValue<T>) => void;

@@ -32,7 +32,6 @@
 		name,
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		prefix,
 		suffix,
@@ -79,7 +78,6 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'combobox'
 	});
@@ -386,7 +384,6 @@
 				placeholder={currentOption ? currentOption.label : placeholder}
 				bind:this={field.node}
 				bind:focused={field.focused}
-				{readonly}
 				{disabled}
 				role="combobox"
 				aria-expanded={isOpen}

@@ -1,6 +1,5 @@
-import { cva } from 'cva';
 import type { InputProps } from '../Field/field.js';
-import type { InferComponentTheme } from '$lib/utils/cva.js';
+import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
 
 export type SwitchInputProps = InputProps<'switch'> & {
 	theme?: InferComponentTheme<typeof switchInputTheme> & InputProps<'switch'>['theme'];

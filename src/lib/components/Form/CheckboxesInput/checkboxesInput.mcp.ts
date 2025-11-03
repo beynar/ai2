@@ -40,7 +40,6 @@ The CheckboxesInput component is a multi-selection input that allows users to se
 - **description**: Slot - Helper text below label
 - **required**: boolean (default: false) - Makes field required
 - **disabled**: boolean - Disables all checkboxes
-- **readonly**: boolean - Makes checkboxes read-only
 - **visible**: boolean - Controls field visibility
 - **name**: string - Form field name
 
@@ -182,7 +181,7 @@ The component renders as a fieldset with the following DOM structure:
 ### In a Form
 \`\`\`svelte
 <script>
-	import { Form } from '$lib/components/Form';
+	import { Form } from 'svelai/form';
 	
 	function handleSubmit(data) {
 		console.log('Selected interests:', data.interests);
@@ -257,7 +256,7 @@ The component renders as a fieldset with the following DOM structure:
 ### Complex Options with Rich Labels
 \`\`\`svelte
 <script>
-	import { Badge } from '$lib/components';
+	import { Badge } from 'svelai/badge';
 	
 	let plans = $state([]);
 </script>

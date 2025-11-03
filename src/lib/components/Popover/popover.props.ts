@@ -1,0 +1,34 @@
+import type { Snippet } from 'svelte';
+import type { PopoverState } from './popover.state.svelte.js';
+import type { ResponsiveProps } from '../Theme/theme.js';
+import type { ButtonProps } from '../Button/index.js';
+import type { FSOProps } from '$lib/transitions/transition.js';
+import { type Placement } from '@floating-ui/dom';
+import type { WithAttachments } from '$lib/types/props.js';
+import type { PopoverThemeProps } from './popover.theme.js';
+
+export type PopoverProps = WithAttachments<{
+	id?: string;
+	isOpen?: boolean;
+	onClose?: (popover: PopoverState) => void;
+	onOpen?: (popover: PopoverState) => void;
+	size?: ResponsiveProps<'small' | 'normal' | 'large'>;
+	offset?: number;
+	ref?: HTMLElement | null;
+	position?: ResponsiveProps<Placement>;
+	openOnClick?: boolean;
+	openOnHover?: boolean;
+	hoverDelay?: number;
+	directedTransition?: boolean;
+	transition?: ResponsiveProps<FSOProps>;
+	children?: Snippet<[PopoverState]>;
+	trigger?: Snippet<[PopoverState]> | (ButtonProps & { content?: string }) | false;
+	closeOnClickOutside?: boolean;
+	closeOnEscape?: boolean;
+	closeOnMouseLeave?: boolean;
+	lockScroll?: boolean;
+	class?: string;
+	fitTrigger?: boolean;
+	theme?: PopoverThemeProps;
+}>;
+

@@ -7,12 +7,12 @@ The Dialog component (also known as Modal) displays content in a layer above the
 
 \`\`\`svelte
 <script>
-	let isOpen = $state(false);
+	import { Dialog } from 'svelai/dialog';
+	import { Button } from 'svelai/button';
+		
 </script>
-
-<Button onClick={() => isOpen = true}>Open Dialog</Button>
-
-<Dialog bind:isOpen title="Dialog Title">
+// By default Dialog comes with a button that trigger them, no need to define a callback and a $state
+<Dialog title="Dialog Title">
 	Dialog content goes here
 </Dialog>
 \`\`\`
@@ -22,18 +22,32 @@ The Dialog component (also known as Modal) displays content in a layer above the
 ### Core Props
 - **isOpen**: boolean (bindable) - Controls dialog visibility
 - **id**: string - Unique identifier for the dialog
-- **type**: 'modal' | 'drawer' - Dialog presentation style
+- **type**: 'fullScreen' | 'drawerRight' | 'drawerLeft' | 'drawerBottom' | 'alert' | 'modal' (default: 'modal')
+  - fullScreen: Full screen dialog overlay
+  - drawerRight: Drawer sliding in from the right
+  - drawerLeft: Drawer sliding in from the left
+  - drawerBottom: Drawer sliding in from the bottom
+  - alert: Alert-style dialog
+  - modal: Standard modal dialog
 
-### Content Props
-- **title**: string | Snippet - Dialog title
-- **description**: string | Snippet - Dialog description
-- **children**: Snippet - Main dialog content
+### Layout Props
+- **size**: 'small' | 'normal' | 'large' (default: 'normal')
+  - small: Compact dialog size
+  - normal: Standard dialog size
+  - large: Larger dialog size
 
-### Header/Footer Slots
-- **header**: Snippet - Custom header content
-- **footer**: Snippet - Custom footer content
-- **trigger**: Snippet - Custom trigger button
-- **closeButton**: Snippet - Custom close button
+### Event Props
+- **onClose**: (dialog: DialogState) => void - Called when dialog closes, receives dialog state
+- **onOpen**: (dialog: DialogState) => void - Called when dialog opens, receives dialog state
+
+### Slot Props
+- **title**: string | Snippet<[DialogState]> - Dialog title
+- **description**: string | Snippet<[DialogState]> - Dialog description
+- **children**: Snippet<[DialogState]> - Main dialog content
+- **header**: Snippet<[DialogState]> - Custom header content
+- **footer**: Snippet<[DialogState]> - Custom footer content
+- **trigger**: Snippet<[DialogState]> | (ButtonProps & { content?: string }) - Custom trigger button
+- **closeButton**: Snippet<[DialogState]> - Custom close button
 - **headerProps**: object - Props for header slot
 - **footerProps**: object - Props for footer slot
 - **titleProps**: object - Props for title slot
@@ -45,12 +59,7 @@ The Dialog component (also known as Modal) displays content in a layer above the
 - **closeOnClickOutside**: boolean (default: true) - Close when clicking outside dialog
 - **closable**: boolean (default: true) - Whether dialog can be closed
 
-### Event Props
-- **onClose**: () => void - Called when dialog closes
-- **onOpen**: () => void - Called when dialog opens
-
 ### Visual Props
-- **size**: 'small' | 'normal' | 'large' | 'full' - Dialog size
 - **transition**: TransitionConfig - Custom transition animation
 
 ### Styling Props
@@ -77,23 +86,59 @@ The Dialog component (also known as Modal) displays content in a layer above the
 
 ## Examples
 
-### Basic Dialog
+### More Examples
+
+### A with a custom trigger 
 \`\`\`svelte
+
 <script>
+	import { Dialog } from 'svelai/dialog';
+	import { Button } from 'svelai/button';
+	
 	let isOpen = $state(false);
 </script>
 
-<Button onClick={() => isOpen = true}>Open</Button>
 
 <Dialog bind:isOpen title="Welcome">
 	<p>This is a basic dialog.</p>
+	
+	{#snippet trigger(dialog)}
+		<Button onClick={() => dialog.open()}>Open</Button>
+	{/snippet}
+</Dialog>
+\`\`\`
+
+### A with a custom as button props 
+\`\`\`svelte
+
+<script>
+	import { Dialog } from 'svelai/dialog';
+	import { Button } from 'svelai/button';
+	
+	let isOpen = $state(false);
+</script>
+
+
+<Dialog bind:isOpen title="Welcome"
+trigger={{
+content:"Click me",
+color:"secondary",
+size:"small"
+}}
+>
+	<p>This is a basic dialog.</p>	
 </Dialog>
 \`\`\`
 
 ### With Description
+
 \`\`\`svelte
-<Dialog 
-	bind:isOpen 
+<script>
+	import { Dialog } from 'svelai/dialog';
+	
+</script>
+
+<Dialog 	
 	title="Confirm Action"
 	description="Are you sure you want to continue?"
 >
@@ -102,22 +147,31 @@ The Dialog component (also known as Modal) displays content in a layer above the
 \`\`\`
 
 ### Different Sizes
+
 \`\`\`svelte
-<Dialog bind:isOpen size="small" title="Small">
-	Small dialog content
-</Dialog>
+<script>
+	import { Dialog } from 'svelai/dialog';
+	
+	let isOpen = $state(false);
+</script>
 
-<Dialog bind:isOpen size="large" title="Large">
-	Large dialog content
-</Dialog>
-
-<Dialog bind:isOpen size="full" title="Full Screen">
-	Full screen dialog
-</Dialog>
 \`\`\`
 
-### With Footer Actions
+### Advanced Example
+
 \`\`\`svelte
+<script>
+	import { Dialog } from 'svelai/dialog';
+	import { Button } from 'svelai/button';
+	
+	let isOpen = $state(false);
+	
+	function handleConfirm() {
+		console.log('Confirmed!');
+		isOpen = false;
+	}
+</script>
+
 <Dialog bind:isOpen title="Confirm">
 	Are you sure?
 	
@@ -134,8 +188,44 @@ The Dialog component (also known as Modal) displays content in a layer above the
 </Dialog>
 \`\`\`
 
-### Custom Header
+### Drawer Types
+
 \`\`\`svelte
+<script>
+	import { Dialog } from 'svelai/dialog';
+	
+	
+</script>
+
+<!-- Right drawer -->
+<Dialog type="drawerRight" title="Side Drawer">
+	This slides in from the right
+</Dialog>
+
+<!-- Left drawer -->
+<Dialog type="drawerLeft" title="Left Drawer">
+	This slides in from the left
+</Dialog>
+
+<!-- Bottom drawer -->
+<Dialog type="drawerBottom" title="Bottom Drawer">
+	This slides in from the bottom
+</Dialog>
+
+<!-- Full screen -->
+<Dialog type="fullScreen" title="Full Screen">
+	Full screen dialog content
+</Dialog>
+\`\`\`
+
+### Custom Header
+
+\`\`\`svelte
+<script>
+	import { Dialog } from 'svelai/dialog';
+	import { Icon } from 'svelai/icons';
+</script>
+
 <Dialog bind:isOpen>
 	{#snippet header()}
 		<div class="flex items-center gap-2">
@@ -148,78 +238,36 @@ The Dialog component (also known as Modal) displays content in a layer above the
 </Dialog>
 \`\`\`
 
-### Non-closable Dialog
-\`\`\`svelte
-<Dialog 
-	bind:isOpen 
-	closable={false}
-	closeOnEscape={false}
-	closeOnClickOutside={false}
-	title="Processing"
->
-	<p>Please wait...</p>
-	<Spinner />
-</Dialog>
-\`\`\`
-
-### With Custom Close Button
-\`\`\`svelte
-<Dialog bind:isOpen title="Custom Close">
-	Dialog content
-	
-	{#snippet closeButton()}
-		<Button variant="ghost" squared>
-			<Icon name="x" />
-		</Button>
-	{/snippet}
-</Dialog>
-\`\`\`
-
-### Form Dialog
-\`\`\`svelte
-<script>
-	let isOpen = $state(false);
-	let name = $state('');
-	
-	function handleSubmit() {
-		console.log('Submitted:', name);
-		isOpen = false;
-	}
-</script>
-
-<Dialog bind:isOpen title="Enter Name">
-	<form onsubmit={handleSubmit}>
-		<TextInput bind:value={name} label="Name" />
-		
-		{#snippet footer()}
-			<Button type="submit">Submit</Button>
-		{/snippet}
-	</form>
-</Dialog>
-\`\`\`
 
 ### With Lifecycle Hooks
+
 \`\`\`svelte
+<script>
+	import { Dialog } from 'svelai/dialog';
+	
+	let isOpen = $state(false);
+</script>
+
 <Dialog 
 	bind:isOpen
 	title="Lifecycle"
-	onOpen={() => console.log('Dialog opened')}
-	onClose={() => console.log('Dialog closed')}
+	onOpen={(dialog) => console.log('Dialog opened', dialog)}
+	onClose={(dialog) => console.log('Dialog closed', dialog)}
 >
 	Watch the console
 </Dialog>
 \`\`\`
 
-### Drawer Type
-\`\`\`svelte
-<Dialog 
-	bind:isOpen
-	type="drawer"
-	title="Side Drawer"
->
-	This slides in from the side
-</Dialog>
-\`\`\`
+## State Management
+
+The Dialog component uses a \`DialogState\` instance that is passed to all slot snippets. This state object provides:
+
+- **isOpen**: boolean - Current open state
+- **id**: string - Dialog identifier
+- **type**: DialogType - Current dialog type
+- **size**: Size - Current dialog size
+- **open()**: () => void - Method to open the dialog
+- **close()**: () => void - Method to close the dialog
 
 ## Accessibility
 

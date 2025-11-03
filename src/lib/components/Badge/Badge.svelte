@@ -1,13 +1,7 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { badgeTheme } from './badge.js';
-	export const setBadgeTheme = setComponentTheme<typeof badgeTheme>('badge');
-	export const useBadgeTheme = useComponentTheme('badge', badgeTheme);
-</script>
-
 <script lang="ts">
 	import Slot from '../Slot/Slot.svelte';
-	import type { BadgeProps } from './badge.js';
+	import type { BadgeProps } from './badge.props.js';
+	import { useBadgeTheme } from './badge.theme.js';
 
 	let {
 		position = 'topRight',

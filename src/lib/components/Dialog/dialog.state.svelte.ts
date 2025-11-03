@@ -2,7 +2,7 @@ import { bind } from '$lib/utils/state.svelte.js';
 // import { useTheme } from '$lib/utils/theme.svelte.js';
 import { getContext, onMount, setContext } from 'svelte';
 import { useTheme } from '../Theme/theme.state.svelte.js';
-import type { DialogProps, DialogType } from './dialog.js';
+import type { DialogProps, DialogType } from './dialog.props.js';
 
 interface DialogOptions
 	extends Pick<DialogProps, 'id' | 'type' | 'size' | 'transition' | 'onClose' | 'onOpen'> {

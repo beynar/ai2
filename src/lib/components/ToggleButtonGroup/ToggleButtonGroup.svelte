@@ -1,19 +1,11 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import {
-		toggleButtonGroupTheme,
-		type ToggleButtonGroupProps
-	} from '$lib/components/ToggleButtonGroup/toggleButtonGroup.js';
-	export const setButtonTheme = setComponentTheme<typeof toggleButtonGroupTheme>('buttonGroup');
-	export const useButtonTheme = useComponentTheme('buttonGroup', toggleButtonGroupTheme);
-</script>
-
 <script
 	lang="ts"
 	generics="Buttons extends Record<string, Omit<ToggleButtonProps, 'variant' | 'color' | 'size'>>"
 >
 	import ToggleButton from '../ToggleButton/ToggleButton.svelte';
-	import { type ToggleButtonProps } from '../ToggleButton/toggleButton.js';
+	import { type ToggleButtonProps } from '../ToggleButton/index.js';
+	import type { ToggleButtonGroupProps } from './toggleButtonGroup.props.js';
+	import { useToggleButtonGroupTheme } from './toggleButtonGroup.theme.js';
 
 	let {
 		buttons = $bindable(),
@@ -38,7 +30,7 @@
 		...attachments
 	}: ToggleButtonGroupProps<Buttons> = $props();
 
-	const classes = $derived(useButtonTheme(theme));
+	const classes = $derived(useToggleButtonGroupTheme(theme));
 </script>
 
 <div data-color={color} class={classes.buttonGroup({ className })} {...attachments}>

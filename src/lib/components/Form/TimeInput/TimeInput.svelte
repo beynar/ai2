@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { timeInputTheme } from '$lib/components/Form/TimeInput/timeInput.def.js';
-	export const setTimeInputTheme = setComponentTheme<typeof timeInputTheme>('timeInput');
-	export const useTimeInputTheme = useComponentTheme('timeInput', timeInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { TimeInputProps } from '$lib/components/Form/TimeInput/timeInput.def.js';
+	import type { TimeInputProps } from './timeInput.props.js';
+	import { useTimeInputTheme } from './timeInput.theme.js';
 	import { Maskito } from '@maskito/core';
 	import {
 		maskitoTimeOptionsGenerator,
@@ -33,12 +27,26 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		...rest
 	}: TimeInputProps = $props();
 
 	const id = $props.id();
+
+	const normalizeValue = (value: number) => {
+		return as === 'minuteSinceMidnight'
+			? value * 60000
+			: as === 'secondSinceMidnight'
+				? value * 1000
+				: value * 1;
+	};
+	const denormalizeValue = (value: number) => {
+		return as === 'minuteSinceMidnight'
+			? value / 60000
+			: as === 'secondSinceMidnight'
+				? value / 1000
+				: value / 1;
+	};
 
 	const field = createFieldState({
 		id,
@@ -72,14 +80,15 @@
 		required,
 		name,
 		onValidate: (value) => {
-			const string = maskitoStringifyTime(value, params);
+			const string = maskitoStringifyTime(normalizeValue(value), params);
 			const parsed = maskitoParseTime(string, params);
+			console.log('parsed', parsed);
+			console.log('string', string);
 			if (parsed === 0) {
 				return true;
 			}
 			return onValidate?.(value) || false;
 		},
-		readonly,
 		visible,
 		type: 'time'
 	});
@@ -98,31 +107,11 @@
 			const maskedElement = new Maskito(input, mask);
 
 			if (value && typeof value === 'number') {
-				switch (as) {
-					case 'minuteSinceMidnight':
-						input.value = maskitoStringifyTime(value * 60000, params);
-						break;
-					case 'secondSinceMidnight':
-						input.value = maskitoStringifyTime(value * 1000, params);
-						break;
-					case 'millisecondSinceMidnight':
-						input.value = maskitoStringifyTime(value, params);
-						break;
-				}
+				input.value = maskitoStringifyTime(normalizeValue(value), params);
 			}
 			const off = on(input, 'input', () => {
 				const parsed = maskitoParseTime(input.value, params);
-				switch (as) {
-					case 'minuteSinceMidnight':
-						field.value = parsed / 60000;
-						break;
-					case 'secondSinceMidnight':
-						field.value = parsed / 1000;
-						break;
-					case 'millisecondSinceMidnight':
-						field.value = parsed;
-						break;
-				}
+				field.value = denormalizeValue(parsed);
 			});
 
 			return () => {
@@ -139,7 +128,7 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
 		}
 	}}
 	{...rest}
@@ -151,7 +140,8 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled })}
+		disabled={field.disabled}
 		{@attach maskAction}
 	/>
 </Field>

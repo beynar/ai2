@@ -1,12 +1,10 @@
 <script lang="ts">
 	import Button from '$lib/components/Button/Button.svelte';
-	import MultiStepForm from '$lib/components/Form/MultiStepForm/MultiStepForm.svelte';
-	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.js';
+	import Combobox from '$lib/components/Form/Combobox/Combobox.svelte';
+	import { Form } from '$lib/components/Form/Form/index.js';
+	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.props.js';
 	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
 	import ComponentCard from '../../ComponentCard.svelte';
-	import CheckBoxesInput from '$lib/components/Form/CheckboxesInput/CheckBoxesInput.svelte';
-	import TimeInput from '$lib/components/Form/TimeInput/TimeInput.svelte';
-	import { Form } from '$lib/index.js';
 
 	let items = $state<FormStep[]>(<const>[
 		{
@@ -16,7 +14,7 @@
 				time: {
 					type: 'time',
 					label: 'Time',
-					value: 1439,
+
 					format: 'HH:MM',
 					placeholder: 'HH:MM'
 				},
@@ -291,37 +289,33 @@
 
 <ComponentCard title="Dynamic Field Visibility Example" class="flex !items-start">
 	<div class="my-10 grid w-[800px] gap-10">
+		<Combobox
+			options={[
+				{ label: 'Option 1', value: 'option1' },
+				{ label: 'Option 2', value: 'option2' }
+			]}
+			onChange={(value, option) => {
+				console.log('value', value, option);
+			}}
+		></Combobox>
+
 		<Form
 			bind:value={dynamicFormValue}
 			inputs={{
-				newsletter: {
-					type: 'switch',
-					label: 'Subscribe to Newsletter',
-					description: 'Receive updates and promotions'
+				startTimeMinutes: {
+					type: 'time',
+					label: 'Heure de début',
+
+					value: 814,
+					as: 'minuteSinceMidnight',
+					required: false
 				},
-				combobox: {
-					type: 'combobox',
-					label: 'Combobox',
-					placeholder: 'Select an option',
-					onChange: (value, option) => {},
-					options: [
-						{ label: 'Option 1', value: 'option1' },
-						{ label: 'Option 2', value: 'option2' }
-					]
-				},
-				// Dynamic visibility: show only when newsletter is true
-				emailPreference: {
-					type: 'select',
-					label: 'Email Preference',
-					required: true,
-					value: defaultValue,
-					placeholder: 'Select frequency',
-					options: [
-						{ label: 'Daily', value: 'daily' },
-						{ label: 'Weekly', value: 'weekly' },
-						{ label: 'Monthly', value: 'monthly' }
-					],
-					visible: (value) => value.combobox === 'option1'
+				endTimeMinutes: {
+					type: 'time',
+					label: 'Heure de fin',
+					value: 824,
+					as: 'minuteSinceMidnight',
+					required: false
 				}
 			}}
 			onSubmit={(values) => {

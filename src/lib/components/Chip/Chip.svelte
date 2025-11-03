@@ -1,12 +1,7 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { chipTheme, type ChipProps } from './chip.js';
-	export const setChipTheme = setComponentTheme<typeof chipTheme>('chip');
-	export const useChipTheme = useComponentTheme('chip', chipTheme);
-</script>
-
 <script lang="ts">
 	import Slot from '../Slot/Slot.svelte';
+	import type { ChipProps } from './chip.props.js';
+	import { useChipTheme } from './chip.theme.js';
 	const {
 		color = 'primary',
 		variant = 'solid',

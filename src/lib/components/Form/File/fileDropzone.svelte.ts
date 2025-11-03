@@ -1,12 +1,6 @@
-import {
-	dropTargetForExternal,
-	monitorForExternal
-} from '@atlaskit/pragmatic-drag-and-drop/external/adapter';
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import { containsFiles, getFiles } from '@atlaskit/pragmatic-drag-and-drop/external/file';
-import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled';
 import { fromEvent } from 'file-selector';
 import { untrack } from 'svelte';
+import { on } from 'svelte/events';
 
 export type FileDropzoneState = 'idle' | 'potential' | 'valid' | 'invalid';
 
@@ -62,9 +56,6 @@ export class FileDropzone {
 	constructor(opts: { config: FileDropzoneConfig; disabled?: boolean }) {
 		this.config = opts.config;
 		this.disabled = opts.disabled || false;
-		$effect(() => {
-			this.zoneElement?.setAttribute('data-state', this.state);
-		});
 
 		$effect(() => {
 			const newConfig = opts.config;
@@ -91,31 +82,55 @@ export class FileDropzone {
 		});
 	}
 
-	handleDrop = (event: DragEvent): void => {
+	onDrop = async (event: DragEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
 		if (this.disabled) return;
 		this.state = 'idle';
-		const files = event.dataTransfer?.files;
-		if (files) {
-			this.files = Array.from(files);
+
+		const files = (await fromEvent(event)).filter((file): file is File => file instanceof File);
+		console.log('files', files);
+		if (files.length) {
+			const newFiles = this.getValidFiles(files);
+			console.log('newFiles', newFiles);
+			if (this.config?.mode === 'single') {
+				this.files = newFiles.slice(0, 1);
+			} else {
+				this.files = newFiles.concat(this.files).slice(0, this.config?.maxFiles || 1);
+			}
+
+			this.config?.onChange(this.files);
 		}
 	};
 
-	addNewFiles = (files: File[]): void => {
-		if (this.disabled) return;
-		const newFiles = this.getValidFiles(files);
-
-		if (this.config?.mode === 'single') {
-			// In single mode, replace the files array with the first valid file
-			const maxFiles = this.config?.maxFiles || 1;
-			this.files = newFiles.slice(0, maxFiles);
-		} else {
-			// In multiple mode, append new files to existing list
-			this.files.push(...newFiles);
+	onDragStart = (event: DragEvent) => {
+		if (this.hasFiles(event)) {
+			this.state = 'potential';
 		}
+	};
 
-		this.config?.onChange(this.files);
+	// Native drag handlers
+	onDragOver = (event: DragEvent) => {
+		if (!this.hasFiles(event)) return;
+		event.preventDefault();
+		event.stopPropagation();
+	};
+
+	onDragEnter = async (event: DragEvent) => {
+		if (!this.config || this.disabled || !this.hasFiles(event)) {
+			return;
+		}
+		const files = await fromEvent(event);
+		this.isValid = files.every((file: File | DataTransferItem) => this.matchesAccept(file as File));
+		this.state = this.isValid ? 'valid' : 'invalid';
+	};
+
+	onDragLeave = (event: DragEvent) => {
+		// Only update state if we're actually leaving the dropzone
+		// (not just moving to a child element)
+		if (!this.zoneElement?.contains(event.relatedTarget as Node)) {
+			this.state = 'potential';
+		}
 	};
 
 	removeFile = (file: File): void => {
@@ -128,7 +143,7 @@ export class FileDropzone {
 	getValidFiles = (files: File[]): File[] => {
 		if (!this.config) return [];
 
-		const remainingSlots = this.config.maxFiles - this.files.length;
+		const remainingSlots = this.config.mode === 'single' ? 1 : this.config.maxFiles;
 
 		return (
 			files
@@ -149,11 +164,10 @@ export class FileDropzone {
 		);
 	};
 
-	onDragEnter = async (event: DragEvent): Promise<void> => {
-		if (!this.config || this.disabled) return;
-		const files = await fromEvent(event);
-		this.isValid = files.every((file: File | DataTransferItem) => this.matchesAccept(file as File));
-	};
+	private hasFiles(event: DragEvent): boolean {
+		if (!event.dataTransfer) return false;
+		return Array.from(event.dataTransfer.types).includes('Files');
+	}
 
 	openFileSelector = (e: MouseEvent): void => {
 		const hasClickedAButton = e.composedPath().some((node) => node instanceof HTMLButtonElement);
@@ -165,49 +179,26 @@ export class FileDropzone {
 	};
 
 	zone = (node: HTMLElement) => {
-		this.zoneElement = node;
-		const cleanup = combine(
-			dropTargetForExternal({
-				element: node,
-				canDrop: containsFiles,
-				onDragEnter: () => {
-					this.state = this.isValid ? 'valid' : 'invalid';
-				},
-				onDragLeave: () => {
-					this.state = 'potential';
-				},
-				onDrop: async ({ source }) => {
-					const files = getFiles({ source });
-					if (!files.length) return;
-					this.addNewFiles(files);
-				}
-			}),
-			monitorForExternal({
-				canMonitor: containsFiles,
-				onDragStart: () => {
-					this.state = 'potential';
-					preventUnhandled.start();
-				},
-				onDrop: () => {
-					this.state = 'idle';
-					preventUnhandled.stop();
-				}
-			})
-		);
+		untrack(() => {
+			this.zoneElement = node;
 
-		document.addEventListener('dragenter', this.onDragEnter);
+			// Element-level event listeners
+			const offDragOver = on(node, 'dragover', this.onDragOver);
+			const offDragEnter = on(node, 'dragenter', this.onDragEnter);
+			const offDragLeave = on(node, 'dragleave', this.onDragLeave);
+			const offDrop = on(node, 'drop', this.onDrop);
+			const offGlobalDragStart = on(document, 'dragstart', this.onDragStart);
+			const offClick = on(node, 'click', this.openFileSelector);
 
-		if (this.config?.clickable) {
-			node.addEventListener('click', this.openFileSelector);
-		}
-
-		return {
-			destroy: () => {
-				cleanup();
-				document.removeEventListener('dragenter', this.onDragEnter);
-				node.removeEventListener('click', this.openFileSelector);
-			}
-		};
+			return () => {
+				offDragOver();
+				offDragEnter();
+				offDragLeave();
+				offDrop();
+				offGlobalDragStart();
+				offClick();
+			};
+		});
 	};
 
 	onChange = async (event: Event): Promise<void> => {
@@ -237,12 +228,12 @@ export class FileDropzone {
 	};
 
 	input = (node: HTMLInputElement) => {
-		this.inputElement = node;
-		node.addEventListener('change', this.onChange);
-		return {
-			destroy: () => {
+		untrack(() => {
+			this.inputElement = node;
+			node.addEventListener('change', this.onChange);
+			return () => {
 				node.removeEventListener('change', this.onChange);
-			}
-		};
+			};
+		});
 	};
 }

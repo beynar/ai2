@@ -35,7 +35,6 @@ The Calendar component provides a visual calendar interface for selecting single
 
 ### Behavior Props
 - **disabled**: boolean - Disable entire calendar
-- **readonly**: boolean - Make calendar read-only
 
 ### Event Props
 - **onChange**: (value: Date | DateRange) => void - Called when date selected

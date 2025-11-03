@@ -6,6 +6,10 @@ The Accordion component provides an interactive collapsible container for organi
 ## Basic Usage
 
 \`\`\`svelte
+<script>
+	import { Accordion } from 'svelai/accordion';
+</script>
+
 <Accordion 
 	items={[
 		{ title: 'Section 1', content: 'Content 1' },
@@ -22,42 +26,49 @@ The Accordion component provides an interactive collapsible container for organi
 - **contentKey**: string - Key to extract content from items (default: 'content')
 - **descriptionKey**: string - Key to extract description from items (default: 'description')
 
-### Behavior Props
-- **oneAtATime**: boolean (default: true) - Whether only one item can be expanded at a time
-- **onToggle**: (item: Item, isOpen: boolean) => void - Callback when item is toggled
-
-### Visual Props
-- **variant**: 'classic' | 'minimal' | 'bordered' (default: 'classic')
+### Layout Props
+- **variant**: 'classic' | 'card' | 'outlined' (default: 'classic')
   - classic: Traditional accordion with borders
-  - minimal: Clean design with minimal styling
-  - bordered: Each item has visible borders
+  - card: Card-style design
+  - outlined: Each item has visible borders
 
-- **icon**: 'chevron' | 'math' | Snippet (default: 'math')
-  - chevron: Down chevron that rotates
-  - math: Plus/minus icon
-  - Custom snippet for custom icons
+- **size**: 'small' | 'normal' | 'large' (default: 'normal')
+  - small: Compact accordion items
+  - normal: Standard accordion items
+  - large: Larger accordion items
 
-- **size**: 'small' | 'normal' | 'large' - Size of the accordion items
-- **splitted**: boolean - Adds spacing between accordion items
+- **splitted**: boolean (default: false) - Adds spacing between accordion items
 
-### Content Slots
+### Event Props
+- **onToggle**: (options: { item: Item; index: number; isOpen: boolean }) => void - Callback when item is toggled
+
+### Slot Props
 - **actions**: Snippet - Additional actions in header
 - **title**: Snippet - Custom title rendering
 - **description**: Snippet - Custom description rendering
 - **content**: Snippet - Custom content rendering
 - **icon**: Snippet - Custom icon rendering
-
-### Slot Props
 - **actionsProps**: object - Props passed to actions slot
 - **iconProps**: object - Props passed to icon slot
 - **titleProps**: object - Props passed to title slot
 - **descriptionProps**: object - Props passed to description slot
 - **contentProps**: object - Props passed to content slot
 
+### Behavior Props
+- **oneAtATime**: boolean (default: true) - Whether only one item can be expanded at a time
+
+### Visual Props
+- **icon**: 'chevron' | 'math' | Snippet | false (default: 'math')
+  - chevron: Down chevron that rotates
+  - math: Plus/minus icon
+  - Custom snippet for custom icons
+  - false: Hide icon
+
+- **transitions**: SlideTransitionProps - Transition configuration for accordion content
+
 ### Styling Props
 - **class**: string - Additional CSS classes
 - **theme**: ComponentTheme - Custom theme overrides
-- **transitions**: boolean - Enable/disable transitions
 
 ## Structure
 
@@ -78,9 +89,12 @@ The Accordion component provides an interactive collapsible container for organi
 
 ## Examples
 
-### Basic Accordion
+### Basic Example
+
 \`\`\`svelte
 <script>
+	import { Accordion } from 'svelai/accordion';
+	
 	let items = [
 		{ title: 'What is Svelte?', content: 'Svelte is a radical new approach to building user interfaces.' },
 		{ title: 'Why use Svelte?', content: 'Svelte offers better performance and smaller bundle sizes.' }
@@ -91,16 +105,30 @@ The Accordion component provides an interactive collapsible container for organi
 \`\`\`
 
 ### Multiple Expanded Items
+
 \`\`\`svelte
+<script>
+	import { Accordion } from 'svelai/accordion';
+	
+	let items = [
+		{ title: 'Section 1', content: 'Content 1' },
+		{ title: 'Section 2', content: 'Content 2' }
+	];
+</script>
+
 <Accordion 
 	{items}
 	oneAtATime={false}
 />
 \`\`\`
 
-### With Descriptions
+### Advanced Example
+
 \`\`\`svelte
 <script>
+	import { Accordion } from 'svelai/accordion';
+	import { Icon } from 'svelai/icons';
+	
 	let items = [
 		{ 
 			title: 'Getting Started',
@@ -114,14 +142,38 @@ The Accordion component provides an interactive collapsible container for organi
 \`\`\`
 
 ### Different Variants
+
 \`\`\`svelte
+<script>
+	import { Accordion } from 'svelai/accordion';
+	
+	let items = [
+		{ title: 'Item 1', content: 'Content 1' }
+	];
+</script>
+
+<!-- Classic variant -->
 <Accordion variant="classic" {items} />
-<Accordion variant="minimal" {items} />
-<Accordion variant="bordered" {items} />
+
+<!-- Card variant -->
+<Accordion variant="card" {items} />
+
+<!-- Outlined variant -->
+<Accordion variant="outlined" {items} />
 \`\`\`
 
 ### Different Icons
+
 \`\`\`svelte
+<script>
+	import { Accordion } from 'svelai/accordion';
+	import { Icon } from 'svelai/icons';
+	
+	let items = [
+		{ title: 'Section 1', content: 'Content 1' }
+	];
+</script>
+
 <!-- Chevron icon -->
 <Accordion icon="chevron" {items} />
 
@@ -137,8 +189,11 @@ The Accordion component provides an interactive collapsible container for organi
 \`\`\`
 
 ### With Custom Keys
+
 \`\`\`svelte
 <script>
+	import { Accordion } from 'svelai/accordion';
+	
 	let faqs = [
 		{ question: 'How to install?', answer: 'Run npm install...' }
 	];
@@ -152,19 +207,36 @@ The Accordion component provides an interactive collapsible container for organi
 \`\`\`
 
 ### Splitted Layout
+
 \`\`\`svelte
+<script>
+	import { Accordion } from 'svelai/accordion';
+	
+	let items = [
+		{ title: 'Section 1', content: 'Content 1' },
+		{ title: 'Section 2', content: 'Content 2' }
+	];
+</script>
+
 <Accordion 
 	{items}
 	splitted
-	variant="bordered"
+	variant="outlined"
 />
 \`\`\`
 
 ### With Event Handler
+
 \`\`\`svelte
 <script>
-	function handleToggle(item, isOpen) {
-		console.log(\`Item \${item.title} is now \${isOpen ? 'open' : 'closed'}\`);
+	import { Accordion } from 'svelai/accordion';
+	
+	let items = [
+		{ title: 'Section 1', content: 'Content 1' }
+	];
+	
+	function handleToggle({ item, index, isOpen }) {
+		console.log(\`Item \${item.title} at index \${index} is now \${isOpen ? 'open' : 'closed'}\`);
 	}
 </script>
 
@@ -175,7 +247,16 @@ The Accordion component provides an interactive collapsible container for organi
 \`\`\`
 
 ### Custom Content Rendering
+
 \`\`\`svelte
+<script>
+	import { Accordion } from 'svelai/accordion';
+	
+	let items = [
+		{ title: 'Section 1', content: 'Content 1' }
+	];
+</script>
+
 <Accordion {items}>
 	{#snippet title({ item })}
 		<strong>{item.title}</strong>
