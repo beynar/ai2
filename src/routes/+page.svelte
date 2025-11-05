@@ -10,7 +10,7 @@
 	// });
 </script>
 
-<button data-color="danger" class="bg-color"> eaz </button>
+<button data-color="danger" class="border"> eaz </button>
 
 <div class="bg-primary/20 m-10 size-20 shadow"></div>
 

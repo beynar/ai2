@@ -6,8 +6,8 @@
 </script>
 
 <script lang="ts">
-	import type { CalendarPrimitiveProps, CalendarType } from './calendarInput.js';
-	import type { Event } from './calendarInput.js';
+	import type { CalendarPrimitiveProps, CalendarType } from './calendarInput.props.js';
+	import type { Event } from './useCalendar.svelte.js';
 	import { CalendarState } from './useCalendar.svelte.js';
 	import Button from '../../Button/Button.svelte';
 	import Slot from '../../Slot/Slot.svelte';
@@ -36,16 +36,36 @@
 	}: CalendarPrimitiveProps<CalendarEvent, T> = $props();
 
 	const calendar = new CalendarState<CalendarEvent, T>({
-		events: (events || []) as CalendarEvent[],
-		disabledDates,
-		minDate,
-		maxDate,
-
-		view,
-		weekStartsOnMonday,
-		type: (type || 'calendar') as T,
-		onChange: onChange as any,
-		value: value as any
+		get events() {
+			return events || [];
+		},
+		get disabledDates() {
+			return disabledDates;
+		},
+		get minDate() {
+			return minDate;
+		},
+		get maxDate() {
+			return maxDate;
+		},
+		get view() {
+			return view;
+		},
+		get weekStartsOnMonday() {
+			return weekStartsOnMonday;
+		},
+		get type() {
+			return (type || 'calendar') as T;
+		},
+		get onChange() {
+			return onChange as any;
+		},
+		get value() {
+			return value as any;
+		},
+		set value(v: any) {
+			value = v;
+		}
 	});
 
 	const buttonProps = $derived(
@@ -60,16 +80,6 @@
 	);
 
 	const classes = $derived(useCalendarTheme(theme));
-	// $effect(() => {
-	// 	if (type === 'calendar-range' && Array.isArray(value)) {
-	// 		calendar.setRange(value[0], value[1]);
-	// 	} else if (typeof value === 'object' && value !== null) {
-	// 		// Handle case where value might be an array but not detected as such
-	// 		calendar.setRange(null, null);
-	// 	} else {
-	// 		calendar.setRange(value as Date | null, null);
-	// 	}
-	// });
 	if (calendar.rangeStart) {
 		const monthOfValue = calendar.rangeStart.getMonth();
 

@@ -1,18 +1,18 @@
 @import 'tailwindcss';
 
-@plugin "./lib/tailwind/index" {
+@plugin './lib/tailwind/index' {
 	default: true;
 	eas: true;
 }
 
-@plugin "./lib/tailwind/theme" {
+@plugin './lib/tailwind/theme' {
 	name: light;
 	default: true;
 	radius: normal;
 	spacing: large;
 	colorscheme: light;
 }
-@plugin "./lib/tailwind/theme" {
+@plugin './lib/tailwind/theme' {
 	name: dark;
 	radius: normal;
 	spacing: large;

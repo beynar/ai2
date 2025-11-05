@@ -1,4 +1,4 @@
-import plugin from 'tailwindcss/plugin';
+import plugin, { type Config } from 'tailwindcss/plugin';
 import { colors, variants } from './colors.js';
 import type { ThemeOptions } from './theme.js';
 import { getSpinner } from './spinnner.js';
@@ -105,6 +105,19 @@ export default plugin.withOptions<ThemeOptions>(
 
 			matchUtilities(
 				{
+					border: (value) => {
+						console.log('border', { value });
+						return {
+							border: value ? value : 'var(--color-surface-muted)'
+						};
+					}
+				},
+				{
+					values: theme('border')
+				}
+			);
+			matchUtilities(
+				{
 					raised: (value) => {
 						if (value !== 'none') {
 							const valueWithoutRgb = value.replace(/rgb\((.*?)\)/g, 'var(--tw-shadow-color)');
@@ -131,13 +144,17 @@ export default plugin.withOptions<ThemeOptions>(
 			);
 		};
 	},
-	(options) => ({
-		theme: {
-			extend: {
-				keyframes: {
-					...getSpinner(options).keyframes
+	(options) =>
+		({
+			theme: {
+				extend: {
+					keyframes: {
+						...getSpinner(options).keyframes
+					},
+					borderColor: {
+						DEFAULT: 'var(--color-surface-muted)'
+					}
 				}
 			}
-		}
-	})
+		}) satisfies Config
 );
