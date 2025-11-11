@@ -1,5 +1,6 @@
 import type { Colors } from '$lib/types/theme.js';
 import { cva, setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import { untrack } from 'svelte';
 
 export type SpinnerOverlayOptions = {
 	text?: string;
@@ -135,7 +136,8 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 					{ opacity: 0, transform: 'translateY(-10px)' }
 				],
 				{
-					duration: 200
+					duration: 200,
+					direction: 'alternate'
 				}
 			).onfinish = () => {
 				textElement!.textContent = opts.text || '';
@@ -145,7 +147,8 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 						{ opacity: 1, transform: 'translateY(0)' }
 					],
 					{
-						duration: 200
+						duration: 200,
+						direction: 'alternate'
 					}
 				);
 				textAnimation!.onfinish = () => {
@@ -178,7 +181,8 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 
 			if (!parentAnimation && !mounted) {
 				parentAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
-					duration: 200
+					duration: 200,
+					direction: 'alternate'
 				});
 			} else if (parentAnimation) {
 				parentAnimation.reverse();
@@ -193,7 +197,7 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 			} else {
 				const overlay = getSpinnerOverlay(node);
 				if (overlay) {
-					parentAnimation = node.animate([{ opacity: 1 }, { opacity: 0 }], {
+					parentAnimation = overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
 						duration: 200
 					});
 					parentAnimation.onfinish = () => {
@@ -205,10 +209,13 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 	};
 
 	return (node: HTMLElement) => {
-		setup(node);
-
-		return () => {
-			destroy(node);
-		};
+		opts.loading;
+		opts.text;
+		return untrack(() => {
+			setup(node);
+			return () => {
+				destroy(node);
+			};
+		});
 	};
 };

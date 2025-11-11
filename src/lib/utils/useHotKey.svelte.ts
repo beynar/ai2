@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import { on } from 'svelte/events';
 
 export type HotKeyModifier = 'mod' | 'alt' | 'ctrl' | 'shift';
@@ -101,8 +102,6 @@ export const useHotKey = (opts: HotKeysOptions) => {
 
 	const isHotkey = (event: KeyboardEvent) => {
 		const combination = getCombination(event);
-		console.log(combination);
-
 		const hotKey = opts.hotKeys[combination];
 		if (hotKey) {
 			event.preventDefault();
@@ -125,10 +124,9 @@ export const useHotKey = (opts: HotKeysOptions) => {
 	});
 
 	return {
-		get reference() {
+		reference: (ref: HTMLElement) => {
 			if (!opts.isActive) return null;
-
-			return (ref: HTMLElement) => {
+			return untrack(() => {
 				ref.tabIndex = 0;
 				if (!opts.isActive) return;
 				offRef?.();
@@ -139,7 +137,7 @@ export const useHotKey = (opts: HotKeysOptions) => {
 					off?.();
 					offRef = null;
 				};
-			};
+			});
 		}
 	};
 };

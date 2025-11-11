@@ -1,6 +1,6 @@
 import type { HandleServerError } from '@sveltejs/kit';
 import { mcpHandler, resource, tool, prompt } from 'svelte-mcp/mcp';
-import * as valibot from 'valibot';
+
 import * as z from 'zod/v4';
 import { accordionDescription } from '$lib/components/Accordion/accordion.mcp.js';
 import { avatarDescription } from '$lib/components/Avatar/avatar.mcp.js';
@@ -39,6 +39,11 @@ import { checkboxesInputDescription } from '$lib/components/Form/CheckboxesInput
 import { iconsDescription } from '$lib/components/Icons/icons.mcp.js';
 import { confirmationDescription } from '$lib/components/Confirmation/confirmation.mcp.js';
 import { toastDescription } from '$lib/components/Toast/toast.mcp.js';
+import { carouselDescription } from '$lib/components/Carousel/carousel.mcp.js';
+import { menuDescription } from '$lib/components/Menu/menu.mcp.js';
+import { popupMenuDescription } from '$lib/components/PopupMenu/popupMenu.mcp.js';
+import { menuOptionDescription } from '$lib/components/MenuOption/menuOption.mcp.js';
+import { separatorDescription } from '$lib/components/Separator/separator.mcp.js';
 
 const components = {
 	accordion: accordionDescription,
@@ -76,7 +81,12 @@ const components = {
 	tooltip: tooltipDescription,
 	confirmation: confirmationDescription,
 	toast: toastDescription,
-	icons: iconsDescription
+	icons: iconsDescription,
+	carousel: carouselDescription,
+	menu: menuDescription,
+	'popup-menu': popupMenuDescription,
+	'menu-option': menuOptionDescription,
+	separator: separatorDescription
 };
 
 const handler = mcpHandler({

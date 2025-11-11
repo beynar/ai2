@@ -5,9 +5,9 @@ export const defaultPopover = cva({
 	base: 'z-[+50] fixed bg-surface-light w-fit rounded-large raised isolate h-fit ',
 	variants: {
 		size: {
-			small: 'max-w-xs w-full p-2',
-			normal: 'max-w-sm w-full p-3',
-			large: 'max-w-md w-full p-4'
+			small: 'max-w-3xs w-full p-2',
+			normal: 'max-w-xs w-full p-3',
+			large: 'max-w-sm w-full p-4'
 		}
 	}
 });
@@ -20,4 +20,3 @@ export type PopoverTheme = typeof popoverTheme;
 export type PopoverThemeProps = InferComponentTheme<PopoverTheme>;
 export const setPopoverTheme = setComponentTheme<PopoverTheme>('popover');
 export const usePopoverTheme = useComponentTheme('popover', popoverTheme);
-

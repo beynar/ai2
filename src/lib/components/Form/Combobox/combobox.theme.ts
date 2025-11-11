@@ -5,9 +5,9 @@ const defaultInput = cva({
 	base: 'py-1 outline-none flex-1 h-full w-full rounded bg-transparent leading-3 text-sm resize-none  autofill:text-contrast-light',
 	variants: {
 		size: {
-			small: 'text-sm',
-			medium: 'text-base',
-			large: 'text-lg'
+			small: 'text-xs placeholder:text-xs',
+			normal: 'text-sm placeholder:text-sm',
+			large: 'text-base placeholder:text-base'
 		},
 		hasValue: {
 			true: 'placeholder:text-contrast',
@@ -21,7 +21,7 @@ const defaultInputContainer = cva({
 	variants: {
 		size: {
 			small: 'h-4',
-			medium: 'h-6',
+			normal: 'h-6',
 			large: 'h-8'
 		}
 	}
@@ -32,7 +32,7 @@ const defaultLoading = cva({
 	variants: {
 		size: {
 			small: 'text-xs p-1.5',
-			medium: 'text-sm p-2',
+			normal: 'text-sm p-2',
 			large: 'text-base p-2.5'
 		}
 	}
@@ -43,7 +43,7 @@ const defaultError = cva({
 	variants: {
 		size: {
 			small: 'text-xs p-1.5',
-			medium: 'text-sm p-2',
+			normal: 'text-sm p-2',
 			large: 'text-base p-2.5'
 		}
 	}
@@ -54,7 +54,7 @@ const defaultNoOptions = cva({
 	variants: {
 		size: {
 			small: 'text-xs p-1.5',
-			medium: 'text-sm p-2',
+			normal: 'text-sm p-2',
 			large: 'text-base p-2.5'
 		}
 	}
@@ -79,7 +79,7 @@ const defaultOptionLabel = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			medium: 'text-sm',
+			normal: 'text-sm',
 			large: 'text-base'
 		}
 	}
@@ -90,7 +90,7 @@ const defaultOptionDescription = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			medium: 'text-xs',
+			normal: 'text-xs',
 			large: 'text-sm'
 		}
 	}

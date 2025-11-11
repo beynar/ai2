@@ -31,7 +31,7 @@ const defaultRadioInputItem = cva({
 		{
 			mode: 'card',
 			checked: true,
-			class: 'ring-2 ring-contrast'
+			class: 'ring-2 ring-primary bg-primary-muted'
 		}
 	]
 });
@@ -41,7 +41,7 @@ const defaultRadioInputItemLabel = cva({
 });
 
 const defaultRadioInputItemTrack = cva({
-	base: 'size-6 origin-center content-[""] bg-surface-light border border-surface-muted rounded-full absolute top-0 left-2 right-0 bottom-0 my-auto',
+	base: 'size-5 origin-center content-[""] bg-surface-light border border-surface-muted rounded-full absolute top-0 left-2 right-0 bottom-0 my-auto',
 	variants: {
 		checked: {
 			true: '',
@@ -59,10 +59,10 @@ const defaultRadioInputItemTrack = cva({
 });
 
 const defaultRadioInputItemThumb = cva({
-	base: 'size-6 my-auto origin-center radio bg-contrast rounded-full transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[40%] opacity-0',
+	base: 'size-5 my-auto origin-center radio bg-contrast rounded-full transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[40%] opacity-0',
 	variants: {
 		checked: {
-			true: 'bg-contrast scale-[60%] opacity-100',
+			true: 'bg-primary scale-[60%] opacity-100',
 			false: ''
 		},
 		mode: {

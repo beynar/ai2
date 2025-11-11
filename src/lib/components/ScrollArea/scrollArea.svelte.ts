@@ -97,7 +97,7 @@ export class ScrollArea {
 	hoover = $derived(
 		useHoverAction({
 			delay: this.delay,
-			isActive: this.type === 'hover'
+			isActive: () => this.type === 'hover'
 		})
 	);
 
@@ -206,7 +206,7 @@ export class ScrollArea {
 
 		// Observe viewport resize to update scroll state
 		const resizeObserver = useResizeObserver({
-			isActive: true,
+			isActive: () => true,
 			callback: () => {
 				this.viewportDimensions = {
 					width: element.clientWidth,
@@ -214,7 +214,7 @@ export class ScrollArea {
 				};
 			}
 		});
-		const offResize = resizeObserver.attachment?.(element);
+		const offResize = resizeObserver.reference?.(element);
 
 		return () => {
 			offScroll();
@@ -228,7 +228,7 @@ export class ScrollArea {
 
 		// Observe content resize to update scroll state
 		const resizeObserver = useResizeObserver({
-			isActive: true,
+			isActive: () => true,
 			callback: () => {
 				this.contentDimensions = {
 					width: element.scrollWidth,
@@ -236,7 +236,7 @@ export class ScrollArea {
 				};
 			}
 		});
-		const offResize = resizeObserver.attachment?.(element);
+		const offResize = resizeObserver.reference?.(element);
 
 		return () => {
 			offWheel();

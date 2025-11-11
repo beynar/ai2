@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
 
 export const defaultDialog = cva({
-	base: 'z-[+50] fixed py-4 left-0 flex bg-surface-fg/20 right-0 top-0 bottom-0 w-window isolate h-window p-4',
+	base: 'z-[+50] fixed py-4 left-0 flex bg-surface-fg/20 right-0 top-0 bottom-0 w-window isolate h-window p-6',
 	variants: {
 		size: {
 			small: 'max-w-screen max-h-screen',
@@ -64,7 +64,7 @@ export const defaultDialogFooter = cva({
 });
 
 export const defaultDialogCloseButton = cva({
-	base: 'ml-auto rounded-full absolute top-0 right-0',
+	base: 'ml-auto rounded-full absolute top-1 right-1 p-1',
 	variants: {
 		size: {
 			small: '',

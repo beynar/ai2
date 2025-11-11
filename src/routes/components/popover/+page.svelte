@@ -65,7 +65,7 @@
 	>
 
 	<Popover
-		closeOnMouseLeave={false}
+		closeOnMouseLeave={true}
 		openOnHover
 		hoverDelay={1000}
 		trigger={{
@@ -80,6 +80,7 @@
 		</div>
 	</Popover>
 	<Popover
+		closeOnEscape
 		position="top"
 		trigger={{
 			content: 'top',

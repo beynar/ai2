@@ -88,6 +88,9 @@ export default plugin.withOptions<ThemeOptions>(
 				},
 				':has([data-badge])': {
 					position: 'relative'
+				},
+				':focus': {
+					outline: 'none'
 				}
 			});
 			addComponents({
@@ -102,6 +105,11 @@ export default plugin.withOptions<ThemeOptions>(
 			addVariant('not-first-child', '& > *:not(:first-child)');
 			addVariant('not-last-child', '& > *:not(:last-child)');
 			addVariant('not-first-not-last-child', '& > *:not(:first-child):not(:last-child)');
+			addVariant('active', ['&:active', '&[data-active="true"]']);
+			addVariant('inactive', ['&:not(:active)', '&[data-active="false"]']);
+
+			addVariant('highlight', ['&[data-highlighted="true"]']);
+			addVariant('disabled', ['&:disabled', '&[data-disabled="true"]']);
 
 			matchUtilities(
 				{

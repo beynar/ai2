@@ -19,7 +19,7 @@ const defaultCheckBoxesInputItem = cva({
 			normal: ''
 		},
 		checked: {
-			true: 'bg-primary-lighter/20',
+			true: '',
 			false: ''
 		},
 		disabled: {
@@ -31,7 +31,7 @@ const defaultCheckBoxesInputItem = cva({
 		{
 			mode: 'card',
 			checked: true,
-			class: 'ring-2 ring-primary'
+			class: 'ring-2 ring-primary bg-primary-muted'
 		}
 	]
 });
@@ -41,7 +41,7 @@ const defaultCheckBoxesInputItemLabel = cva({
 });
 
 const defaultCheckBoxesInputItemTrack = cva({
-	base: 'size-6 origin-center content-[""] bg-surface-light border border-surface-muted rounded absolute top-0 left-2 right-0 bottom-0 my-auto',
+	base: 'size-5 origin-center content-[""] bg-surface-light border border-surface-muted rounded absolute top-0 left-2 right-0 bottom-0 my-auto',
 	variants: {
 		checked: {
 			true: '',
@@ -59,7 +59,7 @@ const defaultCheckBoxesInputItemTrack = cva({
 });
 
 const defaultCheckBoxesInputItemThumb = cva({
-	base: `size-6 my-auto origin-center radio bg-contrast rounded flex items-center justify-center transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[85%] opacity-0 
+	base: `size-5 my-auto origin-center radio bg-contrast rounded flex items-center justify-center transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[85%] opacity-0 
 	stroke-surface [&>svg]:fill-surface p-1
 	`,
 	variants: {

@@ -1,5 +1,5 @@
 type ScrollLockOptions = {
-	isActive: boolean;
+	isActive: () => boolean;
 	scroller?: HTMLElement;
 };
 export const useScrollLock = (opts: ScrollLockOptions) => {
@@ -24,7 +24,7 @@ export const useScrollLock = (opts: ScrollLockOptions) => {
 	};
 
 	$effect(() => {
-		if (opts.isActive && !locked) {
+		if (opts.isActive() && !locked) {
 			lock(true);
 		} else if (locked) {
 			lock(false);

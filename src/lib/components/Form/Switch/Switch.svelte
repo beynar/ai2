@@ -18,6 +18,7 @@
 		size = 'normal',
 		label,
 		labelProps,
+		onChange,
 		...rest
 	}: SwitchInputProps = $props();
 
@@ -44,7 +45,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			// console.log('onChange', v);
+			onChange?.(v);
 		},
 		get disabled() {
 			return disabled;

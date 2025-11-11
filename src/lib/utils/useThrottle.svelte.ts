@@ -1,12 +1,12 @@
+import { onDestroy } from 'svelte';
+
 export const useThrottle = <T extends any[]>(callback?: (...args: T[]) => void, delay?: number) => {
 	let timeout: ReturnType<typeof setTimeout>;
 	let lastCall = 0;
 	let lastArgs: T[] = [];
 
-	$effect(() => {
-		return () => {
-			clearTimeout(timeout);
-		};
+	onDestroy(() => {
+		clearTimeout(timeout);
 	});
 	return (...args: T[]) => {
 		const now = Date.now();

@@ -1,55 +1,28 @@
 <script lang="ts">
-	import { CarouselState, type Snippets, type CarouselProps } from './carousel.state.svelte.js';
+	import type { WithAttachments } from '$lib/types/props.js';
+	import { caretLeftIcon } from '../Icons/caretLeft.js';
+	import { caretRightIcon } from '../Icons/caretRight.js';
+	import { CarouselState, type CarouselProps } from './carousel.state.svelte.js';
+	import { useCarouselTheme } from './carousel.theme.js';
 
 	let {
 		class: className,
-		withGrabCursor = true,
-		axis = { default: 'x' },
 		dragFree = false,
-		disableNativeScroll = { default: false },
-		oneAtTime = false,
-		autoHeight = false,
-		autoPlay = 0,
-		pauseOnHover = false,
 		layout = { default: 1 },
 		gaps: gap = { default: 20 },
 		partialDelta = { default: 0 },
-		pagination: paginationSnippet,
-		prev: prevSnippet,
-		next: nextSnippet,
-		progress: progressSnippet,
 		dots: dotsSnippet,
-		children
-	}: CarouselProps & Snippets = $props();
+		theme,
+		children,
+		navigationButton,
+		snapAlign = 'center',
+		...attachments
+	}: WithAttachments<CarouselProps> = $props();
 
 	let id = $props.id();
 
 	const carousel = new CarouselState(
 		{
-			get withGrabCursor() {
-				return withGrabCursor;
-			},
-			get axis() {
-				return axis;
-			},
-			get dragFree() {
-				return dragFree;
-			},
-			get disableNativeScroll() {
-				return disableNativeScroll;
-			},
-			get oneAtTime() {
-				return oneAtTime;
-			},
-			get autoHeight() {
-				return autoHeight;
-			},
-			get autoPlay() {
-				return autoPlay;
-			},
-			get pauseOnHover() {
-				return pauseOnHover;
-			},
 			get layout() {
 				return layout;
 			},
@@ -63,218 +36,223 @@
 		id
 	);
 
-	const buttonA11y = (type: 'prev' | 'next') => ({
-		'aria-controls': `${id}-slides`,
-		'aria-label': type === 'prev' ? 'Previous slide' : 'Next slide'
-	});
+	const classes = $derived(useCarouselTheme(theme));
+
+	const percent = (n: number) => {
+		return (100 / n).toFixed(2);
+	};
+
+	const canNavigate = $derived(carousel.dots.length > 1);
 </script>
 
-<div aria-roledescription="carousel" {id} class={className} data-carousel-container>
+<!-- {carousel.currentSlide?.index} -->
+<div data-carousel class={classes.container({ class: className })} {...attachments}>
 	<div
-		data-carousel-slider
-		data-carousel-with-grab-cursor={withGrabCursor}
-		data-drag-free={dragFree}
+		{id}
+		aria-roledescription="carousel"
 		{@attach carousel.attachment}
-		style:--padding-xs={`${(axis.xs || axis.default) === 'x' ? '0 ' : ''}${
-			gap.xs ?? gap.default ?? 20
-		}px ${(axis.xs || axis.default) === 'x' ? '' : '0'}`}
-		style:--padding-sm={`${(axis.sm || axis.default) === 'x' ? '0 ' : ''}${
-			gap.sm ?? gap.default ?? 20
-		}px ${(axis.sm || axis.default) === 'x' ? '' : '0'}`}
-		style:--padding-md={`${(axis.md || axis.default) === 'x' ? '0 ' : ''}${
-			gap.md ?? gap.default ?? 20
-		}px ${(axis.md || axis.default) === 'x' ? '' : '0'}`}
-		style:--padding-lg={`${(axis.lg || axis.default) === 'x' ? '0 ' : ''}${
-			gap.lg ?? gap.default ?? 20
-		}px ${(axis.lg || axis.default) === 'x' ? '' : '0'}`}
-		style:--padding-xl={`${(axis.xl || axis.default) === 'x' ? '0 ' : ''}${
-			gap.xl ?? gap.default ?? 20
-		}px ${(axis.xl || axis.default) === 'x' ? '' : '0'}`}
-		style:--overflow-xs={axis.xs === 'x'
-			? `${(disableNativeScroll.xs ?? disableNativeScroll.default) ? 'hidden' : 'auto'} visible`
-			: `visible ${(disableNativeScroll.xs ?? disableNativeScroll.default) ? 'hidden' : 'auto'}`}
-		style:--overflow-sm={axis.sm === 'x'
-			? `${(disableNativeScroll.sm ?? disableNativeScroll.default) ? 'hidden' : 'auto'} visible`
-			: `visible ${(disableNativeScroll.sm ?? disableNativeScroll.default) ? 'hidden' : 'auto'}`}
-		style:--overflow-md={axis.md === 'x'
-			? `${(disableNativeScroll.md ?? disableNativeScroll.default) ? 'hidden' : 'auto'} visible`
-			: `visible ${(disableNativeScroll.md ?? disableNativeScroll.default) ? 'hidden' : 'auto'}`}
-		style:--overflow-lg={axis.lg === 'x'
-			? `${(disableNativeScroll.lg ?? disableNativeScroll.default) ? 'hidden' : 'auto'} visible`
-			: `visible ${(disableNativeScroll.lg ?? disableNativeScroll.default) ? 'hidden' : 'auto'}`}
-		style:--overflow-xl={axis.xl === 'x'
-			? `${(disableNativeScroll.xl ?? disableNativeScroll.default) ? 'hidden' : 'auto'} visible`
-			: `visible ${(disableNativeScroll.xl ?? disableNativeScroll.default) ? 'hidden' : 'auto'}`}
-		style:--layout-xs={`${100 / (layout.xs ?? layout.default ?? 1)}%`}
-		style:--layout-sm={`${100 / (layout.sm ?? layout.default ?? 2)}%`}
-		style:--layout-md={`${100 / (layout.md ?? layout.default ?? 2)}%`}
-		style:--layout-lg={`${100 / (layout.lg ?? layout.default ?? 3)}%`}
-		style:--layout-xl={`${100 / (layout.xl ?? layout.default ?? 4)}%`}
+		data-carousel-slider
+		data-drag-free={dragFree}
+		data-can-scroll-next={carousel.canScrollNext}
+		data-can-scroll-prev={carousel.canScrollPrev}
+		data-axis={'x'}
+		class={classes.slider()}
+		style:--gap-xs={`${gap.xs ?? gap.default ?? 20}px`}
+		style:--gap-sm={`${gap.sm ?? gap.default ?? 20}px`}
+		style:--gap-md={`${gap.md ?? gap.default ?? 20}px`}
+		style:--gap-lg={`${gap.lg ?? gap.default ?? 20}px`}
+		style:--gap-xl={`${gap.xl ?? gap.default ?? 20}px`}
+		style:--layout-xs={`${percent(layout.xs ?? layout.default ?? 1)}%`}
+		style:--layout-sm={`${percent(layout.sm ?? layout.default ?? 2)}%`}
+		style:--layout-md={`${percent(layout.md ?? layout.default ?? 2)}%`}
+		style:--layout-lg={`${percent(layout.lg ?? layout.default ?? 3)}%`}
+		style:--layout-xl={`${percent(layout.xl ?? layout.default ?? 4)}%`}
 		style:--partial-delta-xs={`${partialDelta.xs ?? partialDelta.default ?? 0}px`}
 		style:--partial-delta-sm={`${partialDelta.sm ?? partialDelta.default ?? 0}px`}
 		style:--partial-delta-md={`${partialDelta.md ?? partialDelta.default ?? 0}px`}
 		style:--partial-delta-lg={`${partialDelta.lg ?? partialDelta.default ?? 0}px`}
 		style:--partial-delta-xl={`${partialDelta.xl ?? partialDelta.default ?? 0}px`}
-		data-axis-xs={axis.xs || axis.default || 'x'}
-		data-axis-sm={axis.sm || axis.default || 'x'}
-		data-axis-md={axis.md || axis.default || 'x'}
-		data-axis-lg={axis.lg || axis.default || 'x'}
-		data-axis-xl={axis.xl || axis.default || 'x'}
-		style:transform={autoHeight ? 'scaleY(0%)' : ''}
-		id={`${id}-slides`}
+		style:width="100%"
+		style:--snap-align={snapAlign}
 	>
-		<!-- style:--flex-direction={axis === 'x' ? 'row' : 'column'}
-			style:--display={axis === 'x' ? 'flex' : 'grid'}
-			style:--snap-type={axis === 'x' ? 'x mandatory' : 'y mandatory'} -->
-		{@render children(carousel)}
+		{@render children?.(carousel)}
 	</div>
 
-	{@render progressSnippet?.(carousel)}
-	{@render dotsSnippet?.(carousel, {
-		'aria-label': 'Slides',
-		role: 'tablist'
-	})}
-	{@render paginationSnippet?.(carousel)}
-	{@render nextSnippet?.(carousel, buttonA11y('next'))}
-	{@render prevSnippet?.(carousel, buttonA11y('prev'))}
+	{#if navigationButton && canNavigate}
+		{#if typeof navigationButton === 'object'}
+			<button
+				data-color={navigationButton.color || 'primary'}
+				{...carousel.prevButton}
+				class={classes.navigationButton({
+					...navigationButton,
+					disabled: carousel.prevButton.disabled,
+					direction: 'previous'
+				})}
+			>
+				{@render caretLeftIcon()}
+			</button>
+
+			<button
+				data-color={navigationButton.color || 'primary'}
+				{...carousel.nextButton}
+				class={classes.navigationButton({
+					...navigationButton,
+					disabled: carousel.nextButton.disabled,
+					direction: 'next'
+				})}
+			>
+				{@render caretRightIcon()}
+			</button>
+		{:else}
+			{@render navigationButton(
+				carousel,
+				{
+					'aria-controls': `${carousel.id}-slides`,
+					'aria-label': 'Previous slide'
+				},
+				'prev'
+			)}
+
+			{@render navigationButton(
+				carousel,
+				{
+					'aria-controls': `${carousel.id}-slides`,
+					'aria-label': 'Next slide'
+				},
+				'next'
+			)}
+		{/if}
+	{/if}
+
+	{#if dotsSnippet && canNavigate}
+		{#if typeof dotsSnippet === 'object'}
+			<div class={classes.dots()}>
+				{#each carousel.dots as dotItem}
+					<button
+						data-color={dotsSnippet.color || 'primary'}
+						{...dotItem.attributes}
+						class={classes.dot({
+							...dotsSnippet,
+							active: dotItem.active
+						})}
+					>
+					</button>
+				{/each}
+			</div>
+		{:else}
+			{@render dotsSnippet(carousel, carousel.dots)}
+		{/if}
+	{/if}
 </div>
 
 <style>
-	[data-carousel-container] {
-		position: relative;
-		overflow: visible;
-		min-height: 100%;
-		display: flex;
-		flex-direction: column;
-		min-width: 100%;
+	[data-carousel-slider]:not([data-drag-free='true']) {
+		scroll-snap-type: x mandatory;
+
+		:global(& > *) {
+			scroll-snap-align: var(--snap-align);
+		}
 	}
 
 	[data-carousel-slider] {
-		display: flex;
-		flex-direction: row;
-		user-select: none;
+		display: grid;
 		position: relative;
-		flex-wrap: nowrap;
-		max-height: 100%;
-		max-width: 100%;
-	}
-	:global([data-carousel-slider][data-dragging='false'][data-drag-free='false']) {
-		scroll-snap-type: x mandatory;
-	}
-	[data-carousel-with-grab-cursor='true'] {
-		cursor: grab;
-	}
-	[data-carousel-with-grab-cursor='true']:active {
-		cursor: grabbing;
-	}
-	[data-carousel-slide] {
-		height: auto;
+		white-space: nowrap;
+		overflow-x: scroll;
+		overflow-y: clip;
+		scroll-behavior: smooth;
+		overscroll-behavior-x: contain;
+		inline-size: 100%;
+		max-inline-size: 100vw;
+		box-sizing: border-box;
+		scrollbar-width: none;
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		:global(&[has-repeat='true']) {
+			scroll-padding-inline: 50% !important;
+			padding-inline: 50% !important;
+		}
+
+		:global(&[has-overflow='true']) {
+			cursor: grab;
+
+			&:active {
+				cursor: grabbing;
+				@media (pointer: fine) {
+					scroll-snap-type: none !important;
+				}
+			}
+		}
+
+		:global(&[has-snap='true']) {
+			scroll-snap-type: var(--snap-type) !important;
+		}
+
+		:global(& > *) {
+			display: inline-block;
+			white-space: initial;
+			vertical-align: top;
+		}
+
+		/* prevent drag interaction on children */
+		:global(& *) {
+			-webkit-user-drag: none;
+			-webkit-touch-callout: none;
+			user-select: none;
+		}
 	}
 
+	[data-carousel-slider][data-axis='x'] {
+		grid-auto-flow: column;
+	}
+	[data-carousel-slider][data-axis='y'] {
+		grid-auto-flow: row;
+	}
+
+	/* xs */
 	@media (max-width: 640px) {
-		[data-carousel-slider] {
-			overflow: var(--overflow-xs);
-		}
-		[data-carousel-slider] > * {
-			flex: 0 0 calc(var(--layout-xs) - var(--partial-delta-xs));
-			padding: var(--padding-xs);
-		}
-		:global([data-carousel-slider][data-axis-xs='y']) {
-			flex-direction: column !important;
-		}
-		:global(
-			[data-carousel-slider][data-axis-xs='y'][data-dragging='false'][data-drag-free='false']
-		) {
-			scroll-snap-type: y mandatory;
-		}
-	}
-	@media (min-width: 640px) {
-		[data-carousel-slider] {
-			overflow: var(--overflow-sm);
-		}
-		:global([data-carousel-slider] > *) {
-			flex: 0 0 calc(var(--layout-sm) - var(--partial-delta-sm));
-			padding: var(--padding-sm);
-		}
-		:global([data-carousel-slider][data-axis-sm='y']) {
-			flex-direction: column !important;
-		}
-		:global(
-			[data-carousel-slider][data-axis-sm='y'][data-dragging='false'][data-drag-free='false']
-		) {
-			scroll-snap-type: y mandatory;
-		}
-	}
-	@media (min-width: 768px) {
-		[data-carousel-slider] {
-			overflow: var(--overflow-md);
-		}
-		:global([data-carousel-slider] > *) {
-			flex: 0 0 calc(var(--layout-md) - var(--partial-delta-md));
-			padding: var(--padding-md);
-		}
-		:global([data-carousel-slider][data-axis-md='y']) {
-			flex-direction: column !important;
-		}
-		:global(
-			[data-carousel-slider][data-axis-md='y'][data-dragging='false'][data-drag-free='false']
-		) {
-			scroll-snap-type: y mandatory;
+		[data-carousel-slider][data-axis='x'] {
+			grid-auto-columns: calc(var(--layout-xs) - calc(var(--gap-xs)) - var(--partial-delta-xs));
+			column-gap: var(--gap-xs);
 		}
 	}
 
-	@media (min-width: 1024px) {
-		[data-carousel-slider] {
-			overflow: var(--overflow-lg);
-		}
-		:global([data-carousel-slider] > *) {
-			flex: 0 0 calc(var(--layout-lg) - var(--partial-delta-lg));
-			padding: var(--padding-lg);
-		}
-		:global([data-carousel-slider][data-axis-lg='y']) {
-			flex-direction: column !important;
-		}
-		:global(
-			[data-carousel-slider][data-axis-lg='y'][data-dragging='false'][data-drag-free='false']
-		) {
-			scroll-snap-type: y mandatory;
+	/* sm */
+	@media (min-width: 640px) {
+		[data-carousel-slider][data-axis='x'] {
+			grid-auto-columns: calc(var(--layout-sm) - calc(var(--gap-sm)) - var(--partial-delta-sm));
+			column-gap: var(--gap-sm);
 		}
 	}
+
+	/* md */
+	@media (min-width: 768px) {
+		[data-carousel-slider][data-axis='x'] {
+			grid-auto-columns: calc(var(--layout-md) - calc(var(--gap-md)) - var(--partial-delta-md));
+			column-gap: var(--gap-md);
+		}
+	}
+
+	/* lg */
+	@media (min-width: 1024px) {
+		[data-carousel-slider][data-axis='x'] {
+			grid-auto-columns: calc(var(--layout-lg) - calc(var(--gap-lg)) - var(--partial-delta-lg));
+			column-gap: var(--gap-lg);
+		}
+	}
+
+	/* xl */
 	@media (min-width: 1280px) {
-		[data-carousel-slider] {
-			overflow: var(--overflow-xl);
-		}
-		:global([data-carousel-slider] > *) {
-			flex: 0 0 calc(var(--layout-xl) - var(--partial-delta-xl));
-			padding: var(--padding-xl);
-		}
-		:global([data-carousel-slider][data-axis-xl='y']) {
-			flex-direction: column !important;
-		}
-		:global(
-			[data-carousel-slider][data-axis-xl='y'][data-dragging='false'][data-drag-free='false']
-		) {
-			scroll-snap-type: y mandatory;
+		[data-carousel-slider][data-axis='x'] {
+			grid-auto-columns: calc(var(--layout-xl) - calc(var(--gap-xl)) - var(--partial-delta-xl));
+
+			column-gap: var(--gap-xl);
 		}
 	}
 
 	:global([data-carousel-slider] img) {
 		user-select: none;
-	}
-
-	[data-carousel-slider]::-webkit-scrollbar {
-		display: none;
-	}
-	[data-carousel-slider] {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-
-	:global([data-carousel-slider][data-dragging='false'][data-drag-free='false']) {
-		scroll-snap-type: mandatory;
-		scroll-behavior: smooth;
-	}
-	:global([data-carousel-slider][data-dragging='false'][data-drag-free='false'] > *) {
-		scroll-snap-align: start;
 	}
 </style>

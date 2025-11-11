@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
-	import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
-	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
-	import { useScrollLock } from '$lib/utils/useScrollLock.svelte.js';
 	import type { DialogProps } from './dialog.props.js';
 	import { useDialogTheme } from './dialog.theme.js';
 	import { DialogState } from './dialog.state.svelte.js';
@@ -55,53 +51,17 @@
 		get transition() {
 			return transition;
 		},
+		get closeOnEscape() {
+			return closeOnEscape;
+		},
+		get closeOnClickOutside() {
+			return closeOnClickOutside;
+		},
+		get closable() {
+			return closable;
+		},
 		onClose,
 		onOpen
-	});
-
-	useKeyDown({
-		get isActive() {
-			return dialog.isOpen;
-		},
-		keys: ['Escape'],
-		callback: (e) => {
-			if (dialog.isOpen) {
-				e.preventDefault();
-			}
-			if (
-				closeOnEscape &&
-				closable &&
-				dialog.isOpen &&
-				(dialog.isLastOfStack || dialog.isLastOpen)
-			) {
-				dialog.close();
-			}
-		}
-	});
-
-	useScrollLock({
-		get isActive() {
-			return (
-				!dialog.parent && dialog.isOpen && dialog.theme.dialogs.filter((d) => d.isOpen).length === 1
-			);
-		}
-	});
-
-	const clickOutside = useClickOutside({
-		get isActive() {
-			if (!closeOnClickOutside || dialog.children.some((d) => d.isOpen)) {
-				return false;
-			}
-			return dialog.isOpen && dialog.hasTransitioned;
-		},
-		callback: dialog.close
-	});
-
-	const focusTrap = useFocusTrap({
-		get isActive() {
-			return false;
-			return dialog.isOpen && (dialog.isLastOfStack || dialog.isLastOpen);
-		}
 	});
 
 	const classes = $derived(useDialogTheme());
@@ -154,8 +114,7 @@
 			</Slot>
 		{/snippet}
 		<div
-			{@attach focusTrap.attachment}
-			{@attach clickOutside.reference}
+			{@attach dialog.contentAttachment}
 			data-type={dialog.type}
 			in:in_out={dialog.computedTransition.in}
 			out:in_out={dialog.computedTransition.out}

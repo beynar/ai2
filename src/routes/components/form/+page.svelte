@@ -4,6 +4,7 @@
 	import { Form } from '$lib/components/Form/Form/index.js';
 	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.props.js';
 	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
+	import Switch from '$lib/components/Form/Switch/Switch.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 
 	let items = $state<FormStep[]>(<const>[
@@ -290,6 +291,7 @@
 <ComponentCard title="Dynamic Field Visibility Example" class="flex !items-start">
 	<div class="my-10 grid w-[800px] gap-10">
 		<Combobox
+			placeholder="Select an option"
 			options={[
 				{ label: 'Option 1', value: 'option1' },
 				{ label: 'Option 2', value: 'option2' }
@@ -299,23 +301,21 @@
 			}}
 		></Combobox>
 
+		<Switch
+			label="Switch"
+			description="Switch description"
+			onChange={(value) => {
+				console.log('value', value);
+			}}
+		/>
 		<Form
 			bind:value={dynamicFormValue}
 			inputs={{
-				startTimeMinutes: {
-					type: 'time',
-					label: 'Heure de début',
-
-					value: 814,
-					as: 'minuteSinceMidnight',
-					required: false
-				},
-				endTimeMinutes: {
-					type: 'time',
-					label: 'Heure de fin',
-					value: 824,
-					as: 'minuteSinceMidnight',
-					required: false
+				phone: {
+					type: 'phone',
+					label: 'Phone',
+					placeholder: 'Phone',
+					required: true
 				}
 			}}
 			onSubmit={(values) => {
@@ -325,8 +325,56 @@
 		<Form
 			bind:value={dynamicFormValue}
 			inputs={{
+				textInput: {
+					type: 'text',
+					label: 'Text Input',
+					placeholder: 'Text Input',
+					required: true
+				},
 				userType: {
 					type: 'select',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType2: {
+					type: 'radio',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType3: {
+					type: 'radio',
+					mode: 'card',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType4: {
+					type: 'checkboxes',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType5: {
+					type: 'checkboxes',
+					mode: 'card',
 					label: 'Account Type',
 					placeholder: 'Select account type',
 					options: [

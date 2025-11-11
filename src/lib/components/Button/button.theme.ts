@@ -2,12 +2,12 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
 
 const defaultButton = cva({
-	base: 'rounded cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem]',
+	base: 'rounded focus:ring-1 focus:ring-color focus:ring-offset-1 ring-offset-surface cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem]',
 	variants: {
 		size: {
-			small: 'px-2.5 text-sm leading-4 h-6 gap-1',
-			normal: 'px-4 py-2 h-8 text-base gap-2',
-			large: 'px-6 py-2.5 text-md leading-7 h-9 gap-2.5'
+			small: 'px-2.5 py-1 text-sm gap-1',
+			normal: 'px-4 py-1  text-base gap-2',
+			large: 'px-5.5 py-1 text-md gap-2.5'
 		},
 		color: {
 			surface: 'bg-surface-dark text-color-fg',
@@ -124,4 +124,3 @@ export type ButtonTheme = typeof buttonTheme;
 export type ButtonThemeProps = InferComponentTheme<ButtonTheme>;
 export const setButtonTheme = setComponentTheme<ButtonTheme>('button');
 export const useButtonTheme = useComponentTheme('button', buttonTheme);
-

@@ -52,19 +52,21 @@
 		style:grid-template-columns="repeat({items.length}, 100%)"
 	>
 		{#each items as item, index}
-			<div
-				bind:clientHeight={stepper.stepHeights[index]}
-				data-step={index}
-				tabindex={stepper.activeStep === index ? 0 : -1}
-				inert={stepper.activeStep !== index}
-				role="tabpanel"
-				aria-labelledby={`stepper-${index}`}
-				class={classes.step({
-					mode
-				})}
-			>
-				{@render snippets[`step${index + 1}`]?.({ stepper, item, index })}
-			</div>
+			{#if stepper.stepHeights?.[index]}
+				<div
+					bind:clientHeight={stepper.stepHeights[index]}
+					data-step={index}
+					tabindex={stepper.activeStep === index ? 0 : -1}
+					inert={stepper.activeStep !== index}
+					role="tabpanel"
+					aria-labelledby={`stepper-${index}`}
+					class={classes.step({
+						mode
+					})}
+				>
+					{@render snippets[`step${index + 1}`]?.({ stepper, item, index })}
+				</div>
+			{/if}
 		{/each}
 	</div>
 </div>

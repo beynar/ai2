@@ -81,11 +81,13 @@
 				<!-- {@render sideNavigationButton({ href: '/components/thumb', text: 'Thumb' })} -->
 				<!-- {@render sideNavigationButton({ href: '/components/toast', text: 'Toast' })} -->
 				{@render sideNavigationButton({ href: '/components/avatar', text: 'Avatar' })}
+				{@render sideNavigationButton({ href: '/components/separator', text: 'Separator' })}
 				<!-- <Button size="small" variant="link" href="/components/separator">Separator</Button> -->
 
 				{@render sideNavigationButton({ href: '/components/meter', text: 'Meter' })}
 				{@render sideNavigationButton({ href: '/components/marquee', text: 'Marquee' })}
 				{@render sideNavigationButton({ href: '/components/slideshow', text: 'Slideshow' })}
+				{@render sideNavigationButton({ href: '/components/tabbar', text: 'Tabbar' })}
 				{@render sideNavigationButton({ href: '/components/tabs', text: 'Tabs' })}
 				{@render sideNavigationButton({ href: '/components/tree', text: 'Tree' })}
 				<!-- <Button size="small" variant="link" href="/components/navlinks">Navigation links</Button> -->
@@ -106,6 +108,7 @@
 
 				{@render sideNavigationButton({ href: '/components/popover', text: 'Popover' })}
 				{@render sideNavigationButton({ href: '/components/tooltip', text: 'Tooltip' })}
+				{@render sideNavigationButton({ href: '/components/popup-menu', text: 'Popup menu' })}
 
 				{@render sideNavigationButton({ href: '/components/kbd', text: 'KBD' })}
 				{@render sideNavigationButton({ href: '/components/accordion', text: 'Accordion' })}

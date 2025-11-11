@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Accordion from '$lib/components/Accordion/Accordion.svelte';
 	import { Carousel } from '$lib/components/Carousel/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 
@@ -27,18 +26,39 @@
 			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 			customKey: 'custom value'
+		},
+		{
+			title: 'title',
+			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			customKey: 'custom value'
+		},
+		{
+			title: 'title',
+			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			customKey: 'custom value'
+		},
+		{
+			title: 'title',
+			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			customKey: 'custom value'
 		}
 	]);
-	let size = $state<'normal'>('normal');
-	let variant = $state<'classic' | 'card' | 'outlined'>('card');
-	let oneAtATime = $state<boolean>(true);
-	let splitted = $state(true);
 </script>
 
-<ComponentCard title="Accordion Classic" class="flex ">
-	<Carousel layout={{ default: 2 }}>
+<ComponentCard title="Carousel" class="flex p-10 ">
+	<Carousel
+		layout={{ default: 1, sm: 1, xl: 3 }}
+		gaps={{ default: 20 }}
+		partialDelta={{ default: 50 }}
+		class="w-full max-w-[90vw]"
+		navigationButton={{ color: 'primary' }}
+		dots={{ color: 'primary' }}
+	>
 		{#each items as item}
-			<div class="bg-primary raised size-10 rounded p-10">
+			<div class="bg-primary-muted raised-lg h-[400px] rounded p-4">
 				<h1>{item.title}</h1>
 				<p>{item.description}</p>
 				<p>{item.content}</p>
@@ -46,26 +66,3 @@
 		{/each}
 	</Carousel>
 </ComponentCard>
-
-<!--
-<ComponentCard title="Accordion Outlined" class="flex !items-start">
-	<div class="w-[300px] my-10 grid gap-10">
-		<AccordionGroup {size} variant="outlined" openedIndices={openedIndex} {items} />
-		<AccordionGroup {size} variant="outlined" splitted openedIndices={openedIndex} {items} />
-
-	</div>
-</ComponentCard>
-
-<ComponentCard title="Accordion Card" class="flex !items-start">
-	<div class="w-[300px] my-10 grid gap-10">
-		<AccordionGroup {size} variant="card" openedIndices={openedIndex} {items} />
-		<AccordionGroup {size} variant="card" splitted openedIndices={openedIndex} {items} />
-		<Accordion
-			{size}
-			variant="card"
-			title="title"
-			description="description"
-			content="Lorem ipsum dolor, sit amet consectetur adipisicing elit."
-		/>
-	</div>
-</ComponentCard> -->

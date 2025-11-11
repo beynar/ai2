@@ -85,14 +85,22 @@
 		...theme,
 		inputContainer: {
 			...theme?.inputContainer,
-			base: componentTheme.checkboxesInputContainer({ mode, class: theme?.inputContainer?.base, disabled: field.disabled })
+			base: componentTheme.checkboxesInputContainer({
+				mode,
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled
+			})
 		}
 	}}
+	{...rest}
 >
 	{#each options as option (option.value)}
 		{@const checked = field.value?.includes(option.value)}
 		{@const optionId = `${field.name}-${option.value}`}
-		<label for={optionId} class={componentTheme.checkboxesInputItem({ mode, checked, disabled: field.disabled })}>
+		<label
+			for={optionId}
+			class={componentTheme.checkboxesInputItem({ mode, checked, disabled: field.disabled })}
+		>
 			<input
 				hidden
 				onchange={() => {
@@ -113,10 +121,14 @@
 			/>
 
 			<!-- Checkbox Button Track -->
-			<div class={componentTheme.checkboxesInputItemTrack({ mode, checked, disabled: field.disabled })}></div>
+			<div
+				class={componentTheme.checkboxesInputItemTrack({ mode, checked, disabled: field.disabled })}
+			></div>
 
 			<!-- Checkbox Button Thumb -->
-			<div class={componentTheme.checkboxesInputItemThumb({ checked, mode, disabled: field.disabled })}>
+			<div
+				class={componentTheme.checkboxesInputItemThumb({ checked, mode, disabled: field.disabled })}
+			>
 				{@render checkIcon({ size: 40 })}
 			</div>
 

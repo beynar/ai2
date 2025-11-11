@@ -182,19 +182,15 @@
 	});
 	// Use useKeyDown hook for keyboard navigation
 	useKeyDown({
-		get isActive() {
-			return field.focused;
-		},
+		isActive: () => field.focused,
 		keys: ['Escape'],
 		callback: (event: KeyboardEvent) => {
 			field.node?.blur();
 		},
-		onWindow: true
+		onWindow: () => true
 	});
 	const keyDownHook = useKeyDown({
-		get isActive() {
-			return isOpen || field.focused;
-		},
+		isActive: () => isOpen || field.focused,
 		keys: ['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Home', 'End'],
 		callback: (event: KeyboardEvent) => {
 			const filteredOptions = optionsAsync.options;
@@ -264,7 +260,7 @@
 				}
 			}
 		},
-		onWindow: false // Only attach to input element, not window
+		onWindow: () => false // Only attach to input element, not window
 	});
 
 	onMount(async () => {
@@ -281,12 +277,11 @@
 	const showClear = $derived(searchValue || field.value);
 
 	// Default prefix: magnifying glass icon (unless prefix is false or custom snippet provided)
-	const effectivePrefix = $derived(prefix === false ? undefined : (prefix ?? magnifyingGlassIcon));
+	const effectivePrefix = $derived(
+		prefix === false ? undefined : (prefix ?? magnifyingGlassIcon.withProps({ size: 20 }))
+	);
 
 	const classes = $derived(useComboboxTheme(theme));
-
-	// Map size to theme size variant (normal -> medium)
-	const themeSize = $derived(size === 'normal' ? 'medium' : size);
 </script>
 
 <Popover closeOnClickOutside={false} fitTrigger position="bottom" size="small" offset={20} {isOpen}>
@@ -298,17 +293,17 @@
 			class="flex max-h-[200px] flex-col gap-1"
 		>
 			{#if loading}
-				<div class={classes.loading({ size: themeSize })} role="status" aria-live="polite">
+				<div class={classes.loading({ size })} role="status" aria-live="polite">
 					{loadingText}
 				</div>
 			{:else if optionsAsync.error}
-				<div class={classes.error({ size: themeSize })} role="alert" aria-live="assertive">
+				<div class={classes.error({ size })} role="alert" aria-live="assertive">
 					{optionsAsync.error}
 				</div>
 			{:else if optionsAsync.options.length === 0 && searchValue}
-				<div class={classes.noOptions({ size: themeSize })} role="status">{noOptionsText}</div>
+				<div class={classes.noOptions({ size })} role="status">{noOptionsText}</div>
 			{:else if optionsAsync.options.length === 0 && !searchValue && showAllOnFocus}
-				<div class={classes.noOptions({ size: themeSize })} role="status">{noOptionsText}</div>
+				<div class={classes.noOptions({ size })} role="status">{noOptionsText}</div>
 			{:else if optionsAsync.options.length > 0}
 				<ScrollArea scrollOnEdges type="auto" class="flex max-h-[200px] flex-col gap-1">
 					{#each optionsAsync.options as option, index}
@@ -330,11 +325,9 @@
 								handleSelectOption(option);
 							}}
 						>
-							<span class={classes.optionLabel({ size: themeSize })}>{option.label}</span>
+							<span class={classes.optionLabel({ size })}>{option.label}</span>
 							{#if option.description}
-								<span class={classes.optionDescription({ size: themeSize })}
-									>{option.description}</span
-								>
+								<span class={classes.optionDescription({ size })}>{option.description}</span>
 							{/if}
 						</button>
 					{/each}
@@ -361,15 +354,12 @@
 			{field}
 			{description}
 			prefix={effectivePrefix}
-			prefixProps={{
-				size: 20
-			}}
 			suffix={suffix || (showClear ? clearButtonSuffix : undefined)}
 			theme={{
 				...(theme || {}),
 				inputContainer: {
 					...(theme?.inputContainer || {}),
-					base: classes.inputContainer({ class: theme?.inputContainer?.base, size: themeSize })
+					base: classes.inputContainer({ class: theme?.inputContainer?.base, size })
 				}
 			}}
 			{...rest}
@@ -393,7 +383,7 @@
 				aria-haspopup="listbox"
 				aria-invalid={!!optionsAsync.error}
 				autocomplete="off"
-				class={classes.input({ size: themeSize, hasValue: field.value !== null })}
+				class={classes.input({ size, hasValue: field.value !== null })}
 				class:placeholder:text-contrast={currentOption && !searchValue}
 				{@attach keyDownHook.reference}
 			/>

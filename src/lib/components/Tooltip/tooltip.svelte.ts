@@ -27,9 +27,7 @@ export const tooltip = (props: TooltipProps) => {
 	let refElement: HTMLElement | null = null;
 
 	const hoverAction = useHoverAction({
-		get isActive() {
-			return true;
-		},
+		isActive: () => true,
 		onMouseEnter: () => {
 			if (refElement) {
 				theme.tooltip = { ...props, ref: refElement };
@@ -50,9 +48,9 @@ export const tooltip = (props: TooltipProps) => {
 	});
 
 	return (ref: HTMLElement) => {
+		console.log('tooltip reference', ref);
 		refElement = ref;
 		const off = hoverAction.reference?.(ref);
-
 		return () => {
 			off?.();
 			hoverAction.destroy();

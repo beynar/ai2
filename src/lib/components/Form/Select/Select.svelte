@@ -5,7 +5,7 @@
 	import { useSelectTheme } from './select.theme.js';
 
 	let {
-		value = $bindable(null),
+		value = $bindable(''),
 		errors = $bindable([]),
 		focused = $bindable(false),
 		required = false,
@@ -79,14 +79,13 @@
 		name={field.name}
 		bind:value={field.value}
 		bind:this={field.node}
-		{placeholder}
 		class={classes.input({ disabled: field.disabled })}
 		disabled={field.disabled}
 	>
-		{#if placeholder && !value}
-			<option disabled hidden>{placeholder}</option>
+		{#if placeholder}
+			<option disabled selected value="">{placeholder}</option>
 		{/if}
-		{#each options || [] as option}
+		{#each options || [] as option (option.value)}
 			<option value={option.value}>{option.label}</option>
 		{/each}
 	</select>

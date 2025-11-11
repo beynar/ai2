@@ -83,9 +83,7 @@
 	});
 
 	const setPolygon = useSafeArea({
-		get isActive() {
-			return !!toaster.hovering;
-		},
+		isActive: () => !!toaster.hovering,
 		offset: 30,
 		callback: () => {
 			toaster.hovering && toaster.toggleTimers(toaster.hovering, 'resume');
