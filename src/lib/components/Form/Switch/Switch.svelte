@@ -17,7 +17,6 @@
 		visible,
 		size = 'normal',
 		label,
-		labelProps,
 		onChange,
 		...rest
 	}: SwitchInputProps = $props();
@@ -119,7 +118,6 @@
 				for: 'input-' + field.id
 			}}
 			render={label}
-			props={labelProps}
 			class={fieldClasses.label()}
 		/>
 	{/snippet}

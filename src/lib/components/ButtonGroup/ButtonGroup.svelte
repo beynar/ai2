@@ -1,4 +1,4 @@
-<script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
+<script lang="ts">
 	import Button from '../Button/Button.svelte';
 	import type { ButtonGroupProps } from './buttonGroup.props.js';
 	import { useButtonGroupTheme } from './buttonGroup.theme.js';
@@ -12,7 +12,7 @@
 		theme,
 		class: className,
 		...attachments
-	}: ButtonGroupProps<Payload> = $props();
+	}: ButtonGroupProps = $props();
 
 	const classes = $derived(useButtonGroupTheme(theme));
 </script>

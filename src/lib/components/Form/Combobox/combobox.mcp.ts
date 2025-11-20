@@ -187,4 +187,122 @@ A searchable dropdown component that supports both static arrays and async optio
 - **Clear Button**: Automatically shown when value exists, uses danger variant Button component
 - **Default Prefix**: Magnifying glass icon shown by default unless \`prefix={false}\` or custom snippet provided
 - **Theme Size Mapping**: \`'normal'\` size maps to \`'medium'\` theme variant internally
+
+## Theme Customization
+
+The Combobox component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Input element styles
+- **inputContainer**: Input container wrapper styles
+- **loading**: Loading state indicator styles
+- **error**: Error message styles
+- **noOptions**: No options found message styles
+- **option**: Individual option item styles
+- **optionLabel**: Option label text styles
+- **optionDescription**: Option description text styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the input element
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the input container
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Size-based styling
+  - disabled: boolean - Disabled state styling
+
+**loading**:
+- base: Base classes for loading indicator
+
+**error**:
+- base: Base classes for error message
+
+**noOptions**:
+- base: Base classes for no options message
+
+**option**:
+- base: Base classes for option items
+- Variants:
+  - highlighted: boolean - Highlighted/hovered option styling
+
+**optionLabel**:
+- base: Base classes for option label text
+
+**optionDescription**:
+- base: Base classes for option description text
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Combobox
+  options={options}
+  bind:value={value}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        medium: 'px-4 py-2'
+      }
+    },
+    option: {
+      base: 'px-4 py-2 hover:bg-gray-100',
+      highlighted: {
+        true: 'bg-primary text-white'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Option Styling**:
+\`\`\`svelte
+<Combobox
+  options={options}
+  bind:value={value}
+  theme={{
+    option: {
+      base: 'rounded-md transition-colors',
+      highlighted: {
+        true: 'bg-blue-500 text-white'
+      }
+    },
+    optionLabel: {
+      base: 'font-semibold'
+    },
+    optionDescription: {
+      base: 'text-sm text-gray-600'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setComboboxTheme } from 'svelai/combobox';
+  
+  setComboboxTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        medium: 'px-4 py-2'
+      }
+    },
+    option: {
+      base: 'px-4 py-2 rounded-md',
+      highlighted: {
+        true: 'bg-primary text-white'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

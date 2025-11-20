@@ -47,6 +47,10 @@ The Tabbar component is a flexible navigation component that displays a list of 
   - center: Tabs centered in the container
   - end: Tabs aligned to the end of the container
 
+- **fullWidth**: boolean (default: false)
+  - Whether the tabbar should be full width
+  - When true, the tabbar and individual tabs will expand to fill the available width
+
 ### Advanced Props
 - **class**: string - Additional CSS classes for the tabbar container
 - **theme**: TabbarThemeProps - Custom theme overrides
@@ -178,6 +182,16 @@ The tabbar follows this DOM structure:
 <Tabbar tabs={['One', 'Two', 'Three']} bind:activeTab alignment="end" />
 \`\`\`
 
+### Full Width Tabs
+\`\`\`svelte
+<script>
+	let activeTab = $state(0);
+</script>
+
+<!-- Full width tabbar where tabs expand to fill available space -->
+<Tabbar tabs={['Tab 1', 'Tab 2', 'Tab 3']} bind:activeTab fullWidth />
+\`\`\`
+
 ### With onChange Callback
 \`\`\`svelte
 <script>
@@ -307,5 +321,121 @@ Full keyboard support following WAI-ARIA best practices:
 - Tabs with \`href\` will not update \`activeTab\` on click (they navigate instead)
 - Icon/content sizing is automatically adjusted based on tab size
 - The component is fully responsive and works with all color schemes
+
+## Theme Customization
+
+The Tabbar component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **tabbar**: Main tabbar container styles
+- **tabbarItem**: Individual tab item styles
+- **tabbarItemLabel**: Tab label text styles
+- **tabbarItemPrefix**: Prefix icon/content styles
+- **tabbarItemSuffix**: Suffix icon/content styles
+- **tabbarIndicator**: Active indicator styles
+
+### Available Variants
+
+**tabbar**:
+- base: Base classes for tabbar container
+- Variants:
+  - orientation: 'horizontal' | 'vertical' - Tab orientation
+  - size: 'small' | 'normal' | 'large' - Tab size
+  - color: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'surface' | 'contrast' - Color scheme
+
+**tabbarItem**:
+- base: Base classes for tab items
+- Variants:
+  - active: boolean - Active state styling
+  - disabled: boolean - Disabled state styling
+  - size: 'small' | 'normal' | 'large' - Item size
+  - color: Color variants
+
+**tabbarItemLabel**:
+- base: Base classes for label text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - active: boolean - Active state styling
+
+**tabbarItemPrefix**:
+- base: Base classes for prefix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+
+**tabbarItemSuffix**:
+- base: Base classes for suffix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+
+**tabbarIndicator**:
+- base: Base classes for active indicator
+- Variants:
+  - orientation: 'horizontal' | 'vertical' - Indicator direction
+  - color: Color variants
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Tabbar 
+  tabs={tabs}
+  bind:activeTab
+  theme={{
+    tabbar: {
+      base: 'border-b-2 border-gray-200',
+      size: {
+        normal: 'gap-4'
+      }
+    },
+    tabbarItem: {
+      active: {
+        true: 'border-b-2 border-primary'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Active State**:
+\`\`\`svelte
+<Tabbar 
+  tabs={tabs}
+  bind:activeTab
+  theme={{
+    tabbarItem: {
+      active: {
+        true: 'bg-primary text-white rounded-t-lg'
+      }
+    },
+    tabbarIndicator: {
+      base: 'bg-primary h-1 rounded-full'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setTabbarTheme } from 'svelai/tabbar';
+  
+  setTabbarTheme({
+    tabbar: {
+      base: 'border-b border-gray-200',
+      size: {
+        normal: 'gap-2'
+      }
+    },
+    tabbarItem: {
+      base: 'transition-colors',
+      active: {
+        true: 'text-primary border-b-2 border-primary'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;
 

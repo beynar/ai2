@@ -272,4 +272,85 @@ Select automatically validates:
 - Options can be loaded asynchronously
 - Empty string or null for no selection
 - Suffix typically shows dropdown indicator
+
+## Theme Customization
+
+The Select component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Select element styles
+- **inputContainer**: Select container wrapper styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the select element
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the select container (handles focus states, borders, padding)
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Size-based styling
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Select 
+  label="Choose Option"
+  bind:value={value}
+  options={options}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        medium: 'px-4 py-2'
+      }
+    },
+    input: {
+      size: {
+        medium: 'text-base'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Focus State Customization**:
+\`\`\`svelte
+<Select 
+  label="Styled Select"
+  bind:value={value}
+  options={options}
+  theme={{
+    inputContainer: {
+      base: 'focus-within:ring-2 focus-within:ring-primary focus-within:border-primary'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setSelectTheme } from 'svelai/select';
+  
+  setSelectTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        medium: 'px-4 py-2'
+      }
+    },
+    input: {
+      base: 'appearance-none bg-transparent'
+    }
+  });
+</script>
+\`\`\`
 `;

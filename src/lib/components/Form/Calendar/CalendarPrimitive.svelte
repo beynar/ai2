@@ -30,7 +30,11 @@
 		minDate,
 		maxDate,
 		header,
-		headerProps,
+		todayBadge = {
+			size: 'small',
+			color: 'danger',
+			class: ''
+		},
 		onChange,
 		theme
 	}: CalendarPrimitiveProps<CalendarEvent, T> = $props();
@@ -99,7 +103,6 @@
 	<Slot
 		render={header}
 		class={classes.header()}
-		props={headerProps}
 		style={view === 'single' ? '' : 'grid-column-start: 1; grid-column-end: 3;'}
 	>
 		<Button
@@ -169,7 +172,8 @@
 							<Badge
 								size="small"
 								color="danger"
-								class="top-1 right-1 aspect-square !size-2 min-h-2 min-w-2"
+								{...todayBadge}
+								class="top-1 right-1 aspect-square !size-2 min-h-2 min-w-2 {todayBadge.class}"
 							/>
 						{/if}
 						<abbr

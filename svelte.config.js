@@ -17,11 +17,11 @@ const config = {
 		}
 	},
 
-	compilerOptions: {
-		experimental: {
-			async: true
-		}
-	},
+	// compilerOptions: {
+	// 	experimental: {
+	// 		async: true
+	// 	}
+	// },
 
 	extensions: ['.svelte', '.svx']
 };

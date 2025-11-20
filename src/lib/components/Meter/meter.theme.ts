@@ -2,12 +2,12 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
 
 const defaultMeter = cva({
-	base: 'flex flex-col gap-4 relative',
+	base: 'flex flex-col relative',
 	variants: {
 		size: {
-			small: 'gap-2',
-			normal: 'gap-4',
-			large: 'gap-6'
+			small: 'gap-1',
+			normal: 'gap-2',
+			large: 'gap-3'
 		}
 	}
 });
@@ -80,68 +80,91 @@ const defaultMeterProgress = cva({
 });
 
 const defaultMeterTrack = cva({
-	base: 'flex items-center justify-start bg-surface-lighter rounded-full relative',
+	base: 'flex items-center justify-start bg-surface-muted/50 rounded-full relative',
 	variants: {
 		size: {
 			small: 'h-1',
 			normal: 'h-2',
 			large: 'h-3'
+		},
+		labelsPosition: {
+			top: 'mt-4',
+			bottom: 'mb-4',
+			both: 'mt-4 mb-4'
 		}
 	}
 });
 
 const defaultMeterIndicator = cva({
-	base: 'absolute whitespace-nowrap w-fit rounded px-1 py-0.5 text-xs text-color mx-auto left-0 right-0',
+	base: 'absolute whitespace-nowrap w-fit rounded text-color mx-auto left-0 right-0 leading-none',
+	variants: {
+		size: {
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-sm'
+		},
+		position: {
+			top: 'bottom-full	',
+			bottom: 'top-full'
+		}
+	},
+	defaultVariants: {
+		position: 'top'
+	}
+});
+
+const defaultMeterLegend = cva({
+	base: 'flex flex-col',
+	variants: {
+		size: {
+			small: '',
+			normal: '',
+			large: ''
+		}
+	}
+});
+
+const defaultMeterLegendItem = cva({
+	base: 'flex items-center gap-2 [&[data-color="danger"]_*]:text-danger [&[data-color="warning"]_*]:text-warning [&[data-color="success"]_*]:text-success [&[data-color="info"]_*]:text-info',
+	variants: {
+		size: {
+			small: 'gap-1.5',
+			normal: 'gap-2',
+			large: 'gap-2.5'
+		}
+	}
+});
+
+const defaultMeterLegendIcon = cva({
+	base: '[&>svg]:size-full',
+	variants: {
+		size: {
+			small: 'w-3 h-3',
+			normal: 'w-4 h-4',
+			large: 'w-5 h-5'
+		}
+	}
+});
+
+const defaultMeterLegendLabel = cva({
+	base: 'text-contrast-lighter',
 	variants: {
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
 			large: 'text-base'
-		},
-		position: {
-			top: '-top-5',
-			bottom: '-bottom-5'
 		}
-	},
-	defaultVariants: {
-		position: 'top'
 	}
 });
 
-const defaultMeterStep = cva({
-	base: 'flex whitespace-nowrap items-center justify-between w-full text-xs absolute text-contrast-muted h-fit px-1.5 py-0.5',
+const defaultMeterLegendPercentage = cva({
+	base: 'text-contrast-lighter font-medium',
 	variants: {
 		size: {
-			small: 'text-xs px-1 py-0',
-			normal: 'text-base px-1.5 py-0.5',
-			large: 'text-md px-2 py-1'
-		},
-		position: {
-			top: '-top-8',
-			bottom: '-bottom-8'
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
 		}
-	},
-	defaultVariants: {
-		position: 'top'
-	}
-});
-
-const defaultMeterStepLabel = cva({
-	base: 'absolute whitespace-nowrap text-xs text-contrast-light',
-	variants: {
-		size: {
-			small: 'text-sm',
-			normal: 'text-base',
-			large: 'text-md'
-		},
-		position: {
-			top: 'top-0 left-1/2 -translate-x-1/2 ',
-			center: 'top-1/2 left-1/2 -translate-x-1/2 ',
-			bottom: 'bottom-0 left-1/2 -translate-x-1/2'
-		}
-	},
-	defaultVariants: {
-		position: 'top'
 	}
 });
 
@@ -155,12 +178,14 @@ export const meterTheme = {
 	progress: defaultMeterProgress,
 	track: defaultMeterTrack,
 	indicator: defaultMeterIndicator,
-	step: defaultMeterStep,
-	stepLabel: defaultMeterStepLabel
+	legend: defaultMeterLegend,
+	legendItem: defaultMeterLegendItem,
+	legendIcon: defaultMeterLegendIcon,
+	legendLabel: defaultMeterLegendLabel,
+	legendPercentage: defaultMeterLegendPercentage
 };
 
 export type MeterTheme = typeof meterTheme;
 export type MeterThemeProps = InferComponentTheme<MeterTheme>;
 export const setMeterTheme = setComponentTheme<MeterTheme>('meter');
 export const useMeterTheme = useComponentTheme('meter', meterTheme);
-

@@ -8,29 +8,24 @@ export const useKeyDown = (opts: {
 	onWindow?: () => boolean;
 	preventDefault?: boolean;
 }) => {
-	let offWindow: (() => void) | null;
-
 	const eventCallback = (event: KeyboardEvent) => {
 		if (opts.keys.includes(event.key)) {
 			if (opts.preventDefault !== false) {
-				// event.preventDefault();
+				event.preventDefault();
 			}
 			opts.callback(event);
 		}
 	};
 
 	$effect(() => {
-		if (opts.isActive() && !offWindow && opts.onWindow?.() === true) {
-			offWindow = on(window, 'keydown', eventCallback);
-		} else {
-			offWindow?.();
-			offWindow = null;
+		if (opts.isActive() && opts.onWindow?.()) {
+			return on(window, 'keydown', eventCallback);
 		}
 	});
 
 	return {
 		reference: (ref: HTMLElement) => {
-			if (opts.isActive()) {
+			if (opts.isActive() && !opts.onWindow?.()) {
 				return on(ref, 'keydown', eventCallback);
 			}
 		}

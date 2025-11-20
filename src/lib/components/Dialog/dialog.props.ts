@@ -33,7 +33,6 @@ export type DialogProps = WithSlot<
 		class?: string;
 		theme?: DialogThemeProps;
 	},
-	'title' | 'description' | 'footer' | 'header' | 'closeButton',
-	DialogState
+	'title' | 'description' | 'footer' | 'header' | 'closeButton'
 >;
 

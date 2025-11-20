@@ -24,6 +24,9 @@
 		tabbarAlignment,
 		tabbarClass,
 		tabbarTheme,
+		tabbarFullWidth,
+		tab: defaultTabSnippet,
+
 		...snippets
 	}: TabsProps<Item> = $props();
 
@@ -34,7 +37,11 @@
 		tabbarOrientation ?? (placement === 'left' || placement === 'right' ? 'vertical' : 'horizontal')
 	);
 
-	// Extract snippet props (tab1, tab2, etc.) and map to stepper steps (step1, step2, etc.)
+	function handleTabChange(index: number) {
+		stepper?.goTo(index);
+		onChange?.(index);
+	}
+
 	const stepperSteps = $derived(
 		tabs.reduce(
 			(acc, _tab, index) => {
@@ -50,15 +57,11 @@
 			{} as Record<string, any>
 		)
 	);
-
-	function handleTabChange(index: number) {
-		stepper?.goTo(index);
-		onChange?.(index);
-	}
 </script>
 
 <div class={classes.tabs({ placement, className })}>
 	<Tabbar
+		fullWidth={tabbarFullWidth}
 		onChange={handleTabChange}
 		{tabs}
 		bind:activeTab
@@ -70,13 +73,13 @@
 		class={tabbarClass}
 		theme={tabbarTheme}
 	/>
-	<div class={classes.content({ placement })}>
-		<Stepper
-			bind:stepper
-			items={tabs}
-			bind:activeStep={activeTab}
-			{keyFramesOptions}
-			{...stepperSteps}
-		/>
-	</div>
+	<Stepper
+		step={defaultTabSnippet}
+		class={classes.content({ placement })}
+		bind:stepper
+		items={tabs}
+		bind:activeStep={activeTab}
+		{keyFramesOptions}
+		{...stepperSteps}
+	/>
 </div>

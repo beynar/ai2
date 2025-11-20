@@ -17,7 +17,6 @@ export type FormProps<I extends FormInputs> = WithSlot<
 		theme?: FormThemeProps;
 		submitButton?: ButtonProps | null;
 	},
-	'header' | 'title' | 'description' | 'footer',
-	[FormState<I>]
+	'header' | 'title' | 'description' | 'footer'
 >;
 

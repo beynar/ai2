@@ -347,4 +347,89 @@ Common accept patterns:
 - Works with FormData for upload
 - Can handle single or multiple files
 - File objects are returned for processing
+
+## Theme Customization
+
+The FileInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **fileInput**: Main file input container styles
+- **fileInputDropzone**: Drop zone area styles
+- **fileInputPreview**: File preview container styles
+- **fileInputPreviewItem**: Individual file preview item styles
+
+### Available Variants
+
+**fileInput**:
+- base: Base classes for main container
+
+**fileInputDropzone**:
+- base: Base classes for drag-and-drop zone
+- Variants:
+  - disabled: boolean - Disabled state styling
+  - dragging: boolean - Active drag state styling
+
+**fileInputPreview**:
+- base: Base classes for preview container
+
+**fileInputPreviewItem**:
+- base: Base classes for individual preview items
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<FileInput 
+  label="Upload Files"
+  bind:value={files}
+  theme={{
+    fileInputDropzone: {
+      base: 'border-2 border-dashed rounded-lg',
+      dragging: {
+        true: 'border-primary bg-primary/10'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Dropzone Styling**:
+\`\`\`svelte
+<FileInput 
+  label="Custom Upload"
+  bind:value={files}
+  theme={{
+    fileInputDropzone: {
+      base: 'border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-primary transition-colors',
+      dragging: {
+        true: 'border-primary bg-blue-50'
+      }
+    },
+    fileInputPreview: {
+      base: 'mt-4 grid grid-cols-2 gap-4'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setFileInputTheme } from 'svelai/file-input';
+  
+  setFileInputTheme({
+    fileInputDropzone: {
+      base: 'border-2 border-dashed rounded-lg transition-all',
+      dragging: {
+        true: 'border-primary bg-primary/5'
+      }
+    },
+    fileInputPreview: {
+      base: 'mt-4'
+    }
+  });
+</script>
+\`\`\`
 `;

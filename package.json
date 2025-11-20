@@ -1,6 +1,6 @@
 {
 	"name": "svelai",
-	"version": "0.1.18",
+	"version": "0.1.37",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -30,7 +30,7 @@
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
-		"@eslint/compat": "^1.4.1",
+		"@eslint/compat": "^2.0.0",
 		"@eslint/js": "^9.39.1",
 		"@playwright/test": "^1.56.1",
 		"@sveltejs/adapter-auto": "^7.0.0",
@@ -39,24 +39,24 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/vite": "^4.1.17",
 		"@testing-library/jest-dom": "^6.9.1",
-		"@testing-library/svelte": "^5.2.8",
+		"@testing-library/svelte": "^5.2.9",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.0",
 		"globals": "^16.5.0",
-		"jsdom": "^27.1.0",
+		"jsdom": "^27.2.0",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.7.1",
 		"publint": "^0.3.15",
-		"svelte": "^5.43.5",
-		"svelte-check": "^4.3.3",
+		"svelte": "^5.43.10",
+		"svelte-check": "^4.3.4",
 		"tailwindcss": "^4.1.17",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.46.4",
+		"typescript-eslint": "^8.47.0",
 		"vite": "^7.2.2",
-		"vitest": "^4.0.8",
-		"wrangler": "^4.46.0",
+		"vitest": "^4.0.10",
+		"wrangler": "^4.47.0",
 		"zod": "^4.1.12"
 	},
 	"keywords": [
@@ -71,9 +71,9 @@
 		"@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
 		"@blossom-carousel/core": "^0.2.0",
 		"@floating-ui/dom": "^1.7.4",
-		"@maskito/core": "^4.0.0",
-		"@maskito/kit": "^4.0.0",
-		"@sveltejs/kit": "^2.48.4",
+		"@maskito/core": "^4.0.1",
+		"@maskito/kit": "^4.0.1",
+		"@sveltejs/kit": "^2.48.5",
 		"add": "^2.0.6",
 		"bits-ui": "^2.14.3",
 		"color2k": "^2.0.3",
@@ -88,7 +88,7 @@
 		"intl-tel-input": "^25.12.5",
 		"libphonenumber-js": "^1.12.26",
 		"melt": "^0.41.0",
-		"pnpm": "^10.21.0",
+		"pnpm": "^10.22.0",
 		"runed": "^0.36.0",
 		"shiki": "^3.15.0",
 		"svelte-mcp": "^0.0.5",
@@ -113,6 +113,16 @@
 			"types": "./dist/components/Form/Combobox/index.d.ts",
 			"svelte": "./dist/components/Form/Combobox/index.js",
 			"default": "./dist/components/Form/Combobox/index.js"
+		},
+		"./tabs": {
+			"types": "./dist/components/Tabs/index.d.ts",
+			"svelte": "./dist/components/Tabs/index.js",
+			"default": "./dist/components/Tabs/index.js"
+		},
+		"./network-indicator": {
+			"types": "./dist/components/NetworkIndicator/index.d.ts",
+			"svelte": "./dist/components/NetworkIndicator/index.js",
+			"default": "./dist/components/NetworkIndicator/index.js"
 		},
 		"./form": {
 			"types": "./dist/components/Form/Form/index.d.ts",
@@ -276,6 +286,16 @@
 			"svelte": "./dist/components/Accordion/index.js",
 			"default": "./dist/components/Accordion/index.js"
 		},
+		"./alert": {
+			"types": "./dist/components/Alert/index.d.ts",
+			"svelte": "./dist/components/Alert/index.js",
+			"default": "./dist/components/Alert/index.js"
+		},
+		"./aspect-ratio": {
+			"types": "./dist/components/AspectRatio/index.d.ts",
+			"svelte": "./dist/components/AspectRatio/index.js",
+			"default": "./dist/components/AspectRatio/index.js"
+		},
 		"./code": {
 			"types": "./dist/components/Code/index.d.ts",
 			"svelte": "./dist/components/Code/index.js",
@@ -285,6 +305,11 @@
 			"types": "./dist/components/ButtonGroup/index.d.ts",
 			"svelte": "./dist/components/ButtonGroup/index.js",
 			"default": "./dist/components/ButtonGroup/index.js"
+		},
+		"./card": {
+			"types": "./dist/components/Card/index.d.ts",
+			"svelte": "./dist/components/Card/index.js",
+			"default": "./dist/components/Card/index.js"
 		},
 		"./carousel": {
 			"types": "./dist/components/Carousel/index.d.ts",
@@ -306,6 +331,11 @@
 			"svelte": "./dist/components/MenuOption/index.js",
 			"default": "./dist/components/MenuOption/index.js"
 		},
+		"./marquee": {
+			"types": "./dist/components/Marquee/index.d.ts",
+			"svelte": "./dist/components/Marquee/index.js",
+			"default": "./dist/components/Marquee/index.js"
+		},
 		"./popup-menu": {
 			"types": "./dist/components/PopupMenu/index.d.ts",
 			"svelte": "./dist/components/PopupMenu/index.js",
@@ -315,6 +345,26 @@
 			"types": "./dist/components/Separator/index.d.ts",
 			"svelte": "./dist/components/Separator/index.js",
 			"default": "./dist/components/Separator/index.js"
+		},
+		"./breadcrumbs": {
+			"types": "./dist/components/Breadcrumbs/index.d.ts",
+			"svelte": "./dist/components/Breadcrumbs/index.js",
+			"default": "./dist/components/Breadcrumbs/index.js"
+		},
+		"./table": {
+			"types": "./dist/components/Table/index.d.ts",
+			"svelte": "./dist/components/Table/index.js",
+			"default": "./dist/components/Table/index.js"
+		},
+		"./skeleton": {
+			"types": "./dist/components/Skeleton/index.d.ts",
+			"svelte": "./dist/components/Skeleton/index.js",
+			"default": "./dist/components/Skeleton/index.js"
+		},
+		"./collapsible": {
+			"types": "./dist/components/Collapsible/index.d.ts",
+			"svelte": "./dist/components/Collapsible/index.js",
+			"default": "./dist/components/Collapsible/index.js"
 		}
 	},
 	"typesVersion": {

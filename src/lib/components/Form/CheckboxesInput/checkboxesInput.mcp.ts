@@ -317,15 +317,129 @@ The component renders as a fieldset with the following DOM structure:
 
 ## Theme Customization
 
-The component supports theming for these parts:
-- **checkboxesInput**: Main container
-- **checkboxesInputContainer**: Options grid container
-- **checkboxesInputItem**: Individual checkbox wrapper
-- **checkboxesInputItemTrack**: Checkbox background
-- **checkboxesInputItemThumb**: Check mark indicator
-- **checkboxesInputItemLabel**: Label text
-- **checkboxesInputItemDescription**: Description text
+The CheckboxesInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **checkboxesInput**: Main container styles
+- **checkboxesInputContainer**: Options grid container styles
+- **checkboxesInputItem**: Individual checkbox wrapper styles
+- **checkboxesInputItemTrack**: Checkbox background/track styles
+- **checkboxesInputItemThumb**: Check mark indicator styles
+- **checkboxesInputItemLabel**: Label text styles
+- **checkboxesInputItemDescription**: Description text styles
 - **checkboxesInputItemIcon**: Icon styling
+
+### Available Variants
+
+**checkboxesInput**:
+- base: Base classes for main container
+- Variants:
+  - mode: 'card' | 'normal' - Layout mode
+
+**checkboxesInputContainer**:
+- base: Base classes for options grid container
+- Variants:
+  - mode: 'card' | 'normal' - Grid layout based on mode
+  - disabled: boolean - Disabled state styling
+
+**checkboxesInputItem**:
+- base: Base classes for individual checkbox wrapper
+- Variants:
+  - mode: 'card' | 'normal' - Item styling based on mode
+  - checked: boolean - Selected state styling
+  - disabled: boolean - Disabled state styling
+
+**checkboxesInputItemTrack**:
+- base: Base classes for checkbox track/background
+- Variants:
+  - checked: boolean - Track styling when checked
+  - mode: 'card' | 'normal' - Mode-based styling
+  - disabled: boolean - Disabled state styling
+
+**checkboxesInputItemThumb**:
+- base: Base classes for check mark indicator
+- Variants:
+  - checked: boolean - Visibility and styling when checked
+  - mode: 'card' | 'normal' - Mode-based styling
+  - disabled: boolean - Disabled state styling
+
+**checkboxesInputItemLabel**:
+- base: Base classes for label text
+
+**checkboxesInputItemDescription**:
+- base: Base classes for description text
+
+**checkboxesInputItemIcon**:
+- base: Base classes for icon styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<CheckboxesInput 
+  label="Options"
+  bind:value={selected}
+  options={options}
+  theme={{
+    checkboxesInputContainer: {
+      base: 'grid-cols-1 md:grid-cols-3 gap-4'
+    },
+    checkboxesInputItem: {
+      mode: {
+        card: 'rounded-lg border-2'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Card Mode Customization**:
+\`\`\`svelte
+<CheckboxesInput 
+  mode="card"
+  label="Features"
+  bind:value={features}
+  options={options}
+  theme={{
+    checkboxesInputItem: {
+      checked: {
+        true: 'ring-2 ring-primary bg-primary/10'
+      },
+      mode: {
+        card: 'rounded-xl shadow-md hover:shadow-lg'
+      }
+    },
+    checkboxesInputItemThumb: {
+      checked: {
+        true: 'bg-primary scale-100'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setCheckBoxesInputTheme } from 'svelai/checkboxes-input';
+  
+  setCheckBoxesInputTheme({
+    checkboxesInputContainer: {
+      base: 'gap-4',
+      mode: {
+        card: 'grid-cols-1 md:grid-cols-2'
+      }
+    },
+    checkboxesInputItem: {
+      mode: {
+        card: 'rounded-lg transition-all'
+      }
+    }
+  });
+</script>
+\`\`\`
 
 ## Notes
 

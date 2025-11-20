@@ -53,7 +53,6 @@ export type MenuOptionProps = WithAttachments<
 			 */
 			theme?: MenuOptionThemeProps;
 		},
-		'children' | 'title' | 'description' | 'prefix' | 'suffix',
-		undefined
+		'children' | 'title' | 'description' | 'prefix' | 'suffix'
 	>
 >;

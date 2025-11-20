@@ -3,6 +3,8 @@ import { mcpHandler, resource, tool, prompt } from 'svelte-mcp/mcp';
 
 import * as z from 'zod/v4';
 import { accordionDescription } from '$lib/components/Accordion/accordion.mcp.js';
+import { alertDescription } from '$lib/components/Alert/alert.mcp.js';
+import { aspectRatioDescription } from '$lib/components/AspectRatio/aspectRatio.mcp.js';
 import { avatarDescription } from '$lib/components/Avatar/avatar.mcp.js';
 import { badgeDescription } from '$lib/components/Badge/badge.mcp.js';
 import { buttonDescription } from '$lib/components/Button/button.mcp.js';
@@ -44,9 +46,22 @@ import { menuDescription } from '$lib/components/Menu/menu.mcp.js';
 import { popupMenuDescription } from '$lib/components/PopupMenu/popupMenu.mcp.js';
 import { menuOptionDescription } from '$lib/components/MenuOption/menuOption.mcp.js';
 import { separatorDescription } from '$lib/components/Separator/separator.mcp.js';
+import { breadcrumbsDescription } from '$lib/components/Breadcrumbs/breadcrumbs.mcp.js';
+import { cardDescription } from '$lib/components/Card/card.mcp.js';
+import { tableDescription } from '$lib/components/Table/table.mcp.js';
+import { marqueeDescription } from '$lib/components/Marquee/marquee.mcp.js';
+import { skeletonDescription } from '$lib/components/Skeleton/skeleton.mcp.js';
+import { tabsDescription } from '$lib/components/Tabs/tabs.mcp.js';
+import { tabbarDescription } from '$lib/components/Tabbar/tabbar.mcp.js';
+import { networkIndicatorDescription } from '$lib/components/NetworkIndicator/networkIndicator.mcp.js';
+import { timeInputDescription } from '$lib/components/Form/TimeInput/timeInput.mcp.js';
+// import { fieldDescription } from '$lib/components/Form/Field/field.mcp.js';
+import { collapsibleDescription } from '$lib/components/Collapsible/collapsible.mcp.js';
 
 const components = {
 	accordion: accordionDescription,
+	alert: alertDescription,
+	'aspect-ratio': aspectRatioDescription,
 	avatar: avatarDescription,
 	badge: badgeDescription,
 	button: buttonDescription,
@@ -86,7 +101,18 @@ const components = {
 	menu: menuDescription,
 	'popup-menu': popupMenuDescription,
 	'menu-option': menuOptionDescription,
-	separator: separatorDescription
+	separator: separatorDescription,
+	breadcrumbs: breadcrumbsDescription,
+	card: cardDescription,
+	table: tableDescription,
+	marquee: marqueeDescription,
+	skeleton: skeletonDescription,
+	tabs: tabsDescription,
+	tabbar: tabbarDescription,
+	'network-indicator': networkIndicatorDescription,
+	'time-input': timeInputDescription,
+	// field: fieldDescription,
+	collapsible: collapsibleDescription
 };
 
 const handler = mcpHandler({

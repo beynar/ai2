@@ -397,4 +397,71 @@ The MultiStepForm component breaks complex forms into manageable steps with prog
 - Data persists across navigation
 - Customizable navigation and rendering
 - Integrates with Form component per step
+
+## Theme Customization
+
+The MultiStepForm component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme. The MultiStepForm component forwards theme to its child Form components.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **multiStepForm**: Main multi-step form container styles
+- **form**: Form component theme (forwarded to each step's form)
+
+### Available Variants
+
+**multiStepForm**:
+- base: Base classes for multi-step form container
+
+**form**:
+- Theme structure matches the Form component theme (see Form component documentation)
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<MultiStepForm 
+  steps={steps}
+  bind:value={formData}
+  onSubmit={handleSubmit}
+  theme={{
+    multiStepForm: {
+      base: 'flex flex-col gap-6'
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Step Layout**:
+\`\`\`svelte
+<MultiStepForm 
+  steps={steps}
+  bind:value={formData}
+  onSubmit={handleSubmit}
+  theme={{
+    multiStepForm: {
+      base: 'max-w-4xl mx-auto'
+    },
+    form: {
+      base: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setMultiStepFormTheme } from 'svelai/multi-step-form';
+  
+  setMultiStepFormTheme({
+    multiStepForm: {
+      base: 'flex flex-col gap-6'
+    },
+    form: {
+      base: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+    }
+  });
+</script>
+\`\`\`
 `;

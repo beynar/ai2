@@ -124,7 +124,6 @@
 				{#if option.icon}
 					<Slot
 						render={option.icon}
-						props={option.iconProps}
 						class={componentTheme.radiosInputItemIcon()}
 					/>
 				{/if}

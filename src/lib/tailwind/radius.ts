@@ -1,4 +1,4 @@
-export type Size = 'normal' | 'small' | 'large' | 'subtile' | 'none' | 'round' | number;
+export type RadiusSize = 'normal' | 'small' | 'large' | 'subtile' | 'none' | 'round' | number;
 
 const roundedSizes = {
 	normal: 0.25,
@@ -8,7 +8,7 @@ const roundedSizes = {
 	none: 0,
 	round: 1
 };
-export const radius = (size: Size = 0.25) => {
+export const radius = (size: RadiusSize = 0.25) => {
 	const base = typeof size === 'number' ? size : roundedSizes[size];
 	return {
 		small: `${base * 0.5}rem`,

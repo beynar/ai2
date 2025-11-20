@@ -306,4 +306,90 @@ The Popover component uses a \`PopoverState\` instance that is passed to all slo
 - Multiple popovers can be stacked
 - Scroll locking prevents background scroll (when enabled)
 - Transitions animate based on position direction
+
+## Theme Customization
+
+The Popover component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **popover**: Main popover container styles
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { PopoverThemeProps } from 'svelai/popover';
+
+// Example theme customization
+const customTheme: PopoverThemeProps = {
+  popover: {
+    base: 'z-[+50] fixed bg-surface-light w-fit rounded-large raised isolate h-fit',
+    size: {
+      small: 'max-w-3xs w-full p-2',
+      normal: 'max-w-xs w-full p-3',
+      large: 'max-w-sm w-full p-4'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**popover**:
+- base: Base classes applied to all popovers
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls max-width, width, and padding
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Popover 
+  trigger={{ content: "Click Me" }}
+  theme={{
+    popover: {
+      base: 'rounded-xl shadow-xl border-2 border-primary',
+      size: {
+        normal: 'max-w-md p-4'
+      }
+    }
+  }}
+>
+  Custom styled popover content
+</Popover>
+\`\`\`
+
+**Size Customization**:
+\`\`\`svelte
+<Popover 
+  size="large"
+  trigger={{ content: "Large Popover" }}
+  theme={{
+    popover: {
+      size: {
+        large: 'max-w-lg p-6'
+      }
+    }
+  }}
+>
+  Large popover with more padding
+</Popover>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setPopoverTheme } from 'svelai/popover';
+  
+  setPopoverTheme({
+    popover: {
+      base: 'rounded-lg shadow-2xl backdrop-blur-sm bg-white/95',
+      size: {
+        normal: 'max-w-sm p-4'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

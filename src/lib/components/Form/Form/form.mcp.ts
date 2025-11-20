@@ -405,4 +405,63 @@ The form state object provides:
 - Form automatically handles loading states
 - All form inputs are built on the Field component
 - Grid layout makes responsive forms easy
+
+## Theme Customization
+
+The Form component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme. The Form component forwards theme to its child Field components.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **form**: Main form container styles
+- **field**: Field component theme (forwarded to all fields)
+
+### Available Variants
+
+**form**:
+- base: Base classes for form container
+
+**field**:
+- Theme structure matches the Field component theme (see Field component documentation)
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Form 
+  inputs={inputs}
+  onSubmit={handleSubmit}
+  theme={{
+    form: {
+      base: 'grid grid-cols-2 gap-4'
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Form Layout**:
+\`\`\`svelte
+<Form 
+  inputs={inputs}
+  onSubmit={handleSubmit}
+  theme={{
+    form: {
+      base: 'flex flex-col gap-6 max-w-2xl mx-auto'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setFormTheme } from 'svelai/form';
+  
+  setFormTheme({
+    form: {
+      base: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+    }
+  });
+</script>
+\`\`\`
 `;

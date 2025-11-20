@@ -283,4 +283,83 @@ PhoneInput validates:
 - Country code is included in value
 - Validation depends on country format
 - Works with form libraries and validation schemas
+
+## Theme Customization
+
+The PhoneInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme. It shares the same theme structure as TextInput.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Input element styles
+- **inputContainer**: Input container wrapper styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the input element
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the input container (handles focus states, borders, padding)
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Size-based styling
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<PhoneInput 
+  label="Phone Number"
+  bind:value={phone}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    },
+    input: {
+      size: {
+        normal: 'text-base'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Focus State Customization**:
+\`\`\`svelte
+<PhoneInput 
+  label="Contact Phone"
+  bind:value={phone}
+  theme={{
+    inputContainer: {
+      base: 'focus-within:ring-2 focus-within:ring-primary focus-within:border-primary'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setPhoneInputTheme } from 'svelai/phone-input';
+  
+  setPhoneInputTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    },
+    input: {
+      base: 'placeholder:text-gray-400'
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -152,4 +152,84 @@ The Heading component renders semantic heading elements (h1-h6) with consistent 
 - Text balancing improves readability on multiple lines
 - Trim helps maintain consistent vertical spacing
 - Data attributes are added for all visual props for CSS targeting
+
+## Theme Customization
+
+The Heading component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **heading**: Main heading element styles
+
+### Available Variants
+
+**heading**:
+- base: Base classes applied to all headings
+- Variants:
+  - size: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' - Text size based on heading level
+  - weight: 'normal' | 'bold' | 'light' - Font weight
+  - align: 'left' | 'center' | 'right' - Text alignment
+  - balanced: boolean - Text balancing (text-wrap: balance)
+  - underline: boolean - Underline decoration
+  - muted: boolean - Reduced opacity for secondary headings
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Heading 
+  size="h1"
+  theme={{
+    heading: {
+      base: 'gradient-text bg-clip-text',
+      size: {
+        h1: 'text-5xl font-extrabold'
+      }
+    }
+  }}
+>
+  Custom Heading
+</Heading>
+\`\`\`
+
+**Size and Weight Customization**:
+\`\`\`svelte
+<Heading 
+  size="h2"
+  theme={{
+    heading: {
+      size: {
+        h2: 'text-4xl'
+      },
+      weight: {
+        bold: 'font-black'
+      }
+    }
+  }}
+>
+  Bold Heading
+</Heading>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setHeadingTheme } from 'svelai/heading';
+  
+  setHeadingTheme({
+    heading: {
+      base: 'tracking-tight',
+      size: {
+        h1: 'text-5xl',
+        h2: 'text-4xl',
+        h3: 'text-3xl'
+      },
+      weight: {
+        bold: 'font-extrabold'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -340,4 +340,104 @@ In \`calendar-range\` mode:
 - Can disable specific dates or days of week
 - Month/year can be controlled externally
 - Works standalone or within DateInput
+
+## Theme Customization
+
+The Calendar component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **calendar**: Main calendar container styles
+- **calendarHeader**: Header section styles (month/year navigation)
+- **calendarGrid**: Calendar grid container styles
+- **calendarDay**: Individual day cell styles
+- **calendarDaySelected**: Selected day styles
+- **calendarDayToday**: Today indicator styles
+- **calendarDayDisabled**: Disabled day styles
+- **calendarDayRange**: Date range styles
+
+### Available Variants
+
+**calendar**:
+- base: Base classes for main calendar container
+
+**calendarHeader**:
+- base: Base classes for header section
+
+**calendarGrid**:
+- base: Base classes for calendar grid
+
+**calendarDay**:
+- base: Base classes for day cells
+- Variants:
+  - selected: boolean - Selected state styling
+  - today: boolean - Today indicator styling
+  - disabled: boolean - Disabled state styling
+  - inRange: boolean - Date range styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Calendar 
+  bind:value={date}
+  theme={{
+    calendar: {
+      base: 'rounded-lg border-2 shadow-lg'
+    },
+    calendarDay: {
+      selected: {
+        true: 'bg-primary text-primary-fg'
+      },
+      today: {
+        true: 'ring-2 ring-primary'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Day Styling**:
+\`\`\`svelte
+<Calendar 
+  bind:value={date}
+  theme={{
+    calendarDay: {
+      base: 'rounded-md hover:bg-gray-100',
+      selected: {
+        true: 'bg-blue-500 text-white font-semibold'
+      },
+      today: {
+        true: 'border-2 border-blue-500'
+      },
+      disabled: {
+        true: 'opacity-30 cursor-not-allowed'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setCalendarTheme } from 'svelai/calendar';
+  
+  setCalendarTheme({
+    calendar: {
+      base: 'rounded-xl shadow-xl border'
+    },
+    calendarDay: {
+      base: 'transition-colors',
+      selected: {
+        true: 'bg-primary text-white'
+      },
+      today: {
+        true: 'ring-2 ring-primary'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

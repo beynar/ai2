@@ -131,7 +131,7 @@ export const bgFade = () => {
 		const rgba = getComputedStyle(node).backgroundColor;
 		const [r = 255, g = 255, b = 255, target_opacity = 1] = rgba.match(/\d+(\.\d+)?/g)!.map(Number);
 		node.style.removeProperty('background-color');
-		console.log({ r, g, b, target_opacity });
+
 		const od = target_opacity * (1 - 0);
 		return {
 			delay: options.delay,

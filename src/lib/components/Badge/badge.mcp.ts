@@ -155,4 +155,118 @@ The Badge component uses absolute positioning and requires its parent to have \`
 - Content automatically determines minimum width (circular for single characters)
 - Numbers are commonly used but any content (text, icons) is supported
 - Consider using appropriate colors for semantic meaning (danger for errors, success for completed states)
+
+## Theme Customization
+
+The Badge component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **badge**: Main badge container styles
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { BadgeThemeProps } from 'svelai/badge';
+
+// Example theme customization
+const customTheme: BadgeThemeProps = {
+  badge: {
+    base: 'custom-base-classes',
+    size: {
+      small: 'px-1 text-sm h-4 min-w-4',
+      normal: 'px-1.5 text-base h-5 min-w-5',
+      large: 'px-2 text-md h-6 min-w-6'
+    },
+    color: {
+      primary: 'bg-primary text-primary-fg',
+      danger: 'bg-danger text-danger-fg'
+    },
+    variant: {
+      solid: 'text-color-fg',
+      outline: 'bg-opacity-0 text-color border-color border',
+      soft: 'bg-color/20 text-color'
+    },
+    position: {
+      topRight: '-top-2 -right-2',
+      topLeft: '-top-2 -left-2',
+      bottomRight: '-bottom-2 -right-2',
+      bottomLeft: '-bottom-2 -left-2'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**badge**:
+- base: Base classes applied to all badges
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls height, padding, and text size
+  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - variant: 'solid' | 'outline' | 'soft' - Visual style variant
+  - position: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft' - Positioning relative to parent
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<div class="relative">
+  <Button>Notifications</Button>
+  <Badge 
+    theme={{
+      badge: {
+        base: 'ring-2 ring-white',
+        size: {
+          normal: 'h-6 min-w-6 px-2 text-sm font-bold'
+        }
+      }
+    }}
+  >
+    5
+  </Badge>
+</div>
+\`\`\`
+
+**Color and Variant Customization**:
+\`\`\`svelte
+<div class="relative">
+  <Avatar src="/user.jpg" />
+  <Badge 
+    color="success"
+    variant="outline"
+    theme={{
+      badge: {
+        variant: {
+          outline: 'border-2 border-green-500 bg-white text-green-600'
+        },
+        position: {
+          bottomRight: '-bottom-1 -right-1'
+        }
+      }
+    }}
+  >
+    •
+  </Badge>
+</div>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setBadgeTheme } from 'svelai/badge';
+  
+  setBadgeTheme({
+    badge: {
+      base: 'ring-2 ring-white shadow-md',
+      variant: {
+        solid: 'font-semibold',
+        outline: 'border-2 bg-white',
+        soft: 'bg-opacity-30'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

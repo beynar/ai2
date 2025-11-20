@@ -28,6 +28,39 @@ type IconProps = {
   {@render houseIcon({ size: 24, color: 'primary' })}
 \`\`\`
 
+### Passing Icons to Components with Default Props
+
+When passing icons to components that accept snippet props (like \`prefix\` or \`suffix\`), you can use the \`withProps\` method to set default props. This avoids writing snippet markup.
+
+**Using \`withProps\` (Recommended):**
+\`\`\`svelte
+<script>
+    import { eyeClosedIcon } from "svelai/icons/eyeClosed";
+    import { Button } from "svelai/button";
+</script>
+
+<Button prefix={eyeClosedIcon.withProps({ color: "danger" })}>
+    Click me
+</Button>
+\`\`\`
+
+**Without \`withProps\` (Verbose):**
+\`\`\`svelte
+<script>
+    import { eyeClosedIcon } from "svelai/icons/eyeClosed";
+    import { Button } from "svelai/button";
+</script>
+
+<Button>
+    {#snippet prefix()}
+        {@render eyeClosedIcon({ color: "danger" })}
+    {/snippet}
+    Click me
+</Button>
+\`\`\`
+
+The \`withProps\` method creates a new snippet with default props, making it cleaner and more concise when passing icons to components.
+
 ## Customization
 
 Icons inherit the current text color and can be styled with CSS

@@ -65,9 +65,12 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 */
 			transitions?: SlideTransitionProps;
 			theme?: AccordionThemeProps;
+			/**
+			 * Whether the accordion should be accessible when not expanded.
+			 * This is useful for screen readers to skip the content when not expanded.
+			 */
+			accessible?: boolean;
 		},
-		'actions' | 'icon' | 'title' | 'description' | 'content',
-		Item
+		'actions' | 'icon' | 'title' | 'description' | 'content'
 	>
 >;
-

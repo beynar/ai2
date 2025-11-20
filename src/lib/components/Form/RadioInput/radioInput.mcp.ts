@@ -320,4 +320,130 @@ RadioInput automatically validates:
 - Individual options can be disabled
 - Supports both vertical and horizontal layouts
 - Works seamlessly with Form component
+
+## Theme Customization
+
+The RadioInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **radiosInput**: Main container styles
+- **radiosInputContainer**: Options grid container styles
+- **radiosInputItem**: Individual radio wrapper styles
+- **radiosInputItemTrack**: Radio button track/background styles
+- **radiosInputItemThumb**: Radio button indicator styles
+- **radiosInputItemLabel**: Label text styles
+- **radiosInputItemDescription**: Description text styles
+- **radiosInputItemIcon**: Icon styling
+
+### Available Variants
+
+**radiosInput**:
+- base: Base classes for main container
+- Variants:
+  - mode: 'card' | 'normal' - Layout mode
+
+**radiosInputContainer**:
+- base: Base classes for options grid container
+- Variants:
+  - mode: 'card' | 'normal' - Grid layout based on mode
+  - disabled: boolean - Disabled state styling
+
+**radiosInputItem**:
+- base: Base classes for individual radio wrapper
+- Variants:
+  - mode: 'card' | 'normal' - Item styling based on mode
+  - checked: boolean - Selected state styling
+  - disabled: boolean - Disabled state styling
+
+**radiosInputItemTrack**:
+- base: Base classes for radio track/background
+- Variants:
+  - checked: boolean - Track styling when checked
+  - mode: 'card' | 'normal' - Mode-based styling
+  - disabled: boolean - Disabled state styling
+
+**radiosInputItemThumb**:
+- base: Base classes for radio indicator
+- Variants:
+  - checked: boolean - Visibility and styling when checked
+  - mode: 'card' | 'normal' - Mode-based styling
+  - disabled: boolean - Disabled state styling
+
+**radiosInputItemLabel**:
+- base: Base classes for label text
+
+**radiosInputItemDescription**:
+- base: Base classes for description text
+
+**radiosInputItemIcon**:
+- base: Base classes for icon styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<RadioInput 
+  label="Choose Option"
+  bind:value={value}
+  options={options}
+  theme={{
+    radiosInputContainer: {
+      base: 'grid-cols-1 md:grid-cols-3 gap-4'
+    },
+    radiosInputItem: {
+      mode: {
+        card: 'rounded-lg border-2'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Card Mode Customization**:
+\`\`\`svelte
+<RadioInput 
+  mode="card"
+  label="Plan"
+  bind:value={plan}
+  options={options}
+  theme={{
+    radiosInputItem: {
+      checked: {
+        true: 'ring-2 ring-primary bg-primary/10'
+      },
+      mode: {
+        card: 'rounded-xl shadow-md hover:shadow-lg'
+      }
+    },
+    radiosInputItemThumb: {
+      checked: {
+        true: 'bg-primary scale-[60%]'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setRadioInputTheme } from 'svelai/radio-input';
+  
+  setRadioInputTheme({
+    radiosInputContainer: {
+      base: 'gap-4',
+      mode: {
+        card: 'grid-cols-1 md:grid-cols-2'
+      }
+    },
+    radiosInputItem: {
+      mode: {
+        card: 'rounded-lg transition-all'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -28,6 +28,7 @@
 		name,
 		onValidate,
 		visible,
+		onChange,
 		...rest
 	}: TimeInputProps = $props();
 
@@ -69,7 +70,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			// Date value changed
+			onChange?.(v);
 		},
 		get disabled() {
 			return disabled;

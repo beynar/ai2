@@ -317,4 +317,83 @@ PasswordInput supports:
 - Type switches between "password" and "text"
 - Works with browser password managers
 - All TextInput features are available
+
+## Theme Customization
+
+The PasswordInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme. It shares the same theme structure as TextInput.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Input element styles
+- **inputContainer**: Input container wrapper styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the input element
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the input container (handles focus states, borders, padding)
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Size-based styling
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<PasswordInput 
+  label="Password"
+  bind:value={password}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    },
+    input: {
+      size: {
+        normal: 'text-base'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Focus State Customization**:
+\`\`\`svelte
+<PasswordInput 
+  label="Secure Password"
+  bind:value={password}
+  theme={{
+    inputContainer: {
+      base: 'focus-within:ring-2 focus-within:ring-primary focus-within:border-primary'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setPasswordInputTheme } from 'svelai/password-input';
+  
+  setPasswordInputTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    },
+    input: {
+      base: 'placeholder:text-gray-400'
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -4,7 +4,9 @@
 	import { Form } from '$lib/components/Form/Form/index.js';
 	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.props.js';
 	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
+	import { Select } from '$lib/components/Form/Select/index.js';
 	import Switch from '$lib/components/Form/Switch/Switch.svelte';
+	import { TimeInput } from '$lib/components/Form/TimeInput/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 
 	let items = $state<FormStep[]>(<const>[
@@ -278,14 +280,16 @@
 {/snippet}
 
 <div class="m-2 flex flex-col gap-4 p-10">
-	<!-- <TimeInput
+	<TimeInput
 		as="minuteSinceMidnight"
 		value={1439}
 		label="Time"
 		format="HH:MM"
 		placeholder="HH:MM"
-	/> -->
-	{value}
+		onChange={(value) => {
+			console.log('value', value);
+		}}
+	/>
 </div>
 
 <ComponentCard title="Dynamic Field Visibility Example" class="flex !items-start">
@@ -300,6 +304,17 @@
 				console.log('value', value, option);
 			}}
 		></Combobox>
+		<Select
+			placeholder="Select an option"
+			options={[
+				{ label: 'Option 1', value: 'option1' },
+				{ label: 'Option 2', value: 'option2' }
+			]}
+			onChange={(value) => {
+				console.log('value', value);
+			}}
+			value="option1"
+		></Select>
 
 		<Switch
 			label="Switch"

@@ -49,6 +49,10 @@ const defaultAccordionItem = cva({
 		splitted: {
 			true: '',
 			false: ''
+		},
+		expanded: {
+			true: '',
+			false: ''
 		}
 	},
 	compoundVariants: [
@@ -139,12 +143,12 @@ const defaultAccordionDescription = cva({
 });
 
 const defaultAccordionIcon = cva({
-	base: 'size-4 transition-all',
+	base: 'transition-all',
 	variants: {
 		size: {
-			normal: '',
-			small: '',
-			large: ''
+			small: 'size-3',
+			normal: 'size-4',
+			large: 'size-5'
 		},
 		variant: {
 			classic: '',
@@ -185,4 +189,3 @@ export type AccordionTheme = typeof accordionTheme;
 export type AccordionThemeProps = InferComponentTheme<AccordionTheme>;
 export const setAccordionTheme = setComponentTheme<AccordionTheme>('accordion');
 export const useAccordionTheme = useComponentTheme('accordion', accordionTheme);
-

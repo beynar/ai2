@@ -464,5 +464,151 @@ Default submenu behavior:
 - Each item type spreads its respective component props for full flexibility
 - The menu container uses minimal styling, focusing on vertical layout and spacing
 - Theme forwarding allows global styling of all items of a specific type
+
+## Theme Customization
+
+The Menu component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **menu**: Main menu container styles
+- **button**: Theme forwarded to Button items (optional)
+- **option**: Theme forwarded to MenuOption items (optional)
+- **separator**: Theme forwarded to Separator items (optional)
+- **submenu**: Theme forwarded to submenu MenuOption triggers (optional)
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { MenuThemeProps } from 'svelai/menu';
+import type { ButtonThemeProps } from 'svelai/button';
+import type { MenuOptionThemeProps } from 'svelai/menu-option';
+import type { SeparatorThemeProps } from 'svelai/separator';
+
+// Example theme customization
+const customTheme: MenuThemeProps = {
+  menu: {
+    base: 'flex flex-col w-full',
+    gap: {
+      none: 'gap-0',
+      small: 'gap-0.5',
+      normal: 'gap-1',
+      large: 'gap-2'
+    }
+  },
+  button: {
+    button: {
+      base: 'w-full justify-start'
+    }
+  },
+  option: {
+    menuOption: {
+      size: {
+        normal: 'px-3 py-2'
+      }
+    }
+  },
+  separator: {
+    separator: {
+      base: 'my-2'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**menu**:
+- base: Base classes for menu container
+- Variants:
+  - gap: 'none' | 'small' | 'normal' | 'large' - Spacing between menu items
+
+**button** (optional):
+- Forwards theme to all Button items in the menu
+- See Button component theme documentation for available variants
+
+**option** (optional):
+- Forwards theme to all MenuOption items in the menu
+- See MenuOption component theme documentation for available variants
+
+**separator** (optional):
+- Forwards theme to all Separator items in the menu
+- See Separator component theme documentation for available variants
+
+**submenu** (optional):
+- Forwards theme to submenu MenuOption triggers
+- See MenuOption component theme documentation for available variants
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Menu 
+  items={menuItems}
+  theme={{
+    menu: {
+      gap: {
+        normal: 'gap-2'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Theme Forwarding to Child Components**:
+\`\`\`svelte
+<Menu 
+  items={menuItems}
+  theme={{
+    menu: {
+      gap: {
+        large: 'gap-3'
+      }
+    },
+    option: {
+      menuOption: {
+        size: {
+          normal: 'px-4 py-3 min-h-10'
+        },
+        color: {
+          primary: 'text-blue-600 highlight:bg-blue-50'
+        }
+      }
+    },
+    separator: {
+      separator: {
+        base: 'my-3',
+        color: {
+          surface: 'before:border-gray-200 after:border-gray-200'
+        }
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setMenuTheme } from 'svelai/menu';
+  
+  setMenuTheme({
+    menu: {
+      gap: {
+        normal: 'gap-2'
+      }
+    },
+    option: {
+      menuOption: {
+        base: 'rounded-lg',
+        size: {
+          normal: 'px-3 py-2'
+        }
+      }
+    }
+  });
+</script>
+\`\`\`
 `;
 

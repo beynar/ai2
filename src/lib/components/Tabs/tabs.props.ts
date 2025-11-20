@@ -80,12 +80,30 @@ export type TabsProps<Item = any> = WithAttachments<
 		 * Custom theme overrides for the tabbar.
 		 */
 		tabbarTheme?: TabbarThemeProps;
+		/**
+		 * The default snippet to render for each tab. Use if you do not want to render a snippet for each tab and based your rendering on the tabs array
+		 */
+
+		tab?: Snippet<
+			[
+				{
+					stepper: StepperState<Item>;
+					item: TabItem;
+					index: number;
+				}
+			]
+		>;
+		/**
+		 * Whether the tabbar should be full width.
+		 * @default false
+		 */
+		tabbarFullWidth?: boolean;
 	} & {
 		[k in `tab${number}`]: Snippet<
 			[
 				{
 					stepper: StepperState<Item>;
-					item: Item;
+					item: TabItem;
 					index: number;
 				}
 			]

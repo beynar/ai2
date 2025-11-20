@@ -29,7 +29,7 @@
 			if (popover?.hasChildOpen) {
 				return false;
 			}
-			return true;
+			return false;
 		},
 		orientation: () => 'vertical',
 		loop: true,

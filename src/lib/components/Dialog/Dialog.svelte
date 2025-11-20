@@ -11,8 +11,6 @@
 		id: customId,
 		type,
 		isOpen = $bindable(false),
-		title,
-		description,
 		onClose,
 		onOpen,
 		size,
@@ -23,13 +21,10 @@
 		closable = true,
 		class: className,
 		header,
-		headerProps,
 		footer,
-		footerProps,
-		titleProps,
-		descriptionProps,
+		title,
+		description,
 		closeButton,
-		closeButtonProps,
 		trigger
 	}: DialogProps = $props();
 
@@ -96,12 +91,7 @@
 		{@attach dialog.attachment}
 	>
 		{#snippet CLOSE_BUTTON()}
-			<Slot
-				class={classes.closeButton({ size: dialog.computedSize })}
-				render={closeButton}
-				payload={dialog}
-				props={closeButtonProps}
-			>
+			<Slot class={classes.closeButton({ size: dialog.computedSize })} render={closeButton}>
 				<Button
 					squared
 					class={classes.closeButton({ size: dialog.computedSize })}
@@ -134,23 +124,11 @@
 			<Slot
 				as="header"
 				render={header}
-				payload={dialog}
 				class={classes.header({ size: dialog.computedSize })}
-				props={headerProps}
 				renderIf={hasHeader}
 			>
-				<Slot
-					class={classes.title({ size: dialog.computedSize })}
-					render={title}
-					payload={dialog}
-					props={titleProps}
-				/>
-				<Slot
-					class={classes.description({ size: dialog.computedSize })}
-					render={description}
-					payload={dialog}
-					props={descriptionProps}
-				/>
+				<Slot class={classes.title({ size: dialog.computedSize })} render={title} />
+				<Slot class={classes.description({ size: dialog.computedSize })} render={description} />
 				{#if closable}
 					{@render CLOSE_BUTTON()}
 				{/if}
@@ -159,12 +137,7 @@
 				{@render CLOSE_BUTTON()}
 			{/if}
 			{@render children?.(dialog)}
-			<Slot
-				render={footer}
-				class={classes.footer({ size: dialog.computedSize })}
-				payload={dialog}
-				props={footerProps}
-			/>
+			<Slot render={footer} class={classes.footer({ size: dialog.computedSize })} />
 		</div>
 	</dialog>
 {/if}

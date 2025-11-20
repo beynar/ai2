@@ -146,7 +146,7 @@ export class CarouselState {
 					'data-active': active,
 					'aria-controls': `${this.id}-slide-${index + 1}`,
 					'aria-label': `Slide ${index + 1}`,
-					'aria-selected': index === this.currentSlide.current?.index,
+					'aria-selected': active,
 					onclick: () => {
 						this.moveToSlide({ node: this.sortedSlides[index * this.resolvedLayout]?.node });
 					}
@@ -158,7 +158,7 @@ export class CarouselState {
 	nextButton = $derived.by(() => {
 		return {
 			disabled: !this.canScrollNext,
-			'aria-controls': `${this.id}-slides`,
+			'aria-controls': `${this.id}`,
 			'aria-label': 'Next slide',
 			onclick: () => {
 				this.next();
@@ -169,7 +169,7 @@ export class CarouselState {
 	prevButton = $derived.by(() => {
 		return {
 			disabled: !this.canScrollPrev,
-			'aria-controls': `${this.id}-slides`,
+			'aria-controls': `${this.id}`,
 			'aria-label': 'Previous slide',
 			onclick: () => {
 				this.prev();
@@ -190,7 +190,6 @@ export class CarouselState {
 		if (!this.slideHeight) this.slideHeight = node.clientHeight;
 		const index = Array.from(this.container.children).indexOf(node);
 		node.setAttribute('id', `${this.id}-slide-${index + 1}`);
-		// node.setAttribute('aria-label', `Slide ${index + 1} of ${this.slides.length} `);
 		node.setAttribute('aria-roledescription', 'slide');
 		node.setAttribute('role', 'tabpanel');
 		node.setAttribute('data-carousel-slide', index.toString());
@@ -218,6 +217,10 @@ export class CarouselState {
 			intersectionObserver,
 			inView: false
 		});
+
+		Array.from(this.slides.values()).forEach((slide) => {
+			slide.node.setAttribute('aria-label', `Slide ${slide.index + 1} of ${this.slides.size}`);
+		});
 	};
 
 	private onResize = () => {
@@ -238,7 +241,6 @@ export class CarouselState {
 		this.moveToSlide(nextSlide);
 	};
 	prev = (count: number = this.resolvedLayout) => {
-		console.log({ resolvedLayout: this.resolvedLayout, count });
 		if (!this.currentSlide.current || !this.canScrollPrev) return;
 		const prevSlideIndex = Math.max(0, this.currentSlide.current.index - count);
 		const prevSlide = this.sortedSlides.find((slide) => slide?.index === prevSlideIndex);

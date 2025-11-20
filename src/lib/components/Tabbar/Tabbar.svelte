@@ -16,6 +16,7 @@
 		position = 'top',
 		class: className = '',
 		theme,
+		fullWidth = false,
 		...attachments
 	}: TabbarProps = $props();
 
@@ -52,7 +53,7 @@
 
 	// Navigation hook for keyboard support
 	const navigation = useNavigation({
-		enabled: () => true,
+		enabled: () => false,
 		orientation: () => orientation,
 		loop: true,
 		id,
@@ -76,7 +77,7 @@
 </script>
 
 <div
-	class={classes.tabbar({ orientation, alignment, size, className })}
+	class={classes.tabbar({ orientation, alignment, size, className, fullWidth })}
 	role="tablist"
 	aria-orientation={orientation}
 	{@attach navigation.containerReference}
@@ -107,7 +108,8 @@
 				focused: isFocused,
 				disabled: tab.disabled,
 				orientation,
-				position
+				position,
+				fullWidth
 			})}
 			onclick={() => handleTabClick(index, tab)}
 			{@attach navigation.itemReference}

@@ -9,13 +9,13 @@
 	name: light;
 	default: true;
 	radius: normal;
-	spacing: large;
+	spacing: normal;
 	colorscheme: light;
 }
 @plugin './lib/tailwind/theme' {
 	name: dark;
 	radius: normal;
-	spacing: large;
+	spacing: normal;
 	colorscheme: dark;
 }
 
@@ -34,3 +34,9 @@ meter {
 ::-moz-meter-sub-sub-optimum::-moz-meter-bar {
 	background: none !important;
 }
+
+/* button {
+	-webkit-box-shadow: inset 0px 0px 0px 1px var(--color-light);
+	-moz-box-shadow: inset 0px 0px 0px 1px var(--color-light);
+	box-shadow: inset 0px 0px 0px 1px var(--color-light);
+} */

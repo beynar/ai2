@@ -12,37 +12,39 @@ export type TabbarPosition = 'top' | 'bottom' | 'left' | 'right';
  * - A simple string (label only)
  * - An object with label, optional prefix/suffix snippets, optional href, and optional disabled state
  */
-export type TabItem = string | {
-	/**
-	 * The label of the tab. Can be a string or a Snippet for custom rendering.
-	 */
-	label: string | Snippet;
-	/**
-	 * Optional prefix content (typically an icon).
-	 */
-	prefix?: Snippet;
-	/**
-	 * Optional suffix content (typically an icon or badge).
-	 */
-	suffix?: Snippet;
-	/**
-	 * Optional URL to navigate to. If provided, the tab renders as a link.
-	 */
-	href?: string;
-	/**
-	 * Whether this tab is disabled.
-	 * @default false
-	 */
-	disabled?: boolean;
-	/**
-	 * Link target attribute (only used when href is provided).
-	 */
-	target?: string;
-	/**
-	 * Link rel attribute (only used when href is provided).
-	 */
-	rel?: string;
-};
+export type TabItem =
+	| string
+	| {
+			/**
+			 * The label of the tab. Can be a string or a Snippet for custom rendering.
+			 */
+			label: string | Snippet;
+			/**
+			 * Optional prefix content (typically an icon).
+			 */
+			prefix?: Snippet;
+			/**
+			 * Optional suffix content (typically an icon or badge).
+			 */
+			suffix?: Snippet;
+			/**
+			 * Optional URL to navigate to. If provided, the tab renders as a link.
+			 */
+			href?: string;
+			/**
+			 * Whether this tab is disabled.
+			 * @default false
+			 */
+			disabled?: boolean;
+			/**
+			 * Link target attribute (only used when href is provided).
+			 */
+			target?: string;
+			/**
+			 * Link rel attribute (only used when href is provided).
+			 */
+			rel?: string;
+	  };
 
 export type TabbarProps = WithAttachments<{
 	/**
@@ -92,5 +94,10 @@ export type TabbarProps = WithAttachments<{
 	 * Custom theme overrides.
 	 */
 	theme?: TabbarThemeProps;
-}>;
 
+	/**
+	 * Whether the tabbar should be full width.
+	 * @default false
+	 */
+	fullWidth?: boolean;
+}>;

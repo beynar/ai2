@@ -4,6 +4,15 @@ import type { StepperState } from './stepperState.svelte.js';
 
 export type StepperProps<Item> = {
 	items: Item[];
+	step?: Snippet<
+		[
+			{
+				stepper: StepperState<Item>;
+				item: Item;
+				index: number;
+			}
+		]
+	>;
 	onChange?: (item: Item) => void;
 	class?: string;
 	activeStep?: number;
@@ -26,4 +35,3 @@ export type StepperProps<Item> = {
 		]
 	>;
 };
-

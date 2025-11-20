@@ -143,6 +143,5 @@
 			color: toast.opts.color,
 			richColors: toast.opts.richColors
 		})}
-		payload={toast}
 	/>
 </li>

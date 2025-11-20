@@ -16,7 +16,7 @@
 				{#each colors as color}
 					<div class="flex items-center justify-center gap-4">
 						{#each sizes as size}
-							<Button prefix={eyeClosedIcon} {color} {size} {variant} {disabled}>
+							<Button {color} {size} {variant} {disabled}>
 								{variant} - {color} - {size}
 							</Button>
 						{/each}

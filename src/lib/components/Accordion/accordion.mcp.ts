@@ -48,11 +48,6 @@ The Accordion component provides an interactive collapsible container for organi
 - **description**: Snippet - Custom description rendering
 - **content**: Snippet - Custom content rendering
 - **icon**: Snippet - Custom icon rendering
-- **actionsProps**: object - Props passed to actions slot
-- **iconProps**: object - Props passed to icon slot
-- **titleProps**: object - Props passed to title slot
-- **descriptionProps**: object - Props passed to description slot
-- **contentProps**: object - Props passed to content slot
 
 ### Behavior Props
 - **oneAtATime**: boolean (default: true) - Whether only one item can be expanded at a time
@@ -283,4 +278,140 @@ The Accordion component provides an interactive collapsible container for organi
 - Uses Melt UI's Accordion builder for accessibility
 - Smooth transitions with Svelte's slide transition
 - Supports bindable items for dynamic updates
+
+## Theme Customization
+
+The Accordion component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **accordion**: Main accordion container styles
+- **item**: Individual accordion item styles
+- **trigger**: Accordion trigger button styles
+- **header**: Header section styles (contains title and description)
+- **title**: Title text styles
+- **description**: Description text styles
+- **icon**: Expand/collapse icon styles
+- **content**: Content panel styles
+
+### Available Variants
+
+**accordion**:
+- base: Base classes for main container
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Spacing between items
+  - variant: 'classic' | 'card' | 'outlined' - Visual style variant
+  - splitted: boolean - Whether items are visually separated
+
+**item**:
+- base: Base classes for individual items
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Item size
+  - variant: 'classic' | 'card' | 'outlined' - Item style variant
+  - splitted: boolean - Separation styling
+  - expanded: boolean - Expanded state styling
+
+**trigger**:
+- base: Base classes for trigger button
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Trigger size
+  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+  - splitted: boolean - Border radius based on splitting
+
+**header**:
+- base: Base classes for header section
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Gap between title and description
+  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+
+**title**:
+- base: Base classes for title text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+
+**description**:
+- base: Base classes for description text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+
+**icon**:
+- base: Base classes for expand/collapse icon
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+
+**content**:
+- base: Base classes for content panel
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size and padding
+  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Accordion 
+  items={items}
+  theme={{
+    accordion: {
+      base: 'rounded-lg border-2',
+      variant: {
+        outlined: 'border-primary'
+      }
+    },
+    trigger: {
+      base: 'hover:bg-primary/10'
+    }
+  }}
+/>
+\`\`\`
+
+**Card Variant Customization**:
+\`\`\`svelte
+<Accordion 
+  variant="card"
+  splitted
+  items={items}
+  theme={{
+    item: {
+      variant: {
+        card: 'rounded-xl shadow-md hover:shadow-lg'
+      },
+      expanded: {
+        true: 'bg-primary/5'
+      }
+    },
+    title: {
+      size: {
+        large: 'text-xl font-bold'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setAccordionTheme } from 'svelai/accordion';
+  
+  setAccordionTheme({
+    accordion: {
+      base: 'gap-4',
+      variant: {
+        card: 'rounded-lg'
+      }
+    },
+    trigger: {
+      base: 'transition-colors',
+      size: {
+        normal: 'px-4 py-3'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

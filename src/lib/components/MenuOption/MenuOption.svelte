@@ -20,11 +20,6 @@
 		prefix,
 		suffix,
 		theme,
-		prefixProps,
-		suffixProps,
-		titleProps,
-		descriptionProps,
-		childrenProps,
 		...attachments
 	}: MenuOptionProps = $props();
 
@@ -60,21 +55,20 @@
 	<Slot
 		render={prefix}
 		class={classes.prefix({ size, align: title && description ? 'start' : 'center' })}
-		props={prefixProps}
 	/>
 
 	{#if children}
-		<Slot render={children} props={childrenProps} />
+		<Slot render={children} />
 	{:else if title || description}
 		<div class={classes.content({ size })}>
 			{#if title}
-				<Slot render={title} class="{classes.title({ size })} leading-none" props={titleProps} />
+				<Slot render={title} class="{classes.title({ size })} leading-none" />
 			{/if}
 			{#if description}
-				<Slot render={description} class={classes.description({ size })} props={descriptionProps} />
+				<Slot render={description} class={classes.description({ size })} />
 			{/if}
 		</div>
 	{/if}
 
-	<Slot render={suffix} class={classes.suffix({ size })} props={suffixProps} />
+	<Slot render={suffix} class={classes.suffix({ size })} />
 </svelte:element>

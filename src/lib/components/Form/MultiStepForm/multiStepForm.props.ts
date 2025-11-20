@@ -59,7 +59,6 @@ export type MultiStepFormProps<I extends FormStep[] = FormStep[]> = WithSlot<
 		submitButtonProps?: ButtonProps;
 		value?: Partial<InferFormValue<MergedMultiStepFormInputs<I>>>;
 	},
-	'footer' | 'header',
-	MultiStepFormState<I>
+	'footer' | 'header'
 >;
 

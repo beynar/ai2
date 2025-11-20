@@ -17,9 +17,6 @@
 		prefix,
 		href,
 		theme,
-		prefixProps,
-		suffixProps,
-		childrenProps,
 		...attachments
 	}: ChipProps = $props();
 
@@ -40,7 +37,7 @@
 	class={classes.chip({ color, variant, size, className })}
 	{...attachments}
 >
-	<Slot render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot render={children} props={childrenProps} />
-	<Slot render={suffix} class={classes.suffix({ size })} props={suffixProps} />
+	<Slot render={prefix} class={classes.prefix({ size })} />
+	<Slot render={children} />
+	<Slot render={suffix} class={classes.suffix({ size })} />
 </svelte:element>

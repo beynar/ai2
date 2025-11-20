@@ -60,7 +60,7 @@ export const createFieldState = <T extends InputType>(
 			});
 		}
 
-		private checkSchema(value?: FieldValue<T> | null) {
+		checkSchema(value?: FieldValue<T> | null) {
 			let schema = schemas[this.required ? 'required' : 'optional'][this.type];
 			return v.safeParse(schema, value);
 		}

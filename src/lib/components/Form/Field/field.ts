@@ -86,7 +86,6 @@ export type InputProps<T extends InputType> = WithSlot<
 	| 'description'
 	| 'helper'
 	| 'footer'
-	| 'header'
 	| 'error'
 	| 'errorsContainer'
 >;

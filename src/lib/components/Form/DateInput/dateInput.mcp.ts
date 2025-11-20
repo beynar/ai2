@@ -316,4 +316,83 @@ DateInput validates:
 - Validates date ranges automatically
 - Supports both date and datetime selection
 - Integrates with form validation
+
+## Theme Customization
+
+The DateInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme. It shares the same theme structure as TextInput for the input field.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Input element styles
+- **inputContainer**: Input container wrapper styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the input element
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the input container (handles focus states, borders, padding)
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Size-based styling
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<DateInput 
+  label="Select Date"
+  bind:value={date}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    },
+    input: {
+      size: {
+        normal: 'text-base'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Focus State Customization**:
+\`\`\`svelte
+<DateInput 
+  label="Custom Date"
+  bind:value={date}
+  theme={{
+    inputContainer: {
+      base: 'focus-within:ring-2 focus-within:ring-primary focus-within:border-primary'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setDateInputTheme } from 'svelai/date-input';
+  
+  setDateInputTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    },
+    input: {
+      base: 'placeholder:text-gray-400'
+    }
+  });
+</script>
+\`\`\`
 `;

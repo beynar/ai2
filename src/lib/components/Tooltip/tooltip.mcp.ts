@@ -172,4 +172,107 @@ The tooltip attachment displays contextual information when hovering over an ele
 - Brief content only (use Popover for interactive content)
 - Tooltip is managed globally through theme state
 - Does not lock scroll or trap focus
+
+## Theme Customization
+
+The Tooltip component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **tooltip**: Main tooltip container styles
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { TooltipThemeProps } from 'svelai/tooltip';
+
+// Example theme customization
+const customTheme: TooltipThemeProps = {
+  tooltip: {
+    base: 'z-[+50] fixed w-fit rounded raised isolate h-fit',
+    size: {
+      small: 'text-xs px-1 py-0.5',
+      normal: 'text-sm px-1 py-0.5',
+      large: 'text-base px-1.5 py-1'
+    },
+    color: {
+      surface: 'bg-surface-light text-contrast',
+      primary: 'bg-primary text-primary-fg',
+      danger: 'bg-danger text-danger-fg',
+      success: 'bg-success text-success-fg',
+      warning: 'bg-warning text-warning-fg',
+      info: 'bg-info text-info-fg'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**tooltip**:
+- base: Base classes applied to all tooltips
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls text size and padding
+  - color: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<button 
+  {@attach tooltip({ 
+    content: 'Custom tooltip',
+    theme: {
+      tooltip: {
+        base: 'rounded-lg shadow-lg border-2',
+        size: {
+          normal: 'px-3 py-2 text-sm'
+        }
+      }
+    }
+  })}
+>
+  Hover me
+</button>
+\`\`\`
+
+**Color Customization**:
+\`\`\`svelte
+<button 
+  {@attach tooltip({ 
+    content: 'Success!',
+    color: 'success',
+    theme: {
+      tooltip: {
+        color: {
+          success: 'bg-green-500 text-white shadow-md'
+        }
+      }
+    }
+  })}
+>
+  Success Tooltip
+</button>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setTooltipTheme } from 'svelai/tooltip';
+  
+  setTooltipTheme({
+    tooltip: {
+      base: 'rounded-md shadow-lg backdrop-blur-sm',
+      size: {
+        normal: 'px-3 py-1.5 text-sm'
+      },
+      color: {
+        surface: 'bg-gray-900 text-white',
+        primary: 'bg-blue-500 text-white'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

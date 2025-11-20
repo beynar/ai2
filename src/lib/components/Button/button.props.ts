@@ -4,11 +4,11 @@ import type { WithAttachments } from '$lib/types/props.js';
 import type { ButtonThemeProps } from './button.theme.js';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost' | 'link';
-export type ButtonPrimitiveProps<Payload extends Record<string, any> | undefined = undefined> =
+export type ButtonPrimitiveProps =
 	WithAttachments<
 		WithSlot<
 			{
-				payload?: Payload;
+				payload?: any;
 				label?: string;
 				ref?: HTMLElement | null;
 				href?: string;
@@ -19,9 +19,9 @@ export type ButtonPrimitiveProps<Payload extends Record<string, any> | undefined
 				size?: Sizes;
 				fullWidth?: boolean;
 				disabled?: boolean;
-				onClick?: ((payload: Payload | undefined) => void) | null | undefined;
-				onEnter?: ((payload: Payload | undefined) => void) | null | undefined;
-				onLeave?: ((payload: Payload | undefined) => void) | null | undefined;
+				onClick?: ((payload: any) => void) | null | undefined;
+				onEnter?: ((payload: any) => void) | null | undefined;
+				onLeave?: ((payload: any) => void) | null | undefined;
 				/**
 				 * The class name of the button. First element that the component outputs in the DOM.
 				 */
@@ -31,13 +31,12 @@ export type ButtonPrimitiveProps<Payload extends Record<string, any> | undefined
 				as?: 'string';
 				theme?: ButtonThemeProps;
 			},
-			'suffix' | 'prefix' | 'children',
-			Payload
+			'suffix' | 'prefix' | 'children'
 		>
 	>;
 
-export type ButtonProps<Payload extends Record<string, any> | undefined = undefined> = Omit<
-	ButtonPrimitiveProps<Payload>,
+export type ButtonProps = Omit<
+	ButtonPrimitiveProps,
 	'as'
 >;
 

@@ -41,20 +41,17 @@ The Button component is a flexible and customizable button element that supports
 - **rel**: string - Link relationship
 
 ### Event Props
-- **onClick**: (payload?: Payload) => void - Click event handler
-- **onEnter**: (payload?: Payload) => void - Pointer enter event handler
-- **onLeave**: (payload?: Payload) => void - Pointer leave event handler
+- **onClick**: (payload?: any) => void - Click event handler
+- **onEnter**: (payload?: any) => void - Pointer enter event handler
+- **onLeave**: (payload?: any) => void - Pointer leave event handler
 
 ### Content Props (Slots)
 - **children**: Snippet - Main button content
 - **prefix**: Snippet - Content before main text (typically icons)
 - **suffix**: Snippet - Content after main text (typically icons)
-- **prefixProps**: object - Props passed to prefix slot
-- **suffixProps**: object - Props passed to suffix slot
-- **childrenProps**: object - Props passed to children slot
 
 ### Advanced Props
-- **payload**: any - Data passed to event handlers and slots
+- **payload**: any - Data passed to event handlers
 - **ref**: HTMLElement - Reference to the button element
 - **class**: string - Additional CSS classes
 - **theme**: ComponentTheme - Custom theme overrides
@@ -144,4 +141,126 @@ The button follows this DOM structure:
 - \`squared\` is automatically determined when only prefix or suffix is provided without children
 - All event handlers respect disabled state
 - Icon sizing is automatically adjusted based on button size
+
+## Theme Customization
+
+The Button component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **button**: Main button container styles
+- **prefix**: Styles for prefix content (icons before text)
+- **suffix**: Styles for suffix content (icons after text)
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { ButtonThemeProps } from 'svelai/button';
+
+// Example theme customization
+const customTheme: ButtonThemeProps = {
+  button: {
+    base: 'custom-base-classes',
+    size: {
+      small: 'custom-small-classes',
+      normal: 'custom-normal-classes',
+      large: 'custom-large-classes'
+    },
+    color: {
+      primary: 'bg-blue-500 text-white',
+      danger: 'bg-red-500 text-white'
+    },
+    variant: {
+      solid: 'bg-color text-color-fg',
+      outline: 'border-2 border-color'
+    }
+  },
+  prefix: {
+    size: {
+      small: 'w-3 h-3',
+      normal: 'w-4 h-4',
+      large: 'w-5 h-5'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**button**:
+- base: Base classes applied to all buttons
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls padding, text size, and height
+  - color: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - variant: 'solid' | 'outline' | 'soft' | 'ghost' | 'link' - Visual style variant
+  - loading: boolean - Loading state styling
+  - disabled: boolean - Disabled state styling
+  - squared: boolean - Square button styling
+  - fullWidth: boolean - Full width styling
+
+**prefix**:
+- base: Base classes for prefix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size based on button size
+
+**suffix**:
+- base: Base classes for suffix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size based on button size
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Button 
+  theme={{
+    button: {
+      base: 'rounded-full shadow-lg',
+      size: {
+        large: 'px-8 py-4 text-xl'
+      }
+    }
+  }}
+>
+  Custom Styled Button
+</Button>
+\`\`\`
+
+**Color Variant Customization**:
+\`\`\`svelte
+<Button 
+  color="primary"
+  theme={{
+    button: {
+      color: {
+        primary: 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+      }
+    }
+  }}
+>
+  Gradient Button
+</Button>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setButtonTheme } from 'svelai/button';
+  
+  setButtonTheme({
+    button: {
+      variant: {
+        solid: 'bg-color text-color-fg shadow-md hover:shadow-lg transition-shadow',
+        outline: 'border-2 border-color hover:bg-color/10'
+      }
+    },
+    prefix: {
+      size: {
+        normal: 'w-5 h-5'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

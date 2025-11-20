@@ -23,10 +23,8 @@ export type FileInputProps<Mode extends FileInputMode = 'single'> = Omit<
 	// Slot props
 	fileList?: Snippet<[any]>;
 	fileListClass?: string;
-	fileListProps?: Record<string, any>;
 	file?: Snippet<[any]>;
 	fileClass?: string;
-	fileProps?: Record<string, any>;
 	placeholderClass?: string;
 	theme?: FileInputThemeProps & InputProps<FileInputType<Mode>>['theme'];
 };

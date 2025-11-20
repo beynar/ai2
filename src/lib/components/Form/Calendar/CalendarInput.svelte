@@ -28,7 +28,6 @@
 		cell,
 		buttons,
 		header,
-		headerProps,
 		...rest
 	}: CalendarInputProps<T> = $props();
 
@@ -88,6 +87,5 @@
 		{cell}
 		{buttons}
 		{header}
-		{headerProps}
 	/>
 </Field>

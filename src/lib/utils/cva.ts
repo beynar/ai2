@@ -1,5 +1,5 @@
 import { defineConfig, type VariantProps } from 'cva';
-import { twMerge } from 'tailwind-merge';
+import { twMerge, createTailwindMerge } from 'tailwind-merge';
 import { getContext, setContext } from 'svelte';
 
 export const { cva, cx, compose } = defineConfig({
@@ -40,7 +40,7 @@ export const setComponentTheme =
 
 const getKeys = (obj: any) => Object.keys(obj);
 
-const mergeObject = (
+const mergeThemeObjects = (
 	source: Record<string, any> | null | undefined,
 	target: Record<string, any>
 ) => {
@@ -54,25 +54,33 @@ const mergeObject = (
 	for (i = 0, il = targetKeys.length; i < il; ++i) {
 		key = targetKeys[i];
 		if (typeof target[key] === 'string') {
-			Object.assign(result, {
-				[key]: target[key]
-			});
+			const sourceValue = source[key];
+			if (typeof sourceValue === 'string') {
+				Object.assign(result, {
+					[key]: cx(sourceValue, target[key])
+				});
+			} else {
+				Object.assign(result, {
+					[key]: target[key]
+				});
+			}
 		} else if (typeof target[key] === 'object') {
 			Object.assign(result, {
-				[key]: mergeObject(source[key] || {}, target[key] || {})
+				[key]: mergeThemeObjects(source[key] || {}, target[key] || {})
 			});
 		}
 	}
 	return result;
 };
 
-export const useComponentTheme =
-	<T extends ComponentTheme>(
-		component: string,
-		defaultTheme: T
-	): ((theme?: InferComponentTheme<T>) => T) =>
-	({ override, ...theme }: InferComponentTheme<T> = {}) => {
-		if (!theme) {
+export const useComponentTheme = <T extends ComponentTheme>(
+	component: string,
+	defaultTheme: T
+): ((theme?: InferComponentTheme<T>) => T) => {
+	return ({ override, ...theme }: InferComponentTheme<T> = {}) => {
+		const themeContext = getContext<Record<string, any> | null | undefined>(`${component}Theme`);
+
+		if (!theme && !themeContext) {
 			return defaultTheme;
 		}
 		if (override) {
@@ -86,12 +94,11 @@ export const useComponentTheme =
 			}
 			return overridedTheme as T;
 		} else {
-			const themeContext = getContext<Record<string, any> | null | undefined>(`${component}Theme`);
-
-			const customTheme = mergeObject(themeContext, theme);
+			const customTheme = mergeThemeObjects(themeContext, theme);
 			if (!Object.keys(customTheme).length) {
 				return defaultTheme;
 			}
+
 			let composedTheme = { ...defaultTheme };
 			for (const key in customTheme) {
 				// @ts-ignore
@@ -103,3 +110,4 @@ export const useComponentTheme =
 			return composedTheme;
 		}
 	};
+};

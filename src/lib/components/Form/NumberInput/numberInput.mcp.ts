@@ -252,4 +252,83 @@ NumberInput automatically validates:
 - Automatically respects min/max bounds
 - Supports decimal values with step
 - Can be styled with prefix/suffix for units
+
+## Theme Customization
+
+The NumberInput component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Input element styles
+- **inputContainer**: Input container wrapper styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the input element
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the input container (handles focus states, borders, padding)
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Container height and size-based styling
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<NumberInput 
+  label="Quantity"
+  bind:value={quantity}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        medium: 'h-8 px-4'
+      }
+    },
+    input: {
+      size: {
+        medium: 'text-base'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Focus State Customization**:
+\`\`\`svelte
+<NumberInput 
+  label="Custom Number"
+  bind:value={value}
+  theme={{
+    inputContainer: {
+      base: 'focus-within:ring-2 focus-within:ring-primary focus-within:border-primary'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setNumberInputTheme } from 'svelai/number-input';
+  
+  setNumberInputTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        medium: 'h-8 px-4'
+      }
+    },
+    input: {
+      base: 'text-right'
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -82,6 +82,9 @@ export default plugin.withOptions<ThemeOptions>(
 			});
 
 			addBase({
+				'body *': {
+					'border-color': 'var(--color-surface-muted)'
+				},
 				'[data-color-scheme="dark"]': {
 					'--dark-raised-border': '1px solid var(--current-border, var(--color-surface-muted))',
 					'--dark-raised-shadow': 'none'
@@ -111,19 +114,11 @@ export default plugin.withOptions<ThemeOptions>(
 			addVariant('highlight', ['&[data-highlighted="true"]']);
 			addVariant('disabled', ['&:disabled', '&[data-disabled="true"]']);
 
-			matchUtilities(
-				{
-					border: (value) => {
-						console.log('border', { value });
-						return {
-							border: value ? value : 'var(--color-surface-muted)'
-						};
-					}
-				},
-				{
-					values: theme('border')
-				}
-			);
+			addBase({
+				'border-color': 'var(--color-surface-muted)',
+				'border-width': '1px'
+			});
+
 			matchUtilities(
 				{
 					raised: (value) => {
@@ -158,9 +153,6 @@ export default plugin.withOptions<ThemeOptions>(
 				extend: {
 					keyframes: {
 						...getSpinner(options).keyframes
-					},
-					borderColor: {
-						DEFAULT: 'var(--color-surface-muted)'
 					}
 				}
 			}

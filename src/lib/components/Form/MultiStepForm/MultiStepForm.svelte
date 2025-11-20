@@ -26,9 +26,7 @@
 		class: className,
 		theme,
 		footer,
-		footerProps,
 		header,
-		headerProps,
 		nextButtonProps = {},
 		previousButtonProps = {},
 		submitButtonProps = {},
@@ -64,7 +62,7 @@
 {/snippet}
 
 <div class={classes.multiStepForm({ className })}>
-	<Slot render={header} payload={form} props={headerProps}>
+	<Slot render={header}>
 		{#if showMeter}
 			<Meter value={[form.progress]} steps={form.meterSteps} />
 		{/if}
@@ -86,7 +84,7 @@
 		{...form.stepsSnippets}
 	/>
 	{@render children?.(form)}
-	<Slot render={footer} payload={form} props={footerProps} class={classes.multiStepFormFooter()}>
+	<Slot render={footer} class={classes.multiStepFormFooter()}>
 		<Button
 			prefix={arrowLeftIcon}
 			disabled={form.stepper?.activeStep === 0}

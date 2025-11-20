@@ -13,7 +13,6 @@ The Slot component is a utility for rendering dynamic content - it can render sn
 
 ### Core Props
 - **render**: Slot - Content to render (can be string, number, Snippet, or component)
-- **props**: object - Props to pass to the rendered content (if it's a snippet)
 - **class**: string - CSS class to apply to the wrapper
 
 ## Slot Type
@@ -45,16 +44,13 @@ The Slot type accepts:
 <Slot render={content} />
 \`\`\`
 
-### Render Snippet with Props
+### Render Snippet
 \`\`\`svelte
-{#snippet greeting(props)}
-	<h1>Hello {props.name}!</h1>
+{#snippet greeting()}
+	<h1>Hello World!</h1>
 {/snippet}
 
-<Slot 
-	render={greeting} 
-	props={{ name: 'World' }}
-/>
+<Slot render={greeting} />
 \`\`\`
 
 ### With CSS Class
@@ -119,7 +115,7 @@ Render items with flexible content:
 
 \`\`\`svelte
 {#each items as item}
-	<Slot render={item.label} props={{ item }} />
+	<Slot render={item.label} />
 {/each}
 \`\`\`
 
@@ -127,7 +123,6 @@ Render items with flexible content:
 
 - Automatically handles different content types
 - Safely renders null/undefined as empty
-- Props are only passed to snippets/components
 - Class is applied to the wrapper element
 - Useful for building flexible, reusable components
 `;

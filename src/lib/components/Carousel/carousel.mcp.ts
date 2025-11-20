@@ -327,5 +327,130 @@ All responsive properties support these breakpoints plus \`default\` as a fallba
 - Smooth scroll behavior
 - Items are lazily measured for optimal performance
 - Supports any content (images, cards, videos, etc.)
+
+## Theme Customization
+
+The Carousel component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **container**: Main carousel container styles
+- **slider**: Scrollable slider container styles
+- **navigationButton**: Previous/next navigation button styles
+- **dots**: Dots container styles
+- **dot**: Individual dot indicator styles
+
+### Available Variants
+
+**container**:
+- base: Base classes for main container
+
+**slider**:
+- base: Base classes for scrollable slider
+
+**navigationButton**:
+- base: Base classes for navigation buttons
+- Variants:
+  - size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default' - Button size
+  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Button color
+  - disabled: boolean - Disabled state styling
+  - direction: 'previous' | 'next' - Button position
+
+**dots**:
+- base: Base classes for dots container
+- Variants:
+  - size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default' - Gap between dots
+  - position: 'top' | 'bottom' | 'left' | 'right' - Dots position
+
+**dot**:
+- base: Base classes for individual dots
+- Variants:
+  - size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default' - Dot size
+  - color: Color variants
+  - active: boolean - Active dot styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Carousel 
+  items={items}
+  theme={{
+    container: {
+      base: 'relative'
+    },
+    navigationButton: {
+      size: {
+        md: 'w-10 h-10'
+      },
+      color: {
+        primary: 'bg-primary text-white'
+      }
+    }
+  }}
+>
+  {#snippet children()}
+    {#each items as item}
+      <div>{item.content}</div>
+    {/each}
+  {/snippet}
+</Carousel>
+\`\`\`
+
+**Custom Dot Styling**:
+\`\`\`svelte
+<Carousel 
+  items={items}
+  theme={{
+    dot: {
+      base: 'rounded-full transition-all',
+      size: {
+        md: 'h-2 w-2'
+      },
+      active: {
+        true: 'bg-primary scale-125',
+        false: 'bg-gray-300'
+      }
+    },
+    dots: {
+      position: {
+        bottom: 'bottom-4'
+      }
+    }
+  }}
+>
+  {#snippet children()}
+    {#each items as item}
+      <div>{item.content}</div>
+    {/each}
+  {/snippet}
+</Carousel>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setCarouselTheme } from 'svelai/carousel';
+  
+  setCarouselTheme({
+    container: {
+      base: 'relative overflow-hidden'
+    },
+    navigationButton: {
+      base: 'rounded-full bg-white shadow-lg',
+      size: {
+        default: 'w-8 h-8'
+      }
+    },
+    dot: {
+      base: 'rounded-full transition-all',
+      active: {
+        true: 'bg-primary'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;
 

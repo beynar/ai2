@@ -200,4 +200,149 @@ The Avatar component displays a user's profile picture with fallback initials. I
 - Suffix badge is positioned at bottom-right, absolute positioning
 - Avatar group creates overlapping effect with negative margins
 - Loading states: waiting → loading → success/errored
+
+## Theme Customization
+
+The Avatar component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **avatar**: Main avatar container styles
+- **avatarImage**: Avatar image element styles
+- **avatarPrefix**: Prefix badge styles (bottom-left)
+- **avatarSuffix**: Suffix badge styles (bottom-right)
+- **avatarInitials**: Fallback initials display styles
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { AvatarThemeProps } from 'svelai/avatar';
+
+// Example theme customization
+const customTheme: AvatarThemeProps = {
+  avatar: {
+    base: 'custom-base-classes',
+    size: {
+      small: 'size-6',
+      normal: 'size-8',
+      large: 'size-10'
+    }
+  },
+  avatarImage: {
+    size: {
+      small: '',
+      normal: '',
+      large: ''
+    }
+  },
+  avatarPrefix: {
+    size: {
+      small: 'size-5 right-[-0.25rem] bottom-[-0.25rem]',
+      normal: 'size-4 right-[-0.3rem] bottom-[-0.2rem]',
+      large: 'size-5 left-[-0.4rem] bottom-[-0.4rem]'
+    }
+  },
+  avatarSuffix: {
+    size: {
+      small: 'size-3.5 left-[-0.25rem] bottom-[-0.25rem]',
+      normal: 'size-4 right-[-0.3rem] bottom-[-0.3rem]',
+      large: 'size-3.5 right-[-0.4rem] bottom-[-0.4rem]'
+    }
+  },
+  avatarInitials: {
+    size: {
+      small: 'text-xs',
+      normal: 'text-sm',
+      large: 'text-base'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**avatar**:
+- base: Base classes applied to all avatars
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls avatar dimensions (6/8/10)
+
+**avatarImage**:
+- base: Base classes for avatar image
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Inherited from avatar size
+
+**avatarPrefix**:
+- base: Base classes for prefix badge
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Badge size and positioning based on avatar size
+
+**avatarSuffix**:
+- base: Base classes for suffix badge
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Badge size and positioning based on avatar size
+
+**avatarInitials**:
+- base: Base classes for initials fallback
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size based on avatar size
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Avatar 
+  user={{ name: 'John Doe' }}
+  theme={{
+    avatar: {
+      base: 'ring-2 ring-primary',
+      size: {
+        large: 'size-12'
+      }
+    },
+    avatarInitials: {
+      size: {
+        large: 'text-lg'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Badge Styling**:
+\`\`\`svelte
+<Avatar user={{ name: 'Jane Smith' }}>
+  {#snippet suffix()}
+    <div class="w-3 h-3 bg-success rounded-full"></div>
+  {/snippet}
+  {#snippet theme()}
+    {{
+      avatarSuffix: {
+        size: {
+          normal: 'size-5 ring-2 ring-white'
+        }
+      }
+    }}
+  {/snippet}
+</Avatar>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setAvatarTheme } from 'svelai/avatar';
+  
+  setAvatarTheme({
+    avatar: {
+      base: 'ring-2 ring-surface-muted transition-all',
+      size: {
+        normal: 'size-10'
+      }
+    },
+    avatarInitials: {
+      base: 'font-bold'
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -83,4 +83,127 @@ A \`Toast\` instance that you can use to programmatically control the toast:
 - Multiple toasts can be displayed simultaneously and will stack based on position
 - Toasts pause their auto-close timer when hovered
 - Toasts can be dismissed by clicking the close icon, clicking the toast (if \`closeOnClick\` is true), or automatically after the duration expires
+
+## Theme Customization
+
+The Toast component uses a theme object that can be customized using the \`theme\` prop in toast options or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **toast**: Main toast container styles
+- **prefix**: Prefix icon/content styles
+- **suffix**: Suffix content styles
+- **content**: Content wrapper styles
+- **closeIcon**: Close button icon styles
+- **title**: Title text styles
+- **description**: Description text styles
+
+### Available Variants
+
+**toast**:
+- base: Base classes for toast container
+- Variants:
+  - richColors: boolean - Rich color variant styling
+  - color: Color variants
+  - size: 'small' | 'normal' | 'large' - Toast size
+
+**prefix**:
+- base: Base classes for prefix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+  - color: Color variants
+  - richColors: boolean - Rich color variant styling
+
+**suffix**:
+- base: Base classes for suffix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Content size
+  - color: Color variants
+  - richColors: boolean - Rich color variant styling
+
+**content**:
+- base: Base classes for content wrapper
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Content size
+  - color: Color variants
+  - richColors: boolean - Rich color variant styling
+
+**closeIcon**:
+- base: Base classes for close button
+- Variants:
+  - richColors: boolean - Rich color variant styling
+  - color: Color variants
+
+**title**:
+- base: Base classes for title text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - color: Color variants
+  - richColors: boolean - Rich color variant styling
+
+**description**:
+- base: Base classes for description text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - color: Color variants
+  - richColors: boolean - Rich color variant styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`typescript
+import { toast } from 'svelai/toast';
+
+toast.success({
+  title: 'Success',
+  description: 'Operation completed',
+  theme: {
+    toast: {
+      base: 'rounded-xl shadow-xl',
+      size: {
+        normal: 'px-4 py-3'
+      }
+    }
+  }
+});
+\`\`\`
+
+**Custom Toast Styling**:
+\`\`\`typescript
+toast.danger({
+  title: 'Error',
+  description: 'Something went wrong',
+  theme: {
+    toast: {
+      base: 'border-2 border-red-500',
+      richColors: {
+        true: 'bg-red-50 border-red-500'
+      }
+    },
+    title: {
+      base: 'font-bold text-red-900'
+    }
+  }
+});
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setToastTheme } from 'svelai/toast';
+  
+  setToastTheme({
+    toast: {
+      base: 'rounded-lg shadow-lg border',
+      size: {
+        normal: 'px-3 py-2'
+      }
+    },
+    title: {
+      base: 'font-semibold'
+    }
+  });
+</script>
+\`\`\`
 `;

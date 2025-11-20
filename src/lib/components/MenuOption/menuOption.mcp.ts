@@ -32,8 +32,6 @@ Either use **title/description** OR **children** (mutually exclusive):
 ### Icon/Badge Slots
 - **prefix**: Snippet - Icon or badge at the start of the menu item
 - **suffix**: Snippet - Icon or badge at the end of the menu item
-- **prefixProps**: Record<string, any> - Props to pass to prefix slot
-- **suffixProps**: Record<string, any> - Props to pass to suffix slot
 
 ### Interaction Props
 - **onClick**: (event: MouseEvent) => void - Click event handler
@@ -342,4 +340,116 @@ The component automatically determines the HTML element to render:
 - Prefix icons are positioned at the start, suffix icons at the end (with ml-auto)
 - All color variants include appropriate hover states with muted backgrounds
 - Works well within Popover or Dialog components for dropdown menus
+
+## Theme Customization
+
+The MenuOption component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **menuOption**: Main menu option container styles
+- **title**: Menu option title text styles
+- **description**: Menu option description text styles
+- **prefix**: Prefix icon/content styles
+- **suffix**: Suffix icon/content styles
+- **content**: Content wrapper styles
+
+### Available Variants
+
+**menuOption**:
+- base: Base classes applied to all menu options
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls padding, text size, gap, and min-height
+  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme and hover states
+
+**title**:
+- base: Base classes for title text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+**description**:
+- base: Base classes for description text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+**prefix**:
+- base: Base classes for prefix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+  - align: 'start' | 'center' - Vertical alignment
+
+**suffix**:
+- base: Base classes for suffix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+
+**content**:
+- base: Base classes for content wrapper
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Gap spacing between title and description
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<MenuOption 
+  theme={{
+    menuOption: {
+      base: 'rounded-lg',
+      size: {
+        large: 'px-4 py-3 min-h-12'
+      }
+    },
+    title: {
+      size: {
+        large: 'text-lg font-semibold'
+      }
+    }
+  }}
+>
+  {#snippet title()}
+    Custom Menu Option
+  {/snippet}
+</MenuOption>
+\`\`\`
+
+**Color Customization**:
+\`\`\`svelte
+<MenuOption 
+  color="danger"
+  theme={{
+    menuOption: {
+      color: {
+        danger: 'text-red-600 highlight:bg-red-50 highlight:text-red-700'
+      }
+    }
+  }}
+>
+  {#snippet title()}
+    Delete Item
+  {/snippet}
+</MenuOption>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setMenuOptionTheme } from 'svelai/menu-option';
+  
+  setMenuOptionTheme({
+    menuOption: {
+      base: 'rounded-md transition-colors',
+      size: {
+        normal: 'px-3 py-2'
+      }
+    },
+    prefix: {
+      size: {
+        normal: 'w-5 h-5'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

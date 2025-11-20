@@ -26,17 +26,11 @@
 		value = $bindable(),
 		class: className,
 		header,
-		headerProps,
 		title,
-		titleProps,
 		description,
-		descriptionProps,
 		children,
 		form = $bindable(),
-		submitButton = {
-			class: 'ml-auto',
-			children: 'Submit'
-		}
+		submitButton
 	}: FormProps<I> = $props();
 
 	form = useForm({
@@ -55,19 +49,15 @@
 </script>
 
 {#snippet headerSnippet()}
-	<Slot render={title} payload={form} props={titleProps} class={classes.formTitle()} />
+	<Slot render={title} class={classes.formTitle()} />
 	<Slot
 		render={description}
-		payload={form}
-		props={descriptionProps}
 		class={classes.formDescription()}
 	/>
 {/snippet}
 <div class={classes.form({ className })}>
 	<Slot
 		render={header ? header : title || description ? headerSnippet : undefined}
-		payload={form}
-		props={headerProps}
 		class={classes.formHeader()}
 	/>
 	{#each visibleInputsEntries as [name, input]}

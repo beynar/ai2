@@ -1,0 +1,284 @@
+export const collapsibleDescription = `
+# Collapsible Component
+
+The Collapsible component provides a way to show and hide content with a toggle trigger. It supports both controlled and uncontrolled modes, keyboard navigation, and smooth slide transitions.
+
+## Basic Usage
+
+\`\`\`svelte
+<Collapsible>
+	{#snippet trigger()}
+		Click to expand
+	{/snippet}
+	{#snippet content()}
+		This content will be shown when expanded.
+	{/snippet}
+</Collapsible>
+\`\`\`
+
+## Props
+
+### Core Props
+- **open**: boolean (optional)
+  - Controlled state. When provided, the component becomes controlled.
+  - If not provided, uses internal state with \`defaultOpen\`.
+
+- **defaultOpen**: boolean (default: false)
+  - Initial open state for uncontrolled mode.
+  - Ignored when \`open\` prop is provided.
+
+- **disabled**: boolean (default: false)
+  - Disables the collapsible trigger and prevents toggling.
+  - Applies opacity styling and removes pointer events.
+
+- **onOpenChange**: (open: boolean) => void (optional)
+  - Callback fired when the open state changes.
+  - Receives the new open state as parameter.
+
+### Layout Props
+- **size**: 'small' | 'normal' | 'large' (default: 'normal')
+  - Controls padding and text size of trigger and content.
+  - small: Reduced padding (py-2 px-2) and text-sm
+  - normal: Standard padding (py-3 px-4) and text-base
+  - large: Increased padding (py-4 px-6) and text-lg
+
+### Content Props (Slots)
+- **trigger**: Snippet - Content rendered in the toggle button
+  - Required for the component to function
+  - Typically contains text, icons, or both
+
+- **content**: Snippet - Content shown when expanded
+  - Rendered inside a container with slide transition
+  - If not provided, falls back to \`children\` slot
+
+- **children**: Snippet - Default content slot
+  - Used as fallback if \`content\` slot is not provided
+  - Rendered inside the content container
+
+### Advanced Props
+- **theme**: CollapsibleThemeProps - Theme configuration overrides
+  - Allows customizing styles for container, trigger, and content parts
+
+## Examples
+
+### Example 1 - Uncontrolled
+\`\`\`svelte
+<Collapsible defaultOpen={false}>
+	{#snippet trigger()}
+		<span>Toggle Content</span>
+		<Icon name="chevron-down" />
+	{/snippet}
+	{#snippet content()}
+		<p>This content can be toggled.</p>
+	{/snippet}
+</Collapsible>
+\`\`\`
+
+### Example 2 - Controlled
+\`\`\`svelte
+<script>
+	let isOpen = false;
+</script>
+
+<Collapsible bind:open={isOpen} onOpenChange={(open) => console.log('State:', open)}>
+	{#snippet trigger()}
+		Toggle (Currently: {isOpen ? 'Open' : 'Closed'})
+	{/snippet}
+	{#snippet content()}
+		<p>Controlled content</p>
+	{/snippet}
+</Collapsible>
+\`\`\`
+
+### Example 3 - With Children Slot
+\`\`\`svelte
+<Collapsible>
+	{#snippet trigger()}
+		Show Details
+	{/snippet}
+	{#snippet children()}
+		<p>This uses the children slot instead of content.</p>
+		<ul>
+			<li>Item 1</li>
+			<li>Item 2</li>
+		</ul>
+	{/snippet}
+</Collapsible>
+\`\`\`
+
+### Example 4 - Disabled State
+\`\`\`svelte
+<Collapsible disabled={true}>
+	{#snippet trigger()}
+		Disabled Collapsible
+	{/snippet}
+	{#snippet content()}
+		This content cannot be toggled.
+	{/snippet}
+</Collapsible>
+\`\`\`
+
+### Example 5 - Different Sizes
+\`\`\`svelte
+<Collapsible size="small">
+	{#snippet trigger()}
+		Small Collapsible
+	{/snippet}
+	{#snippet content()}
+		Small content
+	{/snippet}
+</Collapsible>
+
+<Collapsible size="large">
+	{#snippet trigger()}
+		Large Collapsible
+	{/snippet}
+	{#snippet content()}
+		Large content
+	{/snippet}
+</Collapsible>
+\`\`\`
+
+## Structure
+
+The component renders:
+- A container \`<div>\` with data attributes for state
+- A trigger \`<button>\` with ARIA attributes
+- A content \`<div>\` with slide transition (only when open)
+
+## Accessibility
+
+- **ARIA Attributes**:
+  - \`aria-expanded\` on trigger indicates open/closed state
+  - \`aria-controls\` links trigger to content element
+  - \`data-state\` attribute provides state information for styling
+
+- **Keyboard Support**:
+  - **Enter** or **Space**: Toggles the collapsible
+  - Focus management handled by browser default behavior
+
+- **Semantic HTML**:
+  - Uses \`<button>\` element for trigger (proper focus and keyboard handling)
+  - Content is hidden from accessibility tree when closed
+
+## Notes
+
+- The component uses Svelte's built-in \`slide\` transition with a 200ms duration.
+- When \`open\` prop is provided, the component is controlled. Otherwise, it manages its own state.
+- The \`content\` slot takes precedence over \`children\` slot if both are provided.
+- Content is completely removed from DOM when closed (not just hidden) for better performance.
+
+## Theme Customization
+
+The Collapsible component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **container**: Main collapsible container styles
+- **trigger**: Toggle trigger button styles
+- **content**: Collapsible content panel styles
+- **icon**: Expand/collapse icon styles
+
+### Available Variants
+
+**container**:
+- base: Base classes for main container
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Container size
+
+**trigger**:
+- base: Base classes for trigger button
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Trigger padding and text size
+  - disabled: boolean - Disabled state styling
+
+**content**:
+- base: Base classes for content panel
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Content gap and text size
+
+**icon**:
+- base: Base classes for expand/collapse icon
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Collapsible 
+  theme={{
+    container: {
+      base: 'w-full'
+    },
+    trigger: {
+      base: 'flex items-center justify-between w-full',
+      size: {
+        normal: 'px-4 py-2'
+      }
+    }
+  }}
+>
+  {#snippet trigger()}
+    Toggle
+  {/snippet}
+  {#snippet content()}
+    Content
+  {/snippet}
+</Collapsible>
+\`\`\`
+
+**Custom Trigger Styling**:
+\`\`\`svelte
+<Collapsible 
+  theme={{
+    trigger: {
+      base: 'hover:bg-gray-100 rounded-lg transition-colors',
+      size: {
+        large: 'px-6 py-4 text-lg'
+      },
+      disabled: {
+        true: 'opacity-50 cursor-not-allowed'
+      }
+    },
+    icon: {
+      size: {
+        normal: 'size-5'
+      }
+    }
+  }}
+>
+  {#snippet trigger()}
+    Custom Trigger
+  {/snippet}
+  {#snippet content()}
+    Content
+  {/snippet}
+</Collapsible>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setCollapsibleTheme } from 'svelai/collapsible';
+  
+  setCollapsibleTheme({
+    container: {
+      base: 'w-full flex flex-col'
+    },
+    trigger: {
+      base: 'transition-all hover:opacity-80',
+      size: {
+        normal: 'px-2 py-2 text-sm'
+      }
+    },
+    content: {
+      size: {
+        normal: 'gap-2 mt-2'
+      }
+    }
+  });
+</script>
+\`\`\`
+`;

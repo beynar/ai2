@@ -102,6 +102,48 @@
 			</p>
 		</div>
 		<div class="border-surface-muted bg-surface rounded-lg border p-6">
+			<Tabs
+				onChange={(index: number) => {
+					console.log('Tab changed to:', index);
+				}}
+				tabs={simpleTabs}
+				bind:activeTab={simpleActiveTab}
+			>
+				{#snippet tab({ index, item, stepper })}
+					{#if item === 'Overview'}
+						<div class="p-6">
+							<h3 class="mb-3 text-xl font-semibold">{item}</h3>
+							<p class="text-contrast/80">
+								Content for {index}
+							</p>
+						</div>
+					{:else if item === 'Details'}
+						<div class="p-6">
+							<h3 class="mb-3 text-xl font-semibold">{item}</h3>
+							<p class="text-contrast/80">
+								Content for {index}
+							</p>
+						</div>
+					{:else if item === 'Settings'}
+						<div class="p-6">
+							<h3 class="mb-3 text-xl font-semibold">{item}</h3>
+							<p class="text-contrast/80">
+								Content for {index}
+							</p>
+						</div>
+					{/if}
+				{/snippet}
+			</Tabs>
+		</div>
+	</section>
+	<section class="space-y-4">
+		<div>
+			<h2 class="mb-2 text-2xl font-semibold">Tabs with Icons</h2>
+			<p class="text-contrast/70 text-sm">
+				Tabs can include prefix icons for better visual identification.
+			</p>
+		</div>
+		<div class="border-surface-muted bg-surface rounded-lg border p-6">
 			<Tabs tabs={iconTabs} bind:activeTab={iconActiveTab}>
 				{#snippet tab1()}
 					<div class="p-6">

@@ -17,8 +17,7 @@ export type ToggleButtonProps = WithAttachments<
 			checked?: boolean;
 			onChange?: ((checked: boolean) => void) | null | undefined;
 		},
-		'prefix' | 'children' | 'suffix',
-		{ checked: boolean }
+		'prefix' | 'children' | 'suffix'
 	>
 >;
 

@@ -41,9 +41,6 @@ The Chip component is a compact element for displaying tags, labels, categories,
 - **children**: Snippet - Main chip content
 - **prefix**: Snippet - Content before main text (typically icons)
 - **suffix**: Snippet - Content after main text (typically close buttons or icons)
-- **prefixProps**: object - Props passed to prefix slot
-- **suffixProps**: object - Props passed to suffix slot
-- **childrenProps**: object - Props passed to children slot
 
 ### Styling Props
 - **class**: string - Additional CSS classes
@@ -207,4 +204,132 @@ The Chip component is a compact element for displaying tags, labels, categories,
 - Interactive chips have hover and focus states
 - Suffix is commonly used for close/remove actions
 - Prefix is typically used for icons or status indicators
+
+## Theme Customization
+
+The Chip component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **chip**: Main chip container styles
+- **prefix**: Prefix icon/content styles
+- **suffix**: Suffix icon/content styles
+
+### Theme Type Definition
+
+\`\`\`typescript
+import type { ChipThemeProps } from 'svelai/chip';
+
+// Example theme customization
+const customTheme: ChipThemeProps = {
+  chip: {
+    base: 'custom-base-classes',
+    size: {
+      small: 'px-1.5 py-0.5 min-h-4 text-sm gap-1',
+      normal: 'px-2 py-0.5 min-h-5 text-base gap-1',
+      large: 'px-2.5 py-0.5 min-h-6 text-md gap-1.5'
+    },
+    color: {
+      primary: 'bg-primary text-primary-fg',
+      danger: 'bg-danger text-danger-fg'
+    },
+    variant: {
+      solid: 'text-color-fg bg-color',
+      outline: 'bg-opacity-0 text-color border-color border',
+      soft: 'bg-color-muted text-color'
+    }
+  },
+  prefix: {
+    size: {
+      small: 'w-2 h-2',
+      normal: 'w-4 h-4',
+      large: 'w-5 h-5'
+    }
+  },
+  suffix: {
+    size: {
+      small: 'w-2 h-2',
+      normal: 'w-4 h-4',
+      large: 'w-5 h-5'
+    }
+  }
+};
+\`\`\`
+
+### Available Variants
+
+**chip**:
+- base: Base classes applied to all chips
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Controls padding, height, text size, and gap
+  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - variant: 'solid' | 'outline' | 'soft' - Visual style variant
+
+**prefix**:
+- base: Base classes for prefix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size based on chip size
+
+**suffix**:
+- base: Base classes for suffix content
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size based on chip size
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Chip 
+  theme={{
+    chip: {
+      base: 'rounded-full shadow-md',
+      size: {
+        large: 'px-4 py-2 min-h-8'
+      }
+    }
+  }}
+>
+  Custom Chip
+</Chip>
+\`\`\`
+
+**Color and Variant Customization**:
+\`\`\`svelte
+<Chip 
+  color="danger"
+  variant="outline"
+  theme={{
+    chip: {
+      variant: {
+        outline: 'border-2 border-red-500 bg-red-50 text-red-700'
+      }
+    }
+  }}
+>
+  Danger Chip
+</Chip>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setChipTheme } from 'svelai/chip';
+  
+  setChipTheme({
+    chip: {
+      base: 'transition-all hover:scale-105',
+      variant: {
+        solid: 'shadow-sm hover:shadow-md',
+        outline: 'border-2 hover:bg-color/10'
+      }
+    },
+    prefix: {
+      size: {
+        normal: 'w-5 h-5'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

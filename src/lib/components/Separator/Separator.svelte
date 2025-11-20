@@ -11,7 +11,6 @@
 		color = 'surface',
 		size = 1,
 		theme,
-		childrenProps,
 		...attachments
 	}: SeparatorProps = $props();
 
@@ -28,6 +27,6 @@
 	{...attachments}
 >
 	{#if children}
-		<Slot render={children} class={classes.label({ orientation })} props={childrenProps} />
+		<Slot render={children} class={classes.label({ orientation })} />
 	{/if}
 </div>

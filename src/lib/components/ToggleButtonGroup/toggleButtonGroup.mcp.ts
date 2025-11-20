@@ -245,4 +245,59 @@ The ToggleButtonGroup component manages a collection of toggle buttons where one
 - Selected state is visually distinct
 - Individual button props override group props
 - Empty selection is allowed in single mode by setting value to null/undefined
+
+## Theme Customization
+
+The ToggleButtonGroup component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **buttonGroup**: Main button group container styles
+
+### Available Variants
+
+**buttonGroup**:
+- base: Base classes for button group container (handles spacing between buttons)
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<ToggleButtonGroup 
+  bind:value={value}
+  buttons={buttons}
+  theme={{
+    buttonGroup: {
+      base: 'flex items-center gap-2'
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Group Styling**:
+\`\`\`svelte
+<ToggleButtonGroup 
+  bind:value={value}
+  buttons={buttons}
+  theme={{
+    buttonGroup: {
+      base: 'flex items-center gap-1 p-1 bg-gray-100 rounded-lg'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setToggleButtonGroupTheme } from 'svelai/toggle-button-group';
+  
+  setToggleButtonGroupTheme({
+    buttonGroup: {
+      base: 'flex items-center gap-1'
+    }
+  });
+</script>
+\`\`\`
 `;

@@ -39,7 +39,7 @@ const defaultButton = cva({
 			false: null
 		},
 		fullWidth: {
-			true: '!w-full flex-1 max-w-full'
+			true: '!w-full flex-1 flex-[0_0_100%] max-w-full'
 		}
 	},
 	defaultVariants: {

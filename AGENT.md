@@ -84,7 +84,7 @@ text-color        /* Uses --color CSS variable */
 text-color-light  /* Uses --color-light CSS variable */
 text-color-lighter /* Uses --color-lighter CSS variable */
 text-color-dark   /* Uses --color-dark CSS variable */
-text-color-muted  /* Uses --color-muted CSS variable */
+text-contrast-muted  /* Uses --color-muted CSS variable */
 text-color-fg     /* Uses --color-fg CSS variable */
 
 border-color      /* Uses --color CSS variable */
@@ -220,13 +220,10 @@ The Button component is a flexible and customizable button element that supports
 - **children**: Snippet - Main button content
 - **prefix**: Snippet - Content before main text (typically icons)
 - **suffix**: Snippet - Content after main text (typically icons)
-- **prefixProps**: object - Props passed to prefix slot
-- **suffixProps**: object - Props passed to suffix slot
-- **childrenProps**: object - Props passed to children slot
 
 ### Advanced Props
 
-- **payload**: any - Data passed to event handlers and slots
+- **payload**: any - Data passed to event handlers
 - **ref**: HTMLElement - Reference to the button element
 - **class**: string - Additional CSS classes
 - **theme**: ComponentTheme - Custom theme overrides

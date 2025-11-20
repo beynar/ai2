@@ -5,6 +5,9 @@
 	import { useAccordionTheme } from './accordion.theme.js';
 	import Slot from '../Slot/Slot.svelte';
 	import { slide } from 'svelte/transition';
+	import { caretDownIcon } from '../Icons/caretDown.js';
+	import { plusIcon } from '../Icons/plus.js';
+	import { minusIcon } from '../Icons/minus.js';
 
 	let {
 		items = $bindable([]),
@@ -19,16 +22,12 @@
 		size,
 		class: className,
 		theme,
-		actionsProps,
-		iconProps,
-		titleProps,
-		descriptionProps,
-		contentProps,
 		actions,
 		title,
 		description,
 		content,
 		transitions,
+		accessible = true,
 		...attachments
 	}: AccordionProps<Item> = $props();
 
@@ -56,36 +55,12 @@
 
 {#snippet renderIcon(isOpen: boolean)}
 	{#if icon && icon === 'chevron'}
-		<svg
-			style:transform="rotate({isOpen ? '180' : '0'}deg)"
-			class={classes.icon({ variant, size })}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="1.5"
-			stroke="currentColor"
-		>
-			<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-		</svg>
+		{@render caretDownIcon({
+			class: classes.icon({ variant, size }),
+			transform: `rotate(${isOpen ? '180deg' : '0deg'})`
+		})}
 	{:else if icon && icon === 'math'}
-		<svg
-			class={classes.icon({ variant, size })}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="1.5"
-			stroke="currentColor"
-		>
-			<path
-				style="transform-origin: center; transition: scale 200ms ease-in-out; transform: scale({!isOpen
-					? '1'
-					: '0'})"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				d={'M12 4.5v15m7.5-7.5h-15'}
-			/>
-			<path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-		</svg>
+		{@render (isOpen ? minusIcon : plusIcon)({ class: classes.icon({ variant, size }) })}
 	{:else if icon}
 		<Slot class={classes.icon({ variant, size })} render={icon} />
 	{/if}
@@ -101,7 +76,7 @@
 >
 	{#each itemsWithId as accordionItem}
 		{@const item = accordion.getItem(accordionItem)}
-		<div class={classes.item({ variant, size, splitted })}>
+		<div class={classes.item({ variant, size, splitted, expanded: item.isExpanded })}>
 			<button {...item.trigger} class={classes.trigger({ variant, size, splitted })}>
 				<div {...item.heading} class={classes.header({ variant, size })}>
 					<Slot
@@ -119,12 +94,16 @@
 			</button>
 
 			{#if item.isExpanded}
-				<div transition:slide {...item.content}>
+				<div transition:slide {...item.content} class={classes.content({ variant, size })}>
 					<Slot
 						render={resolve(accordionItem, contentKey || 'content')}
-						class={classes.content({ variant, size })}
+						payload={{ expanded: item.isExpanded }}
 					/>
 				</div>
+			{:else if accessible}
+				<span class="sr-only">
+					{@render resolve(accordionItem, contentKey || 'content')}
+				</span>
 			{/if}
 		</div>
 	{/each}

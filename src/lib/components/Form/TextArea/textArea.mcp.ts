@@ -256,4 +256,83 @@ TextArea automatically validates:
 - Resize handle can be controlled
 - Works in forms with validation
 - Maintains scroll position during typing
+
+## Theme Customization
+
+The TextArea component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **input**: Textarea element styles
+- **inputContainer**: Textarea container wrapper styles
+
+### Available Variants
+
+**input**:
+- base: Base classes applied to the textarea element
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Text size
+  - disabled: boolean - Disabled state styling
+
+**inputContainer**:
+- base: Base classes for the textarea container (handles focus states, borders, padding)
+- Variants:
+  - size: 'small' | 'medium' | 'large' - Container height and size-based styling
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<TextArea 
+  label="Message"
+  bind:value={message}
+  theme={{
+    inputContainer: {
+      base: 'border-2 rounded-lg',
+      size: {
+        medium: 'h-24 px-4 py-2'
+      }
+    },
+    input: {
+      size: {
+        medium: 'text-base'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Focus State Customization**:
+\`\`\`svelte
+<TextArea 
+  label="Custom TextArea"
+  bind:value={value}
+  theme={{
+    inputContainer: {
+      base: 'focus-within:ring-2 focus-within:ring-primary focus-within:border-primary'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setTextAreaTheme } from 'svelai/text-area';
+  
+  setTextAreaTheme({
+    inputContainer: {
+      base: 'rounded-lg border-2 transition-all',
+      size: {
+        medium: 'h-24 px-4 py-2'
+      }
+    },
+    input: {
+      base: 'resize-y min-h-[100px]'
+    }
+  });
+</script>
+\`\`\`
 `;

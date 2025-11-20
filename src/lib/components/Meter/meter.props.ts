@@ -1,11 +1,12 @@
-import { cva } from '$lib/utils/cva.js';
+import type { Snippet } from 'svelte';
 import type { Colors, Sizes } from '../../types/theme.js';
 import type { Slot, WithSlot } from '../Slot/slot.js';
 import type { MeterThemeProps } from './meter.theme.js';
 
-export type Meter<T extends Record<string, any> | undefined> = {
+export type MeterStep<T extends Record<string, any> | undefined> = {
 	label?: string;
 	color?: Colors;
+	icon?: Snippet<[]>;
 	position?: 'top' | 'bottom';
 	value: number;
 	data?: T;
@@ -18,7 +19,7 @@ type Step<T extends Record<string, any> | undefined> = {
 	class?: string;
 	labelClass?: string;
 	color: Colors;
-	label: Slot<Omit<Step<T>, 'label'>>;
+	label: Slot;
 	data?: T;
 };
 
@@ -30,8 +31,9 @@ export type MeterProps<
 		{
 			class?: string;
 			showIndicatorAs?: 'value' | 'percentage';
-			value: Meter<T> | Meter<T>[];
+			value: MeterStep<T> | MeterStep<T>[];
 			steps?: Step<S>[];
+			showLegend?: boolean;
 			stiffness?: number;
 			soft?: number;
 			damping?: number;
@@ -41,10 +43,7 @@ export type MeterProps<
 			size?: Sizes;
 			theme?: MeterThemeProps;
 		},
-		'label' | 'description' | 'helper' | 'header',
-		never
+		'label' | 'description' | 'helper' | 'header'
 	>,
-	'indicator',
-	Meter<T> & { percentage: number; min: number; max: number }
+	'indicator'
 >;
-

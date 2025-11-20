@@ -201,4 +201,57 @@ ButtonGroup automatically:
 - Buttons are rendered in the order provided
 - The group container can be styled with the \`class\` prop
 - All Button component features are supported for individual buttons
+
+## Theme Customization
+
+The ButtonGroup component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **buttonGroup**: Main button group container styles
+
+### Available Variants
+
+**buttonGroup**:
+- base: Base classes for button group container (handles border radius and border connections between buttons)
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<ButtonGroup 
+  buttons={buttons}
+  theme={{
+    buttonGroup: {
+      base: 'flex items-center rounded-lg overflow-hidden'
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Group Styling**:
+\`\`\`svelte
+<ButtonGroup 
+  buttons={buttons}
+  theme={{
+    buttonGroup: {
+      base: 'flex items-center gap-0 border-2 border-primary rounded-lg overflow-hidden'
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setButtonGroupTheme } from 'svelai/button-group';
+  
+  setButtonGroupTheme({
+    buttonGroup: {
+      base: 'flex items-center first-child:rounded-r-none last-child:rounded-l-none'
+    }
+  });
+</script>
+\`\`\`
 `;

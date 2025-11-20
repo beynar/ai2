@@ -77,4 +77,19 @@
 			<p class="text-contrast/70 text-sm">Active tab: {simpleActiveTab}</p>
 		</div>
 	</div>
+	<!-- Simple String Tabs -->
+	<div class="grid gap-4">
+		<h2 class="text-lg font-bold">Simple String Tabs</h2>
+		<div
+			class="border-surface-muted relative grid min-h-[100px] w-full max-w-[90vw] items-center gap-4 rounded border p-6"
+		>
+			<Tabbar
+				fullWidth
+				tabs={simpleTabs}
+				bind:activeTab={simpleActiveTab}
+				onChange={handleTabChange}
+			/>
+			<p class="text-contrast/70 text-sm">Active tab: {simpleActiveTab}</p>
+		</div>
+	</div>
 </div>

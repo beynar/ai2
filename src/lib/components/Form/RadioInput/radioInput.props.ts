@@ -5,7 +5,6 @@ export type RadiosOption = {
 	label?: string;
 	value: string;
 	icon?: Slot;
-	iconProps?: Record<string, any>;
 	description?: string;
 };
 export type RadioInputProps<T extends RadiosOption = RadiosOption> = InputProps<'radio'> & {

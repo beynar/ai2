@@ -34,8 +34,8 @@ export type AvatarProps<I> = WithAttachments<{
 	 */
 	class?: string;
 	loadingState?: LoadingState;
-	prefix?: Slot<{ name: string; avatar?: string }>;
-	suffix?: Slot<{ name: string; avatar?: string }>;
+	prefix?: Slot;
+	suffix?: Slot;
 	theme?: AvatarThemeProps;
 }>;
 

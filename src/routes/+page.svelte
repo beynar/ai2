@@ -19,12 +19,7 @@
 <p class="text-contrast-muted">hello</p>
 
 {#snippet Test({ text }: { text: string })}
-	<button
-		onClick={() => {
-			console.log({ Test, Component });
-		}}
-		class="bg-primary text-color-light p-2">{text}</button
-	>
+	<button class="bg-primary text-color-light p-2">{text}</button>
 {/snippet}
 
 <div class="bg-primary/20 size-20 rounded p-1" {@attach tooltip({ content: 'hello' })}>hello</div>
@@ -32,6 +27,9 @@
 <!--  -->
 <Button color="secondary">Hello</Button>
 <Button color="secondary">Hello</Button>
+
+<div class="size-10 border">e</div>
+<div class="border-danger bg-primary-dark size-10 border">e</div>
 <!-- <Button color="danger">Hello</Button>
 <Button color="success">Hello</Button>
 <Button color="warning">Hello</Button>

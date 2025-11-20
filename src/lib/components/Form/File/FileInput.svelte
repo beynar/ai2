@@ -20,10 +20,8 @@
 		maxSize = 50 * 1024 * 1024,
 		fileList,
 		fileListClass,
-		fileListProps,
 		file,
 		fileClass,
-		fileProps,
 		placeholder = 'Click or drag files here',
 		placeholderClass,
 		required = false,
@@ -158,24 +156,13 @@
 		<div transition:slide class="h-fit w-full">
 			<Slot
 				render={fileList}
-				payload={dropzone}
-				props={fileListProps}
 				class={classes.fileList({ class: fileListClass })}
 			>
 				{#each dropzone.files as fil, i (fil.name + fil.size)}
 					{@const size = dropzone.formatSize(fil.size)}
 					<div transition:slide={{ duration: 300 }}>
 						<Slot
-							payload={{
-								file: fil,
-								index: i,
-								remove: () => {
-									dropzone.removeFile(fil);
-								},
-								size
-							}}
 							render={file}
-							props={fileProps}
 							class={classes.file({ class: fileClass })}
 						>
 							{#if isImage(fil)}

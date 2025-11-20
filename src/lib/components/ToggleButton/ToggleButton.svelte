@@ -4,8 +4,6 @@
 	import { useToggleButtonTheme } from './toggleButton.theme.js';
 	let {
 		onChange = null,
-		prefixProps,
-		suffixProps,
 		class: className,
 		color = 'surface',
 		prefix,
@@ -15,7 +13,6 @@
 		ref = $bindable(),
 		disabled = false,
 		theme,
-		childrenProps,
 		checked = $bindable(false),
 		variant = 'ghost',
 		...attachments
@@ -51,16 +48,12 @@
 	{...attachments}
 >
 	<Slot
-		payload={{ checked }}
 		render={prefix}
 		class={classes.prefix({ size, checked })}
-		props={prefixProps}
 	/>
-	<Slot payload={{ checked }} render={children} props={childrenProps} />
+	<Slot render={children} />
 	<Slot
-		payload={{ checked }}
 		render={suffix}
 		class={classes.suffix({ size, checked })}
-		props={suffixProps}
 	/>
 </button>

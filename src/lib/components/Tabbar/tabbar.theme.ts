@@ -17,6 +17,10 @@ const defaultTabbar = cva({
 			small: 'gap-0.5',
 			normal: 'gap-1',
 			large: 'gap-1.5'
+		},
+		fullWidth: {
+			true: 'w-full',
+			false: ''
 		}
 	},
 	defaultVariants: {
@@ -65,6 +69,10 @@ const defaultTab = cva({
 			bottom: '',
 			left: '',
 			right: ''
+		},
+		fullWidth: {
+			true: 'w-full',
+			false: ''
 		}
 	},
 	defaultVariants: {

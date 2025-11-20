@@ -281,4 +281,109 @@ Switch validates:
 - Thumb slides with smooth animation
 - Toggle background changes color based on state
 - Supports all Field component features
+
+## Theme Customization
+
+The Switch component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **toggle**: Switch toggle track styles
+- **thumb**: Switch thumb/knob styles
+- **inputContainer**: Container wrapper styles
+
+### Available Variants
+
+**toggle**:
+- base: Base classes for the toggle track
+- Variants:
+  - checked: boolean - Background and border color based on checked state
+  - size: 'small' | 'normal' | 'large' - Toggle dimensions (height and width)
+  - disabled: boolean - Disabled state styling
+
+**thumb**:
+- base: Base classes for the thumb/knob
+- Variants:
+  - checked: boolean - Thumb position and styling based on checked state
+  - size: 'small' | 'normal' | 'large' - Thumb dimensions
+
+**inputContainer**:
+- base: Base classes for the container wrapper
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Gap spacing between label and toggle
+  - disabled: boolean - Disabled state styling
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Switch 
+  label="Enable Feature"
+  bind:checked={enabled}
+  theme={{
+    toggle: {
+      base: 'rounded-full transition-all',
+      checked: {
+        true: 'bg-green-500 border-green-600'
+      },
+      size: {
+        normal: 'h-6 w-11'
+      }
+    },
+    thumb: {
+      size: {
+        normal: 'h-5 w-5'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Colors**:
+\`\`\`svelte
+<Switch 
+  label="Custom Switch"
+  bind:checked={checked}
+  theme={{
+    toggle: {
+      checked: {
+        true: 'bg-purple-500 border-purple-600',
+        false: 'bg-gray-300 border-gray-400'
+      }
+    },
+    thumb: {
+      checked: {
+        true: 'bg-white border-purple-500',
+        false: 'bg-white border-gray-400'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setSwitchInputTheme } from 'svelai/switch';
+  
+  setSwitchInputTheme({
+    toggle: {
+      base: 'transition-all duration-300',
+      checked: {
+        true: 'bg-primary border-primary shadow-md'
+      },
+      size: {
+        normal: 'h-6 w-12'
+      }
+    },
+    thumb: {
+      base: 'shadow-lg',
+      size: {
+        normal: 'h-5 w-5'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;

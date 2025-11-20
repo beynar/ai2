@@ -62,6 +62,11 @@ The Meter component visualizes a measurement or progress along a known scale, wi
 
 ## Examples
 
+### Simple Progress Bar
+\`\`\`svelte
+<Meter value={{ value: 65 }} />
+\`\`\`
+
 ### Basic Meter
 \`\`\`svelte
 <Meter value={{ value: 60, label: 'Completion' }} />
@@ -228,4 +233,176 @@ The Meter component visualizes a measurement or progress along a known scale, wi
 - Indicator position can be top or bottom
 - Progress bar fills from left to right
 - Colors can be set per value or inherited
+
+## Theme Customization
+
+The Meter component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **meter**: Main meter container styles
+- **header**: Header section styles
+- **container**: Progress container styles
+- **label**: Label text styles
+- **helper**: Helper text styles
+- **description**: Description text styles
+- **progress**: Progress bar element styles
+- **track**: Track/background styles
+- **indicator**: Value indicator styles
+- **legend**: Legend container styles
+- **legendItem**: Legend item styles
+- **legendIcon**: Legend icon styles
+- **legendLabel**: Legend label text styles
+- **legendPercentage**: Legend percentage text styles
+
+### Available Variants
+
+**meter**:
+- base: Base classes for main container
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Container gap size
+
+**header**:
+- base: Base classes for header section
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Gap between elements
+
+**container**:
+- base: Base classes for progress container
+- Variants:
+  - first: boolean - First segment styling (rounded left)
+  - last: boolean - Last segment styling (rounded right)
+
+**label**:
+- base: Base classes for label text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+**helper**:
+- base: Base classes for helper text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+**description**:
+- base: Base classes for description text
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+**progress**:
+- base: Base classes for progress bar
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Bar height
+
+**track**:
+- base: Base classes for track/background
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Track height
+  - labelsPosition: 'top' | 'bottom' | 'both' - Margin based on label position
+
+**indicator**:
+- base: Base classes for value indicator
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+  - position: 'top' | 'bottom' - Indicator position
+
+**legend**:
+- base: Base classes for legend container
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Legend size
+
+**legendItem**:
+- base: Base classes for legend items
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Gap between elements
+
+**legendIcon**:
+- base: Base classes for legend icons
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Icon size
+
+**legendLabel**:
+- base: Base classes for legend labels
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+**legendPercentage**:
+- base: Base classes for legend percentages
+- Variants:
+  - size: 'small' | 'normal' | 'large' - Text size
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Meter 
+  value={{ value: 75 }}
+  theme={{
+    meter: {
+      base: 'flex flex-col',
+      size: {
+        normal: 'gap-2'
+      }
+    },
+    track: {
+      base: 'rounded-full bg-gray-200',
+      size: {
+        normal: 'h-2'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Custom Progress Bar**:
+\`\`\`svelte
+<Meter 
+  value={{ value: 60 }}
+  theme={{
+    progress: {
+      base: 'bg-gradient-to-r from-primary to-secondary',
+      size: {
+        large: 'h-4'
+      }
+    },
+    track: {
+      base: 'bg-gray-100 rounded-full',
+      size: {
+        large: 'h-4'
+      }
+    },
+    indicator: {
+      base: 'text-sm font-semibold',
+      position: {
+        top: 'bottom-full mb-2'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setMeterTheme } from 'svelai/meter';
+  
+  setMeterTheme({
+    meter: {
+      base: 'flex flex-col',
+      size: {
+        normal: 'gap-2'
+      }
+    },
+    track: {
+      base: 'rounded-full bg-gray-200',
+      size: {
+        normal: 'h-2'
+      }
+    },
+    progress: {
+      base: 'bg-primary rounded-full'
+    }
+  });
+</script>
+\`\`\`
 `;

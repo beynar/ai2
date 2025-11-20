@@ -47,10 +47,19 @@ The Tabs component combines a Tabbar for navigation with a Stepper for animated 
   - Automatically sets tabbar orientation (horizontal for top/bottom, vertical for left/right)
 
 ### Content Props (Snippets)
+- **tab**: Snippet<[{ stepper, item, index }]>
+  - Default snippet to render for each tab panel
+  - Use this when you want flexible rendering based on the tab item data
+  - Receives: \`stepper\` (StepperState), \`item\` (TabItem), \`index\` (number)
+  - Allows conditional rendering based on item values
+  - Example: Use when you want to render different content based on the tab label or item properties
+
 - **tab1, tab2, tab3, ...**: Snippet<[{ stepper, item, index }]>
-  - Content snippets for each tab panel
-  - Number corresponds to tab index (1-based)
-  - Receives stepper state, item data, and index
+  - Content snippets for each specific tab panel (1-based numbering)
+  - Number corresponds to tab index (tab1 = first tab, tab2 = second tab, etc.)
+  - Receives: \`stepper\` (StepperState), \`item\` (TabItem), \`index\` (number)
+  - Use when you want explicit control over each tab's content
+  - Takes precedence over the \`tab\` prop when both are provided
 
 ### Animation Props
 - **keyFramesOptions**: object (default: { duration: 300, easing: 'ease-in-out', fill: 'both' })
@@ -71,6 +80,10 @@ The Tabs component combines a Tabbar for navigation with a Stepper for animated 
 
 - **tabbarAlignment**: 'start' | 'center' | 'end' (default: 'start')
   - The alignment of the tabs within the container
+
+- **tabbarFullWidth**: boolean (default: false)
+  - Whether the tabbar should be full width
+  - When true, the tabbar and individual tabs will expand to fill the available width
 
 - **tabbarClass**: string
   - Additional CSS classes for the tabbar container
@@ -137,6 +150,45 @@ The Tabs component follows this DOM structure:
 	{/snippet}
 </Tabs>
 \`\`\`
+
+### Flexible Rendering with Default Tab Snippet
+\`\`\`svelte
+<script>
+	import { Tabs } from '$lib/components/Tabs';
+	
+	let activeTab = $state(0);
+	const tabs = ['Overview', 'Details', 'Settings'];
+</script>
+
+<Tabs {tabs} bind:activeTab>
+	{#snippet tab({ index, item, stepper })}
+		{#if item === 'Overview'}
+			<div class="p-6">
+				<h3 class="mb-3 text-xl font-semibold">{item}</h3>
+				<p class="text-contrast/80">
+					Content for Overview tab at index {index}
+				</p>
+			</div>
+		{:else if item === 'Details'}
+			<div class="p-6">
+				<h3 class="mb-3 text-xl font-semibold">{item}</h3>
+				<p class="text-contrast/80">
+					Content for Details tab at index {index}
+				</p>
+			</div>
+		{:else if item === 'Settings'}
+			<div class="p-6">
+				<h3 class="mb-3 text-xl font-semibold">{item}</h3>
+				<p class="text-contrast/80">
+					Content for Settings tab at index {index}
+				</p>
+			</div>
+		{/if}
+	{/snippet}
+</Tabs>
+\`\`\`
+
+This approach allows you to conditionally render content based on the tab item value, making it more flexible when you have dynamic tab arrays or want to reuse the same snippet logic across multiple tabs.
 
 ### Tabs with Icons
 \`\`\`svelte
@@ -245,6 +297,28 @@ The Tabs component follows this DOM structure:
 	{/snippet}
 	{#snippet tab2()}
 		<div>Second tab content</div>
+	{/snippet}
+</Tabs>
+\`\`\`
+
+### Full Width Tabbar
+\`\`\`svelte
+<script>
+	import { Tabs } from '$lib/components/Tabs';
+	
+	const tabs = ['Tab 1', 'Tab 2', 'Tab 3'];
+</script>
+
+<!-- Full width tabbar where tabs expand to fill available space -->
+<Tabs {tabs} tabbarFullWidth>
+	{#snippet tab1()}
+		<div>First tab content</div>
+	{/snippet}
+	{#snippet tab2()}
+		<div>Second tab content</div>
+	{/snippet}
+	{#snippet tab3()}
+		<div>Third tab content</div>
 	{/snippet}
 </Tabs>
 \`\`\`
@@ -451,8 +525,12 @@ The Tabs component inherits accessibility features from both Tabbar and Stepper:
 
 ## Notes
 
-- Tab content is rendered using snippet props (\`tab1\`, \`tab2\`, etc.)
+- Tab content can be rendered using either:
+  - Individual snippet props (\`tab1\`, \`tab2\`, etc.) for explicit control
+  - Default \`tab\` snippet prop for flexible, conditional rendering based on item data
+- When both \`tab\` and numbered snippets (\`tab1\`, \`tab2\`, etc.) are provided, numbered snippets take precedence
 - Snippet numbering is 1-based (first tab = tab1)
+- The \`tab\` snippet receives: \`stepper\` (StepperState), \`item\` (TabItem), \`index\` (number)
 - Content panels animate smoothly when switching tabs
 - The \`stepper\` binding provides programmatic control
 - Inactive panels are hidden with \`inert\` attribute for accessibility
@@ -461,4 +539,92 @@ The Tabs component inherits accessibility features from both Tabbar and Stepper:
 - You can override the automatic orientation by explicitly setting \`tabbarOrientation\`
 - Animation can be customized via \`keyFramesOptions\`
 - The component is fully responsive and works with all color schemes
+
+## Theme Customization
+
+The Tabs component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **tabs**: Main tabs container styles
+- **content**: Tab content panel styles
+
+### Available Variants
+
+**tabs**:
+- base: Base classes for main tabs container
+- Variants:
+  - placement: 'top' | 'bottom' | 'left' | 'right' - Tab placement direction
+
+**content**:
+- base: Base classes for content panel
+- Variants:
+  - placement: 'top' | 'bottom' | 'left' | 'right' - Content positioning based on placement
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Tabs 
+  tabs={tabs}
+  theme={{
+    tabs: {
+      placement: {
+        top: 'border-b-2 border-gray-200'
+      }
+    },
+    content: {
+      base: 'p-4'
+    }
+  }}
+>
+  {#snippet tab1()}
+    Content
+  {/snippet}
+</Tabs>
+\`\`\`
+
+**Vertical Placement Customization**:
+\`\`\`svelte
+<Tabs 
+  tabs={tabs}
+  placement="left"
+  theme={{
+    tabs: {
+      placement: {
+        left: 'border-r-2 border-gray-200'
+      }
+    },
+    content: {
+      placement: {
+        left: 'ml-4'
+      }
+    }
+  }}
+>
+  {#snippet tab1()}
+    Content
+  {/snippet}
+</Tabs>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setTabsTheme } from 'svelai/tabs';
+  
+  setTabsTheme({
+    tabs: {
+      base: 'w-full',
+      placement: {
+        top: 'flex-col'
+      }
+    },
+    content: {
+      base: 'w-full'
+    }
+  });
+</script>
+\`\`\`
 `;

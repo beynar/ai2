@@ -3,7 +3,7 @@ import { createRawSnippet } from 'svelte';
 import type { SVGAttributes } from 'svelte/elements';
 
 type IconProps = {
-	size: number | string;
+	size?: number | string;
 	mirrored?: boolean;
 	color?: (string & {}) | Colors;
 } & Omit<SVGAttributes<SVGSVGElement>, 'color' | 'size'>;
@@ -46,7 +46,7 @@ const isColor = (color?: string | Colors): color is Colors => colorSet.has(color
 
 const useSetup = (node: Element, args: (() => IconProps) | undefined) => {
 	$effect(() => {
-		const { size = '1lh', mirrored, color, ...attributes } = args?.() || {};
+		const { size = '1lh', mirrored, color, class: className = '', ...attributes } = args?.() || {};
 		for (const key in attributes) {
 			const value = attributes[key as keyof typeof attributes];
 			if (value !== undefined) {
@@ -63,26 +63,41 @@ const useSetup = (node: Element, args: (() => IconProps) | undefined) => {
 			node.setAttribute('fill', 'currentColor');
 		}
 		mirrored && node.setAttribute('transform', mirrored ? 'scale(-1, 1)' : '');
-		node.setAttribute('height', `${sizeWithUnit(size)}`);
+		if (typeof className === 'string') {
+			const classList = className.split(' ').filter(Boolean);
+			if (classList.length > 0) {
+				for (const cls of classList) {
+					node.classList.add(cls);
+				}
+			}
+		}
 	});
 };
 export const icon = (...paths: string[]) => {
-	const render = (props: IconProps) => {
-		return `<svg class="aspect-square" 
-		${attributesToString(props)} ${props.mirrored ? 'transform="scale(-1, 1)"' : ''}
-		class="${props.class || ''} aspect-square"
-		xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" height="${sizeWithUnit(props.size)}"
-		fill="${isColor(props.color) ? `var(--color-${props.color})` : props.color || 'currentColor'}"
+	const render = (propsAccessor: () => IconProps) => {
+		const { size, mirrored, color, class: className = '', ...rest } = propsAccessor?.();
+
+		const icon = `<svg class="${className} aspect-square" 
+		${attributesToString(rest)} ${mirrored ? 'transform="scale(-1, 1)"' : ''}
+		xmlns="http://www.w3.org/2000/svg" 
+		viewBox="0 0 256 256" 
+		height="${sizeWithUnit(size || '1lh')}"
+		fill="${isColor(color) ? `var(--color-${color})` : color || 'currentColor'}"
 		>
           ${paths.map((path, i) => `<path d="${path}" ${paths.length === 2 && i === 0 ? "opacity='0.2'" : ''} />`).join('')}
         </svg>`;
+		return icon;
 	};
 
 	const snippet = createRawSnippet<[IconProps] | []>((...args) => {
 		return {
-			render: () => render(args[0]?.() || { size: '1lh', mirrored: false, color: 'currentColor' }),
+			render: () =>
+				render(() => args[0]?.() || { size: '1lh', mirrored: false, color: 'currentColor' }),
 			setup: (node) => {
-				useSetup(node, args[0]);
+				useSetup(node, () => {
+					const value = args[0]?.() || { size: '1lh', mirrored: false, color: 'currentColor' };
+					return value;
+				});
 			}
 		};
 	});
@@ -91,7 +106,8 @@ export const icon = (...paths: string[]) => {
 		withProps: (props: IconProps) => {
 			return createRawSnippet(() => {
 				return {
-					render: () => render(props || { size: '1lh', mirrored: false, color: 'currentColor' }),
+					render: () =>
+						render(() => props || { size: '1lh', mirrored: false, color: 'currentColor' }),
 					setup: (node) => {
 						useSetup(node, () => props);
 					}

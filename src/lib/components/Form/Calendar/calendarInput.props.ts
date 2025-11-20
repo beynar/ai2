@@ -5,6 +5,7 @@ import type { ButtonProps } from '$lib/components/Button/index.js';
 import type { Snippet } from 'svelte';
 import type { Event, CalendarType } from './useCalendar.svelte.js';
 import type { calendarTheme } from './calendar.theme.js';
+import type { BadgeProps } from '$lib/components/Badge/badge.props.js';
 
 // Re-export types and values from useCalendar
 export type { Event, Cell, CalendarType } from './useCalendar.svelte.js';
@@ -35,6 +36,7 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 		disabledDates?: (Date | [Date, Date])[];
 		theme?: InferComponentTheme<typeof calendarTheme>;
 		cell?: Snippet<[import('./useCalendar.svelte.js').Cell]>;
+		todayBadge?: Pick<BadgeProps, 'size' | 'color' | 'class'>;
 		buttons?:
 			| {
 					prev: ButtonProps;
@@ -42,8 +44,7 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 			  }
 			| ButtonProps;
 	},
-	'header',
-	never
+	'header'
 >;
 
 export type CalendarInputProps<T extends 'calendar' | 'calendar-range'> = CalendarPrimitiveProps<
@@ -56,4 +57,3 @@ export type CalendarInputProps<T extends 'calendar' | 'calendar-range'> = Calend
 			field: InferComponentTheme<typeof fieldTheme>;
 		};
 	};
-

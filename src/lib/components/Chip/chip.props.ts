@@ -18,8 +18,7 @@ export type ChipProps = WithAttachments<
 			onleave?: (event: MouseEvent) => void;
 			theme?: ChipThemeProps;
 		},
-		'children' | 'suffix' | 'prefix',
-		undefined
+		'children' | 'suffix' | 'prefix'
 	>
 >;
 

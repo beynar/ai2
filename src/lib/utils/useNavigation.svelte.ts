@@ -40,14 +40,29 @@ export const useNavigation = (opts: NavigationOptions) => {
 		return opts.orientation || 'horizontal';
 	};
 	$effect(() => {
+		if (!focusedIndex) return;
 		const newFocusedIndex = focusedIndex;
 		untrack(() => {
 			opts.onChange?.(newFocusedIndex);
 		});
 	});
 
+	const cleanUp = () => {
+		itemsSet.clear();
+		containerRef = null;
+		focusedIndex = null;
+		focusSource = null;
+		isHovering = false;
+		isFocused = false;
+		lastFocusedIndex = null;
+	};
+
+	onDestroy(() => {
+		cleanUp();
+	});
 	const focusContainer = () => {
 		if (containerRef) {
+			console.log('focusContainer', containerRef);
 			focusedIndex = -1;
 			containerRef.focus();
 		}
@@ -55,6 +70,8 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 	// Derived: Get ordered items by DOM position
 	const items = $derived.by(() => {
+		if (itemsSet.size === 0) return [];
+		if (containerRef === null) return [];
 		const itemsArray = Array.from(itemsSet);
 		// Sort by DOM position using compareDocumentPosition
 		return itemsArray.sort((a, b) => {
@@ -227,6 +244,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 	// Use the existing useKeyDown hook - pass all possible keys, filter in handleKeyboard
 	const keyDown = useKeyDown({
 		isActive: () => {
+			// return false;
 			const enabled = opts.enabled?.();
 			if (!enabled) return false;
 			if (isHovering && opts.enableHoverFocus) {
@@ -235,7 +253,10 @@ export const useNavigation = (opts: NavigationOptions) => {
 			return enabled;
 		},
 		preventDefault: opts.preventKeyboardDefault,
-		onWindow: () => (isHovering && !isFocused && opts.enableHoverFocus ? true : false),
+		onWindow: () => {
+			// return false;
+			return isHovering && !isFocused && opts.enableHoverFocus ? true : false;
+		},
 		callback: (event: KeyboardEvent) => {
 			// If hovering but container not focused, focus it first on arrow key
 			if (
@@ -332,8 +353,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 	return {
 		containerReference: (node: HTMLElement) => {
-			const enabled = opts.enabled?.();
-			if (!enabled) return;
+			if (!opts.enabled?.()) return;
 			return untrack(() => {
 				containerRef = node;
 
@@ -397,7 +417,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 					}
 				}
 				return () => {
-					containerRef = null;
+					cleanUp();
 					keyDownCleanup?.();
 					focusCleanup();
 					blurCleanup();
@@ -408,6 +428,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 			});
 		},
 		itemReference: (node: HTMLElement) => {
+			return;
 			const enabled = opts.enabled?.();
 			if (!enabled) return;
 			return untrack(() => {

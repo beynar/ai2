@@ -1,4 +1,4 @@
-export type Size = 'normal' | 'small' | 'large' | number;
+export type Spacing = 'normal' | 'small' | 'large' | number;
 
 const roundedSizes = {
 	normal: 0.25,
@@ -6,7 +6,7 @@ const roundedSizes = {
 	large: 0.3
 };
 
-export const spacing = (size: Size = 0.25) => {
+export const spacing = (size: Spacing = 0.25) => {
 	const base = typeof size === 'number' ? size : roundedSizes[size];
 	return {
 		DEFAULT: `${base}rem`

@@ -28,15 +28,11 @@ export const usePointerDown = (opts: {
 
 	return {
 		reference: (node: HTMLElement) => {
-			const isActive = opts.isActive();
-			if (!isActive) return;
-			return untrack(() => {
-				if (opts.isActive()) {
-					offs.add(on(node, 'pointerdown', onDown));
-					offs.add(on(node, 'pointerup', onUp));
-					return destroy;
-				}
-			});
+			if (!opts.isActive()) return;
+
+			offs.add(on(node, 'pointerdown', onDown));
+			offs.add(on(node, 'pointerup', onUp));
+			return destroy;
 		},
 		get isDown() {
 			return isDown;

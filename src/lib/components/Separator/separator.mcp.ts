@@ -215,5 +215,91 @@ The Separator component is a visual divider that separates content in an interfa
 - Vertical separators require a parent with defined height
 - Works well with MenuOption, Dialog, and other components
 - Can be used purely for decoration or as semantic content dividers
+
+## Theme Customization
+
+The Separator component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+
+### Theme Structure
+
+The theme object contains the following parts:
+- **separator**: Main separator container styles
+- **label**: Separator label text styles
+
+### Available Variants
+
+**separator**:
+- base: Base classes applied to all separators
+- Variants:
+  - orientation: 'horizontal' | 'vertical' - Layout direction and styling
+  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Border color
+
+**label**:
+- base: Base classes for label text
+- Variants:
+  - orientation: 'horizontal' | 'vertical' - Label styling based on separator orientation
+
+### Usage Examples
+
+**Basic Theme Override**:
+\`\`\`svelte
+<Separator 
+  theme={{
+    separator: {
+      base: 'opacity-60',
+      orientation: {
+        horizontal: 'my-4'
+      },
+      color: {
+        primary: 'before:border-primary/50 after:border-primary/50'
+      }
+    }
+  }}
+/>
+\`\`\`
+
+**Color Customization**:
+\`\`\`svelte
+<Separator 
+  color="danger"
+  theme={{
+    separator: {
+      color: {
+        danger: 'before:border-red-500 after:border-red-500'
+      },
+      orientation: {
+        horizontal: 'my-6'
+      }
+    },
+    label: {
+      base: 'text-red-600 font-semibold'
+    }
+  }}
+>
+  {#snippet children()}
+    Warning
+  {/snippet}
+</Separator>
+\`\`\`
+
+**Global Theme Setting**:
+\`\`\`svelte
+<script>
+  import { setSeparatorTheme } from 'svelai/separator';
+  
+  setSeparatorTheme({
+    separator: {
+      base: 'transition-opacity',
+      orientation: {
+        horizontal: 'my-3',
+        vertical: 'mx-3'
+      },
+      color: {
+        surface: 'before:border-gray-300 after:border-gray-300'
+      }
+    }
+  });
+</script>
+\`\`\`
 `;
 
