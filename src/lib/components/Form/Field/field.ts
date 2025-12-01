@@ -1,6 +1,5 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
-import type { InferComponentTheme } from '$lib/utils/cva.js';
-import { cva } from 'cva';
+import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
 import type { Snippet } from 'svelte';
 import type { FieldState } from './fieldState.svelte.js';
 import type { Sizes } from '$lib/types/theme.js';
@@ -19,7 +18,7 @@ export type TagInputType = 'tag';
 export type DateInputType = 'datetime' | 'date';
 export type TimeInputType = 'time';
 export type BooleanInputType = 'switch' | 'checkbox';
-export type SingleOptionInputType = 'select' | 'radio';
+export type SingleOptionInputType = 'select' | 'radio' | 'combobox';
 export type MultipleChoiceInputType = 'checkboxes';
 export type FileInputType = 'file' | 'files';
 export type CalendarInputType = 'calendar' | 'calendar-range';
@@ -45,7 +44,7 @@ export type FieldValue<T extends InputType> = T extends 'file'
 			: T extends NumberInputType
 				? number
 				: T extends TimeInputType
-					? string
+					? number
 					: T extends TextInputType
 						? string
 						: T extends BooleanInputType
@@ -68,7 +67,6 @@ export type InputProps<T extends InputType> = WithSlot<
 		required?: boolean;
 		disabled?: boolean;
 		size?: Sizes;
-		readonly?: boolean;
 		visible?: boolean;
 		// schema?: any;
 		onValidate?: (value: FieldValue<T>) => string[] | boolean;
@@ -88,14 +86,13 @@ export type InputProps<T extends InputType> = WithSlot<
 	| 'description'
 	| 'helper'
 	| 'footer'
-	| 'header'
 	| 'error'
 	| 'errorsContainer'
 >;
 
 export type FieldProps<T extends InputType> = Omit<
 	InputProps<T>,
-	'type' | 'name' | 'required' | 'disabled' | 'readonly' | 'visible' | 'onValidate' | 'onChange'
+	'type' | 'name' | 'required' | 'disabled' | 'visible' | 'onValidate' | 'onChange'
 > & {
 	as?: string;
 	children: Snippet;
@@ -117,7 +114,7 @@ const defaultFieldHeader = cva({
 	variants: {
 		size: {
 			small: 'gap-1',
-			normal: 'gap-2',
+			medium: 'gap-2',
 			large: 'gap-3'
 		},
 		required: {
@@ -136,7 +133,7 @@ const defaultFieldLabel = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			normal: 'text-sm',
+			medium: 'text-sm',
 			large: 'text-base'
 		},
 		hasError: {
@@ -155,7 +152,7 @@ const defaultFieldActions = cva({
 	variants: {
 		size: {
 			small: 'gap-1',
-			normal: 'gap-2',
+			medium: 'gap-2',
 			large: 'gap-3'
 		}
 	}
@@ -166,7 +163,7 @@ const defaultFieldErrorsContainer = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			normal: 'text-sm',
+			medium: 'text-sm',
 			large: 'text-base'
 		}
 	}
@@ -177,7 +174,7 @@ const defaultFieldError = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			normal: 'text-sm',
+			medium: 'text-sm',
 			large: 'text-base'
 		}
 	}

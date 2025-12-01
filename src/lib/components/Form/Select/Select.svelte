@@ -1,17 +1,11 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { selectTheme } from '$lib/components/Form/Select/select.js';
-	export const setSelectTheme = setComponentTheme<typeof selectTheme>('select');
-	export const useSelectTheme = useComponentTheme('select', selectTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { SelectProps } from '$lib/components/Form/Select/select.js';
+	import type { SelectProps } from './select.props.js';
+	import { useSelectTheme } from './select.theme.js';
 
 	let {
-		value = $bindable(null),
+		value = $bindable(''),
 		errors = $bindable([]),
 		focused = $bindable(false),
 		required = false,
@@ -19,9 +13,9 @@
 		theme,
 		disabled,
 		name,
+		size = 'normal',
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		options,
 		...rest
@@ -63,7 +57,6 @@
 		},
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'select'
 	});
@@ -73,9 +66,10 @@
 
 <Field
 	{field}
+	{size}
 	theme={{
 		inputContainer: {
-			base: classes.inputContainer()
+			base: classes.inputContainer({ size: size, disabled: field.disabled })
 		},
 		...(theme || {})
 	}}
@@ -87,13 +81,13 @@
 		name={field.name}
 		bind:value={field.value}
 		bind:this={field.node}
-		{placeholder}
-		class={classes.input()}
+		class={classes.input({ size, disabled: field.disabled })}
+		disabled={field.disabled}
 	>
-		{#if placeholder && !value}
-			<option value="" disabled hidden>{placeholder}</option>
+		{#if placeholder}
+			<option disabled selected value="">{placeholder}</option>
 		{/if}
-		{#each options || [] as option}
+		{#each options || [] as option (option.value)}
 			<option value={option.value}>{option.label}</option>
 		{/each}
 	</select>

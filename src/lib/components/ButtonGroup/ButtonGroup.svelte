@@ -1,15 +1,7 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import {
-		buttonGroupTheme,
-		type ButtonGroupProps
-	} from '$lib/components/ButtonGroup/buttonGroup.js';
-	export const setButtonTheme = setComponentTheme<typeof buttonGroupTheme>('buttonGroup');
-	export const useButtonTheme = useComponentTheme('buttonGroup', buttonGroupTheme);
-</script>
-
-<script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
+<script lang="ts">
 	import Button from '../Button/Button.svelte';
+	import type { ButtonGroupProps } from './buttonGroup.props.js';
+	import { useButtonGroupTheme } from './buttonGroup.theme.js';
 
 	let {
 		buttons,
@@ -20,9 +12,9 @@
 		theme,
 		class: className,
 		...attachments
-	}: ButtonGroupProps<Payload> = $props();
+	}: ButtonGroupProps = $props();
 
-	const classes = $derived(useButtonTheme(theme));
+	const classes = $derived(useButtonGroupTheme(theme));
 </script>
 
 <div class={classes.buttonGroup({ className })} {...attachments}>

@@ -1,8 +1,8 @@
-import { onDestroy } from 'svelte';
+import { onDestroy, untrack } from 'svelte';
 import { on } from 'svelte/events';
 
 type HoverActionHandlerOptions = {
-	isActive: boolean;
+	isActive: () => boolean;
 	onMouseEnter?: () => void;
 	onMouseLeave?: () => void;
 	delay?: number;
@@ -29,11 +29,11 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 		}
 		if (props.delay) {
 			wait(this).then(() => {
-				props.isActive && props.onMouseEnter?.();
+				props.isActive() && props.onMouseEnter?.();
 				isHovered = true;
 			});
 		} else {
-			props.isActive && props.onMouseEnter?.();
+			props.isActive() && props.onMouseEnter?.();
 			isHovered = true;
 		}
 	}
@@ -42,7 +42,7 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 			clearTimeout(timeouts.get(this));
 			timeouts.delete(this);
 		}
-		props.isActive && props.onMouseLeave?.();
+		props.isActive() && props.onMouseLeave?.();
 		isHovered = false;
 	}
 
@@ -56,9 +56,9 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 	onDestroy(destroy);
 
 	return {
-		get reference() {
-			if (!props.isActive) return null;
-			return (ref: HTMLElement) => {
+		reference: (ref: HTMLElement) => {
+			if (!props.isActive()) return null;
+			return untrack(() => {
 				const offEnter = on(ref, 'mouseenter', onMouseEnter.bind(ref));
 				const offLeave = on(ref, 'mouseleave', onMouseLeave.bind(ref));
 				offs.add(offEnter);
@@ -75,7 +75,7 @@ export const useHoverAction = (props: HoverActionHandlerOptions) => {
 						timeouts.delete(ref);
 					}
 				};
-			};
+			});
 		},
 		destroy,
 		get isHovered() {

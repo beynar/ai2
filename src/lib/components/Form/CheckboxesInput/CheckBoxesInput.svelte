@@ -1,15 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { checkBoxesInputTheme } from './checkBoxesInput.js';
-	export const setCheckBoxesInputTheme =
-		setComponentTheme<typeof checkBoxesInputTheme>('checkboxesInput');
-	export const useCheckBoxesInputTheme = useComponentTheme('checkboxesInput', checkBoxesInputTheme);
-</script>
-
 <script lang="ts" generics="Option extends CheckBoxesOption">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { CheckBoxesOption, CheckBoxesInputProps } from './checkBoxesInput.js';
+	import type { CheckBoxesOption, CheckBoxesInputProps } from './checkBoxesInput.props.js';
+	import { useCheckBoxesInputTheme } from './checkBoxesInput.theme.js';
 	import Slot from '../../Slot/Slot.svelte';
 	import { checkIcon } from '$lib/components/Icons/check.js';
 
@@ -24,9 +17,9 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		field: providedField,
+		onClick,
 		label,
 		...rest
 	}: CheckBoxesInputProps<Option> = $props();
@@ -63,14 +56,20 @@
 			disabled = v;
 		},
 		required,
-		onValidate,
+		onValidate: (value) => {
+			if (required) {
+				if (value.length === 0) {
+					return true;
+				}
+			}
+			return onValidate?.(value) || false;
+		},
 		name,
-		readonly,
 		visible,
 		type: 'checkboxes'
 	});
 
-	const componentTheme = useComponentTheme('checkboxesInput', checkBoxesInputTheme)(theme);
+	const componentTheme = useCheckBoxesInputTheme(theme);
 </script>
 
 <!-- Create own field wrapper (when used standalone) -->
@@ -87,17 +86,35 @@
 		...theme,
 		inputContainer: {
 			...theme?.inputContainer,
-			base: componentTheme.checkboxesInputContainer({ mode, class: theme?.inputContainer?.base })
+			base: componentTheme.checkboxesInputContainer({
+				mode,
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled
+			})
 		}
 	}}
+	{...rest}
 >
 	{#each options as option (option.value)}
 		{@const checked = field.value?.includes(option.value)}
 		{@const optionId = `${field.name}-${option.value}`}
-		<label for={optionId} class={componentTheme.checkboxesInputItem({ mode, checked })}>
+		<button
+			aria-controls={optionId}
+			onclick={() => {
+				if (field.disabled) return;
+				if (checked) {
+					field.value = field.value?.filter((v) => v !== option.value);
+				} else {
+					field.value = [...(field.value || []), option.value];
+				}
+				onClick?.(option.value);
+			}}
+			class={componentTheme.checkboxesInputItem({ mode, checked, disabled: field.disabled })}
+		>
 			<input
 				hidden
 				onchange={() => {
+					if (field.disabled) return;
 					if (checked) {
 						field.value = field.value?.filter((v) => v !== option.value);
 					} else {
@@ -110,13 +127,18 @@
 				name={field.name}
 				id={optionId}
 				value={option.value}
+				disabled={field.disabled}
 			/>
 
 			<!-- Checkbox Button Track -->
-			<div class={componentTheme.checkboxesInputItemTrack({ mode, checked })}></div>
+			<div
+				class={componentTheme.checkboxesInputItemTrack({ mode, checked, disabled: field.disabled })}
+			></div>
 
 			<!-- Checkbox Button Thumb -->
-			<div class={componentTheme.checkboxesInputItemThumb({ checked, mode })}>
+			<div
+				class={componentTheme.checkboxesInputItemThumb({ checked, mode, disabled: field.disabled })}
+			>
 				{@render checkIcon({ size: 40 })}
 			</div>
 
@@ -125,6 +147,6 @@
 
 			<!-- Description -->
 			<Slot render={option.description} class={componentTheme.checkboxesInputItemDescription()} />
-		</label>
+		</button>
 	{/each}
 </Field>

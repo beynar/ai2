@@ -1,7 +1,7 @@
-import { tick } from 'svelte';
+import { tick, untrack } from 'svelte';
 import { on } from 'svelte/events';
 
-export const useFocusTrap = (opts: { isActive: boolean }) => {
+export const useFocusTrap = (opts: { isActive: () => boolean }) => {
 	let trapNode: HTMLElement | null;
 	let listener: (() => void) | null;
 	let focusableEls: HTMLElement[] = [];
@@ -49,7 +49,7 @@ export const useFocusTrap = (opts: { isActive: boolean }) => {
 
 	const setFocusableEls = () => {
 		focusableEls = Array.from(
-			opts.isActive && trapNode
+			opts.isActive() && trapNode
 				? trapNode.querySelectorAll(
 						'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]'
 					)
@@ -80,16 +80,15 @@ export const useFocusTrap = (opts: { isActive: boolean }) => {
 	};
 
 	return {
-		get attachment() {
-			return opts.isActive
-				? (node: HTMLElement) => {
-						focusTrap(node);
-						trapNode = node;
-						return () => {
-							unfocusTrap(node);
-						};
-					}
-				: null;
+		attachment: (node: HTMLElement) => {
+			if (!opts.isActive()) return;
+			return untrack(() => {
+				focusTrap(node);
+				trapNode = node;
+				return () => {
+					unfocusTrap(node);
+				};
+			});
 		}
 	};
 };

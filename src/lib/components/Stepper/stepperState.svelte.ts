@@ -1,5 +1,5 @@
 import { createBindableStateClass } from '$lib/utils/state.svelte.js';
-import type { StepperProps } from './stepper.js';
+import type { StepperProps } from './stepper.props.js';
 
 export class StepperState<Item> extends createBindableStateClass<
 	Pick<StepperProps<any>, 'items' | 'onChange' | 'keyFramesOptions' | 'activeStep'>
@@ -71,9 +71,7 @@ export class StepperState<Item> extends createBindableStateClass<
 		const resizeObserver = new ResizeObserver(setOffsets);
 		resizeObserver.observe(node);
 
-		return {
-			destroy: () => resizeObserver.unobserve(node)
-		};
+		return () => resizeObserver.unobserve(node);
 	};
 
 	next = () => {

@@ -5,7 +5,7 @@ import type { ResponsiveProps, Breakpoint } from './theme.js';
 import type { Easing } from '$lib/transitions/easingFunctions.js';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { on } from 'svelte/events';
-import type { FSOProps } from '$lib/transitions/transition.js';
+import type { FSOParams, FSOProps } from '$lib/transitions/transition.js';
 import type { Theme as SvelteTheme } from 'svelte-themes';
 import type { PopoverState } from '../Popover/popover.state.svelte.js';
 import type { TooltipProps } from '../Tooltip/tooltip.svelte.js';
@@ -72,33 +72,44 @@ export class ThemeState {
 		setContext('sveltaiTheme', this);
 	}
 
-	resolveTransitionProps = (
-		props?: ResponsiveProps<any>,
-		defaultTransition?: {
-			in?: FSOProps;
-			out?: FSOProps;
-		}
-	) => {
+	resolveTransitionProps = (props?: ResponsiveProps<any>, defaultTransition?: FSOProps) => {
 		const responsiveTransition = this.resolveResponsiveProps(props);
+		const defaultTransitionProps = {
+			in:
+				defaultTransition && 'in' in defaultTransition && defaultTransition.in
+					? defaultTransition.in
+					: defaultTransition
+						? (defaultTransition as FSOParams)
+						: {
+								x: 0,
+								y: 0,
+								scale: 0.98,
+								opacity: 0
+							},
+			out:
+				defaultTransition && 'out' in defaultTransition && defaultTransition.out
+					? defaultTransition.out
+					: defaultTransition
+						? (defaultTransition as FSOParams)
+						: {
+								x: 0,
+								y: 0,
+								scale: 0.98,
+								opacity: 0
+							}
+		} as {
+			in: FSOParams;
+			out: FSOParams;
+		};
 		if (!responsiveTransition) {
-			return {
-				in: defaultTransition?.in || {
-					x: 0,
-					y: 0,
-					scale: 0.98,
-					opacity: 0
-				},
-				out: defaultTransition?.out || {
-					x: 0,
-					y: 0,
-					scale: 0.98,
-					opacity: 0
-				}
-			};
+			return defaultTransitionProps;
 		}
 		return {
-			in: 'in' in responsiveTransition ? responsiveTransition.in : responsiveTransition,
-			out: 'out' in responsiveTransition ? responsiveTransition.out : responsiveTransition
+			in: 'in' in responsiveTransition ? responsiveTransition.in : defaultTransitionProps.in,
+			out: 'out' in responsiveTransition ? responsiveTransition.out : defaultTransitionProps.out
+		} as {
+			in: FSOParams;
+			out: FSOParams;
 		};
 	};
 

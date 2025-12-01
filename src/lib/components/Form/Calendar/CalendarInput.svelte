@@ -1,16 +1,9 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { calendarInputTheme } from '$lib/components/Form/Calendar/calendarInput.js';
-	export const setCalendarInputTheme =
-		setComponentTheme<typeof calendarInputTheme>('calendarInput');
-	export const useCalendarInputTheme = useComponentTheme('calendarInput', calendarInputTheme);
-</script>
-
 <script lang="ts">
-	import type { CalendarInputProps, CalendarType } from './calendarInput.js';
+	import type { CalendarInputProps, CalendarType } from './calendarInput.props.js';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
 	import CalendarPrimitive from './CalendarPrimitive.svelte';
+	import { useCalendarInputTheme } from './calendar.theme.js';
 
 	type T = $$Generic<CalendarType>;
 
@@ -24,24 +17,17 @@
 		name,
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		theme,
 		disabledDates,
 		view,
 		weekStartsOnMonday,
 		weekdayLength,
-		containerClass,
-		headerClass,
-		dayClass,
-		weekdayClass,
-		gridClass,
 		minDate,
 		maxDate,
 		cell,
 		buttons,
 		header,
-		headerProps,
 		...rest
 	}: CalendarInputProps<T> = $props();
 
@@ -79,29 +65,17 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: (type || 'calendar') as T
 	});
-
-	const classes = $derived(useCalendarInputTheme(theme));
 </script>
 
-<Field
-	{field}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.container({ class: theme?.inputContainer?.base })
-		}
-	}}
-	{...rest}
->
+<Field {field} theme={theme?.field} {...rest}>
 	<CalendarPrimitive
 		onChange={(v: any) => {
 			field.value = v;
 		}}
+		theme={theme?.calendar}
 		value={field.value as any}
 		type={type || 'calendar'}
 		{disabledDates}
@@ -110,14 +84,8 @@
 		{view}
 		{weekStartsOnMonday}
 		{weekdayLength}
-		containerClass={classes.container({ class: containerClass })}
-		headerClass={classes.header({ class: headerClass })}
-		dayClass={classes.day({ class: dayClass })}
-		weekdayClass={classes.weekday({ class: weekdayClass })}
-		gridClass={classes.grid({ class: gridClass })}
 		{cell}
 		{buttons}
 		{header}
-		{headerProps}
 	/>
 </Field>

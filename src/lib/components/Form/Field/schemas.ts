@@ -54,7 +54,7 @@ export const schemas: {
 		date: v.date(),
 
 		// Time input type
-		time: v.string(),
+		time: v.number(),
 
 		// Boolean input types
 		switch: v.boolean(),
@@ -63,6 +63,7 @@ export const schemas: {
 		// Single option input types
 		select: v.string(),
 		radio: v.string(),
+		combobox: v.string(),
 
 		// Multiple choice input types
 		checkboxes: v.array(v.string()),
@@ -95,7 +96,7 @@ export const schemas: {
 		date: optional(v.date()),
 
 		// Time input type
-		time: optional(v.string()),
+		time: optional(v.number()),
 
 		// Boolean input types
 		switch: optional(v.boolean()),
@@ -104,6 +105,7 @@ export const schemas: {
 		// Single option input types
 		select: optional(v.string()),
 		radio: optional(v.string()),
+		combobox: optional(v.string()),
 
 		// Multiple choice input types
 		checkboxes: optional(emptyArrayNull(v.array(v.string()))),

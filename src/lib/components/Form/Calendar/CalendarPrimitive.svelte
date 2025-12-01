@@ -1,10 +1,18 @@
+<script lang="ts" module>
+	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+	import { calendarTheme } from '$lib/components/Form/Calendar/calendar.theme.js';
+	export const setCalendarTheme = setComponentTheme<typeof calendarTheme>('calendar');
+	export const useCalendarTheme = useComponentTheme('calendar', calendarTheme);
+</script>
+
 <script lang="ts">
-	import type { CalendarPrimitiveProps, CalendarType } from './calendarInput.js';
-	import type { Event } from './calendarInput.js';
+	import type { CalendarPrimitiveProps, CalendarType } from './calendarInput.props.js';
+	import type { Event } from './useCalendar.svelte.js';
 	import { CalendarState } from './useCalendar.svelte.js';
 	import Button from '../../Button/Button.svelte';
 	import Slot from '../../Slot/Slot.svelte';
 	import { caretRightIcon } from '$lib/components/Icons/caretRight.js';
+	import Badge from '$lib/components/Badge/Badge.svelte';
 
 	type T = $$Generic<CalendarType>;
 	type CalendarEvent = $$Generic<Event>;
@@ -16,30 +24,52 @@
 		view = 'single',
 		weekStartsOnMonday = true,
 		weekdayLength = 'narrow',
-		containerClass = '',
-		headerClass = '',
-		dayClass = '',
-		weekdayClass = '',
-		gridClass = '',
+		class: className,
 		cell: renderCell,
 		buttons,
 		minDate,
 		maxDate,
 		header,
-		headerProps,
-		onChange
+		todayBadge = {
+			size: 'small',
+			color: 'danger',
+			class: ''
+		},
+		onChange,
+		theme
 	}: CalendarPrimitiveProps<CalendarEvent, T> = $props();
 
 	const calendar = new CalendarState<CalendarEvent, T>({
-		events: (events || []) as CalendarEvent[],
-		disabledDates,
-		minDate,
-		maxDate,
-		view,
-		weekStartsOnMonday,
-		type: (type || 'calendar') as T,
-		onChange: onChange as any,
-		value: value as any
+		get events() {
+			return events || [];
+		},
+		get disabledDates() {
+			return disabledDates;
+		},
+		get minDate() {
+			return minDate;
+		},
+		get maxDate() {
+			return maxDate;
+		},
+		get view() {
+			return view;
+		},
+		get weekStartsOnMonday() {
+			return weekStartsOnMonday;
+		},
+		get type() {
+			return (type || 'calendar') as T;
+		},
+		get onChange() {
+			return onChange as any;
+		},
+		get value() {
+			return value as any;
+		},
+		set value(v: any) {
+			value = v;
+		}
 	});
 
 	const buttonProps = $derived(
@@ -53,16 +83,7 @@
 				}
 	);
 
-	$effect(() => {
-		if (type === 'calendar-range' && Array.isArray(value)) {
-			calendar.setRange(value[0], value[1]);
-		} else if (typeof value === 'object' && value !== null) {
-			// Handle case where value might be an array but not detected as such
-			calendar.setRange(null, null);
-		} else {
-			calendar.setRange(value as Date | null, null);
-		}
-	});
+	const classes = $derived(useCalendarTheme(theme));
 	if (calendar.rangeStart) {
 		const monthOfValue = calendar.rangeStart.getMonth();
 
@@ -73,7 +94,7 @@
 </script>
 
 <div
-	class={containerClass}
+	class={classes.container({ class: className })}
 	style="display: grid; grid-template-columns: repeat({view === 'single'
 		? '1'
 		: '2'}, minmax(0, 1fr)) "
@@ -81,8 +102,7 @@
 >
 	<Slot
 		render={header}
-		class={headerClass}
-		props={headerProps}
+		class={classes.header()}
 		style={view === 'single' ? '' : 'grid-column-start: 1; grid-column-end: 3;'}
 	>
 		<Button
@@ -93,7 +113,7 @@
 			{...buttonProps.prev}
 			onClick={calendar.goPrevMonth}
 		>
-			{@html caretRightIcon}
+			{@render caretRightIcon()}
 		</Button>
 		{calendar.displayedMonthLabel}
 		<Button
@@ -103,7 +123,7 @@
 			{...buttonProps.next}
 			onClick={calendar.goNextMonth}
 		>
-			{@html caretRightIcon}
+			{@render caretRightIcon()}
 		</Button>
 	</Slot>
 	{@render calendarPart(calendar.rows)}
@@ -118,7 +138,7 @@
 		'double'
 			? Math.max(calendar.rows.length, calendar.nextMonthRows.length) + 1
 			: calendar.rows.length + 1}, minmax(0, 1fr));"
-		class={gridClass}
+		class={classes.grid()}
 	>
 		{#each Array(7) as _d, day}
 			{@const colPosition =
@@ -127,7 +147,7 @@
 					: calendar.weekStartsOnMonday
 						? day
 						: day + 1}
-			<span style="grid-row-start: 1; grid-column-start: {colPosition};" class={weekdayClass}>
+			<span style="grid-row-start: 1; grid-column-start: {colPosition};" class={classes.weekday()}>
 				{new Date(0, 0, day).toLocaleDateString(undefined, { weekday: weekdayLength })}
 			</span>
 		{/each}
@@ -135,7 +155,27 @@
 		{#each rows as { cells }}
 			{#each cells as cell}
 				{#if cell.visible}
-					<button {...cell.attributes} class={dayClass}>
+					<button
+						{...cell.attributes}
+						class={classes.day({
+							selected: cell.selected,
+							disabled: cell.disabled,
+							inMonth: cell.inMonth,
+							inRange: cell.isInRange,
+							today: cell.isToday,
+							startOfRange: cell.isStartOfRange,
+							endOfRange: cell.isEndOfRange,
+							isPast: cell.isInPreviousMonth
+						})}
+					>
+						{#if cell.isToday}
+							<Badge
+								size="small"
+								color="danger"
+								{...todayBadge}
+								class="top-1 right-1 aspect-square !size-2 min-h-2 min-w-2 {todayBadge.class}"
+							/>
+						{/if}
 						<abbr
 							aria-label={cell.date.toLocaleDateString(undefined, {
 								day: 'numeric',

@@ -10,7 +10,6 @@ type FieldStateStaticOptions<T extends InputType> = {
 	name?: string;
 	required?: boolean;
 	disabled?: boolean;
-	readonly?: boolean;
 	visible?: boolean;
 	onValidate?: (value: FieldValue<T>) => string[] | boolean;
 	onChange?: (value: FieldValue<T>) => void;
@@ -61,10 +60,9 @@ export const createFieldState = <T extends InputType>(
 			});
 		}
 
-		private checkSchema(value?: FieldValue<T> | null) {
+		checkSchema(value?: FieldValue<T> | null) {
 			let schema = schemas[this.required ? 'required' : 'optional'][this.type];
-			const result = v.safeParse(schema, value);
-			return result;
+			return v.safeParse(schema, value);
 		}
 
 		get isValid() {
@@ -80,7 +78,10 @@ export const createFieldState = <T extends InputType>(
 				return [this.hasError, parseResult.output];
 			}
 
-			if (this.onValidate) {
+			// We should only call onValidate if the value is not null or undefined and not an empty string when the field is not required
+			const shouldCallOnValidate =
+				this.required || (value !== null && value !== undefined && value !== '');
+			if (this.onValidate && shouldCallOnValidate) {
 				this.errors = this.onValidate(value as FieldValue<T>);
 			}
 

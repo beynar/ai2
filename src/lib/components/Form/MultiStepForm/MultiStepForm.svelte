@@ -1,19 +1,9 @@
-<script lang="ts" module>
-	import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
-	export { step };
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { multiStepFormTheme } from './multiStepForm.js';
-	export const setMultiStepFormTheme =
-		setComponentTheme<typeof multiStepFormTheme>('multiStepForm');
-	export const useMultiStepFormTheme = useComponentTheme('multiStepForm', multiStepFormTheme);
-</script>
-
 <script lang="ts" generics="I extends FormStep[]">
 	import Stepper from '$lib/components/Stepper/Stepper.svelte';
 
 	import { getContext, setContext, tick, type Snippet } from 'svelte';
-	import type { MultiStepFormProps } from './multiStepForm.js';
-	import type { FormStep } from './multiStepForm.js';
+	import type { MultiStepFormProps, FormStep } from './multiStepForm.props.js';
+	import { useMultiStepFormTheme } from './multiStepForm.theme.js';
 	import Form from '../Form/Form.svelte';
 	import Meter from '$lib/components/Meter/Meter.svelte';
 	import { MultiStepFormState } from './multiStepFormState.svelte.js';
@@ -36,35 +26,43 @@
 		class: className,
 		theme,
 		footer,
-		footerProps,
 		header,
-		headerProps,
 		nextButtonProps = {},
 		previousButtonProps = {},
-		submitButtonProps = {}
+		submitButtonProps = {},
+		value = $bindable({})
 	}: MultiStepFormProps<I> = $props();
 
-	let form = new MultiStepFormState({
-		get steps() {
-			return steps;
+	let form = new MultiStepFormState(
+		{
+			get steps() {
+				return steps;
+			},
+			onSubmitForm,
+			onSubmitStep,
+			get meterColor() {
+				return meterColor;
+			}
 		},
-		onSubmitForm,
-		onSubmitStep,
-		get meterColor() {
-			return meterColor;
-		}
-	});
+		step
+	);
 
 	const { form: formTheme, ...baseTheme } = theme || {};
 	const classes = $derived(useMultiStepFormTheme(baseTheme));
 </script>
 
 {#snippet step({ item }: { stepper: StepperState<FormStep>; item: FormStep; index: number })}
-	<Form class="p-4" inputs={item.inputs} title={item.title} description={item.description} />
+	<Form
+		class="p-4"
+		inputs={item.inputs}
+		title={item.title}
+		description={item.description}
+		submitButton={null}
+	/>
 {/snippet}
 
 <div class={classes.multiStepForm({ className })}>
-	<Slot render={header} payload={form} props={headerProps}>
+	<Slot render={header}>
 		{#if showMeter}
 			<Meter value={[form.progress]} steps={form.meterSteps} />
 		{/if}
@@ -86,7 +84,7 @@
 		{...form.stepsSnippets}
 	/>
 	{@render children?.(form)}
-	<Slot render={footer} payload={form} props={footerProps} class={classes.multiStepFormFooter()}>
+	<Slot render={footer} class={classes.multiStepFormFooter()}>
 		<Button
 			prefix={arrowLeftIcon}
 			disabled={form.stepper?.activeStep === 0}

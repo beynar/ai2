@@ -1,19 +1,9 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import {
-		toggleButtonTheme,
-		type ToggleButtonProps
-	} from '$lib/components/ToggleButton/toggleButton.js';
-	export const setButtonTheme = setComponentTheme<typeof toggleButtonTheme>('toggleButton');
-	export const useButtonTheme = useComponentTheme('toggleButton', toggleButtonTheme);
-</script>
-
 <script lang="ts">
 	import Slot from '../Slot/Slot.svelte';
+	import type { ToggleButtonProps } from './toggleButton.props.js';
+	import { useToggleButtonTheme } from './toggleButton.theme.js';
 	let {
 		onChange = null,
-		prefixProps,
-		suffixProps,
 		class: className,
 		color = 'surface',
 		prefix,
@@ -23,7 +13,6 @@
 		ref = $bindable(),
 		disabled = false,
 		theme,
-		childrenProps,
 		checked = $bindable(false),
 		variant = 'ghost',
 		...attachments
@@ -33,7 +22,7 @@
 		!!((!children && prefix && !suffix) || (!children && !prefix && suffix))
 	);
 
-	const classes = $derived(useButtonTheme(theme));
+	const classes = $derived(useToggleButtonTheme(theme));
 </script>
 
 <button
@@ -59,16 +48,12 @@
 	{...attachments}
 >
 	<Slot
-		payload={{ checked }}
 		render={prefix}
 		class={classes.prefix({ size, checked })}
-		props={prefixProps}
 	/>
-	<Slot payload={{ checked }} render={children} props={childrenProps} />
+	<Slot render={children} />
 	<Slot
-		payload={{ checked }}
 		render={suffix}
 		class={classes.suffix({ size, checked })}
-		props={suffixProps}
 	/>
 </button>

@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { radiosInputTheme } from './radioInput.js';
-	export const setRadioInputTheme = setComponentTheme<typeof radiosInputTheme>('radiosInput');
-	export const useRadioInputTheme = useComponentTheme('radiosInput', radiosInputTheme);
-</script>
-
 <script lang="ts" generics="Option extends RadiosOption">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { RadiosOption, RadioInputProps } from './radioInput.js';
+	import type { RadiosOption, RadioInputProps } from './radioInput.props.js';
+	import { useRadioInputTheme } from './radioInput.theme.js';
 	import Slot from '../../Slot/Slot.svelte';
 
 	let {
@@ -22,10 +16,10 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		label,
 		onChange,
+		onClick,
 		...rest
 	}: RadioInputProps<Option> = $props();
 
@@ -64,12 +58,11 @@
 		required,
 		onValidate,
 		name,
-		readonly,
 		visible,
 		type: 'radio'
 	});
 
-	const componentTheme = useComponentTheme('radiosInput', radiosInputTheme)(theme);
+	const componentTheme = useRadioInputTheme(theme);
 </script>
 
 <!-- Create own field wrapper (when used standalone) -->
@@ -87,17 +80,33 @@
 		...theme,
 		inputContainer: {
 			...theme?.inputContainer,
-			base: componentTheme.radiosInputContainer({ mode, class: theme?.inputContainer?.base })
+			base: componentTheme.radiosInputContainer({
+				mode,
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled
+			})
 		}
 	}}
 >
 	{#each options as option (option.value)}
 		{@const checked = field.value === option.value}
 		{@const optionId = `${field.name}-${option.value}`}
-		<label for={optionId} class={componentTheme.radiosInputItem({ mode, checked })}>
+		<button
+			aria-label={option.label}
+			aria-controls={optionId}
+			class={componentTheme.radiosInputItem({ mode, checked, disabled: field.disabled })}
+			onclick={() => {
+				if (field.disabled) return;
+				if (!field.value || field.value !== option.value) {
+					field.value = option.value;
+				}
+				onClick?.(option.value);
+			}}
+		>
 			<input
 				hidden
 				onchange={() => {
+					if (field.disabled) return;
 					field.value = option.value;
 				}}
 				style="transform: scale(0); opacity: 0; pointer-events: none; margin: -1px; position: absolute;"
@@ -106,28 +115,29 @@
 				name={field.name}
 				id={optionId}
 				value={option.value}
+				disabled={field.disabled}
 			/>
 
 			<!-- Radio Button Track -->
-			<div class={componentTheme.radiosInputItemTrack({ mode, checked })}></div>
+			<div
+				class={componentTheme.radiosInputItemTrack({ mode, checked, disabled: field.disabled })}
+			></div>
 
 			<!-- Radio Button Thumb -->
-			<div class={componentTheme.radiosInputItemThumb({ checked, mode })}></div>
+			<div
+				class={componentTheme.radiosInputItemThumb({ checked, mode, disabled: field.disabled })}
+			></div>
 
 			<!-- Label Content -->
 			<div class={componentTheme.radiosInputItemLabel()}>
 				{#if option.icon}
-					<Slot
-						render={option.icon}
-						props={option.iconProps}
-						class={componentTheme.radiosInputItemIcon()}
-					/>
+					<Slot render={option.icon} class={componentTheme.radiosInputItemIcon()} />
 				{/if}
 				<Slot render={option.label} />
 			</div>
 
 			<!-- Description -->
 			<Slot render={option.description} class={componentTheme.radiosInputItemDescription()} />
-		</label>
+		</button>
 	{/each}
 </Field>

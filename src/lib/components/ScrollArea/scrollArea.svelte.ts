@@ -3,11 +3,13 @@ import { useBoundingClientRect } from '$lib/utils/useBoundingClientRect.svelte.j
 import { useDrag } from '$lib/utils/useDrag.svelte.js';
 import { useHotKey } from '$lib/utils/useHotKey.svelte.js';
 import { useHoverAction } from '$lib/utils/useHoverAction.svelte.js';
+import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
 import { on } from 'svelte/events';
 
 export interface ScrollAreaOptions {
 	delay: number;
 	type: 'auto' | 'always' | 'scroll' | 'hover';
+	scrollOnEdges: boolean;
 }
 
 export interface ScrollArea extends ScrollAreaOptions {}
@@ -26,14 +28,23 @@ export class ScrollArea {
 	scrollbarXEnabled = $state(false);
 	scrollY = $state(0);
 	dragOffset = $state(0);
+	// Force recalculation when resize happens
+	viewportDimensions = $state<{ width: number; height: number }>({ width: 0, height: 0 });
+	contentDimensions = $state<{ width: number; height: number }>({ width: 0, height: 0 });
+
 	maxScrollY = $derived.by(() => {
 		if (!this.contentElement || !this.viewportElement) {
 			return 0;
 		}
+		// Access reactive state to ensure recalculation
+		this.viewportDimensions;
+		this.contentDimensions;
 		return this.contentElement.scrollHeight - this.viewportElement.clientHeight;
 	});
 	scrollbarYEnabled = $derived(this.maxScrollY > 0);
 	visible = $derived(this.scrollbarYEnabled); // or add hover/auto logic
+	canScrollUp = $derived(this.maxScrollY > 0 && this.scrollY > 0);
+	canScrollDown = $derived(this.maxScrollY > 0 && this.scrollY < this.maxScrollY);
 	thumbRect = useBoundingClientRect();
 	trackRect = useBoundingClientRect();
 	thumbYSize = $derived.by(() => {
@@ -86,7 +97,7 @@ export class ScrollArea {
 	hoover = $derived(
 		useHoverAction({
 			delay: this.delay,
-			isActive: this.type === 'hover'
+			isActive: () => this.type === 'hover'
 		})
 	);
 
@@ -192,15 +203,44 @@ export class ScrollArea {
 		this.viewportElement = element;
 		const offScroll = on(element, 'scroll', this.handleScroll);
 		element.style.scrollbarWidth = 'none';
-		return () => offScroll();
+
+		// Observe viewport resize to update scroll state
+		const resizeObserver = useResizeObserver({
+			isActive: () => true,
+			callback: () => {
+				this.viewportDimensions = {
+					width: element.clientWidth,
+					height: element.clientHeight
+				};
+			}
+		});
+		const offResize = resizeObserver.reference?.(element);
+
+		return () => {
+			offScroll();
+			offResize?.();
+		};
 	};
 
 	contentAttachment = (element: HTMLElement) => {
 		this.contentElement = element;
 		const offWheel = on(element, 'wheel', this.handleWheel);
 
+		// Observe content resize to update scroll state
+		const resizeObserver = useResizeObserver({
+			isActive: () => true,
+			callback: () => {
+				this.contentDimensions = {
+					width: element.scrollWidth,
+					height: element.scrollHeight
+				};
+			}
+		});
+		const offResize = resizeObserver.reference?.(element);
+
 		return () => {
 			offWheel();
+			offResize?.();
 		};
 	};
 
@@ -210,4 +250,93 @@ export class ScrollArea {
 			offClick();
 		};
 	};
+
+	private scrollAnimationFrame = $state<number | null>(null);
+	private edgeScrollSpeed = $state(0);
+
+	get scrollOnEdgesAttachment() {
+		if (!this.scrollOnEdges) return null;
+		return (element: HTMLElement) => {
+			const edgeThreshold = 10; // pixels from edge to trigger scroll
+			const maxScrollSpeed = 3; // pixels per frame
+
+			const handlePointerMove = (event: PointerEvent) => {
+				if (!this.viewportElement || !this.scrollbarYEnabled) {
+					this.stopEdgeScroll();
+					return;
+				}
+
+				const rect = element.getBoundingClientRect();
+				const pointerY = event.clientY - rect.top;
+				const elementHeight = rect.height;
+
+				// Check if pointer is near top edge
+				if (pointerY < edgeThreshold && pointerY >= 0) {
+					const intensity = 1 - pointerY / edgeThreshold;
+					this.edgeScrollSpeed = -maxScrollSpeed * intensity;
+					this.startEdgeScroll();
+				}
+				// Check if pointer is near bottom edge
+				else if (pointerY > elementHeight - edgeThreshold && pointerY <= elementHeight) {
+					const distanceFromBottom = elementHeight - pointerY;
+					const intensity = 1 - distanceFromBottom / edgeThreshold;
+					this.edgeScrollSpeed = maxScrollSpeed * intensity;
+					this.startEdgeScroll();
+				}
+				// Not near any edge
+				else {
+					this.stopEdgeScroll();
+				}
+			};
+
+			const handlePointerLeave = () => {
+				this.stopEdgeScroll();
+			};
+
+			const offMove = on(element, 'pointermove', handlePointerMove);
+			const offLeave = on(element, 'pointerleave', handlePointerLeave);
+
+			return () => {
+				this.stopEdgeScroll();
+				offMove();
+				offLeave();
+			};
+		};
+	}
+
+	private startEdgeScroll() {
+		if (this.scrollAnimationFrame !== null) return;
+
+		const scroll = () => {
+			if (!this.viewportElement || this.edgeScrollSpeed === 0) {
+				this.stopEdgeScroll();
+				return;
+			}
+
+			const newScrollTop = this.viewportElement.scrollTop + this.edgeScrollSpeed;
+			const clampedScrollTop = Math.max(0, Math.min(newScrollTop, this.maxScrollY));
+
+			// Stop if we've reached the limit
+			if (
+				(this.edgeScrollSpeed < 0 && clampedScrollTop === 0) ||
+				(this.edgeScrollSpeed > 0 && clampedScrollTop === this.maxScrollY)
+			) {
+				this.stopEdgeScroll();
+				return;
+			}
+
+			this.viewportElement.scrollTop = clampedScrollTop;
+			this.scrollAnimationFrame = requestAnimationFrame(scroll);
+		};
+
+		this.scrollAnimationFrame = requestAnimationFrame(scroll);
+	}
+
+	private stopEdgeScroll() {
+		if (this.scrollAnimationFrame !== null) {
+			cancelAnimationFrame(this.scrollAnimationFrame);
+			this.scrollAnimationFrame = null;
+		}
+		this.edgeScrollSpeed = 0;
+	}
 }

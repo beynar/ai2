@@ -1,12 +1,6 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { avatarGroupTheme } from './avatar.js';
-	export const setAvatarGroupTheme = setComponentTheme<typeof avatarGroupTheme>('avatarGroup');
-	export const useAvatarGroupTheme = useComponentTheme('avatarGroup', avatarGroupTheme);
-</script>
-
 <script lang="ts" generics="Item extends object">
-	import type { AvatarGroupProps } from './avatar.js';
+	import type { AvatarGroupProps } from './avatar.props.js';
+	import { useAvatarGroupTheme } from './avatar.theme.js';
 	import Avatar from './Avatar.svelte';
 
 	let {

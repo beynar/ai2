@@ -1,18 +1,13 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { phoneInputTheme } from '$lib/components/Form/PhoneInput/phoneInput.js';
-	export const setPhoneInputTheme = setComponentTheme<typeof phoneInputTheme>('phoneInput');
-	export const usePhoneInputTheme = useComponentTheme('phoneInput', phoneInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
 	import intlTelInput from 'intl-tel-input';
 	import 'intl-tel-input/build/css/intlTelInput.css';
-	import type { PhoneInputProps } from '$lib/components/Form/PhoneInput/phoneInput.js';
+	import type { PhoneInputProps } from './phoneInput.props.js';
+	import { usePhoneInputTheme } from './phoneInput.theme.js';
 	import { untrack } from 'svelte';
 	import fr from 'intl-tel-input/i18n/fr';
+	import { on } from 'svelte/events';
 
 	let {
 		value = $bindable(null),
@@ -30,7 +25,6 @@
 		name,
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		...rest
 	}: PhoneInputProps = $props();
@@ -78,7 +72,6 @@
 			const isValid = country && iti?.isValidNumber();
 			return customErrors || (isValid ? [] : ['Invalid phone number']);
 		},
-		readonly,
 		visible,
 		type: 'phone'
 	});
@@ -93,12 +86,13 @@
 			iti = intlTelInput(node, {
 				strictMode: strict,
 				initialCountry: country as any,
-
+				allowPhonewords: false,
 				formatOnDisplay: true,
 				formatAsYouType: true,
 				separateDialCode: true,
 				allowDropdown: true,
 				nationalMode: true,
+
 				dropdownContainer: document.body,
 				i18n: {
 					...fr,
@@ -116,17 +110,29 @@
 	};
 </script>
 
-{field.value}
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
 		}
 	}}
 	{...rest}
+	{@attach (node: HTMLElement) => {
+		return on(node, 'click', () => {
+			const input = node.querySelector('input');
+			if (input) {
+				input.focus();
+			}
+		});
+	}}
 >
 	<input
 		data-1p-ignore
@@ -139,12 +145,30 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled, size: rest.size })}
+		disabled={field.disabled}
 	/>
 </Field>
 
 <style>
 	:global {
+		/* Reset intl-tel-input container styles */
+		.iti {
+			width: 100%;
+		}
+		.iti__selected-dial-code {
+			font-size: 0.875rem;
+			line-height: 1.5;
+		}
+		.iti__arrow {
+			margin-left: 4px;
+		}
+		.iti input {
+			margin: 0 !important;
+			height: auto !important;
+			line-height: 1.5 !important;
+		}
+
 		/* Webkit (Chrome, Safari, newer versions of Opera) */
 		.scroller::-webkit-scrollbar {
 			width: 4px;

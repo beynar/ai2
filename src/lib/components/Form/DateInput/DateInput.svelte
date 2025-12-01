@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { dateInputTheme } from '$lib/components/Form/DateInput/dateInput.js';
-	export const setDateInputTheme = setComponentTheme<typeof dateInputTheme>('dateInput');
-	export const useDateInputTheme = useComponentTheme('dateInput', dateInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { DateInputProps } from '$lib/components/Form/DateInput/dateInput.js';
+	import type { DateInputProps } from './dateInput.props.js';
+	import { useDateInputTheme } from './dateInput.theme.js';
 	import { Maskito } from '@maskito/core';
 	import { maskitoDateOptionsGenerator } from '@maskito/kit';
 	import { untrack } from 'svelte';
@@ -26,7 +20,6 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		...rest
 	}: DateInputProps = $props();
@@ -65,21 +58,11 @@
 		required,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		type: 'date'
 	});
 
 	const classes = $derived(useDateInputTheme(theme));
-
-	$effect(() => {
-		const currentValue = value;
-		untrack(() => {
-			if (field.node) {
-				(field.node as HTMLInputElement).value = formatDate(currentValue);
-			}
-		});
-	});
 
 	const formatDate = (date: Date | null) => {
 		if (!date) return '';
@@ -150,10 +133,8 @@
 		if (value) {
 			input.value = formatDate(value);
 		}
-		return {
-			destroy: () => {
-				maskedElement.destroy();
-			}
+		return () => {
+			maskedElement.destroy();
 		};
 	};
 
@@ -168,11 +149,12 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled, size: rest.size })
 		}
 	}}
 	{...rest}
@@ -185,8 +167,9 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input()}
-		use:maskAction
+		disabled={field.disabled}
+		class={classes.input({ disabled: field.disabled, size: rest.size })}
+		{@attach maskAction}
 		oninput={handleInput}
 	/>
 </Field>

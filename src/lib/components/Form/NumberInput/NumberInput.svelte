@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { numberInputTheme } from '$lib/components/Form/NumberInput/numberInput.js';
-	export const setNumberInputTheme = setComponentTheme<typeof numberInputTheme>('numberInput');
-	export const useNumberInputTheme = useComponentTheme('numberInput', numberInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { NumberInputProps } from '$lib/components/Form/NumberInput/numberInput.js';
+	import type { NumberInputProps } from './numberInput.props.js';
+	import { useNumberInputTheme } from './numberInput.theme.js';
 
 	let {
 		value = $bindable(null),
@@ -20,7 +14,6 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		min,
 		max,
@@ -74,7 +67,6 @@
 			}
 			return onValidate?.(val) || false;
 		},
-		readonly,
 		visible,
 		type: 'number'
 	});
@@ -84,11 +76,12 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled, size: rest.size })
 		}
 	}}
 	{...rest}
@@ -104,6 +97,7 @@
 		{min}
 		{max}
 		{step}
-		class={classes.input()}
+		disabled={field.disabled}
+		class={classes.input({ disabled: field.disabled, size: rest.size })}
 	/>
 </Field>

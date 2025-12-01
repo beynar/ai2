@@ -1,8 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/Button/Button.svelte';
-	import MultiStepForm from '$lib/components/Form/MultiStepForm/MultiStepForm.svelte';
-	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.js';
+	import Combobox from '$lib/components/Form/Combobox/Combobox.svelte';
+	import { Form } from '$lib/components/Form/Form/index.js';
+	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.props.js';
 	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
+	import { Select } from '$lib/components/Form/Select/index.js';
+	import Switch from '$lib/components/Form/Switch/Switch.svelte';
+	import { TimeInput } from '$lib/components/Form/TimeInput/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 
 	let items = $state<FormStep[]>(<const>[
@@ -10,6 +14,22 @@
 			title: 'step 1',
 			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 			inputs: {
+				time: {
+					type: 'time',
+					label: 'Time',
+
+					format: 'HH:MM',
+					placeholder: 'HH:MM'
+				},
+				checkboxes: {
+					type: 'checkboxes',
+					label: 'CheckBoxes',
+					mode: 'card',
+					options: [
+						{ label: 'Option 1', value: 'option1' },
+						{ label: 'Option 2', value: 'option2' }
+					]
+				},
 				password: {
 					type: 'password',
 					label: 'Password',
@@ -20,9 +40,16 @@
 					label: 'Phone',
 					placeholder: 'Phone'
 				},
+				switch: {
+					type: 'switch',
+					label: 'Switch',
+					description: 'Switch description'
+				},
 				date: {
 					type: 'date',
-					label: 'Date'
+					label: 'Date',
+					format: 'dd/mm/yyyy',
+					placeholder: 'jj/mm/aaaa'
 				},
 				datetime: {
 					type: 'datetime',
@@ -35,7 +62,34 @@
 				calendarRange: {
 					type: 'calendar-range',
 					label: 'Calendar Range'
+				},
+				file: {
+					type: 'file',
+					label: 'File'
+				},
+				files: {
+					type: 'files',
+					label: 'Files',
+					description: 'Upload multiple files',
+					maxFiles: 3
+				},
+				select: {
+					placeholder: 'Select an option',
+					type: 'select',
+					label: 'Select',
+					description: 'Select an option',
+					options: [
+						{
+							label: 'Option 1',
+							value: 'option1'
+						},
+						{
+							label: 'Option 2',
+							value: 'option2'
+						}
+					]
 				}
+
 				// name: {
 				// 	type: 'text',
 				// 	label: 'Name',
@@ -211,6 +265,12 @@
 	]);
 
 	let showFooter = $state(false);
+
+	let value = $state<any>(1439);
+	let formValue = $state<any>({});
+	let dynamicFormValue = $state<any>({});
+
+	let defaultValue = $state<string | null>(null);
 </script>
 
 {#snippet footer({ payload: form }: { payload: MultiStepFormState<typeof items> })}
@@ -219,18 +279,186 @@
 	</div>
 {/snippet}
 
-<ComponentCard title="Accordion Classic" class="flex !items-start ">
+<div class="m-2 flex flex-col gap-4 p-10">
+	<TimeInput
+		as="minuteSinceMidnight"
+		value={1439}
+		label="Time"
+		format="HH:MM"
+		placeholder="HH:MM"
+		onChange={(value) => {
+			console.log('value', value);
+		}}
+	/>
+</div>
+
+<ComponentCard title="Dynamic Field Visibility Example" class="flex !items-start">
 	<div class="my-10 grid w-[800px] gap-10">
-		<MultiStepForm
-			footer={showFooter ? footer : undefined}
-			steps={items}
-			onSubmitStep={(values, step, index) => {
-				console.log(values, step, index);
+		<Combobox
+			placeholder="Select an option"
+			options={[
+				{ label: 'Option 1', value: 'option1' },
+				{ label: 'Option 2', value: 'option2' }
+			]}
+			onChange={(value, option) => {
+				console.log('value', value, option);
 			}}
-			onSubmitForm={(values) => {
-				console.log(values);
+		></Combobox>
+		<Select
+			placeholder="Select an option"
+			options={[
+				{ label: 'Option 1', value: 'option1' },
+				{ label: 'Option 2', value: 'option2' }
+			]}
+			onChange={(value) => {
+				console.log('value', value);
 			}}
-		></MultiStepForm>
+			value="option1"
+		></Select>
+
+		<Switch
+			label="Switch"
+			description="Switch description"
+			onChange={(value) => {
+				console.log('value', value);
+			}}
+		/>
+		<Form
+			bind:value={dynamicFormValue}
+			inputs={{
+				phone: {
+					type: 'phone',
+					label: 'Phone',
+					placeholder: 'Phone',
+					required: true
+				}
+			}}
+			onSubmit={(values) => {
+				console.log('Form submitted:', values);
+			}}
+		/>
+		<Form
+			bind:value={dynamicFormValue}
+			inputs={{
+				textInput: {
+					type: 'text',
+					label: 'Text Input',
+					placeholder: 'Text Input',
+					required: true
+				},
+				userType: {
+					type: 'select',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType2: {
+					type: 'radio',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType3: {
+					type: 'radio',
+					mode: 'card',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType4: {
+					type: 'checkboxes',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				userType5: {
+					type: 'checkboxes',
+					mode: 'card',
+					label: 'Account Type',
+					placeholder: 'Select account type',
+					options: [
+						{ label: 'Personal', value: 'personal' },
+						{ label: 'Business', value: 'business' }
+					],
+					required: true
+				},
+				// Static visibility: always hidden
+				hiddenField: {
+					type: 'text',
+					label: 'This field is always hidden',
+					placeholder: 'Hidden field',
+					visible: false
+				},
+				// Dynamic visibility: show only when userType is 'business'
+				companyName: {
+					type: 'text',
+					label: 'Company Name',
+					placeholder: 'Enter company name',
+					visible: (value) => value.userType === 'business',
+					required: true
+				},
+				// Dynamic visibility: show only when userType is 'personal'
+				age: {
+					type: 'number',
+					label: 'Age',
+					placeholder: 'Enter your age',
+					min: 18,
+					max: 120,
+					visible: (value) => value.userType === 'personal'
+				},
+				newsletter: {
+					type: 'switch',
+					label: 'Subscribe to Newsletter',
+					description: 'Receive updates and promotions'
+				},
+				// Dynamic visibility: show only when newsletter is true
+				emailPreference: {
+					type: 'select',
+					label: 'Email Preference',
+					placeholder: 'Select frequency',
+					options: [
+						{ label: 'Daily', value: 'daily' },
+						{ label: 'Weekly', value: 'weekly' },
+						{ label: 'Monthly', value: 'monthly' }
+					],
+					visible: (value) => value.newsletter === true
+				},
+				// Dynamic visibility: show when userType is 'business' AND newsletter is true
+				businessNewsletter: {
+					type: 'text',
+					label: 'Business Newsletter Email',
+					placeholder: 'business@example.com',
+					visible: (value) => value.userType === 'business' && value.newsletter === true
+				},
+				// Static visibility: always visible
+				email: {
+					type: 'email',
+					label: 'Email Address',
+					placeholder: 'your@email.com',
+					required: true,
+					visible: true
+				}
+			}}
+			onSubmit={(values) => {
+				console.log('Form submitted:', values);
+			}}
+		/>
 	</div>
 </ComponentCard>
 

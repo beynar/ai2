@@ -84,7 +84,7 @@ text-color        /* Uses --color CSS variable */
 text-color-light  /* Uses --color-light CSS variable */
 text-color-lighter /* Uses --color-lighter CSS variable */
 text-color-dark   /* Uses --color-dark CSS variable */
-text-color-muted  /* Uses --color-muted CSS variable */
+text-contrast-muted  /* Uses --color-muted CSS variable */
 text-color-fg     /* Uses --color-fg CSS variable */
 
 border-color      /* Uses --color CSS variable */
@@ -212,21 +212,18 @@ The Button component is a flexible and customizable button element that supports
 ### Event Props
 
 - **onClick**: (payload?: Payload) => void - Click event handler
-- **onenter**: (payload?: Payload) => void - Pointer enter event handler
-- **onleave**: (payload?: Payload) => void - Pointer leave event handler
+- **onEnter**: (payload?: Payload) => void - Pointer enter event handler
+- **onLeave**: (payload?: Payload) => void - Pointer leave event handler
 
 ### Content Props (Slots)
 
 - **children**: Snippet - Main button content
 - **prefix**: Snippet - Content before main text (typically icons)
 - **suffix**: Snippet - Content after main text (typically icons)
-- **prefixProps**: object - Props passed to prefix slot
-- **suffixProps**: object - Props passed to suffix slot
-- **childrenProps**: object - Props passed to children slot
 
 ### Advanced Props
 
-- **payload**: any - Data passed to event handlers and slots
+- **payload**: any - Data passed to event handlers
 - **ref**: HTMLElement - Reference to the button element
 - **class**: string - Additional CSS classes
 - **theme**: ComponentTheme - Custom theme overrides
@@ -323,3 +320,29 @@ Custom Styled
 - \`squared\` is automatically determined when only prefix or suffix is provided without children
 - All event handlers respect disabled state
 - Icon sizing is automatically adjusted based on button size
+
+
+# Svelte MCP Server
+You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+
+## Available MCP Tools of the svelte-mcp-server:
+
+### 1. list-sections
+
+Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
+When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+
+### 2. get-documentation
+
+Retrieves full documentation content for specific sections. Accepts single or multiple sections.
+After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+
+### 3. svelte-autofixer
+
+Analyzes Svelte code and returns issues and suggestions.
+You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
+
+### 4. playground-link
+
+Generates a Svelte Playground link with the provided code.
+After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.

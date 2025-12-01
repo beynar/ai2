@@ -82,7 +82,7 @@ function drawAreaInDOM(points: Point[]): SVGSVGElement {
 }
 
 export const useSafeArea = (opts: {
-	isActive: boolean;
+	isActive: () => boolean;
 	callback?: () => void;
 	offset?: number;
 	debug?: boolean;
@@ -139,7 +139,7 @@ export const useSafeArea = (opts: {
 		removeDebug();
 	};
 	$effect(() => {
-		const isActive = opts.isActive;
+		const isActive = opts.isActive();
 		untrack(() => {
 			if (isActive) {
 				refs.forEach((ref) => {

@@ -1,39 +1,36 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { scrollAreaTheme } from '$lib/components/ScrollArea/scrollArea.js';
-	export const setScrollAreaTheme = setComponentTheme<typeof scrollAreaTheme>('scrollArea');
-	export const useScrollAreaTheme = useComponentTheme('scrollArea', scrollAreaTheme);
-</script>
-
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { ScrollArea } from './scrollArea.svelte.js';
-	import type { ScrollAreaProps } from './scrollArea.ts';
+	import type { ScrollAreaProps } from './scrollArea.props.js';
+	import { useScrollAreaTheme } from './scrollArea.theme.js';
+	import { caretUpDownIcon } from '../Icons/caretUpDown.js';
+	import { caretUpIcon } from '../Icons/caretUp.js';
+	import { caretDownIcon } from '../Icons/caretDown.js';
 
 	let {
 		class: className = '',
 		children,
 		delay = 0,
 		type = 'hover',
+		scrollOnEdges = false,
 		theme
 	}: ScrollAreaProps = $props();
 
 	const scrollArea = new ScrollArea({
-		type,
-		delay
+		get type() {
+			return type;
+		},
+		get delay() {
+			return delay;
+		},
+		get scrollOnEdges() {
+			return scrollOnEdges;
+		}
 	});
 
 	const classes = $derived(useScrollAreaTheme(theme));
 </script>
 
-<button
-	onclick={() => {
-		const element = document.getElementById('test');
-		if (element) {
-			element.scrollIntoView({ behavior: 'smooth' });
-		}
-	}}>Scroll to</button
->
 <div
 	data-scroll-area
 	class={classes.base({ className })}
@@ -41,6 +38,7 @@
 	aria-label="Scrollable content area"
 	{@attach scrollArea.keydown.reference}
 	{@attach scrollArea.hoover.reference}
+	{@attach scrollArea.scrollOnEdgesAttachment}
 >
 	<div
 		id="scroll-area-viewport"
@@ -61,8 +59,6 @@
 			{@render children?.()}
 		</div>
 	</div>
-
-	{scrollArea.hoover.isHovered}
 
 	{#if (type === 'hover' && scrollArea.visible && scrollArea.hoover.isHovered) || scrollArea.isDraggingY || type === 'always' || (type === 'scroll' && scrollArea.isScrolling)}
 		<div
@@ -92,6 +88,25 @@
 				{@attach scrollArea.thumbRect.reference}
 			></div>
 		</div>
+	{/if}
+	{#if scrollArea.scrollOnEdgesAttachment}
+		{#if scrollArea.canScrollUp}
+			<div
+				class="absolute top-0 left-0 flex w-full items-center justify-center"
+				style:pointer-events="none"
+			>
+				{@render caretUpIcon({ size: 10 })}
+			</div>
+		{/if}
+
+		{#if scrollArea.canScrollDown}
+			<div
+				class="absolute bottom-0 left-0 flex w-full items-center justify-center"
+				style:pointer-events="none"
+			>
+				{@render caretDownIcon({ size: 10 })}
+			</div>
+		{/if}
 	{/if}
 </div>
 

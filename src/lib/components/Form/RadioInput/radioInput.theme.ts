@@ -1,0 +1,115 @@
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+
+const defaultRadioInput = cva({
+	base: 'grid gap-3',
+	variants: {
+		mode: {
+			card: '',
+			normal: ''
+		}
+	}
+});
+
+const defaultRadioInputItem = cva({
+	base: 'transition-all relative grid items-center min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
+	variants: {
+		mode: {
+			card: 'rounded bg-surface-light raised py-2 ',
+			normal: 'py-1'
+		},
+		checked: {
+			true: '',
+			false: ''
+		},
+		disabled: {
+			true: 'cursor-not-allowed opacity-50',
+			false: ''
+		}
+	},
+	compoundVariants: [
+		{
+			mode: 'card',
+			checked: true,
+			class: 'ring-2 ring-primary bg-primary-muted'
+		}
+	]
+});
+
+const defaultRadioInputItemLabel = cva({
+	base: 'flex items-center gap-4 flex-wrap text-sm'
+});
+
+const defaultRadioInputItemTrack = cva({
+	base: 'size-5 origin-center content-[""] bg-surface-light border border-surface-muted rounded-full absolute top-0 left-2 right-0 bottom-0 my-auto',
+	variants: {
+		checked: {
+			true: '',
+			false: ''
+		},
+		mode: {
+			card: '',
+			normal: ''
+		},
+		disabled: {
+			true: 'opacity-50',
+			false: ''
+		}
+	}
+});
+
+const defaultRadioInputItemThumb = cva({
+	base: 'size-5 my-auto origin-center radio bg-contrast rounded-full transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[40%] opacity-0',
+	variants: {
+		checked: {
+			true: 'bg-primary scale-[60%] opacity-100',
+			false: ''
+		},
+		mode: {
+			card: '',
+			normal: ''
+		},
+		disabled: {
+			true: 'opacity-50',
+			false: ''
+		}
+	}
+});
+
+const defaultRadioInputItemIcon = cva({
+	base: ''
+});
+
+const defaultRadioInputItemDescription = cva({
+	base: 'text-xs text-contrast-muted'
+});
+
+const defaultRadioInputContainer = cva({
+	base: 'grid gap-3 grid-cols-1 md:grid-cols-2 items-start',
+	variants: {
+		mode: {
+			card: '',
+			normal: ''
+		},
+		disabled: {
+			true: 'opacity-50',
+			false: ''
+		}
+	}
+});
+
+export const radiosInputTheme = {
+	radiosInput: defaultRadioInput,
+	radiosInputItem: defaultRadioInputItem,
+	radiosInputItemLabel: defaultRadioInputItemLabel,
+	radiosInputItemTrack: defaultRadioInputItemTrack,
+	radiosInputItemThumb: defaultRadioInputItemThumb,
+	radiosInputItemIcon: defaultRadioInputItemIcon,
+	radiosInputItemDescription: defaultRadioInputItemDescription,
+	radiosInputContainer: defaultRadioInputContainer
+};
+
+export type RadiosInputTheme = typeof radiosInputTheme;
+export type RadiosInputThemeProps = InferComponentTheme<RadiosInputTheme>;
+export const setRadioInputTheme = setComponentTheme<RadiosInputTheme>('radiosInput');
+export const useRadioInputTheme = useComponentTheme('radiosInput', radiosInputTheme);

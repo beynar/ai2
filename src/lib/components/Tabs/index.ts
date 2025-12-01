@@ -1,0 +1,10 @@
+export { default as Tabs } from './Tabs.svelte';
+export type { TabsProps, TabsPlacement } from './tabs.props.js';
+export {
+	tabsTheme,
+	setTabsTheme,
+	useTabsTheme,
+	type TabsTheme,
+	type TabsThemeProps
+} from './tabs.theme.js';
+

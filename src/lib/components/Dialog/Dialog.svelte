@@ -1,40 +1,6 @@
-<script module lang="ts">
-	// declare global {
-	// 	interface Document {
-	// 		addEventListener<K extends keyof ModalTriggerEventMap>(
-	// 			type: K,
-	// 			listener: (this: Document, ev: ModalTriggerEventMap[K]) => void
-	// 		): void;
-	// 		dispatchEvent<K extends keyof ModalTriggerEventMap>(ev: ModalTriggerEventMap[K]): void;
-	// 		removeEventListener<K extends keyof ModalTriggerEventMap>(
-	// 			type: K,
-	// 			listener: (this: Document, ev: ModalTriggerEventMap[K]) => void
-	// 		): void;
-	// 	}
-	// }
-
-	// export const toggleDialog = (id: string, open: boolean) => {
-	// 	document.dispatchEvent(
-	// 		new CustomEvent('open_dialog', {
-	// 			detail: { id, open }
-	// 		})
-	// 	);
-	// };
-
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { dialogTheme } from './dialog.js';
-	export const setDialogTheme = setComponentTheme<typeof dialogTheme>('dialog');
-	export const useDialogTheme = useComponentTheme('dialog', dialogTheme);
-</script>
-
 <script lang="ts">
-	import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
-	import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
-
-	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
-	import { useScrollLock } from '$lib/utils/useScrollLock.svelte.js';
-
-	import type { DialogProps } from './dialog.js';
+	import type { DialogProps } from './dialog.props.js';
+	import { useDialogTheme } from './dialog.theme.js';
 	import { DialogState } from './dialog.state.svelte.js';
 	import Slot from '../Slot/Slot.svelte';
 	import { xIcon } from '../Icons/x.js';
@@ -45,8 +11,6 @@
 		id: customId,
 		type,
 		isOpen = $bindable(false),
-		title,
-		description,
 		onClose,
 		onOpen,
 		size,
@@ -57,13 +21,10 @@
 		closable = true,
 		class: className,
 		header,
-		headerProps,
 		footer,
-		footerProps,
-		titleProps,
-		descriptionProps,
+		title,
+		description,
 		closeButton,
-		closeButtonProps,
 		trigger
 	}: DialogProps = $props();
 
@@ -85,45 +46,17 @@
 		get transition() {
 			return transition;
 		},
+		get closeOnEscape() {
+			return closeOnEscape;
+		},
+		get closeOnClickOutside() {
+			return closeOnClickOutside;
+		},
+		get closable() {
+			return closable;
+		},
 		onClose,
 		onOpen
-	});
-
-	useKeyDown({
-		get isActive() {
-			return (
-				closeOnEscape && closable && dialog.isOpen && (dialog.isLastOfStack || dialog.isLastOpen)
-			);
-		},
-		keys: ['Escape'],
-		callback: () => {
-			dialog.close();
-		}
-	});
-
-	useScrollLock({
-		get isActive() {
-			return (
-				!dialog.parent && dialog.isOpen && dialog.theme.dialogs.filter((d) => d.isOpen).length === 1
-			);
-		}
-	});
-
-	const clickOutside = useClickOutside({
-		get isActive() {
-			if (!closeOnClickOutside || dialog.children.some((d) => d.isOpen)) {
-				return false;
-			}
-			return dialog.isOpen && dialog.hasTransitioned;
-		},
-		callback: dialog.close
-	});
-
-	const focusTrap = useFocusTrap({
-		get isActive() {
-			return false;
-			return dialog.isOpen && (dialog.isLastOfStack || dialog.isLastOpen);
-		}
 	});
 
 	const classes = $derived(useDialogTheme());
@@ -136,7 +69,6 @@
 
 {#if dialog.isOpen}
 	<dialog
-		open={true}
 		id={dialog.id}
 		aria-modal={true}
 		aria-labelledby="{dialog.id}-label"
@@ -152,15 +84,14 @@
 			delay: 0,
 			easing: 'linear'
 		}}
+		onintrostart={() => {
+			dialog.element?.showModal?.();
+		}}
 		bind:this={dialog.element}
+		{@attach dialog.attachment}
 	>
 		{#snippet CLOSE_BUTTON()}
-			<Slot
-				class={classes.closeButton({ size: dialog.computedSize })}
-				render={closeButton}
-				payload={dialog}
-				props={closeButtonProps}
-			>
+			<Slot class={classes.closeButton({ size: dialog.computedSize })} render={closeButton}>
 				<Button
 					squared
 					class={classes.closeButton({ size: dialog.computedSize })}
@@ -173,8 +104,7 @@
 			</Slot>
 		{/snippet}
 		<div
-			{@attach focusTrap.attachment}
-			{@attach clickOutside.reference}
+			{@attach dialog.contentAttachment}
 			data-type={dialog.type}
 			in:in_out={dialog.computedTransition.in}
 			out:in_out={dialog.computedTransition.out}
@@ -194,23 +124,11 @@
 			<Slot
 				as="header"
 				render={header}
-				payload={dialog}
 				class={classes.header({ size: dialog.computedSize })}
-				props={headerProps}
 				renderIf={hasHeader}
 			>
-				<Slot
-					class={classes.title({ size: dialog.computedSize })}
-					render={title}
-					payload={dialog}
-					props={titleProps}
-				/>
-				<Slot
-					class={classes.description({ size: dialog.computedSize })}
-					render={description}
-					payload={dialog}
-					props={descriptionProps}
-				/>
+				<Slot class={classes.title({ size: dialog.computedSize })} render={title} />
+				<Slot class={classes.description({ size: dialog.computedSize })} render={description} />
 				{#if closable}
 					{@render CLOSE_BUTTON()}
 				{/if}
@@ -219,12 +137,7 @@
 				{@render CLOSE_BUTTON()}
 			{/if}
 			{@render children?.(dialog)}
-			<Slot
-				render={footer}
-				class={classes.footer({ size: dialog.computedSize })}
-				payload={dialog}
-				props={footerProps}
-			/>
+			<Slot render={footer} class={classes.footer({ size: dialog.computedSize })} />
 		</div>
 	</dialog>
 {/if}

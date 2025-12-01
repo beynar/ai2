@@ -1,4 +1,4 @@
-import plugin from 'tailwindcss/plugin';
+import plugin, { type Config } from 'tailwindcss/plugin';
 import { colors, variants } from './colors.js';
 import type { ThemeOptions } from './theme.js';
 import { getSpinner } from './spinnner.js';
@@ -81,24 +81,22 @@ export default plugin.withOptions<ThemeOptions>(
 				}
 			});
 
-			// RAISED UTILITY
 			addBase({
+				'body *': {
+					'border-color': 'var(--color-surface-muted)',
+					'--tw-ring-offset-color': 'var(--color-surface-dark)'
+				},
 				'[data-color-scheme="dark"]': {
 					'--dark-raised-border': '1px solid var(--current-border, var(--color-surface-muted))',
 					'--dark-raised-shadow': 'none'
 				},
-				'[data-color-scheme="light"]': {
-					// '--light-raised-border': 'var(--current-border, var(--color-surface-lighter))'
-					'--light-raised-border':
-						options?.['raised-with-border'] !== false
-							? '1px solid var(--current-border, var(--color-surface-muted))'
-							: '0px'
-				},
 				':has([data-badge])': {
 					position: 'relative'
+				},
+				':focus': {
+					outline: 'none'
 				}
 			});
-
 			addComponents({
 				'.ui-spinner': getSpinner(options).style
 			});
@@ -111,6 +109,16 @@ export default plugin.withOptions<ThemeOptions>(
 			addVariant('not-first-child', '& > *:not(:first-child)');
 			addVariant('not-last-child', '& > *:not(:last-child)');
 			addVariant('not-first-not-last-child', '& > *:not(:first-child):not(:last-child)');
+			addVariant('active', ['&:active', '&[data-active="true"]']);
+			addVariant('inactive', ['&:not(:active)', '&[data-active="false"]']);
+
+			addVariant('highlight', ['&[data-highlighted="true"]']);
+			addVariant('disabled', ['&:disabled', '&[data-disabled="true"]']);
+
+			addBase({
+				'border-color': 'var(--color-surface-muted)',
+				'border-width': '1px'
+			});
 
 			matchUtilities(
 				{
@@ -118,12 +126,9 @@ export default plugin.withOptions<ThemeOptions>(
 						if (value !== 'none') {
 							const valueWithoutRgb = value.replace(/rgb\((.*?)\)/g, 'var(--tw-shadow-color)');
 							return {
-								border: 'var(--light-raised-border)',
-								// border:
-								// 	'1px solid var(--light-raised-border, var(--current-border, var(--color-surface-lighter)))',
+								border: 'var(--raised-border)',
 								'--tw-shadow': value as string,
 								'--tw-shadow-colored': valueWithoutRgb as string,
-								// 'box-shadow': `var(--dark-raised-shadow, var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow))`,
 								'box-shadow':
 									'var(--dark-raised-shadow, var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow))'
 							};
@@ -143,13 +148,14 @@ export default plugin.withOptions<ThemeOptions>(
 			);
 		};
 	},
-	(options) => ({
-		theme: {
-			extend: {
-				keyframes: {
-					...getSpinner(options).keyframes
+	(options) =>
+		({
+			theme: {
+				extend: {
+					keyframes: {
+						...getSpinner(options).keyframes
+					}
 				}
 			}
-		}
-	})
+		}) satisfies Config
 );

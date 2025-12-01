@@ -1,12 +1,6 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { avatarTheme } from './avatar.js';
-	export const setAvatarTheme = setComponentTheme<typeof avatarTheme>('avatar');
-	export const useAvatarTheme = useComponentTheme('avatar', avatarTheme);
-</script>
-
 <script lang="ts" generics="Item extends object">
-	import type { AvatarProps } from './avatar.js';
+	import type { AvatarProps } from './avatar.props.js';
+	import { useAvatarTheme } from './avatar.theme.js';
 	import Slot from '../Slot/Slot.svelte';
 
 	let {
@@ -46,7 +40,7 @@
 </script>
 
 <div data-avatar class={classes.avatar({ size, className })} data-size={size} {...attachments}>
-	<Slot payload={user} render={prefix} class={classes.avatarPrefix({ size })} />
+	<Slot render={prefix} class={classes.avatarPrefix({ size })} />
 	{#if user.avatar}
 		<img use:complete src={user.avatar} alt={user.name} class={classes.avatarImage({ size })} />
 	{/if}
@@ -55,5 +49,5 @@
 			{initials}
 		</div>
 	{/if}
-	<Slot payload={user} render={suffix} class={classes.avatarSuffix({ size })} />
+	<Slot render={suffix} class={classes.avatarSuffix({ size })} />
 </div>

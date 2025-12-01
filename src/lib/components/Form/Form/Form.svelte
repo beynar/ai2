@@ -1,17 +1,14 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { formTheme } from './form.js';
-	export const setFormTheme = setComponentTheme<typeof formTheme>('form');
-	export const useFormTheme = useComponentTheme('form', formTheme);
-</script>
-
 <script lang="ts" generics="I extends FormInputs">
 	import TextInput from '../TextInput/TextInput.svelte';
 	import NumberInput from '../NumberInput/NumberInput.svelte';
-	import type { FormInputs, FormProps, FormSubmitHandler, FormInput } from './form.js';
+	import type { FormInputs, FormSubmitHandler, FormInput, InferFormValue } from './form.js';
+	import type { FormProps } from './form.props.js';
+	import { useFormTheme } from './form.theme.js';
 	import { useForm } from './formState.svelte.js';
+	import { isFieldVisible, prepareInputProps } from './visibility.js';
 	import TextArea from '../TextArea/TextArea.svelte';
 	import Select from '../Select/Select.svelte';
+	import Combobox from '../Combobox/Combobox.svelte';
 	import RadioInput from '../RadioInput/RadioInput.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import CheckBoxesInput from '../CheckboxesInput/CheckBoxesInput.svelte';
@@ -20,19 +17,20 @@
 	import PhoneInput from '../PhoneInput/PhoneInput.svelte';
 	import CalendarInput from '../Calendar/CalendarInput.svelte';
 	import DateInput from '../DateInput/DateInput.svelte';
+	import FileInput from '../File/FileInput.svelte';
+	import TimeInput from '../TimeInput/TimeInput.svelte';
+	import Button from '$lib/components/Button/Button.svelte';
 	let {
 		inputs,
 		onSubmit,
 		value = $bindable(),
 		class: className,
 		header,
-		headerProps,
 		title,
-		titleProps,
 		description,
-		descriptionProps,
 		children,
-		form = $bindable()
+		form = $bindable(),
+		submitButton
 	}: FormProps<I> = $props();
 
 	form = useForm({
@@ -42,52 +40,62 @@
 	});
 	const inputsEntries = $derived(Object.entries<FormInput>(inputs));
 
+	// Filter visible fields reactively
+	const visibleInputsEntries = $derived(
+		inputsEntries.filter(([name, input]) => isFieldVisible(input, form.value))
+	);
+
 	const classes = $derived(useFormTheme());
 </script>
 
 {#snippet headerSnippet()}
-	<Slot render={title} payload={form} props={titleProps} class={classes.formTitle()} />
+	<Slot render={title} class={classes.formTitle()} />
 	<Slot
 		render={description}
-		payload={form}
-		props={descriptionProps}
 		class={classes.formDescription()}
 	/>
 {/snippet}
 <div class={classes.form({ className })}>
 	<Slot
 		render={header ? header : title || description ? headerSnippet : undefined}
-		payload={form}
-		props={headerProps}
 		class={classes.formHeader()}
 	/>
-	{#each inputsEntries as [name, input]}
+	{#each visibleInputsEntries as [name, input]}
+		{@const inputProps = prepareInputProps(input)}
 		{#if input.type === 'text'}
-			<TextInput {...input} {name} />
+			<TextInput {...inputProps as any} {name} />
 		{:else if input.type === 'email'}
-			<TextInput {...input} {name} />
+			<TextInput {...inputProps as any} {name} />
 		{:else if input.type === 'url'}
-			<TextInput {...input} {name} />
+			<TextInput {...inputProps as any} {name} />
 		{:else if input.type === 'number'}
-			<NumberInput {...input} {name} />
+			<NumberInput {...inputProps as any} {name} />
 		{:else if input.type === 'textarea'}
-			<TextArea {...input} {name} />
+			<TextArea {...inputProps as any} {name} />
 		{:else if input.type === 'select'}
-			<Select {...input} {name} />
+			<Select {...inputProps as any} {name} />
+		{:else if input.type === 'combobox'}
+			<Combobox {...inputProps as any} {name} />
 		{:else if input.type === 'radio'}
-			<RadioInput {...input} {name} />
+			<RadioInput {...inputProps as any} {name} />
 		{:else if input.type === 'checkboxes'}
-			<CheckBoxesInput {...input} {name} />
+			<CheckBoxesInput {...inputProps as any} {name} />
 		{:else if input.type === 'switch'}
-			<Switch {...input} {name} />
+			<Switch {...inputProps as any} {name} />
 		{:else if input.type === 'password'}
-			<PasswordInput {...input} {name} />
+			<PasswordInput {...inputProps as any} {name} />
 		{:else if input.type === 'phone'}
-			<PhoneInput {...input} {name} />
+			<PhoneInput {...inputProps as any} {name} />
 		{:else if input.type === 'calendar' || input.type === 'calendar-range'}
-			<CalendarInput {...input} {name} />
+			<CalendarInput {...inputProps as any} {name} />
 		{:else if input.type === 'date' || input.type === 'datetime'}
-			<DateInput {...input} {name} />
+			<DateInput {...inputProps as any} {name} />
+		{:else if input.type === 'file'}
+			<FileInput {...inputProps as any} {name} mode="single" />
+		{:else if input.type === 'files'}
+			<FileInput {...inputProps as any} {name} mode="multiple" />
+		{:else if input.type === 'time'}
+			<TimeInput {...inputProps as any} {name} />
 		{:else}
 			<p>Input type not supported: {input.type}</p>
 		{/if}
@@ -118,4 +126,7 @@
 		{/if} -->
 	{/each}
 	{@render children?.(form)}
+	{#if submitButton}
+		<Button onClick={() => form.submit()} {...submitButton} />
+	{/if}
 </div>

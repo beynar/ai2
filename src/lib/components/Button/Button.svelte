@@ -1,27 +1,20 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { buttonTheme, type ButtonPrimitiveProps } from '$lib/components/Button/button.js';
-	export const setButtonTheme = setComponentTheme<typeof buttonTheme>('button');
-	export const useButtonTheme = useComponentTheme('button', buttonTheme);
-</script>
-
-<script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
+<script lang="ts">
 	import { spinnerOverlay } from '$lib/attachments/spinnerOverlay.svelte.js';
 	import Slot from '../Slot/Slot.svelte';
+	import type { ButtonPrimitiveProps } from './button.props.js';
+	import { useButtonTheme } from './button.theme.js';
 
 	let {
 		as,
 		payload,
 		loading = false,
 		onClick = null,
-		prefixProps,
-		onenter = null,
-		onleave = null,
-		suffixProps,
+		onEnter = null,
+		onLeave = null,
 		href,
 		squared,
 		class: className,
-		color = 'contrast',
+		color = 'primary',
 		prefix,
 		suffix,
 		children,
@@ -33,9 +26,9 @@
 		theme,
 		rel,
 		target,
-		childrenProps,
+		label,
 		...attachments
-	}: ButtonPrimitiveProps<Payload> = $props();
+	}: ButtonPrimitiveProps = $props();
 
 	const isSquared = $derived(
 		squared ?? !!((!children && prefix && !suffix) || (!children && !prefix && suffix))
@@ -46,6 +39,7 @@
 
 <svelte:element
 	this={as || href ? 'a' : 'button'}
+	aria-label={label}
 	role={as || href ? 'link' : 'button'}
 	{href}
 	{rel}
@@ -70,21 +64,21 @@
 				onClick(payload);
 			}
 		})}
-	onpointerenter={onenter &&
+	onpointerenter={onEnter &&
 		(() => {
 			if (!disabled) {
-				onenter(payload);
+				onEnter(payload);
 			}
 		})}
-	onpointerleave={onleave &&
+	onpointerleave={onLeave &&
 		(() => {
 			if (!disabled) {
-				onleave(payload);
+				onLeave(payload);
 			}
 		})}
 	{...attachments}
 >
-	<Slot {payload} render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot {payload} render={children} props={childrenProps} />
-	<Slot {payload} render={suffix} class={classes.suffix({ size })} props={suffixProps} />
+	<Slot render={prefix} class={classes.prefix({ size })} />
+	<Slot render={children} />
+	<Slot render={suffix} class={classes.suffix({ size })} />
 </svelte:element>

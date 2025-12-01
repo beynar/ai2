@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/Button/Button.svelte';
+	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 
 	let disabled = $state(false);

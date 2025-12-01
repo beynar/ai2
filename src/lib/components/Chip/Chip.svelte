@@ -1,12 +1,7 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { chipTheme, type ChipProps } from './chip.js';
-	export const setChipTheme = setComponentTheme<typeof chipTheme>('chip');
-	export const useChipTheme = useComponentTheme('chip', chipTheme);
-</script>
-
 <script lang="ts">
 	import Slot from '../Slot/Slot.svelte';
+	import type { ChipProps } from './chip.props.js';
+	import { useChipTheme } from './chip.theme.js';
 	const {
 		color = 'primary',
 		variant = 'solid',
@@ -22,9 +17,6 @@
 		prefix,
 		href,
 		theme,
-		prefixProps,
-		suffixProps,
-		childrenProps,
 		...attachments
 	}: ChipProps = $props();
 
@@ -42,10 +34,10 @@
 	{target}
 	{href}
 	onclick={onClick}
-	class={classes.chip({ color, variant, size, className })}
+	class={classes.chip({ color, variant, size, className, isLink: as === 'a' })}
 	{...attachments}
 >
-	<Slot render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot render={children} props={childrenProps} />
-	<Slot render={suffix} class={classes.suffix({ size })} props={suffixProps} />
+	<Slot render={prefix} class={classes.prefix({ size })} />
+	<Slot render={children} />
+	<Slot render={suffix} class={classes.suffix({ size })} />
 </svelte:element>
