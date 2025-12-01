@@ -12,11 +12,11 @@ const defaultCheckBoxesInput = cva({
 });
 
 const defaultCheckBoxesInputItem = cva({
-	base: 'transition-all relative grid items-center gap-1 pl-12 cursor-pointer w-full',
+	base: 'transition-all relative grid items-center min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
 	variants: {
 		mode: {
 			card: 'rounded bg-surface-light raised py-2',
-			normal: ''
+			normal: 'py-1'
 		},
 		checked: {
 			true: '',

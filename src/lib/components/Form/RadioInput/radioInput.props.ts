@@ -9,6 +9,6 @@ export type RadiosOption = {
 };
 export type RadioInputProps<T extends RadiosOption = RadiosOption> = InputProps<'radio'> & {
 	mode?: 'card' | 'normal';
+	onClick?: (value: string) => void;
 	options: T[];
 };
-

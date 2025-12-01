@@ -9,6 +9,8 @@ const roundedSizes = {
 export const spacing = (size: Spacing = 0.25) => {
 	const base = typeof size === 'number' ? size : roundedSizes[size];
 	return {
-		DEFAULT: `${base}rem`
+		DEFAULT: `${base}rem`,
+		small: `${base * 0.5}rem`,
+		large: `${base * 2}rem`
 	};
 };

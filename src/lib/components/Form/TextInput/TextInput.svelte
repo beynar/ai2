@@ -63,6 +63,7 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {

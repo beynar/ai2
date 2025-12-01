@@ -59,7 +59,7 @@ export default plugin.withOptions<ThemeOptions>(
 			extend: {
 				colors: toTailwindCssTheme(),
 				radius: radius(options?.radius),
-				spacing: spacing(options?.spacing)
+				spacing: spacing(options?.spacing || 'small')
 				// fontSize: getTypeScale({
 				// 	baseMinPx: 14,
 				// 	baseMaxPx: 16,

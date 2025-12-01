@@ -2,12 +2,12 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
 
 const defaultInput = cva({
-	base: 'py-1 outline-none flex-1 h-full w-full rounded bg-transparent leading-3 text-sm resize-none  autofill:text-contrast-light',
+	base: 'outline-none flex-1 w-full rounded bg-transparent resize-none autofill:text-contrast-light appearance-none text-sm leading-normal',
 	variants: {
 		size: {
-			small: 'text-xs placeholder:text-xs',
-			normal: 'text-sm placeholder:text-sm',
-			large: 'text-base placeholder:text-base'
+			small: 'text-xs placeholder:text-xs h-5',
+			normal: 'text-sm placeholder:text-sm h-6',
+			large: 'text-base placeholder:text-base h-7'
 		},
 		hasValue: {
 			true: 'placeholder:text-contrast',
@@ -17,12 +17,12 @@ const defaultInput = cva({
 });
 
 const defaultInputContainer = cva({
-	base: 'px-2 bg-surface-light border border-surface-muted rounded text-contrast w-full focus-within:ring-1 focus-within:ring-primary  ring-0 transition-all p-1',
+	base: 'px-3 bg-surface-light border border-surface-muted rounded text-contrast w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all flex items-center py-2',
 	variants: {
 		size: {
-			small: 'h-4',
-			normal: 'h-6',
-			large: 'h-8'
+			small: 'py-1.5 text-xs',
+			normal: 'py-2 text-sm',
+			large: 'py-2.5 text-base'
 		}
 	}
 });

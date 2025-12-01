@@ -114,7 +114,7 @@ const defaultFieldHeader = cva({
 	variants: {
 		size: {
 			small: 'gap-1',
-			normal: 'gap-2',
+			medium: 'gap-2',
 			large: 'gap-3'
 		},
 		required: {
@@ -133,7 +133,7 @@ const defaultFieldLabel = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			normal: 'text-sm',
+			medium: 'text-sm',
 			large: 'text-base'
 		},
 		hasError: {
@@ -152,7 +152,7 @@ const defaultFieldActions = cva({
 	variants: {
 		size: {
 			small: 'gap-1',
-			normal: 'gap-2',
+			medium: 'gap-2',
 			large: 'gap-3'
 		}
 	}
@@ -163,7 +163,7 @@ const defaultFieldErrorsContainer = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			normal: 'text-sm',
+			medium: 'text-sm',
 			large: 'text-base'
 		}
 	}
@@ -174,7 +174,7 @@ const defaultFieldError = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			normal: 'text-sm',
+			medium: 'text-sm',
 			large: 'text-base'
 		}
 	}

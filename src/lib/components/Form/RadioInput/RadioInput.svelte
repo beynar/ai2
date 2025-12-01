@@ -19,6 +19,7 @@
 		visible,
 		label,
 		onChange,
+		onClick,
 		...rest
 	}: RadioInputProps<Option> = $props();
 
@@ -90,9 +91,17 @@
 	{#each options as option (option.value)}
 		{@const checked = field.value === option.value}
 		{@const optionId = `${field.name}-${option.value}`}
-		<label
-			for={optionId}
+		<button
+			aria-label={option.label}
+			aria-controls={optionId}
 			class={componentTheme.radiosInputItem({ mode, checked, disabled: field.disabled })}
+			onclick={() => {
+				if (field.disabled) return;
+				if (!field.value || field.value !== option.value) {
+					field.value = option.value;
+				}
+				onClick?.(option.value);
+			}}
 		>
 			<input
 				hidden
@@ -122,16 +131,13 @@
 			<!-- Label Content -->
 			<div class={componentTheme.radiosInputItemLabel()}>
 				{#if option.icon}
-					<Slot
-						render={option.icon}
-						class={componentTheme.radiosInputItemIcon()}
-					/>
+					<Slot render={option.icon} class={componentTheme.radiosInputItemIcon()} />
 				{/if}
 				<Slot render={option.label} />
 			</div>
 
 			<!-- Description -->
 			<Slot render={option.description} class={componentTheme.radiosInputItemDescription()} />
-		</label>
+		</button>
 	{/each}
 </Field>

@@ -34,7 +34,7 @@
 	{target}
 	{href}
 	onclick={onClick}
-	class={classes.chip({ color, variant, size, className })}
+	class={classes.chip({ color, variant, size, className, isLink: as === 'a' })}
 	{...attachments}
 >
 	<Slot render={prefix} class={classes.prefix({ size })} />

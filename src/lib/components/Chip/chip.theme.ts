@@ -4,6 +4,10 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
 const defaultChip = cva({
 	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex',
 	variants: {
+		isLink: {
+			true: 'cursor-pointer',
+			false: null
+		},
 		size: {
 			small: 'px-1.5 py-0.5 min-h-4 text-sm  gap-1',
 			normal: 'px-2 py-0.5 min-h-5 text-base gap-1',
@@ -82,4 +86,3 @@ export type ChipTheme = typeof chipTheme;
 export type ChipThemeProps = InferComponentTheme<ChipTheme>;
 export const setChipTheme = setComponentTheme<ChipTheme>('chip');
 export const useChipTheme = useComponentTheme('chip', chipTheme);
-

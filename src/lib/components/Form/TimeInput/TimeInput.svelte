@@ -125,11 +125,12 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
+			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled, size: rest.size })
 		}
 	}}
 	{...rest}
@@ -141,7 +142,7 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input({ disabled: field.disabled })}
+		class={classes.input({ disabled: field.disabled, size: rest.size })}
 		disabled={field.disabled}
 		{@attach maskAction}
 	/>

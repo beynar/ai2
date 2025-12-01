@@ -112,11 +112,16 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled })
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
 		}
 	}}
 	{...rest}
@@ -140,13 +145,30 @@
 		name={field.name}
 		bind:this={field.node}
 		{placeholder}
-		class={classes.input({ disabled: field.disabled })}
+		class={classes.input({ disabled: field.disabled, size: rest.size })}
 		disabled={field.disabled}
 	/>
 </Field>
 
 <style>
 	:global {
+		/* Reset intl-tel-input container styles */
+		.iti {
+			width: 100%;
+		}
+		.iti__selected-dial-code {
+			font-size: 0.875rem;
+			line-height: 1.5;
+		}
+		.iti__arrow {
+			margin-left: 4px;
+		}
+		.iti input {
+			margin: 0 !important;
+			height: auto !important;
+			line-height: 1.5 !important;
+		}
+
 		/* Webkit (Chrome, Safari, newer versions of Opera) */
 		.scroller::-webkit-scrollbar {
 			width: 4px;

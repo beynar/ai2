@@ -1,6 +1,6 @@
 {
 	"name": "svelai",
-	"version": "0.1.37",
+	"version": "0.1.42",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -367,8 +367,11 @@
 			"default": "./dist/components/Collapsible/index.js"
 		}
 	},
-	"typesVersion": {
+	"typesVersions": {
 		"*": {
+			"./icons/*": [
+				"./dist/components/Icons/*.d.ts"
+			],
 			"./form": [
 				"./dist/components/Form/Form/index.d.ts"
 			],

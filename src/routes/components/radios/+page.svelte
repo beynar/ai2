@@ -23,7 +23,9 @@
 	<ComponentCard title="Radios Input - Normal Mode" class="flex !items-start">
 		<div class="w-full max-w-md">
 			<RadioInput
-				bind:value={selectedOptions}
+				onClick={(value) => {
+					console.log('clicked', value);
+				}}
 				options={normalOptions}
 				mode="normal"
 				name="normal-radios"
@@ -39,7 +41,6 @@
 	<ComponentCard title="Radios Input - Card Mode" class="flex !items-start">
 		<div class="w-full max-w-md">
 			<RadioInput
-				bind:value={cardSelectedOptions}
 				options={cardOptions}
 				mode="card"
 				name="card-radios"
@@ -57,7 +58,7 @@
 			<Form
 				inputs={{
 					preference: {
-						type: 'radios',
+						type: 'radio',
 						label: 'Your preference',
 						required: true,
 						mode: 'normal',
@@ -72,7 +73,7 @@
 						]
 					},
 					style: {
-						type: 'radios',
+						type: 'radio',
 						label: 'Interface style',
 						required: true,
 						mode: 'card',

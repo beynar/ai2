@@ -19,6 +19,7 @@
 		onValidate,
 		visible,
 		field: providedField,
+		onClick,
 		label,
 		...rest
 	}: CheckBoxesInputProps<Option> = $props();
@@ -97,8 +98,17 @@
 	{#each options as option (option.value)}
 		{@const checked = field.value?.includes(option.value)}
 		{@const optionId = `${field.name}-${option.value}`}
-		<label
-			for={optionId}
+		<button
+			aria-controls={optionId}
+			onclick={() => {
+				if (field.disabled) return;
+				if (checked) {
+					field.value = field.value?.filter((v) => v !== option.value);
+				} else {
+					field.value = [...(field.value || []), option.value];
+				}
+				onClick?.(option.value);
+			}}
 			class={componentTheme.checkboxesInputItem({ mode, checked, disabled: field.disabled })}
 		>
 			<input
@@ -137,6 +147,6 @@
 
 			<!-- Description -->
 			<Slot render={option.description} class={componentTheme.checkboxesInputItemDescription()} />
-		</label>
+		</button>
 	{/each}
 </Field>

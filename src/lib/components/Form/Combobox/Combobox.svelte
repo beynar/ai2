@@ -344,9 +344,9 @@
 				onClick={handleClear}
 				label="Clear selection"
 				squared
-				class="flex h-[1.3lh] max-h-[1.3lh] items-center justify-center"
+				class="flex h-[1lh] max-h-[1lh] items-center justify-center p-0.5"
 			>
-				{@render xIcon({ size: 20 })}
+				{@render xIcon({ size: 18 })}
 			</Button>
 		{/snippet}
 

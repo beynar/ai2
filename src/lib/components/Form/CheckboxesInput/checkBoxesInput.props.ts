@@ -9,7 +9,7 @@ export type CheckBoxesOption = {
 export type CheckBoxesInputProps<T extends CheckBoxesOption = CheckBoxesOption> =
 	InputProps<'checkboxes'> & {
 		value?: string[];
+		onClick?: (value: string) => void;
 		mode?: 'card' | 'normal';
 		options: T[];
 	} & Partial<Omit<FieldProps<'checkboxes'>, 'children' | 'type'>>;
-

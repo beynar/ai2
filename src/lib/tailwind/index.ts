@@ -83,7 +83,8 @@ export default plugin.withOptions<ThemeOptions>(
 
 			addBase({
 				'body *': {
-					'border-color': 'var(--color-surface-muted)'
+					'border-color': 'var(--color-surface-muted)',
+					'--tw-ring-offset-color': 'var(--color-surface-dark)'
 				},
 				'[data-color-scheme="dark"]': {
 					'--dark-raised-border': '1px solid var(--current-border, var(--color-surface-muted))',

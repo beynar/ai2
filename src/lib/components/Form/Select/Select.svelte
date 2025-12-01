@@ -13,6 +13,7 @@
 		theme,
 		disabled,
 		name,
+		size = 'normal',
 		onValidate,
 		onChange,
 		visible,
@@ -65,9 +66,10 @@
 
 <Field
 	{field}
+	{size}
 	theme={{
 		inputContainer: {
-			base: classes.inputContainer({ disabled: field.disabled })
+			base: classes.inputContainer({ size: size, disabled: field.disabled })
 		},
 		...(theme || {})
 	}}
@@ -79,7 +81,7 @@
 		name={field.name}
 		bind:value={field.value}
 		bind:this={field.node}
-		class={classes.input({ disabled: field.disabled })}
+		class={classes.input({ size, disabled: field.disabled })}
 		disabled={field.disabled}
 	>
 		{#if placeholder}
