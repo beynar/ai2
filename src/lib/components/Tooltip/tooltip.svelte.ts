@@ -48,7 +48,6 @@ export const tooltip = (props: TooltipProps) => {
 	});
 
 	return (ref: HTMLElement) => {
-		console.log('tooltip reference', ref);
 		refElement = ref;
 		const off = hoverAction.reference?.(ref);
 		return () => {

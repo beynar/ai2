@@ -36,6 +36,7 @@
 			class: ''
 		},
 		onChange,
+		onViewChange,
 		theme
 	}: CalendarPrimitiveProps<CalendarEvent, T> = $props();
 
@@ -71,6 +72,31 @@
 			value = v;
 		}
 	});
+
+	function getViewChangeParams() {
+		const startYear = calendar.date.getFullYear();
+		const startMonth = calendar.date.getMonth();
+		const endDate =
+			view === 'double'
+				? new Date(startYear, startMonth + 1, 1)
+				: new Date(startYear, startMonth, 1);
+		return {
+			startYear,
+			startMonth,
+			endYear: endDate.getFullYear(),
+			endMonth: endDate.getMonth()
+		};
+	}
+
+	function handlePrevMonth() {
+		calendar.goPrevMonth();
+		onViewChange?.(getViewChangeParams());
+	}
+
+	function handleNextMonth() {
+		calendar.goNextMonth();
+		onViewChange?.(getViewChangeParams());
+	}
 
 	const buttonProps = $derived(
 		buttons
@@ -111,18 +137,12 @@
 			variant="ghost"
 			class="rotate-180"
 			{...buttonProps.prev}
-			onClick={calendar.goPrevMonth}
+			onClick={handlePrevMonth}
 		>
 			{@render caretRightIcon()}
 		</Button>
 		{calendar.displayedMonthLabel}
-		<Button
-			squared
-			size="small"
-			variant="ghost"
-			{...buttonProps.next}
-			onClick={calendar.goNextMonth}
-		>
+		<Button squared size="small" variant="ghost" {...buttonProps.next} onClick={handleNextMonth}>
 			{@render caretRightIcon()}
 		</Button>
 	</Slot>

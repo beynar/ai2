@@ -13,6 +13,9 @@ const defaultInput = cva({
 			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
+	},
+	defaultVariants: {
+		size: 'normal'
 	}
 });
 
@@ -28,6 +31,9 @@ const defaultInputContainer = cva({
 			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
+	},
+	defaultVariants: {
+		size: 'normal'
 	}
 });
 

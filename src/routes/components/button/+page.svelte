@@ -4,6 +4,7 @@
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 
 	let disabled = $state(false);
+	let loading = $state(false);
 </script>
 
 <div class="grid gap-10">
@@ -16,7 +17,20 @@
 				{#each colors as color}
 					<div class="flex items-center justify-center gap-4">
 						{#each sizes as size}
-							<Button {color} {size} {variant} {disabled}>
+							<Button
+								{loading}
+								onClick={() => {
+									loading = true;
+									setTimeout(() => {
+										loading = false;
+									}, 1000);
+								}}
+								prefix={eyeClosedIcon}
+								{color}
+								{size}
+								{variant}
+								{disabled}
+							>
 								{variant} - {color} - {size}
 							</Button>
 						{/each}

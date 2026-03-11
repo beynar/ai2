@@ -80,12 +80,14 @@
 			<button {...item.trigger} class={classes.trigger({ variant, size, splitted })}>
 				<div {...item.heading} class={classes.header({ variant, size })}>
 					<Slot
-						render={resolve(accordionItem, titleKey || 'title')}
+						render={title || resolve(accordionItem, titleKey || 'title')}
 						class={classes.title({ variant, size })}
+						payload={{ item }}
 					/>
 					<Slot
-						render={resolve(accordionItem, descriptionKey || 'description')}
+						render={description || resolve(accordionItem, descriptionKey || 'description')}
 						class={classes.description({ variant, size })}
+						payload={{ item }}
 					/>
 				</div>
 				{#if icon}
@@ -96,13 +98,14 @@
 			{#if item.isExpanded}
 				<div transition:slide {...item.content} class={classes.content({ variant, size })}>
 					<Slot
-						render={resolve(accordionItem, contentKey || 'content')}
-						payload={{ expanded: item.isExpanded }}
+						render={content || resolve(accordionItem, contentKey || 'content')}
+						payload={{ item }}
 					/>
 				</div>
 			{:else if accessible}
+				{@const contentToRender = content || resolve(accordionItem, contentKey || 'content')}
 				<span class="sr-only">
-					{@render resolve(accordionItem, contentKey || 'content')}
+					{@render contentToRender()}
 				</span>
 			{/if}
 		</div>

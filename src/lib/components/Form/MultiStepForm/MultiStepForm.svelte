@@ -1,7 +1,6 @@
 <script lang="ts" generics="I extends FormStep[]">
 	import Stepper from '$lib/components/Stepper/Stepper.svelte';
-
-	import { getContext, setContext, tick, type Snippet } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import type { MultiStepFormProps, FormStep } from './multiStepForm.props.js';
 	import { useMultiStepFormTheme } from './multiStepForm.theme.js';
 	import Form from '../Form/Form.svelte';
@@ -51,7 +50,7 @@
 	const classes = $derived(useMultiStepFormTheme(baseTheme));
 </script>
 
-{#snippet step({ item }: { stepper: StepperState<FormStep>; item: FormStep; index: number })}
+{#snippet step({ item }: { stepper: Stepper<FormStep>; item: FormStep; index: number })}
 	<Form
 		class="p-4"
 		inputs={item.inputs}
@@ -74,9 +73,9 @@
 					`[data-step="${form.stepper?.activeStep}"]`
 				);
 
-				if (firstInput) {
-					(firstInput as HTMLElement).focus();
-				}
+				// if (firstInput) {
+				// 	(firstInput as HTMLElement).focus();
+				// }
 			});
 		}}
 		bind:stepper={form.stepper}

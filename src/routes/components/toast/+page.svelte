@@ -5,12 +5,21 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 </script>
 
-<Toaster showCloseIcon />
+<Toaster showCloseIcon position="top-left" />
 <Confirmation />
 
 <ComponentCard>
 	<Button
 		onClick={async () => {
+			return toast.danger({
+				title: 'Hello',
+				description: 'This is a toast',
+				richColors: true,
+				duration: 100000,
+				onClose: () => {
+					console.log('closed');
+				}
+			});
 			const { confirmed } = await confirmation({
 				title: 'Hello',
 				description: 'This is a toast',

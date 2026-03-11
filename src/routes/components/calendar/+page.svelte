@@ -10,6 +10,11 @@
 		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
 	>
 		<Button onClick={() => disabledDates.push(new Date())}>Add disabled date</Button>
-		<CalendarPrimitive type="calendar" {disabledDates}></CalendarPrimitive>
+		<CalendarPrimitive
+			onViewChange={(v) => console.log(v)}
+			view="double"
+			type="calendar"
+			{disabledDates}
+		></CalendarPrimitive>
 	</div>
 </div>

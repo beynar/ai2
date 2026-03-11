@@ -1,6 +1,6 @@
 {
 	"name": "svelai",
-	"version": "0.1.42",
+	"version": "0.1.52",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -183,6 +183,11 @@
 			"types": "./dist/components/Form/PhoneInput/index.d.ts",
 			"svelte": "./dist/components/Form/PhoneInput/index.js",
 			"default": "./dist/components/Form/PhoneInput/index.js"
+		},
+		"./calendar": {
+			"types": "./dist/components/Form/Calendar/index.d.ts",
+			"svelte": "./dist/components/Form/Calendar/index.js",
+			"default": "./dist/components/Form/Calendar/index.js"
 		},
 		"./calendar-primitive": {
 			"types": "./dist/components/Form/Calendar/index.d.ts",
@@ -422,6 +427,9 @@
 			],
 			"./separator": [
 				"./dist/components/Separator/index.d.ts"
+			],
+			"./calendar": [
+				"./dist/components/Form/Calendar/index.d.ts"
 			]
 		}
 	}

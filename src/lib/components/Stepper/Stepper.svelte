@@ -63,6 +63,8 @@ container.style.height = firstSlide.clientHeight + 'px';
 		className
 	})}
 	id="stepper-{id}"
+	style:overflow={stepper?.isAnimating ? 'hidden' : 'visible'}
+	style:will-change="height"
 	style:height="{stepper?.stepHeights?.[activeStep] || undefined}px"
 	style:transition-duration={`${keyFramesOptions.duration}ms`}
 >
@@ -76,12 +78,7 @@ container.style.height = firstSlide.clientHeight + 'px';
 		{#each items as item, index}
 			<div
 				bind:clientHeight={
-					() => {
-						if (stepper?.stepHeights?.[index]) {
-							return 0;
-						}
-						return stepper.stepHeights[index];
-					},
+					() => stepper?.stepHeights?.[index] ?? undefined,
 					(value) => {
 						if (!stepper?.stepHeights) return;
 						stepper.stepHeights[index] = value || 0;
@@ -93,6 +90,10 @@ container.style.height = firstSlide.clientHeight + 'px';
 				inert={stepper.activeStep !== index}
 				role="tabpanel"
 				aria-labelledby={`stepper-${index}`}
+				style:opacity={stepper.activeStep === index ? 1 : 0}
+				style:transition-property="opacity"
+				style:transition-duration={`${keyFramesOptions.duration}ms`}
+				style:transition-timing-function={keyFramesOptions.easing}
 				class={classes.step({
 					mode
 				})}

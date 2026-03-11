@@ -87,7 +87,6 @@ export class Toaster {
 	element = $state<HTMLElement>();
 	hovering = $state<ToastPosition | null>(null);
 	polygon = $state<[number, number, number, number]>([0, 0, 0, 0]);
-	position = $state<ToastPosition>('bottom-center');
 	isOpen = $state(false);
 	theme = useTheme();
 
@@ -160,7 +159,7 @@ export class Toaster {
 		const toast = new Toast(
 			{
 				...opts,
-				position: opts.position || 'bottom-right',
+				position: opts.position || this.currentPosition || 'bottom-right',
 				dismissible: opts.dismissible ?? this.dismissible,
 				closeOnClick: opts.closeOnClick ?? this.closeOnClick,
 				duration: opts.duration ?? this.duration,

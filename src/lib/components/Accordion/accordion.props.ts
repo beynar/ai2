@@ -71,6 +71,7 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 */
 			accessible?: boolean;
 		},
-		'actions' | 'icon' | 'title' | 'description' | 'content'
+		'actions' | 'icon' | 'title' | 'description' | 'content',
+		{ item: Item }
 	>
 >;

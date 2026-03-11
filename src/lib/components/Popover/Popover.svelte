@@ -26,7 +26,8 @@
 		lockScroll = true,
 		fitTrigger = false,
 		class: className,
-		trigger
+		trigger,
+		theme
 	}: PopoverProps = $props();
 
 	const id = $props.id();
@@ -84,7 +85,7 @@
 		onOpen
 	});
 
-	const classes = $derived(usePopoverTheme());
+	const classes = $derived(usePopoverTheme(theme));
 
 	const in_out = fso();
 

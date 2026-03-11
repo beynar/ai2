@@ -13,6 +13,9 @@ const defaultInput = cva({
 			true: 'placeholder:text-contrast',
 			false: 'placeholder:text-contrast-muted'
 		}
+	},
+	defaultVariants: {
+		size: 'normal'
 	}
 });
 
@@ -24,6 +27,9 @@ const defaultInputContainer = cva({
 			normal: 'py-2 text-sm',
 			large: 'py-2.5 text-base'
 		}
+	},
+	defaultVariants: {
+		size: 'normal'
 	}
 });
 

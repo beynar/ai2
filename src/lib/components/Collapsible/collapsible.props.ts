@@ -37,11 +37,16 @@ type CollapsibleBaseProps = {
 	 * Theme configuration overrides.
 	 */
 	theme?: CollapsibleThemeProps;
+
+	/**
+	 * Whether the collapsible is accessible.
+	 */
+	accessible?: boolean;
 };
 
 type CollapsibleSlotProps = WithSlot<
 	CollapsibleBaseProps,
-	'trigger' | 'children' | 'icon',
+	'trigger' | 'children' | 'icon' | 'srOnlyContent',
 	{ isOpen: boolean }
 >;
 

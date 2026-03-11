@@ -11,44 +11,75 @@ export class StepperState<Item> extends createBindableStateClass<
 	stepContainer: HTMLElement | null = null;
 	declare activeStep: number;
 	isAnimating = $state(false);
+	private animations: Animation[] = [];
+	private rafId: number | null = null;
 	constructor(
 		props: Pick<StepperProps<Item>, 'items' | 'onChange' | 'keyFramesOptions' | 'activeStep'>
 	) {
 		super(props);
 	}
 
-	translate = () => {
-		if (this.destinationOffset !== this.offsets[this.activeStep]) {
-			this.destinationOffset = this.offsets[this.activeStep];
-			// this.stepAnimation?.cancel();
-			this.stepAnimation = this.stepContainer!.animate(
-				{
-					transform: `translateX(-${this.offsets[this.activeStep]}px)`
-				},
-
-				this.keyFramesOptions
-			);
+	private freezeCurrentTransform() {
+		if (!this.stepContainer) return;
+		const currentTransform = getComputedStyle(this.stepContainer).transform;
+		if (currentTransform && currentTransform !== 'none') {
+			this.stepContainer.style.transform = currentTransform;
 		}
+	}
+
+	private cancelStepAnimation() {
+		this.freezeCurrentTransform();
+		this.stepAnimation?.cancel();
+	}
+
+	private cancelAnimations() {
+		this.animations.forEach((animation) => animation.cancel());
+		this.animations = [];
+		this.cancelStepAnimation();
+	}
+
+	translate = () => {
+		const offset = this.offsets[this.activeStep];
+		if (offset == null || Number.isNaN(offset)) return;
+		if (this.destinationOffset === offset) return;
+		this.destinationOffset = offset;
+		this.cancelStepAnimation();
+		this.stepAnimation = this.stepContainer!.animate(
+			{
+				transform: `translateX(-${offset}px)`
+			},
+
+			this.keyFramesOptions
+		);
+		this.stepAnimation.onfinish = () => {
+			if (this.stepContainer) {
+				this.stepContainer.style.transform = `translateX(-${offset}px)`;
+			}
+		};
 	};
 
 	setActiveStep = (i: number) => () => {
-		if (!this.canGoToStep(i)) return;
+		if (!this.canGoToStep(i) || this.isAnimating) return;
+		this.isAnimating = true;
+		this.cancelAnimations();
 		const previousStep = this.stepContainer!.children[this.activeStep] as HTMLElement;
 		const nextStep = this.stepContainer!.children[i] as HTMLElement;
 		this.activeStep = i;
 		this.translate();
-		previousStep.animate(
-			{
-				opacity: `0`
-			},
-			this.keyFramesOptions
+		void previousStep;
+		void nextStep;
+		this.animations = [this.stepAnimation].filter((animation): animation is Animation =>
+			Boolean(animation)
 		);
-		nextStep.animate(
-			{
-				opacity: `1`
-			},
-			this.keyFramesOptions
-		);
+		Promise.all(this.animations.map((animation) => animation.finished)).finally(() => {
+			const offset = this.offsets[this.activeStep];
+			if (this.stepContainer && offset != null && !Number.isNaN(offset)) {
+				this.destinationOffset = offset;
+				this.stepContainer.style.transform = `translateX(-${offset}px)`;
+			}
+			this.cancelStepAnimation();
+			this.isAnimating = false;
+		});
 
 		this.onChange?.(this.items[i]);
 	};
@@ -63,9 +94,20 @@ export class StepperState<Item> extends createBindableStateClass<
 		const steps = node.querySelectorAll('[data-step]');
 
 		const setOffsets = () => {
-			steps.forEach((step, i) => {
-				this.offsets[i] = (step as HTMLElement).offsetLeft;
-				this.translate();
+			if (this.rafId) cancelAnimationFrame(this.rafId);
+			this.rafId = requestAnimationFrame(() => {
+				steps.forEach((step, i) => {
+					this.offsets[i] = (step as HTMLElement).offsetLeft;
+				});
+				if (!this.isAnimating && this.stepContainer) {
+					const offset = this.offsets[this.activeStep];
+					if (offset != null && !Number.isNaN(offset)) {
+						this.destinationOffset = offset;
+						this.cancelStepAnimation();
+						this.stepContainer.style.transform = `translateX(-${offset}px)`;
+					}
+				}
+				this.rafId = null;
 			});
 		};
 		const resizeObserver = new ResizeObserver(setOffsets);

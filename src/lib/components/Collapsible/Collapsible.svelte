@@ -20,6 +20,8 @@
 		theme,
 		trigger,
 		children,
+		accessible,
+		srOnlyContent,
 		...attachments
 	}: CollapsibleProps = $props();
 
@@ -90,5 +92,7 @@
 		>
 			<Slot payload={{ isOpen }} render={children} />
 		</div>
+	{:else if accessible || srOnlyContent}
+		<Slot render={srOnlyContent || children} />
 	{/if}
 </div>

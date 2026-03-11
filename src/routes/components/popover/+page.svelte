@@ -164,4 +164,21 @@
 			</Popover>
 		</div>
 	</Popover>
+
+	<Popover position="bottom-start">
+		{#snippet trigger(popover)}
+			<Button
+				variant="soft"
+				size="small"
+				{@attach popover.reference}
+				onClick={() => {
+					console.log(popover);
+					popover.toggle();
+				}}
+			>
+				yo
+			</Button>
+		{/snippet}
+		content
+	</Popover>
 </ComponentCard>

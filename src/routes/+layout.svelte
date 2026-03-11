@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
 	import { Separator } from '$lib/components/Separator/index.js';
+	import Confirmation from '$lib/components/Confirmation/Confirmation.svelte';
 	const { children: childrenSnippet } = $props();
 </script>
 
@@ -35,6 +36,7 @@
 <Theme>
 	{#snippet children(theme: ThemeState)}
 		<NetworkIndicator color="danger" />
+		<Confirmation />
 		<div class="relative grid grid-cols-12">
 			<div
 				class=" bg-surface border-surface-muted sticky top-0 z-10 col-span-12 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"

@@ -43,6 +43,12 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 					next: ButtonProps;
 			  }
 			| ButtonProps;
+		onViewChange?: (params: {
+			startYear: number;
+			startMonth: number;
+			endYear: number;
+			endMonth: number;
+		}) => void;
 	},
 	'header'
 >;

@@ -3,6 +3,7 @@
 	import Button from '../Button/Button.svelte';
 	import type { ConfirmationDetail, ConfirmationState } from './confirmation.state.svelte.js';
 	import { onMount, tick } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	let confirmations = $state<ConfirmationState[]>([]);
 
 	const onConfirmation = (event: CustomEvent<ConfirmationDetail>) => {
@@ -45,6 +46,7 @@
 			})
 		);
 	};
+	const isMobile = new MediaQuery('(max-width: 768px)');
 </script>
 
 {#each confirmations as confirmation}
@@ -61,13 +63,14 @@
 		description={confirmation.description}
 	>
 		{#snippet footer()}
-			<div class="flex justify-end gap-2 p-2">
+			<div class={isMobile.current ? 'flex flex-col gap-4 p-2' : 'flex justify-end gap-2 p-2'}>
 				{#if typeof confirmation.cancel === 'object'}
 					<Button
 						disabled={confirmation.loading}
 						color="surface"
 						{...confirmation.cancel}
 						onClick={actionConfirmation(confirmation, false)}
+						fullWidth={isMobile.current}
 					>
 						{confirmation.cancel.text}
 					</Button>
@@ -76,6 +79,7 @@
 						disabled={confirmation.loading}
 						color="surface"
 						onClick={actionConfirmation(confirmation, false)}
+						fullWidth={isMobile.current}
 					>
 						{confirmation.cancel}
 					</Button>
@@ -86,11 +90,16 @@
 						loading={confirmation.loading}
 						{...confirmation.confirm}
 						onClick={actionConfirmation(confirmation, true)}
+						fullWidth={isMobile.current}
 					>
 						{confirmation.confirm.text}
 					</Button>
 				{:else}
-					<Button loading={confirmation.loading} onClick={actionConfirmation(confirmation, true)}>
+					<Button
+						loading={confirmation.loading}
+						onClick={actionConfirmation(confirmation, true)}
+						fullWidth={isMobile.current}
+					>
 						{confirmation.confirm}
 					</Button>
 				{/if}

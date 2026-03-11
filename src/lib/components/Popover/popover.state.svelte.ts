@@ -220,12 +220,17 @@ export class PopoverState {
 				middleware: [
 					hide(),
 					offset(this.offset ?? 5),
-					shift({
+					// shift({
+					// 	mainAxis: true,
+					// 	crossAxis: true,
+					// 	padding: 20,
+
+					// }),
+					flip({
 						mainAxis: true,
 						crossAxis: true,
 						padding: 20
-					}),
-					flip({})
+					})
 				]
 			}
 		);

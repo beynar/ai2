@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Chip from '$lib/components/Chip/Chip.svelte';
+	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 </script>
 
@@ -12,7 +13,7 @@
 				{#each colors as color}
 					<div class="flex items-center justify-center gap-4">
 						{#each sizes as size}
-							<Chip {color} {size} {variant}>
+							<Chip prefix={eyeClosedIcon} {color} {size} {variant}>
 								{variant} - {color} - {size}
 							</Chip>
 						{/each}

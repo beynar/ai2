@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/Button/Button.svelte';
+	import { confirmation } from '$lib/components/Confirmation/confirmation.state.svelte.js';
 	import Dialog from '$lib/components/Dialog/Dialog.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 
@@ -96,11 +97,29 @@
 </script>
 
 <ComponentCard title="Accordion Classic" class="flex !items-start ">
+	<Button
+		onClick={async () => {
+			await confirmation({
+				title: 'Confirmation',
+				description: 'Are you sure you want to continue?',
+				confirm: 'Confirm',
+				cancel: 'Cancel',
+				onConfirm: () => {
+					console.log('confirmed');
+				}
+			});
+		}}>Open</Button
+	>
 	<Dialog
+		onOpen={() => {
+			console.log('open');
+		}}
+		onClose={() => {
+			console.log('close');
+		}}
 		closeOnEscape={false}
 		title="Modal"
 		description="This is a modal dialog"
-		isOpen
 		trigger={{
 			content: 'modal',
 			color: 'danger'

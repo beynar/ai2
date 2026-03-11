@@ -2,16 +2,16 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
 
 const defaultChip = cva({
-	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex',
+	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex text-balance text-center',
 	variants: {
 		isLink: {
 			true: 'cursor-pointer',
 			false: null
 		},
 		size: {
-			small: 'px-1.5 py-0.5 min-h-4 text-sm  gap-1',
-			normal: 'px-2 py-0.5 min-h-5 text-base gap-1',
-			large: 'px-2.5 py-0.5 min-h-6 text-md  gap-1.5'
+			small: 'px-2 py-1  min-h-5 text-sm  gap-1.5 leading-2.5',
+			normal: 'px-2 py-1.5  min-h-7 text-base gap-2 leading-4.5',
+			large: 'px-2.5 py-2  min-h-9 text-md  gap-2.5 leading-5.5'
 		},
 		color: {
 			primary: 'bg-primary text-primary-fg',

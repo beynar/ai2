@@ -5,9 +5,9 @@ const defaultButton = cva({
 	base: 'rounded focus:ring-1 focus:ring-color focus:ring-offset-1 ring-offset-surface cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem]',
 	variants: {
 		size: {
-			small: 'px-2.5 py-1 text-sm gap-1',
-			normal: 'px-4 py-1  text-base gap-2',
-			large: 'px-5.5 py-1 text-md gap-2.5'
+			small: 'px-2.5 py-1 text-sm gap-1.5 leading-4',
+			normal: 'px-4 py-1  text-base gap-2 leading-5',
+			large: 'px-5.5 py-1 text-md gap-2.5 leading-6'
 		},
 		color: {
 			surface: 'bg-surface-dark text-color-fg',
