@@ -14,6 +14,7 @@
 		disabled,
 		name,
 		onValidate,
+		onChange,
 		visible,
 		min,
 		max,
@@ -45,17 +46,22 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			// console.log('onChange', v);
-		},
+		onChange: (v) => onChange?.(v),
 		get disabled() {
 			return disabled;
 		},
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
 		onValidate: (val) => {
 			if (typeof val === 'number') {
 				if (min && val < min) {
@@ -67,7 +73,9 @@
 			}
 			return onValidate?.(val) || false;
 		},
-		visible,
+		get visible() {
+			return visible;
+		},
 		type: 'number'
 	});
 
@@ -81,7 +89,11 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled, size: rest.size })
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
 		}
 	}}
 	{...rest}

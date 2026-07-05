@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultNetworkIndicator = cva({
 	base: 'fixed top-0 left-0 w-full z-[9999] origin-left rounded-xl',
@@ -7,8 +7,8 @@ const defaultNetworkIndicator = cva({
 		color: {
 			primary: 'bg-primary shadow-primary',
 			secondary: 'bg-secondary shadow-secondary',
-			contrast: 'bg-contrast shadow-contrast',
-			surface: 'bg-surface shadow-surface',
+			foreground: 'bg-foreground shadow-foreground',
+			background: 'bg-background shadow-background',
 			danger: 'bg-danger shadow-danger',
 			success: 'bg-success shadow-success',
 			warning: 'bg-warning shadow-warning',
@@ -16,19 +16,19 @@ const defaultNetworkIndicator = cva({
 		}
 	},
 	defaultVariants: {
-		color: 'contrast'
+		color: 'foreground'
 	}
 });
 
 export const networkIndicatorTheme = {
-	networkIndicator: defaultNetworkIndicator
+	root: defaultNetworkIndicator
 };
 
 export type NetworkIndicatorTheme = typeof networkIndicatorTheme;
 export type NetworkIndicatorThemeProps = InferComponentTheme<NetworkIndicatorTheme>;
 export const setNetworkIndicatorTheme =
 	setComponentTheme<NetworkIndicatorTheme>('networkIndicator');
-export const useNetworkIndicatorTheme = useComponentTheme(
+export const useNetworkIndicatorTheme = useComponentTheme<NetworkIndicatorTheme>(
 	'networkIndicator',
 	networkIndicatorTheme
 );

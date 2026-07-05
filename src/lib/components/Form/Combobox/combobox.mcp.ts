@@ -9,7 +9,7 @@ A searchable dropdown component that supports both static arrays and async optio
 <script>
 	import { Combobox } from 'svelai/combobox';
 	let value = $state(null);
-	const options = [
+	const items = [
 		{ value: 'us', label: 'United States', description: 'North America' },
 		{ value: 'uk', label: 'United Kingdom', description: 'Europe' }
 	];
@@ -17,7 +17,7 @@ A searchable dropdown component that supports both static arrays and async optio
 
 <Combobox
 	placeholder="Search countries..."
-	options={options}
+	items={items}
 	bind:value={value}
 />
 \`\`\`
@@ -26,7 +26,7 @@ A searchable dropdown component that supports both static arrays and async optio
 
 ### Core Props
 
-- **options**: \`ComboboxOption[] | ((searchValue?: string) => MaybePromise<ComboboxOption[]>)\` (required)
+- **items**: \`ComboboxOption[] | ((searchValue?: string) => MaybePromise<ComboboxOption[]>)\` (required)
   - Array of options or async function that returns options based on search value
   - For arrays: filtered client-side
   - For functions: called with search value, returns Promise or array
@@ -104,7 +104,7 @@ A searchable dropdown component that supports both static arrays and async optio
 </script>
 
 <Combobox
-	options={countries}
+	items={countries}
 	bind:value={value}
 	placeholder="Search countries..."
 />
@@ -122,7 +122,7 @@ A searchable dropdown component that supports both static arrays and async optio
 </script>
 
 <Combobox
-	options={getOptions}
+	items={getOptions}
 	bind:value={value}
 	placeholder="Search async..."
 />
@@ -132,7 +132,7 @@ A searchable dropdown component that supports both static arrays and async optio
 
 \`\`\`svelte
 <Combobox
-	options={countries}
+	items={countries}
 	showAllOnFocus={true}
 	bind:value={value}
 />
@@ -152,7 +152,7 @@ A searchable dropdown component that supports both static arrays and async optio
 </script>
 
 <Combobox
-	options={getOptions}
+	items={getOptions}
 	bind:value={value}
 	getValueOption={getValueOption}
 />
@@ -243,7 +243,7 @@ The theme object contains the following parts:
 **Basic Theme Override**:
 \`\`\`svelte
 <Combobox
-  options={options}
+  items={items}
   bind:value={value}
   theme={{
     inputContainer: {
@@ -265,7 +265,7 @@ The theme object contains the following parts:
 **Custom Option Styling**:
 \`\`\`svelte
 <Combobox
-  options={options}
+  items={items}
   bind:value={value}
   theme={{
     option: {

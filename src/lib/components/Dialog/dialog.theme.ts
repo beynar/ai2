@@ -1,28 +1,49 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 export const defaultDialog = cva({
-	base: 'z-[+50] fixed py-4 left-0 flex bg-surface-fg/20 right-0 top-0 bottom-0 w-window isolate h-window p-6',
+	base: 'fixed inset-0',
 	variants: {
-		size: {
-			small: 'max-w-screen max-h-screen',
-			normal: 'max-w-screen max-h-screen',
-			large: 'max-w-screen max-h-screen'
-		},
+		scroll: {
+			inner: 'overflow-hidden',
+			outer: 'overflow-y-auto'
+		}
+	},
+	defaultVariants: {
+		scroll: 'inner'
+	}
+});
+
+export const defaultDialogAlign = cva({
+	base: 'flex p-6',
+	variants: {
 		type: {
 			fullScreen: 'justify-center items-center',
 			drawerRight: 'justify-end',
 			drawerLeft: 'justify-start',
 			drawerBottom: 'justify-center items-end',
 			drawerTop: 'justify-center items-start',
-			modal: 'justify-center',
-			alert: 'justify-center'
+			modal: 'justify-center items-center',
+			alert: 'justify-center items-center'
+		},
+		// `inner` needs a definite height so the card's `max-h-full` actually caps;
+		// `outer` grows past the viewport so the positioner scrolls.
+		scroll: {
+			inner: 'h-full',
+			outer: 'min-h-full'
 		}
+	},
+	defaultVariants: {
+		scroll: 'inner'
 	}
 });
 
+export const defaultDialogBackdrop = cva({
+	base: 'fixed inset-0 bg-background/40 backdrop-blur-xs'
+});
+
 export const defaultDialogContent = cva({
-	base: 'z-10 relative px-4 py-2 raised-xl h-fit bg-surface rounded flex flex-col z-50 overflow-auto',
+	base: 'z-10 relative px-4 py-2 raised-xl h-fit bg-background rounded flex flex-col z-50 will-change-transform transition-transform duration-200 ease-out',
 	variants: {
 		size: {
 			small: 'max-w-md w-full',
@@ -30,19 +51,49 @@ export const defaultDialogContent = cva({
 			large: 'max-w-3xl w-full'
 		},
 		type: {
-			fullScreen: 'h-full w-full max-w-full',
-			drawerRight: 'rounded-l-none h-full',
-			drawerLeft: 'rounded-r-none h-full',
-			drawerBottom: 'rounded-b-none max-w-full',
-			drawerTop: 'rounded-t-none max-w-full',
-			modal: '',
-			alert: ''
+			fullScreen: 'h-full w-full max-w-full origin-center',
+			drawerRight: 'rounded-l-none h-full origin-right',
+			drawerLeft: 'rounded-r-none h-full origin-left',
+			drawerBottom: 'rounded-b-none max-w-full origin-bottom',
+			drawerTop: 'rounded-t-none max-w-full origin-top',
+			modal: 'origin-center',
+			alert: 'origin-center'
+		},
+		// `inner`: the card itself is the scroll container (capped by `max-h-full`).
+		// `outer`: the card grows freely and the positioner scrolls — so it must NOT
+		// be a scroll container, or `overscroll-none` traps the wheel over the card.
+		scroll: {
+			inner: 'max-h-full overflow-auto overscroll-none',
+			outer: ''
+		}
+	},
+	defaultVariants: {
+		scroll: 'inner'
+	}
+});
+
+// Drag thumb for swipe-dismissable drawers: in-flow bar on the inner edge for
+// vertical drawers, edge-anchored vertical bar for horizontal ones.
+export const defaultDialogThumb = cva({
+	// Absolute so the bar overlays the panel edge instead of taking flow space (the header
+	// sits flush at the top). The ::before oversizes the hitbox around the 6px bar (~38px
+	// touch target); pointer events on it target the thumb, so drags there count as handle drags.
+	base: "absolute z-10 touch-none rounded-full bg-background-muted before:absolute before:-inset-4 before:content-['']",
+	variants: {
+		type: {
+			fullScreen: 'hidden',
+			drawerRight: 'left-1.5 top-1/2 -translate-y-1/2 h-12 w-1.5',
+			drawerLeft: 'right-1.5 top-1/2 -translate-y-1/2 h-12 w-1.5',
+			drawerBottom: 'left-1/2 -translate-x-1/2 top-1.5 h-1.5 w-12',
+			drawerTop: 'left-1/2 -translate-x-1/2 bottom-1.5 h-1.5 w-12',
+			modal: 'hidden',
+			alert: 'hidden'
 		}
 	}
 });
 
 export const defaultDialogHeader = cva({
-	base: 'grid gap-1 mb-2 border-b border-surface-muted py-2',
+	base: 'grid gap-1 mb-2 border-b border-background-muted py-2',
 	variants: {
 		size: {
 			small: '',
@@ -75,7 +126,7 @@ export const defaultDialogCloseButton = cva({
 });
 
 export const defaultDialogTitle = cva({
-	base: 'text-lg font-semibold text-contrast',
+	base: 'text-lg font-semibold text-foreground',
 	variants: {
 		size: {
 			small: '',
@@ -86,7 +137,7 @@ export const defaultDialogTitle = cva({
 });
 
 export const defaultDialogDescription = cva({
-	base: 'text-sm text-contrast-muted',
+	base: 'text-sm text-foreground-muted',
 	variants: {
 		size: {
 			small: '',
@@ -97,8 +148,11 @@ export const defaultDialogDescription = cva({
 });
 
 export const dialogTheme = {
-	dialog: defaultDialog,
+	root: defaultDialog,
+	align: defaultDialogAlign,
+	backdrop: defaultDialogBackdrop,
 	content: defaultDialogContent,
+	thumb: defaultDialogThumb,
 	header: defaultDialogHeader,
 	footer: defaultDialogFooter,
 	closeButton: defaultDialogCloseButton,
@@ -109,4 +163,4 @@ export const dialogTheme = {
 export type DialogTheme = typeof dialogTheme;
 export type DialogThemeProps = InferComponentTheme<DialogTheme>;
 export const setDialogTheme = setComponentTheme<DialogTheme>('dialog');
-export const useDialogTheme = useComponentTheme('dialog', dialogTheme);
+export const useDialogTheme = useComponentTheme<DialogTheme>('dialog', dialogTheme);

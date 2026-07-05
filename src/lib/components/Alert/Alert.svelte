@@ -30,7 +30,7 @@
 	data-color={color}
 	data-size={size}
 	data-variant={variant}
-	class={classes.alert({
+	class={classes.root({
 		color,
 		variant,
 		size,

@@ -18,7 +18,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 
 <Marquee>
 	{#each items as item}
-		<div class="px-4 py-2 bg-surface rounded">
+		<div class="px-4 py-2 bg-background rounded">
 			{item.text}
 		</div>
 	{/each}
@@ -98,7 +98,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 
 <Marquee>
 	{#each testimonials as item}
-		<div class="px-8 py-4 bg-surface rounded-lg">
+		<div class="px-8 py-4 bg-background rounded-lg">
 			<p class="text-lg font-semibold">"{item.quote}"</p>
 			<p class="text-sm text-muted">— {item.author}</p>
 		</div>
@@ -131,7 +131,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 \`\`\`svelte
 <Marquee direction="up" class="h-[400px]">
 	{#each items as item}
-		<div class="px-6 py-4 bg-surface rounded">
+		<div class="px-6 py-4 bg-background rounded">
 			{item.content}
 		</div>
 	{/each}
@@ -224,7 +224,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 	size="large"
 >
 	{#each items as item}
-		<div class="px-8 py-6 bg-surface rounded-lg">
+		<div class="px-8 py-6 bg-background rounded-lg">
 			{item.content}
 		</div>
 	{/each}
@@ -252,7 +252,7 @@ The Marquee component renders:
 
 - Uses \`role="presentation"\` on the container as the marquee is decorative
 - Consider providing alternative static content for screen readers
-- Ensure sufficient color contrast for text content
+- Ensure sufficient color foreground for text content
 - Pause on hover helps users interact with and read content
 - Be mindful of users with vestibular disorders - avoid very fast speeds
 
@@ -273,12 +273,12 @@ The Marquee component uses a theme object that can be customized using the \`the
 ### Theme Structure
 
 The theme object contains the following parts:
-- **marquee**: Main marquee container styles
+- **root**: Main marquee container styles
 - **inner**: Inner scrolling content container styles
 
 ### Available Variants
 
-**marquee**:
+**root**:
 - base: Base classes for main container
 - Variants:
   - direction: 'left' | 'up' - Scroll direction
@@ -298,7 +298,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Marquee 
   theme={{
-    marquee: {
+    root: {
       base: 'group flex overflow-hidden relative',
       direction: {
         left: 'flex-row'
@@ -345,7 +345,7 @@ The theme object contains the following parts:
   import { setMarqueeTheme } from 'svelai/marquee';
   
   setMarqueeTheme({
-    marquee: {
+    root: {
       base: 'group flex overflow-hidden relative',
       direction: {
         left: 'flex-row'

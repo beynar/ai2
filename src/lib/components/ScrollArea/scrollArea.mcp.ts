@@ -89,7 +89,7 @@ The ScrollArea component uses a theme object that can be customized using the \`
 ### Theme Structure
 
 The theme object contains the following parts:
-- **base**: Main scroll area container styles
+- **root**: Main scroll area container styles
 - **viewport**: Scrollable viewport container styles
 - **content**: Scrollable content wrapper styles
 - **scrollbar**: Scrollbar track styles
@@ -97,7 +97,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**base**:
+**root**:
 - base: Base classes for main container
 
 **viewport**:
@@ -118,7 +118,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <ScrollArea 
   theme={{
-    base: {
+    root: {
       base: 'relative h-64'
     },
     scrollbar: {
@@ -159,7 +159,7 @@ The theme object contains the following parts:
   import { setScrollAreaTheme } from 'svelai/scroll-area';
   
   setScrollAreaTheme({
-    base: {
+    root: {
       base: 'relative'
     },
     scrollbar: {

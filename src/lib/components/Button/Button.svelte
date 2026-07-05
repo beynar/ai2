@@ -27,6 +27,7 @@
 		rel,
 		target,
 		label,
+		role,
 		...attachments
 	}: ButtonPrimitiveProps = $props();
 
@@ -40,14 +41,14 @@
 <svelte:element
 	this={as || href ? 'a' : 'button'}
 	aria-label={label}
-	role={as || href ? 'link' : 'button'}
+	role={role ?? (as || href ? 'link' : 'button')}
 	{href}
 	{rel}
 	{target}
 	bind:this={ref}
 	data-color={color}
 	{disabled}
-	class={classes.button({
+	class={classes.root({
 		color,
 		squared: isSquared,
 		variant,

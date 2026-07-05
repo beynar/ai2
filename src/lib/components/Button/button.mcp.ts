@@ -21,7 +21,7 @@ The Button component is a flexible and customizable button element that supports
   - ghost: Transparent background, shows background on hover
   - link: Text-only styling with underline on hover
 
-- **color**: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' (default: 'contrast')
+- **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' (default: 'foreground')
   - Determines the color scheme of the button
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
@@ -149,7 +149,7 @@ The Button component uses a theme object that can be customized using the \`them
 ### Theme Structure
 
 The theme object contains the following parts:
-- **button**: Main button container styles
+- **root**: Main button container styles
 - **prefix**: Styles for prefix content (icons before text)
 - **suffix**: Styles for suffix content (icons after text)
 
@@ -160,7 +160,7 @@ import type { ButtonThemeProps } from 'svelai/button';
 
 // Example theme customization
 const customTheme: ButtonThemeProps = {
-  button: {
+  root: {
     base: 'custom-base-classes',
     size: {
       small: 'custom-small-classes',
@@ -172,7 +172,7 @@ const customTheme: ButtonThemeProps = {
       danger: 'bg-red-500 text-white'
     },
     variant: {
-      solid: 'bg-color text-color-fg',
+      solid: 'bg-color text-color-contrast',
       outline: 'border-2 border-color'
     }
   },
@@ -188,11 +188,11 @@ const customTheme: ButtonThemeProps = {
 
 ### Available Variants
 
-**button**:
+**root**:
 - base: Base classes applied to all buttons
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls padding, text size, and height
-  - color: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' | 'ghost' | 'link' - Visual style variant
   - loading: boolean - Loading state styling
   - disabled: boolean - Disabled state styling
@@ -215,7 +215,7 @@ const customTheme: ButtonThemeProps = {
 \`\`\`svelte
 <Button 
   theme={{
-    button: {
+    root: {
       base: 'rounded-full shadow-lg',
       size: {
         large: 'px-8 py-4 text-xl'
@@ -232,7 +232,7 @@ const customTheme: ButtonThemeProps = {
 <Button 
   color="primary"
   theme={{
-    button: {
+    root: {
       color: {
         primary: 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
       }
@@ -249,9 +249,9 @@ const customTheme: ButtonThemeProps = {
   import { setButtonTheme } from 'svelai/button';
   
   setButtonTheme({
-    button: {
+    root: {
       variant: {
-        solid: 'bg-color text-color-fg shadow-md hover:shadow-lg transition-shadow',
+        solid: 'bg-color text-color-contrast shadow-md hover:shadow-lg transition-shadow',
         outline: 'border-2 border-color hover:bg-color/10'
       }
     },

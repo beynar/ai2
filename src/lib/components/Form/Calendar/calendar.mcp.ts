@@ -388,7 +388,7 @@ The theme object contains the following parts:
     },
     calendarDay: {
       selected: {
-        true: 'bg-primary text-primary-fg'
+        true: 'bg-primary text-primary-contrast'
       },
       today: {
         true: 'ring-2 ring-primary'

@@ -1,13 +1,37 @@
+import font from '@svelte-plugin/font';
 import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
+import { svelaiPropsDocs } from './tooling/props-docs/plugin';
+import { svelaiStructureDocs } from './tooling/structure-docs/plugin';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [
+		font({
+			fonts: [
+				{
+					family: 'Fira Mono',
+					cssVariable: '--font-mono'
+				},
+				{
+					family: 'Noto Sans',
+					cssVariable: '--font-sans'
+				},
+				{
+					family: 'Playfair Display',
+					cssVariable: '--font-serif'
+				}
+			]
+		}),
+		tailwindcss(),
+		sveltekit(),
+		svelaiPropsDocs(),
+		svelaiStructureDocs()
+	],
 
 	test: {
-		workspace: [
+		projects: [
 			{
 				extends: './vite.config.ts',
 				plugins: [svelteTesting()],

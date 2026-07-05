@@ -9,8 +9,8 @@
 		size = 'normal',
 		class: className = '',
 		onClick,
-		onenter,
-		onleave,
+		onEnter,
+		onLeave,
 		suffix,
 		target,
 		rel,
@@ -21,7 +21,7 @@
 	}: ChipProps = $props();
 
 	const classes = $derived(useChipTheme(theme));
-	const as = $derived(href ? 'a' : onClick || onenter || onleave ? 'button' : 'div');
+	const as = $derived(href ? 'a' : onClick || onEnter || onLeave ? 'button' : 'div');
 </script>
 
 <svelte:element
@@ -34,7 +34,9 @@
 	{target}
 	{href}
 	onclick={onClick}
-	class={classes.chip({ color, variant, size, className, isLink: as === 'a' })}
+	onpointerenter={onEnter}
+	onpointerleave={onLeave}
+	class={classes.root({ color, variant, size, className, isLink: as === 'a' })}
 	{...attachments}
 >
 	<Slot render={prefix} class={classes.prefix({ size })} />

@@ -5,7 +5,7 @@
 
 	let {
 		class: className,
-		color = 'contrast',
+		color = 'foreground',
 		children,
 		theme,
 		...attachments
@@ -17,7 +17,7 @@
 <div
 	data-slot="skeleton"
 	data-color={color}
-	class={classes.skeleton({ className, color })}
+	class={classes.root({ className, color })}
 	{...attachments}
 >
 	<Slot render={children} />

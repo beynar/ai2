@@ -78,29 +78,36 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
 		onValidate: (value) => {
 			const string = maskitoStringifyTime(normalizeValue(value), params);
 			const parsed = maskitoParseTime(string, params);
-			console.log('parsed', parsed);
-			console.log('string', string);
 			if (parsed === 0) {
 				return true;
 			}
 			return onValidate?.(value) || false;
 		},
-		visible,
+		get visible() {
+			return visible;
+		},
 		type: 'time'
 	});
 
 	const classes = $derived(useTimeInputTheme(theme));
 
-	const params = {
+	const params = $derived({
 		timeSegmentMaxValues: maxValues,
 		timeSegmentMinValues: minValues,
 		mode: format
-	} satisfies MaskitoTimeParams;
+	} satisfies MaskitoTimeParams);
 
 	const maskAction = (input: HTMLInputElement) => {
 		untrack(() => {
@@ -130,7 +137,11 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled, size: rest.size })
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
 		}
 	}}
 	{...rest}

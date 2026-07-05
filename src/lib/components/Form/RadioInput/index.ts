@@ -1,10 +1,9 @@
 export { default as RadioInput } from './RadioInput.svelte';
-export type { RadioInputProps, RadiosOption } from './radioInput.props.js';
+export type { RadioInputProps, RadioOption } from './radioInput.props.js';
 export {
-	radiosInputTheme,
+	radioInputTheme,
 	setRadioInputTheme,
 	useRadioInputTheme,
-	type RadiosInputTheme,
-	type RadiosInputThemeProps
+	type RadioInputTheme,
+	type RadioInputThemeProps
 } from './radioInput.theme.js';
-

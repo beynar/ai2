@@ -22,7 +22,7 @@ The Card component is a flexible container component used to display content in 
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' (default: 'surface')
+- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'background')
   - Determines the color scheme of the card
 
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'solid')
@@ -41,7 +41,7 @@ The Card component is a flexible container component used to display content in 
   - Disables interactions and applies opacity styling
 
 - **showBorders**: boolean (default: false)
-  - Shows subtle borders (surface-muted, 1px) between sections (header/content, content/footer)
+  - Shows subtle borders (background-muted, 1px) between sections (header/content, content/footer)
 
 ### Interactive Props
 - **href**: string - Makes the card a link (renders as <a>)
@@ -319,7 +319,7 @@ Enable subtle borders between sections using the \`showBorders\` prop.
 - The \`solid\` variant includes a \`raised\` class for elevation effect
 - Header uses CSS Grid with container queries (@container) for responsive layout
 - Action slot is automatically positioned top-right when present (via \`hasAction\` variant)
-- Borders are optional and can be enabled with \`showBorders={true}\` (subtle surface-muted, 1px)
+- Borders are optional and can be enabled with \`showBorders={true}\` (subtle background-muted, 1px)
 - All slots are optional - the card adapts to missing sections
 - \`children\` slot is rendered inside the content section by default
 - Custom \`header\` or \`content\` slots override the default structure
@@ -331,7 +331,7 @@ The Card component uses a theme object that can be customized using the \`theme\
 ### Theme Structure
 
 The theme object contains the following parts:
-- **card**: Main card container styles
+- **root**: Main card container styles
 - **header**: Card header section styles
 - **title**: Card title text styles
 - **description**: Card description text styles
@@ -346,7 +346,7 @@ import type { CardThemeProps } from 'svelai/card';
 
 // Example theme customization
 const customTheme: CardThemeProps = {
-  card: {
+  root: {
     base: 'custom-base-classes',
     size: {
       small: 'py-2 gap-2',
@@ -354,8 +354,8 @@ const customTheme: CardThemeProps = {
       large: 'py-6 gap-6'
     },
     color: {
-      primary: 'bg-primary text-primary-fg',
-      surface: 'bg-surface text-color-fg'
+      primary: 'bg-primary text-primary-contrast',
+      background: 'bg-background text-color-contrast'
     },
     variant: {
       solid: 'bg-color border-color shadow-sm',
@@ -385,11 +385,11 @@ const customTheme: CardThemeProps = {
 
 ### Available Variants
 
-**card**:
+**root**:
 - base: Base classes applied to all cards
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls padding and gap spacing
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' | 'ghost' - Visual style variant
   - disabled: boolean - Disabled state styling
 
@@ -436,7 +436,7 @@ const customTheme: CardThemeProps = {
 \`\`\`svelte
 <Card 
   theme={{
-    card: {
+    root: {
       base: 'border-2 border-dashed',
       variant: {
         solid: 'shadow-xl'
@@ -461,7 +461,7 @@ const customTheme: CardThemeProps = {
   color="primary"
   variant="outline"
   theme={{
-    card: {
+    root: {
       variant: {
         outline: 'border-4 border-primary/50 bg-primary/5'
       }
@@ -485,7 +485,7 @@ const customTheme: CardThemeProps = {
   import { setCardTheme } from 'svelai/card';
   
   setCardTheme({
-    card: {
+    root: {
       base: 'rounded-2xl transition-all duration-300',
       variant: {
         solid: 'shadow-lg hover:shadow-xl',

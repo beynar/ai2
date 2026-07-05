@@ -1,40 +1,40 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultButton = cva({
-	base: 'rounded cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem]',
+	base: 'group/toggle inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap relative overflow-hidden cursor-pointer rounded-lg border border-transparent bg-clip-padding font-medium text-sm outline-none transition-all duration-100 ease-in-out focus-visible:ring-2 focus-visible:ring-color/50 active:translate-y-px [&_svg:not([class*=size-])]:size-4',
 	variants: {
 		checked: {
 			true: '',
 			false: null
 		},
 		disabled: {
-			true: 'opacity-55 cursor-not-allowed',
+			true: 'opacity-50 cursor-not-allowed pointer-events-none',
 			false: null
 		},
 		color: {
-			surface: '',
+			background: '',
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: ''
 		},
 		variant: {
-			outline: 'bg-color/0 border border-color text-color active:bg-color/20 checked:bg-color/20',
-			soft: 'text-color bg-color-muted active:bg-color/30 checked:bg-color/30',
-			ghost: 'text-color bg-color/0 active:bg-color/20 checked:bg-color/20'
+			outline: 'bg-color/0 border-color text-color-readable active:bg-color/20 checked:bg-color/20',
+			soft: 'text-color-muted-readable bg-color-muted active:bg-color/30 checked:bg-color/30',
+			ghost: 'text-color-readable bg-color/0 active:bg-color/20 checked:bg-color/20'
 		},
 		squared: {
-			true: 'p-1 aspect-square',
+			true: 'aspect-square !px-0',
 			false: null
 		},
 		size: {
-			normal: 'px-4 py-2 h-8 text-base gap-2',
-			large: 'px-6 py-2.5 text-md leading-7 h-9 gap-2.5',
-			small: 'px-2.5 text-sm leading-4 h-6 gap-1'
+			small: 'h-7 min-w-7 px-2.5 gap-1 text-xs',
+			normal: 'h-8 min-w-8 px-2.5 gap-1 text-sm',
+			large: 'h-9 min-w-9 px-2.5 gap-1 text-sm'
 		}
 	},
 	defaultVariants: {
@@ -58,51 +58,51 @@ const defaultButton = cva({
 		},
 		{
 			variant: 'soft',
-			color: 'surface',
+			color: 'background',
 			checked: false,
-			class: '!bg-surface hover:!bg-surface-light text-contrast'
+			class: '!bg-background hover:!bg-background-light text-foreground'
 		},
 		{
 			variant: 'soft',
-			color: 'surface',
+			color: 'background',
 			checked: true,
-			class: '!bg-surface-muted text-contrast'
+			class: '!bg-background-muted text-foreground'
 		},
 		{
 			variant: 'ghost',
-			color: 'surface',
+			color: 'background',
 			checked: false,
-			class: 'hover:!bg-surface-lighter/20 active:!bg-surface-lighter/30 text-contrast'
+			class: 'hover:!bg-background-lighter/20 active:!bg-background-lighter/30 text-foreground'
 		},
 		{
 			variant: 'ghost',
-			color: 'surface',
+			color: 'background',
 			checked: true,
-			class: '!bg-surface-lighter/30 text-contrast'
+			class: '!bg-background-lighter/30 text-foreground'
 		},
 		{
 			variant: 'outline',
-			color: 'surface',
+			color: 'background',
 			checked: false,
 			class:
-				'hover:!bg-surface-lighter/20 active:!bg-surface-lighter/30 border-surface-lighter text-contrast'
+				'hover:!bg-background-lighter/20 active:!bg-background-lighter/30 border-background-lighter text-foreground'
 		},
 		{
 			variant: 'outline',
-			color: 'surface',
+			color: 'background',
 			checked: true,
-			class: '!bg-surface-lighter/30 border-surface-lighter text-contrast'
+			class: '!bg-background-lighter/30 border-background-lighter text-foreground'
 		}
 	]
 });
 
 const defaultToggleButtonPrefix = cva({
-	base: 'max-w-6 max-h-6',
+	base: 'max-w-4 max-h-4',
 	variants: {
 		size: {
-			normal: 'max-w-6 max-h-6',
-			large: 'max-w-7 max-h-7',
-			small: 'max-w-4 max-h-4'
+			normal: 'max-w-4 max-h-4',
+			large: 'max-w-5 max-h-5',
+			small: 'max-w-3.5 max-h-3.5'
 		},
 		checked: {
 			true: '',
@@ -112,12 +112,12 @@ const defaultToggleButtonPrefix = cva({
 });
 
 const defaultToggleButtonSuffix = cva({
-	base: 'max-w-6 max-h-6',
+	base: 'max-w-4 max-h-4',
 	variants: {
 		size: {
-			normal: 'max-w-6 max-h-6',
-			large: 'max-w-7 max-h-7',
-			small: 'max-w-4 max-h-4'
+			normal: 'max-w-4 max-h-4',
+			large: 'max-w-5 max-h-5',
+			small: 'max-w-3.5 max-h-3.5'
 		},
 		checked: {
 			true: '',
@@ -127,7 +127,7 @@ const defaultToggleButtonSuffix = cva({
 });
 
 export const toggleButtonTheme = {
-	button: defaultButton,
+	root: defaultButton,
 	prefix: defaultToggleButtonPrefix,
 	suffix: defaultToggleButtonSuffix
 };
@@ -135,5 +135,7 @@ export const toggleButtonTheme = {
 export type ToggleButtonTheme = typeof toggleButtonTheme;
 export type ToggleButtonThemeProps = InferComponentTheme<ToggleButtonTheme>;
 export const setToggleButtonTheme = setComponentTheme<ToggleButtonTheme>('toggleButton');
-export const useToggleButtonTheme = useComponentTheme('toggleButton', toggleButtonTheme);
-
+export const useToggleButtonTheme = useComponentTheme<ToggleButtonTheme>(
+	'toggleButton',
+	toggleButtonTheme
+);

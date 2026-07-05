@@ -10,13 +10,13 @@ The Tabbar component is a flexible navigation component that displays a list of 
 	let activeTab = $state(0);
 </script>
 
-<Tabbar tabs={['Home', 'Profile', 'Settings']} bind:activeTab />
+<Tabbar items={['Home', 'Profile', 'Settings']} bind:activeTab />
 \`\`\`
 
 ## Props
 
 ### Core Props
-- **tabs**: Array<string | TabItem> (required)
+- **items**: Array<string | TabItem> (required)
   - Array of tab items. Each item can be:
     - A simple string (e.g., "Home")
     - A TabItem object with: { label, prefix?, suffix?, href?, disabled?, target?, rel? }
@@ -39,7 +39,7 @@ The Tabbar component is a flexible navigation component that displays a list of 
   - horizontal: Tabs arranged in a row
   - vertical: Tabs arranged in a column
 
-- **color**: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
+- **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
   - Determines the color scheme of the active tab
 
 - **alignment**: 'start' | 'center' | 'end' (default: 'start')
@@ -57,7 +57,7 @@ The Tabbar component is a flexible navigation component that displays a list of 
 
 ## TabItem Structure
 
-When using object format for tabs:
+When using object format for items:
 
 \`\`\`typescript
 type TabItem = {
@@ -96,7 +96,7 @@ The tabbar follows this DOM structure:
 </script>
 
 <Tabbar 
-	tabs={['Home', 'About', 'Contact']} 
+	items={['Home', 'About', 'Contact']} 
 	bind:activeTab 
 	color="primary"
 />
@@ -125,7 +125,7 @@ The tabbar follows this DOM structure:
 	];
 </script>
 
-<Tabbar {tabs} bind:activeTab />
+<Tabbar items={tabs} bind:activeTab />
 \`\`\`
 
 ### Navigation Tabs (with links)
@@ -138,7 +138,7 @@ The tabbar follows this DOM structure:
 	];
 </script>
 
-<Tabbar {tabs} />
+<Tabbar items={tabs} />
 \`\`\`
 
 ### Tabs with Disabled State
@@ -153,7 +153,7 @@ The tabbar follows this DOM structure:
 	];
 </script>
 
-<Tabbar {tabs} bind:activeTab />
+<Tabbar items={tabs} bind:activeTab />
 \`\`\`
 
 ### Vertical Orientation
@@ -163,7 +163,7 @@ The tabbar follows this DOM structure:
 </script>
 
 <Tabbar 
-	tabs={['First', 'Second', 'Third']} 
+	items={['First', 'Second', 'Third']} 
 	bind:activeTab 
 	orientation="vertical"
 />
@@ -176,10 +176,10 @@ The tabbar follows this DOM structure:
 </script>
 
 <!-- Centered tabs -->
-<Tabbar tabs={['One', 'Two', 'Three']} bind:activeTab alignment="center" />
+<Tabbar items={['One', 'Two', 'Three']} bind:activeTab alignment="center" />
 
 <!-- Right-aligned tabs -->
-<Tabbar tabs={['One', 'Two', 'Three']} bind:activeTab alignment="end" />
+<Tabbar items={['One', 'Two', 'Three']} bind:activeTab alignment="end" />
 \`\`\`
 
 ### Full Width Tabs
@@ -189,7 +189,7 @@ The tabbar follows this DOM structure:
 </script>
 
 <!-- Full width tabbar where tabs expand to fill available space -->
-<Tabbar tabs={['Tab 1', 'Tab 2', 'Tab 3']} bind:activeTab fullWidth />
+<Tabbar items={['Tab 1', 'Tab 2', 'Tab 3']} bind:activeTab fullWidth />
 \`\`\`
 
 ### With onChange Callback
@@ -204,7 +204,7 @@ The tabbar follows this DOM structure:
 </script>
 
 <Tabbar 
-	tabs={['Tab 1', 'Tab 2', 'Tab 3']} 
+	items={['Tab 1', 'Tab 2', 'Tab 3']} 
 	bind:activeTab 
 	onChange={handleTabChange}
 />
@@ -218,7 +218,7 @@ The tabbar follows this DOM structure:
 
 <!-- Small size with secondary color -->
 <Tabbar 
-	tabs={['Small', 'Tabs']} 
+	items={['Small', 'Tabs']} 
 	bind:activeTab 
 	size="small"
 	color="secondary"
@@ -226,7 +226,7 @@ The tabbar follows this DOM structure:
 
 <!-- Large size with success color -->
 <Tabbar 
-	tabs={['Large', 'Tabs']} 
+	items={['Large', 'Tabs']} 
 	bind:activeTab 
 	size="large"
 	color="success"
@@ -254,7 +254,7 @@ The tabbar follows this DOM structure:
 	];
 </script>
 
-<Tabbar {tabs} bind:activeTab />
+<Tabbar items={tabs} bind:activeTab />
 \`\`\`
 
 ### External Links
@@ -266,7 +266,7 @@ The tabbar follows this DOM structure:
 	];
 </script>
 
-<Tabbar {tabs} />
+<Tabbar items={tabs} />
 \`\`\`
 
 ## Accessibility
@@ -329,7 +329,7 @@ The Tabbar component uses a theme object that can be customized using the \`them
 ### Theme Structure
 
 The theme object contains the following parts:
-- **tabbar**: Main tabbar container styles
+- **root**: Main tabbar container styles
 - **tabbarItem**: Individual tab item styles
 - **tabbarItemLabel**: Tab label text styles
 - **tabbarItemPrefix**: Prefix icon/content styles
@@ -338,12 +338,12 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**tabbar**:
+**root**:
 - base: Base classes for tabbar container
 - Variants:
   - orientation: 'horizontal' | 'vertical' - Tab orientation
   - size: 'small' | 'normal' | 'large' - Tab size
-  - color: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'surface' | 'contrast' - Color scheme
+  - color: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'background' | 'foreground' - Color scheme
 
 **tabbarItem**:
 - base: Base classes for tab items
@@ -379,11 +379,10 @@ The theme object contains the following parts:
 
 **Basic Theme Override**:
 \`\`\`svelte
-<Tabbar 
-  tabs={tabs}
+<Tabbar items={tabs}
   bind:activeTab
   theme={{
-    tabbar: {
+    root: {
       base: 'border-b-2 border-gray-200',
       size: {
         normal: 'gap-4'
@@ -400,8 +399,7 @@ The theme object contains the following parts:
 
 **Custom Active State**:
 \`\`\`svelte
-<Tabbar 
-  tabs={tabs}
+<Tabbar items={tabs}
   bind:activeTab
   theme={{
     tabbarItem: {
@@ -422,7 +420,7 @@ The theme object contains the following parts:
   import { setTabbarTheme } from 'svelai/tabbar';
   
   setTabbarTheme({
-    tabbar: {
+    root: {
       base: 'border-b border-gray-200',
       size: {
         normal: 'gap-2'
@@ -438,4 +436,3 @@ The theme object contains the following parts:
 </script>
 \`\`\`
 `;
-

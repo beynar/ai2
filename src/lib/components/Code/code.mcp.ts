@@ -1,181 +1,105 @@
 export const codeDescription = `
 # Code Component
 
-The Code component displays formatted code snippets with syntax highlighting support and proper typography for inline or block code.
+Displays a syntax-highlighted code block with an optional header (language label
++ copy button), line numbers, and header/footer slots. Highlighting is powered by
+a bundled, SSR-safe Shiki highlighter with a CSS-variable syntax theme, so colors
+adapt to light and dark automatically from the design tokens.
 
 ## Basic Usage
 
 \`\`\`svelte
-<Code>const hello = 'world';</Code>
+<Code language="typescript" code={\`const hello: string = 'world';\`} />
 \`\`\`
 
 ## Props
 
 ### Core Props
-- **language**: string - Programming language for syntax highlighting
-- **inline**: boolean (default: false) - Renders as inline code instead of block
-- **children**: Snippet - Code content to display
+- **code**: string (required) - Source code to highlight. Also what the copy button writes to the clipboard.
+- **language**: string (default: 'text') - Shiki grammar id (\`typescript\`, \`svelte\`, \`css\`, \`bash\`, \`json\`, \`python\`, …). Aliases like \`ts\`, \`js\`, \`sh\` resolve automatically; unknown ids fall back to plain text.
+- **title**: string - Header label. Defaults to the language's display name (e.g. "TypeScript").
+
+### Display Props
+- **showLineNumbers**: boolean (default: false) - Renders a line-number gutter.
+- **showHeader**: boolean (default: true) - Renders the default header row (title + copy button). Set to false to show only the code block. Ignored when a custom \`header\` snippet is provided.
+- **copyable**: boolean (default: true) - Shows the copy-to-clipboard button. In the header when one is shown, otherwise a floating button in the top-right corner that appears on hover.
+- **wrap**: boolean (default: false) - Soft-wraps long lines instead of scrolling horizontally.
+- **maxHeight**: number | string (default: none) - Caps the block height and makes it vertically scrollable (via ScrollArea). A number is pixels; a string is used as-is (e.g. \`'20rem'\`).
+- **tabSize**: number (default: 2) - Tab width in spaces.
 
 ### Styling Props
-- **class**: string - Additional CSS classes
-- **theme**: ComponentTheme - Custom theme overrides
+- **class**: string - Additional CSS classes on the root element.
+- **theme**: CodeThemeProps - Theme overrides for the \`code\`, \`header\`, \`title\`, \`container\`, and \`footer\` parts.
+
+### Slots
+- **header**: Snippet<[CodeHeaderPayload]> - Replaces the default header row. Receives \`{ language, label, copied, copy }\`.
+- **footer**: Snippet - Optional footer row (e.g. a token count or a run button).
 
 ## Examples
 
-### Inline Code
+### With a title and line numbers
 \`\`\`svelte
-<p>Use the <Code inline>console.log()</Code> function to debug.</p>
+<Code
+  language="svelte"
+  title="Counter.svelte"
+  showLineNumbers
+  code={svelteSource}
+/>
 \`\`\`
 
-### Block Code
+### Custom header
 \`\`\`svelte
-<Code language="javascript">
-const greeting = 'Hello World';
-console.log(greeting);
+<Code language="json" code={json}>
+  {#snippet header({ label, copied, copy })}
+    <div class="flex items-center justify-between px-3 py-1.5">
+      <span>{label}</span>
+      <button onclick={copy}>{copied ? 'Copied!' : 'Copy'}</button>
+    </div>
+  {/snippet}
 </Code>
 \`\`\`
 
-### Multiple Languages
+### With a footer
 \`\`\`svelte
-<Code language="typescript">
-interface User {
-  name: string;
-  age: number;
-}
-</Code>
-
-<Code language="css">
-.button {
-  padding: 1rem;
-  background: blue;
-}
+<Code language="bash" code={installCmd}>
+  {#snippet footer()}
+    <span>Run in your project root</span>
+  {/snippet}
 </Code>
 \`\`\`
 
-## Notes
+## Theming
 
-- Inline code is rendered as \`<code>\` within text
-- Block code is rendered as \`<pre><code>\`
-- Preserves whitespace and formatting
-- Monospace font is automatically applied
-
-## Theme Customization
-
-The Code component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
+The block chrome (border, header, footer, container) is styled with cva parts and
+uses \`bg-background-muted\` / \`text-foreground-muted\` for the header and footer.
+The syntax colors are NOT part of cva — they come from the Shiki HTML plus the
+colocated \`CodeTheme.svelte\`, which maps each \`--code-token-*\` variable onto our
+\`--color-*\` design tokens (keyword → primary, string → success, number → warning,
+function → info, tag → danger, …) and re-tunes a few roles under the dark selector.
 
 ### Theme Structure
-
-The theme object contains the following parts:
-- **code**: Main code container styles
-- **header**: Optional header section styles
-- **footer**: Optional footer section styles
-- **container**: Code content container styles
-- **pre**: Preformatted text wrapper styles
-- **line**: Individual code line styles
+- **root**: Root container (border, radius, background).
+- **header**: Header row (language label + copy button).
+- **title**: The language/title label text.
+- **container**: The scrollable code area wrapping the highlighted \`<pre>\`.
+- **footer**: Optional footer row.
 
 ### Theme Type Definition
 
 \`\`\`typescript
 import type { CodeThemeProps } from 'svelai/code';
 
-// Example theme customization
 const customTheme: CodeThemeProps = {
-  code: {
-    base: 'my-4 w-full overflow-hidden rounded-lg border border-surface-muted flex flex-col'
-  },
-  header: {
-    base: 'flex items-center justify-between bg-surface-muted px-2 py-1 text-contrast-muted text-xs'
-  },
-  footer: {
-    base: 'flex items-center justify-between bg-surface-muted px-2 py-1 text-contrast-muted text-xs'
-  },
-  container: {
-    base: 'h-fit w-full bg-surface p-2 font-mono text-sm'
-  },
-  pre: {
-    base: 'overflow-x-auto font-mono p-0'
-  },
-  line: {
-    base: 'block'
-  }
+  root: { base: 'rounded-xl shadow-lg' },
+  header: { base: 'bg-primary text-primary-contrast px-4 py-2' }
 };
 \`\`\`
 
-### Available Variants
+## Accessibility
+- The copy button carries an \`aria-label\` that reflects its state ("Copy" / "Copied").
+- Clipboard access is guarded (\`navigator.clipboard\`) and only runs client-side.
 
-**code**:
-- base: Base classes for the main code container
-
-**header**:
-- base: Base classes for header section (when provided)
-
-**footer**:
-- base: Base classes for footer section (when provided)
-
-**container**:
-- base: Base classes for code content container
-
-**pre**:
-- base: Base classes for preformatted wrapper
-
-**line**:
-- base: Base classes for individual code lines
-
-### Usage Examples
-
-**Basic Theme Override**:
-\`\`\`svelte
-<Code 
-  language="javascript"
-  theme={{
-    code: {
-      base: 'rounded-xl shadow-lg border-2'
-    },
-    container: {
-      base: 'bg-gray-900 text-gray-100 p-4'
-    }
-  }}
->
-  const example = 'code';
-</Code>
-\`\`\`
-
-**Custom Header and Footer**:
-\`\`\`svelte
-<Code 
-  language="typescript"
-  theme={{
-    header: {
-      base: 'bg-blue-500 text-white px-4 py-2 font-semibold'
-    },
-    footer: {
-      base: 'bg-gray-800 text-gray-300 px-4 py-1 text-xs'
-    },
-    container: {
-      base: 'bg-gray-900 p-6'
-    }
-  }}
->
-  interface Example { value: string; }
-</Code>
-\`\`\`
-
-**Global Theme Setting**:
-\`\`\`svelte
-<script>
-  import { setCodeTheme } from 'svelai/code';
-  
-  setCodeTheme({
-    code: {
-      base: 'rounded-lg border-2 border-primary/20'
-    },
-    container: {
-      base: 'bg-slate-900 text-slate-100 p-4 font-mono text-sm'
-    },
-    pre: {
-      base: 'overflow-x-auto'
-    }
-  });
-</script>
-\`\`\`
+## Notes
+- The highlighter is a singleton constructed at module load — SSR-safe, no top-level await.
+- Copied state resets automatically after 2 seconds and whenever \`code\` or \`language\` changes.
 `;

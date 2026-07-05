@@ -21,7 +21,7 @@ The tooltip attachment displays contextual information when hovering over an ele
 - **position**: Placement (default: 'top') - Tooltip position relative to element
   - Options: 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end' | 'right-start' | 'right-end'
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Visual size
-- **color**: Colors (default: 'surface') - Color theme
+- **color**: Colors (default: 'background') - Color theme
 - **delay**: number (default: 400) - Delay in ms before showing tooltip
 - **offset**: number - Distance from reference element in pixels
 - **class**: string - Additional CSS classes
@@ -180,7 +180,7 @@ The Tooltip component uses a theme object that can be customized using the \`the
 ### Theme Structure
 
 The theme object contains the following parts:
-- **tooltip**: Main tooltip container styles
+- **root**: Main tooltip container styles
 
 ### Theme Type Definition
 
@@ -189,7 +189,7 @@ import type { TooltipThemeProps } from 'svelai/tooltip';
 
 // Example theme customization
 const customTheme: TooltipThemeProps = {
-  tooltip: {
+  root: {
     base: 'z-[+50] fixed w-fit rounded raised isolate h-fit',
     size: {
       small: 'text-xs px-1 py-0.5',
@@ -197,12 +197,12 @@ const customTheme: TooltipThemeProps = {
       large: 'text-base px-1.5 py-1'
     },
     color: {
-      surface: 'bg-surface-light text-contrast',
-      primary: 'bg-primary text-primary-fg',
-      danger: 'bg-danger text-danger-fg',
-      success: 'bg-success text-success-fg',
-      warning: 'bg-warning text-warning-fg',
-      info: 'bg-info text-info-fg'
+      background: 'bg-background-light text-foreground',
+      primary: 'bg-primary text-primary-contrast',
+      danger: 'bg-danger text-danger-contrast',
+      success: 'bg-success text-success-contrast',
+      warning: 'bg-warning text-warning-contrast',
+      info: 'bg-info text-info-contrast'
     }
   }
 };
@@ -210,11 +210,11 @@ const customTheme: TooltipThemeProps = {
 
 ### Available Variants
 
-**tooltip**:
+**root**:
 - base: Base classes applied to all tooltips
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls text size and padding
-  - color: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
 
 ### Usage Examples
 
@@ -224,7 +224,7 @@ const customTheme: TooltipThemeProps = {
   {@attach tooltip({ 
     content: 'Custom tooltip',
     theme: {
-      tooltip: {
+      root: {
         base: 'rounded-lg shadow-lg border-2',
         size: {
           normal: 'px-3 py-2 text-sm'
@@ -244,7 +244,7 @@ const customTheme: TooltipThemeProps = {
     content: 'Success!',
     color: 'success',
     theme: {
-      tooltip: {
+      root: {
         color: {
           success: 'bg-green-500 text-white shadow-md'
         }
@@ -262,13 +262,13 @@ const customTheme: TooltipThemeProps = {
   import { setTooltipTheme } from 'svelai/tooltip';
   
   setTooltipTheme({
-    tooltip: {
+    root: {
       base: 'rounded-md shadow-lg backdrop-blur-sm',
       size: {
         normal: 'px-3 py-1.5 text-sm'
       },
       color: {
-        surface: 'bg-gray-900 text-white',
+        background: 'bg-gray-900 text-white',
         primary: 'bg-blue-500 text-white'
       }
     }

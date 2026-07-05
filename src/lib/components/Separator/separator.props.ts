@@ -21,10 +21,22 @@ export type SeparatorProps = WithAttachments<
 			 */
 			orientation?: 'horizontal' | 'vertical';
 			/**
-			 * The color of the separator.
-			 * @default 'surface'
+			 * Alignment of the label along the separator. `start`/`end` push the
+			 * label to one side (with the line filling the remaining space).
+			 * @default 'center'
 			 */
-			color?: Colors | 'surface';
+			align?: 'start' | 'center' | 'end';
+			/**
+			 * Whether to draw the divider line(s). When false, only the label is
+			 * shown (still positioned according to `align`).
+			 * @default true
+			 */
+			line?: boolean;
+			/**
+			 * The color of the separator.
+			 * @default 'background'
+			 */
+			color?: Colors | 'background';
 			/**
 			 * The size (thickness) of the separator in pixels.
 			 * @default 1
@@ -39,4 +51,3 @@ export type SeparatorProps = WithAttachments<
 		undefined
 	>
 >;
-

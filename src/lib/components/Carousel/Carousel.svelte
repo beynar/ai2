@@ -2,7 +2,8 @@
 	import type { WithAttachments } from '$lib/types/props.js';
 	import { caretLeftIcon } from '../Icons/caretLeft.js';
 	import { caretRightIcon } from '../Icons/caretRight.js';
-	import { CarouselState, type CarouselProps } from './carousel.state.svelte.js';
+	import { CarouselState } from './carousel.state.svelte.js';
+	import type { CarouselProps } from './carousel.props.js';
 	import { useCarouselTheme } from './carousel.theme.js';
 
 	let {
@@ -46,7 +47,7 @@
 </script>
 
 <!-- {carousel.currentSlide?.index} -->
-<div data-carousel class={classes.container({ class: className })} {...attachments}>
+<div data-carousel class={classes.root({ class: className })} {...attachments}>
 	<div
 		{id}
 		aria-roledescription="carousel"

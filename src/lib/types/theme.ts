@@ -10,8 +10,8 @@ export type Colors =
 	| 'success'
 	| 'warning'
 	| 'info'
-	| 'contrast'
-	| 'surface';
+	| 'foreground'
+	| 'background';
 export type FontSize = `fontSize.${
 	| 'xs'
 	| 'sm'
@@ -29,8 +29,8 @@ export type ColorKeys = `${
 	| 'success'
 	| 'warning'
 	| 'info'
-	| 'contrast'
-	| 'surface'}.${'light' | 'lighter' | 'DEFAULT' | 'fg' | 'dark'}`;
+	| 'foreground'
+	| 'background'}.${'light' | 'lighter' | 'DEFAULT' | 'contrast' | 'dark'}`;
 
 export type ColorPath = `colors.${ColorKeys}`;
 

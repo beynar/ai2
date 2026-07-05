@@ -20,15 +20,18 @@ The Dialog component (also known as Modal) displays content in a layer above the
 ## Props
 
 ### Core Props
-- **isOpen**: boolean (bindable) - Controls dialog visibility
+- **open**: boolean (bindable) - Controls dialog visibility
 - **id**: string - Unique identifier for the dialog
-- **type**: 'fullScreen' | 'drawerRight' | 'drawerLeft' | 'drawerBottom' | 'alert' | 'modal' (default: 'modal')
+- **type**: 'fullScreen' | 'drawerRight' | 'drawerLeft' | 'drawerBottom' | 'drawerTop' | 'alert' | 'modal' (default: 'modal')
   - fullScreen: Full screen dialog overlay
   - drawerRight: Drawer sliding in from the right
   - drawerLeft: Drawer sliding in from the left
   - drawerBottom: Drawer sliding in from the bottom
+  - drawerTop: Drawer sliding in from the top
   - alert: Alert-style dialog
   - modal: Standard modal dialog
+  - Supports responsive values: pass a \`(breakpoint) => DialogType\` function to vary the type per breakpoint (breakpoint is one of 'xs' | 'sm' | 'md' | 'lg' | 'xl', tracked live from the viewport)
+- **responsive**: boolean (default: true) - When the resolved type is \`modal\`, collapse it into a \`drawerBottom\` bottom sheet on mobile (viewport < 768px). The sheet inherits swipe-to-dismiss and the drag thumb. Set false to keep a centered modal on every screen size
 
 ### Layout Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
@@ -53,6 +56,9 @@ The Dialog component (also known as Modal) displays content in a layer above the
 - **closeOnEscape**: boolean (default: true) - Close when Escape key is pressed
 - **closeOnClickOutside**: boolean (default: true) - Close when clicking outside dialog
 - **closable**: boolean (default: true) - Whether dialog can be closed
+- **swipeToDismiss**: boolean (default: true for drawer types) - Drag the drawer toward its edge to dismiss. Direction-aware (drawerRight drags right, drawerBottom drags down, etc.) and never hijacks inner scrolling; opt elements out with \`data-no-swipe\`
+- **thumb**: boolean (default: true) - Drag thumb bar shown on swipe-dismissable drawers (inner edge, orientation follows the drawer side, oversized hitbox); set false to hide. Themeable via the \`thumb\` theme part
+- **swipeFrom**: 'panel' | 'handle' (default: 'panel') - Where a swipe can start: anywhere on the panel, or only the drag handles (thumb and header)
 
 ### Visual Props
 - **transition**: TransitionConfig - Custom transition animation
@@ -90,11 +96,11 @@ The Dialog component (also known as Modal) displays content in a layer above the
 	import { Dialog } from 'svelai/dialog';
 	import { Button } from 'svelai/button';
 	
-	let isOpen = $state(false);
+	let open = $state(false);
 </script>
 
 
-<Dialog bind:isOpen title="Welcome">
+<Dialog bind:open title="Welcome">
 	<p>This is a basic dialog.</p>
 	
 	{#snippet trigger(dialog)}
@@ -110,11 +116,11 @@ The Dialog component (also known as Modal) displays content in a layer above the
 	import { Dialog } from 'svelai/dialog';
 	import { Button } from 'svelai/button';
 	
-	let isOpen = $state(false);
+	let open = $state(false);
 </script>
 
 
-<Dialog bind:isOpen title="Welcome"
+<Dialog bind:open title="Welcome"
 trigger={{
 content:"Click me",
 color:"secondary",
@@ -147,7 +153,7 @@ size:"small"
 <script>
 	import { Dialog } from 'svelai/dialog';
 	
-	let isOpen = $state(false);
+	let open = $state(false);
 </script>
 
 \`\`\`
@@ -159,20 +165,20 @@ size:"small"
 	import { Dialog } from 'svelai/dialog';
 	import { Button } from 'svelai/button';
 	
-	let isOpen = $state(false);
+	let open = $state(false);
 	
 	function handleConfirm() {
 		console.log('Confirmed!');
-		isOpen = false;
+		open = false;
 	}
 </script>
 
-<Dialog bind:isOpen title="Confirm">
+<Dialog bind:open title="Confirm">
 	Are you sure?
 	
 	{#snippet footer()}
 		<div class="flex gap-2 justify-end">
-			<Button variant="ghost" onClick={() => isOpen = false}>
+			<Button variant="ghost" onClick={() => open = false}>
 				Cancel
 			</Button>
 			<Button color="danger" onClick={handleConfirm}>
@@ -221,7 +227,7 @@ size:"small"
 	import { Icon } from 'svelai/icons';
 </script>
 
-<Dialog bind:isOpen>
+<Dialog bind:open>
 	{#snippet header()}
 		<div class="flex items-center gap-2">
 			<Icon name="warning" />
@@ -240,11 +246,11 @@ size:"small"
 <script>
 	import { Dialog } from 'svelai/dialog';
 	
-	let isOpen = $state(false);
+	let open = $state(false);
 </script>
 
 <Dialog 
-	bind:isOpen
+	bind:open
 	title="Lifecycle"
 	onOpen={(dialog) => console.log('Dialog opened', dialog)}
 	onClose={(dialog) => console.log('Dialog closed', dialog)}
@@ -257,7 +263,6 @@ size:"small"
 
 The Dialog component uses a \`DialogState\` instance that is passed to all slot snippets. This state object provides:
 
-- **isOpen**: boolean - Current open state
 - **id**: string - Dialog identifier
 - **type**: DialogType - Current dialog type
 - **size**: Size - Current dialog size
@@ -287,8 +292,9 @@ The Dialog component uses a theme object that can be customized using the \`them
 ### Theme Structure
 
 The theme object contains the following parts:
-- **dialog**: Dialog overlay/backdrop styles
+- **root**: Dialog overlay/backdrop styles
 - **content**: Dialog content container styles
+- **thumb**: Drag thumb bar styles (type variant controls per-side placement)
 - **header**: Dialog header section styles
 - **footer**: Dialog footer section styles
 - **closeButton**: Close button styles
@@ -302,8 +308,8 @@ import type { DialogThemeProps } from 'svelai/dialog';
 
 // Example theme customization
 const customTheme: DialogThemeProps = {
-  dialog: {
-    base: 'z-[+50] fixed py-4 left-0 flex bg-surface-fg/20',
+  root: {
+    base: 'z-[+50] fixed py-4 left-0 flex bg-background-contrast/20',
     size: {
       small: 'max-w-screen max-h-screen',
       normal: 'max-w-screen max-h-screen',
@@ -357,7 +363,7 @@ const customTheme: DialogThemeProps = {
 
 ### Available Variants
 
-**dialog**:
+**root**:
 - base: Base classes for dialog overlay/backdrop
 - Variants:
   - size: 'small' | 'normal' | 'large' - Size constraints
@@ -421,7 +427,7 @@ const customTheme: DialogThemeProps = {
 <Dialog 
   type="drawerRight"
   theme={{
-    dialog: {
+    root: {
       type: {
         drawerRight: 'justify-end bg-black/50'
       }
@@ -443,7 +449,7 @@ const customTheme: DialogThemeProps = {
   import { setDialogTheme } from 'svelai/dialog';
   
   setDialogTheme({
-    dialog: {
+    root: {
       base: 'backdrop-blur-sm'
     },
     content: {

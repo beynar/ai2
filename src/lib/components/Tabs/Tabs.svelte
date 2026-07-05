@@ -6,7 +6,7 @@
 	import { useTabsTheme } from './tabs.theme.js';
 
 	let {
-		tabs,
+		items,
 		activeTab = $bindable(0),
 		onChange,
 		placement = 'top',
@@ -43,7 +43,7 @@
 	}
 
 	const stepperSteps = $derived(
-		tabs.reduce(
+		items.reduce(
 			(acc, _tab, index) => {
 				const tabKey = `tab${index + 1}` as const;
 				const stepKey = `step${index + 1}` as const;
@@ -59,11 +59,11 @@
 	);
 </script>
 
-<div class={classes.tabs({ placement, className })}>
+<div class={classes.root({ placement, className })}>
 	<Tabbar
 		fullWidth={tabbarFullWidth}
 		onChange={handleTabChange}
-		{tabs}
+		{items}
 		bind:activeTab
 		size={tabbarSize}
 		orientation={effectiveTabbarOrientation}
@@ -77,7 +77,7 @@
 		step={defaultTabSnippet}
 		class={classes.content({ placement })}
 		bind:stepper
-		items={tabs}
+		{items}
 		bind:activeStep={activeTab}
 		{keyFramesOptions}
 		{...stepperSteps}

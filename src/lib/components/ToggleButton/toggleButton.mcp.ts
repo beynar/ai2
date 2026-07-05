@@ -22,7 +22,7 @@ The ToggleButton component is a two-state button that can be toggled on and off,
 - **value**: any - Value when used in a group
 
 ### Visual Props
-- **color**: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
+- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'outline')
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
 
@@ -148,13 +148,13 @@ The ToggleButton component uses a theme object that can be customized using the 
 ### Theme Structure
 
 The theme object contains the following parts:
-- **button**: Main button element styles
+- **root**: Main button element styles
 - **prefix**: Prefix icon/content styles
 - **suffix**: Suffix icon/content styles
 
 ### Available Variants
 
-**button**:
+**root**:
 - base: Base classes for button element
 - Variants:
   - checked: boolean - Checked/toggled state styling
@@ -183,7 +183,7 @@ The theme object contains the following parts:
 <ToggleButton 
   bind:checked
   theme={{
-    button: {
+    root: {
       base: 'rounded-md transition-all',
       checked: {
         true: 'bg-primary text-white',
@@ -205,7 +205,7 @@ The theme object contains the following parts:
   bind:checked
   variant="outline"
   theme={{
-    button: {
+    root: {
       variant: {
         outline: 'border-2',
         soft: 'bg-color-muted'
@@ -235,7 +235,7 @@ The theme object contains the following parts:
   import { setToggleButtonTheme } from 'svelai/toggle-button';
   
   setToggleButtonTheme({
-    button: {
+    root: {
       base: 'transition-all duration-100',
       checked: {
         true: 'bg-primary text-white',

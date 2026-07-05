@@ -22,6 +22,8 @@
 		children,
 		accessible,
 		srOnlyContent,
+		variant = 'default',
+		peekHeight = 80,
 		...attachments
 	}: CollapsibleProps = $props();
 
@@ -32,6 +34,12 @@
 	const isOpen = $derived(open !== undefined ? open : internalOpen);
 
 	const contentId = $derived(`${id}-content`);
+
+	// Peek variant: content is always mounted, clipped to `peekHeight` and faded
+	// when closed. `contentHeight` (measured) drives a smooth max-height animation.
+	let contentHeight = $state(0);
+	const peekHeightCss = $derived(typeof peekHeight === 'number' ? `${peekHeight}px` : peekHeight);
+	const maskGradient = 'linear-gradient(to bottom, rgb(0 0 0) 35%, transparent 100%)';
 
 	const handleToggle = () => {
 		if (disabled) return;
@@ -50,49 +58,94 @@
 	const collapsibleState = $derived(isOpen ? 'open' : 'closed');
 </script>
 
-<div
-	bind:this={ref}
-	data-state={collapsibleState}
-	data-disabled={disabled ? '' : undefined}
-	data-size={size}
-	class={classes.container({ size, className })}
-	{...attachments}
->
-	<button
-		type="button"
-		aria-expanded={isOpen}
-		aria-controls={contentId}
+{#snippet triggerIcon()}
+	{#if typeof icon === 'function'}
+		<Slot render={icon} class={classes.icon({ size })} payload={{ open: isOpen }} />
+	{:else if icon === 'math'}
+		<div style:transform="rotate({isOpen ? '180' : '0'}deg)" class={classes.icon({ size })}>
+			{@render (collapsibleState === 'open' ? plusIcon : minusIcon)({ size: 16 })}
+		</div>
+	{:else if icon === 'caret'}
+		<div style:transform="rotate({isOpen ? '180' : '0'}deg)" class={classes.icon({ size })}>
+			{@render caretDownIcon({ size: 16 })}
+		</div>
+	{/if}
+{/snippet}
+
+{#if variant === 'peek'}
+	<div
+		bind:this={ref}
 		data-state={collapsibleState}
 		data-disabled={disabled ? '' : undefined}
-		{disabled}
-		class={classes.trigger({ size, disabled })}
-		onclick={handleToggle}
+		data-size={size}
+		data-variant="peek"
+		class={classes.root({ size, className })}
+		{...attachments}
 	>
-		<Slot render={trigger} />
-		{#if typeof icon === 'function'}
-			<Slot render={icon} class={classes.icon({ size })} payload={{ isOpen }} />
-		{:else if icon === 'math'}
-			<div style:transform="rotate({isOpen ? '180' : '0'}deg)" class={classes.icon({ size })}>
-				{@render (collapsibleState === 'open' ? plusIcon : minusIcon)({ size: 16 })}
+		<div class="relative">
+			<div
+				id={contentId}
+				class="overflow-hidden transition-[max-height] duration-300 ease-out"
+				style:max-height={isOpen ? `${contentHeight}px` : peekHeightCss}
+				style:-webkit-mask-image={isOpen ? undefined : maskGradient}
+				style:mask-image={isOpen ? undefined : maskGradient}
+			>
+				<div bind:clientHeight={contentHeight} class="pb-12">
+					<Slot payload={{ open: isOpen }} render={children} />
+				</div>
 			</div>
-		{:else if icon === 'caret'}
-			<div style:transform="rotate({isOpen ? '180' : '0'}deg)" class={classes.icon({ size })}>
-				{@render caretDownIcon({ size: 16 })}
+			<div class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-3">
+				<button
+					type="button"
+					aria-expanded={isOpen}
+					aria-controls={contentId}
+					data-state={collapsibleState}
+					data-disabled={disabled ? '' : undefined}
+					{disabled}
+					class="border-background-muted bg-background text-foreground/80 hover:bg-background-light pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-55"
+					onclick={handleToggle}
+				>
+					<Slot render={trigger} />
+					{@render triggerIcon()}
+				</button>
 			</div>
-		{/if}
-	</button>
-
-	{#if isOpen}
-		<div
-			id={contentId}
+		</div>
+	</div>
+{:else}
+	<div
+		bind:this={ref}
+		data-state={collapsibleState}
+		data-disabled={disabled ? '' : undefined}
+		data-size={size}
+		class={classes.root({ size, className })}
+		{...attachments}
+	>
+		<button
+			type="button"
+			aria-expanded={isOpen}
+			aria-controls={contentId}
 			data-state={collapsibleState}
 			data-disabled={disabled ? '' : undefined}
-			class={classes.content({ size })}
-			transition:slide={{ duration: 200 }}
+			{disabled}
+			class={classes.trigger({ size, disabled })}
+			onclick={handleToggle}
 		>
-			<Slot payload={{ isOpen }} render={children} />
-		</div>
-	{:else if accessible || srOnlyContent}
-		<Slot render={srOnlyContent || children} />
-	{/if}
-</div>
+			<Slot render={trigger} />
+			{@render triggerIcon()}
+		</button>
+
+		{#if isOpen}
+			<div
+				id={contentId}
+				data-state={collapsibleState}
+				data-disabled={disabled ? '' : undefined}
+				class={classes.content({ size })}
+				transition:slide={{ duration: 200 }}
+			>
+				<Slot payload={{ open: isOpen }} render={children} />
+			</div>
+		{:else if accessible || srOnlyContent}
+			<Slot render={srOnlyContent || children} />
+		{/if}
+	</div>
+{/if}

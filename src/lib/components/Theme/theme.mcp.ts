@@ -118,11 +118,11 @@ Access theme state using the \`useTheme()\` hook:
 
 <Button 
 	bind:ref={buttonRef}
-	onenter={() => theme.showTooltip({
+	onEnter={() => theme.showTooltip({
 		ref: buttonRef,
 		content: 'Button tooltip'
 	})}
-	onleave={() => theme.hideTooltip()}
+	onLeave={() => theme.hideTooltip()}
 >
 	Hover Me
 </Button>

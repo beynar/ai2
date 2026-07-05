@@ -26,6 +26,7 @@ const emptyArrayNull = (schema: v.BaseSchema<any, any, any>) =>
 
 const optional = (schema: v.BaseSchema<any, any, any>) =>
 	v.optional(v.nullable(schema, null), null);
+const sliderRangeValue = v.pipe(v.array(v.number()), v.minLength(2));
 
 type Schemas = Record<InputType, v.BaseSchema<any, any, any>>;
 export const schemas: {
@@ -45,6 +46,7 @@ export const schemas: {
 		// Number input types
 		number: v.number(),
 		slider: v.number(),
+		'slider-range': sliderRangeValue,
 
 		// Tag input type
 		tag: nonEmptyArray(v.string()),
@@ -87,6 +89,7 @@ export const schemas: {
 		// Number input types
 		number: optional(v.number()),
 		slider: optional(v.number()),
+		'slider-range': optional(sliderRangeValue),
 
 		// Tag input type
 		tag: optional(emptyArrayNull(v.array(v.string()))),

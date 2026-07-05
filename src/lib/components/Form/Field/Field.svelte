@@ -1,8 +1,9 @@
 <script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { fieldTheme } from './field.js';
-	export const setFieldTheme = setComponentTheme<typeof fieldTheme>('field');
-	export const useFieldTheme = useComponentTheme('field', fieldTheme);
+	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+	import { fieldTheme, type FieldTheme } from './field.js';
+
+	export const setFieldTheme = setComponentTheme<FieldTheme>('field');
+	export const useFieldTheme = useComponentTheme<FieldTheme>('field', fieldTheme);
 </script>
 
 <script lang="ts">
@@ -34,10 +35,12 @@
 	const classes = $derived(useFieldTheme(theme));
 </script>
 
+<!-- Suffixed id: the bare field.id belongs to the control element, so <label for={field.id}>
+     resolves to it — a duplicate id here (first in tree order) would steal the label linkage. -->
 <svelte:element
 	this={as}
-	id={field.id}
-	class={classes.field({ className, hasError: field.hasError })}
+	id="{field.id}-field"
+	class={classes.root({ className, hasError: field.hasError })}
 	bind:this={field.node}
 	{...attrs}
 	{...attachments}
@@ -53,10 +56,7 @@
 				class={classes.label({ size, hasError: field.hasError, required: field.required })}
 				render={label}
 			/>
-			<Slot
-				class={classes.actions({ size })}
-				render={actions}
-			/>
+			<Slot class={classes.actions({ size })} render={actions} />
 		</Slot>
 	{/if}
 	<div class={classes.inputContainer({ size, hasError: field.hasError })}>
@@ -66,18 +66,12 @@
 	</div>
 	{#if description || helper || footer}
 		<Slot render={footer} class={classes.footer({ size })}>
-			<Slot
-				class={classes.description({ size })}
-				render={description}
-			/>
+			<Slot class={classes.description({ size })} render={description} />
 			<Slot class={classes.helper({ size })} render={helper} />
 		</Slot>
 	{/if}
 	{#if field.hasError && Array.isArray(field.errors)}
-		<Slot
-			render={errorsContainer}
-			class={classes.errorsContainer({ size })}
-		>
+		<Slot render={errorsContainer} class={classes.errorsContainer({ size })}>
 			{#each field.errors as err}
 				<Slot render={error} class={classes.error({ size })}>
 					{err}

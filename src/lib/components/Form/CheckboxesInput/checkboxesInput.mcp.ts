@@ -12,7 +12,7 @@ The CheckboxesInput component is a multi-selection input that allows users to se
 
 <CheckboxesInput 
 	label="Select your interests"
-	options={[
+	items={[
 		{ value: 'coding', label: 'Coding' },
 		{ value: 'design', label: 'Design' },
 		{ value: 'marketing', label: 'Marketing' }
@@ -24,7 +24,7 @@ The CheckboxesInput component is a multi-selection input that allows users to se
 ## Props
 
 ### Core Props
-- **options**: CheckBoxesOption[] (required) - Array of checkbox options
+- **items**: CheckboxOption[] (required) - Array of checkbox options
   - Each option has:
     - value: string (required) - Unique identifier for the option
     - label?: Slot - Display label (can be text or Svelte snippet)
@@ -90,7 +90,7 @@ The component renders as a fieldset with the following DOM structure:
 
 <CheckboxesInput 
 	label="Interests"
-	options={[
+	items={[
 		{ value: 'music', label: 'Music' },
 		{ value: 'sports', label: 'Sports' },
 		{ value: 'reading', label: 'Reading' },
@@ -105,7 +105,7 @@ The component renders as a fieldset with the following DOM structure:
 <CheckboxesInput 
 	label="Select features"
 	mode="card"
-	options={[
+	items={[
 		{ 
 			value: 'analytics', 
 			label: 'Analytics',
@@ -130,7 +130,7 @@ The component renders as a fieldset with the following DOM structure:
 \`\`\`svelte
 <CheckboxesInput 
 	label="Communication preferences"
-	options={[
+	items={[
 		{ 
 			value: 'email', 
 			label: 'Email notifications',
@@ -167,7 +167,7 @@ The component renders as a fieldset with the following DOM structure:
 <CheckboxesInput 
 	label="Skills"
 	required
-	options={[
+	items={[
 		{ value: 'js', label: 'JavaScript' },
 		{ value: 'py', label: 'Python' },
 		{ value: 'go', label: 'Go' },
@@ -194,7 +194,7 @@ The component renders as a fieldset with the following DOM structure:
 			type: 'checkboxes',
 			label: 'Your interests',
 			required: true,
-			options: [
+			items: [
 				{ value: 'tech', label: 'Technology' },
 				{ value: 'science', label: 'Science' },
 				{ value: 'art', label: 'Art' },
@@ -210,7 +210,7 @@ The component renders as a fieldset with the following DOM structure:
 \`\`\`svelte
 <CheckboxesInput 
 	label="Select options"
-	options={[
+	items={[
 		{ value: 'opt1', label: 'Option 1' },
 		{ value: 'opt2', label: 'Option 2' }
 	]}
@@ -234,7 +234,7 @@ The component renders as a fieldset with the following DOM structure:
 
 <CheckboxesInput 
 	label="Preferences"
-	options={[
+	items={[
 		{ value: 'option1', label: 'Option 1' },
 		{ value: 'option2', label: 'Option 2' },
 		{ value: 'option3', label: 'Option 3' }
@@ -248,7 +248,7 @@ The component renders as a fieldset with the following DOM structure:
 <CheckboxesInput 
 	label="Read-only selection"
 	disabled
-	options={options}
+	items={items}
 	value={['option1']}
 />
 \`\`\`
@@ -264,7 +264,7 @@ The component renders as a fieldset with the following DOM structure:
 <CheckboxesInput 
 	label="Select add-ons"
 	mode="card"
-	options={[
+	items={[
 		{ 
 			value: 'storage',
 			label: (props) => {
@@ -301,7 +301,7 @@ The component renders as a fieldset with the following DOM structure:
 
 ### Card Mode
 - Each option displayed as a card with elevation
-- Selected cards show a contrast ring
+- Selected cards show a foreground ring
 - Better visual feedback
 - Ideal for feature selection or important choices
 
@@ -322,7 +322,7 @@ The CheckboxesInput component uses a theme object that can be customized using t
 ### Theme Structure
 
 The theme object contains the following parts:
-- **checkboxesInput**: Main container styles
+- **root**: Main container styles
 - **checkboxesInputContainer**: Options grid container styles
 - **checkboxesInputItem**: Individual checkbox wrapper styles
 - **checkboxesInputItemTrack**: Checkbox background/track styles
@@ -333,7 +333,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**checkboxesInput**:
+**root**:
 - base: Base classes for main container
 - Variants:
   - mode: 'card' | 'normal' - Layout mode
@@ -381,7 +381,7 @@ The theme object contains the following parts:
 <CheckboxesInput 
   label="Options"
   bind:value={selected}
-  options={options}
+  items={items}
   theme={{
     checkboxesInputContainer: {
       base: 'grid-cols-1 md:grid-cols-3 gap-4'
@@ -401,7 +401,7 @@ The theme object contains the following parts:
   mode="card"
   label="Features"
   bind:value={features}
-  options={options}
+  items={items}
   theme={{
     checkboxesInputItem: {
       checked: {
@@ -423,9 +423,9 @@ The theme object contains the following parts:
 **Global Theme Setting**:
 \`\`\`svelte
 <script>
-  import { setCheckBoxesInputTheme } from 'svelai/checkboxes-input';
+  import { setCheckboxesInputTheme } from 'svelai/checkboxes-input';
   
-  setCheckBoxesInputTheme({
+  setCheckboxesInputTheme({
     checkboxesInputContainer: {
       base: 'gap-4',
       mode: {

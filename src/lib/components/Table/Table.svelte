@@ -6,7 +6,7 @@
 	let {
 		header,
 		footer,
-		rows,
+		items,
 		prefix,
 		suffix,
 		caption,
@@ -55,7 +55,7 @@
 	{/if}
 {/snippet}
 
-<div class={classes.container({ className })} {...attachments}>
+<div class={classes.root({ className })} {...attachments}>
 	<Slot render={prefix} class={classes.prefix()} />
 	<table class={classes.table()}>
 		<Slot render={caption} as="caption" class={classes.caption()} />
@@ -70,9 +70,9 @@
 			</thead>
 		{/if}
 
-		{#if rows && rows.length > 0}
+		{#if items && items.length > 0}
 			<tbody class={classes.tbody()}>
-				{#each rows as row}
+				{#each items as row}
 					<tr class={classes.row({ class: row.class })}>
 						{#if row.content}
 							<Slot render={row.content} />

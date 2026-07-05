@@ -56,7 +56,7 @@
 			customAnimation?.out || animation?.[position]?.out || animation?.out || {}} -->
 
 <li
-	data-color={toast.opts.color || 'surface'}
+	data-color={toast.opts.color || 'background'}
 	bind:this={toast.element}
 	bind:clientHeight={toast.height}
 	{...attachments}
@@ -78,7 +78,7 @@
 	tabIndex={0}
 	aria-hidden={reversedIndex > toast.toaster.visibleToasts - 1}
 	style:opacity={reversedIndex > toast.toaster.visibleToasts - 1 ? 0 : 1}
-	class={classes.toast({
+	class={classes.root({
 		richColors: toast.opts.richColors,
 		color: toast.opts.color,
 		size: toast.opts.size

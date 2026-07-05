@@ -58,7 +58,7 @@ container.style.height = firstSlide.clientHeight + 'px';
 
 <div
 	{@attach stepper.scroller}
-	class={classes.stepper({
+	class={classes.root({
 		mode,
 		className
 	})}

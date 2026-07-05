@@ -13,7 +13,7 @@
 	{@const isActive = page.route.id === href}
 	<a
 		{href}
-		class="text-contrast {isActive
+		class="text-foreground {isActive
 			? 'bg-primary/20 text-primary'
 			: ''} rounded-md px-2 py-1 text-sm"
 	>
@@ -25,7 +25,7 @@
 	{@const isActive = page.route.id === href}
 	<a
 		{href}
-		class="text-contrast {isActive
+		class="text-foreground {isActive
 			? 'bg-primary/20 text-primary'
 			: ''} rounded-md px-2 py-1 text-sm"
 	>
@@ -39,7 +39,7 @@
 		<Confirmation />
 		<div class="relative grid grid-cols-12">
 			<div
-				class=" bg-surface border-surface-muted sticky top-0 z-10 col-span-12 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"
+				class=" bg-background border-background-muted sticky top-0 z-10 col-span-12 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"
 			>
 				<div class="flex items-center gap-4">
 					{@render navigationButton({ href: '/docs', text: 'Docs' })}
@@ -52,7 +52,7 @@
 				<div class="flex items-center gap-2">
 					<!-- <Button suffix={githubLogo} variant="ghost" size="small" /> -->
 					<button
-						class="border-border bg-background text-foreground hover:bg-muted hover:text-foreground inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50"
+						class="border-background-muted bg-background text-foreground hover:bg-background-muted hover:text-foreground inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50"
 						onclick={() => (theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark')}
 					>
 						{theme?.resolvedTheme === 'dark' ? '☀️ Light' : '🌙 Dark'}
@@ -60,10 +60,15 @@
 				</div>
 			</div>
 			<div
-				class="  border-surface-muted scrollbar scrollbar-none bg-surface sticky top-[45px] left-0 col-span-2 grid max-h-[calc(100vh-45px)] overflow-auto border-r border-dashed px-2 pb-10"
+				class="  border-background-muted scrollbar scrollbar-none bg-background sticky top-[45px] left-0 col-span-2 grid max-h-[calc(100vh-45px)] overflow-auto border-r border-dashed px-2 pb-10"
 			>
+				<!-- Getting started -->
+				<Separator line={false} align="start" class="mt-4" children="Getting Started" />
+				{@render sideNavigationButton({ href: '/docs', text: 'Theme & setup' })}
+				{@render sideNavigationButton({ href: '/docs/conventions', text: 'Conventions' })}
+
 				<!-- Actions -->
-				<Separator class="my-4" children="Actions" />
+				<Separator line={false} align="start" class="mt-4" children="Actions" />
 				{@render sideNavigationButton({ href: '/components/button', text: 'Button' })}
 				{@render sideNavigationButton({ href: '/components/button-group', text: 'Button group' })}
 				{@render sideNavigationButton({ href: '/components/toggle-button', text: 'Toggle button' })}
@@ -72,50 +77,79 @@
 					text: 'Toggle group'
 				})}
 
-				<!-- Display -->
-				<Separator class="my-4" children="Display" />
-				{@render sideNavigationButton({ href: '/components/code', text: 'Code' })}
-				{@render sideNavigationButton({ href: '/components/chip', text: 'Chip' })}
-				{@render sideNavigationButton({ href: '/components/badge', text: 'Badge' })}
-				{@render sideNavigationButton({ href: '/components/breadcrumbs', text: 'Breadcrumbs' })}
-				{@render sideNavigationButton({ href: '/components/avatar', text: 'Avatar' })}
-				{@render sideNavigationButton({ href: '/components/separator', text: 'Separator' })}
-				{@render sideNavigationButton({ href: '/components/meter', text: 'Meter' })}
-				{@render sideNavigationButton({ href: '/components/marquee', text: 'Marquee' })}
-				{@render sideNavigationButton({ href: '/components/carousel', text: 'Carousel' })}
-				{@render sideNavigationButton({ href: '/components/tabbar', text: 'Tabbar' })}
-				{@render sideNavigationButton({ href: '/components/tabs', text: 'Tabs' })}
-				{@render sideNavigationButton({ href: '/components/stepper', text: 'Stepper' })}
-				{@render sideNavigationButton({ href: '/components/table', text: 'Table' })}
-				{@render sideNavigationButton({ href: '/components/dialog', text: 'Dialog' })}
-				{@render sideNavigationButton({ href: '/components/card', text: 'Card' })}
-				{@render sideNavigationButton({ href: '/components/aspect-ratio', text: 'Aspect ratio' })}
-				{@render sideNavigationButton({ href: '/components/skeleton', text: 'Skeleton' })}
-
-				<!-- Menus & Navigation -->
-				<Separator class="my-4" children="Menus & Navigation" />
-				{@render sideNavigationButton({ href: '/components/menu', text: 'Menu' })}
-				{@render sideNavigationButton({ href: '/components/menu-option', text: 'Menu option' })}
-				{@render sideNavigationButton({ href: '/components/popup-menu', text: 'Popup menu' })}
-				{@render sideNavigationButton({ href: '/components/popover', text: 'Popover' })}
-				{@render sideNavigationButton({ href: '/components/tooltip', text: 'Tooltip' })}
-				{@render sideNavigationButton({ href: '/components/toast', text: 'Toast' })}
-
 				<!-- Disclosure -->
-				<Separator class="my-4" children="Disclosure" />
+				<Separator line={false} align="start" class="mt-4" children="Disclosure" />
 				{@render sideNavigationButton({ href: '/components/accordion', text: 'Accordion' })}
 				{@render sideNavigationButton({ href: '/components/alert', text: 'Alert' })}
 				{@render sideNavigationButton({ href: '/components/collapsible', text: 'Collapsible' })}
 
+				<!-- Display -->
+				<Separator line={false} align="start" class="mt-4" children="Display" />
+				{@render sideNavigationButton({ href: '/components/aspect-ratio', text: 'Aspect ratio' })}
+				{@render sideNavigationButton({ href: '/components/avatar', text: 'Avatar' })}
+				{@render sideNavigationButton({ href: '/components/badge', text: 'Badge' })}
+				{@render sideNavigationButton({ href: '/components/breadcrumbs', text: 'Breadcrumbs' })}
+				{@render sideNavigationButton({ href: '/components/card', text: 'Card' })}
+				{@render sideNavigationButton({ href: '/components/carousel', text: 'Carousel' })}
+				{@render sideNavigationButton({ href: '/components/chip', text: 'Chip' })}
+				{@render sideNavigationButton({ href: '/components/code', text: 'Code' })}
+				{@render sideNavigationButton({ href: '/components/diff', text: 'Diff' })}
+				{@render sideNavigationButton({ href: '/components/dialog', text: 'Dialog' })}
+				{@render sideNavigationButton({ href: '/components/empty', text: 'Empty' })}
+				{@render sideNavigationButton({ href: '/components/globe', text: 'Globe' })}
+				{@render sideNavigationButton({ href: '/components/kbd', text: 'Kbd' })}
+				{@render sideNavigationButton({ href: '/components/marquee', text: 'Marquee' })}
+				{@render sideNavigationButton({ href: '/components/mermaid', text: 'Mermaid' })}
+				{@render sideNavigationButton({ href: '/components/map', text: 'Map' })}
+				{@render sideNavigationButton({ href: '/components/meter', text: 'Meter' })}
+				{@render sideNavigationButton({ href: '/components/pagination', text: 'Pagination' })}
+				{@render sideNavigationButton({ href: '/components/pdf-viewer', text: 'PDF viewer' })}
+				{@render sideNavigationButton({ href: '/components/qr-code', text: 'QR code' })}
+				{@render sideNavigationButton({ href: '/components/separator', text: 'Separator' })}
+				{@render sideNavigationButton({ href: '/components/skeleton', text: 'Skeleton' })}
+				{@render sideNavigationButton({ href: '/components/spinner', text: 'Spinner' })}
+				{@render sideNavigationButton({ href: '/components/stepper', text: 'Stepper' })}
+				{@render sideNavigationButton({ href: '/components/tabbar', text: 'Tabbar' })}
+				{@render sideNavigationButton({ href: '/components/table', text: 'Table' })}
+				{@render sideNavigationButton({ href: '/components/tabs', text: 'Tabs' })}
+				{@render sideNavigationButton({ href: '/components/tree', text: 'Tree' })}
+
 				<!-- Form -->
-				<Separator class="my-4" children="Form" />
-				{@render sideNavigationButton({ href: '/components/form', text: 'Form' })}
-				{@render sideNavigationButton({ href: '/components/textinput', text: 'Text input' })}
-				{@render sideNavigationButton({ href: '/components/select', text: 'Select' })}
-				{@render sideNavigationButton({ href: '/components/combobox', text: 'Combobox' })}
-				{@render sideNavigationButton({ href: '/components/switch', text: 'Switch' })}
-				{@render sideNavigationButton({ href: '/components/radios', text: 'Radios' })}
+				<Separator line={false} align="start" class="mt-4" children="Form" />
 				{@render sideNavigationButton({ href: '/components/calendar', text: 'Calendar' })}
+				{@render sideNavigationButton({ href: '/components/checkboxes', text: 'Checkboxes' })}
+				{@render sideNavigationButton({ href: '/components/combobox', text: 'Combobox' })}
+				{@render sideNavigationButton({ href: '/components/date-input', text: 'Date input' })}
+				{@render sideNavigationButton({ href: '/components/file', text: 'File' })}
+				{@render sideNavigationButton({ href: '/components/form', text: 'Form' })}
+				{@render sideNavigationButton({
+					href: '/components/multi-step-form',
+					text: 'Multi-step form'
+				})}
+				{@render sideNavigationButton({ href: '/components/number-input', text: 'Number input' })}
+				{@render sideNavigationButton({ href: '/components/password', text: 'Password' })}
+				{@render sideNavigationButton({ href: '/components/phone', text: 'Phone' })}
+				{@render sideNavigationButton({ href: '/components/radios', text: 'Radios' })}
+				{@render sideNavigationButton({ href: '/components/select', text: 'Select' })}
+				{@render sideNavigationButton({ href: '/components/slider', text: 'Slider' })}
+				{@render sideNavigationButton({ href: '/components/switch', text: 'Switch' })}
+				{@render sideNavigationButton({ href: '/components/textinput', text: 'Text input' })}
+				{@render sideNavigationButton({ href: '/components/textarea', text: 'Textarea' })}
+				{@render sideNavigationButton({ href: '/components/time-input', text: 'Time input' })}
+
+				<!-- Menus & Navigation -->
+				<Separator line={false} align="start" class="mt-4" children="Menus & Navigation" />
+				{@render sideNavigationButton({ href: '/components/app-shell', text: 'App shell' })}
+				{@render sideNavigationButton({ href: '/components/command', text: 'Command' })}
+				{@render sideNavigationButton({ href: '/components/menu', text: 'Menu' })}
+				{@render sideNavigationButton({ href: '/components/context-menu', text: 'Context menu' })}
+				{@render sideNavigationButton({ href: '/components/menu-option', text: 'Menu option' })}
+				{@render sideNavigationButton({ href: '/components/page-shell', text: 'Page shell' })}
+				{@render sideNavigationButton({ href: '/components/popover', text: 'Popover' })}
+				{@render sideNavigationButton({ href: '/components/popup-menu', text: 'Popup menu' })}
+				{@render sideNavigationButton({ href: '/components/sidebar', text: 'Sidebar' })}
+				{@render sideNavigationButton({ href: '/components/toast', text: 'Toast' })}
+				{@render sideNavigationButton({ href: '/components/tooltip', text: 'Tooltip' })}
 
 				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">actions & utilities</Separator> -->
 
@@ -128,8 +162,10 @@
 
 				<!-- {@render sideNavigationButton({ href: '/utilities/raised', text: '.raised' })} -->
 			</div>
-			<main class="bg-surface-dark col-span-10 p-4 md:p-10">
-				{@render childrenSnippet()}
+			<main class="bg-background-dark col-span-10 p-4 md:p-10">
+				<div class="mx-auto w-full max-w-6xl">
+					{@render childrenSnippet()}
+				</div>
 			</main>
 		</div>
 	{/snippet}

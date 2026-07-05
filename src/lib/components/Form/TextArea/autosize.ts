@@ -1,5 +1,23 @@
 import { tick } from 'svelte';
 
+interface CustomEventMap {
+	'autosize:update': CustomEvent<void>;
+}
+
+declare global {
+	interface Document {
+		addEventListener<K extends keyof CustomEventMap>(
+			type: K,
+			listener: (this: Document, ev: CustomEventMap[K]) => void
+		): void;
+		dispatchEvent<K extends keyof CustomEventMap>(ev: CustomEventMap[K]): void;
+		removeEventListener<K extends keyof CustomEventMap>(
+			type: K,
+			listener: (this: Document, ev: CustomEventMap[K]) => void
+		): void;
+	}
+}
+
 type Opts = {
 	value?: unknown;
 	maxRows?: number;
@@ -7,7 +25,7 @@ type Opts = {
 };
 export const triggerAutoSizeUpdate = () =>
 	tick().then(() => {
-		document.dispatchEvent(new CustomEvent('autosize:update'));
+		document.dispatchEvent(new CustomEvent<void>('autosize:update'));
 	});
 
 export const autosize = (

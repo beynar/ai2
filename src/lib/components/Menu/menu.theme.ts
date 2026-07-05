@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import type { ButtonThemeProps } from '../Button/button.theme.js';
 import type { MenuOptionThemeProps } from '../MenuOption/menuOption.theme.js';
 import type { SeparatorThemeProps } from '../Separator/separator.theme.js';
@@ -19,13 +19,23 @@ const defaultMenu = cva({
 	}
 });
 
+const defaultMenuHeader = cva({
+	base: ''
+});
+
+const defaultMenuFooter = cva({
+	base: ''
+});
+
 export const menuTheme = {
-	menu: defaultMenu
+	root: defaultMenu,
+	header: defaultMenuHeader,
+	footer: defaultMenuFooter
 };
 
 export type MenuTheme = typeof menuTheme;
 
-export type MenuThemeProps = InferComponentTheme<typeof menuTheme> & {
+export type MenuThemeProps = InferComponentTheme<MenuTheme> & {
 	button?: ButtonThemeProps;
 	option?: MenuOptionThemeProps;
 	separator?: SeparatorThemeProps;

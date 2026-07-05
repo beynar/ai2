@@ -44,19 +44,28 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			// console.log('onChange', v);
-		},
+		onChange: () => {},
 		get disabled() {
 			return disabled;
 		},
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'text'
 	});
 
@@ -91,6 +100,5 @@
 		name={field.name}
 		id={field.id}
 		required={field.required}
-		class={classes.input({ disabled: field.disabled })}
-	></textarea>
+		class={classes.input({ disabled: field.disabled })}></textarea>
 </Field>

@@ -3,7 +3,7 @@
 	import Slot from '../Slot/Slot.svelte';
 	import { useTheme } from '../Theme/theme.state.svelte.js';
 	import { useTooltipTheme } from './tooltip.theme.js';
-	
+
 	const theme = useTheme();
 	const id = $props.id();
 	const currentTooltip = $derived(theme.tooltip);
@@ -13,7 +13,7 @@
 
 <Popover
 	{id}
-	isOpen={!!currentTooltip}
+	open={!!currentTooltip}
 	ref={currentTooltip?.ref}
 	size={currentTooltip?.size}
 	lockScroll={false}
@@ -21,9 +21,9 @@
 	transition={currentTooltip?.transition}
 	closeOnMouseLeave={false}
 	offset={currentTooltip?.offset}
-	class={classes.tooltip({
+	class={classes.root({
 		size: currentTooltip?.size || 'normal',
-		color: currentTooltip?.color || 'surface',
+		color: currentTooltip?.color || 'background',
 		className: currentTooltip?.class
 	})}
 >

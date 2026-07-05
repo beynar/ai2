@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Field, { useFieldTheme } from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { SwitchInputProps } from './switch.props.js';
-	import { useSwitchInputTheme } from './switch.theme.js';
+	import type { SwitchProps } from './switch.props.js';
+	import { useSwitchTheme } from './switch.theme.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 
 	let {
@@ -19,7 +19,7 @@
 		label,
 		onChange,
 		...rest
-	}: SwitchInputProps = $props();
+	}: SwitchProps = $props();
 
 	const id = $props.id();
 
@@ -52,14 +52,25 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'switch'
 	});
 
-	const classes = $derived(useSwitchInputTheme(theme));
+	const classes = $derived(useSwitchTheme(theme));
 	const fieldClasses = $derived(useFieldTheme(theme));
 	const onclick = () => {
 		if (disabled) return;

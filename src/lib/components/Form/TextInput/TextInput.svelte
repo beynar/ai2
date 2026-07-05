@@ -51,10 +51,21 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'text'
 	});
 

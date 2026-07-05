@@ -1,8 +1,8 @@
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultBreadcrumbsContainer = cva({
-	base: 'text-contrast-muted flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-4.5',
+	base: 'text-foreground-muted flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-4.5',
 	variants: {},
 	defaultVariants: {}
 });
@@ -11,26 +11,26 @@ const defaultBreadcrumbsItem = cva({
 	base: 'inline-flex items-center gap-1.5',
 	variants: {
 		disabled: {
-			true: 'text-contrast-muted/50 cursor-not-allowed *:pointer-events-none',
+			true: 'text-foreground-muted/50 cursor-not-allowed *:pointer-events-none',
 			false: 'cursor-pointer'
 		},
 		active: {
-			true: 'text-contrast font-normal cursor-auto',
-			false: 'hover:text-contrast'
+			true: 'text-foreground font-normal cursor-auto',
+			false: 'hover:text-foreground'
 		}
 	},
 	defaultVariants: {}
 });
 
 const defaultBreadcrumbsLink = cva({
-	base: 'px-2 py-0.5  outline-none focus-visible:ring-1 focus-visible:ring-contrast focus-visible:ring-offset-1 ring-offset-surface rounded',
+	base: 'px-2 py-0.5  outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-offset-1 ring-offset-background rounded',
 	variants: {
 		disabled: {
 			true: '',
 			false: ''
 		},
 		active: {
-			true: 'text-contrast font-normal',
+			true: 'text-foreground font-normal',
 			false: ''
 		}
 	},
@@ -46,7 +46,7 @@ const defaultBreadcrumbsPage = cva({
 });
 
 const defaultBreadcrumbsSeparator = cva({
-	base: 'flex items-center text-contrast-muted [&>svg]:size-3.5',
+	base: 'flex items-center text-foreground-muted [&>svg]:size-3.5',
 	variants: {},
 	defaultVariants: {}
 });
@@ -72,7 +72,7 @@ const defaultBreadcrumbsIcon = cva({
 });
 
 export const breadcrumbsTheme = {
-	container: defaultBreadcrumbsContainer,
+	root: defaultBreadcrumbsContainer,
 	item: defaultBreadcrumbsItem,
 	link: defaultBreadcrumbsLink,
 
@@ -84,4 +84,7 @@ export const breadcrumbsTheme = {
 export type BreadcrumbsTheme = typeof breadcrumbsTheme;
 export type BreadcrumbsThemeProps = InferComponentTheme<BreadcrumbsTheme>;
 export const setBreadcrumbsTheme = setComponentTheme<BreadcrumbsTheme>('breadcrumbs');
-export const useBreadcrumbsTheme = useComponentTheme('breadcrumbs', breadcrumbsTheme);
+export const useBreadcrumbsTheme = useComponentTheme<BreadcrumbsTheme>(
+	'breadcrumbs',
+	breadcrumbsTheme
+);

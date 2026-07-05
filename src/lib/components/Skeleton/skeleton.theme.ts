@@ -1,30 +1,30 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultSkeleton = cva({
 	base: 'animate-pulse rounded-md',
 	variants: {
 		color: {
-			primary: 'bg-primary-light/50',
-			secondary: 'bg-secondary-light/50',
-			danger: 'bg-danger-light/50',
-			success: 'bg-success-light/50',
-			warning: 'bg-warning-light/50',
-			info: 'bg-info-light/50',
-			contrast: 'bg-contrast-muted/50',
-			surface: 'bg-surface-muted/50'
+			primary: 'bg-primary-light/10',
+			secondary: 'bg-secondary-light/10',
+			danger: 'bg-danger-light/10',
+			success: 'bg-success-light/10',
+			warning: 'bg-warning-light/10',
+			info: 'bg-info-light/10',
+			foreground: 'bg-foreground-muted/10',
+			background: 'bg-background-muted/50'
 		}
 	},
 	defaultVariants: {
-		color: 'contrast'
+		color: 'background'
 	}
 });
 
 export const skeletonTheme = {
-	skeleton: defaultSkeleton
+	root: defaultSkeleton
 };
 
 export type SkeletonTheme = typeof skeletonTheme;
 export type SkeletonThemeProps = InferComponentTheme<SkeletonTheme>;
 export const setSkeletonTheme = setComponentTheme<SkeletonTheme>('skeleton');
-export const useSkeletonTheme = useComponentTheme('skeleton', skeletonTheme);
+export const useSkeletonTheme = useComponentTheme<SkeletonTheme>('skeleton', skeletonTheme);

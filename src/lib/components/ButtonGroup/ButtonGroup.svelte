@@ -4,7 +4,7 @@
 	import { useButtonGroupTheme } from './buttonGroup.theme.js';
 
 	let {
-		buttons,
+		items,
 		size,
 		color,
 		variant,
@@ -17,8 +17,8 @@
 	const classes = $derived(useButtonGroupTheme(theme));
 </script>
 
-<div class={classes.buttonGroup({ className })} {...attachments}>
-	{#each buttons as button}
+<div class={classes.root({ className })} {...attachments}>
+	{#each items as button}
 		<Button {size} {color} {variant} {disabled} {...button} />
 	{/each}
 </div>

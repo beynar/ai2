@@ -1,7 +1,7 @@
-<script lang="ts" generics="Option extends RadiosOption">
+<script lang="ts" generics="Option extends RadioOption">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { RadiosOption, RadioInputProps } from './radioInput.props.js';
+	import type { RadioOption, RadioInputProps } from './radioInput.props.js';
 	import { useRadioInputTheme } from './radioInput.theme.js';
 	import Slot from '../../Slot/Slot.svelte';
 
@@ -10,7 +10,7 @@
 		errors = $bindable([]),
 		focused = $bindable(false),
 		required = false,
-		options,
+		items,
 		mode = 'normal',
 		theme,
 		disabled,
@@ -45,24 +45,32 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			onChange?.(v);
-			// console.log('onChange', v);
-		},
+		onChange: (v) => onChange?.(v),
 		get disabled() {
 			return disabled;
 		},
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		onValidate,
-		name,
-		visible,
+		get required() {
+			return required;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'radio'
 	});
 
-	const componentTheme = useRadioInputTheme(theme);
+	const componentTheme = $derived(useRadioInputTheme(theme));
 </script>
 
 <!-- Create own field wrapper (when used standalone) -->
@@ -74,7 +82,7 @@
 	as={'fieldset'}
 	{field}
 	{label}
-	class={componentTheme.radiosInput({ mode })}
+	class={componentTheme.root({ mode })}
 	{...rest}
 	theme={{
 		...theme,
@@ -88,7 +96,7 @@
 		}
 	}}
 >
-	{#each options as option (option.value)}
+	{#each items as option (option.value)}
 		{@const checked = field.value === option.value}
 		{@const optionId = `${field.name}-${option.value}`}
 		<button

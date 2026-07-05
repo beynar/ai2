@@ -1,7 +1,7 @@
 import type { InputProps } from '../Field/field.js';
-import type { SwitchInputThemeProps } from './switch.theme.js';
+import type { SwitchThemeProps } from './switch.theme.js';
 
-export type SwitchInputProps = InputProps<'switch'> & {
-	theme?: SwitchInputThemeProps & InputProps<'switch'>['theme'];
+export type SwitchProps = InputProps<'switch'> & {
+	/** Theme overrides for the switch toggle, thumb, input container, and field parts. */
+	theme?: SwitchThemeProps & InputProps<'switch'>['theme'];
 };
-

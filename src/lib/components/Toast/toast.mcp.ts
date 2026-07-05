@@ -1,5 +1,5 @@
 export const toastDescription = `
-The toast function displays non-blocking notification messages to the user. It provides color-based methods (primary, secondary, success, warning, danger, info, surface, contrast) that each return a Toast instance.
+The toast function displays non-blocking notification messages to the user. It provides color-based methods (primary, secondary, success, warning, danger, info, background, foreground) that each return a Toast instance.
 
 
 **Usage:**
@@ -47,8 +47,8 @@ toast.warning({
 - \`toast.warning(options)\` - Warning/yellow variant
 - \`toast.danger(options)\` - Danger/red variant
 - \`toast.info(options)\` - Info/blue variant
-- \`toast.surface(options)\` - Surface color variant
-- \`toast.contrast(options)\` - Contrast color variant
+- \`toast.background(options)\` - Background color variant
+- \`toast.foreground(options)\` - Foreground color variant
 
 **Parameters (all optional):**
 - \`title\` (Slot or string): The toast title text
@@ -73,7 +73,7 @@ toast.warning({
 - \`onAutoClose\` (function, optional): Callback when toast auto-closes after duration: \`(toast: Toast) => void\`
 
 **Returns:**
-A \`Toast\` instance that you can use to programmatically control the toast:
+A \`Toast\` instance that you can use to programmatically control the root:
 - \`toast.remove()\` - Remove the toast manually
 - \`toast.id\` - Unique identifier
 - \`toast.opts\` - Toast options
@@ -91,7 +91,7 @@ The Toast component uses a theme object that can be customized using the \`theme
 ### Theme Structure
 
 The theme object contains the following parts:
-- **toast**: Main toast container styles
+- **root**: Main toast container styles
 - **prefix**: Prefix icon/content styles
 - **suffix**: Suffix content styles
 - **content**: Content wrapper styles
@@ -101,7 +101,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**toast**:
+**root**:
 - base: Base classes for toast container
 - Variants:
   - richColors: boolean - Rich color variant styling
@@ -159,7 +159,7 @@ toast.success({
   title: 'Success',
   description: 'Operation completed',
   theme: {
-    toast: {
+    root: {
       base: 'rounded-xl shadow-xl',
       size: {
         normal: 'px-4 py-3'
@@ -175,7 +175,7 @@ toast.danger({
   title: 'Error',
   description: 'Something went wrong',
   theme: {
-    toast: {
+    root: {
       base: 'border-2 border-red-500',
       richColors: {
         true: 'bg-red-50 border-red-500'
@@ -194,7 +194,7 @@ toast.danger({
   import { setToastTheme } from 'svelai/toast';
   
   setToastTheme({
-    toast: {
+    root: {
       base: 'rounded-lg shadow-lg border',
       size: {
         normal: 'px-3 py-2'

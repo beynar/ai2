@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Alert from '$lib/components/Alert/Alert.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 	import { checkCircleIcon } from '$lib/components/Icons/checkCircle.js';
 	import { xCircleIcon } from '$lib/components/Icons/xCircle.js';
 	import { infoIcon } from '$lib/components/Icons/info.js';
@@ -7,235 +9,220 @@
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 </script>
 
-<div class="grid gap-10">
-	<!-- Basic Alert -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
+<DocPage
+	title="Alert"
+	subtitle="Contextual banners that communicate status, warnings, or important messages."
+	component="Alert"
+	features={[
+		'role=alert for live regions',
+		'prefix, title, description, children slots',
+		'color, variant, and size tokens',
+		'Layout adapts when icon is omitted'
+	]}
+>
+	<ComponentCard
+		description="A basic alert with title and description slots."
+		code={`<Alert>
+	{#snippet title()}
+		Heads up!
+	{/snippet}
+	{#snippet description()}
+		This is a basic alert message.
+	{/snippet}
+</Alert>`}
 	>
-		<h2 class="text-xl font-semibold">Basic Alert</h2>
-		<div class="grid gap-4">
-			<Alert>
-				{#snippet title()}
-					Heads up!
-				{/snippet}
-				{#snippet description()}
-					This is a basic alert message.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
+		<Alert>
+			{#snippet title()}
+				Heads up!
+			{/snippet}
+			{#snippet description()}
+				This is a basic alert message.
+			{/snippet}
+		</Alert>
+	</ComponentCard>
 
-	<!-- Alert with Icon -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert with Icon</h2>
-		<div class="grid gap-4">
-			<Alert color="info">
-				{#snippet prefix()}
-					{@render infoIcon()}
-				{/snippet}
-				{#snippet title()}
-					Information
-				{/snippet}
-				{#snippet description()}
-					This alert includes an icon.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
+	{#snippet examples()}
+		<ComponentCard description="Basic alert with title and description.">
+			<div class="grid gap-4">
+				<Alert>
+					{#snippet title()}
+						Heads up!
+					{/snippet}
+					{#snippet description()}
+						This is a basic alert message.
+					{/snippet}
+				</Alert>
+			</div>
+		</ComponentCard>
 
-	<!-- Success Alert -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Success Alert</h2>
-		<div class="grid gap-4">
-			<Alert color="success">
-				{#snippet prefix()}
-					{@render checkCircleIcon()}
-				{/snippet}
-				{#snippet title()}
-					Success!
-				{/snippet}
-				{#snippet description()}
-					Your changes have been saved successfully.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-
-	<!-- Warning Alert -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Warning Alert</h2>
-		<div class="grid gap-4">
-			<Alert color="warning">
-				{#snippet prefix()}
-					{@render triangleIcon()}
-				{/snippet}
-				{#snippet title()}
-					Warning
-				{/snippet}
-				{#snippet description()}
-					Please review your input before proceeding.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-
-	<!-- Danger Alert -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Danger Alert</h2>
-		<div class="grid gap-4">
-			<Alert color="danger">
-				{#snippet prefix()}
-					{@render xCircleIcon()}
-				{/snippet}
-				{#snippet title()}
-					Error
-				{/snippet}
-				{#snippet description()}
-					Something went wrong. Please try again.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-
-	<!-- Alert Variants -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert Variants</h2>
-		<div class="grid gap-4">
-			{#each variants as variant}
-				<Alert {variant} color="primary">
+		<ComponentCard description="Alert with icon via the prefix slot.">
+			<div class="grid gap-4">
+				<Alert color="info">
 					{#snippet prefix()}
 						{@render infoIcon()}
 					{/snippet}
 					{#snippet title()}
-						{variant} Alert
+						Information
 					{/snippet}
 					{#snippet description()}
-						This is a {variant} variant alert.
+						This alert includes an icon.
 					{/snippet}
 				</Alert>
-			{/each}
-		</div>
-	</div>
+			</div>
+		</ComponentCard>
 
-	<!-- Alert Sizes -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert Sizes</h2>
-		<div class="grid gap-4">
-			{#each sizes as size}
-				<Alert {size} color="info">
+		<ComponentCard description="Success alert.">
+			<div class="grid gap-4">
+				<Alert color="success">
+					{#snippet prefix()}
+						{@render checkCircleIcon()}
+					{/snippet}
+					{#snippet title()}
+						Success!
+					{/snippet}
+					{#snippet description()}
+						Your changes have been saved successfully.
+					{/snippet}
+				</Alert>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Warning alert.">
+			<div class="grid gap-4">
+				<Alert color="warning">
+					{#snippet prefix()}
+						{@render triangleIcon()}
+					{/snippet}
+					{#snippet title()}
+						Warning
+					{/snippet}
+					{#snippet description()}
+						Please review your input before proceeding.
+					{/snippet}
+				</Alert>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Danger alert.">
+			<div class="grid gap-4">
+				<Alert color="danger">
+					{#snippet prefix()}
+						{@render xCircleIcon()}
+					{/snippet}
+					{#snippet title()}
+						Error
+					{/snippet}
+					{#snippet description()}
+						Something went wrong. Please try again.
+					{/snippet}
+				</Alert>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Alert variants.">
+			<div class="grid gap-4">
+				{#each variants as variant}
+					<Alert {variant} color="primary">
+						{#snippet prefix()}
+							{@render infoIcon()}
+						{/snippet}
+						{#snippet title()}
+							{variant} Alert
+						{/snippet}
+						{#snippet description()}
+							This is a {variant} variant alert.
+						{/snippet}
+					</Alert>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Alert sizes.">
+			<div class="grid gap-4">
+				{#each sizes as size}
+					<Alert {size} color="info">
+						{#snippet prefix()}
+							{@render infoIcon()}
+						{/snippet}
+						{#snippet title()}
+							{size} Alert
+						{/snippet}
+						{#snippet description()}
+							This is a {size} size alert.
+						{/snippet}
+					</Alert>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Alert colors.">
+			<div class="grid gap-4">
+				{#each colors as color}
+					<Alert {color}>
+						{#snippet prefix()}
+							{@render infoIcon()}
+						{/snippet}
+						{#snippet title()}
+							{color} Alert
+						{/snippet}
+						{#snippet description()}
+							This is a {color} colored alert.
+						{/snippet}
+					</Alert>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Alert with children slot only.">
+			<div class="grid gap-4">
+				<Alert color="info">
+					{#snippet children()}
+						Simple alert message without title or description slots.
+					{/snippet}
+				</Alert>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Alert without icon — grid layout adjusts automatically.">
+			<div class="grid gap-4">
+				<Alert color="background" variant="soft">
+					{#snippet title()}
+						No Icon Alert
+					{/snippet}
+					{#snippet description()}
+						The grid layout automatically adjusts when no icon is provided.
+					{/snippet}
+				</Alert>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Alert with title only.">
+			<div class="grid gap-4">
+				<Alert color="primary">
 					{#snippet prefix()}
 						{@render infoIcon()}
 					{/snippet}
 					{#snippet title()}
-						{size} Alert
-					{/snippet}
-					{#snippet description()}
-						This is a {size} size alert.
+						Alert Title Only
 					{/snippet}
 				</Alert>
-			{/each}
-		</div>
-	</div>
+			</div>
+		</ComponentCard>
 
-	<!-- Alert Colors -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert Colors</h2>
-		<div class="grid gap-4">
-			{#each colors as color}
-				<Alert {color}>
+		<ComponentCard description="Disabled alert.">
+			<div class="grid gap-4">
+				<Alert disabled={true} color="info">
 					{#snippet prefix()}
 						{@render infoIcon()}
 					{/snippet}
 					{#snippet title()}
-						{color} Alert
+						Disabled Alert
 					{/snippet}
 					{#snippet description()}
-						This is a {color} colored alert.
+						This alert is disabled and non-interactive.
 					{/snippet}
 				</Alert>
-			{/each}
-		</div>
-	</div>
-
-	<!-- Alert with Children Only -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert with Children Only</h2>
-		<div class="grid gap-4">
-			<Alert color="info">
-				{#snippet children()}
-					Simple alert message without title or description slots.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-
-	<!-- Alert without Icon -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert without Icon</h2>
-		<div class="grid gap-4">
-			<Alert color="surface" variant="soft">
-				{#snippet title()}
-					No Icon Alert
-				{/snippet}
-				{#snippet description()}
-					The grid layout automatically adjusts when no icon is provided.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-
-	<!-- Alert with Title Only -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Alert with Title Only</h2>
-		<div class="grid gap-4">
-			<Alert color="primary">
-				{#snippet prefix()}
-					{@render infoIcon()}
-				{/snippet}
-				{#snippet title()}
-					Alert Title Only
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-
-	<!-- Disabled Alert -->
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
-	>
-		<h2 class="text-xl font-semibold">Disabled Alert</h2>
-		<div class="grid gap-4">
-			<Alert disabled={true} color="info">
-				{#snippet prefix()}
-					{@render infoIcon()}
-				{/snippet}
-				{#snippet title()}
-					Disabled Alert
-				{/snippet}
-				{#snippet description()}
-					This alert is disabled and non-interactive.
-				{/snippet}
-			</Alert>
-		</div>
-	</div>
-</div>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

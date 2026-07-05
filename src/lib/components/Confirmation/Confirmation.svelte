@@ -58,7 +58,7 @@
 		closable={false}
 		closeOnClickOutside={false}
 		closeOnEscape={false}
-		bind:isOpen={confirmation.isOpen}
+		bind:open={confirmation.isOpen}
 		title={confirmation.title}
 		description={confirmation.description}
 	>
@@ -67,7 +67,7 @@
 				{#if typeof confirmation.cancel === 'object'}
 					<Button
 						disabled={confirmation.loading}
-						color="surface"
+						color="background"
 						{...confirmation.cancel}
 						onClick={actionConfirmation(confirmation, false)}
 						fullWidth={isMobile.current}
@@ -77,7 +77,7 @@
 				{:else}
 					<Button
 						disabled={confirmation.loading}
-						color="surface"
+						color="background"
 						onClick={actionConfirmation(confirmation, false)}
 						fullWidth={isMobile.current}
 					>

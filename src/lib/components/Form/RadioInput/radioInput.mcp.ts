@@ -13,7 +13,7 @@ The RadioInput component provides a group of radio buttons for single-selection 
 <RadioInput 
 	label="Choose a plan"
 	bind:value={selected}
-	options={[
+	items={[
 		{ value: 'free', label: 'Free' },
 		{ value: 'pro', label: 'Pro' },
 		{ value: 'enterprise', label: 'Enterprise' }
@@ -27,7 +27,7 @@ Extends all Field component props plus:
 
 ### Core Props
 - **value**: string (bindable) - Selected value
-- **options**: Array<{ value: string, label: string, description?: string, disabled?: boolean }> (required)
+- **items**: Array<{ value: string, label: string, description?: string, disabled?: boolean }> (required)
 
 ### Layout Props
 - **orientation**: 'vertical' | 'horizontal' (default: 'vertical')
@@ -73,7 +73,7 @@ Extends all Field component props plus:
 <RadioInput 
 	label="Select a plan"
 	bind:value={plan}
-	options={[
+	items={[
 		{ value: 'free', label: 'Free' },
 		{ value: 'pro', label: 'Pro' },
 		{ value: 'enterprise', label: 'Enterprise' }
@@ -86,7 +86,7 @@ Extends all Field component props plus:
 <RadioInput 
 	label="Subscription"
 	bind:value={subscription}
-	options={[
+	items={[
 		{ 
 			value: 'monthly', 
 			label: 'Monthly',
@@ -107,7 +107,7 @@ Extends all Field component props plus:
 	label="Gender"
 	bind:value={gender}
 	orientation="horizontal"
-	options={[
+	items={[
 		{ value: 'male', label: 'Male' },
 		{ value: 'female', label: 'Female' },
 		{ value: 'other', label: 'Other' }
@@ -121,7 +121,7 @@ Extends all Field component props plus:
 	label="Shipping Method"
 	bind:value={shipping}
 	required
-	options={[
+	items={[
 		{ value: 'standard', label: 'Standard (5-7 days)' },
 		{ value: 'express', label: 'Express (2-3 days)' },
 		{ value: 'overnight', label: 'Overnight' }
@@ -134,7 +134,7 @@ Extends all Field component props plus:
 <RadioInput 
 	label="Seat Selection"
 	bind:value={seat}
-	options={[
+	items={[
 		{ value: 'window', label: 'Window' },
 		{ value: 'aisle', label: 'Aisle' },
 		{ value: 'middle', label: 'Middle', disabled: true }
@@ -148,7 +148,7 @@ Extends all Field component props plus:
 	label="Account Type"
 	value="premium"
 	disabled
-	options={[
+	items={[
 		{ value: 'free', label: 'Free' },
 		{ value: 'premium', label: 'Premium' }
 	]}
@@ -165,7 +165,7 @@ Extends all Field component props plus:
 	label="Payment Method"
 	bind:value={paymentMethod}
 	required
-	options={[
+	items={[
 		{ 
 			value: 'card', 
 			label: 'Credit/Debit Card',
@@ -199,7 +199,7 @@ Extends all Field component props plus:
 	bind:value={size}
 	orientation="horizontal"
 	required
-	options={[
+	items={[
 		{ value: 'xs', label: 'XS' },
 		{ value: 's', label: 'S' },
 		{ value: 'm', label: 'M' },
@@ -241,7 +241,7 @@ Extends all Field component props plus:
 <RadioInput 
 	label="Delivery Method"
 	bind:value={delivery}
-	options={deliveryOptions}
+	items={deliveryOptions}
 	required
 />
 \`\`\`
@@ -252,7 +252,7 @@ Extends all Field component props plus:
 	label="How satisfied are you with our service?"
 	bind:value={satisfaction}
 	required
-	options={[
+	items={[
 		{ value: '5', label: 'Very Satisfied' },
 		{ value: '4', label: 'Satisfied' },
 		{ value: '3', label: 'Neutral' },
@@ -268,7 +268,7 @@ Extends all Field component props plus:
 	label="Notification Frequency"
 	bind:value={frequency}
 	description="Choose how often you want to receive notifications"
-	options={[
+	items={[
 		{ 
 			value: 'realtime', 
 			label: 'Real-time',
@@ -328,7 +328,7 @@ The RadioInput component uses a theme object that can be customized using the \`
 ### Theme Structure
 
 The theme object contains the following parts:
-- **radiosInput**: Main container styles
+- **root**: Main container styles
 - **radiosInputContainer**: Options grid container styles
 - **radiosInputItem**: Individual radio wrapper styles
 - **radiosInputItemTrack**: Radio button track/background styles
@@ -339,7 +339,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**radiosInput**:
+**root**:
 - base: Base classes for main container
 - Variants:
   - mode: 'card' | 'normal' - Layout mode
@@ -387,7 +387,7 @@ The theme object contains the following parts:
 <RadioInput 
   label="Choose Option"
   bind:value={value}
-  options={options}
+  items={items}
   theme={{
     radiosInputContainer: {
       base: 'grid-cols-1 md:grid-cols-3 gap-4'
@@ -407,7 +407,7 @@ The theme object contains the following parts:
   mode="card"
   label="Plan"
   bind:value={plan}
-  options={options}
+  items={items}
   theme={{
     radiosInputItem: {
       checked: {

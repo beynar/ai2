@@ -13,8 +13,8 @@ The Separator component is a visual divider that separates content in an interfa
 
 ### Core Props
 - **orientation**: 'horizontal' | 'vertical' (default: 'horizontal') - The direction of the separator
-- **color**: Colors | 'surface' (default: 'surface') - The color of the separator line
-  - Available: primary, secondary, success, warning, danger, info, contrast, surface
+- **color**: Colors | 'background' (default: 'background') - The color of the separator line
+  - Available: primary, secondary, success, warning, danger, info, foreground, background
 - **size**: number (default: 1) - The thickness of the separator in pixels
 - **decorative**: boolean (default: false) - Whether the separator is purely decorative (affects ARIA role)
 
@@ -143,7 +143,7 @@ The Separator component is a visual divider that separates content in an interfa
 \`\`\`svelte
 <Separator 
 	theme={{
-		separator: { base: 'opacity-50' }
+		root: { base: 'opacity-50' }
 	}}
 />
 \`\`\`
@@ -209,7 +209,7 @@ The Separator component is a visual divider that separates content in an interfa
 ## Notes
 
 - Default orientation is horizontal
-- Default color is 'surface' for subtle separation
+- Default color is 'background' for subtle separation
 - Size controls the thickness (border-width) of the line
 - Label automatically positions in the center with proper spacing
 - Vertical separators require a parent with defined height
@@ -223,16 +223,16 @@ The Separator component uses a theme object that can be customized using the \`t
 ### Theme Structure
 
 The theme object contains the following parts:
-- **separator**: Main separator container styles
+- **root**: Main separator container styles
 - **label**: Separator label text styles
 
 ### Available Variants
 
-**separator**:
+**root**:
 - base: Base classes applied to all separators
 - Variants:
   - orientation: 'horizontal' | 'vertical' - Layout direction and styling
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Border color
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Border color
 
 **label**:
 - base: Base classes for label text
@@ -245,7 +245,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Separator 
   theme={{
-    separator: {
+    root: {
       base: 'opacity-60',
       orientation: {
         horizontal: 'my-4'
@@ -263,7 +263,7 @@ The theme object contains the following parts:
 <Separator 
   color="danger"
   theme={{
-    separator: {
+    root: {
       color: {
         danger: 'before:border-red-500 after:border-red-500'
       },
@@ -288,18 +288,17 @@ The theme object contains the following parts:
   import { setSeparatorTheme } from 'svelai/separator';
   
   setSeparatorTheme({
-    separator: {
+    root: {
       base: 'transition-opacity',
       orientation: {
         horizontal: 'my-3',
         vertical: 'mx-3'
       },
       color: {
-        surface: 'before:border-gray-300 after:border-gray-300'
+        background: 'before:border-gray-300 after:border-gray-300'
       }
     }
   });
 </script>
 \`\`\`
 `;
-

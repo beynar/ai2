@@ -95,7 +95,7 @@ The Menu accepts a discriminated union of four item types:
 {
 	type: 'separator';
 	// All SeparatorProps are available
-	color?: Colors | 'surface';
+	color?: Colors | 'background';
 	size?: number;
 	decorative?: boolean;
 	children?: Snippet; // Optional label
@@ -215,12 +215,12 @@ The menu follows this DOM structure:
 \`\`\`svelte
 <script>
 	const customTheme = {
-		menu: {
-			gap: 'large' // More spacing between items
+		root: {
+			base: 'gap-3' // More spacing between items
 		},
 		option: {
-			menuOption: {
-				size: 'large'
+			root: {
+				base: 'px-4 py-3'
 			}
 		}
 	};
@@ -472,7 +472,7 @@ The Menu component uses a theme object that can be customized using the \`theme\
 ### Theme Structure
 
 The theme object contains the following parts:
-- **menu**: Main menu container styles
+- **root**: Main menu container styles
 - **button**: Theme forwarded to Button items (optional)
 - **option**: Theme forwarded to MenuOption items (optional)
 - **separator**: Theme forwarded to Separator items (optional)
@@ -488,7 +488,7 @@ import type { SeparatorThemeProps } from 'svelai/separator';
 
 // Example theme customization
 const customTheme: MenuThemeProps = {
-  menu: {
+  root: {
     base: 'flex flex-col w-full',
     gap: {
       none: 'gap-0',
@@ -498,19 +498,19 @@ const customTheme: MenuThemeProps = {
     }
   },
   button: {
-    button: {
+    root: {
       base: 'w-full justify-start'
     }
   },
   option: {
-    menuOption: {
+    root: {
       size: {
         normal: 'px-3 py-2'
       }
     }
   },
   separator: {
-    separator: {
+    root: {
       base: 'my-2'
     }
   }
@@ -519,7 +519,7 @@ const customTheme: MenuThemeProps = {
 
 ### Available Variants
 
-**menu**:
+**root**:
 - base: Base classes for menu container
 - Variants:
   - gap: 'none' | 'small' | 'normal' | 'large' - Spacing between menu items
@@ -547,7 +547,7 @@ const customTheme: MenuThemeProps = {
 <Menu 
   items={menuItems}
   theme={{
-    menu: {
+    root: {
       gap: {
         normal: 'gap-2'
       }
@@ -561,13 +561,13 @@ const customTheme: MenuThemeProps = {
 <Menu 
   items={menuItems}
   theme={{
-    menu: {
+    root: {
       gap: {
         large: 'gap-3'
       }
     },
     option: {
-      menuOption: {
+      root: {
         size: {
           normal: 'px-4 py-3 min-h-10'
         },
@@ -577,10 +577,10 @@ const customTheme: MenuThemeProps = {
       }
     },
     separator: {
-      separator: {
+      root: {
         base: 'my-3',
         color: {
-          surface: 'before:border-gray-200 after:border-gray-200'
+          background: 'before:border-gray-200 after:border-gray-200'
         }
       }
     }
@@ -594,13 +594,13 @@ const customTheme: MenuThemeProps = {
   import { setMenuTheme } from 'svelai/menu';
   
   setMenuTheme({
-    menu: {
+    root: {
       gap: {
         normal: 'gap-2'
       }
     },
     option: {
-      menuOption: {
+      root: {
         base: 'rounded-lg',
         size: {
           normal: 'px-3 py-2'
@@ -611,4 +611,3 @@ const customTheme: MenuThemeProps = {
 </script>
 \`\`\`
 `;
-

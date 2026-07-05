@@ -12,11 +12,11 @@ The Skeleton component is a loading placeholder element that displays a pulsing 
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'contrast' | 'surface' (default: 'contrast')
+- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'foreground')
   - Determines the color scheme of the skeleton
-  - contrast: High contrast color (default)
+  - foreground: High foreground color (default)
   - primary, secondary, danger, success, warning, info: Semantic colors
-  - surface: Muted surface color
+  - background: Muted background color
 
 ### Styling Props
 - **class**: string - Additional CSS classes for the skeleton container
@@ -99,7 +99,7 @@ The Skeleton component is a loading placeholder element that displays a pulsing 
 
 The skeleton uses \`animate-pulse\` for the pulsing animation and supports color variants. You can customize the appearance by:
 
-1. Using the \`color\` prop to change the background color (default: 'contrast')
+1. Using the \`color\` prop to change the background color (default: 'foreground')
 2. Adding custom classes via the \`class\` prop
 3. Overriding the theme via the \`theme\` prop
 4. Using Tailwind utility classes for size, shape, and spacing
@@ -134,7 +134,7 @@ The skeleton uses \`animate-pulse\` for the pulsing animation and supports color
 ## Notes
 
 - The skeleton uses CSS animation (\`animate-pulse\`) which is provided by Tailwind CSS
-- The default color is 'contrast' which provides high visibility
+- The default color is 'foreground' which provides high visibility
 - Color variants use the theme's color system and adapt to your theme configuration
 - Skeletons should be replaced with actual content once loading is complete
 - Consider using skeletons that match the layout of the content being loaded for better UX
@@ -147,14 +147,14 @@ The Skeleton component uses a theme object that can be customized using the \`th
 ### Theme Structure
 
 The theme object contains the following parts:
-- **skeleton**: Main skeleton element styles
+- **root**: Main skeleton element styles
 
 ### Available Variants
 
-**skeleton**:
+**root**:
 - base: Base classes for skeleton element (includes animation)
 - Variants:
-  - color: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'contrast' | 'surface' - Background color
+  - color: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' - Background color
 
 ### Usage Examples
 
@@ -162,7 +162,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Skeleton 
   theme={{
-    skeleton: {
+    root: {
       base: 'rounded-lg',
       color: {
         primary: 'bg-primary/30'
@@ -176,10 +176,10 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Skeleton 
   theme={{
-    skeleton: {
+    root: {
       base: 'animate-pulse rounded-md bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200',
       color: {
-        contrast: 'bg-gray-200'
+        foreground: 'bg-gray-200'
       }
     }
   }}
@@ -192,10 +192,10 @@ The theme object contains the following parts:
   import { setSkeletonTheme } from 'svelai/skeleton';
   
   setSkeletonTheme({
-    skeleton: {
+    root: {
       base: 'animate-pulse rounded-md',
       color: {
-        contrast: 'bg-gray-200/50',
+        foreground: 'bg-gray-200/50',
         primary: 'bg-primary/20'
       }
     }
@@ -203,4 +203,3 @@ The theme object contains the following parts:
 </script>
 \`\`\`
 `;
-

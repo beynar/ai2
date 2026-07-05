@@ -1,40 +1,68 @@
 <script lang="ts">
 	import ButtonGroup from '$lib/components/ButtonGroup/ButtonGroup.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 
-	let disabled = $state(false);
+	const items = [{ children: 'One' }, { children: 'Two' }, { children: 'Three' }];
 </script>
 
-<div class="grid gap-10">
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
+<DocPage
+	title="Button group"
+	subtitle="Groups related buttons into a single connected control."
+	component="ButtonGroup"
+	features={[
+		'Composes shared Button primitives',
+		'Joined segments with shared borders',
+		'focus-visible ring lifts above neighbors',
+		'Shared size, color & variant props'
+	]}
+>
+	<ComponentCard
+		code={`<ButtonGroup
+	items={[
+		{ children: 'Button 1' },
+		{ children: 'Button 2' },
+		{ children: 'Button 3' }
+	]}
+/>`}
 	>
-		{#each variants as variant}
-			<div class="grid gap-4">
-				{#each colors as color}
-					<div class="flex items-center justify-center gap-4">
-						{#each sizes as size}
-							<ButtonGroup
-								{size}
-								{color}
-								{variant}
-								{disabled}
-								buttons={[
-									{
-										children: 'Button 1'
-									},
-									{
-										children: 'Button 2'
-									},
-									{
-										children: 'Button 3'
-									}
-								]}
-							/>
-						{/each}
-					</div>
+		<ButtonGroup
+			items={[{ children: 'Button 1' }, { children: 'Button 2' }, { children: 'Button 3' }]}
+		/>
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard description="Three variants join their segments into one connected control.">
+			<div class="flex flex-wrap items-center justify-center gap-4">
+				{#each variants as variant (variant)}
+					<ButtonGroup {variant} color="foreground" {items} />
 				{/each}
 			</div>
-		{/each}
-	</div>
-</div>
+		</ComponentCard>
+
+		<ComponentCard description="Eight semantic colors, shown here in the solid variant.">
+			<div class="flex flex-wrap items-center justify-center gap-4">
+				{#each colors as color (color)}
+					<ButtonGroup {color} {items} />
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Three sizes to match surrounding density.">
+			<div class="flex flex-wrap items-center justify-center gap-4">
+				{#each sizes as size (size)}
+					<ButtonGroup {size} color="foreground" {items} />
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Disabled groups are dimmed and ignore interaction.">
+			<div class="flex flex-wrap items-center justify-center gap-4">
+				{#each variants as variant (variant)}
+					<ButtonGroup {variant} color="foreground" disabled {items} />
+				{/each}
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

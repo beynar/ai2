@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultTabs = cva({
 	base: 'flex w-full',
@@ -32,11 +32,11 @@ const defaultTabsContent = cva({
 });
 
 export const tabsTheme = {
-	tabs: defaultTabs,
+	root: defaultTabs,
 	content: defaultTabsContent
 };
 
 export type TabsTheme = typeof tabsTheme;
 export type TabsThemeProps = InferComponentTheme<TabsTheme>;
 export const setTabsTheme = setComponentTheme<TabsTheme>('tabs');
-export const useTabsTheme = useComponentTheme('tabs', tabsTheme);
+export const useTabsTheme = useComponentTheme<TabsTheme>('tabs', tabsTheme);

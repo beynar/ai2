@@ -8,10 +8,15 @@
 	let {
 		menu,
 		closeOnItemClick = true,
-		isOpen = $bindable(false),
+		open = $bindable(false),
 		closeOnEscape = true,
+		class: className,
 		...popoverProps
 	}: PopupMenuProps = $props();
+
+	// A menu-appropriate min-width so short-label menus (e.g. context menus) don't collapse to their
+	// content. Overridable — a consumer `class` wins via tailwind-merge.
+	const panelClass = $derived(['min-w-44', className].filter(Boolean).join(' '));
 
 	const closeOnClick = (popover: PopoverState) => (node: HTMLElement) => {
 		if (closeOnItemClick) {
@@ -28,7 +33,7 @@
 	};
 </script>
 
-<Popover bind:isOpen size="small" {closeOnEscape} {...popoverProps}>
+<Popover bind:open size="small" {closeOnEscape} class={panelClass} {...popoverProps}>
 	{#snippet children(popover)}
 		<Menu focusOnMount="container" {...menu} {@attach closeOnClick(popover)} />
 	{/snippet}

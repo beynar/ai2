@@ -1,13 +1,12 @@
-import { cva } from '$lib/utils/cva.js';
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import type { InferComponentTheme } from '$lib/utils/cva.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultContainer = cva({
-	base: 'flex flex-col gap-4 p-2 rounded-lg bg-surface-light border border-surface-muted w-full'
+	base: 'flex flex-col gap-4 p-2 rounded-lg bg-background-light border border-background-muted w-full'
 });
 
 const defaultHeader = cva({
-	base: 'flex items-center justify-between gap-2 font-semibold text-contrast px-2'
+	base: 'flex items-center justify-between gap-2 font-semibold text-foreground px-2'
 });
 
 const defaultGrid = cva({
@@ -15,7 +14,7 @@ const defaultGrid = cva({
 });
 
 const defaultWeekday = cva({
-	base: 'text-center text-xs font-medium text-contrast-muted uppercase py-2'
+	base: 'text-center text-xs font-medium text-foreground-muted uppercase py-2'
 });
 
 const defaultDay = cva({
@@ -25,8 +24,8 @@ const defaultDay = cva({
 			true: 'bg-primary-lighter !text-primary-dark font-semibold hover:bg-primary-lighter'
 		},
 		inMonth: {
-			true: 'text-contrast',
-			false: 'text-contrast-muted opacity-50'
+			true: 'text-foreground',
+			false: 'text-foreground-muted opacity-50'
 		},
 		inRange: {
 			true: 'bg-primary-lighter text-primary '
@@ -58,7 +57,7 @@ const defaultDay = cva({
 });
 
 export const calendarTheme = {
-	container: defaultContainer,
+	root: defaultContainer,
 	header: defaultHeader,
 	grid: defaultGrid,
 	weekday: defaultWeekday,
@@ -68,5 +67,4 @@ export const calendarTheme = {
 export type CalendarTheme = typeof calendarTheme;
 export type CalendarThemeProps = InferComponentTheme<CalendarTheme>;
 export const setCalendarInputTheme = setComponentTheme<CalendarTheme>('calendar');
-export const useCalendarInputTheme = useComponentTheme('calendar', calendarTheme);
-
+export const useCalendarInputTheme = useComponentTheme<CalendarTheme>('calendar', calendarTheme);

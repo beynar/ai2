@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultMultiStep = cva({
 	base: 'flex flex-col relative p-2'
@@ -10,6 +10,10 @@ const defaultMultiStep = cva({
 	// 	large: 'gap-6'
 	// }
 	// }
+});
+
+const defaultMultiStepHeader = cva({
+	base: ''
 });
 
 const defaultMultiStepFooter = cva({
@@ -24,11 +28,15 @@ const defaultMultiStepFooter = cva({
 });
 
 export const multiStepFormTheme = {
-	multiStepForm: defaultMultiStep,
+	root: defaultMultiStep,
+	multiStepFormHeader: defaultMultiStepHeader,
 	multiStepFormFooter: defaultMultiStepFooter
 };
 
 export type MultiStepFormTheme = typeof multiStepFormTheme;
 export type MultiStepFormThemeProps = InferComponentTheme<MultiStepFormTheme>;
 export const setMultiStepFormTheme = setComponentTheme<MultiStepFormTheme>('multiStepForm');
-export const useMultiStepFormTheme = useComponentTheme('multiStepForm', multiStepFormTheme);
+export const useMultiStepFormTheme = useComponentTheme<MultiStepFormTheme>(
+	'multiStepForm',
+	multiStepFormTheme
+);

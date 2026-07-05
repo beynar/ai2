@@ -1,5 +1,11 @@
 export { default as Select } from './Select.svelte';
-export type { SelectProps } from './select.props.js';
+export type {
+	SelectProps,
+	SelectOption,
+	SelectOptionGroup,
+	SelectItems
+} from './select.props.js';
+export { SelectState } from './select.state.svelte.js';
 export {
 	selectTheme,
 	setSelectTheme,

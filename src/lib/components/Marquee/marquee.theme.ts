@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultMarquee = cva({
 	base: 'group flex overflow-hidden relative',
@@ -50,11 +50,11 @@ const defaultInner = cva({
 });
 
 export const marqueeTheme = {
-	marquee: defaultMarquee,
+	root: defaultMarquee,
 	inner: defaultInner
 };
 
 export type MarqueeTheme = typeof marqueeTheme;
 export type MarqueeThemeProps = InferComponentTheme<MarqueeTheme>;
 export const setMarqueeTheme = setComponentTheme<MarqueeTheme>('marquee');
-export const useMarqueeTheme = useComponentTheme('marquee', marqueeTheme);
+export const useMarqueeTheme = useComponentTheme<MarqueeTheme>('marquee', marqueeTheme);

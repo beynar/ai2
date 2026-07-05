@@ -53,10 +53,10 @@ The PopupMenu component is a wrapper around Popover that renders a Menu inside. 
 - **trigger**: Snippet | ButtonProps | false
   - Snippet: Custom trigger rendering with popover state
   - ButtonProps: Render a button with these props
-  - false: No trigger (control externally via isOpen)
+  - false: No trigger (control externally via open)
 
 #### Interaction Behavior
-- **isOpen**: boolean (bindable) - Control open state externally
+- **open**: boolean (bindable) - Control open state externally
 
 - **openOnClick**: boolean (default: true) - Open on trigger click
 
@@ -148,13 +148,13 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 <script>
 	import { trashIcon, copyIcon, shareIcon } from '$lib/components/Icons';
 	
-	let isOpen = $state(false);
+	let open = $state(false);
 	let contextMenuRef = $state(null);
 	
 	function handleContextMenu(e: MouseEvent) {
 		e.preventDefault();
 		contextMenuRef = e.target as HTMLElement;
-		isOpen = true;
+		open = true;
 	}
 	
 	const items = [
@@ -172,7 +172,7 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 
 <PopupMenu
 	trigger={false}
-	bind:isOpen
+	bind:open
 	ref={contextMenuRef}
 	position="bottom-start"
 	menu={{ items }}
@@ -182,16 +182,18 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 ### With Custom Trigger Snippet
 \`\`\`svelte
 <script>
+	let open = $state(false);
+
 	const items = [
 		{ type: 'option', title: 'Option 1' },
 		{ type: 'option', title: 'Option 2' }
 	];
 </script>
 
-<PopupMenu position="bottom" menu={{ items }}>
+<PopupMenu bind:open position="bottom" menu={{ items }}>
 	{#snippet trigger(popover)}
 		<button onclick={() => popover.toggle()}>
-			Custom Trigger {popover.isOpen ? '▲' : '▼'}
+			Custom Trigger {open ? '▲' : '▼'}
 		</button>
 	{/snippet}
 </PopupMenu>
@@ -253,7 +255,7 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 
 <PopupMenu
 	trigger={{ content: 'Menu' }}
-	bind:isOpen={menuOpen}
+	bind:open={menuOpen}
 	menu={{ items }}
 />
 \`\`\`
@@ -283,9 +285,9 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 	];
 	
 	const menuTheme = {
-		menu: { gap: 'large' },
+		root: { base: 'gap-3' },
 		option: {
-			menuOption: { size: 'large' }
+			root: { base: 'px-4 py-3' }
 		}
 	};
 </script>
@@ -356,7 +358,7 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 {#if submenuOpen}
 	<PopupMenu
 		trigger={false}
-		bind:isOpen={submenuOpen}
+		bind:open={submenuOpen}
 		position="right-start"
 		menu={{ items: subItems }}
 	/>
@@ -379,4 +381,3 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 - Use \`closeOnMouseLeave={true}\` for hover-triggered quick menus
 - The \`menu\` prop accepts full MenuProps including theme forwarding to child components
 `;
-

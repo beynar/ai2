@@ -4,13 +4,14 @@
 	import type { AccordionProps } from './accordion.props.js';
 	import { useAccordionTheme } from './accordion.theme.js';
 	import Slot from '../Slot/Slot.svelte';
-	import { slide } from 'svelte/transition';
+	import { slide, type SlideTransitionParams } from '$lib/transitions/transition.js';
+	import { useTheme } from '../Theme/theme.state.svelte.js';
 	import { caretDownIcon } from '../Icons/caretDown.js';
 	import { plusIcon } from '../Icons/plus.js';
 	import { minusIcon } from '../Icons/minus.js';
 
 	let {
-		items = $bindable([]),
+		items: itemsWithoutIds = $bindable([]),
 		titleKey,
 		contentKey,
 		descriptionKey,
@@ -19,7 +20,7 @@
 		variant = 'classic',
 		icon = 'math',
 		splitted,
-		size,
+		size = 'normal',
 		class: className,
 		theme,
 		actions,
@@ -34,23 +35,44 @@
 	const id = $props.id();
 	const classes = $derived(useAccordionTheme(theme));
 
+	const themeState = useTheme();
+	const split = $derived(themeState.splitTransition<SlideTransitionParams>(transitions));
+
 	const resolve = (item: Item, key: keyof Item) => {
 		return item[key] as any;
 	};
 
-	const accordion = new Accordion(
-		getters({
+	// Prefer the item's own id (stable across reorder/filter), but disambiguate
+	// duplicates — melt keys by id, so collisions would toggle items together.
+	const items = $derived.by(() => {
+		const seen = new Map<string, number>();
+		return itemsWithoutIds.map((item, index) => {
+			const base = 'id' in item ? String(item.id) : id + '-' + index;
+			const n = seen.get(base) ?? 0;
+			seen.set(base, n + 1);
+			return Object.assign({}, item, { id: n ? `${base}-${n}` : base });
+		}) as (Item & { id: string })[];
+	});
+
+	let prevOpen: string[] = [];
+	const accordion = new Accordion({
+		...getters({
 			get multiple() {
 				return !oneAtATime;
 			}
-		})
-	);
-
-	const itemsWithId = $derived(
-		items.map((item, index) =>
-			'id' in item ? item : Object.assign({ id: id + '-' + index }, item)
-		) as (Item & { id: string })[]
-	);
+		}),
+		onValueChange(value) {
+			const next = value == null ? [] : Array.isArray(value) ? value : [value];
+			const changed = [...next, ...prevOpen].find(
+				(id) => next.includes(id) !== prevOpen.includes(id)
+			);
+			prevOpen = next;
+			if (changed === undefined) return;
+			const index = items.findIndex((i) => i.id === changed);
+			if (index === -1) return;
+			ot?.({ item: itemsWithoutIds[index], index, open: next.includes(changed) });
+		}
+	});
 </script>
 
 {#snippet renderIcon(isOpen: boolean)}
@@ -71,10 +93,10 @@
 	data-splitted={splitted}
 	data-variant={variant}
 	data-size={size}
-	class={classes.accordion({ variant, size, splitted, className })}
+	class={classes.root({ variant, size, splitted, className })}
 	{...attachments}
 >
-	{#each itemsWithId as accordionItem}
+	{#each items as accordionItem}
 		{@const item = accordion.getItem(accordionItem)}
 		<div class={classes.item({ variant, size, splitted, expanded: item.isExpanded })}>
 			<button {...item.trigger} class={classes.trigger({ variant, size, splitted })}>
@@ -96,16 +118,23 @@
 			</button>
 
 			{#if item.isExpanded}
-				<div transition:slide {...item.content} class={classes.content({ variant, size })}>
+				<div
+					in:slide={split.in}
+					out:slide={split.out}
+					{...item.content}
+					class={classes.content({ variant, size })}
+				>
 					<Slot
 						render={content || resolve(accordionItem, contentKey || 'content')}
 						payload={{ item }}
 					/>
 				</div>
 			{:else if accessible}
-				{@const contentToRender = content || resolve(accordionItem, contentKey || 'content')}
 				<span class="sr-only">
-					{@render contentToRender()}
+					<Slot
+						render={content || resolve(accordionItem, contentKey || 'content')}
+						payload={{ item }}
+					/>
 				</span>
 			{/if}
 		</div>

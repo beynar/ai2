@@ -281,17 +281,17 @@ const defaultComponentContainer = cva({
       large: 'px-6 py-3 text-lg gap-3'
     },
     color: {
-      primary: 'bg-primary text-primary-fg',
-      secondary: 'bg-secondary text-secondary-fg',
-      danger: 'bg-danger text-danger-fg',
-      success: 'bg-success text-success-fg',
-      warning: 'bg-warning text-warning-fg',
-      info: 'bg-info text-info-fg',
-      surface: 'bg-surface text-color-fg',
-      contrast: 'bg-contrast text-contrast-fg'
+      primary: 'bg-primary text-primary-contrast',
+      secondary: 'bg-secondary text-secondary-contrast',
+      danger: 'bg-danger text-danger-contrast',
+      success: 'bg-success text-success-contrast',
+      warning: 'bg-warning text-warning-contrast',
+      info: 'bg-info text-info-contrast',
+      background: 'bg-background text-color-contrast',
+      foreground: 'bg-foreground text-foreground-contrast'
     },
     variant: {
-      solid: 'bg-color text-color-fg',
+      solid: 'bg-color text-color-contrast',
       outline: 'bg-transparent border border-color text-color',
       soft: 'bg-color-muted text-color',
       ghost: 'bg-transparent text-color hover:bg-color-muted'
@@ -303,14 +303,14 @@ const defaultComponentContainer = cva({
   },
   compoundVariants: [
     {
-      color: 'surface',
+      color: 'background',
       variant: 'solid',
-      class: 'bg-surface-dark hover:bg-surface-light'
+      class: 'bg-background-dark hover:bg-background-light'
     },
     {
-      color: 'contrast',
+      color: 'foreground',
       variant: 'outline',
-      class: 'border-contrast/50 hover:border-contrast'
+      class: 'border-foreground/50 hover:border-foreground'
     }
   ],
   defaultVariants: {
@@ -831,12 +831,12 @@ const defaultBadge = cva({
       large: 'px-3 py-1.5 text-base'
     },
     color: {
-      primary: 'bg-primary text-primary-fg',
-      danger: 'bg-danger text-danger-fg',
+      primary: 'bg-primary text-primary-contrast',
+      danger: 'bg-danger text-danger-contrast',
       // ... other colors
     },
     variant: {
-      solid: 'bg-color text-color-fg',
+      solid: 'bg-color text-color-contrast',
       outline: 'bg-transparent border border-color text-color',
       soft: 'bg-color-muted text-color'
     }

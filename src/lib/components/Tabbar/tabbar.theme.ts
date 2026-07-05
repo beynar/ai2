@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultTabbar = cva({
 	base: 'flex w-full',
@@ -31,7 +31,7 @@ const defaultTabbar = cva({
 });
 
 const defaultTab = cva({
-	base: 'rounded relative cursor-pointer inline-flex items-center justify-center relative transition-all duration-150 ease-in-out outline-none whitespace-nowrap text-contrast/70',
+	base: 'rounded relative cursor-pointer inline-flex items-center justify-center relative transition-all duration-150 ease-in-out outline-none whitespace-nowrap text-foreground/70',
 	variants: {
 		size: {
 			small: 'px-2 py-1 text-xs gap-1',
@@ -39,10 +39,10 @@ const defaultTab = cva({
 			large: 'px-4 py-1 text-base gap-2.5 '
 		},
 		color: {
-			surface: '',
+			background: '',
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
@@ -53,7 +53,7 @@ const defaultTab = cva({
 			false: ''
 		},
 		focused: {
-			true: 'bg-surface-muted/50 text-contrast',
+			true: 'bg-background-muted/50 text-foreground',
 			false: ''
 		},
 		disabled: {
@@ -145,7 +145,7 @@ const defaultTabSuffix = cva({
 });
 
 export const tabbarTheme = {
-	tabbar: defaultTabbar,
+	root: defaultTabbar,
 	tab: defaultTab,
 	prefix: defaultTabPrefix,
 	suffix: defaultTabSuffix
@@ -154,4 +154,4 @@ export const tabbarTheme = {
 export type TabbarTheme = typeof tabbarTheme;
 export type TabbarThemeProps = InferComponentTheme<TabbarTheme>;
 export const setTabbarTheme = setComponentTheme<TabbarTheme>('tabbar');
-export const useTabbarTheme = useComponentTheme('tabbar', tabbarTheme);
+export const useTabbarTheme = useComponentTheme<TabbarTheme>('tabbar', tabbarTheme);

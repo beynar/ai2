@@ -113,7 +113,7 @@ The outer container maintains the aspect ratio with overflow hidden to prevent c
 	<AspectRatio ratio="16x9">
 		{#snippet children()}
 			<div class="bg-gradient-to-br from-primary to-secondary flex h-full w-full items-center justify-center">
-				<span class="text-primary-fg text-2xl font-bold">Content</span>
+				<span class="text-primary-contrast text-2xl font-bold">Content</span>
 			</div>
 		{/snippet}
 	</AspectRatio>
@@ -157,12 +157,12 @@ The AspectRatio component uses a theme object that can be customized using the \
 ### Theme Structure
 
 The theme object contains the following parts:
-- **container**: Outer aspect ratio container styles
+- **root**: Outer aspect ratio container styles
 - **content**: Inner content container styles
 
 ### Available Variants
 
-**container**:
+**root**:
 - base: Base classes for the outer container (maintains aspect ratio)
 
 **content**:
@@ -175,7 +175,7 @@ The theme object contains the following parts:
 <AspectRatio 
   ratio="16x9"
   theme={{
-    container: {
+    root: {
       base: 'rounded-lg overflow-hidden shadow-md'
     },
     content: {
@@ -194,7 +194,7 @@ The theme object contains the following parts:
 <AspectRatio 
   ratio="1x1"
   theme={{
-    container: {
+    root: {
       base: 'rounded-full border-4 border-primary overflow-hidden'
     },
     content: {
@@ -214,7 +214,7 @@ The theme object contains the following parts:
   import { setAspectRatioTheme } from 'svelai/aspect-ratio';
   
   setAspectRatioTheme({
-    container: {
+    root: {
       base: 'rounded-xl overflow-hidden shadow-lg'
     },
     content: {

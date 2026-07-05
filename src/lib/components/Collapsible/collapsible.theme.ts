@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultCollapsibleContainer = cva({
 	base: 'flex w-full flex-col',
@@ -63,7 +63,7 @@ const defaultCollapsibleIcon = cva({
 });
 
 export const collapsibleTheme = {
-	container: defaultCollapsibleContainer,
+	root: defaultCollapsibleContainer,
 	trigger: defaultCollapsibleTrigger,
 	content: defaultCollapsibleContent,
 	icon: defaultCollapsibleIcon
@@ -72,4 +72,7 @@ export const collapsibleTheme = {
 export type CollapsibleTheme = typeof collapsibleTheme;
 export type CollapsibleThemeProps = InferComponentTheme<CollapsibleTheme>;
 export const setCollapsibleTheme = setComponentTheme<CollapsibleTheme>('collapsible');
-export const useCollapsibleTheme = useComponentTheme('collapsible', collapsibleTheme);
+export const useCollapsibleTheme = useComponentTheme<CollapsibleTheme>(
+	'collapsible',
+	collapsibleTheme
+);

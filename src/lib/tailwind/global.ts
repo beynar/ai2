@@ -1,0 +1,166 @@
+import type { PluginAPI } from 'tailwindcss/plugin';
+import { colors, variants } from './colors.js';
+import { getSpinner } from './spinnner.js';
+import type { ThemeOptions } from './theme.js';
+
+const dataColors = colors.reduce(
+	(acc, color) => {
+		acc[`[data-color="${color}"]`] = variants.reduce(
+			(acc, variant) => {
+				const v = variant.toLowerCase();
+				Object.assign(acc, {
+					[`--color-${v}`]: `var(--color-${color}-${v})`
+				});
+				return acc;
+			},
+			{
+				'--color': `var(--color-${color})`,
+				'--color-readable': `var(--color-${color}-readable)`,
+				'--color-muted-readable': `var(--color-${color}-muted-readable)`
+			} as Record<string, string>
+		);
+		return acc;
+	},
+	{} as Record<string, Record<string, string>>
+);
+
+export const globalKeyframes = (options?: ThemeOptions) => ({
+	...getSpinner(options).keyframes
+});
+
+/**
+ * Registers the palette-agnostic layer: custom color utilities, variants, the
+ * `.ui-spinner` component and `raised-*` shadows. It must run exactly once per
+ * build — the `theme` plugin bootstraps it from the default theme, and the
+ * standalone `index` plugin calls it directly for consumers who want the engine
+ * without a generated palette.
+ */
+export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
+	const { addBase, addComponents, matchUtilities, addUtilities, theme, addVariant } = api;
+
+	addBase({ ...dataColors });
+
+	const parseUtility =
+		(attribute: string) =>
+		(value: string, { modifier }: { modifier: string | null }) => {
+			if (modifier) {
+				const suffixPattern = /(-muted-readable|-lighter|-light|-dark|-muted|-contrast|-readable)/;
+				const match = value.match(suffixPattern);
+				const suffix = match?.[1] || '';
+				return {
+					[`${attribute}`]: `color-mix(in oklab, var(--color${suffix}) ${modifier}%, transparent)`
+				};
+			} else {
+				return {
+					[`${attribute}`]: `var(--color${value})`
+				};
+			}
+		};
+
+	matchUtilities(
+		{
+			'text-color': parseUtility('color'),
+			'bg-color': parseUtility('background-color'),
+			'ring-color': parseUtility('--tw-ring-color'),
+			'ring-offset-color': parseUtility('--tw-ring-offset-color'),
+			'border-color': parseUtility('border-color'),
+			'border-top-color': parseUtility('border-top-color'),
+			'border-right-color': parseUtility('border-right-color'),
+			'border-bottom-color': parseUtility('border-bottom-color'),
+			'border-left-color': parseUtility('border-left-color'),
+			'border-s-color': parseUtility('border-inline-start-color'),
+			'border-e-color': parseUtility('border-inline-end-color'),
+			'shadow-color': parseUtility('--tw-shadow-color')
+		},
+		{
+			values: {
+				DEFAULT: '',
+				light: '-light',
+				lighter: '-lighter',
+				dark: '-dark',
+				muted: '-muted',
+				contrast: '-contrast',
+				readable: '-readable',
+				'muted-readable': '-muted-readable'
+			},
+			type: 'color',
+			modifiers: 'any'
+		}
+	);
+
+	// DYNAMIC WINDOW UTILITIES
+	addUtilities({
+		'.h-window': {
+			height: 'var(--window-height)'
+		},
+		'.w-window': {
+			width: 'var(--window-width)'
+		}
+	});
+
+	addBase({
+		'body *': {
+			'border-color': 'var(--color-background-muted)',
+			'--tw-ring-offset-color': 'var(--color-background-dark)'
+		},
+		'[data-color-scheme="dark"]': {
+			'--dark-raised-border': '1px solid var(--current-border, var(--color-background-muted))',
+			'--dark-raised-shadow': 'none'
+		},
+		':has([data-badge])': {
+			position: 'relative'
+		},
+		':focus': {
+			outline: 'none'
+		}
+	});
+	addComponents({
+		'.ui-spinner': getSpinner(options).style
+	});
+
+	addVariant('checked', ['&:checked', "&[data-checked='true']"]);
+	addVariant('not-checked', ['&:not(:checked)', "&[data-checked='false']"]);
+	addVariant('child', '& > *');
+	addVariant('first-child', '& > *:first-child');
+	addVariant('last-child', '& > *:last-child');
+	addVariant('not-first-child', '& > *:not(:first-child)');
+	addVariant('not-last-child', '& > *:not(:last-child)');
+	addVariant('not-first-not-last-child', '& > *:not(:first-child):not(:last-child)');
+	addVariant('active', ['&:active', '&[data-active="true"]']);
+	addVariant('inactive', ['&:not(:active)', '&[data-active="false"]']);
+
+	addVariant('highlight', ['&[data-highlighted="true"]']);
+	addVariant('disabled', ['&:disabled', '&[data-disabled="true"]']);
+
+	addBase({
+		'border-color': 'var(--color-background-muted)',
+		'border-width': '1px'
+	});
+
+	matchUtilities(
+		{
+			raised: (value) => {
+				if (value !== 'none') {
+					const valueWithoutRgb = value.replace(/rgb\((.*?)\)/g, 'var(--tw-shadow-color)');
+					return {
+						border: 'var(--raised-border)',
+						'--tw-shadow': value as string,
+						'--tw-shadow-colored': valueWithoutRgb as string,
+						'box-shadow':
+							'var(--dark-raised-shadow, var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow))'
+					};
+				} else {
+					return {
+						'box-shadow': 'none',
+						'--tw-shadow': 'none',
+						'--tw-shadow-colored': 'none',
+						border: '0px'
+					};
+				}
+			}
+		},
+		{
+			values: theme('boxShadow')
+		}
+	);
+};

@@ -35,7 +35,7 @@ The Table component provides a flexible way to display tabular data with support
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ### Alternative Syntax
@@ -64,13 +64,13 @@ You can also use the full object syntax when you need additional properties:
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ## Props
 
 ### Core Props
-- **rows**: TableRow[] (required) - Array of rows to display in the table body
+- **items**: TableRow[] (required) - Array of rows to display in the table body
   - Each row can have either \`cells\` (object keyed by column name) or \`content\` (Slot) for flexible rendering
   - Cells in rows are rendered in the same order as the header keys (if header is provided)
 - **header**: Record<string, TableCellValue> (optional) - Object of cells for the table header, keyed by column name
@@ -216,7 +216,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ### Table with Mixed Cell Formats
@@ -246,7 +246,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ### Table with Footer
@@ -285,7 +285,7 @@ type TableRow = {
 	};
 </script>
 
-<Table {header} {rows} {footer} />
+<Table {header} items={rows} {footer} />
 \`\`\`
 
 ### Table with Custom Row Content (Slot)
@@ -312,7 +312,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ### Table with Prefix and Suffix (Future Features)
@@ -338,7 +338,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows}>
+<Table {header} items={rows}>
 	{#snippet prefix()}
 		<div class="mb-4">
 			<TextInput placeholder="Search..." />
@@ -378,7 +378,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows}>
+<Table {header} items={rows}>
 	{#snippet caption()}
 		Monthly Sales Report
 	{/snippet}
@@ -413,7 +413,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ### Table with RowSpan and ColSpan
@@ -445,7 +445,7 @@ type TableRow = {
 	];
 </script>
 
-<Table {header} {rows} />
+<Table {header} items={rows} />
 \`\`\`
 
 ## Accessibility
@@ -464,8 +464,8 @@ type TableRow = {
 - The \`prefix\` and \`suffix\` slots are designed for future features like search and pagination
 - All parts of the table can be styled via the theme system
 - The table container includes horizontal scroll for responsive design
-- Rows have a subtle hover effect with \`bg-surface-muted/40\`
-- All borders use \`border-surface-muted\` for consistency
+- Rows have a subtle hover effect with \`bg-background-muted/40\`
+- All borders use \`border-background-muted\` for consistency
 - Rows have \`py-0.5\` padding for better spacing
 
 ## Theme Customization
@@ -475,7 +475,7 @@ The Table component uses a theme object that can be customized using the \`theme
 ### Theme Structure
 
 The theme object contains the following parts:
-- **container**: Table wrapper container styles
+- **root**: Table wrapper container styles
 - **table**: Main table element styles
 - **thead**: Table header section styles
 - **tbody**: Table body section styles
@@ -489,7 +489,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**container**:
+**root**:
 - base: Base classes for scrollable container
 
 **table**:
@@ -530,7 +530,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Table 
   {header}
-  {rows}
+  items={rows}
   theme={{
     table: {
       base: 'border-collapse border-2'
@@ -549,7 +549,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Table 
   {header}
-  {rows}
+  items={rows}
   theme={{
     row: {
       base: 'border-b border-gray-200',
@@ -589,4 +589,3 @@ The theme object contains the following parts:
 </script>
 \`\`\`
 `;
-

@@ -39,7 +39,7 @@
 	);
 </script>
 
-<div data-avatar class={classes.avatar({ size, className })} data-size={size} {...attachments}>
+<div data-avatar class={classes.root({ size, className })} data-size={size} {...attachments}>
 	<Slot render={prefix} class={classes.avatarPrefix({ size })} />
 	{#if user.avatar}
 		<img use:complete src={user.avatar} alt={user.name} class={classes.avatarImage({ size })} />

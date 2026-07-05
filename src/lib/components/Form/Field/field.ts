@@ -1,19 +1,13 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
-import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 import type { Snippet } from 'svelte';
 import type { FieldState } from './fieldState.svelte.js';
 import type { Sizes } from '$lib/types/theme.js';
 
 export type TextInputType =
-	| 'text'
-	| 'password'
-	| 'email'
-	| 'url'
-	| 'color'
-	| 'textarea'
-	| 'color'
-	| 'phone';
+	'text' | 'password' | 'email' | 'url' | 'color' | 'textarea' | 'color' | 'phone';
 export type NumberInputType = 'number' | 'slider';
+export type SliderRangeInputType = 'slider-range';
 export type TagInputType = 'tag';
 export type DateInputType = 'datetime' | 'date';
 export type TimeInputType = 'time';
@@ -25,6 +19,7 @@ export type CalendarInputType = 'calendar' | 'calendar-range';
 
 export type InputType =
 	| FileInputType
+	| SliderRangeInputType
 	| DateInputType
 	| NumberInputType
 	| TimeInputType
@@ -41,41 +36,56 @@ export type FieldValue<T extends InputType> = T extends 'file'
 		? File[]
 		: T extends DateInputType
 			? Date
-			: T extends NumberInputType
-				? number
-				: T extends TimeInputType
+			: T extends SliderRangeInputType
+				? number[]
+				: T extends NumberInputType
 					? number
-					: T extends TextInputType
-						? string
-						: T extends BooleanInputType
-							? boolean
-							: T extends MultipleChoiceInputType
-								? string[]
-								: T extends TagInputType
+					: T extends TimeInputType
+						? number
+						: T extends TextInputType
+							? string
+							: T extends BooleanInputType
+								? boolean
+								: T extends MultipleChoiceInputType
 									? string[]
-									: T extends SingleOptionInputType
-										? string
-										: T extends 'calendar'
-											? Date
-											: T extends 'calendar-range'
-												? [Date, Date]
-												: never;
+									: T extends TagInputType
+										? string[]
+										: T extends SingleOptionInputType
+											? string
+											: T extends 'calendar'
+												? Date
+												: T extends 'calendar-range'
+													? [Date, Date]
+													: never;
 
 export type InputProps<T extends InputType> = WithSlot<
 	{
+		/** Form field name, used as the key when the input is part of a Form. */
 		name?: string;
+		/** Marks the field as required for validation and shows the required indicator. */
 		required?: boolean;
+		/** Disables the input, preventing interaction and focus. */
 		disabled?: boolean;
+		/** Visual size of the field (label, spacing, and control). */
 		size?: Sizes;
+		/** Whether the field is rendered; when false the field is hidden from the form. */
 		visible?: boolean;
 		// schema?: any;
+		/** Validates the current value, returning error messages (or false) when invalid. */
 		onValidate?: (value: FieldValue<T>) => string[] | boolean;
+		/** Called whenever the field value changes. */
 		onChange?: (value: FieldValue<T>) => void;
+		/** Extra HTML attributes spread onto the underlying input element. */
 		attrs?: Record<string, string | boolean>;
+		/** CSS classes applied to the field's root element. */
 		class?: string;
-		theme?: InferComponentTheme<typeof fieldTheme>;
+		/** Theme overrides for the field's structural parts (label, input, error, ...). */
+		theme?: FieldThemeProps;
+		/** The field's value, bindable with `bind:value`. */
 		value?: FieldValue<T> | null;
+		/** Validation errors to display; `true` marks the field as errored without a message. */
 		errors?: string[] | boolean;
+		/** Whether the field currently holds focus, bindable with `bind:focused`. */
 		focused?: boolean;
 	},
 	| 'header'
@@ -114,7 +124,7 @@ const defaultFieldHeader = cva({
 	variants: {
 		size: {
 			small: 'gap-1',
-			medium: 'gap-2',
+			normal: 'gap-2',
 			large: 'gap-3'
 		},
 		required: {
@@ -129,11 +139,11 @@ const defaultFieldHeader = cva({
 });
 
 const defaultFieldLabel = cva({
-	base: 'text-contrast-light text-sm',
+	base: 'text-foreground-light text-sm',
 	variants: {
 		size: {
 			small: 'text-xs',
-			medium: 'text-sm',
+			normal: 'text-sm',
 			large: 'text-base'
 		},
 		hasError: {
@@ -152,7 +162,7 @@ const defaultFieldActions = cva({
 	variants: {
 		size: {
 			small: 'gap-1',
-			medium: 'gap-2',
+			normal: 'gap-2',
 			large: 'gap-3'
 		}
 	}
@@ -163,7 +173,7 @@ const defaultFieldErrorsContainer = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			medium: 'text-sm',
+			normal: 'text-sm',
 			large: 'text-base'
 		}
 	}
@@ -174,7 +184,7 @@ const defaultFieldError = cva({
 	variants: {
 		size: {
 			small: 'text-xs',
-			medium: 'text-sm',
+			normal: 'text-sm',
 			large: 'text-base'
 		}
 	}
@@ -227,7 +237,7 @@ const defaultFieldFooter = cva({
 	}
 });
 const defaultFieldDescription = cva({
-	base: 'text-contrast-muted text-xs leading-3 flex-1',
+	base: 'text-foreground-muted text-xs leading-3 flex-1',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -237,7 +247,7 @@ const defaultFieldDescription = cva({
 	}
 });
 const defaultFieldHelper = cva({
-	base: 'text-contrast-muted text-xs leading-3',
+	base: 'text-foreground-muted text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -300,7 +310,7 @@ These snippets will receive the fieldState as argument.
 `;
 
 export const fieldTheme = {
-	field: defaultField,
+	root: defaultField,
 	header: defaultFieldHeader,
 	label: defaultFieldLabel,
 	actions: defaultFieldActions,
@@ -313,3 +323,6 @@ export const fieldTheme = {
 	description: defaultFieldDescription,
 	helper: defaultFieldHelper
 };
+
+export type FieldTheme = typeof fieldTheme;
+export type FieldThemeProps = InferComponentTheme<FieldTheme>;

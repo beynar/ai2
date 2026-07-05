@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 export const defaultStepper = cva({
 	base: 'relative w-full max-w-full transition-[height]',
@@ -32,7 +32,7 @@ export const defaultStepperStep = cva({
 });
 
 export const stepperTheme = {
-	stepper: defaultStepper,
+	root: defaultStepper,
 	container: defaultStepperContainer,
 	step: defaultStepperStep
 };
@@ -40,4 +40,4 @@ export const stepperTheme = {
 export type StepperTheme = typeof stepperTheme;
 export type StepperThemeProps = InferComponentTheme<StepperTheme>;
 export const setStepperTheme = setComponentTheme<StepperTheme>('stepper');
-export const useStepperTheme = useComponentTheme('stepper', stepperTheme);
+export const useStepperTheme = useComponentTheme<StepperTheme>('stepper', stepperTheme);

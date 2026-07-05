@@ -4,6 +4,9 @@ import type { WithAttachments } from '$lib/types/props.js';
 import type { CollapsibleThemeProps } from './collapsible.theme.js';
 
 type CollapsibleBaseProps = {
+	/**
+	 * Bindable reference to the root collapsible container element.
+	 */
 	ref?: HTMLElement | null;
 	/**
 	 * The class name of the collapsible container.
@@ -42,12 +45,22 @@ type CollapsibleBaseProps = {
 	 * Whether the collapsible is accessible.
 	 */
 	accessible?: boolean;
+	/**
+	 * Visual variant. `default` toggles the content in and out with a slide.
+	 * `peek` keeps the content mounted, clips it to `peekHeight` and fades the
+	 * edge while closed, with the trigger floating as a pill over the fade.
+	 */
+	variant?: 'default' | 'peek';
+	/**
+	 * Height of the collapsed preview for the `peek` variant. A number is px.
+	 */
+	peekHeight?: number | string;
 };
 
 type CollapsibleSlotProps = WithSlot<
 	CollapsibleBaseProps,
 	'trigger' | 'children' | 'icon' | 'srOnlyContent',
-	{ isOpen: boolean }
+	{ open: boolean }
 >;
 
 export type CollapsibleProps = WithAttachments<CollapsibleSlotProps>;

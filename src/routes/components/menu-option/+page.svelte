@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
 	import { MenuOption } from '$lib/components/MenuOption/index.js';
 	import { checkIcon } from '$lib/components/Icons/check.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
@@ -11,96 +13,103 @@
 	let isHovered = $state(false);
 </script>
 
-<div class="space-y-8 p-8">
-	<h1 class="mb-8 text-4xl font-bold">MenuOption Component</h1>
-
-	<!-- Basic Examples -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Basic Menu Items</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 space-y-1 border p-1">
-			<MenuOption title="Simple Menu Item" />
-
-			<MenuOption title="With Description" description="This is a helpful description" />
-		</div>
-	</section>
-
-	<!-- With Icons -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">With Icons</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 space-y-1 border p-1">
+<DocPage
+	title="Menu option"
+	subtitle="An individual selectable item within a menu."
+	component="MenuOption"
+	features={[
+		'Auto button, link, or menuitem role',
+		'aria-disabled and aria-selected support',
+		'data-highlighted for keyboard focus',
+		'Prefix, suffix, title, description slots'
+	]}
+>
+	<ComponentCard
+		description="Single item with icon, title, and description."
+		code={`<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />`}
+	>
+		<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
 			<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
-
-			<MenuOption prefix={gearIcon} suffix={caretRightIcon} title="Settings" />
-
-			<MenuOption prefix={questionIcon} title="Help & Support" />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Different Sizes -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Sizes</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 space-y-1 border p-1">
-			<MenuOption size="small" prefix={userIcon} title="Small Menu Item" />
+	{#snippet examples()}
+		<ComponentCard description="Basic menu items with optional description.">
+			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+				<MenuOption title="Simple Menu Item" />
 
-			<MenuOption size="normal" prefix={userIcon} title="Normal Menu Item" />
+				<MenuOption title="With Description" description="This is a helpful description" />
+			</div>
+		</ComponentCard>
 
-			<MenuOption size="large" prefix={userIcon} title="Large Menu Item" />
-		</div>
-	</section>
+		<ComponentCard description="Prefix and suffix icon slots.">
+			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+				<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
 
-	<!-- Different Colors -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Colors</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 space-y-1 border p-1">
-			<MenuOption color="primary" title="Primary" />
+				<MenuOption prefix={gearIcon} suffix={caretRightIcon} title="Settings" />
 
-			<MenuOption color="secondary" title="Secondary" />
+				<MenuOption prefix={questionIcon} title="Help & Support" />
+			</div>
+		</ComponentCard>
 
-			<MenuOption color="success" prefix={checkIcon} title="Approve" />
+		<ComponentCard description="Small, normal, and large sizes.">
+			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+				<MenuOption size="small" prefix={userIcon} title="Small Menu Item" />
 
-			<MenuOption color="danger" prefix={signOutIcon} title="Delete" />
+				<MenuOption size="normal" prefix={userIcon} title="Normal Menu Item" />
 
-			<MenuOption color="info" title="Info" />
-		</div>
-	</section>
+				<MenuOption size="large" prefix={userIcon} title="Large Menu Item" />
+			</div>
+		</ComponentCard>
 
-	<!-- Interactive -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Interactive</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 space-y-1 border p-1">
-			<MenuOption onClick={() => clickCount++} title="Clicked {clickCount} times" />
+		<ComponentCard description="Semantic color variants.">
+			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+				<MenuOption color="primary" title="Primary" />
 
-			<MenuOption
-				onEnter={() => (isHovered = true)}
-				onLeave={() => (isHovered = false)}
-				title={isHovered ? 'Hovering!' : 'Hover over me'}
-			/>
+				<MenuOption color="secondary" title="Secondary" />
 
-			<MenuOption
-				href="/components/button"
-				suffix={caretRightIcon}
-				title="Go to Button Component"
-			/>
-		</div>
-	</section>
+				<MenuOption color="success" prefix={checkIcon} title="Approve" />
 
-	<!-- Complete Menu Example -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Complete Menu Example</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-72 border p-1">
-			<MenuOption prefix={userIcon} title="John Doe" description="john@example.com" />
+				<MenuOption color="danger" prefix={signOutIcon} title="Delete" />
 
-			<div class="border-surface-muted my-1 border-t"></div>
+				<MenuOption color="info" title="Info" />
+			</div>
+		</ComponentCard>
 
-			<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
+		<ComponentCard description="Click, hover, and link interactions.">
+			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+				<MenuOption onClick={() => clickCount++} title="Clicked {clickCount} times" />
 
-			<MenuOption prefix={gearIcon} title="Settings" description="Manage your preferences" />
+				<MenuOption
+					onEnter={() => (isHovered = true)}
+					onLeave={() => (isHovered = false)}
+					title={isHovered ? 'Hovering!' : 'Hover over me'}
+				/>
 
-			<MenuOption prefix={questionIcon} title="Help & Support" />
+				<MenuOption
+					href="/components/button"
+					suffix={caretRightIcon}
+					title="Go to Button Component"
+				/>
+			</div>
+		</ComponentCard>
 
-			<div class="border-surface-muted my-1 border-t"></div>
+		<ComponentCard description="Complete menu with dividers and a danger action.">
+			<div class="bg-background rounded-xl border-background-muted w-72 border p-1">
+				<MenuOption prefix={userIcon} title="John Doe" description="john@example.com" />
 
-			<MenuOption color="danger" prefix={signOutIcon} title="Log Out" />
-		</div>
-	</section>
-</div>
+				<div class="border-background-muted my-1 border-t"></div>
+
+				<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
+
+				<MenuOption prefix={gearIcon} title="Settings" description="Manage your preferences" />
+
+				<MenuOption prefix={questionIcon} title="Help & Support" />
+
+				<div class="border-background-muted my-1 border-t"></div>
+
+				<MenuOption color="danger" prefix={signOutIcon} title="Log Out" />
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

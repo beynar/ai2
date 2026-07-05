@@ -1,0 +1,368 @@
+import { createBindableStateClass } from '$lib/utils/state.svelte.js';
+import type { FieldValue } from '../Field/field.js';
+
+export type SliderValue = number | number[];
+export type SliderOrientation = 'horizontal' | 'vertical';
+export type SliderFormatValue = (value: number, index: number, values: number[]) => string;
+
+export type SliderValuePayload = {
+	value: number;
+	values: number[];
+	index: number;
+	min: number;
+	max: number;
+	step: number;
+	percentage: number;
+	formatted: string;
+	isRange: boolean;
+	thumbMin: number;
+	thumbMax: number;
+};
+
+export type SliderRangePayload = {
+	values: number[];
+	startValue: number;
+	endValue: number;
+	startPercentage: number;
+	endPercentage: number;
+	formatted: string;
+};
+
+type SliderDragState =
+	| {
+			type: 'thumb';
+			index: number;
+	  }
+	| {
+			type: 'range';
+			pointerValue: number;
+			values: number[];
+	  };
+
+type SliderStateOptions = {
+	value?: SliderValue | null;
+	min?: number;
+	max?: number;
+	step?: number;
+	thumbs?: number;
+	minStepsBetweenThumbs?: number;
+	orientation?: SliderOrientation;
+	formatValue?: SliderFormatValue;
+};
+
+const DEFAULT_MIN = 0;
+const DEFAULT_MAX = 100;
+const DEFAULT_STEP = 1;
+
+const getFiniteNumber = (value: number | null | undefined, fallback: number) =>
+	typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+const getDecimalPlaces = (value: number) => {
+	const normalizedValue = value.toString().toLowerCase();
+	if (normalizedValue.includes('e-')) {
+		return Number(normalizedValue.split('e-')[1]);
+	}
+	return normalizedValue.split('.')[1]?.length ?? 0;
+};
+
+export class SliderState extends createBindableStateClass<SliderStateOptions>() {
+	activeThumb = $state<number | null>(null);
+	dragState = $state<SliderDragState | null>(null);
+
+	minValue = $derived(getFiniteNumber(this.min, DEFAULT_MIN));
+	maxValue = $derived(Math.max(this.minValue, getFiniteNumber(this.max, DEFAULT_MAX)));
+	stepValue = $derived.by(() => {
+		const step = getFiniteNumber(this.step, DEFAULT_STEP);
+		return step > 0 ? step : DEFAULT_STEP;
+	});
+	valuePrecision = $derived(
+		Math.max(getDecimalPlaces(this.minValue), getDecimalPlaces(this.stepValue))
+	);
+	thumbCount = $derived.by(() => {
+		if (Array.isArray(this.value) && this.value.length > 0) return this.value.length;
+		const thumbs = getFiniteNumber(this.thumbs, 1);
+		return Math.max(1, Math.floor(thumbs));
+	});
+	minDistance = $derived.by(() => {
+		const requestedDistance =
+			Math.max(0, getFiniteNumber(this.minStepsBetweenThumbs, 0)) * this.stepValue;
+		const availableDistance = this.maxValue - this.minValue;
+		const maxDistance =
+			this.thumbCount <= 1 ? requestedDistance : availableDistance / (this.thumbCount - 1);
+		return Math.min(requestedDistance, maxDistance);
+	});
+	orientationValue = $derived<SliderOrientation>(
+		this.orientation === 'vertical' ? 'vertical' : 'horizontal'
+	);
+	values = $derived.by(() => this.getNormalizedValues());
+	isRange = $derived(this.values.length > 1);
+	fieldType = $derived<'slider' | 'slider-range'>(this.isRange ? 'slider-range' : 'slider');
+	fieldValue: SliderValue = $derived(
+		this.isRange ? this.values : (this.values[0] ?? this.minValue)
+	);
+	startPercentage = $derived(this.getPercentage(this.values[0] ?? this.minValue));
+	endPercentage = $derived(
+		this.getPercentage(this.values[this.values.length - 1] ?? this.minValue)
+	);
+	valuePayloads: SliderValuePayload[] = $derived.by(() =>
+		this.values.map((value, index) => this.getValuePayload(index, value))
+	);
+	valuePayload: SliderValuePayload = $derived(
+		this.valuePayloads[0] ?? this.getValuePayload(0, this.minValue)
+	);
+	rangePayload: SliderRangePayload = $derived({
+		values: this.values,
+		startValue: this.values[0] ?? this.minValue,
+		endValue: this.values[this.values.length - 1] ?? this.minValue,
+		startPercentage: this.startPercentage,
+		endPercentage: this.endPercentage,
+		formatted: this.values
+			.map((value, index) => this.getFormattedValue(value, index, this.values))
+			.join(' - ')
+	});
+
+	getNormalizedValues() {
+		const rawValues = this.getRawValues();
+		const normalizedValues = rawValues.map((value) => this.normalize(value)).sort((a, b) => a - b);
+		return this.constrainValues(normalizedValues);
+	}
+
+	getRawValues() {
+		if (Array.isArray(this.value) && this.value.length > 0) {
+			return this.getAdjustedValueCount(this.value);
+		}
+		if (typeof this.value === 'number') {
+			return this.getAdjustedValueCount([this.value]);
+		}
+		return this.getDefaultValues(this.thumbCount);
+	}
+
+	getAdjustedValueCount(values: number[]) {
+		const sanitizedValues = values.filter((value) => Number.isFinite(value));
+		if (sanitizedValues.length === this.thumbCount) return sanitizedValues;
+		if (sanitizedValues.length > this.thumbCount) return sanitizedValues.slice(0, this.thumbCount);
+
+		const defaults = this.getDefaultValues(this.thumbCount);
+		return [...sanitizedValues, ...defaults.slice(sanitizedValues.length)];
+	}
+
+	getDefaultValues(count: number) {
+		if (count <= 1) return [this.minValue];
+		const range = this.maxValue - this.minValue;
+		return Array.from({ length: count }, (_, index) =>
+			this.normalize(this.minValue + (range * index) / (count - 1))
+		);
+	}
+
+	constrainValues(values: number[]) {
+		const nextValues = [...values];
+		for (let index = 1; index < nextValues.length; index += 1) {
+			nextValues[index] = Math.max(nextValues[index], nextValues[index - 1] + this.minDistance);
+		}
+		for (let index = nextValues.length - 2; index >= 0; index -= 1) {
+			nextValues[index] = Math.min(nextValues[index], nextValues[index + 1] - this.minDistance);
+		}
+		return nextValues.map((value) => this.normalize(value));
+	}
+
+	normalize(value: number) {
+		const clamped = this.clamp(value);
+		const stepped =
+			this.minValue + Math.round((clamped - this.minValue) / this.stepValue) * this.stepValue;
+		return this.clamp(Number(stepped.toFixed(this.valuePrecision)));
+	}
+
+	normalizeDelta(delta: number) {
+		const stepped = Math.round(delta / this.stepValue) * this.stepValue;
+		return Number(stepped.toFixed(this.valuePrecision));
+	}
+
+	clamp(value: number) {
+		return Math.min(this.maxValue, Math.max(this.minValue, value));
+	}
+
+	getPercentage(value: number) {
+		const range = this.maxValue - this.minValue;
+		if (range === 0) return 0;
+		return ((this.clamp(value) - this.minValue) / range) * 100;
+	}
+
+	getValueFromPercentage(percentage: number) {
+		const clampedPercentage = Math.min(100, Math.max(0, percentage));
+		return this.normalize(
+			this.minValue + ((this.maxValue - this.minValue) * clampedPercentage) / 100
+		);
+	}
+
+	getFormattedValue(value: number, index: number, values: number[]) {
+		return this.formatValue?.(value, index, values) ?? `${value}`;
+	}
+
+	getValuePayload(index: number, value = this.values[index] ?? this.minValue): SliderValuePayload {
+		const thumbBounds = this.getThumbBounds(index);
+		return {
+			value,
+			values: this.values,
+			index,
+			min: this.minValue,
+			max: this.maxValue,
+			step: this.stepValue,
+			percentage: this.getPercentage(value),
+			formatted: this.getFormattedValue(value, index, this.values),
+			isRange: this.isRange,
+			thumbMin: thumbBounds.min,
+			thumbMax: thumbBounds.max
+		};
+	}
+
+	getThumbBounds(index: number) {
+		const previousValue = this.values[index - 1];
+		const nextValue = this.values[index + 1];
+
+		return {
+			min:
+				typeof previousValue === 'number'
+					? this.normalize(previousValue + this.minDistance)
+					: this.minValue,
+			max:
+				typeof nextValue === 'number' ? this.normalize(nextValue - this.minDistance) : this.maxValue
+		};
+	}
+
+	markPayload(mark: { value: number }) {
+		const value = this.clamp(mark.value);
+		return {
+			...this.valuePayload,
+			value,
+			percentage: this.getPercentage(value),
+			formatted: this.getFormattedValue(value, 0, this.values)
+		};
+	}
+
+	getClosestThumbIndex(value: number) {
+		let closestIndex = 0;
+		let closestDistance = Number.POSITIVE_INFINITY;
+		this.values.forEach((thumbValue, index) => {
+			const distance = Math.abs(thumbValue - value);
+			if (distance < closestDistance) {
+				closestIndex = index;
+				closestDistance = distance;
+			}
+		});
+		return closestIndex;
+	}
+
+	setThumbValue(index: number, nextValue: number) {
+		const nextValues = [...this.values];
+		const previousValue = nextValues[index - 1] ?? this.minValue - this.minDistance;
+		const nextThumbValue = nextValues[index + 1] ?? this.maxValue + this.minDistance;
+		const constrainedValue = Math.min(
+			nextThumbValue - this.minDistance,
+			Math.max(previousValue + this.minDistance, nextValue)
+		);
+
+		nextValues[index] = this.normalize(constrainedValue);
+		this.setValues(nextValues);
+	}
+
+	setValues(nextValues: number[]) {
+		const constrainedValues = this.constrainValues(nextValues);
+		if (this.thumbCount === 1) {
+			this.value = constrainedValues[0] ?? this.minValue;
+			return;
+		}
+		this.value = constrainedValues;
+	}
+
+	startTrackDrag(pointerValue: number) {
+		const index = this.getClosestThumbIndex(pointerValue);
+		this.setThumbValue(index, pointerValue);
+		this.startThumbDrag(index);
+		return index;
+	}
+
+	startThumbDrag(index: number) {
+		this.activeThumb = index;
+		this.dragState = { type: 'thumb', index };
+	}
+
+	startRangeDrag(pointerValue: number) {
+		if (this.values.length <= 1) return false;
+		this.dragState = {
+			type: 'range',
+			pointerValue,
+			values: [...this.values]
+		};
+		return true;
+	}
+
+	moveRange(delta: number) {
+		if (this.values.length <= 1) return;
+		const firstValue = this.dragState?.type === 'range' ? this.dragState.values[0] : this.values[0];
+		const lastValue =
+			this.dragState?.type === 'range'
+				? this.dragState.values[this.dragState.values.length - 1]
+				: this.values[this.values.length - 1];
+
+		const minDelta = this.minValue - firstValue;
+		const maxDelta = this.maxValue - lastValue;
+		const clampedDelta = this.normalizeDelta(Math.min(maxDelta, Math.max(minDelta, delta)));
+		const startValues = this.dragState?.type === 'range' ? this.dragState.values : this.values;
+		this.setValues(startValues.map((value) => this.normalize(value + clampedDelta)));
+	}
+
+	updateDrag(pointerValue: number) {
+		if (!this.dragState) return false;
+		if (this.dragState.type === 'range') {
+			this.moveRange(pointerValue - this.dragState.pointerValue);
+			return true;
+		}
+		this.setThumbValue(this.dragState.index, pointerValue);
+		return true;
+	}
+
+	endDrag() {
+		this.dragState = null;
+	}
+
+	applyThumbKey(index: number, key: string, shiftKey: boolean) {
+		const currentValue = this.values[index] ?? this.minValue;
+		const stepSize = shiftKey ? this.stepValue * 10 : this.stepValue;
+		let nextValue = currentValue;
+
+		if (key === 'ArrowRight' || key === 'ArrowUp') {
+			nextValue = currentValue + stepSize;
+		} else if (key === 'ArrowLeft' || key === 'ArrowDown') {
+			nextValue = currentValue - stepSize;
+		} else if (key === 'PageUp') {
+			nextValue = currentValue + this.stepValue * 10;
+		} else if (key === 'PageDown') {
+			nextValue = currentValue - this.stepValue * 10;
+		} else if (key === 'Home') {
+			nextValue = this.minValue;
+		} else if (key === 'End') {
+			nextValue = this.maxValue;
+		} else {
+			return false;
+		}
+
+		this.activeThumb = index;
+		this.setThumbValue(index, nextValue);
+		return true;
+	}
+
+	validate(
+		value: FieldValue<'slider' | 'slider-range'>,
+		onValidate?: (value: FieldValue<'slider' | 'slider-range'>) => string[] | boolean
+	) {
+		const values = Array.isArray(value) ? value : [value];
+		if (
+			values.some(
+				(value) => typeof value !== 'number' || value < this.minValue || value > this.maxValue
+			)
+		) {
+			return true;
+		}
+		return onValidate?.(value) || false;
+	}
+}

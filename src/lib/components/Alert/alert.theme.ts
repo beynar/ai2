@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultAlert = cva({
 	base: 'relative w-full rounded-lg border px-4 py-3 text-sm flex gap-3 items-start',
@@ -9,17 +9,17 @@ const defaultAlert = cva({
 			false: ''
 		},
 		color: {
-			primary: 'bg-primary text-primary-fg border-primary',
-			secondary: 'bg-secondary text-secondary-fg border-secondary',
-			contrast: 'bg-contrast text-contrast-fg border-contrast',
-			surface: 'bg-surface text-color-fg border-surface-muted',
-			danger: 'bg-danger text-danger-fg border-danger',
-			success: 'bg-success text-success-fg border-success',
-			warning: 'bg-warning text-warning-fg border-warning',
-			info: 'bg-info text-info-fg border-info'
+			primary: 'bg-primary text-primary-contrast border-primary',
+			secondary: 'bg-secondary text-secondary-contrast border-secondary',
+			foreground: 'bg-foreground text-foreground-contrast border-foreground',
+			background: 'bg-background text-color-contrast border-background-muted',
+			danger: 'bg-danger text-danger-contrast border-danger',
+			success: 'bg-success text-success-contrast border-success',
+			warning: 'bg-warning text-warning-contrast border-warning',
+			info: 'bg-info text-info-contrast border-info'
 		},
 		variant: {
-			solid: 'bg-color text-color-fg border-color',
+			solid: 'bg-color text-color-contrast border-color',
 			outline: 'bg-transparent border-color text-color',
 			soft: 'bg-color-muted text-color border-transparent'
 		},
@@ -43,31 +43,31 @@ const defaultAlert = cva({
 	},
 	defaultVariants: {
 		hasIcon: false,
-		color: 'surface',
+		color: 'background',
 		variant: 'solid',
 		size: 'normal',
 		disabled: false
 	},
 	compoundVariants: [
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'solid',
-			class: 'bg-surface border-surface-muted'
+			class: 'bg-background border-background-muted'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'outline',
-			class: 'border-surface-muted text-contrast'
+			class: 'border-background-muted text-foreground'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'soft',
-			class: 'bg-surface-lighter text-color-fg'
+			class: 'bg-background-lighter text-color-contrast'
 		},
 		{
-			color: 'contrast',
+			color: 'foreground',
 			variant: 'outline',
-			class: 'border-contrast/50'
+			class: 'border-foreground/50'
 		},
 		{
 			color: 'danger',
@@ -131,7 +131,7 @@ const defaultAlertDescription = cva({
 });
 
 export const alertTheme = {
-	alert: defaultAlert,
+	root: defaultAlert,
 	prefix: defaultAlertPrefix,
 	content: defaultAlertContent,
 	title: defaultAlertTitle,
@@ -141,4 +141,4 @@ export const alertTheme = {
 export type AlertTheme = typeof alertTheme;
 export type AlertThemeProps = InferComponentTheme<AlertTheme>;
 export const setAlertTheme = setComponentTheme<AlertTheme>('alert');
-export const useAlertTheme = useComponentTheme('alert', alertTheme);
+export const useAlertTheme = useComponentTheme<AlertTheme>('alert', alertTheme);

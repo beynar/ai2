@@ -5,7 +5,7 @@
 	let {
 		onChange = null,
 		class: className,
-		color = 'surface',
+		color = 'background',
 		prefix,
 		suffix,
 		children,
@@ -30,7 +30,7 @@
 	data-color={color}
 	data-checked={checked}
 	{disabled}
-	class={classes.button({
+	class={classes.root({
 		color,
 		checked,
 		squared: isSquared,
@@ -47,13 +47,7 @@
 	}}
 	{...attachments}
 >
-	<Slot
-		render={prefix}
-		class={classes.prefix({ size, checked })}
-	/>
+	<Slot render={prefix} class={classes.prefix({ size, checked })} />
 	<Slot render={children} />
-	<Slot
-		render={suffix}
-		class={classes.suffix({ size, checked })}
-	/>
+	<Slot render={suffix} class={classes.suffix({ size, checked })} />
 </button>

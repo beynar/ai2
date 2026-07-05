@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
 	import { Table } from '$lib/components/Table/index.js';
 	import { Button } from '$lib/components/Button/index.js';
 	import { TextInput } from '$lib/components/Form/TextInput/index.js';
@@ -109,37 +111,60 @@
 	];
 </script>
 
-<div class="mx-auto max-w-6xl space-y-12 p-8">
-	<div>
-		<h1 class="mb-2 text-3xl font-bold">Table Component</h1>
-		<p class="text-contrast/70 mb-8">
-			A flexible table component for displaying structured data with support for headers, footers,
-			and customizable rows.
-		</p>
-	</div>
+<DocPage
+	title="Table"
+	subtitle="Displays tabular data in rows and columns."
+	component="Table"
+	features={[
+		'Semantic table, thead, tbody, tfoot',
+		'Optional caption element for context',
+		'Prefix & suffix slots for controls',
+		'Strings, snippets, or cell objects',
+		'Custom row content slot support'
+	]}
+>
+	<ComponentCard
+		description="Simple table with header and rows using string syntax."
+		code={`<Table
+  header={{
+    name: 'Name',
+    email: 'Email',
+    role: 'Role'
+  }}
+  items={[
+    {
+      cells: {
+        name: 'John Doe',
+        email: 'john@example.com',
+        role: 'Admin'
+      }
+    },
+    {
+      cells: {
+        name: 'Jane Smith',
+        email: 'jane@example.com',
+        role: 'User'
+      }
+    },
+    {
+      cells: {
+        name: 'Bob Johnson',
+        email: 'bob@example.com',
+        role: 'Editor'
+      }
+    }
+  ]}
+/>`}
+	>
+		<Table header={basicHeader} items={basicRows} />
+	</ComponentCard>
 
-	<!-- Basic Table -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Basic Table</h2>
-			<p class="text-contrast/70 text-sm">
-				Simple table with header and rows using simplified string syntax.
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
-			<Table header={basicHeader} rows={basicRows} />
-		</div>
-	</section>
+	{#snippet examples()}
+		<ComponentCard description="Simple table with header and rows using simplified string syntax.">
+			<Table header={basicHeader} items={basicRows} />
+		</ComponentCard>
 
-	<!-- Table with Mixed Formats -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Table with Mixed Cell Formats</h2>
-			<p class="text-contrast/70 text-sm">
-				Demonstrates using strings, snippets, and full objects for cells.
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
+		<ComponentCard description="Demonstrates using strings, snippets, and full objects for cells.">
 			{#snippet statusBadge()}
 				<span class="text-success">✓ Active</span>
 			{/snippet}
@@ -149,7 +174,7 @@
 					status: { content: statusBadge },
 					date: { content: 'Date', class: 'w-32' }
 				}}
-				rows={[
+				items={[
 					{
 						cells: {
 							name: 'John Doe',
@@ -159,43 +184,20 @@
 					}
 				]}
 			/>
-		</div>
-	</section>
+		</ComponentCard>
 
-	<!-- Table with Footer -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Table with Footer</h2>
-			<p class="text-contrast/70 text-sm">
-				Table with header, rows, and footer for totals or summaries.
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
-			<Table header={salesHeader} rows={salesRows} footer={salesFooter} />
-		</div>
-	</section>
+		<ComponentCard description="Table with header, rows, and footer for totals or summaries.">
+			<Table header={salesHeader} items={salesRows} footer={salesFooter} />
+		</ComponentCard>
 
-	<!-- Table with Caption -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Table with Caption</h2>
-			<p class="text-contrast/70 text-sm">Table with a caption for accessibility and context.</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
-			<Table caption="User Management Table" header={basicHeader} rows={basicRows}></Table>
-		</div>
-	</section>
+		<ComponentCard description="Table with a caption for accessibility and context.">
+			<Table caption="User Management Table" header={basicHeader} items={basicRows}></Table>
+		</ComponentCard>
 
-	<!-- Table with Prefix and Suffix -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Table with Prefix and Suffix</h2>
-			<p class="text-contrast/70 text-sm">
-				Table with prefix (for search/filter) and suffix (for pagination) slots.
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
-			<Table header={basicHeader} rows={basicRows}>
+		<ComponentCard
+			description="Table with prefix (for search/filter) and suffix (for pagination) slots."
+		>
+			<Table header={basicHeader} items={basicRows}>
 				{#snippet prefix()}
 					<div class="mb-4">
 						<TextInput placeholder="Search users..." />
@@ -203,7 +205,7 @@
 				{/snippet}
 				{#snippet suffix()}
 					<div class="mt-4 flex items-center justify-between">
-						<span class="text-contrast/70 text-sm">Showing 1-3 of 3</span>
+						<span class="text-foreground/70 text-sm">Showing 1-3 of 3</span>
 						<div class="flex gap-2">
 							<Button size="small" variant="outline">Previous</Button>
 							<Button size="small" variant="outline">Next</Button>
@@ -211,19 +213,11 @@
 					</div>
 				{/snippet}
 			</Table>
-		</div>
-	</section>
+		</ComponentCard>
 
-	<!-- Table with Custom Row Content -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Table with Custom Row Content</h2>
-			<p class="text-contrast/70 text-sm">
-				Table using custom row content slots for flexible rendering (mixing cells array and content
-				slot).
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
+		<ComponentCard
+			description="Table using custom row content slots for flexible rendering (mixing cells array and content slot)."
+		>
 			{#snippet customRow1()}
 				<td>Custom Row 1</td>
 				<td>Custom Content</td>
@@ -237,7 +231,7 @@
 					description: 'Description',
 					actions: 'Actions'
 				}}
-				rows={[
+				items={[
 					{ content: customRow1 },
 					{
 						cells: {
@@ -248,32 +242,16 @@
 					}
 				]}
 			/>
-		</div>
-	</section>
+		</ComponentCard>
 
-	<!-- Table with Custom Classes -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Table with Custom Classes</h2>
-			<p class="text-contrast/70 text-sm">
-				Table with custom CSS classes on cells and rows for styling.
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
-			<Table header={customHeader} rows={customRows} />
-		</div>
-	</section>
+		<ComponentCard description="Table with custom CSS classes on cells and rows for styling.">
+			<Table header={customHeader} items={customRows} />
+		</ComponentCard>
 
-	<!-- Complete Example -->
-	<section class="space-y-4">
-		<div>
-			<h2 class="mb-2 text-2xl font-semibold">Complete Example</h2>
-			<p class="text-contrast/70 text-sm">
-				Table with all features: header, rows, footer, caption, prefix, and suffix.
-			</p>
-		</div>
-		<div class="border-surface-muted bg-surface rounded-lg border p-6">
-			<Table header={salesHeader} rows={salesRows} footer={salesFooter}>
+		<ComponentCard
+			description="Table with all features: header, rows, footer, caption, prefix, and suffix."
+		>
+			<Table header={salesHeader} items={salesRows} footer={salesFooter}>
 				{#snippet caption()}
 					Sales Report - January 2024
 				{/snippet}
@@ -285,7 +263,7 @@
 				{/snippet}
 				{#snippet suffix()}
 					<div class="mt-4 flex items-center justify-between border-t pt-4">
-						<span class="text-contrast/70 text-sm">Total items: 3</span>
+						<span class="text-foreground/70 text-sm">Total items: 3</span>
 						<div class="flex gap-2">
 							<Button size="small" variant="outline">Previous</Button>
 							<Button size="small" variant="outline">Next</Button>
@@ -293,6 +271,6 @@
 					</div>
 				{/snippet}
 			</Table>
-		</div>
-	</section>
-</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

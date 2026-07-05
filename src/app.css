@@ -1,22 +1,42 @@
 @import 'tailwindcss';
 
-@plugin './lib/tailwind/index' {
-	default: true;
-	eas: true;
-}
-
 @plugin './lib/tailwind/theme' {
 	name: light;
 	default: true;
-	radius: normal;
 	spacing: normal;
 	colorscheme: light;
+
+	background: #f7f8fa;
+
+	foreground: #1b1d29;
+	primary: #6d78d5;
+	secondary: #eceef4;
+	danger: #dc2626;
+	success: #16a34a;
+	warning: #d97706;
+	info: #0284c7;
 }
 @plugin './lib/tailwind/theme' {
 	name: dark;
-	radius: normal;
 	spacing: normal;
 	colorscheme: dark;
+	background: #15161c;
+	foreground: #ffffff;
+	primary: #6b77ff;
+	secondary: #272a3a;
+	danger: #7f1d1d;
+	success: #22c55e;
+	warning: #f5a623;
+	info: #38bdf8;
+}
+
+@utility dotted-grid {
+	background-image: radial-gradient(
+		color-mix(in oklab, var(--color-foreground) 9%, transparent) 1px,
+		transparent 1px
+	);
+	background-size: 16px 16px;
+	background-position: -8px -8px;
 }
 
 meter {

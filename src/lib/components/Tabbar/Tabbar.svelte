@@ -6,7 +6,7 @@
 	import type { Snippet } from 'svelte';
 
 	let {
-		tabs,
+		items,
 		activeTab = $bindable(0),
 		onChange,
 		size = 'normal',
@@ -33,27 +33,25 @@
 		rel?: string;
 	};
 
-	// Normalize tabs to always work with objects
+	// Normalize tab items to always work with objects
 	const normalizedTabs = $derived(
-		tabs.map(
-			(tab): NormalizedTab =>
-				typeof tab === 'string'
-					? { label: tab, prefix: undefined, suffix: undefined, href: undefined, disabled: false }
-					: {
-							label: tab.label,
-							prefix: tab.prefix,
-							suffix: tab.suffix,
-							href: tab.href,
-							disabled: tab.disabled ?? false,
-							target: tab.target,
-							rel: tab.rel
-						}
+		items.map((tab): NormalizedTab =>
+			typeof tab === 'string'
+				? { label: tab, prefix: undefined, suffix: undefined, href: undefined, disabled: false }
+				: {
+						label: tab.label,
+						prefix: tab.prefix,
+						suffix: tab.suffix,
+						href: tab.href,
+						disabled: tab.disabled ?? false,
+						target: tab.target,
+						rel: tab.rel
+					}
 		)
 	);
 
 	// Navigation hook for keyboard support
 	const navigation = useNavigation({
-		enabled: () => false,
 		orientation: () => orientation,
 		loop: true,
 		id,
@@ -77,7 +75,7 @@
 </script>
 
 <div
-	class={classes.tabbar({ orientation, alignment, size, className, fullWidth })}
+	class={classes.root({ orientation, alignment, size, className, fullWidth })}
 	role="tablist"
 	aria-orientation={orientation}
 	{@attach navigation.containerReference}

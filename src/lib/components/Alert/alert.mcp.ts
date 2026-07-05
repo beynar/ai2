@@ -19,7 +19,7 @@ The Alert component displays important messages and notifications to users. It s
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' (default: 'surface')
+- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'background')
   - Determines the color scheme of the alert
   - danger: For error messages
   - success: For success messages
@@ -239,7 +239,7 @@ The grid layout:
 
 ### Alert without Icon
 \`\`\`svelte
-<Alert color="surface" variant="soft">
+<Alert color="background" variant="soft">
 	{#snippet title()}
 		No Icon Alert
 	{/snippet}
@@ -264,7 +264,7 @@ The grid layout:
 ## Accessibility
 
 - The alert container has \`role="alert"\` attribute for screen readers
-- Icons inherit text color via \`text-current\` for proper contrast
+- Icons inherit text color via \`text-current\` for proper foreground
 - Description text uses muted foreground color for visual hierarchy
 - The component uses semantic HTML structure with data attributes for styling hooks
 
@@ -284,7 +284,7 @@ The Alert component uses a theme object that can be customized using the \`theme
 ### Theme Structure
 
 The theme object contains the following parts:
-- **alert**: Main alert container styles
+- **root**: Main alert container styles
 - **prefix**: Icon/prefix content styles
 - **content**: Content wrapper styles
 - **title**: Alert title text styles
@@ -297,18 +297,18 @@ import type { AlertThemeProps } from 'svelai/alert';
 
 // Example theme customization
 const customTheme: AlertThemeProps = {
-  alert: {
+  root: {
     base: 'custom-base-classes',
     hasIcon: {
       true: '',
       false: ''
     },
     color: {
-      primary: 'bg-primary text-primary-fg border-primary',
-      danger: 'bg-danger text-danger-fg border-danger'
+      primary: 'bg-primary text-primary-contrast border-primary',
+      danger: 'bg-danger text-danger-contrast border-danger'
     },
     variant: {
-      solid: 'bg-color text-color-fg border-color',
+      solid: 'bg-color text-color-contrast border-color',
       outline: 'bg-transparent border-color text-color',
       soft: 'bg-color-muted text-color border-transparent'
     },
@@ -356,11 +356,11 @@ const customTheme: AlertThemeProps = {
 
 ### Available Variants
 
-**alert**:
+**root**:
 - base: Base classes applied to all alerts
 - Variants:
   - hasIcon: boolean - Grid layout adjustment when icon is present
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' - Visual style variant
   - size: 'small' | 'normal' | 'large' - Controls padding and text size
   - disabled: boolean - Disabled state styling
@@ -391,7 +391,7 @@ const customTheme: AlertThemeProps = {
 \`\`\`svelte
 <Alert 
   theme={{
-    alert: {
+    root: {
       base: 'rounded-xl shadow-lg',
       variant: {
         solid: 'border-2'
@@ -416,7 +416,7 @@ const customTheme: AlertThemeProps = {
   color="danger"
   variant="soft"
   theme={{
-    alert: {
+    root: {
       variant: {
         soft: 'bg-red-50 border-red-200 text-red-800'
       }
@@ -443,7 +443,7 @@ const customTheme: AlertThemeProps = {
   import { setAlertTheme } from 'svelai/alert';
   
   setAlertTheme({
-    alert: {
+    root: {
       base: 'rounded-lg transition-all',
       variant: {
         solid: 'shadow-md',

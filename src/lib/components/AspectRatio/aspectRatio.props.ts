@@ -14,6 +14,9 @@ export type AspectRatioRatio =
 	| '1x2';
 
 type AspectRatioBaseProps = {
+	/**
+	 * Bindable reference to the root aspect ratio container element.
+	 */
 	ref?: HTMLElement | null;
 	/**
 	 * The class name of the aspect ratio container
@@ -23,6 +26,9 @@ type AspectRatioBaseProps = {
 	 * Specify the aspect ratio
 	 */
 	ratio?: AspectRatioRatio;
+	/**
+	 * Theme overrides for the container and content slots.
+	 */
 	theme?: AspectRatioThemeProps;
 };
 

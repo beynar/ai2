@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultContainer = cva({
 	base: 'relative flex items-center overflow-hidden gap-1'
@@ -21,10 +21,10 @@ const defaultNavigationButton = cva({
 			default: 'w-8 h-8'
 		},
 		color: {
-			surface: 'text-surface-muted  active:bg-surface-muted/10',
+			background: 'text-background-muted  active:bg-background-muted/10',
 			primary: 'text-primary ',
 			secondary: 'text-secondary ',
-			contrast: 'text-contrast /20',
+			foreground: 'text-foreground /20',
 			danger: 'text-danger ',
 			success: 'text-success ',
 			warning: 'text-warning ',
@@ -83,8 +83,8 @@ const defaultDot = cva({
 		color: {
 			primary: 'bg-primary',
 			secondary: 'bg-secondary',
-			contrast: 'bg-contrast',
-			surface: 'bg-surface',
+			foreground: 'bg-foreground',
+			background: 'bg-background',
 			danger: 'bg-danger',
 			success: 'bg-success',
 			warning: 'bg-warning',
@@ -103,7 +103,7 @@ const defaultDot = cva({
 });
 
 export const carouselTheme = {
-	container: defaultContainer,
+	root: defaultContainer,
 	slider: defaultSlider,
 	navigationButton: defaultNavigationButton,
 	dots: defaultDots,
@@ -113,4 +113,4 @@ export const carouselTheme = {
 export type CarouselTheme = typeof carouselTheme;
 export type CarouselThemeProps = InferComponentTheme<CarouselTheme>;
 export const setCarouselTheme = setComponentTheme<CarouselTheme>('carousel');
-export const useCarouselTheme = useComponentTheme('carousel', carouselTheme);
+export const useCarouselTheme = useComponentTheme<CarouselTheme>('carousel', carouselTheme);

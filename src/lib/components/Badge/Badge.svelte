@@ -5,7 +5,7 @@
 
 	let {
 		position = 'topRight',
-		color = 'contrast',
+		color = 'foreground',
 		size = 'normal',
 		variant = 'solid',
 		class: className,
@@ -23,7 +23,7 @@
 	data-color={color}
 	data-size={size}
 	data-variant={variant}
-	class={classes.badge({ className, color, size, variant, position })}
+	class={classes.root({ className, color, size, variant, position })}
 	{...attachments}
 >
 	<Slot render={children} />

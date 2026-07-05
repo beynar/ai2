@@ -1,41 +1,45 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultCode = cva({
-	base: 'my-4 w-full overflow-hidden rounded-lg border border-surface-muted flex flex-col'
+	// `group` + `relative` support the floating copy button on headerless blocks.
+	base: 'group relative my-4 flex w-full flex-col overflow-hidden rounded-lg border border-background-muted bg-background'
+});
+
+// Floating copy button for headerless blocks: top-right, revealed on hover/focus.
+const defaultCodeFloatingCopy = cva({
+	base: 'absolute top-2 right-2 z-10 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100'
 });
 
 const defaultCodeHeader = cva({
-	base: 'flex items-center justify-between bg-surface-muted px-2 py-1 text-contrast-muted text-xs'
+	base: 'flex items-center justify-between gap-2 border-b border-background-muted bg-background-muted px-3 py-1.5 text-xs text-foreground-muted'
+});
+
+const defaultCodeTitle = cva({
+	base: 'font-mono'
+});
+
+const defaultCodeContainer = cva({
+	// The scroll + padding live on the inner Shiki <pre> (via the highlighter's pre transformer)
+	// so the focusable node is the scroller; the container is just the surface. `tab-size` is
+	// driven by a CSS var set on the root (defaults to 2).
+	base: 'min-w-0 bg-background text-sm [&_pre]:!bg-transparent [&_pre]:[tab-size:var(--code-tab-size,2)] [&_code]:font-mono'
 });
 
 const defaultCodeFooter = cva({
-	base: 'flex items-center justify-between bg-surface-muted px-2 py-1 text-contrast-muted text-xs'
-});
-
-const defaultContainer = cva({
-	base: 'h-fit w-full bg-surface p-2 font-mono text-sm'
-});
-
-const defaultPre = cva({
-	base: 'overflow-x-auto font-mono p-0'
-});
-
-const defaultCodeLine = cva({
-	base: 'block'
+	base: 'flex items-center justify-between gap-2 border-t border-background-muted bg-background-muted px-3 py-1.5 text-xs text-foreground-muted'
 });
 
 export const codeTheme = {
-	code: defaultCode,
+	root: defaultCode,
 	header: defaultCodeHeader,
-	line: defaultCodeLine,
-	pre: defaultPre,
+	title: defaultCodeTitle,
+	container: defaultCodeContainer,
 	footer: defaultCodeFooter,
-	container: defaultContainer
+	floatingCopy: defaultCodeFloatingCopy
 };
 
 export type CodeTheme = typeof codeTheme;
 export type CodeThemeProps = InferComponentTheme<CodeTheme>;
 export const setCodeTheme = setComponentTheme<CodeTheme>('code');
-export const useCodeTheme = useComponentTheme('code', codeTheme);
-
+export const useCodeTheme = useComponentTheme<CodeTheme>('code', codeTheme);

@@ -44,13 +44,13 @@ The Avatar component displays a user's profile picture with fallback initials. I
 ## AvatarGroup Props
 
 ### Core Props
-- **users**: Array<{ name: string; avatar?: string } & T> (required) - Array of user objects
+- **items**: Array<{ name: string; avatar?: string } & T> (required) - Array of user objects
 - **max**: number - Maximum number of avatars to show before "+N" indicator
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
 
 ### Content Slots
-- **avatar**: Snippet<{ user: T; index: number; avatarProps }> - Custom avatar rendering
-- **remainingCount**: Snippet<{ users: T[]; remaining: number }> - Custom "+N" counter rendering
+- **root**: Snippet<{ user: T; index: number; avatarProps }> - Custom avatar rendering
+- **remainingCount**: Snippet<{ items: T[]; remaining: number }> - Custom "+N" counter rendering
 
 ### Styling Props
 - **class**: string - Additional CSS classes
@@ -121,20 +121,20 @@ The Avatar component displays a user's profile picture with fallback initials. I
 ### Avatar Group
 \`\`\`svelte
 <script>
-	let users = [
+	let items = [
 		{ name: 'John Doe', avatar: '/john.jpg' },
 		{ name: 'Jane Smith', avatar: '/jane.jpg' },
 		{ name: 'Bob Johnson', avatar: '/bob.jpg' }
 	];
 </script>
 
-<AvatarGroup {users} />
+<AvatarGroup {items} />
 \`\`\`
 
 ### Avatar Group with Max Limit
 \`\`\`svelte
 <AvatarGroup 
-	users={[
+	items={[
 		{ name: 'User 1' },
 		{ name: 'User 2' },
 		{ name: 'User 3' },
@@ -148,7 +148,7 @@ The Avatar component displays a user's profile picture with fallback initials. I
 
 ### Custom Avatar in Group
 \`\`\`svelte
-<AvatarGroup {users}>
+<AvatarGroup {items}>
 	{#snippet avatar({ user, index, avatarProps })}
 		<Avatar {...avatarProps} user={user}>
 			{#snippet suffix()}
@@ -161,8 +161,8 @@ The Avatar component displays a user's profile picture with fallback initials. I
 
 ### Custom Remaining Count
 \`\`\`svelte
-<AvatarGroup {users} max={3}>
-	{#snippet remainingCount({ remaining, users })}
+<AvatarGroup {items} max={3}>
+	{#snippet remainingCount({ remaining, items })}
 		<div class="avatar-count">
 			+{remaining} more
 		</div>
@@ -174,13 +174,13 @@ The Avatar component displays a user's profile picture with fallback initials. I
 \`\`\`svelte
 <Avatar user={{ name: 'Online User' }}>
 	{#snippet suffix()}
-		<div class="w-3 h-3 rounded-full bg-success border-2 border-surface"></div>
+		<div class="w-3 h-3 rounded-full bg-success border-2 border-background"></div>
 	{/snippet}
 </Avatar>
 
 <Avatar user={{ name: 'Away User' }}>
 	{#snippet suffix()}
-		<div class="w-3 h-3 rounded-full bg-warning border-2 border-surface"></div>
+		<div class="w-3 h-3 rounded-full bg-warning border-2 border-background"></div>
 	{/snippet}
 </Avatar>
 \`\`\`
@@ -189,7 +189,7 @@ The Avatar component displays a user's profile picture with fallback initials. I
 
 - Automatically generates alt text from user name
 - Fallback to initials when image fails to load
-- Proper contrast for initials display
+- Proper foreground for initials display
 - Image loading states are tracked
 
 ## Notes
@@ -208,7 +208,7 @@ The Avatar component uses a theme object that can be customized using the \`them
 ### Theme Structure
 
 The theme object contains the following parts:
-- **avatar**: Main avatar container styles
+- **root**: Main avatar container styles
 - **avatarImage**: Avatar image element styles
 - **avatarPrefix**: Prefix badge styles (bottom-left)
 - **avatarSuffix**: Suffix badge styles (bottom-right)
@@ -221,7 +221,7 @@ import type { AvatarThemeProps } from 'svelai/avatar';
 
 // Example theme customization
 const customTheme: AvatarThemeProps = {
-  avatar: {
+  root: {
     base: 'custom-base-classes',
     size: {
       small: 'size-6',
@@ -262,7 +262,7 @@ const customTheme: AvatarThemeProps = {
 
 ### Available Variants
 
-**avatar**:
+**root**:
 - base: Base classes applied to all avatars
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls avatar dimensions (6/8/10)
@@ -294,7 +294,7 @@ const customTheme: AvatarThemeProps = {
 <Avatar 
   user={{ name: 'John Doe' }}
   theme={{
-    avatar: {
+    root: {
       base: 'ring-2 ring-primary',
       size: {
         large: 'size-12'
@@ -333,8 +333,8 @@ const customTheme: AvatarThemeProps = {
   import { setAvatarTheme } from 'svelai/avatar';
   
   setAvatarTheme({
-    avatar: {
-      base: 'ring-2 ring-surface-muted transition-all',
+    root: {
+      base: 'ring-2 ring-background-muted transition-all',
       size: {
         normal: 'size-10'
       }

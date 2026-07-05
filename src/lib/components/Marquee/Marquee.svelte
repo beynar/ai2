@@ -35,7 +35,7 @@
 
 <div
 	role="presentation"
-	class={classes.marquee({ direction, size, class: className })}
+	class={classes.root({ direction, size, class: className })}
 	style="--animation-duration: {animationDuration}; --gap: {size === 'small'
 		? '0.5rem'
 		: size === 'large'

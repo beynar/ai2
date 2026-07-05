@@ -1,9 +1,10 @@
 import plugin, { type ThemeConfig } from 'tailwindcss/plugin.js';
 import { getTypeScale, type TypeScale } from './typeScale.js';
 import { generateColorPalette, toTailwindCssTheme, type ColorTheme } from './colors.js';
-import { radius, type RadiusSize } from './radius.js';
-import { spacing, type Spacing } from './spacing.js';
+import { radiusCssVariables, radiusTheme, type RadiusSize } from './radius.js';
+import { spacingCssVariables, spacingTheme, type Spacing } from './spacing.js';
 import type { Spinner } from './spinnner.js';
+import { applyGlobalEngine, globalKeyframes } from './global.js';
 
 export type ThemeOptions = Partial<{
 	name: string;
@@ -12,8 +13,6 @@ export type ThemeOptions = Partial<{
 	saturation?: number;
 	colorScheme?: 'light' | 'dark';
 	'primary-tint-intensity'?: number;
-	'radius-inert-elements'?: number;
-	'radius-interactive-elements'?: number;
 	spacing?: Spacing;
 	'border-width'?: number;
 	'raised-with-border'?: boolean;
@@ -26,11 +25,19 @@ export type ThemeOptions = Partial<{
 
 export default plugin.withOptions<ThemeOptions>(
 	(theme = {}) => {
-		return ({ addBase, addComponents, addUtilities }) => {
+		return (api) => {
+			const { addBase } = api;
 			const { cssVariables } = generateColorPalette(theme);
+			// Radius and spacing are per-theme scales (CSS vars), so light/dark can each
+			// round and breathe differently.
+			const themeVariables = {
+				...cssVariables,
+				...radiusCssVariables(theme.radius),
+				...spacingCssVariables(theme.spacing)
+			};
 			const root = theme.name && !theme.default ? `html[data-theme="${theme.name}"]` : 'html';
 			const roots = [root, theme.name ? `.${theme.name}` : ''].filter(Boolean);
-			const rootBase = Object.fromEntries(roots.map((root) => [root, cssVariables]));
+			const rootBase = Object.fromEntries(roots.map((root) => [root, themeVariables]));
 			addBase(rootBase);
 
 			if (theme.prefersDark) {
@@ -41,16 +48,28 @@ export default plugin.withOptions<ThemeOptions>(
 				});
 			}
 
+			addBase({
+				'*': {
+					'-webkit-font-smoothing': 'subpixel-antialiased'
+				}
+			});
+
 			// RAISED UTILITY
 			if (theme['raised-with-border'] !== false) {
 				addBase({
 					[`html[data-theme="${theme.name}"]`]: {
-						'--raised-border': '1px solid var(--current-border, var(--color-surface-muted))'
+						'--raised-border': '1px solid var(--current-border, var(--color-background-muted))'
 					},
 					[`.${theme.name}`]: {
-						'--raised-border': '1px solid var(--current-border, var(--color-surface-muted))'
+						'--raised-border': '1px solid var(--current-border, var(--color-background-muted))'
 					}
 				});
+			}
+
+			// The default theme bootstraps the palette-agnostic engine (utilities,
+			// variants, spinner, raised-*) so a single @plugin declaration is enough.
+			if (theme.default) {
+				applyGlobalEngine(api, theme);
 			}
 		};
 	},
@@ -58,8 +77,10 @@ export default plugin.withOptions<ThemeOptions>(
 		theme: {
 			extend: {
 				colors: toTailwindCssTheme(),
-				radius: radius(options?.radius),
-				spacing: spacing(options?.spacing || 'small')
+				radius: radiusTheme(),
+				spacing: spacingTheme(),
+				// Keyframes belong to the engine — register them once, from the default theme.
+				...(options?.default ? { keyframes: globalKeyframes(options) } : {})
 				// fontSize: getTypeScale({
 				// 	baseMinPx: 14,
 				// 	baseMaxPx: 16,

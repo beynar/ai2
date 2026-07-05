@@ -87,21 +87,21 @@ export const themePluginDescription = `
 - **Description**: Info state color
 - **Example**: \`info: #3b82f6;\`
 
-#### \`surface\`
+#### \`background\`
 - **Type**: \`string\` (hex color)
 - **Default**: \`#FAFAFA\` (light) / \`#121212\` (dark)
-- **Description**: Background surface color
-- **Example**: \`surface: #ffffff;\`
+- **Description**: Background background color
+- **Example**: \`background: #ffffff;\`
 
-#### \`contrast\`
+#### \`foreground\`
 - **Type**: \`string\` (hex color)
 - **Default**: \`#121212\` (light) / \`#FAFAFA\` (dark)
-- **Description**: High contrast text/foreground color
-- **Example**: \`contrast: #0a0a0a;\`
+- **Description**: High foreground text/foreground color
+- **Example**: \`foreground: #0a0a0a;\`
 
 ### Color Variant Overrides
 
-For each base color (primary, secondary, danger, success, warning, info, surface, contrast), you can override specific variants:
+For each base color (primary, secondary, danger, success, warning, info, background, foreground), you can override specific variants:
 
 #### \`{color}-light\`
 - **Type**: \`string\` (hex color)
@@ -123,30 +123,30 @@ For each base color (primary, secondary, danger, success, warning, info, surface
 
 #### \`{color}-muted\`
 - **Type**: \`string\` (hex color)
-- **Default**: Auto-generated (mixed with surface)
+- **Default**: Auto-generated (mixed with background)
 - **Description**: Muted/subtle variant of the color
 - **Example**: \`primary-muted: #e0e7ff;\`
 
-#### \`{color}-fg\`
+#### \`{color}-contrast\`
 - **Type**: \`string\` (hex color)
-- **Default**: Auto-generated (black or white for contrast)
+- **Default**: Auto-generated (black or white for foreground)
 - **Description**: Foreground color (text on colored background)
-- **Example**: \`primary-fg: #ffffff;\`
+- **Example**: \`primary-contrast: #ffffff;\`
 
 ### Design Tokens
 
 #### \`radius\`
 - **Type**: \`'normal' | 'small' | 'large' | 'subtile' | 'none' | 'round' | number\`
-- **Default**: \`0.25\` (rem)
-- **Description**: Border radius scale
-- **Presets**:
-  - \`normal\`: 0.25rem
-  - \`small\`: 0.125rem
-  - \`large\`: 0.5rem
-  - \`subtile\`: 0.09rem
-  - \`none\`: 0
-  - \`round\`: 1rem
-- **Example**: \`radius: large;\` or \`radius: 0.5;\`
+- **Default**: \`normal\` (1×)
+- **Description**: Multiplier applied to the native Tailwind radius scale (\`rounded-sm\` … \`rounded-4xl\` and bare \`rounded\`). One value rounds the whole UI proportionally.
+- **Presets** (multiplier):
+  - \`none\`: 0×
+  - \`subtile\`: 0.5×
+  - \`small\`: 0.75×
+  - \`normal\`: 1× (native defaults)
+  - \`large\`: 1.5×
+  - \`round\`: 2.5×
+- **Example**: \`radius: large;\` or \`radius: 1.25;\`
 
 #### \`spacing\`
 - **Type**: \`'normal' | 'small' | 'large' | number\`

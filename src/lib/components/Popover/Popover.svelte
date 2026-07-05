@@ -4,6 +4,7 @@
 	import { PopoverState } from './popover.state.svelte.js';
 	import Button from '../Button/Button.svelte';
 	import { fso } from '$lib/transitions/transition.js';
+	import { portal } from '$lib/attachments/portal.js';
 
 	let {
 		id: customId,
@@ -15,7 +16,7 @@
 		offset,
 		transition,
 		children,
-		isOpen = $bindable(false),
+		open = $bindable(false),
 		openOnHover = false,
 		openOnClick = true,
 		hoverDelay = 100,
@@ -34,10 +35,10 @@
 	const popover = new PopoverState({
 		id: customId || id,
 		get isOpen() {
-			return isOpen;
+			return open;
 		},
 		set isOpen(value) {
-			isOpen = value;
+			open = value;
 		},
 		get size() {
 			return size;
@@ -89,35 +90,40 @@
 
 	const in_out = fso();
 
-	const shouldShow = $derived(popover.isOpen && (popover.referenceElement || popover.externalRef));
+	const visible = $derived(popover.isOpen && (popover.referenceElement || popover.externalRef));
 </script>
 
-{#if shouldShow}
+{#if visible}
 	<dialog
+		{@attach portal()}
 		{@attach popover.dialog}
 		{@attach popover.clickOutside.reference}
 		{@attach popover.focusTrap.attachment}
 		{@attach popover.safeArea.reference}
 		open={true}
 		id={popover.id}
-		aria-modal={true}
-		aria-labelledby="{popover.id}-label"
-		class={classes.popover({
-			size: popover.computedSize,
-			className
-		})}
-		in:in_out={popover.computedTransition.in}
-		out:in_out={popover.computedTransition.out}
-		onintroend={() => {
-			popover.hasTransitioned = true;
-			onOpen?.(popover);
-		}}
-		onoutrostart={() => {
-			popover.hasTransitioned = false;
-		}}
-		onoutroend={() => onClose?.(popover)}
+		class={classes.root()}
 	>
-		{@render children?.(popover)}
+		<!-- The panel is a child of the portaled wrapper, so it is never re-parented mid-transition
+		     (which would break the intro). It carries the visuals, transform-origin, and animation. -->
+		<div
+			class={classes.popover({ size: popover.computedSize, className })}
+			style:transform-origin={popover.transformOrigin}
+			style:width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
+			style:max-width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
+			in:in_out={popover.computedTransition.in}
+			out:in_out={popover.computedTransition.out}
+			onintroend={() => {
+				popover.hasTransitioned = true;
+				onOpen?.(popover);
+			}}
+			onoutrostart={() => {
+				popover.hasTransitioned = false;
+			}}
+			onoutroend={() => onClose?.(popover)}
+		>
+			{@render children?.(popover)}
+		</div>
 	</dialog>
 {/if}
 {#if trigger}

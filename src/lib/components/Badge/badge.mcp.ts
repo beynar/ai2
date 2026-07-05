@@ -15,7 +15,7 @@ The Badge component is a small, positioned indicator element used to display not
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
+- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
   - Determines the color scheme of the badge
 
 - **variant**: 'solid' | 'outline' | 'soft' (default: 'solid')
@@ -147,7 +147,7 @@ The Badge component uses absolute positioning and requires its parent to have \`
 - Use semantic content that screen readers can understand
 - For purely decorative badges, consider adding \`aria-hidden="true"\`
 - For notification counts, consider adding appropriate ARIA labels
-- Ensure sufficient color contrast for readability
+- Ensure sufficient color foreground for readability
 
 ## Notes
 
@@ -163,7 +163,7 @@ The Badge component uses a theme object that can be customized using the \`theme
 ### Theme Structure
 
 The theme object contains the following parts:
-- **badge**: Main badge container styles
+- **root**: Main badge container styles
 
 ### Theme Type Definition
 
@@ -172,7 +172,7 @@ import type { BadgeThemeProps } from 'svelai/badge';
 
 // Example theme customization
 const customTheme: BadgeThemeProps = {
-  badge: {
+  root: {
     base: 'custom-base-classes',
     size: {
       small: 'px-1 text-sm h-4 min-w-4',
@@ -180,11 +180,11 @@ const customTheme: BadgeThemeProps = {
       large: 'px-2 text-md h-6 min-w-6'
     },
     color: {
-      primary: 'bg-primary text-primary-fg',
-      danger: 'bg-danger text-danger-fg'
+      primary: 'bg-primary text-primary-contrast',
+      danger: 'bg-danger text-danger-contrast'
     },
     variant: {
-      solid: 'text-color-fg',
+      solid: 'text-color-contrast',
       outline: 'bg-opacity-0 text-color border-color border',
       soft: 'bg-color/20 text-color'
     },
@@ -200,11 +200,11 @@ const customTheme: BadgeThemeProps = {
 
 ### Available Variants
 
-**badge**:
+**root**:
 - base: Base classes applied to all badges
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls height, padding, and text size
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' - Visual style variant
   - position: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft' - Positioning relative to parent
 
@@ -216,7 +216,7 @@ const customTheme: BadgeThemeProps = {
   <Button>Notifications</Button>
   <Badge 
     theme={{
-      badge: {
+      root: {
         base: 'ring-2 ring-white',
         size: {
           normal: 'h-6 min-w-6 px-2 text-sm font-bold'
@@ -237,7 +237,7 @@ const customTheme: BadgeThemeProps = {
     color="success"
     variant="outline"
     theme={{
-      badge: {
+      root: {
         variant: {
           outline: 'border-2 border-green-500 bg-white text-green-600'
         },
@@ -258,7 +258,7 @@ const customTheme: BadgeThemeProps = {
   import { setBadgeTheme } from 'svelai/badge';
   
   setBadgeTheme({
-    badge: {
+    root: {
       base: 'ring-2 ring-white shadow-md',
       variant: {
         solid: 'font-semibold',

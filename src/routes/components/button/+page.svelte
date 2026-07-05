@@ -1,42 +1,93 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 
-	let disabled = $state(false);
 	let loading = $state(false);
+
+	const triggerLoading = () => {
+		loading = true;
+		setTimeout(() => (loading = false), 1200);
+	};
 </script>
 
-<div class="grid gap-10">
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
+<DocPage
+	title="Button"
+	subtitle="Triggers an action or event, with variants, sizes, and colors."
+	component="Button"
+	features={[
+		'role=button or link with aria-label',
+		'Loading spinner overlay attachment',
+		'Bindable ref to root element',
+		'Renders as anchor when href set',
+		'Prefix & suffix icon slots'
+	]}
+>
+	<ComponentCard
+		code={`<Button>Click me</Button>`}
 	>
-		{#each variants.concat(['ghost', 'link']) as variant}
-			<h1>{variant}</h1>
-			<div class="grid gap-4">
-				{#each colors as color}
-					<div class="flex items-center justify-center gap-4">
-						{#each sizes as size}
-							<Button
-								{loading}
-								onClick={() => {
-									loading = true;
-									setTimeout(() => {
-										loading = false;
-									}, 1000);
-								}}
-								prefix={eyeClosedIcon}
-								{color}
-								{size}
-								{variant}
-								{disabled}
-							>
-								{variant} - {color} - {size}
-							</Button>
-						{/each}
-					</div>
+		<Button>Click me</Button>
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard description="Five variants, from the prominent solid down to a minimal link.">
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				{#each [...variants, 'ghost', 'link'] as variant (variant)}
+					<Button {variant}>{variant}</Button>
 				{/each}
 			</div>
-		{/each}
-	</div>
-</div>
+		</ComponentCard>
+
+		<ComponentCard description="Eight semantic colors, shown here in the solid variant.">
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				{#each colors as color (color)}
+					<Button {color}>{color}</Button>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Three sizes to match surrounding density.">
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				{#each sizes as size (size)}
+					<Button {size}>{size}</Button>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Prefix and suffix icon slots. An icon with no label renders squared."
+		>
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				<Button prefix={eyeClosedIcon}>Prefix</Button>
+				<Button suffix={eyeClosedIcon}>Suffix</Button>
+				<Button prefix={eyeClosedIcon} suffix={eyeClosedIcon}>Both</Button>
+				<Button prefix={eyeClosedIcon} label="Toggle visibility" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="A spinner overlays the label while loading — click to preview.">
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				{#each variants as variant (variant)}
+					<Button {variant} {loading} onClick={triggerLoading}>{variant}</Button>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Disabled buttons are dimmed and ignore interaction.">
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				<Button disabled>Solid</Button>
+				<Button variant="outline" disabled>Outline</Button>
+				<Button variant="soft" disabled>Soft</Button>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="With an href, the button renders as an anchor with role=link.">
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				<Button href="https://svelte.dev" target="_blank" rel="noreferrer">Open svelte.dev</Button>
+				<Button href="https://svelte.dev" variant="link">Link variant</Button>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

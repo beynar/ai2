@@ -1,32 +1,32 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultChip = cva({
-	base: 'rounded-large box-border w-fit justify-between max-w-fit min-w-min items-center inline-flex text-balance text-center',
+	base: 'group/chip box-border w-fit max-w-fit min-w-min inline-flex items-center justify-center whitespace-nowrap rounded-full border border-transparent bg-clip-padding font-medium transition-all',
 	variants: {
 		isLink: {
 			true: 'cursor-pointer',
 			false: null
 		},
 		size: {
-			small: 'px-2 py-1  min-h-5 text-sm  gap-1.5 leading-2.5',
-			normal: 'px-2 py-1.5  min-h-7 text-base gap-2 leading-4.5',
-			large: 'px-2.5 py-2  min-h-9 text-md  gap-2.5 leading-5.5'
+			small: 'h-5 px-2 gap-1 text-xs',
+			normal: 'h-6 px-2.5 gap-1.5 text-xs',
+			large: 'h-7 px-3 gap-1.5 text-sm'
 		},
 		color: {
-			primary: 'bg-primary text-primary-fg',
-			secondary: 'bg-secondary text-secondary-fg',
-			contrast: 'bg-contrast text-contrast-fg',
-			surface: 'bg-surface-muted text-color-fg',
-			danger: 'bg-danger text-danger-fg',
-			success: 'bg-success text-success-fg',
-			warning: 'bg-warning text-warning-fg',
-			info: 'bg-info text-info-fg'
+			primary: 'bg-primary text-primary-contrast',
+			secondary: 'bg-secondary text-secondary-contrast',
+			foreground: 'bg-foreground text-foreground-contrast',
+			background: 'bg-background-muted text-color-contrast',
+			danger: 'bg-danger text-danger-contrast',
+			success: 'bg-success text-success-contrast',
+			warning: 'bg-warning text-warning-contrast',
+			info: 'bg-info text-info-contrast'
 		},
 		variant: {
-			solid: 'text-color-fg bg-color',
-			outline: 'bg-opacity-0 text-color border-color border',
-			soft: 'bg-color-muted text-color'
+			solid: 'text-color-contrast bg-color',
+			outline: 'bg-color/0 text-color-readable border-color',
+			soft: 'bg-color-muted text-color-muted-readable'
 		}
 	},
 	defaultVariants: {
@@ -36,25 +36,25 @@ const defaultChip = cva({
 	},
 	compoundVariants: [
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'outline',
-			class: 'border-surface-muted text-contrast'
+			class: 'border-background-muted text-foreground'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'soft',
-			class: 'bg-surface-lighter text-color-fg'
+			class: 'bg-background-lighter text-color-contrast'
 		}
 	]
 });
 
 const defaultChipPrefix = cva({
-	base: 'w-4 h-4',
+	base: 'inline-flex items-center [&>svg]:size-3.5',
 	variants: {
 		size: {
-			normal: 'w-4 h-4',
-			large: 'w-5 h-5',
-			small: 'w-2 h-2'
+			normal: '[&>svg]:size-3.5',
+			large: '[&>svg]:size-4',
+			small: '[&>svg]:size-3'
 		}
 	},
 	defaultVariants: {
@@ -63,12 +63,12 @@ const defaultChipPrefix = cva({
 });
 
 const defaultChipSuffix = cva({
-	base: 'w-4 h-4',
+	base: 'inline-flex items-center [&>svg]:size-3.5',
 	variants: {
 		size: {
-			normal: 'w-4 h-4',
-			large: 'w-5 h-5',
-			small: 'w-2 h-2'
+			normal: '[&>svg]:size-3.5',
+			large: '[&>svg]:size-4',
+			small: '[&>svg]:size-3'
 		}
 	},
 	defaultVariants: {
@@ -77,7 +77,7 @@ const defaultChipSuffix = cva({
 });
 
 export const chipTheme = {
-	chip: defaultChip,
+	root: defaultChip,
 	prefix: defaultChipPrefix,
 	suffix: defaultChipSuffix
 };
@@ -85,4 +85,4 @@ export const chipTheme = {
 export type ChipTheme = typeof chipTheme;
 export type ChipThemeProps = InferComponentTheme<ChipTheme>;
 export const setChipTheme = setComponentTheme<ChipTheme>('chip');
-export const useChipTheme = useComponentTheme('chip', chipTheme);
+export const useChipTheme = useComponentTheme<ChipTheme>('chip', chipTheme);

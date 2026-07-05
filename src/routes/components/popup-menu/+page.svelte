@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { tick } from 'svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 	import { PopupMenu, type MenuItem } from '$lib/components/PopupMenu/index.js';
 	import { userIcon } from '$lib/components/Icons/user.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
@@ -15,7 +18,8 @@
 	let clickCount = $state(0);
 	let externalMenuOpen = $state(false);
 	let contextMenuOpen = $state(false);
-	let contextMenuRef = $state<HTMLElement | null>(null);
+	// A floating-ui virtual element: a zero-size rect at the cursor, so the menu anchors to the pointer.
+	let contextMenuRef = $state<{ getBoundingClientRect: () => DOMRect } | null>(null);
 
 	// Basic menu items
 	const basicItems: MenuItem[] = [
@@ -151,321 +155,345 @@
 		{ type: 'option', title: 'Delete Account', color: 'danger', prefix: trashIcon }
 	];
 
-	function handleContextMenu(e: MouseEvent) {
+	async function handleContextMenu(e: MouseEvent) {
 		e.preventDefault();
-		contextMenuRef = e.target as HTMLElement;
+		const x = e.clientX;
+		const y = e.clientY;
+		// Close first (if already open) so a second right-click re-mounts and repositions.
+		contextMenuOpen = false;
+		await tick();
+		// Anchor to the cursor via a virtual element instead of the container.
+		contextMenuRef = { getBoundingClientRect: () => new DOMRect(x, y, 0, 0) };
 		contextMenuOpen = true;
 	}
 </script>
 
-<div class="space-y-8 p-8">
-	<h1 class="mb-8 text-4xl font-bold">PopupMenu Component</h1>
-
-	<!-- Basic PopupMenu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Basic Dropdown Menu</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'File', variant: 'outline' }}
-				position="bottom-start"
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Edit', variant: 'outline' }}
-				position="bottom-start"
-				menu={{ items: editItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'View', variant: 'outline' }}
-				position="bottom-start"
-				menu={{ items: viewItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- User Profile Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">User Profile Menu</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'John Doe', variant: 'outline', prefix: userIcon }}
-				position="bottom-end"
-				menu={{ items: profileItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Actions Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Actions Menu with Buttons</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'Actions', color: 'primary' }}
-				position="bottom"
-				menu={{ items: actionItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Different Positions -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Different Positions</h2>
-		<div class="flex flex-wrap gap-4">
-			<PopupMenu
-				trigger={{ content: 'Top', variant: 'soft' }}
-				position="top"
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Bottom', variant: 'soft' }}
-				position="bottom"
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Left', variant: 'soft' }}
-				position="left"
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Right', variant: 'soft' }}
-				position="right"
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Top Start', variant: 'soft' }}
-				position="top-start"
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Bottom End', variant: 'soft' }}
-				position="bottom-end"
-				menu={{ items: basicItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Interactive Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Interactive Menu</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'Counter Menu', variant: 'outline', color: 'secondary' }}
-				position="bottom-start"
-				menu={{ items: interactiveItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Hover Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Hover-Triggered Menu</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'Hover Me', variant: 'ghost' }}
-				openOnHover={true}
-				openOnClick={false}
-				hoverDelay={200}
-				closeOnMouseLeave={true}
-				menu={{ items: settingsItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Close on Item Click -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Close on Item Click</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'Closes on Click (default)', variant: 'outline' }}
-				position="bottom-start"
-				closeOnItemClick={true}
-				menu={{ items: interactiveItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Stays Open', variant: 'outline', color: 'secondary' }}
-				position="bottom-start"
-				closeOnItemClick={false}
-				menu={{ items: interactiveItems }}
-			/>
-		</div>
-		<p class="text-contrast/70 mt-2 text-sm">
-			The first menu closes when you click an item. The second stays open for multiple interactions.
-		</p>
-	</section>
-
-	<!-- External Control -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">External Control</h2>
-		<div class="flex gap-4">
-			<button
-				class="border-contrast rounded border px-4 py-2"
-				onclick={() => (externalMenuOpen = true)}
-			>
-				Open Menu Externally
-			</button>
-
-			<PopupMenu
-				trigger={{ content: 'Controlled Menu', variant: 'outline' }}
-				bind:isOpen={externalMenuOpen}
-				position="bottom-start"
-				menu={{ items: basicItems }}
-			/>
-
-			<span class="text-contrast/70 self-center text-sm">
-				Menu is {externalMenuOpen ? 'open' : 'closed'}
-			</span>
-		</div>
-	</section>
-
-	<!-- Context Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Context Menu (Right Click)</h2>
-		<div
-			class="bg-surface-light rounded-large border-surface-muted flex h-48 w-full cursor-context-menu items-center justify-center border"
-			oncontextmenu={handleContextMenu}
-		>
-			<p class="text-contrast/70">Right-click anywhere in this area</p>
-		</div>
-
+<DocPage
+	title="Popup menu"
+	subtitle="A contextual menu that floats near its trigger."
+	component="PopupMenu"
+	features={[
+		'Popover + Menu composition',
+		'Bindable open for external control',
+		'Hover or click open, escape dismiss',
+		'Closes on item click by default',
+		'Context menu via external ref'
+	]}
+>
+	<ComponentCard
+		description="A basic dropdown menu anchored to a trigger button."
+		code={`<PopupMenu
+	trigger={{ content: 'File', variant: 'outline' }}
+	position="bottom-start"
+	menu={{
+		items: [
+			{ type: 'option', title: 'New File' },
+			{ type: 'option', title: 'Open...' },
+			{ type: 'option', title: 'Save' },
+			{ type: 'separator' },
+			{ type: 'option', title: 'Exit' },
+			{
+				type: 'submenu',
+				title: 'Submenu',
+				menu: [
+					{ type: 'option', title: 'New File' },
+					{ type: 'option', title: 'Open...' },
+					{ type: 'option', title: 'Save' },
+					{ type: 'separator' },
+					{ type: 'option', title: 'Exit' }
+				]
+			}
+		]
+	}}
+/>`}
+	>
 		<PopupMenu
-			trigger={false}
-			bind:isOpen={contextMenuOpen}
-			ref={contextMenuRef}
+			trigger={{ content: 'File', variant: 'outline' }}
 			position="bottom-start"
-			menu={{ items: contextItems }}
+			menu={{ items: basicItems }}
 		/>
-	</section>
+	</ComponentCard>
 
-	<!-- Icon Button Menus -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Icon Button Menus</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ prefix: dotsThreeVerticalIcon, variant: 'ghost', squared: true }}
-				position="bottom-end"
-				menu={{ items: actionItems }}
-			/>
+	{#snippet examples()}
+		<ComponentCard description="File, edit, and view dropdown menus.">
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'File', variant: 'outline' }}
+					position="bottom-start"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Edit', variant: 'outline' }}
+					position="bottom-start"
+					menu={{ items: editItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'View', variant: 'outline' }}
+					position="bottom-start"
+					menu={{ items: viewItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="User profile menu with icons, descriptions, and nested notifications."
+		>
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'John Doe', variant: 'outline', prefix: userIcon }}
+					position="bottom-end"
+					menu={{ items: profileItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Menu items rendered as full-width action buttons.">
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Actions', color: 'primary' }}
+					position="bottom"
+					menu={{ items: actionItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Menus anchored on every side and alignment variant.">
+			<div class="flex flex-wrap gap-4">
+				<PopupMenu
+					trigger={{ content: 'Top', variant: 'soft' }}
+					position="top"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Bottom', variant: 'soft' }}
+					position="bottom"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Left', variant: 'soft' }}
+					position="left"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Right', variant: 'soft' }}
+					position="right"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Top Start', variant: 'soft' }}
+					position="top-start"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Bottom End', variant: 'soft' }}
+					position="bottom-end"
+					menu={{ items: basicItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Menu items that update state on each click.">
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Counter Menu', variant: 'outline', color: 'secondary' }}
+					position="bottom-start"
+					menu={{ items: interactiveItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Opens on hover instead of click.">
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Hover Me', variant: 'ghost' }}
+					openOnHover={true}
+					openOnClick={false}
+					hoverDelay={200}
+					closeOnMouseLeave={true}
+					menu={{ items: settingsItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="The first menu closes when you click an item. The second stays open for multiple interactions."
+		>
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Closes on Click (default)', variant: 'outline' }}
+					position="bottom-start"
+					closeOnItemClick={true}
+					menu={{ items: interactiveItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Stays Open', variant: 'outline', color: 'secondary' }}
+					position="bottom-start"
+					closeOnItemClick={false}
+					menu={{ items: interactiveItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Open and observe menu state from outside the trigger.">
+			<div class="flex gap-4">
+				<button
+					class="border-foreground rounded border px-4 py-2"
+					onclick={() => (externalMenuOpen = true)}
+				>
+					Open Menu Externally
+				</button>
+
+				<PopupMenu
+					trigger={{ content: 'Controlled Menu', variant: 'outline' }}
+					bind:open={externalMenuOpen}
+					position="bottom-start"
+					menu={{ items: basicItems }}
+				/>
+
+				<span class="text-foreground/70 self-center text-sm">
+					Menu is {externalMenuOpen ? 'open' : 'closed'}
+				</span>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Context menu opened at the pointer on right-click.">
+			<div
+				class="bg-background-light rounded-xl border-background-muted flex h-48 w-full cursor-context-menu items-center justify-center border"
+				oncontextmenu={handleContextMenu}
+			>
+				<p class="text-foreground/70">Right-click anywhere in this area</p>
+			</div>
 
 			<PopupMenu
-				trigger={{ prefix: gearIcon, variant: 'outline', squared: true }}
-				position="bottom-end"
-				menu={{ items: settingsItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ prefix: userIcon, variant: 'soft', color: 'primary', squared: true }}
-				position="bottom-end"
-				menu={{ items: profileItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Different Button Variants -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Button Variants</h2>
-		<div class="flex flex-wrap gap-4">
-			<PopupMenu
-				trigger={{ content: 'Solid', variant: 'solid', color: 'primary' }}
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Outline', variant: 'outline', color: 'secondary' }}
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Soft', variant: 'soft', color: 'success' }}
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Ghost', variant: 'ghost', color: 'info' }}
-				menu={{ items: basicItems }}
-			/>
-
-			<PopupMenu
-				trigger={{ content: 'Link', variant: 'link', color: 'contrast' }}
-				menu={{ items: basicItems }}
-			/>
-		</div>
-	</section>
-
-	<!-- Custom Theme -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Custom Themed Menu</h2>
-		<div class="flex gap-4">
-			<PopupMenu
-				trigger={{ content: 'Large Gap Menu', variant: 'outline' }}
+				trigger={false}
+				bind:open={contextMenuOpen}
+				ref={contextMenuRef}
 				position="bottom-start"
-				menu={{
-					items: basicItems,
-					theme: {
-						menu: { gap: 'large' }
-					}
-				}}
+				menu={{ items: contextItems }}
 			/>
-		</div>
-	</section>
+		</ComponentCard>
 
-	<!-- Multiple Sizes -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Button Sizes</h2>
-		<div class="flex items-center gap-4">
-			<PopupMenu
-				trigger={{ content: 'Small', variant: 'outline', size: 'small' }}
-				menu={{ items: basicItems }}
-			/>
+		<ComponentCard description="Icon-only trigger buttons for compact menus.">
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ prefix: dotsThreeVerticalIcon, variant: 'ghost', squared: true }}
+					position="bottom-end"
+					menu={{ items: actionItems }}
+				/>
 
-			<PopupMenu
-				trigger={{ content: 'Normal', variant: 'outline', size: 'normal' }}
-				menu={{ items: basicItems }}
-			/>
+				<PopupMenu
+					trigger={{ prefix: gearIcon, variant: 'outline', squared: true }}
+					position="bottom-end"
+					menu={{ items: settingsItems }}
+				/>
 
-			<PopupMenu
-				trigger={{ content: 'Large', variant: 'outline', size: 'large' }}
-				menu={{ items: basicItems }}
-			/>
-		</div>
-	</section>
+				<PopupMenu
+					trigger={{ prefix: userIcon, variant: 'soft', color: 'primary', squared: true }}
+					position="bottom-end"
+					menu={{ items: profileItems }}
+				/>
+			</div>
+		</ComponentCard>
 
-	<!-- Toolbar Example -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Toolbar Example</h2>
-		<div class="bg-surface rounded-large border-surface-muted flex gap-1 border p-1">
-			<PopupMenu
-				trigger={{ content: 'File', variant: 'ghost', size: 'small' }}
-				position="bottom-start"
-				menu={{ items: basicItems }}
-			/>
+		<ComponentCard description="Trigger button variants: solid, outline, soft, ghost, and link.">
+			<div class="flex flex-wrap gap-4">
+				<PopupMenu
+					trigger={{ content: 'Solid', variant: 'solid', color: 'primary' }}
+					menu={{ items: basicItems }}
+				/>
 
-			<PopupMenu
-				trigger={{ content: 'Edit', variant: 'ghost', size: 'small' }}
-				position="bottom-start"
-				menu={{ items: editItems }}
-			/>
+				<PopupMenu
+					trigger={{ content: 'Outline', variant: 'outline', color: 'secondary' }}
+					menu={{ items: basicItems }}
+				/>
 
-			<PopupMenu
-				trigger={{ content: 'View', variant: 'ghost', size: 'small' }}
-				position="bottom-start"
-				menu={{ items: viewItems }}
-			/>
+				<PopupMenu
+					trigger={{ content: 'Soft', variant: 'soft', color: 'success' }}
+					menu={{ items: basicItems }}
+				/>
 
-			<div class="border-surface-muted mx-1 border-l"></div>
+				<PopupMenu
+					trigger={{ content: 'Ghost', variant: 'ghost', color: 'info' }}
+					menu={{ items: basicItems }}
+				/>
 
-			<PopupMenu
-				trigger={{ prefix: userIcon, variant: 'ghost', size: 'small', squared: true }}
-				position="bottom-end"
-				menu={{ items: profileItems }}
-			/>
-		</div>
-	</section>
-</div>
+				<PopupMenu
+					trigger={{ content: 'Link', variant: 'link', color: 'foreground' }}
+					menu={{ items: basicItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Custom menu theme with larger item gap.">
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Large Gap Menu', variant: 'outline' }}
+					position="bottom-start"
+					menu={{
+						items: basicItems,
+						theme: {
+							root: { base: 'gap-3' }
+						}
+					}}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Small, normal, and large trigger button sizes.">
+			<div class="flex items-center gap-4">
+				<PopupMenu
+					trigger={{ content: 'Small', variant: 'outline', size: 'small' }}
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Normal', variant: 'outline', size: 'normal' }}
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Large', variant: 'outline', size: 'large' }}
+					menu={{ items: basicItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Application toolbar with multiple nested popup menus.">
+			<div class="bg-background rounded-xl border-background-muted flex gap-1 border p-1">
+				<PopupMenu
+					trigger={{ content: 'File', variant: 'ghost', size: 'small' }}
+					position="bottom-start"
+					menu={{ items: basicItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'Edit', variant: 'ghost', size: 'small' }}
+					position="bottom-start"
+					menu={{ items: editItems }}
+				/>
+
+				<PopupMenu
+					trigger={{ content: 'View', variant: 'ghost', size: 'small' }}
+					position="bottom-start"
+					menu={{ items: viewItems }}
+				/>
+
+				<div class="border-background-muted mx-1 border-l"></div>
+
+				<PopupMenu
+					trigger={{ prefix: userIcon, variant: 'ghost', size: 'small', squared: true }}
+					position="bottom-end"
+					menu={{ items: profileItems }}
+				/>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

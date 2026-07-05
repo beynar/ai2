@@ -177,7 +177,7 @@ A navigation component that displays a hierarchical path of links, helping users
 
 <Breadcrumbs {items}>
   {#snippet separator()}
-    <span class="text-contrast-muted">›</span>
+    <span class="text-foreground-muted">›</span>
   {/snippet}
 </Breadcrumbs>
 \`\`\`
@@ -346,7 +346,7 @@ The Breadcrumbs component uses a theme object that can be customized using the \
 ### Theme Structure
 
 The theme object contains the following parts:
-- **container**: Main breadcrumbs container styles
+- **root**: Main breadcrumbs container styles
 - **item**: Individual breadcrumb item styles
 - **link**: Breadcrumb link/button styles
 - **separator**: Separator icon/styles
@@ -355,7 +355,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**container**:
+**root**:
 - base: Base classes for main container
 
 **item**:
@@ -388,7 +388,7 @@ The theme object contains the following parts:
 <Breadcrumbs 
   items={items}
   theme={{
-    container: {
+    root: {
       base: 'flex items-center gap-2 text-sm'
     },
     item: {
@@ -427,7 +427,7 @@ The theme object contains the following parts:
   import { setBreadcrumbsTheme } from 'svelai/breadcrumbs';
   
   setBreadcrumbsTheme({
-    container: {
+    root: {
       base: 'flex items-center gap-2 text-sm'
     },
     item: {

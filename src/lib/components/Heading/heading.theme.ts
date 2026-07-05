@@ -1,4 +1,4 @@
-import { cva } from '$lib/utils/cva.js';
+import { cva } from '$lib/utils/cva/index.js';
 
 export const heading = cva({
 	base: 'ui-heading',

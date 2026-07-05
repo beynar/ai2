@@ -28,7 +28,7 @@
 
 <div
 	bind:this={ref}
-	class={classes.container({ className })}
+	class={classes.root({ className })}
 	style:padding-bottom={paddingBottom}
 	{...attachments}
 >

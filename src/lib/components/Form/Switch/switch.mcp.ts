@@ -365,9 +365,9 @@ The theme object contains the following parts:
 **Global Theme Setting**:
 \`\`\`svelte
 <script>
-  import { setSwitchInputTheme } from 'svelai/switch';
+  import { setSwitchTheme } from 'svelai/switch';
   
-  setSwitchInputTheme({
+  setSwitchTheme({
     toggle: {
       base: 'transition-all duration-300',
       checked: {

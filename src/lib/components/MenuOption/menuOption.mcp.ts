@@ -21,7 +21,7 @@ The MenuOption component is a flexible menu item that can be used in dropdown me
   - normal: Standard menu item (36px min height)
   - large: Spacious menu item (44px min height)
 - **color**: Colors (default: 'primary') - Sets the text color and hover background color
-  - Available: primary, secondary, success, warning, danger, info, contrast, surface
+  - Available: primary, secondary, success, warning, danger, info, foreground, background
 
 ### Content Slots
 Either use **title/description** OR **children** (mutually exclusive):
@@ -42,6 +42,14 @@ Either use **title/description** OR **children** (mutually exclusive):
 - **href**: string - If provided, renders as an anchor element
 - **target**: string - Link target attribute (e.g., '_blank')
 - **rel**: string - Link rel attribute (e.g., 'noopener noreferrer')
+
+### Listbox / option props
+MenuOption is also the shared row primitive for the listbox family (Command, Select, Combobox).
+- **role**: string - ARIA role override. Defaults to button/link/menuitem; pass \`option\` inside a \`listbox\`.
+- **highlighted**: boolean - Keyboard-active state (virtual focus). Applies the highlight background and reflects to \`data-highlighted\`. Menus omit this and rely on \`useNavigation\` setting \`data-highlighted\` imperatively.
+- **selected**: boolean - Sets \`aria-selected\`/\`data-selected\` for single-select listboxes (pass a check icon via \`suffix\`).
+- **disabled**: boolean - Dims the row, sets \`aria-disabled\`, blocks pointer/click.
+- **attrs**: Record<string, any> - Extra attributes/handlers spread onto the row (\`id\`, \`data-value\`, \`tabindex\`, \`onpointermove\`, \`onmousedown\`).
 
 ### Styling Props
 - **class**: string - Additional CSS classes
@@ -227,7 +235,7 @@ Either use **title/description** OR **children** (mutually exclusive):
 			<img src="/avatar.jpg" alt="User" class="w-8 h-8 rounded-full" />
 			<div>
 				<div class="font-bold">John Doe</div>
-				<div class="text-xs text-contrast/70">john@example.com</div>
+				<div class="text-xs text-foreground/70">john@example.com</div>
 			</div>
 		</div>
 	{/snippet}
@@ -240,7 +248,7 @@ Either use **title/description** OR **children** (mutually exclusive):
 	import { Settings, User, LogOut, HelpCircle } from '$lib/components/Icons/index.svelte.js';
 </script>
 
-<div class="w-64 bg-surface rounded-large border border-surface-muted p-1">
+<div class="w-64 bg-background rounded-xl border border-background-muted p-1">
 	<MenuOption>
 		{#snippet prefix()}<User />{/snippet}
 		{#snippet title()}Profile{/snippet}
@@ -258,7 +266,7 @@ Either use **title/description** OR **children** (mutually exclusive):
 		{#snippet title()}Help & Support{/snippet}
 	</MenuOption>
 	
-	<div class="border-t border-surface-muted my-1"></div>
+	<div class="border-t border-background-muted my-1"></div>
 	
 	<MenuOption color="danger">
 		{#snippet prefix()}<LogOut />{/snippet}
@@ -271,7 +279,7 @@ Either use **title/description** OR **children** (mutually exclusive):
 \`\`\`svelte
 <MenuOption 
 	theme={{
-		menuOption: { base: 'rounded-full' },
+		root: { base: 'rounded-full' },
 		title: { base: 'font-bold' }
 	}}
 >
@@ -323,7 +331,7 @@ Either use **title/description** OR **children** (mutually exclusive):
   - \`menuitem\` for non-interactive elements
 - Supports keyboard navigation when used as button or link
 - Proper semantic HTML structure
-- Color contrast meets accessibility standards
+- Color foreground meets accessibility standards
 
 ## Element Type Detection
 
@@ -348,7 +356,7 @@ The MenuOption component uses a theme object that can be customized using the \`
 ### Theme Structure
 
 The theme object contains the following parts:
-- **menuOption**: Main menu option container styles
+- **root**: Main menu option container styles
 - **title**: Menu option title text styles
 - **description**: Menu option description text styles
 - **prefix**: Prefix icon/content styles
@@ -357,11 +365,11 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**menuOption**:
+**root**:
 - base: Base classes applied to all menu options
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls padding, text size, gap, and min-height
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme and hover states
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme and hover states
 
 **title**:
 - base: Base classes for title text
@@ -395,7 +403,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <MenuOption 
   theme={{
-    menuOption: {
+    root: {
       base: 'rounded-lg',
       size: {
         large: 'px-4 py-3 min-h-12'
@@ -419,7 +427,7 @@ The theme object contains the following parts:
 <MenuOption 
   color="danger"
   theme={{
-    menuOption: {
+    root: {
       color: {
         danger: 'text-red-600 highlight:bg-red-50 highlight:text-red-700'
       }
@@ -438,7 +446,7 @@ The theme object contains the following parts:
   import { setMenuOptionTheme } from 'svelai/menu-option';
   
   setMenuOptionTheme({
-    menuOption: {
+    root: {
       base: 'rounded-md transition-colors',
       size: {
         normal: 'px-3 py-2'

@@ -13,6 +13,12 @@ type NavigationOptions = {
 	onChange?: (index: number | null) => void;
 	defaultFocusedIndex?: () => number | null;
 	preventKeyboardDefault?: boolean;
+	/**
+	 * Combobox-style navigation: keep DOM focus where it is (e.g. a search input) and
+	 * only move the visual highlight + aria-activedescendant. Items never receive
+	 * roving tabindex or DOM focus.
+	 */
+	virtualFocus?: boolean;
 };
 
 export const useNavigation = (opts: NavigationOptions) => {
@@ -24,8 +30,11 @@ export const useNavigation = (opts: NavigationOptions) => {
 	let isFocused = $state(false);
 	let lastFocusedIndex = $state<number | null>(null);
 
+	// Enabled by default — `enabled` is an opt-out, checked at event time so it stays reactive.
+	const isEnabled = () => (opts.enabled ? opts.enabled() : true);
+
 	$effect(() => {
-		if (focusedIndex && focusedIndex !== -1) {
+		if (focusedIndex !== null && focusedIndex !== -1) {
 			lastFocusedIndex = focusedIndex;
 		}
 	});
@@ -40,7 +49,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 		return opts.orientation || 'horizontal';
 	};
 	$effect(() => {
-		if (!focusedIndex) return;
+		if (focusedIndex === null) return;
 		const newFocusedIndex = focusedIndex;
 		untrack(() => {
 			opts.onChange?.(newFocusedIndex);
@@ -62,7 +71,6 @@ export const useNavigation = (opts: NavigationOptions) => {
 	});
 	const focusContainer = () => {
 		if (containerRef) {
-			console.log('focusContainer', containerRef);
 			focusedIndex = -1;
 			containerRef.focus();
 		}
@@ -147,8 +155,8 @@ export const useNavigation = (opts: NavigationOptions) => {
 				item.id = itemId;
 			}
 
-			// Set tabindex (roving tabindex pattern - follows focus)
-			item.setAttribute('tabindex', isFocused ? '0' : '-1');
+			// Roving tabindex follows focus; virtual focus keeps items out of the tab order.
+			item.setAttribute('tabindex', isFocused && !opts.virtualFocus ? '0' : '-1');
 
 			// Set data-highlighted for keyboard focus
 			if (isFocused) {
@@ -178,7 +186,10 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 		if (items[index]) {
 			const item = items[index];
-			item.focus();
+			// Virtual focus (combobox pattern): DOM focus stays put, only the highlight moves.
+			if (!opts.virtualFocus) {
+				item.focus();
+			}
 			// Scroll the item into view if needed
 			item.scrollIntoView({
 				block: 'nearest',
@@ -244,13 +255,11 @@ export const useNavigation = (opts: NavigationOptions) => {
 	// Use the existing useKeyDown hook - pass all possible keys, filter in handleKeyboard
 	const keyDown = useKeyDown({
 		isActive: () => {
-			// return false;
-			const enabled = opts.enabled?.();
-			if (!enabled) return false;
+			if (!isEnabled()) return false;
 			if (isHovering && opts.enableHoverFocus) {
 				return true;
 			}
-			return enabled;
+			return true;
 		},
 		preventDefault: opts.preventKeyboardDefault,
 		onWindow: () => {
@@ -258,6 +267,23 @@ export const useNavigation = (opts: NavigationOptions) => {
 			return isHovering && !isFocused && opts.enableHoverFocus ? true : false;
 		},
 		callback: (event: KeyboardEvent) => {
+			// Respect the enabled gate per-event: the element listener is attached once at mount and
+			// never re-checks isActive, so without this a disabled menu (e.g. a parent whose submenu
+			// is open) would still handle keys that bubble to it and double-navigate.
+			if (!isEnabled()) return;
+
+			// Hover-to-navigate must not hijack when focus already lives inside another menu/listbox
+			// (e.g. an open submenu portaled elsewhere): stealing focus here would yank the caret out
+			// of the submenu and navigate this container instead.
+			const active = document.activeElement;
+			if (
+				active &&
+				!containerRef?.contains(active) &&
+				active.closest('[role="menu"],[role="listbox"]')
+			) {
+				return;
+			}
+
 			// If hovering but container not focused, focus it first on arrow key
 			if (
 				isHovering &&
@@ -353,12 +379,12 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 	return {
 		containerReference: (node: HTMLElement) => {
-			if (!opts.enabled?.()) return;
 			return untrack(() => {
 				containerRef = node;
 
-				// Make container focusable for keyboard navigation
-				if (!node.hasAttribute('tabindex')) {
+				// Make container focusable for keyboard navigation (virtual focus keeps
+				// DOM focus on the consumer's own element, e.g. a combobox input).
+				if (!node.hasAttribute('tabindex') && !opts.virtualFocus) {
 					node.setAttribute('tabindex', '0');
 				}
 
@@ -412,7 +438,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 				const pointerDownCleanup = pointerDown.reference?.(node);
 				if (opts.defaultFocusedIndex) {
 					const defaultFocusedIndex = opts.defaultFocusedIndex();
-					if (defaultFocusedIndex && defaultFocusedIndex !== -1) {
+					if (defaultFocusedIndex !== null && defaultFocusedIndex !== -1) {
 						moveFocusTo(defaultFocusedIndex);
 					}
 				}
@@ -428,9 +454,6 @@ export const useNavigation = (opts: NavigationOptions) => {
 			});
 		},
 		itemReference: (node: HTMLElement) => {
-			return;
-			const enabled = opts.enabled?.();
-			if (!enabled) return;
 			return untrack(() => {
 				// Add item to set
 				itemsSet.add(node);
@@ -439,7 +462,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 				// Handle hover - only move focus if enabled
 				const handleHover = () => {
-					if (opts.enableHoverFocus !== false && !isItemDisabled(node)) {
+					if (isEnabled() && opts.enableHoverFocus !== false && !isItemDisabled(node)) {
 						handleItemHover(node);
 					}
 				};

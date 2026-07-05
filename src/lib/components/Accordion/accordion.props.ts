@@ -22,9 +22,9 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 */
 			items: Item[];
 			/**
-			 * The function to call when the accordion item is toggled. Receives the item, index and isOpen state.
+			 * The function to call when the accordion item is toggled. Receives the item, index and open state.
 			 */
-			onToggle?: (otps: { item: Item; index: number; isOpen: boolean }) => void;
+			onToggle?: (options: { item: Item; index: number; open: boolean }) => void;
 			/**
 			 * Whether the accordion should only allow one item to be open at a time.
 			 */
@@ -64,6 +64,9 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 * The transitions of the accordion.
 			 */
 			transitions?: SlideTransitionProps;
+			/**
+			 * Theme overrides for the accordion root and item sub-parts (header, trigger, title, description, icon, content).
+			 */
 			theme?: AccordionThemeProps;
 			/**
 			 * Whether the accordion should be accessible when not expanded.

@@ -1,10 +1,9 @@
 export { default as Switch } from './Switch.svelte';
-export type { SwitchInputProps } from './switch.props.js';
+export type { SwitchProps } from './switch.props.js';
 export {
-	switchInputTheme,
-	setSwitchInputTheme,
-	useSwitchInputTheme,
-	type SwitchInputTheme,
-	type SwitchInputThemeProps
+	switchTheme,
+	setSwitchTheme,
+	useSwitchTheme,
+	type SwitchTheme,
+	type SwitchThemeProps
 } from './switch.theme.js';
-

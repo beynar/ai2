@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 	import Combobox from '$lib/components/Form/Combobox/Combobox.svelte';
 	import type { ComboboxOption } from '$lib/components/Form/Combobox/combobox.props.js';
 
@@ -85,120 +86,130 @@
 	let value7 = $state<string | null>('fr'); // Pre-selected value for demo
 </script>
 
-<!-- Example 1: Array Options -->
-<ComponentCard
-	title="Array Options"
-	description="Static array, filtered client-side"
-	class="flex !items-start"
+<DocPage
+	title="Combobox"
+	subtitle="A text input with a filterable dropdown of options."
+	component="Combobox"
+	features={[
+		'role=combobox with aria-autocomplete=list',
+		'Debounced search, async or static',
+		'Arrow keys, Enter, Escape navigation',
+		'Bindable value & searchValue',
+		'Loading, error & empty states'
+	]}
 >
-	<div class="w-full max-w-md">
-		<Combobox
-			showAllOnFocus
-			placeholder="Search countries..."
-			options={arrayOptions}
-			bind:value={value1}
-		/>
-	</div>
-</ComponentCard>
+	<ComponentCard
+		description="Static array, filtered client-side"
+		code={`<Combobox
+	showAllOnFocus
+	placeholder="Search countries..."
+	items={[
+		{ value: 'us', label: 'United States', description: 'North America' },
+		{ value: 'uk', label: 'United Kingdom', description: 'Europe' },
+		{ value: 'fr', label: 'France', description: 'Europe' }
+	]}
+	bind:value
+/>`}
+	>
+		<div class="w-full max-w-md">
+			<Combobox
+				showAllOnFocus
+				placeholder="Search countries..."
+				items={arrayOptions}
+				bind:value={value1}
+			/>
+		</div>
+	</ComponentCard>
 
-<!-- Example 2: Async Function Options -->
-<ComponentCard
-	title="Async Function"
-	description="Simulated API call with 300ms delay"
-	class="flex !items-start"
->
-	<div class="w-full max-w-md">
-		<Combobox placeholder="Search async..." options={getAsyncOptions} bind:value={value2} />
-		{#if value2}
-			<p class="text-contrast-muted mt-2 text-xs">Selected: {value2}</p>
-		{/if}
-	</div>
-</ComponentCard>
+	{#snippet examples()}
+		<!-- Example 1: Array Options -->
+		<ComponentCard description="Static array, filtered client-side">
+			<div class="w-full max-w-md">
+				<Combobox
+					showAllOnFocus
+					placeholder="Search countries..."
+					items={arrayOptions}
+					bind:value={value1}
+				/>
+			</div>
+		</ComponentCard>
 
-<!-- Example 3: Non-Async Function Options -->
-<ComponentCard
-	title="Synchronous Function"
-	description="Non-async function, instant filtering"
-	class="flex !items-start"
->
-	<div class="w-full max-w-md">
-		<Combobox placeholder="Search languages..." options={getSyncOptions} bind:value={value3} />
-		{#if value3}
-			<p class="text-contrast-muted mt-2 text-xs">Selected: {value3}</p>
-		{/if}
-	</div>
-</ComponentCard>
+		<!-- Example 2: Async Function Options -->
+		<ComponentCard description="Simulated API call with 300ms delay">
+			<div class="w-full max-w-md">
+				<Combobox placeholder="Search async..." items={getAsyncOptions} bind:value={value2} />
+				{#if value2}
+					<p class="text-foreground-muted mt-2 text-xs">Selected: {value2}</p>
+				{/if}
+			</div>
+		</ComponentCard>
 
-<!-- Example 4: Async with Error Handling -->
-<ComponentCard
-	title="Async with Error Handling"
-	description="Shows error state if API fails"
-	class="flex !items-start"
->
-	<div class="w-full max-w-md">
-		<Combobox
-			placeholder="Search countries..."
-			options={getAsyncOptionsWithError}
-			bind:value={value4}
-		/>
-		{#if value4}
-			<p class="text-contrast-muted mt-2 text-xs">Selected: {value4}</p>
-		{/if}
-	</div>
-</ComponentCard>
+		<!-- Example 3: Non-Async Function Options -->
+		<ComponentCard description="Non-async function, instant filtering">
+			<div class="w-full max-w-md">
+				<Combobox placeholder="Search languages..." items={getSyncOptions} bind:value={value3} />
+				{#if value3}
+					<p class="text-foreground-muted mt-2 text-xs">Selected: {value3}</p>
+				{/if}
+			</div>
+		</ComponentCard>
 
-<!-- Example 5: Array Options (No Prefix) -->
-<ComponentCard
-	title="Array Options (No Prefix)"
-	description="Prefix set to false to hide the default magnifying glass icon"
-	class="flex !items-start"
->
-	<div class="w-full max-w-md">
-		<Combobox
-			placeholder="Search countries..."
-			options={countries}
-			prefix={false}
-			bind:value={value5}
-		/>
-		{#if value5}
-			<p class="text-contrast-muted mt-2 text-xs">Selected: {value5}</p>
-		{/if}
-	</div>
-</ComponentCard>
+		<!-- Example 4: Async with Error Handling -->
+		<ComponentCard description="Shows error state if API fails">
+			<div class="w-full max-w-md">
+				<Combobox
+					placeholder="Search countries..."
+					items={getAsyncOptionsWithError}
+					bind:value={value4}
+				/>
+				{#if value4}
+					<p class="text-foreground-muted mt-2 text-xs">Selected: {value4}</p>
+				{/if}
+			</div>
+		</ComponentCard>
 
-<!-- Example 6: Show All Options on Focus -->
-<ComponentCard
-	title="Show All Options on Focus"
-	description="Displays all options when focused, even without typing"
-	class="flex !items-start"
->
-	<div class="w-full max-w-md">
-		<Combobox
-			placeholder="Search countries..."
-			options={arrayOptions}
-			showAllOnFocus={true}
-			bind:value={value6}
-		/>
-		{#if value6}
-			<p class="text-contrast-muted mt-2 text-xs">Selected: {value6}</p>
-		{/if}
-	</div>
-</ComponentCard>
+		<!-- Example 5: Array Options (No Prefix) -->
+		<ComponentCard description="Prefix set to false to hide the default magnifying glass icon">
+			<div class="w-full max-w-md">
+				<Combobox
+					placeholder="Search countries..."
+					items={countries}
+					prefix={false}
+					bind:value={value5}
+				/>
+				{#if value5}
+					<p class="text-foreground-muted mt-2 text-xs">Selected: {value5}</p>
+				{/if}
+			</div>
+		</ComponentCard>
 
-<!-- Example 7: Default Value with getValueLabel -->
-<ComponentCard
-	title="Default Value with getValueLabel"
-	description="Shows label for default value even when options haven't loaded yet"
-	class="flex !items-start"
->
-	<div class="w-full max-w-md">
-		<Combobox
-			placeholder="Search async..."
-			options={getAsyncOptions}
-			bind:value={value7}
-			getValueOption={(value) => {
-				return countries.find((option) => option.value === value) || null;
-			}}
-		/>
-	</div>
-</ComponentCard>
+		<!-- Example 6: Show All Options on Focus -->
+		<ComponentCard description="Displays all options when focused, even without typing">
+			<div class="w-full max-w-md">
+				<Combobox
+					placeholder="Search countries..."
+					items={arrayOptions}
+					showAllOnFocus={true}
+					bind:value={value6}
+				/>
+				{#if value6}
+					<p class="text-foreground-muted mt-2 text-xs">Selected: {value6}</p>
+				{/if}
+			</div>
+		</ComponentCard>
+
+		<!-- Example 7: Default Value with getValueLabel -->
+		<ComponentCard description="Shows label for default value even when options haven't loaded yet">
+			<div class="w-full max-w-md">
+				<Combobox
+					placeholder="Search async..."
+					items={getAsyncOptions}
+					bind:value={value7}
+					getValueOption={(value) => {
+						return countries.find((option) => option.value === value) || null;
+					}}
+				/>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

@@ -16,11 +16,11 @@ The NetworkIndicator component is a loading indicator that appears at the top of
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'contrast' | 'surface' (default: 'contrast')
+- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'foreground')
   - Determines the color scheme of the network indicator
-  - contrast: High contrast color (default)
+  - foreground: High foreground color (default)
   - primary, secondary, danger, success, warning, info: Semantic colors
-  - surface: Muted surface color
+  - background: Muted background color
 
 - **size**: number (default: 3)
   - The height of the network indicator in pixels
@@ -131,7 +131,7 @@ The component is typically placed in your root layout file (\`+layout.svelte\`) 
 
 <NetworkIndicator
 	theme={{
-		networkIndicator: {
+		root: {
 			base: 'shadow-lg'
 		}
 	}}
@@ -159,7 +159,7 @@ This is useful for showing loading states during API calls or other asynchronous
 
 The network indicator uses the Web Animations API for smooth, hardware-accelerated animations. You can customize the appearance by:
 
-1. Using the \`color\` prop to change the color scheme (default: 'contrast')
+1. Using the \`color\` prop to change the color scheme (default: 'foreground')
 2. Setting the \`size\` prop to control the height in pixels (default: 3px)
 3. Adjusting the \`delay\` prop to control animation speed (default: 300ms)
 4. Selecting an \`easing\` function for different animation styles (default: 'cubicInOut')
@@ -228,7 +228,7 @@ The NetworkIndicator is a purely visual component that provides feedback about l
 
 - Use consistent colors that match your app's theme
 - Keep the indicator thin (2-5px) to avoid being too intrusive
-- Ensure the indicator color has sufficient contrast against your app's background
+- Ensure the indicator color has sufficient foreground against your app's background
 - Consider providing ARIA live regions for screen reader announcements of loading states
 - The component is positioned fixed at the top of the viewport, making it visible but non-intrusive
 
@@ -251,14 +251,14 @@ The NetworkIndicator component uses a theme object that can be customized using 
 ### Theme Structure
 
 The theme object contains the following parts:
-- **networkIndicator**: Main indicator bar styles
+- **root**: Main indicator bar styles
 
 ### Available Variants
 
-**networkIndicator**:
+**root**:
 - base: Base classes for indicator bar (positioned fixed at top)
 - Variants:
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Indicator color
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Indicator color
 
 ### Usage Examples
 
@@ -266,7 +266,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <NetworkIndicator 
   theme={{
-    networkIndicator: {
+    root: {
       base: 'fixed top-0 left-0 w-full z-[9999] rounded-xl',
       color: {
         primary: 'bg-primary shadow-primary'
@@ -281,7 +281,7 @@ The theme object contains the following parts:
 <NetworkIndicator 
   color="success"
   theme={{
-    networkIndicator: {
+    root: {
       base: 'fixed top-0 left-0 w-full z-[9999] shadow-lg',
       color: {
         success: 'bg-green-500 shadow-green-500'
@@ -297,10 +297,10 @@ The theme object contains the following parts:
   import { setNetworkIndicatorTheme } from 'svelai/network-indicator';
   
   setNetworkIndicatorTheme({
-    networkIndicator: {
+    root: {
       base: 'fixed top-0 left-0 w-full z-[9999] origin-left rounded-xl',
       color: {
-        contrast: 'bg-gray-900 shadow-gray-900',
+        foreground: 'bg-gray-900 shadow-gray-900',
         primary: 'bg-blue-500 shadow-blue-500'
       }
     }

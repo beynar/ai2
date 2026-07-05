@@ -46,19 +46,28 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			// Date value changed
-		},
+		onChange: () => {},
 		get disabled() {
 			return disabled;
 		},
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'date'
 	});
 
@@ -154,7 +163,11 @@
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base, disabled: field.disabled, size: rest.size })
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
 		}
 	}}
 	{...rest}

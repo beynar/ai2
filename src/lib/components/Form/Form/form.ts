@@ -2,12 +2,13 @@ import type { FieldValue } from '../Field/field.js';
 import type { FieldState } from '../Field/fieldState.svelte.js';
 import type { TextInputProps } from '../TextInput/textInput.props.js';
 import type { NumberInputProps } from '../NumberInput/numberInput.props.js';
+import type { SliderProps } from '../Slider/slider.props.js';
 import type { TextAreaProps } from '../TextArea/textArea.props.js';
 import type { SelectProps } from '../Select/select.props.js';
 import type { ComboboxProps } from '../Combobox/combobox.props.js';
 import type { RadioInputProps } from '../RadioInput/radioInput.props.js';
-import type { CheckBoxesInputProps } from '../CheckboxesInput/checkBoxesInput.props.js';
-import type { SwitchInputProps } from '../Switch/switch.props.js';
+import type { CheckboxesInputProps } from '../CheckboxesInput/checkboxesInput.props.js';
+import type { SwitchProps } from '../Switch/switch.props.js';
 import type { PhoneInputProps } from '../PhoneInput/phoneInput.props.js';
 import type { CalendarInputProps } from '../Calendar/calendarInput.props.js';
 import type { DateInputProps } from '../DateInput/dateInput.props.js';
@@ -28,6 +29,12 @@ type BaseFormInput =
 			type: 'number';
 	  } & NumberInputProps)
 	| ({
+			type: 'slider';
+	  } & SliderProps)
+	| ({
+			type: 'slider-range';
+	  } & SliderProps)
+	| ({
 			type: 'calendar' | 'calendar-range';
 	  } & CalendarInputProps<'calendar' | 'calendar-range'>)
 	| ({
@@ -39,9 +46,6 @@ type BaseFormInput =
 	| ({
 			type: 'password';
 	  } & TextInputProps)
-	| ({
-			type: 'number';
-	  } & NumberInputProps)
 	| ({
 			type: 'textarea';
 	  } & TextAreaProps)
@@ -56,10 +60,10 @@ type BaseFormInput =
 	  } & RadioInputProps)
 	| ({
 			type: 'checkboxes';
-	  } & CheckBoxesInputProps)
+	  } & CheckboxesInputProps)
 	| ({
 			type: 'switch';
-	  } & SwitchInputProps)
+	  } & SwitchProps)
 	| ({
 			type: 'file';
 	  } & FileInputProps<'single'>)
@@ -80,7 +84,7 @@ export type FormInput = BaseFormInput extends infer T
 export type FormInputs = Record<string, FormInput>;
 // | ({
 // 		type: 'switch';
-//   } & SwitchInputProps)
+//   } & SwitchProps)
 // | ({
 // 		type: 'textarea';
 //   } & TextAreaProps)
@@ -113,7 +117,7 @@ export type FormInputs = Record<string, FormInput>;
 //   } & RadioInputProps)
 // | ({
 // 		type: 'checkboxes';
-//   } & CheckBoxesInputProps);
+//   } & CheckboxesInputProps);
 
 type FormState<T extends FormInputs> = {
 	[K in keyof T]: T[K] extends FormInput ? FieldState<T[K]['type']> : never;

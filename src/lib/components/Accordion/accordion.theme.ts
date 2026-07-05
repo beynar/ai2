@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultAccordion = cva({
 	base: 'grid h-fit',
@@ -23,7 +23,7 @@ const defaultAccordion = cva({
 		{
 			splitted: false,
 			variant: 'outlined',
-			class: 'border border-surface-muted rounded'
+			class: 'border border-background-muted rounded'
 		},
 		{
 			splitted: false,
@@ -42,7 +42,7 @@ const defaultAccordionItem = cva({
 			large: ''
 		},
 		variant: {
-			classic: 'border-b border-surface-muted last:border-0',
+			classic: 'border-b border-background-muted last:border-0',
 			card: '',
 			outlined: ''
 		},
@@ -59,7 +59,7 @@ const defaultAccordionItem = cva({
 		{
 			variant: 'outlined',
 			splitted: true,
-			className: 'border border-surface-muted rounded'
+			className: 'border border-background-muted rounded'
 		},
 		{
 			variant: 'card',
@@ -75,17 +75,18 @@ const defaultAccordionItem = cva({
 });
 
 const defaultAccordionTrigger = cva({
-	base: 'cursor-default p-2 transition-all w-full flex items-center gap-2 hover:bg-surface-lighter',
+	base: 'group/accordion-trigger cursor-pointer py-2.5 transition-all w-full flex items-center gap-2 outline-none rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50',
 	variants: {
 		size: {
 			normal: '',
-			small: '',
-			large: ''
+			small: 'py-2',
+			large: 'py-3'
 		},
 		variant: {
-			classic: '',
-			card: '',
-			outlined: ''
+			// Nova default: flush trigger, no hover background — the title underlines on hover.
+			classic: 'px-0',
+			card: 'px-2 hover:bg-background-lighter',
+			outlined: 'px-2 hover:bg-background-lighter'
 		},
 		splitted: {
 			true: 'rounded',
@@ -111,7 +112,7 @@ const defaultAccordionHeader = cva({
 });
 
 const defaultAccordionTitle = cva({
-	base: 'text-contrast text-base',
+	base: 'text-foreground font-medium',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -119,7 +120,7 @@ const defaultAccordionTitle = cva({
 			large: 'text-base'
 		},
 		variant: {
-			classic: '',
+			classic: 'group-hover/accordion-trigger:underline',
 			card: '',
 			outlined: ''
 		}
@@ -127,7 +128,7 @@ const defaultAccordionTitle = cva({
 });
 
 const defaultAccordionDescription = cva({
-	base: 'text-contrast-muted text-sm',
+	base: 'text-foreground-muted text-sm',
 	variants: {
 		size: {
 			normal: 'text-xs',
@@ -143,7 +144,7 @@ const defaultAccordionDescription = cva({
 });
 
 const defaultAccordionIcon = cva({
-	base: 'transition-all',
+	base: 'transition-all text-foreground-muted shrink-0',
 	variants: {
 		size: {
 			small: 'size-3',
@@ -159,7 +160,7 @@ const defaultAccordionIcon = cva({
 });
 
 const defaultAccordionContent = cva({
-	base: 'p-2 text-sm origin-top w-full',
+	base: 'pt-0 pb-2.5 origin-top w-full',
 	variants: {
 		size: {
 			normal: 'text-sm',
@@ -167,15 +168,16 @@ const defaultAccordionContent = cva({
 			large: 'text-base'
 		},
 		variant: {
-			classic: '',
-			card: '',
-			outlined: ''
+			// Nova default: content flush with the trigger text.
+			classic: 'px-0',
+			card: 'px-2',
+			outlined: 'px-2'
 		}
 	}
 });
 
 export const accordionTheme = {
-	accordion: defaultAccordion,
+	root: defaultAccordion,
 	item: defaultAccordionItem,
 	header: defaultAccordionHeader,
 	trigger: defaultAccordionTrigger,
@@ -188,4 +190,4 @@ export const accordionTheme = {
 export type AccordionTheme = typeof accordionTheme;
 export type AccordionThemeProps = InferComponentTheme<AccordionTheme>;
 export const setAccordionTheme = setComponentTheme<AccordionTheme>('accordion');
-export const useAccordionTheme = useComponentTheme('accordion', accordionTheme);
+export const useAccordionTheme = useComponentTheme<AccordionTheme>('accordion', accordionTheme);

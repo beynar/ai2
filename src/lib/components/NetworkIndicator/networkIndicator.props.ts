@@ -6,7 +6,7 @@ import type { Easing } from '$lib/transitions/easingFunctions.js';
 export type NetworkIndicatorProps = WithAttachments<{
 	/**
 	 * The color scheme of the network indicator.
-	 * @default 'contrast'
+	 * @default 'foreground'
 	 */
 	color?: Colors;
 	/**

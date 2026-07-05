@@ -196,7 +196,7 @@ export class Toast {
 	timer = $state<Timer | undefined>(undefined);
 	index = $state(0);
 	opts = $state<MakeRequired<ToastOptions, 'position'>>({
-		color: 'contrast',
+		color: 'foreground',
 		position: 'bottom-center',
 		id: Math.random().toString(36).substring(7)
 	});

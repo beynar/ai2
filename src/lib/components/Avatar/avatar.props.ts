@@ -34,10 +34,15 @@ export type AvatarProps<I> = WithAttachments<{
 	 */
 	class?: string;
 	loadingState?: LoadingState;
+	/** Slot overlay positioned at the bottom-left corner of the avatar. */
 	prefix?: Slot;
+	/** Slot overlay positioned at the bottom-right corner of the avatar. */
 	suffix?: Slot;
+	/** Theme overrides for avatar, image, prefix, suffix, and initials parts. */
 	theme?: AvatarThemeProps;
 }>;
+
+type AvatarUser<I extends object> = Pick<AvatarProps<I>, 'user'>['user'];
 
 export type AvatarGroupProps<I extends object> = WithoutAttachments<Omit<AvatarProps<I>, 'user'>> &
 	WithAttachments<{
@@ -45,10 +50,16 @@ export type AvatarGroupProps<I extends object> = WithoutAttachments<Omit<AvatarP
 		 * The class name of the avatar group. First element that the component outputs in the DOM.
 		 */
 		class?: string;
+		/** Maximum number of avatars to display before showing a remaining count. */
 		max?: number;
-		avatar?: Snippet<[{ user: I; index: number; avatarProps: Omit<AvatarProps<I>, 'user'> }]>;
-		remainingCount?: Snippet<[{ users: I[]; remaining: number }]>;
-		users: Pick<AvatarProps<I>, 'user'>['user'][];
+		/** Custom snippet to render each avatar instead of the default Avatar component. */
+		avatar?: Snippet<
+			[{ user: AvatarUser<I>; index: number; avatarProps: Omit<AvatarProps<I>, 'user'> }]
+		>;
+		/** Custom snippet to render the overflow count when items exceed max. */
+		remainingCount?: Snippet<[{ items: AvatarUser<I>[]; remaining: number }]>;
+		/** Items displayed in the group. */
+		items: AvatarUser<I>[];
+		/** Theme overrides for the group container and overflow count. */
 		theme?: AvatarGroupThemeProps;
 	}>;
-

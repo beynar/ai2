@@ -7,7 +7,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 
 \`\`\`svelte
 <ButtonGroup 
-	buttons={[
+	items={[
 		{ children: 'First' },
 		{ children: 'Second' },
 		{ children: 'Third' }
@@ -18,12 +18,12 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 ## Props
 
 ### Core Props
-- **buttons**: Array<ButtonProps> (required) - Array of button configurations
+- **items**: Array<ButtonProps> (required) - Array of button configurations
   - Each button can have all standard Button component props
 
 ### Shared Button Props
 - **size**: 'small' | 'normal' | 'large' - Applied to all buttons in the group
-- **color**: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' - Shared color for all buttons
+- **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' - Shared color for all buttons
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' | 'link' - Shared variant for all buttons
 - **disabled**: boolean - Disables all buttons in the group
 
@@ -46,7 +46,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 ### Basic Button Group
 \`\`\`svelte
 <ButtonGroup 
-	buttons={[
+	items={[
 		{ children: 'Left' },
 		{ children: 'Center' },
 		{ children: 'Right' }
@@ -60,7 +60,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 	size="large"
 	color="primary"
 	variant="outline"
-	buttons={[
+	items={[
 		{ children: 'Option 1' },
 		{ children: 'Option 2' },
 		{ children: 'Option 3' }
@@ -71,7 +71,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 ### With Icons
 \`\`\`svelte
 <ButtonGroup 
-	buttons={[
+	items={[
 		{ 
 			prefix: () => '<Icon name="align-left" />',
 			children: 'Left' 
@@ -97,7 +97,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 </script>
 
 <ButtonGroup 
-	buttons={[
+	items={[
 		{ 
 			children: 'Save',
 			onClick: () => handleOption('save')
@@ -114,7 +114,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 \`\`\`svelte
 <ButtonGroup 
 	disabled
-	buttons={[
+	items={[
 		{ children: 'Option 1' },
 		{ children: 'Option 2' }
 	]}
@@ -124,7 +124,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 ### Icon Only Buttons
 \`\`\`svelte
 <ButtonGroup 
-	buttons={[
+	items={[
 		{ 
 			squared: true,
 			prefix: () => '<Icon name="bold" />'
@@ -145,9 +145,9 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 \`\`\`svelte
 <ButtonGroup 
 	variant="outline"
-	buttons={[
+	items={[
 		{ children: 'Active', color: 'primary' },
-		{ children: 'Default', color: 'surface' },
+		{ children: 'Default', color: 'background' },
 		{ children: 'Disabled', disabled: true }
 	]}
 />
@@ -160,7 +160,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 </script>
 
 <ButtonGroup 
-	buttons={[
+	items={[
 		{ 
 			children: 'Day',
 			variant: selected === 'day' ? 'solid' : 'ghost',
@@ -209,11 +209,11 @@ The ButtonGroup component uses a theme object that can be customized using the \
 ### Theme Structure
 
 The theme object contains the following parts:
-- **buttonGroup**: Main button group container styles
+- **root**: Main button group container styles
 
 ### Available Variants
 
-**buttonGroup**:
+**root**:
 - base: Base classes for button group container (handles border radius and border connections between buttons)
 
 ### Usage Examples
@@ -221,9 +221,9 @@ The theme object contains the following parts:
 **Basic Theme Override**:
 \`\`\`svelte
 <ButtonGroup 
-  buttons={buttons}
+  items={buttons}
   theme={{
-    buttonGroup: {
+    root: {
       base: 'flex items-center rounded-lg overflow-hidden'
     }
   }}
@@ -233,9 +233,9 @@ The theme object contains the following parts:
 **Custom Group Styling**:
 \`\`\`svelte
 <ButtonGroup 
-  buttons={buttons}
+  items={buttons}
   theme={{
-    buttonGroup: {
+    root: {
       base: 'flex items-center gap-0 border-2 border-primary rounded-lg overflow-hidden'
     }
   }}
@@ -248,7 +248,7 @@ The theme object contains the following parts:
   import { setButtonGroupTheme } from 'svelai/button-group';
   
   setButtonGroupTheme({
-    buttonGroup: {
+    root: {
       base: 'flex items-center first-child:rounded-r-none last-child:rounded-l-none'
     }
   });

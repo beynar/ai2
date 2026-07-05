@@ -77,12 +77,12 @@ The Collapsible component provides a way to show and hide content with a toggle 
 ### Example 2 - Controlled
 \`\`\`svelte
 <script>
-	let isOpen = false;
+	let open = false;
 </script>
 
-<Collapsible bind:open={isOpen} onOpenChange={(open) => console.log('State:', open)}>
+<Collapsible bind:open={open} onOpenChange={(open) => console.log('State:', open)}>
 	{#snippet trigger()}
-		Toggle (Currently: {isOpen ? 'Open' : 'Closed'})
+		Toggle (Currently: {open ? 'Open' : 'Closed'})
 	{/snippet}
 	{#snippet content()}
 		<p>Controlled content</p>
@@ -175,14 +175,14 @@ The Collapsible component uses a theme object that can be customized using the \
 ### Theme Structure
 
 The theme object contains the following parts:
-- **container**: Main collapsible container styles
+- **root**: Main collapsible container styles
 - **trigger**: Toggle trigger button styles
 - **content**: Collapsible content panel styles
 - **icon**: Expand/collapse icon styles
 
 ### Available Variants
 
-**container**:
+**root**:
 - base: Base classes for main container
 - Variants:
   - size: 'small' | 'normal' | 'large' - Container size
@@ -209,7 +209,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Collapsible 
   theme={{
-    container: {
+    root: {
       base: 'w-full'
     },
     trigger: {
@@ -264,7 +264,7 @@ The theme object contains the following parts:
   import { setCollapsibleTheme } from 'svelai/collapsible';
   
   setCollapsibleTheme({
-    container: {
+    root: {
       base: 'w-full flex flex-col'
     },
     trigger: {

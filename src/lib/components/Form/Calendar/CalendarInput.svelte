@@ -62,11 +62,24 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
-		type: (type || 'calendar') as T
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
+		get type() {
+			return (type || 'calendar') as T;
+		}
 	});
 </script>
 

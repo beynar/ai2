@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultMeter = cva({
 	base: 'flex flex-col relative',
@@ -36,7 +36,7 @@ const defaultMeterContainer = cva({
 });
 
 const defaultMeterLabel = cva({
-	base: 'text-sm text-contrast-lighter',
+	base: 'text-sm text-foreground-lighter',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -47,7 +47,7 @@ const defaultMeterLabel = cva({
 });
 
 const defaultMeterHelper = cva({
-	base: 'text-sm text-contrast-lighter',
+	base: 'text-sm text-foreground-lighter',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -58,7 +58,7 @@ const defaultMeterHelper = cva({
 });
 
 const defaultMeterDescription = cva({
-	base: 'text-contrast-lighter text-sm',
+	base: 'text-foreground-lighter text-sm',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -80,7 +80,7 @@ const defaultMeterProgress = cva({
 });
 
 const defaultMeterTrack = cva({
-	base: 'flex items-center justify-start bg-surface-muted/50 rounded-full relative',
+	base: 'flex items-center justify-start bg-background-muted/50 rounded-full relative',
 	variants: {
 		size: {
 			small: 'h-1',
@@ -147,7 +147,7 @@ const defaultMeterLegendIcon = cva({
 });
 
 const defaultMeterLegendLabel = cva({
-	base: 'text-contrast-lighter',
+	base: 'text-foreground-lighter',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -158,7 +158,7 @@ const defaultMeterLegendLabel = cva({
 });
 
 const defaultMeterLegendPercentage = cva({
-	base: 'text-contrast-lighter font-medium',
+	base: 'text-foreground-lighter font-medium',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -169,7 +169,7 @@ const defaultMeterLegendPercentage = cva({
 });
 
 export const meterTheme = {
-	meter: defaultMeter,
+	root: defaultMeter,
 	header: defaultMeterHeader,
 	container: defaultMeterContainer,
 	label: defaultMeterLabel,
@@ -188,4 +188,4 @@ export const meterTheme = {
 export type MeterTheme = typeof meterTheme;
 export type MeterThemeProps = InferComponentTheme<MeterTheme>;
 export const setMeterTheme = setComponentTheme<MeterTheme>('meter');
-export const useMeterTheme = useComponentTheme('meter', meterTheme);
+export const useMeterTheme = useComponentTheme<MeterTheme>('meter', meterTheme);

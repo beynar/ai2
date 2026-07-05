@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { mix, toHex, hasBadContrast } from 'color2k';
-import { darken, lighten, saturate, formatCSS } from 'colorizr';
+import { darken, lighten, saturate, formatCSS, hex2oklch, oklch2hex } from 'colorizr';
 
 const isHex = (color: string): color is `#${string}` => {
 	if (!color) {
@@ -316,14 +316,14 @@ export const tailwindColors = {
 } as const;
 
 export type ColorTheme = {
-	[K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'surface' | 'contrast'}${
-		| 'light'
-		| 'lighter'
-		| 'dark'
-		| 'muted'
-		| 'fg'}`]?: string;
+	[
+		K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'background' | 'foreground'}${
+			'light' | 'lighter' | 'dark' | 'muted' | 'contrast'}`
+	]?: string;
 } & {
-	[K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'surface' | 'contrast'}`]?: string;
+	[
+		K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'background' | 'foreground'}`
+	]?: string;
 };
 
 export type TailwindColor = keyof typeof tailwindColors;
@@ -336,6 +336,10 @@ type LowerFirstLetter<T extends string> = T extends `${infer First}${infer Rest}
 
 type ColorRecord = Record<LowerFirstLetter<(typeof variants)[number]>, string | null> & {
 	DEFAULT: string;
+	// Accent pushed to a readable lightness for a given surface, hue/chroma kept.
+	// `readable` = on the page background (ghost/outline/link); `muted-readable` = on this color's muted tint (soft).
+	readable?: string | null;
+	'muted-readable'?: string | null;
 };
 type Colors = {
 	primary: ColorRecord;
@@ -344,8 +348,8 @@ type Colors = {
 	success: ColorRecord;
 	warning: ColorRecord;
 	info: ColorRecord;
-	surface: ColorRecord;
-	contrast: ColorRecord;
+	background: ColorRecord;
+	foreground: ColorRecord;
 };
 
 type DeepNonNullable<T> = {
@@ -356,7 +360,7 @@ type DeepNonNullable<T> = {
 			: T[K];
 };
 
-export const variants = ['Light', 'Lighter', 'Dark', 'Muted', 'Fg'] as const;
+export const variants = ['Light', 'Lighter', 'Dark', 'Muted', 'Contrast'] as const;
 export const colors = [
 	'primary',
 	'secondary',
@@ -364,12 +368,12 @@ export const colors = [
 	'success',
 	'warning',
 	'info',
-	'surface',
-	'contrast'
+	'background',
+	'foreground'
 ] as const;
 
-const baseBlackColor = '#121212';
-const baseWhiteColor = '#FAFAFA';
+const baseBlackColor = '#000000';
+const baseWhiteColor = '#FFFFFF';
 
 const defaultColorsLight = {
 	primary: '#6366f1',
@@ -378,8 +382,8 @@ const defaultColorsLight = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	surface: baseWhiteColor,
-	contrast: baseBlackColor
+	background: baseWhiteColor,
+	foreground: baseBlackColor
 } as const;
 const defaultColorsDark = {
 	primary: '#6366f1',
@@ -388,8 +392,8 @@ const defaultColorsDark = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	surface: baseBlackColor,
-	contrast: baseWhiteColor
+	background: baseBlackColor,
+	foreground: baseWhiteColor
 } as const;
 
 type ColorThemeOption = {
@@ -430,8 +434,8 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 			success: {},
 			warning: {},
 			info: {},
-			surface: {},
-			contrast: {}
+			background: {},
+			foreground: {}
 		} as Colors
 	);
 };
@@ -452,51 +456,85 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		return color;
 	};
 
+	// Colored text for a specific surface. Pin the accent to a fixed perceptual lightness in
+	// OKLCH (dark in light mode, light in dark mode) while keeping its hue and chroma — vivid,
+	// consistent "colored text on a tint" like a design-system -600/-700 step. Near-neutral
+	// accents (e.g. secondary) keep ~0 chroma and stay gray. The surface only drives the
+	// contrast-safety nudge, so each variant gets text readable against the surface it sits on.
+	const readableOn = (accent: string, surface: string) => {
+		const { h, c } = hex2oklch(toHex(accent));
+		const surfaceHex = toHex(surface);
+		let l = isDark ? 0.78 : 0.55;
+		let text = oklch2hex({ l, c, h });
+		while (hasBadContrast(surfaceHex, 'readable', text) && l > 0.15 && l < 0.95) {
+			l += isDark ? 0.02 : -0.02;
+			text = oklch2hex({ l, c, h });
+		}
+		return text;
+	};
+
+	// The page background: where ghost/outline/link text sits.
+	const backgroundSurface = colors.background.DEFAULT || (isDark ? baseBlackColor : baseWhiteColor);
+
 	const shades = (color: ColorRecord) => {
 		const baseColor = adjustColor(color.DEFAULT as string);
+		const muted =
+			color.muted ||
+			(isDark ? mix(baseColor, baseBlackColor, 0.8) : mix(baseColor, baseWhiteColor, 0.9));
 		return {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || darken(baseColor, 15),
 			light: color.light || lighten(baseColor, 15),
 			lighter: color.lighter || lighten(baseColor, 25),
-			muted: color.muted || mix(baseColor, isDark ? baseBlackColor : baseWhiteColor, 0.95),
-			fg: color.fg || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor)
+			muted,
+			contrast:
+				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
+			readable: readableOn(color.DEFAULT as string, backgroundSurface),
+			'muted-readable': readableOn(color.DEFAULT as string, muted)
 		};
 	};
 
 	const generateWhiteShade = (color: ColorRecord) => {
 		const baseColor = color.DEFAULT || (isDark ? baseWhiteColor : baseBlackColor);
+		const muted =
+			color.muted ||
+			(!isDark
+				? // For background on light theme
+					mix(baseColor, baseBlackColor, 0.06)
+				: // For foreground on dark themes
+					mix(baseColor, baseBlackColor, 0.5));
 		return {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || darken(baseColor, 2),
 			light: color.light || lighten(baseColor, 5),
-			lighter: color.lighter || lighten(baseColor, 25),
-			muted:
-				color.muted ||
-				(!isDark
-					? // For surface on light theme
-						mix(baseColor, baseBlackColor, 0.2)
-					: // For contrast on dark themes
-						mix(baseColor, baseBlackColor, 0.5)),
-			fg: color.fg || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor)
+			lighter: color.lighter || lighten(baseColor, 15),
+			muted,
+			contrast:
+				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
+			readable: readableOn(baseColor, backgroundSurface),
+			'muted-readable': readableOn(baseColor, muted)
 		};
 	};
 
 	const generateBlackShade = (color: ColorRecord) => {
 		const baseColor = color.DEFAULT || (isDark ? baseBlackColor : baseWhiteColor);
+		const muted =
+			color.muted ||
+			(isDark
+				? // For background on dark theme
+					mix(baseColor, baseWhiteColor, 0.1)
+				: // For foreground on light themes
+					mix(baseColor, baseWhiteColor, 0.5));
 		return {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || darken(baseColor, 2),
 			light: color.light || lighten(baseColor, 5),
-			lighter: color.lighter || lighten(baseColor, 25),
-			muted:
-				color.muted ||
-				(isDark
-					? // For surface on dark theme
-						mix(baseColor, baseWhiteColor, 0.2)
-					: // For contrast on light themes
-						mix(baseColor, baseWhiteColor, 0.5)),
-			fg: color.fg || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor)
+			lighter: color.lighter || lighten(baseColor, 15),
+			muted,
+			contrast:
+				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
+			readable: readableOn(baseColor, backgroundSurface),
+			'muted-readable': readableOn(baseColor, muted)
 		};
 	};
 
@@ -507,8 +545,12 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		success: shades(colors.success),
 		warning: shades(colors.warning),
 		info: shades(colors.info),
-		surface: isDark ? generateBlackShade(colors.surface) : generateWhiteShade(colors.surface),
-		contrast: isDark ? generateWhiteShade(colors.contrast) : generateBlackShade(colors.contrast)
+		background: isDark
+			? generateBlackShade(colors.background)
+			: generateWhiteShade(colors.background),
+		foreground: isDark
+			? generateWhiteShade(colors.foreground)
+			: generateBlackShade(colors.foreground)
 	} satisfies Colors;
 
 	const cssVariables = paletteToCssVariables(colorsPalette);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 	import RadioInput from '$lib/components/Form/RadioInput/RadioInput.svelte';
 	import Form from '$lib/components/Form/Form/Form.svelte';
 
@@ -19,75 +20,127 @@
 	];
 </script>
 
-<div class="grid gap-10">
-	<ComponentCard title="Radios Input - Normal Mode" class="flex !items-start">
+<DocPage
+	title="Radios"
+	subtitle="Lets users choose a single option from a set."
+	component="RadioInput"
+	features={[
+		'Fieldset groups mutually exclusive options',
+		'aria-label on each option button',
+		'Bindable single value selection',
+		'Normal and card display modes',
+		'Hidden native radio inputs'
+	]}
+>
+	<ComponentCard
+		description="Radio group with normal layout."
+		code={`<RadioInput
+	items={[
+		{ value: 'option1', label: 'Option 1', description: 'This is the first option' },
+		{ value: 'option2', label: 'Option 2', description: 'This is the second option' },
+		{ value: 'option3', label: 'Option 3', description: 'This is the third option' }
+	]}
+	mode="normal"
+	name="usage-radios"
+	label="Choose your option"
+	required
+/>`}
+	>
 		<div class="w-full max-w-md">
 			<RadioInput
 				onClick={(value) => {
 					console.log('clicked', value);
 				}}
-				options={normalOptions}
+				items={normalOptions}
 				mode="normal"
-				name="normal-radios"
+				name="usage-radios"
 				label="Choose your option"
 				required
 			/>
-			<div class="text-contrast-muted mt-4 text-sm">
+			<div class="text-foreground-muted mt-4 text-sm">
 				Selected: {selectedOptions.join(', ')}
 			</div>
 		</div>
 	</ComponentCard>
 
-	<ComponentCard title="Radios Input - Card Mode" class="flex !items-start">
-		<div class="w-full max-w-md">
-			<RadioInput
-				options={cardOptions}
-				mode="card"
-				name="card-radios"
-				label="Choose your card option"
-				required
-			/>
-			<div class="text-contrast-muted mt-4 text-sm">
-				Selected: {cardSelectedOptions.join(', ')}
+	{#snippet examples()}
+		<ComponentCard description="Radio group with normal layout.">
+			<div class="w-full max-w-md">
+				<RadioInput
+					onClick={(value) => {
+						console.log('clicked', value);
+					}}
+					items={normalOptions}
+					mode="normal"
+					name="normal-radios"
+					label="Choose your option"
+					required
+				/>
+				<div class="text-foreground-muted mt-4 text-sm">
+					Selected: {selectedOptions.join(', ')}
+				</div>
 			</div>
-		</div>
-	</ComponentCard>
+		</ComponentCard>
 
-	<ComponentCard title="Radios Input - Form Integration" class="flex !items-start">
-		<div class="w-full max-w-md">
-			<Form
-				inputs={{
-					preference: {
-						type: 'radio',
-						label: 'Your preference',
-						required: true,
-						mode: 'normal',
-						options: [
-							{
-								value: 'email',
-								label: 'Email notifications',
-								description: 'Receive updates via email'
-							},
-							{ value: 'sms', label: 'SMS notifications', description: 'Receive updates via SMS' },
-							{ value: 'none', label: 'No notifications', description: "Don't receive any updates" }
-						]
-					},
-					style: {
-						type: 'radio',
-						label: 'Interface style',
-						required: true,
-						mode: 'card',
-						options: [
-							{ value: 'light', label: 'Light theme', description: 'Clean and bright interface' },
-							{ value: 'dark', label: 'Dark theme', description: 'Easy on the eyes' },
-							{ value: 'auto', label: 'Auto theme', description: 'Follows system preference' }
-						]
-					}
-				}}
-				onSubmit={(data) => {
-					console.log('Form submitted:', data);
-				}}
-			/>
-		</div>
-	</ComponentCard>
-</div>
+		<ComponentCard description="Options rendered as selectable cards.">
+			<div class="w-full max-w-md">
+				<RadioInput
+					items={cardOptions}
+					mode="card"
+					name="card-radios"
+					label="Choose your card option"
+					required
+				/>
+				<div class="text-foreground-muted mt-4 text-sm">
+					Selected: {cardSelectedOptions.join(', ')}
+				</div>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Using type: 'radio' inside a Form.">
+			<div class="w-full max-w-md">
+				<Form
+					inputs={{
+						preference: {
+							type: 'radio',
+							label: 'Your preference',
+							required: true,
+							mode: 'normal',
+							items: [
+								{
+									value: 'email',
+									label: 'Email notifications',
+									description: 'Receive updates via email'
+								},
+								{
+									value: 'sms',
+									label: 'SMS notifications',
+									description: 'Receive updates via SMS'
+								},
+								{
+									value: 'none',
+									label: 'No notifications',
+									description: "Don't receive any updates"
+								}
+							]
+						},
+						style: {
+							type: 'radio',
+							label: 'Interface style',
+							required: true,
+							mode: 'card',
+							items: [
+								{ value: 'light', label: 'Light theme', description: 'Clean and bright interface' },
+								{ value: 'dark', label: 'Dark theme', description: 'Easy on the eyes' },
+								{ value: 'auto', label: 'Auto theme', description: 'Follows system preference' }
+							]
+						}
+					}}
+					onSubmit={(data) => {
+						console.log('Form submitted:', data);
+					}}
+				/>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

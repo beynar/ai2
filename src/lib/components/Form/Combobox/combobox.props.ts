@@ -5,18 +5,28 @@ import type { Snippet } from 'svelte';
 export type MaybePromise<T> = T | Promise<T>;
 
 export type ComboboxOption = {
+	/** Unique value submitted when this option is selected. */
 	value: string;
+	/** Display text shown in the option list and search input when selected. */
 	label: string;
+	/** Supporting text rendered below the option label in the dropdown. */
 	description?: string;
+	/** Optional arbitrary metadata attached to the option. */
 	data?: Record<string, any>;
 };
 
 export type ComboboxProps = Omit<InputProps<'combobox'>, 'prefix' | 'onChange'> & {
+	/** Called when the selection changes, with the new value and selected option (or null when cleared). */
 	onChange?: (value: string, option: ComboboxOption | null) => void;
+	/** Bindable text currently typed in the search input. */
 	searchValue?: string;
+	/** Bindable flag indicating async options are being fetched. */
 	loading?: boolean;
+	/** Hint text shown in the search input when no option is selected. */
 	placeholder?: string;
-	options: ComboboxOption[] | ((searchValue?: string) => MaybePromise<ComboboxOption[]>);
+	/** Static array or function returning items filtered by the current search value. */
+	items: ComboboxOption[] | ((searchValue?: string) => MaybePromise<ComboboxOption[]>);
+	/** When true, shows all options on focus without a search query (static arrays only). */
 	showAllOnFocus?: boolean;
 	/**
 	 * Function to get the label for a value when the option is not yet loaded.
@@ -36,5 +46,6 @@ export type ComboboxProps = Omit<InputProps<'combobox'>, 'prefix' | 'onChange'> 
 	 * Text to display when no options are found or available. Defaults to "No options found".
 	 */
 	noOptionsText?: string;
+	/** Theme overrides for the combobox dropdown, options, and field parts. */
 	theme?: ComboboxThemeProps & InputProps<'combobox'>['theme'];
 };

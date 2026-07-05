@@ -10,7 +10,17 @@ import { badgeDescription } from '$lib/components/Badge/badge.mcp.js';
 import { buttonDescription } from '$lib/components/Button/button.mcp.js';
 import { buttonGroupDescription } from '$lib/components/ButtonGroup/buttonGroup.mcp.js';
 import { chipDescription } from '$lib/components/Chip/chip.mcp.js';
+import { commandDescription } from '$lib/components/Command/command.mcp.js';
 import { codeDescription } from '$lib/components/Code/code.mcp.js';
+import { diffDescription } from '$lib/components/Diff/diff.mcp.js';
+import { appShellDescription } from '$lib/components/AppShell/appShell.mcp.js';
+import { pageShellDescription } from '$lib/components/PageShell/pageShell.mcp.js';
+import { sidebarDescription } from '$lib/components/Sidebar/sidebar.mcp.js';
+import { treeDescription } from '$lib/components/Tree/tree.mcp.js';
+import { mermaidDescription } from '$lib/components/Mermaid/mermaid.mcp.js';
+import { mapDescription } from '$lib/components/Map/map.mcp.js';
+import { emptyDescription } from '$lib/components/Empty/empty.mcp.js';
+import { kbdDescription } from '$lib/components/Kbd/kbd.mcp.js';
 import { dialogDescription } from '$lib/components/Dialog/dialog.mcp.js';
 import { calendarDescription } from '$lib/components/Form/Calendar/calendar.mcp.js';
 import { dateInputDescription } from '$lib/components/Form/DateInput/dateInput.mcp.js';
@@ -22,6 +32,7 @@ import { passwordInputDescription } from '$lib/components/Form/PasswordInput/pas
 import { phoneInputDescription } from '$lib/components/Form/PhoneInput/phoneInput.mcp.js';
 import { radioInputDescription } from '$lib/components/Form/RadioInput/radioInput.mcp.js';
 import { selectDescription } from '$lib/components/Form/Select/select.mcp.js';
+import { sliderDescription } from '$lib/components/Form/Slider/slider.mcp.js';
 import { switchDescription } from '$lib/components/Form/Switch/switch.mcp.js';
 import { textAreaDescription } from '$lib/components/Form/TextArea/textArea.mcp.js';
 import { textInputDescription } from '$lib/components/Form/TextInput/textInput.mcp.js';
@@ -44,19 +55,25 @@ import { toastDescription } from '$lib/components/Toast/toast.mcp.js';
 import { carouselDescription } from '$lib/components/Carousel/carousel.mcp.js';
 import { menuDescription } from '$lib/components/Menu/menu.mcp.js';
 import { popupMenuDescription } from '$lib/components/PopupMenu/popupMenu.mcp.js';
+import { contextMenuDescription } from '$lib/components/ContextMenu/contextMenu.mcp.js';
 import { menuOptionDescription } from '$lib/components/MenuOption/menuOption.mcp.js';
 import { separatorDescription } from '$lib/components/Separator/separator.mcp.js';
 import { breadcrumbsDescription } from '$lib/components/Breadcrumbs/breadcrumbs.mcp.js';
 import { cardDescription } from '$lib/components/Card/card.mcp.js';
 import { tableDescription } from '$lib/components/Table/table.mcp.js';
 import { marqueeDescription } from '$lib/components/Marquee/marquee.mcp.js';
+import { paginationDescription } from '$lib/components/Pagination/pagination.mcp.js';
 import { skeletonDescription } from '$lib/components/Skeleton/skeleton.mcp.js';
+import { spinnerDescription } from '$lib/components/Spinner/spinner.mcp.js';
 import { tabsDescription } from '$lib/components/Tabs/tabs.mcp.js';
 import { tabbarDescription } from '$lib/components/Tabbar/tabbar.mcp.js';
 import { networkIndicatorDescription } from '$lib/components/NetworkIndicator/networkIndicator.mcp.js';
 import { timeInputDescription } from '$lib/components/Form/TimeInput/timeInput.mcp.js';
 // import { fieldDescription } from '$lib/components/Form/Field/field.mcp.js';
 import { collapsibleDescription } from '$lib/components/Collapsible/collapsible.mcp.js';
+import { qrCodeDescription } from '$lib/components/QRCode/qrCode.mcp.js';
+import { pdfViewerDescription } from '$lib/components/PDFViewer/pdfViewer.mcp.js';
+import { globeDescription } from '$lib/components/Globe/globe.mcp.js';
 
 const components = {
 	accordion: accordionDescription,
@@ -67,7 +84,17 @@ const components = {
 	button: buttonDescription,
 	'button-group': buttonGroupDescription,
 	chip: chipDescription,
+	command: commandDescription,
+	empty: emptyDescription,
+	kbd: kbdDescription,
 	code: codeDescription,
+	diff: diffDescription,
+	'app-shell': appShellDescription,
+	'page-shell': pageShellDescription,
+	sidebar: sidebarDescription,
+	tree: treeDescription,
+	mermaid: mermaidDescription,
+	map: mapDescription,
 	dialog: dialogDescription,
 	calendar: calendarDescription,
 	'date-input': dateInputDescription,
@@ -80,6 +107,7 @@ const components = {
 	'radio-input': radioInputDescription,
 	'checkboxes-input': checkboxesInputDescription,
 	select: selectDescription,
+	slider: sliderDescription,
 	switch: switchDescription,
 	'text-area': textAreaDescription,
 	'text-input': textInputDescription,
@@ -100,19 +128,25 @@ const components = {
 	carousel: carouselDescription,
 	menu: menuDescription,
 	'popup-menu': popupMenuDescription,
+	'context-menu': contextMenuDescription,
 	'menu-option': menuOptionDescription,
 	separator: separatorDescription,
 	breadcrumbs: breadcrumbsDescription,
 	card: cardDescription,
 	table: tableDescription,
 	marquee: marqueeDescription,
+	pagination: paginationDescription,
 	skeleton: skeletonDescription,
+	spinner: spinnerDescription,
 	tabs: tabsDescription,
 	tabbar: tabbarDescription,
 	'network-indicator': networkIndicatorDescription,
 	'time-input': timeInputDescription,
 	// field: fieldDescription,
-	collapsible: collapsibleDescription
+	collapsible: collapsibleDescription,
+	'qr-code': qrCodeDescription,
+	globe: globeDescription,
+	'pdf-viewer': pdfViewerDescription
 };
 
 const handler = mcpHandler({
@@ -125,8 +159,8 @@ const handler = mcpHandler({
 			(using kebab-case for the package name, e.g., svelai/dialog and using PascalCase for the component name, e.g., Dialog)
 			
 			When available in props 
-			- most of the components are using the following color props : primary, secondary, success, warning, danger, info, surface, contrast.
-			- most of the components are using the following size props : small, medium, large.
+			- most of the components are using the following color props : primary, secondary, success, warning, danger, info, background, foreground.
+			- most of the components are using the following size props : small, normal, large.
 			- most of the components are using the following variant props : solid, outline, soft, ghost, link.
 			- most of the component can receive prefix and suffix props to add icons or other content with a svelte 5 snippet.
 			- for composability, most component allow passing custom snippets to replace the default rendering if necessary.

@@ -5,6 +5,7 @@
 	import { ThemeState } from './theme.state.svelte.js';
 	import { escapeForInlineScript, escapeJsString, MEDIA } from './helper.js';
 	import Tooltip from '../Tooltip/Tooltip.svelte';
+	import DialogBackdrop from '../Dialog/DialogBackdrop.svelte';
 
 	type SvelaiThemeProps = SvelteThemeProps<T> & {
 		children: Snippet<[ThemeState]>;
@@ -131,4 +132,5 @@ const setWindowDimensions = () => {
 
 {@render children(sveltaiTheme)}
 
+<DialogBackdrop />
 <Tooltip />

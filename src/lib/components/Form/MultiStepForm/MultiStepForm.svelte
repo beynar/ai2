@@ -13,7 +13,7 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 
 	let {
-		steps,
+		items,
 		onSubmitForm,
 		onSubmitStep,
 		children,
@@ -35,10 +35,14 @@
 	let form = new MultiStepFormState(
 		{
 			get steps() {
-				return steps;
+				return items;
 			},
-			onSubmitForm,
-			onSubmitStep,
+			get onSubmitForm() {
+				return onSubmitForm;
+			},
+			get onSubmitStep() {
+				return onSubmitStep;
+			},
 			get meterColor() {
 				return meterColor;
 			}
@@ -46,7 +50,13 @@
 		step
 	);
 
-	const { form: formTheme, ...baseTheme } = theme || {};
+	const formTheme = $derived(theme?.form);
+	const baseTheme = $derived.by(() => {
+		if (!theme) return undefined;
+		const base = { ...theme };
+		delete base.form;
+		return base;
+	});
 	const classes = $derived(useMultiStepFormTheme(baseTheme));
 </script>
 
@@ -56,12 +66,13 @@
 		inputs={item.inputs}
 		title={item.title}
 		description={item.description}
+		theme={formTheme}
 		submitButton={null}
 	/>
 {/snippet}
 
-<div class={classes.multiStepForm({ className })}>
-	<Slot render={header}>
+<div class={classes.root({ className })}>
+	<Slot render={header} renderIf={showMeter || !!header} class={classes.multiStepFormHeader()}>
 		{#if showMeter}
 			<Meter value={[form.progress]} steps={form.meterSteps} />
 		{/if}

@@ -1,0 +1,70 @@
+import {
+	cva,
+	setComponentTheme,
+	useComponentTheme,
+	type InferComponentTheme
+} from '$lib/utils/cva/index.js';
+
+const defaultSpinner = cva({
+	base: 'inline-flex w-fit shrink-0 items-center justify-center align-middle',
+	variants: {
+		size: {
+			small: 'gap-1',
+			normal: 'gap-1.5',
+			large: 'gap-2'
+		},
+		color: {
+			primary: 'text-primary',
+			secondary: 'text-secondary',
+			danger: 'text-danger',
+			success: 'text-success',
+			warning: 'text-warning',
+			info: 'text-info',
+			foreground: 'text-foreground',
+			background: 'text-background'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		color: 'foreground'
+	}
+});
+
+const defaultSpinnerIndicator = cva({
+	base: 'ui-spinner shrink-0',
+	variants: {
+		size: {
+			small: '[--spinner-size:1rem]',
+			normal: '[--spinner-size:1.25rem]',
+			large: '[--spinner-size:1.5rem]'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultSpinnerLabel = cva({
+	base: 'text-foreground-muted',
+	variants: {
+		size: {
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+export const spinnerTheme = {
+	root: defaultSpinner,
+	indicator: defaultSpinnerIndicator,
+	label: defaultSpinnerLabel
+};
+
+export type SpinnerTheme = typeof spinnerTheme;
+export type SpinnerThemeProps = InferComponentTheme<SpinnerTheme>;
+export const setSpinnerTheme = setComponentTheme<SpinnerTheme>('spinner');
+export const useSpinnerTheme = useComponentTheme<SpinnerTheme>('spinner', spinnerTheme);

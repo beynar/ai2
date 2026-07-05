@@ -1,8 +1,8 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultBadge = cva({
-	base: 'rounded-full flex items-center justify-center bg-color text-color-fg absolute z-10',
+	base: 'rounded-full flex items-center justify-center bg-color text-color-contrast absolute z-10',
 	variants: {
 		size: {
 			small: 'px-1 text-sm h-4 min-w-4',
@@ -10,17 +10,17 @@ const defaultBadge = cva({
 			large: 'px-2 text-md h-6 min-w-6'
 		},
 		color: {
-			primary: 'bg-primary text-primary-fg',
-			secondary: 'bg-secondary text-secondary-fg',
-			contrast: 'bg-contrast text-contrast-fg',
-			surface: 'bg-surface-muted text-color-fg',
-			danger: 'bg-danger text-danger-fg',
-			success: 'bg-success text-success-fg',
-			warning: 'bg-warning text-warning-fg',
-			info: 'bg-info text-info-fg'
+			primary: 'bg-primary text-primary-contrast',
+			secondary: 'bg-secondary text-secondary-contrast',
+			foreground: 'bg-foreground text-foreground-contrast',
+			background: 'bg-background-muted text-color-contrast',
+			danger: 'bg-danger text-danger-contrast',
+			success: 'bg-success text-success-contrast',
+			warning: 'bg-warning text-warning-contrast',
+			info: 'bg-info text-info-contrast'
 		},
 		variant: {
-			solid: 'text-color-fg',
+			solid: 'text-color-contrast',
 			outline: 'bg-opacity-0 text-color border-color border',
 			soft: 'bg-color/20 text-color'
 		},
@@ -39,24 +39,23 @@ const defaultBadge = cva({
 	},
 	compoundVariants: [
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'outline',
-			class: 'border-surface-muted text-contrast'
+			class: 'border-background-muted text-foreground'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'soft',
-			class: 'bg-surface-lighter text-color-fg'
+			class: 'bg-background-lighter text-color-contrast'
 		}
 	]
 });
 
 export const badgeTheme = {
-	badge: defaultBadge
+	root: defaultBadge
 };
 
 export type BadgeTheme = typeof badgeTheme;
 export type BadgeThemeProps = InferComponentTheme<BadgeTheme>;
 export const setBadgeTheme = setComponentTheme<BadgeTheme>('badge');
-export const useBadgeTheme = useComponentTheme('badge', badgeTheme);
-
+export const useBadgeTheme = useComponentTheme<BadgeTheme>('badge', badgeTheme);

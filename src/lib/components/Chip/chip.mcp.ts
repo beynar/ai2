@@ -14,7 +14,7 @@ The Chip component is a compact element for displaying tags, labels, categories,
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
+- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
   - Determines the color scheme
 
 - **variant**: 'solid' | 'outline' | 'soft' (default: 'solid')
@@ -29,8 +29,8 @@ The Chip component is a compact element for displaying tags, labels, categories,
 
 ### Interactive Props
 - **onClick**: (event: MouseEvent) => void - Click handler (makes chip a button)
-- **onenter**: (event: PointerEvent) => void - Pointer enter handler
-- **onleave**: (event: PointerEvent) => void - Pointer leave handler
+- **onEnter**: (event: PointerEvent) => void - Pointer enter handler
+- **onLeave**: (event: PointerEvent) => void - Pointer leave handler
 
 ### Link Props
 - **href**: string - Makes chip render as anchor tag
@@ -166,7 +166,7 @@ The Chip component is a compact element for displaying tags, labels, categories,
 	{#each filters as filter}
 		<Chip 
 			variant={selected === filter ? 'solid' : 'outline'}
-			color={selected === filter ? 'primary' : 'surface'}
+			color={selected === filter ? 'primary' : 'background'}
 			onClick={() => selected = filter}
 		>
 			{filter}
@@ -187,7 +187,7 @@ The Chip component is a compact element for displaying tags, labels, categories,
 
 ## Rendering Behavior
 
-- Renders as \`<button>\` when \`onClick\`, \`onenter\`, or \`onleave\` is provided
+- Renders as \`<button>\` when \`onClick\`, \`onEnter\`, or \`onLeave\` is provided
 - Renders as \`<a>\` when \`href\` is provided
 - Renders as \`<div>\` otherwise
 
@@ -212,7 +212,7 @@ The Chip component uses a theme object that can be customized using the \`theme\
 ### Theme Structure
 
 The theme object contains the following parts:
-- **chip**: Main chip container styles
+- **root**: Main chip container styles
 - **prefix**: Prefix icon/content styles
 - **suffix**: Suffix icon/content styles
 
@@ -223,7 +223,7 @@ import type { ChipThemeProps } from 'svelai/chip';
 
 // Example theme customization
 const customTheme: ChipThemeProps = {
-  chip: {
+  root: {
     base: 'custom-base-classes',
     size: {
       small: 'px-1.5 py-0.5 min-h-4 text-sm gap-1',
@@ -231,11 +231,11 @@ const customTheme: ChipThemeProps = {
       large: 'px-2.5 py-0.5 min-h-6 text-md gap-1.5'
     },
     color: {
-      primary: 'bg-primary text-primary-fg',
-      danger: 'bg-danger text-danger-fg'
+      primary: 'bg-primary text-primary-contrast',
+      danger: 'bg-danger text-danger-contrast'
     },
     variant: {
-      solid: 'text-color-fg bg-color',
+      solid: 'text-color-contrast bg-color',
       outline: 'bg-opacity-0 text-color border-color border',
       soft: 'bg-color-muted text-color'
     }
@@ -259,11 +259,11 @@ const customTheme: ChipThemeProps = {
 
 ### Available Variants
 
-**chip**:
+**root**:
 - base: Base classes applied to all chips
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls padding, height, text size, and gap
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' - Visual style variant
 
 **prefix**:
@@ -282,7 +282,7 @@ const customTheme: ChipThemeProps = {
 \`\`\`svelte
 <Chip 
   theme={{
-    chip: {
+    root: {
       base: 'rounded-full shadow-md',
       size: {
         large: 'px-4 py-2 min-h-8'
@@ -300,7 +300,7 @@ const customTheme: ChipThemeProps = {
   color="danger"
   variant="outline"
   theme={{
-    chip: {
+    root: {
       variant: {
         outline: 'border-2 border-red-500 bg-red-50 text-red-700'
       }
@@ -317,7 +317,7 @@ const customTheme: ChipThemeProps = {
   import { setChipTheme } from 'svelai/chip';
   
   setChipTheme({
-    chip: {
+    root: {
       base: 'transition-all hover:scale-105',
       variant: {
         solid: 'shadow-sm hover:shadow-md',

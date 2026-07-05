@@ -33,23 +33,32 @@
 
 <div
 	data-scroll-area
-	class={classes.base({ className })}
+	class={classes.root({ className })}
 	style:position="relative"
-	aria-label="Scrollable content area"
-	{@attach scrollArea.keydown.reference}
 	{@attach scrollArea.hoover.reference}
 	{@attach scrollArea.scrollOnEdgesAttachment}
 >
+	<!-- The viewport is the native scroll container and the keyboard scroll region: focusable
+	     only when it overflows (WCAG SCR34 scrollable-region pattern), so it never becomes a
+	     dead tab stop. -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
 		id="scroll-area-viewport"
 		data-scroll-area-viewport
 		class={classes.viewport()}
+		tabindex={scrollArea.viewportTabindex}
+		role="group"
+		aria-label="Scrollable content"
 		{@attach scrollArea.viewportAttachment}
 		style:position="relative"
-		style:overflow="hidden"
+		style:overflow="scroll"
 		style:width="100%"
 		style:height="100%"
 	>
+		<!-- display:table + min-width:100% shrink-wraps to the true content width (so a wider child
+		     like Code's w-max <pre> makes this box wider → real horizontal overflow) while filling
+		     the viewport for narrow content. Its border-box tracks content width, so the content
+		     ResizeObserver fires on horizontal content changes and keeps maxScrollX fresh. -->
 		<div
 			{@attach scrollArea.contentAttachment}
 			style:min-width="100%"
@@ -60,7 +69,7 @@
 		</div>
 	</div>
 
-	{#if (type === 'hover' && scrollArea.visible && scrollArea.hoover.isHovered) || scrollArea.isDraggingY || type === 'always' || (type === 'scroll' && scrollArea.isScrolling)}
+	{#if (type === 'hover' && scrollArea.visible && scrollArea.hoover.isHovered) || scrollArea.isDraggingY || (type === 'always' && scrollArea.visible) || (type === 'auto' && scrollArea.visible) || (type === 'scroll' && scrollArea.isScrolling)}
 		<div
 			transition:fade={{ duration: 200 }}
 			bind:this={scrollArea.scrollbarYElement}
@@ -89,6 +98,35 @@
 			></div>
 		</div>
 	{/if}
+
+	{#if (type === 'hover' && scrollArea.visibleX && scrollArea.hoover.isHovered) || scrollArea.isDraggingX || (type === 'always' && scrollArea.visibleX) || (type === 'auto' && scrollArea.visibleX) || (type === 'scroll' && scrollArea.isScrolling)}
+		<div
+			transition:fade={{ duration: 200 }}
+			bind:this={scrollArea.scrollbarXElement}
+			class={classes.scrollbarX()}
+			style="right: 0px"
+			style:display="flex"
+			style:user-select="none"
+			style:opacity={scrollArea.visibleX ? 1 : 0}
+			style:transition="opacity 0.2s ease"
+			role="scrollbar"
+			aria-orientation="horizontal"
+			aria-controls="scroll-area-viewport"
+			aria-valuenow={scrollArea.scrollX}
+			aria-valuemin="0"
+			aria-valuemax={scrollArea.maxScrollX}
+			{@attach scrollArea.trackAttachmentX}
+		>
+			<div
+				data-thumb
+				class={classes.scrollbarThumb()}
+				style:width={scrollArea.thumbXSize + 'px'}
+				style:height="100%"
+				style:transform={`translateX(${scrollArea.thumbXPosition}px)`}
+				{@attach scrollArea.dragX.reference}
+			></div>
+		</div>
+	{/if}
 	{#if scrollArea.scrollOnEdgesAttachment}
 		{#if scrollArea.canScrollUp}
 			<div
@@ -111,8 +149,15 @@
 </div>
 
 <style>
+	/* Hide native scrollbars cross-browser; custom thumbs overlay the real scroll container.
+	   Firefox/standard + old Edge are also set inline in viewportAttachment as a backstop. */
+	[data-scroll-area-viewport] {
+		scrollbar-width: none; /* Firefox + standard */
+		-ms-overflow-style: none; /* old Edge/IE */
+	}
+
 	[data-scroll-area-viewport]::-webkit-scrollbar {
-		display: none;
+		display: none; /* Chrome/Safari */
 	}
 
 	[data-scroll-area-viewport]::-webkit-scrollbar-track {

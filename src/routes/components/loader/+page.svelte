@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
 	import { spinnerOverlay } from '$lib/attachments/spinnerOverlay.svelte.js';
 	import Button from '$lib/components/Button/Button.svelte';
 
@@ -9,21 +10,59 @@
 	let show = $state(true);
 </script>
 
-<input placeholder="Loading text" bind:value={loadingText} />
-<input type="checkbox" bind:checked={isLoading} />
-<label for="isLoading"></label>
-
-{#if show}
+<DocPage
+	title="Loader"
+	subtitle="Overlay a spinner on any element while async work runs."
+	features={[
+		'Svelte {@attach} on any element',
+		'Fade in/out overlay animation',
+		'Animated loading text updates',
+		'Auto-positions parent relatively'
+	]}
+>
 	<ComponentCard
+		description="Overlay a spinner on an element while async work runs."
+		code={`<div
+	{@attach spinnerOverlay({
+		loading: true,
+		text: 'Loading...'
+	})}
+>
+	<Button fullWidth>Submit</Button>
+</div>`}
 		{@attach spinnerOverlay({
 			loading: isLoading,
 			text: loadingText
 		})}
-		title="Loader"
-		class="raised flex !items-center bg-amber-100 p-2 "
+		class="raised bg-amber-100 p-2"
 	>
 		<Button fullWidth>Submit caca</Button>
 	</ComponentCard>
-{/if}
 
-<Button fullWidth onClick={() => (show = !show)}>Show loader</Button>
+	{#snippet examples()}
+		<ComponentCard
+			description="Toggle loading state and text interactively."
+			class="raised bg-amber-100 p-2"
+		>
+			<div class="flex w-full flex-col gap-4">
+				<input placeholder="Loading text" bind:value={loadingText} />
+				<input type="checkbox" bind:checked={isLoading} />
+				<label for="isLoading"></label>
+
+				{#if show}
+					<div
+						class="w-full"
+						{@attach spinnerOverlay({
+							loading: isLoading,
+							text: loadingText
+						})}
+					>
+						<Button fullWidth>Submit caca</Button>
+					</div>
+				{/if}
+
+				<Button fullWidth onClick={() => (show = !show)}>Show loader</Button>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

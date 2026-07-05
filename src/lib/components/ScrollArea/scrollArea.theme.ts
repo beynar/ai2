@@ -1,36 +1,45 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultScrollArea = cva({
 	base: 'relative'
 });
 
 const defaultScrollAreaViewport = cva({
-	base: 'relative overflow-hidden'
+	// Native scrolling: `overflow: scroll` is set inline in the component (always a scroll
+	// container for stable measurement); native bars are hidden via scoped CSS. Do not add
+	// `overflow-hidden` here — it would defeat native scrolling. Focus ring shows when the
+	// viewport is the focusable scroll region (keyboard scrolling).
+	base: 'relative outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
 });
 
 const defaultScrollAreaContent = cva({
-	base: 'min-w-full display-table position-relative'
+	// Sizing (min-width/width/position) is set inline in the component; keep this minimal.
+	base: 'relative'
 });
 
 const defaultScrollAreaScrollbar = cva({
 	base: 'absolute top-0 right-0 w-1.5 cursor-pointer'
 });
 
+const defaultScrollAreaScrollbarX = cva({
+	base: 'absolute bottom-0 left-0 h-1.5 cursor-pointer'
+});
+
 const defaultScrollAreaScrollbarThumb = cva({
-	base: 'bg-contrast-muted'
+	base: 'bg-background-muted'
 });
 
 export const scrollAreaTheme = {
-	base: defaultScrollArea,
+	root: defaultScrollArea,
 	viewport: defaultScrollAreaViewport,
 	content: defaultScrollAreaContent,
 	scrollbar: defaultScrollAreaScrollbar,
+	scrollbarX: defaultScrollAreaScrollbarX,
 	scrollbarThumb: defaultScrollAreaScrollbarThumb
 };
 
 export type ScrollAreaTheme = typeof scrollAreaTheme;
 export type ScrollAreaThemeProps = InferComponentTheme<ScrollAreaTheme>;
 export const setScrollAreaTheme = setComponentTheme<ScrollAreaTheme>('scrollArea');
-export const useScrollAreaTheme = useComponentTheme('scrollArea', scrollAreaTheme);
-
+export const useScrollAreaTheme = useComponentTheme<ScrollAreaTheme>('scrollArea', scrollAreaTheme);

@@ -1,7 +1,7 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
-const defaultCheckBoxesInput = cva({
+const defaultCheckboxesInput = cva({
 	base: 'grid gap-3 ',
 	variants: {
 		mode: {
@@ -11,11 +11,11 @@ const defaultCheckBoxesInput = cva({
 	}
 });
 
-const defaultCheckBoxesInputItem = cva({
-	base: 'transition-all relative grid items-center min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
+const defaultCheckboxesInputItem = cva({
+	base: 'transition-all relative grid items-start min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
 	variants: {
 		mode: {
-			card: 'rounded bg-surface-light raised py-2',
+			card: 'rounded bg-background-light raised py-2',
 			normal: 'py-1'
 		},
 		checked: {
@@ -36,20 +36,20 @@ const defaultCheckBoxesInputItem = cva({
 	]
 });
 
-const defaultCheckBoxesInputItemLabel = cva({
+const defaultCheckboxesInputItemLabel = cva({
 	base: 'flex items-center gap-4 flex-wrap text-sm'
 });
 
-const defaultCheckBoxesInputItemTrack = cva({
-	base: 'size-5 origin-center content-[""] bg-surface-light border border-surface-muted rounded absolute top-0 left-2 right-0 bottom-0 my-auto',
+const defaultCheckboxesInputItemTrack = cva({
+	base: 'size-5 origin-center content-[""] bg-background-light border border-background-muted rounded absolute left-2',
 	variants: {
 		checked: {
 			true: '',
 			false: ''
 		},
 		mode: {
-			card: '',
-			normal: ''
+			card: 'top-2',
+			normal: 'top-1'
 		},
 		disabled: {
 			true: 'opacity-50',
@@ -58,9 +58,9 @@ const defaultCheckBoxesInputItemTrack = cva({
 	}
 });
 
-const defaultCheckBoxesInputItemThumb = cva({
-	base: `size-5 my-auto origin-center radio bg-contrast rounded flex items-center justify-center transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[85%] opacity-0 
-	stroke-surface [&>svg]:fill-surface p-1
+const defaultCheckboxesInputItemThumb = cva({
+	base: `size-5 origin-center radio bg-foreground rounded flex items-center justify-center transition-all content-[""] absolute left-2 scale-[85%] opacity-0 
+	stroke-background [&>svg]:fill-background p-1
 	`,
 	variants: {
 		checked: {
@@ -68,8 +68,8 @@ const defaultCheckBoxesInputItemThumb = cva({
 			false: ''
 		},
 		mode: {
-			card: '',
-			normal: ''
+			card: 'top-2',
+			normal: 'top-1'
 		},
 		disabled: {
 			true: 'opacity-50',
@@ -78,16 +78,16 @@ const defaultCheckBoxesInputItemThumb = cva({
 	}
 });
 
-const defaultCheckBoxesInputItemIcon = cva({
+const defaultCheckboxesInputItemIcon = cva({
 	base: ''
 });
 
-const defaultCheckBoxesInputItemDescription = cva({
-	base: 'text-xs text-contrast-muted'
+const defaultCheckboxesInputItemDescription = cva({
+	base: 'text-xs text-foreground-muted'
 });
 
-const defaultCheckBoxesInputContainer = cva({
-	base: 'grid gap-3 grid-cols-1 md:grid-cols-2 items-start',
+const defaultCheckboxesInputContainer = cva({
+	base: 'grid gap-3 grid-cols-1 items-start',
 	variants: {
 		mode: {
 			card: '',
@@ -100,18 +100,21 @@ const defaultCheckBoxesInputContainer = cva({
 	}
 });
 
-export const checkBoxesInputTheme = {
-	checkboxesInput: defaultCheckBoxesInput,
-	checkboxesInputItem: defaultCheckBoxesInputItem,
-	checkboxesInputItemLabel: defaultCheckBoxesInputItemLabel,
-	checkboxesInputItemTrack: defaultCheckBoxesInputItemTrack,
-	checkboxesInputItemThumb: defaultCheckBoxesInputItemThumb,
-	checkboxesInputItemIcon: defaultCheckBoxesInputItemIcon,
-	checkboxesInputItemDescription: defaultCheckBoxesInputItemDescription,
-	checkboxesInputContainer: defaultCheckBoxesInputContainer
+export const checkboxesInputTheme = {
+	root: defaultCheckboxesInput,
+	checkboxesInputItem: defaultCheckboxesInputItem,
+	checkboxesInputItemLabel: defaultCheckboxesInputItemLabel,
+	checkboxesInputItemTrack: defaultCheckboxesInputItemTrack,
+	checkboxesInputItemThumb: defaultCheckboxesInputItemThumb,
+	checkboxesInputItemIcon: defaultCheckboxesInputItemIcon,
+	checkboxesInputItemDescription: defaultCheckboxesInputItemDescription,
+	checkboxesInputContainer: defaultCheckboxesInputContainer
 };
 
-export type CheckBoxesInputTheme = typeof checkBoxesInputTheme;
-export type CheckBoxesInputThemeProps = InferComponentTheme<CheckBoxesInputTheme>;
-export const setCheckBoxesInputTheme = setComponentTheme<CheckBoxesInputTheme>('checkboxesInput');
-export const useCheckBoxesInputTheme = useComponentTheme('checkboxesInput', checkBoxesInputTheme);
+export type CheckboxesInputTheme = typeof checkboxesInputTheme;
+export type CheckboxesInputThemeProps = InferComponentTheme<CheckboxesInputTheme>;
+export const setCheckboxesInputTheme = setComponentTheme<CheckboxesInputTheme>('checkboxes-input');
+export const useCheckboxesInputTheme = useComponentTheme<CheckboxesInputTheme>(
+	'checkboxes-input',
+	checkboxesInputTheme
+);

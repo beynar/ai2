@@ -27,8 +27,7 @@
 
 	const navigation = useNavigation({
 		orientation: 'horizontal',
-		loop: true,
-		enabled: () => false
+		loop: true
 	});
 
 	// Build the items array with ellipsis if needed
@@ -75,7 +74,7 @@
 
 <nav
 	aria-label="Breadcrumbs"
-	class={classes.container({ className })}
+	class={classes.root({ className })}
 	{@attach navigation.containerReference}
 	{...attachments}
 >

@@ -64,9 +64,9 @@ export type TableProps = WithAttachments<{
 	 */
 	footer?: Record<string, TableCellValue>;
 	/**
-	 * Array of rows for the table body.
+	 * Items to render as table body rows.
 	 */
-	rows: TableRow[];
+	items: TableRow[];
 	/**
 	 * Slot rendered above the table. Useful for search/filter controls.
 	 */
@@ -88,4 +88,3 @@ export type TableProps = WithAttachments<{
 	 */
 	theme?: TableThemeProps;
 }>;
-

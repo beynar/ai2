@@ -1,6 +1,8 @@
 <script lang="ts" generics="I extends FormInputs">
 	import TextInput from '../TextInput/TextInput.svelte';
 	import NumberInput from '../NumberInput/NumberInput.svelte';
+	import Slider from '../Slider/Slider.svelte';
+	import type { SliderProps } from '../Slider/slider.props.js';
 	import type { FormInputs, FormSubmitHandler, FormInput, InferFormValue } from './form.js';
 	import type { FormProps } from './form.props.js';
 	import { useFormTheme } from './form.theme.js';
@@ -11,7 +13,7 @@
 	import Combobox from '../Combobox/Combobox.svelte';
 	import RadioInput from '../RadioInput/RadioInput.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import CheckBoxesInput from '../CheckboxesInput/CheckBoxesInput.svelte';
+	import CheckboxesInput from '../CheckboxesInput/CheckboxesInput.svelte';
 	import Switch from '../Switch/Switch.svelte';
 	import PasswordInput from '../PasswordInput/Password.svelte';
 	import PhoneInput from '../PhoneInput/PhoneInput.svelte';
@@ -50,12 +52,9 @@
 
 {#snippet headerSnippet()}
 	<Slot render={title} class={classes.formTitle()} />
-	<Slot
-		render={description}
-		class={classes.formDescription()}
-	/>
+	<Slot render={description} class={classes.formDescription()} />
 {/snippet}
-<div class={classes.form({ className })}>
+<div class={classes.root({ className })}>
 	<Slot
 		render={header ? header : title || description ? headerSnippet : undefined}
 		class={classes.formHeader()}
@@ -70,6 +69,10 @@
 			<TextInput {...inputProps as any} {name} />
 		{:else if input.type === 'number'}
 			<NumberInput {...inputProps as any} {name} />
+		{:else if input.type === 'slider'}
+			<Slider {...inputProps as SliderProps} {name} />
+		{:else if input.type === 'slider-range'}
+			<Slider {...inputProps as SliderProps} {name} mode="range" />
 		{:else if input.type === 'textarea'}
 			<TextArea {...inputProps as any} {name} />
 		{:else if input.type === 'select'}
@@ -79,7 +82,7 @@
 		{:else if input.type === 'radio'}
 			<RadioInput {...inputProps as any} {name} />
 		{:else if input.type === 'checkboxes'}
-			<CheckBoxesInput {...inputProps as any} {name} />
+			<CheckboxesInput {...inputProps as any} {name} />
 		{:else if input.type === 'switch'}
 			<Switch {...inputProps as any} {name} />
 		{:else if input.type === 'password'}
@@ -120,7 +123,7 @@
 		{:else if input.type === 'radios'}
 			<RadioInput {...input} {name} />
 		{:else if input.type === 'checkboxes'}
-			<CheckBoxesInput {...input} {name} />
+			<CheckboxesInput {...input} {name} />
 		{:else}
 			<p>Input type not supported</p>
 		{/if} -->

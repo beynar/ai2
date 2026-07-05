@@ -64,11 +64,24 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
-		type: (mode === 'single' ? 'file' : 'files') as FileInputType<Mode>
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
+		get type() {
+			return (mode === 'single' ? 'file' : 'files') as FileInputType<Mode>;
+		}
 	});
 
 	const classes = $derived(useFileInputTheme(theme));
@@ -149,33 +162,27 @@
 				<polyline points="14 2 14 8 20 8" />
 			</svg>
 			{#if placeholder}
-				<span class="text-contrast-muted mt-2 text-sm">{placeholder}</span>
+				<span class="text-foreground-muted mt-2 text-sm">{placeholder}</span>
 			{/if}
 		</div>
 	{:else}
 		<div transition:slide class="h-fit w-full">
-			<Slot
-				render={fileList}
-				class={classes.fileList({ class: fileListClass })}
-			>
+			<Slot render={fileList} class={classes.fileList({ class: fileListClass })}>
 				{#each dropzone.files as fil, i (fil.name + fil.size)}
 					{@const size = dropzone.formatSize(fil.size)}
 					<div transition:slide={{ duration: 300 }}>
-						<Slot
-							render={file}
-							class={classes.file({ class: fileClass })}
-						>
+						<Slot render={file} class={classes.file({ class: fileClass })}>
 							{#if isImage(fil)}
 								{@const src = URL.createObjectURL(fil)}
 								<img
 									{src}
 									alt={fil.name}
-									class="border-surface-muted h-16 w-16 shrink-0 rounded border object-cover"
+									class="border-background-muted h-16 w-16 shrink-0 rounded border object-cover"
 								/>
 							{/if}
 							<div class="min-w-0 flex-1">
 								<div class="truncate">{fil.name}</div>
-								<div class="text-contrast-muted text-xs">{size}</div>
+								<div class="text-foreground-muted text-xs">{size}</div>
 							</div>
 							<Button variant="ghost" size="small" squared onClick={() => dropzone.removeFile(fil)}>
 								{#snippet prefix()}

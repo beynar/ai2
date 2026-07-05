@@ -11,10 +11,15 @@ export type DateFormat =
 	| 'yyyy/mm/dd';
 
 export type DateInputProps = InputProps<'date' | 'datetime'> & {
+	/** Hint text shown in the empty date input; defaults to the format prop. */
 	placeholder?: string;
+	/** Date mask pattern controlling input masking and value parsing (e.g. dd/mm/yyyy). */
 	format?: DateFormat;
+	/** Locale identifier for date formatting. */
 	locale?: string;
+	/** Separator character between date segments. */
 	separator?: string;
+	/** Theme overrides for the date input element and its field container. */
 	theme?: DateInputThemeProps & InputProps<'date' | 'datetime'>['theme'];
 };
 

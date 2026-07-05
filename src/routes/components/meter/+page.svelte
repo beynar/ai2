@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
 	import Meter from '$lib/components/Meter/Meter.svelte';
 	import Separator from '$lib/components/Separator/Separator.svelte';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
@@ -26,39 +28,48 @@
 	});
 </script>
 
-<div class="grid gap-10 p-10">
-	<h1 class="text-3xl font-bold">Meter Component Examples</h1>
+<DocPage
+	title="Meter"
+	subtitle="Visualizes a scalar value within a known range."
+	component="Meter"
+	features={[
+		'Spring-animated fill via useSpringState',
+		'Stacked values with optional legend',
+		'Colored threshold steps on track',
+		'Configurable min/max range',
+		'Percentage or raw value indicator'
+	]}
+>
+	<ComponentCard
+		description="Simple meter with percentage indicator."
+		code={`<Meter value={{ value: 65 }} label="Progress" helper="65% complete" />`}
+	>
+		<Meter value={{ value: value1 }} label="Progress" helper="65% complete" />
+	</ComponentCard>
 
-	<!-- Example 0: Simple Progress Bars with Different Sizes -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">0. Progress Bars - Different Sizes</h2>
-		<div class="grid gap-6">
+	{#snippet examples()}
+	<ComponentCard description="Progress bars in small, normal, and large sizes.">
+		<div class="grid w-full gap-6">
 			<Meter value={{ value: 60 }} size="small" showIndicatorAs={undefined} />
 			<Meter value={{ value: 60 }} size="normal" showIndicatorAs={undefined} />
 			<Meter value={{ value: 60 }} size="large" showIndicatorAs={undefined} />
 		</div>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 1: Simple Meter with Percentage -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">1. Simple Meter with Percentage</h2>
+	<ComponentCard description="Simple meter with percentage indicator.">
 		<Meter value={{ value: value1 }} label="Progress" helper="65% complete" />
-	</div>
+	</ComponentCard>
 
-	<!-- Example 2: Meter with Value Display -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">2. Meter with Value Display</h2>
+	<ComponentCard description="Meter showing the raw value instead of a percentage.">
 		<Meter
 			value={{ value: value2 }}
 			showIndicatorAs="value"
 			label="Score"
 			description="Current score out of 100"
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 3: Meter with Steps/Ranges -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">3. Meter with Colored Steps</h2>
+	<ComponentCard description="Meter with colored threshold steps on the track.">
 		<Meter
 			value={{ value: value3 }}
 			label="Performance Level"
@@ -70,11 +81,9 @@
 				{ label: 'Excellent', start: 75, end: 100, color: 'info' }
 			]}
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 4: Multiple Meters (Stacked) -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">4. Multiple Stacked Meters</h2>
+	<ComponentCard description="Multiple stacked meters in a single track.">
 		<Meter
 			value={[
 				{ value: 40, color: 'info' },
@@ -84,11 +93,9 @@
 			label="Resource Usage"
 			helper="Total: 90%"
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 5: Meter with Legend -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">5. Meter with Legend</h2>
+	<ComponentCard description="Stacked meters with an icon legend.">
 		<Meter
 			value={[
 				{ value: 19, color: 'info', label: 'System', icon: gearIcon },
@@ -106,11 +113,9 @@
 			label="Storage Usage"
 			helper="Total: 67%"
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 6: Animated Meter -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">6. Animated Meter</h2>
+	<ComponentCard description="Spring-animated meter that cycles through values.">
 		<Meter
 			value={{ value: animatedValue, color: 'info' }}
 			label="Loading Progress"
@@ -118,44 +123,36 @@
 			stiffness={0.1}
 			damping={0.8}
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 7: Small Size Meter -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">7. Small Size Meter</h2>
+	<ComponentCard description="Compact small-size meter.">
 		<Meter
 			size="small"
 			value={{ value: 45, color: 'success' }}
 			label="Storage Used"
 			helper="45GB of 100GB"
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 8: Meter without Indicator -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">8. Meter without Indicator</h2>
+	<ComponentCard description="Meter with the value indicator hidden.">
 		<Meter
 			value={{ value: 75, color: 'warning' }}
 			showIndicatorAs={undefined}
 			label="Battery Level"
 			description="Indicator text hidden"
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 9: Meter with Different Colors -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">9. Different Colors</h2>
-		<div class="grid gap-4">
+	<ComponentCard description="Meters in danger, warning, success, and info colors.">
+		<div class="grid w-full gap-4">
 			<Meter value={{ value: 60, color: 'danger' }} label="Danger" size="small" />
 			<Meter value={{ value: 70, color: 'warning' }} label="Warning" size="small" />
 			<Meter value={{ value: 80, color: 'success' }} label="Success" size="small" />
 			<Meter value={{ value: 90, color: 'info' }} label="Info" size="small" />
 		</div>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 10: Custom Range (0-1000) -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">10. Custom Range (0-1000)</h2>
+	<ComponentCard description="Custom scale from 0 to 1000.">
 		<Meter
 			value={{ value: 750 }}
 			min={0}
@@ -164,65 +161,69 @@
 			label="Custom Scale"
 			helper="750 points"
 		/>
-	</div>
+	</ComponentCard>
 
-	<!-- Example 11: Full Example with All Features -->
-	<div class="border-surface-muted grid gap-4 rounded border p-6">
-		<h2 class="text-xl font-semibold">11. Complete Example</h2>
-		<Meter
-			size="small"
-			showLegend
-			value={[
-				{ value: 25, color: 'danger', position: 'top' },
-				{ value: 35, color: 'success', position: 'top' }
-			]}
-			label="System Resources"
-			helper="CPU & Memory Usage"
-			description="Combined usage should stay below 80% Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
-			steps={[
-				{ label: 'Safe', start: 0, end: 60, color: 'success', position: 'bottom' },
-				{ label: 'Caution', start: 60, end: 80, color: 'warning', position: 'bottom' },
-				{ label: 'Critical', start: 80, end: 100, color: 'danger', position: 'bottom' }
-			]}
-			stiffness={0.15}
-			soft={0.2}
-		/>
-		<Separator />
-		<Meter
-			showLegend
-			value={[
-				{ value: 25, color: 'danger', position: 'top' },
-				{ value: 35, color: 'success', position: 'top' }
-			]}
-			label="System Resources"
-			helper="CPU & Memory Usage"
-			description="Combined usage should stay below 80 Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.%"
-			steps={[
-				{ label: 'Safe', start: 0, end: 60, color: 'success', position: 'bottom' },
-				{ label: 'Caution', start: 60, end: 80, color: 'warning', position: 'bottom' },
-				{ label: 'Critical', start: 80, end: 100, color: 'danger', position: 'bottom' }
-			]}
-			stiffness={0.15}
-			soft={0.2}
-		/>
-		<Separator />
-		<Meter
-			showLegend
-			size="large"
-			value={[
-				{ value: 25, color: 'danger', position: 'top' },
-				{ value: 35, color: 'success', position: 'top' }
-			]}
-			label="System Resources"
-			helper="CPU & Memory Usage"
-			description="Combined usage should stay below 80% Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
-			steps={[
-				{ label: 'Safe', start: 0, end: 60, color: 'success', position: 'bottom' },
-				{ label: 'Caution', start: 60, end: 80, color: 'warning', position: 'bottom' },
-				{ label: 'Critical', start: 80, end: 100, color: 'danger', position: 'bottom' }
-			]}
-			stiffness={0.15}
-			soft={0.2}
-		/>
-	</div>
-</div>
+	<ComponentCard
+		description="Complete example with legend, steps, and multiple sizes."
+		class="!items-start"
+	>
+		<div class="grid w-full gap-4">
+			<Meter
+				size="small"
+				showLegend
+				value={[
+					{ value: 25, color: 'danger', position: 'top' },
+					{ value: 35, color: 'success', position: 'top' }
+				]}
+				label="System Resources"
+				helper="CPU & Memory Usage"
+				description="Combined usage should stay below 80% Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+				steps={[
+					{ label: 'Safe', start: 0, end: 60, color: 'success', position: 'bottom' },
+					{ label: 'Caution', start: 60, end: 80, color: 'warning', position: 'bottom' },
+					{ label: 'Critical', start: 80, end: 100, color: 'danger', position: 'bottom' }
+				]}
+				stiffness={0.15}
+				soft={0.2}
+			/>
+			<Separator />
+			<Meter
+				showLegend
+				value={[
+					{ value: 25, color: 'danger', position: 'top' },
+					{ value: 35, color: 'success', position: 'top' }
+				]}
+				label="System Resources"
+				helper="CPU & Memory Usage"
+				description="Combined usage should stay below 80 Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.%"
+				steps={[
+					{ label: 'Safe', start: 0, end: 60, color: 'success', position: 'bottom' },
+					{ label: 'Caution', start: 60, end: 80, color: 'warning', position: 'bottom' },
+					{ label: 'Critical', start: 80, end: 100, color: 'danger', position: 'bottom' }
+				]}
+				stiffness={0.15}
+				soft={0.2}
+			/>
+			<Separator />
+			<Meter
+				showLegend
+				size="large"
+				value={[
+					{ value: 25, color: 'danger', position: 'top' },
+					{ value: 35, color: 'success', position: 'top' }
+				]}
+				label="System Resources"
+				helper="CPU & Memory Usage"
+				description="Combined usage should stay below 80% Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+				steps={[
+					{ label: 'Safe', start: 0, end: 60, color: 'success', position: 'bottom' },
+					{ label: 'Caution', start: 60, end: 80, color: 'warning', position: 'bottom' },
+					{ label: 'Critical', start: 80, end: 100, color: 'danger', position: 'bottom' }
+				]}
+				stiffness={0.15}
+				soft={0.2}
+			/>
+		</div>
+	</ComponentCard>
+	{/snippet}
+</DocPage>

@@ -2,11 +2,11 @@
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
 	import intlTelInput from 'intl-tel-input';
-	import 'intl-tel-input/build/css/intlTelInput.css';
+	import 'intl-tel-input/styles';
 	import type { PhoneInputProps } from './phoneInput.props.js';
 	import { usePhoneInputTheme } from './phoneInput.theme.js';
 	import { untrack } from 'svelte';
-	import fr from 'intl-tel-input/i18n/fr';
+	import { fr } from 'intl-tel-input/locale';
 	import { on } from 'svelte/events';
 
 	let {
@@ -65,14 +65,23 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
 		onValidate: (value) => {
 			const customErrors = onValidate?.(value);
 			const isValid = country && iti?.isValidNumber();
 			return customErrors || (isValid ? [] : ['Invalid phone number']);
 		},
-		visible,
+		get visible() {
+			return visible;
+		},
 		type: 'phone'
 	});
 
@@ -87,19 +96,17 @@
 				strictMode: strict,
 				initialCountry: country as any,
 				allowPhonewords: false,
-				formatOnDisplay: true,
 				formatAsYouType: true,
 				separateDialCode: true,
-				allowDropdown: true,
-				nationalMode: true,
-
-				dropdownContainer: document.body,
-				i18n: {
+				countrySelectorMode: window.matchMedia('(max-width: 768px)').matches
+					? 'FULLSCREEN'
+					: 'DROPDOWN',
+				dropdownParent: document.body,
+				uiTranslations: {
 					...fr,
 					searchPlaceholder,
 					countryListAriaLabel: 'Liste des pays'
 				},
-				useFullscreenPopup: window.matchMedia('(max-width: 768px)').matches,
 				loadUtils: () => import('intl-tel-input/utils')
 			});
 
@@ -179,7 +186,7 @@
 		}
 
 		.scroller::-webkit-scrollbar-thumb {
-			background-color: var(--color-surface-dark);
+			background-color: var(--color-background-dark);
 			border-radius: 2px;
 		}
 
@@ -187,11 +194,8 @@
 		.scroller {
 			padding-right: 0px !important;
 			padding-left: 10px !important;
-			-ms-scrollbar-track-color: transparent;
-			-ms-scrollbar-face-color: var(--color-surface-dark);
-			-ms-scrollbar-arrow-color: var(--color-surface-dark);
 			scrollbar-width: thin;
-			scrollbar-color: var(--color-surface-dark) transparent;
+			scrollbar-color: var(--color-background-dark) transparent;
 			scrollbar-gutter: stable;
 		}
 
@@ -202,21 +206,21 @@
 			border-bottom-left-radius: 0px;
 			border-bottom-width: 1px;
 			--tw-border-opacity: 1;
-			border-color: var(--color-surface-muted);
+			border-color: var(--color-background-muted);
 			--tw-bg-opacity: 1;
-			background-color: var(--color-surface-dark);
+			background-color: var(--color-background-dark);
 			padding: 0.25rem;
 			font-size: 0.875rem;
 			line-height: 1.25rem;
 			outline: 2px solid transparent;
 			outline-offset: 2px;
 			padding-left: 2rem !important;
-			--current-background: var(--color-surface-light);
-			--current-border: var(--color-surface-muted);
+			--current-background: var(--color-background-light);
+			--current-border: var(--color-background-muted);
 		}
 		.iti__dropdown-content {
 			border: 1px solid
-				var(--light-raised-border, var(--current-border, var(--color-surface-lighter))) !important;
+				var(--light-raised-border, var(--current-border, var(--color-background-lighter))) !important;
 
 			border: var(--light-raised-border);
 			--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -226,13 +230,13 @@
 			margin-top: 0.5rem !important;
 			border-radius: 0.5rem;
 			--tw-bg-opacity: 1;
-			background-color: var(--color-surface-DEFAULT);
+			background-color: var(--color-background-DEFAULT);
 			scrollbar-width: thin;
 			scrollbar-color: var(--scrollbar-thumb, initial) var(--scrollbar-track, initial);
-			border-color: var(--color-surface-muted);
-			--current-border: var(--color-surface-muted);
-			background-color: var(--color-surface-dark);
-			--current-background: var(--color-surface-dark);
+			border-color: var(--color-background-muted);
+			--current-border: var(--color-background-muted);
+			background-color: var(--color-background-dark);
+			--current-background: var(--color-background-dark);
 		}
 
 		.iti__dropdown-content::-webkit-scrollbar-track {
@@ -292,7 +296,7 @@
 			font-size: 0.875rem;
 			line-height: 1.25rem;
 			--tw-text-opacity: 1;
-			color: var(--color-contrast-DEFAULT);
+			color: var(--color-foreground-DEFAULT);
 			scrollbar-width: none;
 			--scrollbar-track: transparent;
 		}
@@ -301,8 +305,8 @@
 		}
 		.iti__country.iti__highlight {
 			--tw-bg-opacity: 1;
-			background-color: var(--color-surface-dark);
-			--current-background: var(--color-surface-dark);
+			background-color: var(--color-background-dark);
+			--current-background: var(--color-background-dark);
 		}
 	}
 </style>

@@ -1,21 +1,48 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
 	import { Breadcrumbs } from '$lib/components/Breadcrumbs/index.js';
 	import type { BreadcrumbItem } from '$lib/components/Breadcrumbs/breadcrumbs.props.js';
 	import type { MenuItem } from '$lib/components/Menu/menu.props.js';
-	import Card from '$lib/components/Card/Card.svelte';
 </script>
 
-{#snippet productsLabel()}
-	<strong>Products</strong>
-{/snippet}
+<DocPage
+	title="Breadcrumbs"
+	subtitle="Shows the current page's location within a navigational hierarchy."
+	component="Breadcrumbs"
+	features={[
+		'nav aria-label=Breadcrumbs',
+		'aria-current=page on active crumb',
+		'Horizontal keyboard navigation',
+		'maxItems ellipsis with dropdown menu',
+		'Custom separator and item snippets'
+	]}
+>
+	<ComponentCard
+		description="Standard breadcrumb trail with an active last item."
+		code={`<Breadcrumbs
+	items={[
+		{ label: 'Home', href: '/' },
+		{ label: 'Products', href: '/products' },
+		{ label: 'Electronics', href: '/products/electronics', active: true }
+	]}
+/>`}
+	>
+		<Breadcrumbs
+			items={[
+				{ label: 'Home', href: '/' },
+				{ label: 'Products', href: '/products' },
+				{ label: 'Electronics', href: '/products/electronics', active: true }
+			]}
+		/>
+	</ComponentCard>
 
-<div class="space-y-8 p-8">
-	<h1 class="mb-8 text-4xl font-bold">Breadcrumbs Component</h1>
+	{#snippet examples()}
+		{#snippet productsLabel()}
+			<strong>Products</strong>
+		{/snippet}
 
-	<!-- Basic Breadcrumbs -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Basic Breadcrumbs</h2>
-		<Card>
+		<ComponentCard description="Basic Breadcrumbs">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -38,13 +65,9 @@
 					{/if}
 				{/snippet}
 			</Breadcrumbs>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Breadcrumbs with Home Prop -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Breadcrumbs with Home Prop</h2>
-		<Card>
+		<ComponentCard description="Breadcrumbs with Home Prop">
 			<Breadcrumbs
 				home={{ label: 'Home', href: '/' }}
 				items={[
@@ -52,13 +75,9 @@
 					{ label: 'Electronics', href: '/products/electronics', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Breadcrumbs with Active State -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Breadcrumbs with Active State</h2>
-		<Card>
+		<ComponentCard description="Breadcrumbs with Active State">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -66,13 +85,9 @@
 					{ label: 'Team', href: '/about/team', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Breadcrumbs with Disabled Items -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Breadcrumbs with Disabled Items</h2>
-		<Card>
+		<ComponentCard description="Breadcrumbs with Disabled Items">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -80,13 +95,9 @@
 					{ label: 'Details', href: '/products/details', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Custom Separator -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Custom Separator</h2>
-		<Card>
+		<ComponentCard description="Custom Separator">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -95,16 +106,12 @@
 				]}
 			>
 				{#snippet separator()}
-					<span class="text-contrast-muted">›</span>
+					<span class="text-foreground-muted">›</span>
 				{/snippet}
 			</Breadcrumbs>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Without Separators -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Without Separators</h2>
-		<Card>
+		<ComponentCard description="Without Separators">
 			<Breadcrumbs
 				showSeparator={false}
 				items={[
@@ -113,13 +120,9 @@
 					{ label: 'Details', href: '/products/details', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Breadcrumbs with Dropdown Menus -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Breadcrumbs with Dropdown Menus</h2>
-		<Card>
+		<ComponentCard description="Breadcrumbs with Dropdown Menus">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -138,13 +141,9 @@
 					{ label: 'Electronics', href: '/products/electronics', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Long Breadcrumb Path -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Long Breadcrumb Path</h2>
-		<Card>
+		<ComponentCard description="Long Breadcrumb Path">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -154,64 +153,49 @@
 					{ label: 'Details', href: '/category/subcategory/product/details', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Breadcrumbs with Ellipsis -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Breadcrumbs with Ellipsis</h2>
-		<div class="space-y-4">
-			<Card>
-				<p class="text-contrast-muted mb-2 text-sm">
-					Using maxItems prop (shows first + last 2 items):
-				</p>
-				<Breadcrumbs
-					maxItems={3}
-					home={{ href: '/' }}
-					items={[
-						{ label: 'Category 1', href: '/cat1' },
-						{ label: 'Category 2', href: '/cat2' },
-						{ label: 'Category 3', href: '/cat3' },
-						{ label: 'Category 4', href: '/cat4' },
-						{ label: 'Current Page', href: '/current', active: true }
-					]}
-				/>
-			</Card>
-			<Card>
-				<p class="text-contrast-muted mb-2 text-sm">Very long path with ellipsis:</p>
-				<Breadcrumbs
-					maxItems={2}
-					items={[
-						{ label: 'Home', href: '/' },
-						{ label: 'Products', href: '/products' },
-						{ label: 'Electronics', href: '/products/electronics' },
-						{ label: 'Computers', href: '/products/electronics/computers' },
-						{ label: 'Laptops', href: '/products/electronics/computers/laptops' },
-						{ label: 'Gaming', href: '/products/electronics/computers/laptops/gaming' },
-						{ label: 'Current', href: '/current', active: true }
-					]}
-				/>
-			</Card>
-			<Card>
-				<p class="text-contrast-muted mb-2 text-sm">
-					Edge case: maxItems >= items.length (shows all items, no ellipsis):
-				</p>
-				<Breadcrumbs
-					maxItems={5}
-					items={[
-						{ label: 'Home', href: '/' },
-						{ label: 'Products', href: '/products' },
-						{ label: 'Electronics', href: '/products/electronics', active: true }
-					]}
-				/>
-			</Card>
-		</div>
-	</section>
+		<ComponentCard description="Using maxItems prop (shows first + last 2 items).">
+			<Breadcrumbs
+				maxItems={3}
+				home={{ href: '/' }}
+				items={[
+					{ label: 'Category 1', href: '/cat1' },
+					{ label: 'Category 2', href: '/cat2' },
+					{ label: 'Category 3', href: '/cat3' },
+					{ label: 'Category 4', href: '/cat4' },
+					{ label: 'Current Page', href: '/current', active: true }
+				]}
+			/>
+		</ComponentCard>
 
-	<!-- Custom Item Rendering with Snippets -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Custom Item Rendering with Snippets</h2>
-		<Card>
+		<ComponentCard description="Very long path with ellipsis.">
+			<Breadcrumbs
+				maxItems={2}
+				items={[
+					{ label: 'Home', href: '/' },
+					{ label: 'Products', href: '/products' },
+					{ label: 'Electronics', href: '/products/electronics' },
+					{ label: 'Computers', href: '/products/electronics/computers' },
+					{ label: 'Laptops', href: '/products/electronics/computers/laptops' },
+					{ label: 'Gaming', href: '/products/electronics/computers/laptops/gaming' },
+					{ label: 'Current', href: '/current', active: true }
+				]}
+			/>
+		</ComponentCard>
+
+		<ComponentCard description="Edge case: maxItems >= items.length (shows all items, no ellipsis).">
+			<Breadcrumbs
+				maxItems={5}
+				items={[
+					{ label: 'Home', href: '/' },
+					{ label: 'Products', href: '/products' },
+					{ label: 'Electronics', href: '/products/electronics', active: true }
+				]}
+			/>
+		</ComponentCard>
+
+		<ComponentCard description="Custom Item Rendering with Snippets">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -222,14 +206,9 @@
 					{ label: 'Details', href: '/products/details', active: true }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Simple String Items -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Simple String Items</h2>
-
-		<Card>
+		<ComponentCard description="Simple String Items">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -237,13 +216,9 @@
 					{ label: 'Electronics', href: '/products/electronics' }
 				]}
 			/>
-		</Card>
-	</section>
+		</ComponentCard>
 
-	<!-- Mixed Items (Strings and Configs) -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Mixed Items</h2>
-		<Card>
+		<ComponentCard description="Mixed Items">
 			<Breadcrumbs
 				items={[
 					{ label: 'Home', href: '/' },
@@ -252,6 +227,6 @@
 					{ label: 'Details', href: '/products/details', active: true }
 				]}
 			/>
-		</Card>
-	</section>
-</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

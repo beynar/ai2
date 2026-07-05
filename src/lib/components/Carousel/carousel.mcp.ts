@@ -39,13 +39,13 @@ The Carousel component displays a scrollable collection of items with navigation
 - **navigationButton**: object | Snippet<[CarouselState, NavigationButton, 'prev' | 'next']>
   - Object with styling: \`{ color: 'primary', size: 'md' }\`
   - Custom snippet for full control
-  - Available colors: \`primary\`, \`secondary\`, \`success\`, \`warning\`, \`danger\`, \`info\`, \`surface\`, \`contrast\`
+  - Available colors: \`primary\`, \`secondary\`, \`success\`, \`warning\`, \`danger\`, \`info\`, \`background\`, \`foreground\`
   - Available sizes: \`xs\`, \`sm\`, \`md\`, \`lg\`, \`xl\`, \`default\`
 
 - **dots**: object | Snippet<[CarouselState, Dot[]]>
   - Object with styling: \`{ color: 'primary', size: 'md' }\`
   - Custom snippet for full control
-  - Available colors: \`primary\`, \`secondary\`, \`success\`, \`warning\`, \`danger\`, \`info\`, \`surface\`, \`contrast\`
+  - Available colors: \`primary\`, \`secondary\`, \`success\`, \`warning\`, \`danger\`, \`info\`, \`background\`, \`foreground\`
   - Available sizes: \`xs\`, \`sm\`, \`md\`, \`lg\`, \`xl\`, \`default\`
 
 ### Behavior Props
@@ -82,7 +82,7 @@ The Carousel component displays a scrollable collection of items with navigation
 	dots={{ color: 'primary', size: 'md' }}
 >
 	{#each items as item}
-		<div class="rounded-lg bg-surface p-6">
+		<div class="rounded-lg bg-background p-6">
 			<img src={item.image} alt={item.title} />
 			<h3>{item.title}</h3>
 		</div>
@@ -141,7 +141,7 @@ The Carousel component displays a scrollable collection of items with navigation
 	dragFree
 	layout={{ default: 3 }}
 	gaps={{ default: 16 }}
-	navigationButton={{ color: 'contrast' }}
+	navigationButton={{ color: 'foreground' }}
 >
 	{#each items as item}
 		<div>{item.content}</div>
@@ -190,7 +190,7 @@ The Carousel component displays a scrollable collection of items with navigation
 					{...dot.attributes}
 					class="h-3 w-3 rounded-full transition-all"
 					class:bg-primary={dot.active}
-					class:bg-contrast-muted={!dot.active}
+					class:bg-foreground-muted={!dot.active}
 					class:scale-125={dot.active}
 				>
 					<span class="sr-only">Slide {i + 1}</span>
@@ -335,7 +335,7 @@ The Carousel component uses a theme object that can be customized using the \`th
 ### Theme Structure
 
 The theme object contains the following parts:
-- **container**: Main carousel container styles
+- **root**: Main carousel container styles
 - **slider**: Scrollable slider container styles
 - **navigationButton**: Previous/next navigation button styles
 - **dots**: Dots container styles
@@ -343,7 +343,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**container**:
+**root**:
 - base: Base classes for main container
 
 **slider**:
@@ -353,7 +353,7 @@ The theme object contains the following parts:
 - base: Base classes for navigation buttons
 - Variants:
   - size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default' - Button size
-  - color: 'primary' | 'secondary' | 'contrast' | 'surface' | 'danger' | 'success' | 'warning' | 'info' - Button color
+  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Button color
   - disabled: boolean - Disabled state styling
   - direction: 'previous' | 'next' - Button position
 
@@ -377,7 +377,7 @@ The theme object contains the following parts:
 <Carousel 
   items={items}
   theme={{
-    container: {
+    root: {
       base: 'relative'
     },
     navigationButton: {
@@ -434,7 +434,7 @@ The theme object contains the following parts:
   import { setCarouselTheme } from 'svelai/carousel';
   
   setCarouselTheme({
-    container: {
+    root: {
       base: 'relative overflow-hidden'
     },
     navigationButton: {
@@ -453,4 +453,3 @@ The theme object contains the following parts:
 </script>
 \`\`\`
 `;
-

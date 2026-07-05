@@ -1,8 +1,8 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultCard = cva({
-	base: 'bg-surface text-contrast flex flex-col rounded-xl transition-all tabular-nums raised-sm',
+	base: 'bg-background text-foreground flex flex-col rounded-xl transition-all tabular-nums raised-sm',
 	variants: {
 		size: {
 			small: 'py-2 gap-2',
@@ -10,14 +10,14 @@ const defaultCard = cva({
 			large: 'py-6 gap-6'
 		},
 		color: {
-			primary: 'bg-primary text-primary-fg border-primary',
-			secondary: 'bg-secondary text-secondary-fg border-secondary',
-			contrast: 'bg-contrast text-contrast-fg border-contrast',
-			surface: 'bg-surface text-color-fg border-surface-muted',
-			danger: 'bg-danger text-danger-fg border-danger',
-			success: 'bg-success text-success-fg border-success',
-			warning: 'bg-warning text-warning-fg border-warning',
-			info: 'bg-info text-info-fg border-info'
+			primary: 'bg-primary text-primary-contrast border-primary',
+			secondary: 'bg-secondary text-secondary-contrast border-secondary',
+			foreground: 'bg-foreground text-foreground-contrast border-foreground',
+			background: 'bg-background text-color-contrast border-background-muted',
+			danger: 'bg-danger text-danger-contrast border-danger',
+			success: 'bg-success text-success-contrast border-success',
+			warning: 'bg-warning text-warning-contrast border-warning',
+			info: 'bg-info text-info-contrast border-info'
 		},
 		variant: {
 			solid: 'bg-color border-color shadow-sm',
@@ -32,30 +32,30 @@ const defaultCard = cva({
 	},
 	defaultVariants: {
 		size: 'normal',
-		color: 'surface',
+		color: 'background',
 		variant: 'solid',
 		disabled: false
 	},
 	compoundVariants: [
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'solid',
-			class: 'bg-surface'
+			class: 'bg-background'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'outline',
-			class: 'border-surface text-contrast'
+			class: 'border-background text-foreground'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'soft',
-			class: 'bg-surface-lighter text-color-fg'
+			class: 'bg-background-lighter text-color-contrast'
 		},
 		{
-			color: 'contrast',
+			color: 'foreground',
 			variant: 'outline',
-			class: 'border-contrast/50'
+			class: 'border-foreground/50'
 		}
 	]
 });
@@ -99,7 +99,7 @@ const defaultCardTitle = cva({
 			large: 'text-lg'
 		},
 		variant: {
-			solid: 'text-color-fg',
+			solid: 'text-color-contrast',
 			outline: 'text-color',
 			soft: 'text-color',
 			ghost: 'text-color'
@@ -111,7 +111,7 @@ const defaultCardTitle = cva({
 });
 
 const defaultCardDescription = cva({
-	base: 'text-contrast-muted',
+	base: 'text-foreground-muted',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -119,7 +119,7 @@ const defaultCardDescription = cva({
 			large: 'text-base'
 		},
 		variant: {
-			solid: 'text-color-fg/70',
+			solid: 'text-color-contrast/70',
 			outline: '',
 			soft: '',
 			ghost: ''
@@ -147,11 +147,11 @@ const defaultCardContent = cva({
 			false: ''
 		},
 		hasBorderTop: {
-			true: 'border-t border-surface-muted',
+			true: 'border-t border-background-muted',
 			false: ''
 		},
 		hasBorderBottom: {
-			true: 'border-b border-surface-muted',
+			true: 'border-b border-background-muted',
 			false: ''
 		}
 	},
@@ -213,7 +213,7 @@ const defaultCardFooter = cva({
 });
 
 export const cardTheme = {
-	card: defaultCard,
+	root: defaultCard,
 	header: defaultCardHeader,
 	title: defaultCardTitle,
 	description: defaultCardDescription,
@@ -225,4 +225,4 @@ export const cardTheme = {
 export type CardTheme = typeof cardTheme;
 export type CardThemeProps = InferComponentTheme<CardTheme>;
 export const setCardTheme = setComponentTheme<CardTheme>('card');
-export const useCardTheme = useComponentTheme('card', cardTheme);
+export const useCardTheme = useComponentTheme<CardTheme>('card', cardTheme);

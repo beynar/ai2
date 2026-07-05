@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultTableContainer = cva({
 	base: 'relative w-full overflow-x-auto'
@@ -10,7 +10,7 @@ const defaultTable = cva({
 });
 
 const defaultTableHead = cva({
-	base: '[&_tr]:border-b [&_tr]:border-surface-muted'
+	base: '[&_tr]:border-b [&_tr]:border-background-muted'
 });
 
 const defaultTableBody = cva({
@@ -18,11 +18,11 @@ const defaultTableBody = cva({
 });
 
 const defaultTableFoot = cva({
-	base: 'bg-muted/50 border-t border-surface-muted font-medium [&>tr]:last:border-b-0'
+	base: 'bg-muted/50 border-t border-background-muted font-medium [&>tr]:last:border-b-0'
 });
 
 const defaultTableRow = cva({
-	base: 'hover:bg-surface-muted/40 data-[state=selected]:bg-muted border-b border-surface-muted transition-colors py-0.5'
+	base: 'hover:bg-background-muted/40 data-[state=selected]:bg-muted border-b border-background-muted transition-colors py-0.5'
 });
 
 const defaultTableHeadCell = cva({
@@ -46,7 +46,7 @@ const defaultTableSuffix = cva({
 });
 
 export const tableTheme = {
-	container: defaultTableContainer,
+	root: defaultTableContainer,
 	table: defaultTable,
 	thead: defaultTableHead,
 	tbody: defaultTableBody,
@@ -62,4 +62,4 @@ export const tableTheme = {
 export type TableTheme = typeof tableTheme;
 export type TableThemeProps = InferComponentTheme<TableTheme>;
 export const setTableTheme = setComponentTheme<TableTheme>('table');
-export const useTableTheme = useComponentTheme('table', tableTheme);
+export const useTableTheme = useComponentTheme<TableTheme>('table', tableTheme);

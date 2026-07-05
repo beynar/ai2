@@ -4,6 +4,8 @@
 	import { houseIcon } from '$lib/components/Icons/house.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
 	import { colors, sizes } from '$lib/utils/tokens.js';
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 
 	let simpleActiveTab = $state(0);
 	let iconActiveTab = $state(0);
@@ -45,51 +47,45 @@
 	}
 </script>
 
-<div class="grid gap-10 p-10">
-	<div class="border-info/30 bg-info/5 rounded border p-4">
-		<h3 class="text-info mb-2 text-base font-semibold">Keyboard Navigation</h3>
-		<p class="text-contrast/80 mb-2 text-sm">
-			Try using your keyboard to navigate! Use <kbd
-				class="bg-surface-dark rounded px-1.5 py-0.5 text-xs font-semibold">Arrow</kbd
-			>
-			keys (Left/Right for horizontal, Up/Down for vertical) to move focus,
-			<kbd class="bg-surface-dark rounded px-1.5 py-0.5 text-xs font-semibold">Home</kbd>
-			/
-			<kbd class="bg-surface-dark rounded px-1.5 py-0.5 text-xs font-semibold">End</kbd>
-			to jump to first/last tab, and
-			<kbd class="bg-surface-dark rounded px-1.5 py-0.5 text-xs font-semibold">Enter</kbd>
-			or
-			<kbd class="bg-surface-dark rounded px-1.5 py-0.5 text-xs font-semibold">Space</kbd>
-			to activate the focused tab.
-		</p>
-		<p class="text-contrast/70 text-xs">
-			Note: Arrow keys move focus (ring indicator), Enter/Space activates the selection.
-		</p>
-	</div>
+<DocPage
+	title="Tabbar"
+	subtitle="Horizontal navigation between related views."
+	component="Tabbar"
+	features={[
+		'tablist/tab roles with arrow keys',
+		'Home, End, Enter, Space navigation',
+		'bind:activeTab selection state',
+		'Link tabs or button tabs'
+	]}
+>
+	<ComponentCard
+		class="max-w-md"
+		code={`<Tabbar
+	items={['Home', 'Profile', 'Settings']}
+	bind:activeTab={activeTab}
+	onChange={(index) => console.log('Tab changed to:', index)}
+/>`}
+	>
+		<Tabbar items={simpleTabs} bind:activeTab={simpleActiveTab} onChange={handleTabChange} />
+	</ComponentCard>
 
-	<!-- Simple String Tabs -->
-	<div class="grid gap-4">
-		<h2 class="text-lg font-bold">Simple String Tabs</h2>
-		<div
-			class="border-surface-muted relative grid min-h-[100px] w-full max-w-[90vw] items-center gap-4 rounded border p-6"
+	{#snippet examples()}
+		<ComponentCard
+			description="Use Arrow keys (Left/Right for horizontal, Up/Down for vertical) to move focus; Home/End jump to first/last tab; Enter or Space activates the focused tab."
+			class="max-w-md"
 		>
-			<Tabbar tabs={simpleTabs} bind:activeTab={simpleActiveTab} onChange={handleTabChange} />
-			<p class="text-contrast/70 text-sm">Active tab: {simpleActiveTab}</p>
-		</div>
-	</div>
-	<!-- Simple String Tabs -->
-	<div class="grid gap-4">
-		<h2 class="text-lg font-bold">Simple String Tabs</h2>
-		<div
-			class="border-surface-muted relative grid min-h-[100px] w-full max-w-[90vw] items-center gap-4 rounded border p-6"
-		>
+			<Tabbar items={simpleTabs} bind:activeTab={simpleActiveTab} onChange={handleTabChange} />
+			<p class="text-foreground/70 text-sm">Active tab: {simpleActiveTab}</p>
+		</ComponentCard>
+
+		<ComponentCard description="Full-width tab bar." class="max-w-md">
 			<Tabbar
 				fullWidth
-				tabs={simpleTabs}
+				items={simpleTabs}
 				bind:activeTab={simpleActiveTab}
 				onChange={handleTabChange}
 			/>
-			<p class="text-contrast/70 text-sm">Active tab: {simpleActiveTab}</p>
-		</div>
-	</div>
-</div>
+			<p class="text-foreground/70 text-sm">Active tab: {simpleActiveTab}</p>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

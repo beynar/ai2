@@ -1,27 +1,13 @@
-import { untrack, type Snippet } from 'svelte';
+import { untrack } from 'svelte';
 import { bind, getSize } from './utils.js';
 import { Blossom } from '@blossom-carousel/core';
 import { on } from 'svelte/events';
 import { SvelteMap } from 'svelte/reactivity';
-import type { Colors } from '$lib/types/theme.js';
-import type { CarouselThemeProps } from './carousel.theme.js';
+import type { CarouselProps } from './carousel.props.js';
+
 export type Sizes = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default';
 
 export type ResponsiveProperty<T = number> = Partial<Record<Sizes, T>> & { default: T };
-type NavigationButton = {
-	'aria-controls': string;
-	'aria-label': string;
-};
-type Dot = {
-	active: boolean;
-	attributes: {
-		'data-active': boolean;
-		'aria-controls': string;
-		'aria-label': string;
-		'aria-selected': boolean;
-		onclick: () => void;
-	};
-};
 
 const memoizedDerived = <T>(fn: () => T) => {
 	let value = $state<T | null>(fn());
@@ -40,32 +26,6 @@ const memoizedDerived = <T>(fn: () => T) => {
 	};
 };
 
-export interface CarouselProps {
-	class?: string;
-	dragFree?: boolean;
-	children?: Snippet<[CarouselState]>;
-	snapAlign?: 'start' | 'center' | 'end';
-	dots?:
-		| Snippet<[CarouselState, Dot[]]>
-		| {
-				color?: Colors;
-				size?: Sizes;
-		  };
-	navigationButton?:
-		| {
-				color?: Colors;
-				size?: Sizes;
-		  }
-		| Snippet<[CarouselState, NavigationButton, 'prev' | 'next']>;
-	theme?: CarouselThemeProps;
-
-	// autoPlay?: number;
-	// pauseOnHover?: boolean;
-
-	layout?: ResponsiveProperty;
-	gaps?: ResponsiveProperty;
-	partialDelta?: ResponsiveProperty;
-}
 type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 type CarouselOptions = MakeRequired<

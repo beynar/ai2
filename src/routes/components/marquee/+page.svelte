@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Marquee } from '$lib/components/Marquee/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 
 	const testimonials = $state([
 		{ id: 1, author: 'John Doe', quote: 'Amazing product! Highly recommended.' },
@@ -27,32 +28,75 @@
 	]);
 </script>
 
-<div class="grid gap-10">
-	<!-- Basic Marquee -->
-
-	<Marquee class="w-full max-w-[90vw]">
-		{#each simpleItems as item}
-			<div class="bg-surface border-surface-muted rounded-lg border px-6 py-4">
-				{item.text}
-			</div>
-		{/each}
-	</Marquee>
-
-	<!-- Testimonials -->
-	<Marquee class="w-full">
-		{#each testimonials as item}
-			<div
-				class="bg-surface border-surface-muted w-[400px] flex-shrink-0 rounded-xl border px-8 py-6"
-			>
-				<p class="mb-2 text-lg font-semibold">"{item.quote}"</p>
-				<p class="text-contrast-muted text-sm">— {item.author}</p>
-			</div>
-		{/each}
-	</Marquee>
-
-	<div
-		class="bg-surface-muted text-contrast-muted flex h-10 w-full max-w-[90vw] items-center justify-center"
+<DocPage
+	title="Marquee"
+	subtitle="Continuously scrolls content in a horizontal or vertical loop."
+	component="Marquee"
+	features={[
+		'CSS animation, no external library',
+		'Pause on hover toggle',
+		'Edge fade via mask gradient',
+		'Horizontal or vertical direction',
+		'Seamless loop via duplicated copies'
+	]}
+>
+	<ComponentCard
+		description="Basic horizontal marquee with simple items."
+		code={`<Marquee class="w-full max-w-[90vw]">
+	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 1</div>
+	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 2</div>
+	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 3</div>
+	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 4</div>
+	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 5</div>
+</Marquee>`}
 	>
-		<p class="text-sm">This is a test of the marquee component.</p>
-	</div>
-</div>
+		<Marquee class="w-full max-w-[90vw]">
+			{#each simpleItems as item}
+				<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
+					{item.text}
+				</div>
+			{/each}
+		</Marquee>
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard description="Basic horizontal marquee.">
+			<Marquee class="w-full max-w-[90vw]">
+				{#each simpleItems as item}
+					<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
+						{item.text}
+					</div>
+				{/each}
+			</Marquee>
+		</ComponentCard>
+
+		<ComponentCard description="Testimonial cards in a continuous scroll.">
+			<Marquee class="w-full">
+				{#each testimonials as item}
+					<div
+						class="bg-background border-background-muted w-[400px] flex-shrink-0 rounded-xl border px-8 py-6"
+					>
+						<p class="mb-2 text-lg font-semibold">"{item.quote}"</p>
+						<p class="text-foreground-muted text-sm">— {item.author}</p>
+					</div>
+				{/each}
+			</Marquee>
+		</ComponentCard>
+
+		<ComponentCard description="Marquee above static content.">
+			<Marquee class="w-full max-w-[90vw]">
+				{#each simpleItems as item}
+					<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
+						{item.text}
+					</div>
+				{/each}
+			</Marquee>
+
+			<div
+				class="bg-background-muted text-foreground-muted flex h-10 w-full items-center justify-center"
+			>
+				<p class="text-sm">This is a test of the marquee component.</p>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

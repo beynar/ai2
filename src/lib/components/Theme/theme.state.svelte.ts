@@ -1,5 +1,7 @@
 import { bind } from '$lib/utils/state.svelte.js';
 import { getContext, onMount, setContext } from 'svelte';
+import { browser } from '$app/environment';
+import { MediaQuery } from 'svelte/reactivity';
 import type { DialogState } from '../Dialog/dialog.state.svelte.js';
 import type { ResponsiveProps, Breakpoint } from './theme.js';
 import type { Easing } from '$lib/transitions/easingFunctions.js';
@@ -9,7 +11,6 @@ import type { FSOParams, FSOProps } from '$lib/transitions/transition.js';
 import type { Theme as SvelteTheme } from 'svelte-themes';
 import type { PopoverState } from '../Popover/popover.state.svelte.js';
 import type { TooltipProps } from '../Tooltip/tooltip.svelte.js';
-import type { HighlighterManager } from '../Code/highlighter.svelte.js';
 
 const events = ['scroll', 'pointerdown', 'keydown', 'keyup'] as const;
 type Events = (typeof events)[number];
@@ -29,12 +30,38 @@ interface ThemeOptions {}
 export interface ThemeState extends ThemeOptions {}
 
 export class ThemeState {
-	highlighter?: HighlighterManager;
 	tooltip = $state<(TooltipProps & { ref: HTMLElement }) | null>(null);
 	lastTooltipClosed = $state<number | null>(null);
 	dialogs = $state<DialogState[]>([]);
+	dialogSeq = 0;
+	openDialogs = $derived(
+		this.dialogs.filter((d) => d.isOpen).sort((a, b) => a.openOrder - b.openOrder)
+	);
 	popovers = $state<PopoverState[]>([]);
-	currentBreakpoint = $state<Breakpoint>('md');
+	// Tailwind's default breakpoint widths. `min-width` queries so the first that
+	// fails tells us the active band. Built only in the browser — MediaQuery calls
+	// `window.matchMedia` in its constructor.
+	private breakpointQueries = browser
+		? {
+				sm: new MediaQuery('(min-width: 640px)'),
+				md: new MediaQuery('(min-width: 768px)'),
+				lg: new MediaQuery('(min-width: 1024px)'),
+				xl: new MediaQuery('(min-width: 1280px)')
+			}
+		: null;
+	// Live viewport breakpoint driving every `ResponsiveProps` function. Falls back to
+	// `md` during SSR (no viewport to measure), which matches the pre-reactive default.
+	currentBreakpoint = $derived.by<Breakpoint>(() => {
+		const q = this.breakpointQueries;
+		if (!q) return 'md';
+		if (q.xl.current) return 'xl';
+		if (q.lg.current) return 'lg';
+		if (q.md.current) return 'md';
+		if (q.sm.current) return 'sm';
+		return 'xs';
+	});
+	// "Mobile" = below Tailwind's `md` (< 768px); used to collapse modals into sheets.
+	isMobile = $derived(this.currentBreakpoint === 'xs' || this.currentBreakpoint === 'sm');
 	preferReducesMotion = $state(false);
 	eventListeners = new SvelteMap<Events, SvelteSet<Function>>();
 	private svelteTheme: SvelteTheme;
@@ -110,6 +137,20 @@ export class ThemeState {
 		} as {
 			in: FSOParams;
 			out: FSOParams;
+		};
+	};
+
+	/**
+	 * Normalizes a transition prop into `{ in, out }`. A flat params object is
+	 * applied to both directions; the `{ in, out }` form is passed through (each
+	 * side optional). `undefined` yields `{ in: undefined, out: undefined }` so
+	 * the transition falls back to its own defaults.
+	 */
+	splitTransition = <T>(props?: T | { in?: T; out?: T }) => {
+		const split = props && typeof props === 'object' && ('in' in props || 'out' in props);
+		return {
+			in: split ? (props as { in?: T }).in : (props as T | undefined),
+			out: split ? (props as { out?: T }).out : (props as T | undefined)
 		};
 	};
 

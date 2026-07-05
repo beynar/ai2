@@ -5,27 +5,34 @@
 	import Slot from '../Slot/Slot.svelte';
 	import { xIcon } from '../Icons/x.js';
 	import Button from '../Button/Button.svelte';
-	import { bgFade, fso } from '$lib/transitions/transition.js';
+	import { fso } from '$lib/transitions/transition.js';
+	import { portal } from '$lib/attachments/portal.js';
 
 	let {
 		id: customId,
 		type,
-		isOpen = $bindable(false),
+		responsive,
+		open = $bindable(false),
 		onClose,
 		onOpen,
 		size,
+		scroll,
 		transition,
 		children,
 		closeOnEscape = true,
 		closeOnClickOutside = true,
 		closable = true,
+		swipeToDismiss,
+		swipeFrom,
+		thumb = true,
 		class: className,
 		header,
 		footer,
 		title,
 		description,
 		closeButton,
-		trigger
+		trigger,
+		theme
 	}: DialogProps = $props();
 
 	const id = $props.id();
@@ -34,14 +41,20 @@
 		get type() {
 			return type;
 		},
+		get responsive() {
+			return responsive;
+		},
 		get isOpen() {
-			return isOpen;
+			return open;
 		},
 		set isOpen(value) {
-			isOpen = value;
+			open = value;
 		},
 		get size() {
 			return size;
+		},
+		get scroll() {
+			return scroll;
 		},
 		get transition() {
 			return transition;
@@ -55,91 +68,116 @@
 		get closable() {
 			return closable;
 		},
+		get swipeToDismiss() {
+			return swipeToDismiss;
+		},
+		get swipeFrom() {
+			return swipeFrom;
+		},
 		onClose,
 		onOpen
 	});
 
-	const classes = $derived(useDialogTheme());
+	const classes = $derived(useDialogTheme(theme));
 
 	const hasHeader = $derived(!!(title || description));
 
 	const in_out = fso();
-	const bg_fade = bgFade();
 </script>
 
+{#snippet CLOSE_BUTTON()}
+	<Slot class={classes.closeButton({ size: dialog.computedSize })} render={closeButton}>
+		<Button
+			squared
+			class={classes.closeButton({ size: dialog.computedSize })}
+			size="small"
+			variant="ghost"
+			onClick={() => dialog.close()}
+		>
+			{@render xIcon({ size: 20 })}
+		</Button>
+	</Slot>
+{/snippet}
+
 {#if dialog.isOpen}
-	<dialog
+	<div
+		{@attach portal()}
 		id={dialog.id}
-		aria-modal={true}
-		aria-labelledby="{dialog.id}-label"
-		class={classes.dialog({
-			size: dialog.computedSize,
-			type: dialog.computedType,
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby={title ? `${dialog.id}-label` : undefined}
+		class={classes.root({
+			scroll: dialog.computedScroll,
 			className
 		})}
 		data-type={dialog.type}
 		data-size={size}
-		transition:bg_fade={{
-			duration: 200,
-			delay: 0,
-			easing: 'linear'
-		}}
-		onintrostart={() => {
-			dialog.element?.showModal?.();
-		}}
-		bind:this={dialog.element}
-		{@attach dialog.attachment}
+		style:z-index={dialog.zIndex}
 	>
-		{#snippet CLOSE_BUTTON()}
-			<Slot class={classes.closeButton({ size: dialog.computedSize })} render={closeButton}>
-				<Button
-					squared
-					class={classes.closeButton({ size: dialog.computedSize })}
-					size="small"
-					variant="ghost"
-					onClick={() => dialog.close()}
-				>
-					{@render xIcon({ size: 20 })}
-				</Button>
-			</Slot>
-		{/snippet}
-		<div
-			{@attach dialog.contentAttachment}
-			data-type={dialog.type}
-			in:in_out={dialog.computedTransition.in}
-			out:in_out={dialog.computedTransition.out}
-			onintroend={() => {
-				dialog.hasTransitioned = true;
-				onOpen?.(dialog);
-			}}
-			onoutrostart={() => {
-				dialog.hasTransitioned = false;
-			}}
-			onoutroend={() => onClose?.(dialog)}
-			class={classes.content({
-				size: dialog.computedSize,
-				type: dialog.computedType
-			})}
-		>
-			<Slot
-				as="header"
-				render={header}
-				class={classes.header({ size: dialog.computedSize })}
-				renderIf={hasHeader}
+		<div class={classes.align({ type: dialog.computedType, scroll: dialog.computedScroll })}>
+			<div
+				{@attach dialog.contentAttachment}
+				data-type={dialog.type}
+				style:transform={dialog.contentTransform}
+				style:transition={dialog.dragging ? 'none' : undefined}
+				in:in_out={dialog.computedTransition.in}
+				out:in_out={dialog.computedTransition.out}
+				onintroend={() => {
+					dialog.hasTransitioned = true;
+					onOpen?.(dialog);
+				}}
+				onoutrostart={() => {
+					dialog.hasTransitioned = false;
+				}}
+				onoutroend={() => onClose?.(dialog)}
+				class={classes.content({
+					size: dialog.computedSize,
+					type: dialog.computedType,
+					scroll: dialog.computedScroll
+				})}
 			>
-				<Slot class={classes.title({ size: dialog.computedSize })} render={title} />
-				<Slot class={classes.description({ size: dialog.computedSize })} render={description} />
-				{#if closable}
-					{@render CLOSE_BUTTON()}
-				{/if}
-			</Slot>
-			{#if !hasHeader}
-				{@render CLOSE_BUTTON()}
-			{/if}
-			{@render children?.(dialog)}
-			<Slot render={footer} class={classes.footer({ size: dialog.computedSize })} />
+				<div
+					class="flex flex-col will-change-[opacity] transition-opacity duration-200 ease-out"
+					style:opacity={dialog.stackOpacity}
+				>
+					{#if thumb && dialog.swipeEnabled}
+						<div
+							aria-hidden="true"
+							data-drag-handle
+							class={classes.thumb({ type: dialog.computedType })}
+						></div>
+					{/if}
+					<Slot
+						as="header"
+						render={header}
+						attrs={dialog.swipeEnabled ? { 'data-drag-handle': true } : undefined}
+						class={classes.header({
+							size: dialog.computedSize,
+							// The header doubles as the drag handle on touch, where a scrollable body
+							// would otherwise let the browser claim the pan before we can.
+							className: dialog.swipeEnabled ? 'touch-none' : undefined
+						})}
+						renderIf={hasHeader}
+					>
+						<Slot
+							attrs={{ id: `${dialog.id}-label` }}
+							class={classes.title({ size: dialog.computedSize })}
+							render={title}
+						/>
+						<Slot class={classes.description({ size: dialog.computedSize })} render={description} />
+						{#if closable}
+							{@render CLOSE_BUTTON()}
+						{/if}
+					</Slot>
+					{#if !hasHeader}
+						{@render CLOSE_BUTTON()}
+					{/if}
+					{@render children?.(dialog)}
+					<Slot render={footer} class={classes.footer({ size: dialog.computedSize })} />
+				</div>
+			</div>
 		</div>
-	</dialog>
+	</div>
 {/if}
 {#if trigger}
 	{#if typeof trigger === 'function'}

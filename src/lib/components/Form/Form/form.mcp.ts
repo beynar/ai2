@@ -33,7 +33,7 @@ The Form component provides a comprehensive form system with built-in validation
   - Value: field configuration (type + field-specific props)
 
 - **value**: InferFormValue<I> (bindable) - Form values
-- **form**: FormState (bindable) - Form state instance
+- **root**: FormState (bindable) - Form state instance
 
 ### Event Props
 - **onSubmit**: (value: InferFormValue<I>) => void | Promise<void> - Submit handler
@@ -59,6 +59,8 @@ The Form component provides a comprehensive form system with built-in validation
 
 ### Number Input
 - **number** - Numeric input with step controls
+- **slider** - Bounded scalar slider input (\`number\`)
+- **slider-range** - Bounded range or multi-thumb slider input (\`number[]\`)
 
 ### Selection Inputs
 - **select** - Dropdown selection
@@ -91,7 +93,7 @@ Each input in the \`inputs\` object supports:
 - **disabled**: Whether field is disabled
 - **defaultValue**: Initial value
 - **validation**: Custom validation function
-- Type-specific props (e.g., min/max for numbers, options for select)
+- Type-specific props (e.g., min/max for numbers, items for select)
 
 ## Examples
 
@@ -160,7 +162,7 @@ Each input in the \`inputs\` object supports:
 			type: 'select',
 			label: 'Country',
 			required: true,
-			options: [
+			items: [
 				{ value: 'us', label: 'United States' },
 				{ value: 'uk', label: 'United Kingdom' },
 				{ value: 'ca', label: 'Canada' }
@@ -179,7 +181,7 @@ Each input in the \`inputs\` object supports:
 			type: 'radio',
 			label: 'Select Plan',
 			required: true,
-			options: [
+			items: [
 				{ value: 'free', label: 'Free' },
 				{ value: 'pro', label: 'Pro' },
 				{ value: 'enterprise', label: 'Enterprise' }
@@ -197,7 +199,7 @@ Each input in the \`inputs\` object supports:
 		interests: {
 			type: 'checkboxes',
 			label: 'Interests',
-			options: [
+			items: [
 				{ value: 'coding', label: 'Coding' },
 				{ value: 'design', label: 'Design' },
 				{ value: 'marketing', label: 'Marketing' }
@@ -219,6 +221,34 @@ Each input in the \`inputs\` object supports:
 		marketing: {
 			type: 'switch',
 			label: 'Marketing Emails'
+		}
+	}}
+	onSubmit={handleSubmit}
+/>
+\`\`\`
+
+### Slider Inputs
+\`\`\`svelte
+<Form
+	inputs={{
+		volume: {
+			type: 'slider',
+			label: 'Volume',
+			value: 35,
+			min: 0,
+			max: 100,
+			step: 5,
+			showValue: true
+		},
+		comfortBand: {
+			type: 'slider-range',
+			label: 'Comfort band',
+			value: [18, 24],
+			min: 12,
+			max: 32,
+			step: 1,
+			dragRange: true,
+			showValue: true
 		}
 	}}
 	onSubmit={handleSubmit}
@@ -342,7 +372,7 @@ Each input in the \`inputs\` object supports:
 			type: 'select',
 			label: 'Country',
 			required: true,
-			options: countries
+			items: countries
 		},
 		terms: {
 			type: 'switch',
@@ -413,12 +443,12 @@ The Form component uses a theme object that can be customized using the \`theme\
 ### Theme Structure
 
 The theme object contains the following parts:
-- **form**: Main form container styles
+- **root**: Main form container styles
 - **field**: Field component theme (forwarded to all fields)
 
 ### Available Variants
 
-**form**:
+**root**:
 - base: Base classes for form container
 
 **field**:
@@ -432,7 +462,7 @@ The theme object contains the following parts:
   inputs={inputs}
   onSubmit={handleSubmit}
   theme={{
-    form: {
+    root: {
       base: 'grid grid-cols-2 gap-4'
     }
   }}
@@ -445,7 +475,7 @@ The theme object contains the following parts:
   inputs={inputs}
   onSubmit={handleSubmit}
   theme={{
-    form: {
+    root: {
       base: 'flex flex-col gap-6 max-w-2xl mx-auto'
     }
   }}
@@ -458,7 +488,7 @@ The theme object contains the following parts:
   import { setFormTheme } from 'svelai/form';
   
   setFormTheme({
-    form: {
+    root: {
       base: 'grid grid-cols-1 md:grid-cols-2 gap-4'
     }
   });

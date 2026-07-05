@@ -39,7 +39,7 @@
 	let {
 		delay = 300,
 		class: className = '',
-		color = 'contrast',
+		color = 'foreground',
 		size = 3,
 		easing = 'cubicInOut',
 		theme,
@@ -109,7 +109,7 @@
 		transition:fade={{ duration: delay }}
 		data-color={color}
 		data-loading={!!animation}
-		class={classes.networkIndicator({ color, className })}
+		class={classes.root({ color, className })}
 		style:height="{size}px"
 		{...attachments}
 	></div>

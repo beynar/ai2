@@ -1,8 +1,8 @@
-<script lang="ts" generics="Option extends CheckBoxesOption">
+<script lang="ts" generics="Option extends CheckboxOption">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { CheckBoxesOption, CheckBoxesInputProps } from './checkBoxesInput.props.js';
-	import { useCheckBoxesInputTheme } from './checkBoxesInput.theme.js';
+	import type { CheckboxOption, CheckboxesInputProps } from './checkboxesInput.props.js';
+	import { useCheckboxesInputTheme } from './checkboxesInput.theme.js';
 	import Slot from '../../Slot/Slot.svelte';
 	import { checkIcon } from '$lib/components/Icons/check.js';
 
@@ -11,7 +11,7 @@
 		errors = $bindable([]),
 		focused = $bindable(false),
 		required = false,
-		options,
+		items,
 		mode = 'normal',
 		theme,
 		disabled,
@@ -22,7 +22,7 @@
 		onClick,
 		label,
 		...rest
-	}: CheckBoxesInputProps<Option> = $props();
+	}: CheckboxesInputProps<Option> = $props();
 
 	const id = $props.id();
 
@@ -46,16 +46,16 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			// console.log('onChange', v);
-		},
+		onChange: () => {},
 		get disabled() {
 			return disabled;
 		},
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
+		get required() {
+			return required;
+		},
 		onValidate: (value) => {
 			if (required) {
 				if (value.length === 0) {
@@ -64,12 +64,19 @@
 			}
 			return onValidate?.(value) || false;
 		},
-		name,
-		visible,
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'checkboxes'
 	});
 
-	const componentTheme = useCheckBoxesInputTheme(theme);
+	const componentTheme = $derived(useCheckboxesInputTheme(theme));
 </script>
 
 <!-- Create own field wrapper (when used standalone) -->
@@ -81,7 +88,7 @@
 	as={'fieldset'}
 	{field}
 	{label}
-	class={componentTheme.checkboxesInput({ mode })}
+	class={componentTheme.root({ mode })}
 	theme={{
 		...theme,
 		inputContainer: {
@@ -95,7 +102,7 @@
 	}}
 	{...rest}
 >
-	{#each options as option (option.value)}
+	{#each items as option (option.value)}
 		{@const checked = field.value?.includes(option.value)}
 		{@const optionId = `${field.name}-${option.value}`}
 		<button

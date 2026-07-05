@@ -100,7 +100,7 @@
 	<Slot class={classes.label({ size })} render={label} />
 	<Slot class={classes.helper({ size })} render={helper} />
 {/snippet}
-<div class={classes.meter({ size, className })}>
+<div class={classes.root({ size, className })}>
 	<Slot
 		class={classes.header({ size })}
 		renderIf={!!(header || label || helper)}

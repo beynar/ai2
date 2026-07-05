@@ -9,7 +9,7 @@
 		ref = $bindable(),
 		class: className,
 		disabled = false,
-		color = 'surface',
+		color = 'background',
 		variant = 'solid',
 		size = 'normal',
 		href,
@@ -72,7 +72,7 @@
 	{target}
 	{rel}
 	{role}
-	class={classes.card({ color, variant, size, disabled, className })}
+	class={classes.root({ color, variant, size, disabled, className })}
 	onclick={handleClick}
 	onpointerenter={handleEnter}
 	onpointerleave={handleLeave}

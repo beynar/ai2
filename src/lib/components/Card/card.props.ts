@@ -9,26 +9,62 @@ export type CardVariant = 'solid' | 'outline' | 'soft' | 'ghost';
 export type CardActionSlot = Slot | Omit<ButtonProps, 'as'>;
 
 type CardBaseProps = {
+	/**
+	 * Bindable reference to the root card element.
+	 */
 	ref?: HTMLElement | null;
 	/**
 	 * The class name of the card. First element that the component outputs in the DOM.
 	 */
 	class?: string;
+	/**
+	 * When true, prevents interaction and applies disabled styles.
+	 */
 	disabled?: boolean;
+	/**
+	 * Theme color token applied to the card styling.
+	 */
 	color?: Colors;
+	/**
+	 * Visual style variant of the card.
+	 */
 	variant?: CardVariant;
+	/**
+	 * Size token controlling padding, typography, and spacing.
+	 */
 	size?: Sizes;
+	/**
+	 * When set, renders the card as an anchor link instead of a div.
+	 */
 	href?: string;
+	/**
+	 * Link target attribute when href is set.
+	 */
 	target?: string;
+	/**
+	 * Link rel attribute when href is set.
+	 */
 	rel?: string;
+	/**
+	 * Click handler; sets role="button" when href is not set.
+	 */
 	onClick?: (() => void) | null | undefined;
+	/**
+	 * Pointer enter handler called when not disabled.
+	 */
 	onEnter?: (() => void) | null | undefined;
+	/**
+	 * Pointer leave handler called when not disabled.
+	 */
 	onLeave?: (() => void) | null | undefined;
 	/**
 	 * Show subtle borders between sections (header/content, content/footer)
 	 * Default: false (borders are hidden by default)
 	 */
 	showBorders?: boolean;
+	/**
+	 * Theme overrides for card parts such as header, content, and footer.
+	 */
 	theme?: CardThemeProps;
 };
 
@@ -39,6 +75,9 @@ type CardSlotProps = WithSlot<
 
 export type CardProps = WithAttachments<
 	CardSlotProps & {
+		/**
+		 * Header action content as a slot, or ButtonProps rendered as a ghost button.
+		 */
 		action?: CardActionSlot;
 	}
 >;

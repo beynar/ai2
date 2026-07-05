@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultForm = cva({
 	// The 'base' property defines the default CSS classes for the form layout:
@@ -24,15 +24,15 @@ const defaultFormHeader = cva({
 });
 
 const defaultFormTitle = cva({
-	base: 'text-lg font-bold text-contrast'
+	base: 'text-lg font-bold text-foreground'
 });
 
 const defaultFormDescription = cva({
-	base: 'text-base text-contrast-muted'
+	base: 'text-base text-foreground-muted'
 });
 
 export const formTheme = {
-	form: defaultForm,
+	root: defaultForm,
 	formHeader: defaultFormHeader,
 	formTitle: defaultFormTitle,
 	formDescription: defaultFormDescription
@@ -41,4 +41,4 @@ export const formTheme = {
 export type FormTheme = typeof formTheme;
 export type FormThemeProps = InferComponentTheme<FormTheme>;
 export const setFormTheme = setComponentTheme<FormTheme>('form');
-export const useFormTheme = useComponentTheme('form', formTheme);
+export const useFormTheme = useComponentTheme<FormTheme>('form', formTheme);

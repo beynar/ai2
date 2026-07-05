@@ -49,6 +49,36 @@ export type MenuOptionProps = WithAttachments<
 			 */
 			as?: 'button' | 'a' | 'div';
 			/**
+			 * ARIA role override. Defaults to `button`/`link`/`menuitem` based on the element.
+			 * Pass `option` when used inside a `listbox` (Command, Select, Combobox).
+			 */
+			role?: string;
+			/**
+			 * Highlighted (keyboard-active) state. When set, reflects to `data-highlighted` and drives
+			 * the `highlight:` styling — used by the virtual-focus listbox family. Leave undefined in
+			 * menus, where `useNavigation` sets `data-highlighted` on the element imperatively.
+			 */
+			highlighted?: boolean;
+			/**
+			 * Selected state — sets `aria-selected` and `data-selected` (for a check indicator passed
+			 * via `suffix`). Used by single-select listboxes.
+			 */
+			selected?: boolean;
+			/**
+			 * Persistent highlight in the item's own `color` — e.g. a submenu trigger while its submenu
+			 * is open. Independent of hover/keyboard highlight.
+			 */
+			active?: boolean;
+			/**
+			 * Disables the option: dims it, sets `aria-disabled`, and blocks pointer/click interaction.
+			 */
+			disabled?: boolean;
+			/**
+			 * Extra attributes/handlers spread onto the row element (`id`, `data-value`, `tabindex`,
+			 * `onpointermove`, `onmousedown`, aria-*). Escape hatch for listbox wiring.
+			 */
+			attrs?: Record<string, any>;
+			/**
 			 * Custom theme overrides.
 			 */
 			theme?: MenuOptionThemeProps;

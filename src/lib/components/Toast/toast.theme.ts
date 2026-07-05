@@ -1,10 +1,10 @@
 import type { FSOParams, FSOProps } from '$lib/transitions/transition.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import type { ToastPosition } from './toast.state.svelte.js';
 
 const defaultToast = cva({
-	base: 'cursor-default absolute pointer-events-auto bg-surface-light border border-surface-lighter text-contrast duration-500 max-w-[300px] px-2 py-1.5 flex items-center justify-between gap-2 rounded-md min-w-[250px]',
+	base: 'cursor-default absolute pointer-events-auto bg-background-light border border-background-lighter text-foreground duration-500 max-w-[300px] px-2 py-1.5 flex items-center justify-between gap-2 rounded-md min-w-[250px]',
 	variants: {
 		richColors: {
 			true: 'bg-color-muted border-color-light text-color',
@@ -13,12 +13,12 @@ const defaultToast = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: ''
+			background: ''
 		},
 		size: {
 			small: '',
@@ -29,13 +29,13 @@ const defaultToast = cva({
 	compoundVariants: [
 		{
 			richColors: true,
-			color: 'contrast',
-			class: 'bg-contrast text-surface'
+			color: 'foreground',
+			class: 'bg-foreground text-background'
 		},
 		{
 			richColors: true,
-			color: 'surface',
-			class: 'bg-surface text-contrast  border-surface-muted'
+			color: 'background',
+			class: 'bg-background text-foreground  border-background-muted'
 		}
 	]
 });
@@ -51,12 +51,12 @@ const defaultToastPrefix = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: 'text-contrast'
+			background: 'text-foreground'
 		},
 		richColors: {
 			true: '',
@@ -66,14 +66,14 @@ const defaultToastPrefix = cva({
 	compoundVariants: [
 		{
 			richColors: true,
-			color: 'contrast',
-			class: 'text-surface bg-contrast'
+			color: 'foreground',
+			class: 'text-background bg-foreground'
 		}
 	]
 });
 
 const defaultToastCloseIcon = cva({
-	base: 'absolute aspect-square leading-none flex items-center justify-center size-4 rounded-full border border-surface-lighter bg-surface-light -top-1.5 -right-1.5',
+	base: 'absolute aspect-square leading-none flex items-center justify-center size-4 rounded-full border border-background-lighter bg-background-light -top-1.5 -right-1.5',
 	variants: {
 		richColors: {
 			true: 'bg-color-muted border border-color-light text-color',
@@ -82,24 +82,24 @@ const defaultToastCloseIcon = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: ''
+			background: ''
 		}
 	},
 	compoundVariants: [
 		{
 			richColors: true,
-			color: 'contrast',
-			class: 'text-surface bg-contrast'
+			color: 'foreground',
+			class: 'text-background bg-foreground'
 		},
 		{
 			richColors: true,
-			color: 'surface',
-			class: 'bg-surface text-contrast border-surface-muted'
+			color: 'background',
+			class: 'bg-background text-foreground border-background-muted'
 		}
 	]
 });
@@ -115,12 +115,12 @@ const defaultToastSuffix = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: ''
+			background: ''
 		},
 		richColors: {
 			true: '',
@@ -140,12 +140,12 @@ const defaultToastContent = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: ''
+			background: ''
 		},
 		richColors: {
 			true: '',
@@ -165,12 +165,12 @@ const defaultToastTitle = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: 'text-contrast'
+			background: 'text-foreground'
 		},
 		richColors: {
 			true: '',
@@ -180,8 +180,8 @@ const defaultToastTitle = cva({
 	compoundVariants: [
 		{
 			richColors: true,
-			color: 'contrast',
-			class: 'text-surface'
+			color: 'foreground',
+			class: 'text-background'
 		}
 	]
 });
@@ -196,12 +196,12 @@ const defaultToastDescription = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			contrast: '',
+			foreground: '',
 			danger: '',
 			success: '',
 			warning: '',
 			info: '',
-			surface: ''
+			background: ''
 		},
 		richColors: {
 			true: '',
@@ -211,7 +211,7 @@ const defaultToastDescription = cva({
 });
 
 const toastTheme = {
-	toast: defaultToast,
+	root: defaultToast,
 	prefix: defaultToastPrefix,
 	suffix: defaultToastSuffix,
 	content: defaultToastContent,
@@ -222,7 +222,7 @@ const toastTheme = {
 export type ToastTheme = typeof toastTheme;
 export type ToastThemeProps = InferComponentTheme<ToastTheme>;
 export const setToastTheme = setComponentTheme<ToastTheme>('toast');
-export const useToastTheme = useComponentTheme('toast', toastTheme);
+export const useToastTheme = useComponentTheme<ToastTheme>('toast', toastTheme);
 
 export const defaultToastAnimation: Record<
 	ToastPosition,

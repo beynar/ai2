@@ -40,7 +40,7 @@ The Accordion component provides an interactive collapsible container for organi
 - **splitted**: boolean (default: false) - Adds spacing between accordion items
 
 ### Event Props
-- **onToggle**: (options: { item: Item; index: number; isOpen: boolean }) => void - Callback when item is toggled
+- **onToggle**: (options: { item: Item; index: number; open: boolean }) => void - Callback when item is toggled
 
 ### Slot Props
 - **actions**: Snippet - Additional actions in header
@@ -177,8 +177,8 @@ The Accordion component provides an interactive collapsible container for organi
 
 <!-- Custom icon -->
 <Accordion {items}>
-	{#snippet icon({ isOpen })}
-		<Icon name={isOpen ? 'minus' : 'plus'} />
+	{#snippet icon({ open })}
+		<Icon name={open ? 'minus' : 'plus'} />
 	{/snippet}
 </Accordion>
 \`\`\`
@@ -230,8 +230,8 @@ The Accordion component provides an interactive collapsible container for organi
 		{ title: 'Section 1', content: 'Content 1' }
 	];
 	
-	function handleToggle({ item, index, isOpen }) {
-		console.log(\`Item \${item.title} at index \${index} is now \${isOpen ? 'open' : 'closed'}\`);
+	function handleToggle({ item, index, open }) {
+		console.log(\`Item \${item.title} at index \${index} is now \${open ? 'open' : 'closed'}\`);
 	}
 </script>
 
@@ -286,7 +286,7 @@ The Accordion component uses a theme object that can be customized using the \`t
 ### Theme Structure
 
 The theme object contains the following parts:
-- **accordion**: Main accordion container styles
+- **root**: Main accordion container styles
 - **item**: Individual accordion item styles
 - **trigger**: Accordion trigger button styles
 - **header**: Header section styles (contains title and description)
@@ -297,7 +297,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**accordion**:
+**root**:
 - base: Base classes for main container
 - Variants:
   - size: 'small' | 'normal' | 'large' - Spacing between items
@@ -356,7 +356,7 @@ The theme object contains the following parts:
 <Accordion 
   items={items}
   theme={{
-    accordion: {
+    root: {
       base: 'rounded-lg border-2',
       variant: {
         outlined: 'border-primary'
@@ -399,7 +399,7 @@ The theme object contains the following parts:
   import { setAccordionTheme } from 'svelai/accordion';
   
   setAccordionTheme({
-    accordion: {
+    root: {
       base: 'gap-4',
       variant: {
         card: 'rounded-lg'

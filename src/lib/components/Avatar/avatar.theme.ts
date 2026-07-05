@@ -1,8 +1,8 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultAvatar = cva({
-	base: 'relative items-center border border-surface-muted text-contrast aspect-ratio-1 rounded-full',
+	base: 'relative items-center border border-background-muted text-foreground aspect-ratio-1 rounded-full',
 	variants: {
 		size: {
 			normal: 'size-8',
@@ -30,7 +30,7 @@ const defaultAvatarImage = cva({
 });
 
 const defaultAvatarPrefix = cva({
-	base: 'absolute bottom-[-0.25rem] rounded-full border border-surface-muted p-[0.25rem] bg-surface size-4 left-[-0.25rem] aspect-square',
+	base: 'absolute bottom-[-0.25rem] rounded-full border border-background-muted p-[0.25rem] bg-background size-4 left-[-0.25rem] aspect-square',
 	variants: {
 		size: {
 			normal: 'size-4 right-[-0.3rem] bottom-[-0.2rem]',
@@ -44,7 +44,7 @@ const defaultAvatarPrefix = cva({
 });
 
 const defaultAvatarSuffix = cva({
-	base: 'absolute  rounded-full border border-surface-muted p-[0.25rem] bg-surface aspect-square',
+	base: 'absolute  rounded-full border border-background-muted p-[0.25rem] bg-background aspect-square',
 	variants: {
 		size: {
 			normal: 'size-4 right-[-0.3rem] bottom-[-0.3rem]',
@@ -58,7 +58,7 @@ const defaultAvatarSuffix = cva({
 });
 
 const defaultAvatarInitials = cva({
-	base: 'absolute bg-surface-lighter bottom-0 w-full h-full text-center left-0 rounded-full flex items-center justify-center uppercase font-bold text-sm',
+	base: 'absolute bg-background-lighter bottom-0 w-full h-full text-center left-0 rounded-full flex items-center justify-center uppercase font-bold text-sm',
 	variants: {
 		size: {
 			normal: 'text-sm',
@@ -86,7 +86,7 @@ const defaultAvatarGroup = cva({
 });
 
 const defaultAvatarGroupCount = cva({
-	base: 'bg-surface-lighter border-surface-muted text-contrast text-center rounded-full flex items-center justify-center uppercase font-bold  ml-[-0.75rem] z-[+1]',
+	base: 'bg-background-lighter border-background-muted text-foreground text-center rounded-full flex items-center justify-center uppercase font-bold  ml-[-0.75rem] z-[+1]',
 	variants: {
 		size: {
 			normal: 'size-8 text-sm',
@@ -100,7 +100,7 @@ const defaultAvatarGroupCount = cva({
 });
 
 export const avatarTheme = {
-	avatar: defaultAvatar,
+	root: defaultAvatar,
 	avatarImage: defaultAvatarImage,
 	avatarPrefix: defaultAvatarPrefix,
 	avatarSuffix: defaultAvatarSuffix,
@@ -108,17 +108,19 @@ export const avatarTheme = {
 };
 
 export const avatarGroupTheme = {
-	avatarGroup: defaultAvatarGroup,
+	root: defaultAvatarGroup,
 	avatarGroupCount: defaultAvatarGroupCount
 };
 
 export type AvatarTheme = typeof avatarTheme;
 export type AvatarThemeProps = InferComponentTheme<AvatarTheme>;
 export const setAvatarTheme = setComponentTheme<AvatarTheme>('avatar');
-export const useAvatarTheme = useComponentTheme('avatar', avatarTheme);
+export const useAvatarTheme = useComponentTheme<AvatarTheme>('avatar', avatarTheme);
 
 export type AvatarGroupTheme = typeof avatarGroupTheme;
 export type AvatarGroupThemeProps = InferComponentTheme<AvatarGroupTheme>;
 export const setAvatarGroupTheme = setComponentTheme<AvatarGroupTheme>('avatarGroup');
-export const useAvatarGroupTheme = useComponentTheme('avatarGroup', avatarGroupTheme);
-
+export const useAvatarGroupTheme = useComponentTheme<AvatarGroupTheme>(
+	'avatarGroup',
+	avatarGroupTheme
+);

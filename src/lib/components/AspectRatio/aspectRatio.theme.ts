@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultAspectRatio = cva({
 	base: 'relative w-full overflow-hidden'
@@ -10,11 +10,14 @@ const defaultAspectRatioContent = cva({
 });
 
 export const aspectRatioTheme = {
-	container: defaultAspectRatio,
+	root: defaultAspectRatio,
 	content: defaultAspectRatioContent
 };
 
 export type AspectRatioTheme = typeof aspectRatioTheme;
 export type AspectRatioThemeProps = InferComponentTheme<AspectRatioTheme>;
 export const setAspectRatioTheme = setComponentTheme<AspectRatioTheme>('aspect-ratio');
-export const useAspectRatioTheme = useComponentTheme('aspect-ratio', aspectRatioTheme);
+export const useAspectRatioTheme = useComponentTheme<AspectRatioTheme>(
+	'aspect-ratio',
+	aspectRatioTheme
+);

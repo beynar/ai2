@@ -11,10 +11,10 @@ export type TabsPlacement = 'top' | 'bottom' | 'left' | 'right';
 export type TabsProps<Item = any> = WithAttachments<
 	{
 		/**
-		 * Array of tab items. Each item can be a simple string or an object with label, prefix, suffix, href, and disabled properties.
+		 * Items to render as tabs. Each item can be a simple string or an object with label, prefix, suffix, href, and disabled properties.
 		 * Inherited from Tabbar component.
 		 */
-		tabs: TabItem[];
+		items: TabItem[];
 		/**
 		 * The index of the currently active tab. This is bindable.
 		 * @default 0
@@ -48,8 +48,17 @@ export type TabsProps<Item = any> = WithAttachments<
 		 * @default { duration: 300, easing: 'ease-in-out', fill: 'both' }
 		 */
 		keyFramesOptions?: {
+			/**
+			 * Animation duration in milliseconds.
+			 */
 			duration: number;
+			/**
+			 * CSS timing function used for tab panel opacity and height transitions.
+			 */
 			easing: string;
+			/**
+			 * Web Animations API fill mode applied to the tab panel translation animation.
+			 */
 			fill: 'auto' | 'backwards' | 'both' | 'forwards' | 'none';
 		};
 		/**

@@ -5,6 +5,15 @@
 <div class="p-4">
 	<h1 class="mb-4 text-2xl font-bold">ScrollArea Test</h1>
 
+	<div class="mb-8" data-test="xy">
+		<h2 class="mb-2 text-xl font-semibold">Both axes</h2>
+		<ScrollArea type="hover" class="border-border h-40 w-72 rounded-md border">
+			<div class="p-4" style="width: 1200px; height: 600px;">
+				A very wide and tall box to exercise both horizontal and vertical custom scrollbars.
+			</div>
+		</ScrollArea>
+	</div>
+
 	<div class="mb-8">
 		<h2 class="mb-2 text-xl font-semibold">Hover Type (Default)</h2>
 		<ScrollArea type="hover" class="border-border h-64 w-64 rounded-md border">

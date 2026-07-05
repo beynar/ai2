@@ -1,41 +1,42 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { cva, type InferComponentTheme } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultButton = cva({
-	base: 'rounded focus:ring-1 focus:ring-color focus:ring-offset-1 ring-offset-surface cursor-pointer inline-flex whitespace-nowrap items-center justify-center relative transition-all duration-100 ease-in-out transform-origin-center overflow-hidden outline-none text-sm leading-[1.5rem]',
+	base: 'group/button inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap relative overflow-hidden cursor-pointer rounded-lg border border-transparent bg-clip-padding font-medium text-sm outline-none transition-all duration-100 ease-in-out focus-visible:ring-2 focus-visible:ring-color/50 active:translate-y-px [&_svg:not([class*=size-])]:size-4',
 	variants: {
 		size: {
-			small: 'px-2.5 py-1 text-sm gap-1.5 leading-4',
-			normal: 'px-4 py-1  text-base gap-2 leading-5',
-			large: 'px-5.5 py-1 text-md gap-2.5 leading-6'
+			small: 'h-7 px-2.5 gap-1.5 text-xs',
+			normal: 'h-8 px-3.5 gap-2 text-sm',
+			large: 'h-9 px-4 gap-2 text-sm'
 		},
 		color: {
-			surface: 'bg-surface-dark text-color-fg',
-			primary: 'bg-primary text-primary-fg',
-			secondary: 'bg-secondary text-secondary-fg',
-			contrast: 'bg-contrast text-contrast-fg',
-			danger: 'bg-danger text-danger-fg',
-			success: 'bg-success text-success-fg',
-			warning: 'bg-warning text-warning-fg',
-			info: 'bg-info text-info-fg'
+			background: 'bg-background-dark text-color-contrast',
+			primary: 'bg-primary text-primary-contrast',
+			secondary: 'bg-secondary text-secondary-contrast',
+			foreground: 'bg-foreground text-foreground-contrast',
+			danger: 'bg-danger text-danger-contrast',
+			success: 'bg-success text-success-contrast',
+			warning: 'bg-warning text-warning-contrast',
+			info: 'bg-info text-info-contrast'
 		},
 		variant: {
-			solid: 'bg-color text-color-fg hover:bg-color/90 active:bg-color/80',
-			outline: 'bg-color/0 border border-color hover:bg-color/10 text-color active:bg-color/20',
-			soft: 'text-color hover:bg-color/30  bg-color-muted active:bg-color/20',
-			ghost: 'text-color hover:bg-color-muted bg-color/0 active:bg-color-muted/70',
-			link: 'bg-transparent hover:bg-opacity-60 text-color hover:underline active:bg-color-muted/60'
+			solid: 'bg-color text-color-contrast hover:bg-color/90 active:bg-color/80',
+			outline:
+				'bg-color/0 border border-color hover:bg-color/10 text-color-readable active:bg-color/20',
+			soft: 'text-color-muted-readable hover:bg-color/30  bg-color-muted active:bg-color/20',
+			ghost: 'text-color-readable hover:bg-color-muted bg-color/0 active:bg-color-muted/70',
+			link: 'bg-transparent hover:bg-opacity-60 text-color-readable hover:underline active:bg-color-muted/60'
 		},
 		loading: {
 			true: 'cursor-default pointer-events-none',
 			false: null
 		},
 		disabled: {
-			true: 'opacity-55 cursor-not-allowed',
+			true: 'opacity-50 cursor-not-allowed pointer-events-none',
 			false: null
 		},
 		squared: {
-			true: 'p-1 aspect-square',
+			true: 'aspect-square !px-0',
 			false: null
 		},
 		fullWidth: {
@@ -43,56 +44,56 @@ const defaultButton = cva({
 		}
 	},
 	defaultVariants: {
-		color: 'contrast',
+		color: 'foreground',
 		variant: 'solid',
 		size: 'normal'
 	},
 	compoundVariants: [
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'outline',
-			class: 'border-surface-muted text-contrast hover:bg-surface-lighter'
+			class: 'border-background-muted text-foreground hover:bg-background-lighter'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'solid',
-			class: 'active:bg-surface-light'
+			class: 'active:bg-background-light'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'soft',
-			class: 'bg-surface-lighter text-color-fg hover:bg-surface-light'
+			class: 'bg-background-lighter text-color-contrast hover:bg-background-light'
 		},
 		{
-			color: 'contrast',
+			color: 'foreground',
 			variant: 'ghost',
-			class: 'hover:bg-contrast-muted/20 active:bg-contrast-muted/20'
+			class: 'hover:bg-foreground-muted/20 active:bg-foreground-muted/20'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'ghost',
-			class: 'active:bg-surface-muted/10 text-surface-muted hover:bg-surface-muted/20'
+			class: 'active:bg-background-muted/10 hover:bg-background-muted/20'
 		},
 		{
-			color: 'contrast',
+			color: 'foreground',
 			variant: 'link',
-			class: 'active:bg-contrast-muted/10 text-contrast'
+			class: 'active:bg-foreground-muted/10 text-foreground'
 		},
 		{
-			color: 'surface',
+			color: 'background',
 			variant: 'link',
-			class: 'active:bg-surface-muted/10 text-surface-muted'
+			class: 'active:bg-background-muted/10'
 		}
 	]
 });
 
 const defaultButtonPrefix = cva({
-	base: 'max-w-6 max-h-6',
+	base: 'max-w-4 max-h-4',
 	variants: {
 		size: {
-			normal: 'max-w-6 max-h-6',
-			large: 'max-w-7 max-h-7',
-			small: 'max-w-4 max-h-4'
+			normal: 'max-w-4 max-h-4',
+			large: 'max-w-5 max-h-5',
+			small: 'max-w-3.5 max-h-3.5'
 		}
 	},
 	defaultVariants: {
@@ -101,12 +102,12 @@ const defaultButtonPrefix = cva({
 });
 
 const defaultButtonSuffix = cva({
-	base: 'max-w-6 max-h-6',
+	base: 'max-w-4 max-h-4',
 	variants: {
 		size: {
-			normal: 'max-w-6 max-h-6',
-			large: 'max-w-7 max-h-7',
-			small: 'max-w-4 max-h-4'
+			normal: 'max-w-4 max-h-4',
+			large: 'max-w-5 max-h-5',
+			small: 'max-w-3.5 max-h-3.5'
 		}
 	},
 	defaultVariants: {
@@ -115,7 +116,7 @@ const defaultButtonSuffix = cva({
 });
 
 export const buttonTheme = {
-	button: defaultButton,
+	root: defaultButton,
 	prefix: defaultButtonPrefix,
 	suffix: defaultButtonSuffix
 };
@@ -123,4 +124,4 @@ export const buttonTheme = {
 export type ButtonTheme = typeof buttonTheme;
 export type ButtonThemeProps = InferComponentTheme<ButtonTheme>;
 export const setButtonTheme = setComponentTheme<ButtonTheme>('button');
-export const useButtonTheme = useComponentTheme('button', buttonTheme);
+export const useButtonTheme = useComponentTheme<ButtonTheme>('button', buttonTheme);

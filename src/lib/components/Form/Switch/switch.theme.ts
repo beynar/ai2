@@ -1,12 +1,12 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultSwitchToggle = cva({
-	base: 'relative inline-flex shrink-0 border cursor-pointer items-center rounded-full transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-contrast focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
+	base: 'relative inline-flex shrink-0 border cursor-pointer items-center rounded-full transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
 	variants: {
 		checked: {
 			true: 'bg-primary-light border-primary shadow-sm',
-			false: 'bg-surface-light border-surface-muted border '
+			false: 'bg-background-light border-background-muted border '
 		},
 		size: {
 			small: 'h-[20px] w-[36px]',
@@ -24,8 +24,8 @@ const defaultSwitchThumb = cva({
 	base: 'pointer-events-none block rounded-full shadow-lg ring-0 transition-all duration-200 ease-in-out transform',
 	variants: {
 		checked: {
-			true: 'border-primary border bg-surface',
-			false: 'bg-surface-lighter border-surface-muted border'
+			true: 'border-primary border bg-background',
+			false: 'bg-background-lighter border-background-muted border'
 		},
 		size: {
 			small: 'h-4 w-4',
@@ -70,7 +70,7 @@ const defaultSwitchThumb = cva({
 	]
 });
 
-const defaultSwitchInputContainer = cva({
+const defaultSwitchContainer = cva({
 	base: 'flex items-center gap-4 justify-start select-none px-0',
 	variants: {
 		size: {
@@ -85,13 +85,13 @@ const defaultSwitchInputContainer = cva({
 	}
 });
 
-export const switchInputTheme = {
+export const switchTheme = {
 	toggle: defaultSwitchToggle,
 	thumb: defaultSwitchThumb,
-	inputContainer: defaultSwitchInputContainer
+	inputContainer: defaultSwitchContainer
 };
 
-export type SwitchInputTheme = typeof switchInputTheme;
-export type SwitchInputThemeProps = InferComponentTheme<SwitchInputTheme>;
-export const setSwitchInputTheme = setComponentTheme<SwitchInputTheme>('switchInput');
-export const useSwitchInputTheme = useComponentTheme('switchInput', switchInputTheme);
+export type SwitchTheme = typeof switchTheme;
+export type SwitchThemeProps = InferComponentTheme<SwitchTheme>;
+export const setSwitchTheme = setComponentTheme<SwitchTheme>('switch');
+export const useSwitchTheme = useComponentTheme('switch', switchTheme);

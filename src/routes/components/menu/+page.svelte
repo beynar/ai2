@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 	import { Menu, type MenuItem } from '$lib/components/Menu/index.js';
 	import { userIcon } from '$lib/components/Icons/user.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
@@ -137,111 +139,115 @@
 	];
 </script>
 
-<div class="space-y-8 p-8">
-	<h1 class="mb-8 text-4xl font-bold">Menu Component</h1>
-
-	<!-- Basic Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Basic Menu</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+<DocPage
+	title="Menu"
+	subtitle="A list of actions or options triggered from a control."
+	component="Menu"
+	features={[
+		'role=menu with menuitem children',
+		'Arrow key navigation with loop',
+		'Submenus with aria-haspopup & aria-expanded',
+		'Options, buttons, separators, submenus',
+		'Optional header and footer snippets'
+	]}
+>
+	<ComponentCard
+		description="A simple vertical list of menu options."
+		code={`<Menu
+  items={[
+    { type: 'option', title: 'Profile' },
+    { type: 'option', title: 'Settings' },
+    { type: 'separator' },
+    { type: 'option', title: 'Logout', color: 'danger' }
+  ]}
+/>`}
+	>
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={basicItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Menu with Icons and Descriptions -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">With Icons & Descriptions</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-72 border p-2">
+	{#snippet examples()}
+	<ComponentCard description="A simple vertical list of menu options.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+			<Menu items={basicItems} />
+		</div>
+	</ComponentCard>
+
+	<ComponentCard description="Menu options with prefix icons and descriptions.">
+		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
 			<Menu items={iconItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Button Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Button Menu</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Menu items rendered as full-width buttons.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={buttonItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Mixed Items -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Mixed Items</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-72 border p-2">
+	<ComponentCard description="Options, separators, and action buttons in one menu.">
+		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
 			<Menu items={mixedItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Different Sizes -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Sizes</h2>
+	<ComponentCard description="Small, normal, and large menu item sizes.">
 		<div class="flex gap-4">
 			<div class="flex-1">
-				<h3 class="text-contrast/70 mb-2 text-sm">Small</h3>
-				<div class="bg-surface rounded-large border-surface-muted border p-2">
+				<h3 class="text-foreground/70 mb-2 text-sm">Small</h3>
+				<div class="bg-background rounded-xl border-background-muted border p-2">
 					<Menu items={smallItems} />
 				</div>
 			</div>
 			<div class="flex-1">
-				<h3 class="text-contrast/70 mb-2 text-sm">Normal</h3>
-				<div class="bg-surface rounded-large border-surface-muted border p-2">
+				<h3 class="text-foreground/70 mb-2 text-sm">Normal</h3>
+				<div class="bg-background rounded-xl border-background-muted border p-2">
 					<Menu items={normalItems} />
 				</div>
 			</div>
 			<div class="flex-1">
-				<h3 class="text-contrast/70 mb-2 text-sm">Large</h3>
-				<div class="bg-surface rounded-large border-surface-muted border p-2">
+				<h3 class="text-foreground/70 mb-2 text-sm">Large</h3>
+				<div class="bg-background rounded-xl border-background-muted border p-2">
 					<Menu items={largeItems} />
 				</div>
 			</div>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Different Colors -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Colors</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Semantic color variants on menu options.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={colorItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Interactive Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Interactive</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Menu items that update state on each click.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={interactiveItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Complete Application Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Application Menu</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-80 border p-2">
+	<ComponentCard description="Full application menu with profile, navigation, and account actions.">
+		<div class="bg-background rounded-xl border-background-muted w-80 border p-2">
 			<Menu items={appMenuItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Context Menu -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Context Menu</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Typical right-click context menu actions.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={contextMenuItems} />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Custom Gap -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Custom Gap (Large)</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Wider spacing between items via a custom gap class.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={customGapItems} class="gap-2" />
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Multiple Menus Side by Side -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Multiple Menus</h2>
+	<ComponentCard description="File, edit, and view menus side by side.">
 		<div class="flex gap-4">
-			<div class="bg-surface rounded-large border-surface-muted flex-1 border p-2">
+			<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
 				<h3 class="mb-2 px-2 text-sm font-semibold">File Menu</h3>
 				<Menu
 					items={[
@@ -253,7 +259,7 @@
 					]}
 				/>
 			</div>
-			<div class="bg-surface rounded-large border-surface-muted flex-1 border p-2">
+			<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
 				<h3 class="mb-2 px-2 text-sm font-semibold">Edit Menu</h3>
 				<Menu
 					items={[
@@ -266,7 +272,7 @@
 					]}
 				/>
 			</div>
-			<div class="bg-surface rounded-large border-surface-muted flex-1 border p-2">
+			<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
 				<h3 class="mb-2 px-2 text-sm font-semibold">View Menu</h3>
 				<Menu
 					items={[
@@ -278,12 +284,10 @@
 				/>
 			</div>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Submenu Examples -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Submenus</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Nested submenu opened from a menu option.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu
 				items={[
 					{ type: 'option', prefix: houseIcon, title: 'Dashboard' },
@@ -305,12 +309,10 @@
 				]}
 			/>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Nested Submenus -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Nested Submenus</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Submenus nested two levels deep.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu
 				items={[
 					{ type: 'option', title: 'New File' },
@@ -338,15 +340,13 @@
 				]}
 			/>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Submenu with Different Triggers -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Submenu Trigger Options</h2>
+	<ComponentCard description="Submenu opened on hover (default) vs click only.">
 		<div class="flex gap-4">
 			<div class="flex-1">
-				<h3 class="text-contrast/70 mb-2 text-sm">Hover Only (default)</h3>
-				<div class="bg-surface rounded-large border-surface-muted border p-2">
+				<h3 class="text-foreground/70 mb-2 text-sm">Hover Only (default)</h3>
+				<div class="bg-background rounded-xl border-background-muted border p-2">
 					<Menu
 						items={[
 							{ type: 'option', title: 'Option 1' },
@@ -365,8 +365,8 @@
 				</div>
 			</div>
 			<div class="flex-1">
-				<h3 class="text-contrast/70 mb-2 text-sm">Click Only</h3>
-				<div class="bg-surface rounded-large border-surface-muted border p-2">
+				<h3 class="text-foreground/70 mb-2 text-sm">Click Only</h3>
+				<div class="bg-background rounded-xl border-background-muted border p-2">
 					<Menu
 						items={[
 							{ type: 'option', title: 'Option 1' },
@@ -385,12 +385,10 @@
 				</div>
 			</div>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Mixed Menu with All Types -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Mixed Menu (All Types)</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-72 border p-2">
+	<ComponentCard description="Every item type in a single menu: options, submenus, buttons, separators.">
+		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
 			<Menu
 				items={[
 					{ type: 'option', prefix: userIcon, title: 'John Doe', description: 'john@example.com' },
@@ -425,74 +423,68 @@
 				]}
 			/>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Menu with Header -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Menu with Header</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-72 border p-2">
+	<ComponentCard description="Custom header content above menu items.">
+		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
 			<Menu items={iconItems}>
 				{#snippet header()}
-					<div class="border-surface-muted mb-2 border-b pb-2">
+					<div class="border-background-muted mb-2 border-b pb-2">
 						<div class="px-2">
 							<h3 class="text-sm font-semibold">User Menu</h3>
-							<p class="text-contrast/70 text-xs">Manage your account</p>
+							<p class="text-foreground/70 text-xs">Manage your account</p>
 						</div>
 					</div>
 				{/snippet}
 			</Menu>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Menu with Footer -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Menu with Footer</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-64 border p-2">
+	<ComponentCard description="Custom footer content below menu items.">
+		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 			<Menu items={basicItems}>
 				{#snippet footer()}
-					<div class="border-surface-muted mt-2 border-t pt-2">
-						<div class="text-contrast/60 px-2 text-xs">Version 1.0.0</div>
+					<div class="border-background-muted mt-2 border-t pt-2">
+						<div class="text-foreground/60 px-2 text-xs">Version 1.0.0</div>
 					</div>
 				{/snippet}
 			</Menu>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Menu with Header and Footer -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Menu with Header & Footer</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-72 border p-2">
+	<ComponentCard description="Header and footer slots combined in one menu.">
+		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
 			<Menu items={iconItems}>
 				{#snippet header()}
-					<div class="border-surface-muted mb-2 border-b pb-2">
+					<div class="border-background-muted mb-2 border-b pb-2">
 						<div class="flex items-center gap-2 px-2">
-							<div class="bg-primary text-primary-fg flex h-10 w-10 items-center justify-center rounded-full">
+							<div
+								class="bg-primary text-primary-contrast flex h-10 w-10 items-center justify-center rounded-full"
+							>
 								JD
 							</div>
 							<div>
 								<div class="text-sm font-semibold">John Doe</div>
-								<div class="text-contrast/70 text-xs">john@example.com</div>
+								<div class="text-foreground/70 text-xs">john@example.com</div>
 							</div>
 						</div>
 					</div>
 				{/snippet}
 				{#snippet footer()}
-					<div class="border-surface-muted mt-2 border-t pt-2">
-						<div class="text-contrast/60 px-2 text-center text-xs">
-							<a href="/privacy" class="hover:text-contrast hover:underline">Privacy</a>
+					<div class="border-background-muted mt-2 border-t pt-2">
+						<div class="text-foreground/60 px-2 text-center text-xs">
+							<a href="/privacy" class="hover:text-foreground hover:underline">Privacy</a>
 							·
-							<a href="/terms" class="hover:text-contrast hover:underline">Terms</a>
+							<a href="/terms" class="hover:text-foreground hover:underline">Terms</a>
 						</div>
 					</div>
 				{/snippet}
 			</Menu>
 		</div>
-	</section>
+	</ComponentCard>
 
-	<!-- Minimal Example -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Minimal Menu</h2>
-		<div class="bg-surface rounded-large border-surface-muted w-48 border p-2">
+	<ComponentCard description="Minimal three-item menu.">
+		<div class="bg-background rounded-xl border-background-muted w-48 border p-2">
 			<Menu
 				items={[
 					{ type: 'option', title: 'Item 1' },
@@ -501,5 +493,6 @@
 				]}
 			/>
 		</div>
-	</section>
-</div>
+	</ComponentCard>
+	{/snippet}
+</DocPage>

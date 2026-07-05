@@ -1,5 +1,5 @@
 import type { Colors } from '$lib/types/theme.js';
-import { cva, setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import { cva, setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { untrack } from 'svelte';
 
 export type SpinnerOverlayOptions = {
@@ -15,7 +15,7 @@ const defaultSpinnerOverlay = cva({
 });
 
 const defaultSpinnerOverlaySpinner = cva({
-	base: 'ui-spinner order-2 text-color-fg',
+	base: 'ui-spinner order-2 text-color-contrast',
 	variants: {
 		size: {
 			small: 'w-4 h-4',
@@ -25,8 +25,8 @@ const defaultSpinnerOverlaySpinner = cva({
 		color: {
 			primary: 'text-primary',
 			secondary: 'text-secondary',
-			contrast: 'text-contrast',
-			surface: 'text-surface',
+			foreground: 'text-foreground',
+			background: 'text-background',
 			danger: 'text-danger',
 			success: 'text-success',
 			warning: 'text-warning',
@@ -39,7 +39,7 @@ const defaultSpinnerOverlaySpinner = cva({
 });
 
 const defaultSpinnerOverlayText = cva({
-	base: 'text-sm order-1 text-color-fg',
+	base: 'text-sm order-1 text-color-contrast',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -49,8 +49,8 @@ const defaultSpinnerOverlayText = cva({
 		color: {
 			primary: 'text-primary',
 			secondary: 'text-secondary',
-			contrast: 'text-contrast',
-			surface: 'text-surface',
+			foreground: 'text-foreground',
+			background: 'text-background',
 			danger: 'text-danger',
 			success: 'text-success',
 			warning: 'text-warning',

@@ -1,6 +1,6 @@
 # shadcn/ui to Svelai Token Conversion Guide
 
-This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai token system (contrast, surface, primary, etc.).
+This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai token system (foreground, background, primary, etc.).
 
 ## Overview
 
@@ -9,9 +9,9 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 - Format: `{property}-{token}` or `{token}-{property}`
 
 ### Svelai System
-- Uses semantic colors: `primary`, `secondary`, `contrast`, `surface`, `danger`, `success`, `warning`, `info`
-- Variants: `light`, `lighter`, `dark`, `muted`, `fg`
-- Tailwind classes: `bg-primary`, `text-contrast`, `text-surface-muted`
+- Uses semantic colors: `primary`, `secondary`, `foreground`, `background`, `danger`, `success`, `warning`, `info`
+- Variants: `light`, `lighter`, `dark`, `muted`, `contrast`
+- Tailwind classes: `bg-primary`, `text-foreground`, `text-background-muted`
 - **Default color**: All Svelai components that receive a `color` prop default to `primary` if not specified
 
 ---
@@ -22,8 +22,8 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 | shadcn/ui ClassName | Svelai ClassName | Notes |
 |---------------------|------------------|-------|
-| `bg-background` | `bg-surface-dark` | Main application background (darker for visual hierarchy) |
-| `text-foreground` | `text-contrast` | Main text color |
+| `bg-background` | `bg-background-dark` | Main application background (darker for visual hierarchy) |
+| `text-foreground` | `text-foreground` | Main text color |
 
 ### Primary Colors
 
@@ -31,7 +31,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 |---------------------|------------------|-------|
 | `bg-primary` | `bg-primary` | Same |
 | `text-primary` | `text-primary` | Same |
-| `text-primary-foreground` | `text-primary-fg` | Text on primary background |
+| `text-primary-foreground` | `text-primary-contrast` | Text on primary background |
 
 ### Secondary Colors
 
@@ -39,15 +39,15 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 |---------------------|------------------|-------|
 | `bg-secondary` | `bg-secondary` | Same |
 | `text-secondary` | `text-secondary` | Same |
-| `text-secondary-foreground` | `text-secondary-fg` | Text on secondary background |
+| `text-secondary-foreground` | `text-secondary-contrast` | Text on secondary background |
 
 ### Muted Colors
 
 | shadcn/ui ClassName | Svelai ClassName | Notes |
 |---------------------|------------------|-------|
-| `bg-muted` | `bg-surface-muted` | Muted background |
-| `text-muted` | `text-contrast-muted` | Muted text |
-| `text-muted-foreground` | `text-contrast-muted` | Muted text (same as above) |
+| `bg-muted` | `bg-background-muted` | Muted background |
+| `text-muted` | `text-foreground-muted` | Muted text |
+| `text-muted-foreground` | `text-foreground-muted` | Muted text (same as above) |
 
 **Note**: In Svelai, muted colors work differently than shadcn:
 - **Semantic muted variants**: Svelai supports semantic muted colors like `primary-muted`, `danger-muted`, `success-muted`, `warning-muted`, `info-muted`, `secondary-muted`
@@ -55,7 +55,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
   - `bg-danger-muted` works great with `text-danger`
   - `bg-primary-muted` works great with `text-primary`
   - `bg-success-muted` works great with `text-success`
-- **General muted**: For general muted backgrounds/text without semantic meaning, use `surface-muted` for backgrounds and `contrast-muted` for text
+- **General muted**: For general muted backgrounds/text without semantic meaning, use `background-muted` for backgrounds and `foreground-muted` for text
 
 ### Accent Colors
 
@@ -63,7 +63,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 |---------------------|------------------|-------|
 | `bg-accent` | `bg-secondary` | Accent background |
 | `text-accent` | `text-secondary` | Accent text |
-| `text-accent-foreground` | `text-secondary-fg` | Text on accent background |
+| `text-accent-foreground` | `text-secondary-contrast` | Text on accent background |
 
 ### Destructive Colors
 
@@ -71,25 +71,25 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 |---------------------|------------------|-------|
 | `bg-destructive` | `bg-danger` | Destructive actions |
 | `text-destructive` | `text-danger` | Destructive text |
-| `text-destructive-foreground` | `text-danger-fg` | Text on destructive background |
+| `text-destructive-foreground` | `text-danger-contrast` | Text on destructive background |
 
 ### Card and Popover
 
 | shadcn/ui ClassName | Svelai ClassName | Notes |
 |---------------------|------------------|-------|
-| `bg-card` | `bg-surface` | Card background (lighter than main background for visual hierarchy) |
-| `text-card` | `text-contrast` | Card text |
-| `text-card-foreground` | `text-contrast` | Text on card |
-| `bg-popover` | `bg-surface` | Popover background |
-| `text-popover-foreground` | `text-contrast` | Text on popover |
+| `bg-card` | `bg-background` | Card background (lighter than main background for visual hierarchy) |
+| `text-card` | `text-foreground` | Card text |
+| `text-card-foreground` | `text-foreground` | Text on card |
+| `bg-popover` | `bg-background` | Popover background |
+| `text-popover-foreground` | `text-foreground` | Text on popover |
 
 ### Borders and Inputs
 
 | shadcn/ui ClassName | Svelai ClassName | Notes |
 |---------------------|------------------|-------|
-| `border-border` | `border-surface-muted` | Standard border |
-| `bg-input` | `bg-surface-light` | Input background |
-| `border-input` | `border-surface-muted` | Input border |
+| `border-border` | `border-background-muted` | Standard border |
+| `bg-input` | `bg-background-light` | Input background |
+| `border-input` | `border-background-muted` | Input border |
 
 ### Focus and Ring
 
@@ -100,21 +100,25 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 ### Border Radius
 
+Svelai uses the **native Tailwind radius classes** — the `radius` theme knob is a
+multiplier that rescales the whole native scale, so no class renaming is needed.
+
 | shadcn/ui ClassName | Svelai ClassName | Notes |
 |---------------------|------------------|-------|
-| `rounded-md` | `rounded-normal` or `rounded-large` | Medium radius (adjust based on your theme config) |
-| `rounded-sm` | `rounded-small` | Small radius |
-| `rounded-lg` | `rounded-large` | Large radius |
+| `rounded-sm` | `rounded-sm` | Scales with the `radius` knob |
+| `rounded-md` | `rounded-md` | Scales with the `radius` knob |
+| `rounded-lg` | `rounded-lg` | Scales with the `radius` knob |
+| `rounded-xl` | `rounded-xl` | Scales with the `radius` knob |
 
 ### Sidebar Classes (if applicable)
 
 | shadcn/ui ClassName | Svelai ClassName | Notes |
 |---------------------|------------------|-------|
-| `bg-sidebar` | `bg-surface` or `bg-surface-dark` | Sidebar background |
-| `text-sidebar-foreground` | `text-contrast` | Sidebar text |
+| `bg-sidebar` | `bg-background` or `bg-background-dark` | Sidebar background |
+| `text-sidebar-foreground` | `text-foreground` | Sidebar text |
 | `bg-sidebar-primary` | `bg-primary` | Primary elements in sidebar |
 | `bg-sidebar-accent` | `bg-secondary` | Accent elements in sidebar |
-| `border-sidebar-border` | `border-surface-muted` | Sidebar border |
+| `border-sidebar-border` | `border-background-muted` | Sidebar border |
 
 ---
 
@@ -129,7 +133,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<p class="text-contrast-muted">Secondary text</p>
+<p class="text-foreground-muted">Secondary text</p>
 ```
 
 ### Example 2: Primary button
@@ -143,7 +147,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<button class="bg-primary text-primary-fg">
+<button class="bg-primary text-primary-contrast">
   Click me
 </button>
 ```
@@ -159,7 +163,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<div class="bg-surface text-contrast border border-surface-muted rounded-normal">
+<div class="bg-background text-foreground border border-background-muted rounded-normal">
   Card content
 </div>
 ```
@@ -173,7 +177,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<input class="bg-surface-light border border-surface-muted focus:ring-primary rounded-normal" />
+<input class="bg-background-light border border-background-muted focus:ring-primary rounded-normal" />
 ```
 
 ### Example 5: Destructive button
@@ -187,7 +191,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<button class="bg-danger text-danger-fg">
+<button class="bg-danger text-danger-contrast">
   Delete
 </button>
 ```
@@ -203,7 +207,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<section class="bg-surface-muted text-contrast-muted">
+<section class="bg-background-muted text-foreground-muted">
   Muted section
 </section>
 ```
@@ -219,7 +223,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 
 **Svelai:**
 ```html
-<button class="bg-secondary text-secondary-fg hover:bg-secondary-dark">
+<button class="bg-secondary text-secondary-contrast hover:bg-secondary-dark">
   Accent button
 </button>
 ```
@@ -241,7 +245,7 @@ This guide helps you convert shadcn/ui design tokens (classNames) to the Svelai 
 </div>
 
 <!-- Or for general muted without semantic meaning -->
-<div class="bg-surface-muted text-contrast-muted">
+<div class="bg-background-muted text-foreground-muted">
   General muted section
 </div>
 ```
@@ -258,8 +262,8 @@ Each color in Svelai can have the following variants:
 | `light` | `bg-primary-light` | 15% lighter |
 | `lighter` | `bg-primary-lighter` | 25% lighter |
 | `dark` | `bg-primary-dark` | 15% darker |
-| `muted` | `bg-primary-muted`, `text-contrast-muted` | Mixed with surface (95%) |
-| `fg` | `text-primary-fg` | Accessible text color (on colored background) |
+| `muted` | `bg-primary-muted`, `text-foreground-muted` | Mixed with background (95%) |
+| `contrast` | `text-primary-contrast` | Accessible text color (on colored background) |
 
 ### Variant Mapping from shadcn
 
@@ -268,55 +272,54 @@ Each color in Svelai can have the following variants:
 | Base color | `DEFAULT` | `bg-primary` |
 | Lighter color | `light` or `lighter` | `bg-primary-light` |
 | Darker color | `dark` | `bg-primary-dark` |
-| Muted color | `muted` | `bg-surface-muted` |
-| Text on color | `fg` | `text-primary-fg` |
+| Muted color | `muted` | `bg-background-muted` |
+| Text on color | `contrast` | `text-primary-contrast` |
 
 ---
 
 ## Quick Decision Guide
 
 ### For Backgrounds
-- Main background → `bg-surface-dark` (darker for visual hierarchy)
-- Surface (cards, popovers) → `bg-surface` (lighter than main background)
-- Muted background → `bg-surface-muted`
+- Main background → `bg-background-dark` (darker for visual hierarchy)
+- Background (cards, popovers) → `bg-background` (lighter than main background)
+- Muted background → `bg-background-muted`
 - Primary background → `bg-primary`
 - Secondary background → `bg-secondary`
 - Destructive background → `bg-danger`
 - Accent background → `bg-secondary`
 
 ### For Text
-- Main text → `text-contrast`
-- Muted text → `text-contrast-muted`
-- Text on primary → `text-primary-fg`
-- Text on secondary → `text-secondary-fg`
-- Text on danger → `text-danger-fg`
+- Main text → `text-foreground`
+- Muted text → `text-foreground-muted`
+- Text on primary → `text-primary-contrast`
+- Text on secondary → `text-secondary-contrast`
+- Text on danger → `text-danger-contrast`
 - Primary colored text → `text-primary`
 - Secondary colored text → `text-secondary`
 - Danger colored text → `text-danger`
 
 ### For Borders
-- Standard border → `border-surface-muted`
-- Input border → `border-surface-muted`
-- Card border → `border-surface-muted`
+- Standard border → `border-background-muted`
+- Input border → `border-background-muted`
+- Card border → `border-background-muted`
 
 ### For Focus/Ring
 - Focus ring → `ring-primary`
 - Focus ring on focus → `focus:ring-primary`
 
 ### For Radius
-- Small radius → `rounded-small`
-- Normal radius → `rounded-normal`
-- Large radius → `rounded-large`
+- Use the native Tailwind classes directly: `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`
+- The `radius` theme knob rescales all of them proportionally (no class renaming)
 
 ---
 
 ## Important Notes
 
-1. **Contextual colors**: Some shadcn tokens like `muted` can have different meanings depending on context. Use your judgment to choose between `surface-muted` and `contrast-muted`.
+1. **Contextual colors**: Some shadcn tokens like `muted` can have different meanings depending on context. Use your judgment to choose between `background-muted` and `foreground-muted`.
 
 2. **Missing variants**: If shadcn uses a variant you don't have directly, use the closest variant:
    - `primary-light` can replace a lighter `primary`
-   - `surface-muted` can replace a general `muted`
+   - `background-muted` can replace a general `muted`
 
 3. **Additional semantic colors**: Svelai offers `success`, `warning`, and `info` that don't exist directly in shadcn. Use them to enrich your palette.
 
@@ -332,24 +335,24 @@ Each color in Svelai can have the following variants:
 
 | Pattern | shadcn/ui | Svelai |
 |---------|-----------|--------|
-| Primary button | `bg-primary text-primary-foreground` | `bg-primary text-primary-fg` |
-| Secondary button | `bg-secondary text-secondary-foreground` | `bg-secondary text-secondary-fg` |
-| Destructive button | `bg-destructive text-destructive-foreground` | `bg-danger text-danger-fg` |
-| Outline button | `border border-border bg-background` | `border border-surface-muted bg-surface-dark` |
-| Ghost button | `hover:bg-muted` | `hover:bg-surface-muted` |
+| Primary button | `bg-primary text-primary-foreground` | `bg-primary text-primary-contrast` |
+| Secondary button | `bg-secondary text-secondary-foreground` | `bg-secondary text-secondary-contrast` |
+| Destructive button | `bg-destructive text-destructive-foreground` | `bg-danger text-danger-contrast` |
+| Outline button | `border border-border bg-background` | `border border-background-muted bg-background-dark` |
+| Ghost button | `hover:bg-muted` | `hover:bg-background-muted` |
 
 ### Card Patterns
 
 | Pattern | shadcn/ui | Svelai |
 |---------|-----------|--------|
-| Basic card | `bg-card text-card-foreground border border-border` | `bg-surface text-contrast border border-surface-muted` |
-| Elevated card | `bg-card shadow-lg` | `bg-surface-light shadow-lg` |
+| Basic card | `bg-card text-card-foreground border border-border` | `bg-background text-foreground border border-background-muted` |
+| Elevated card | `bg-card shadow-lg` | `bg-background-light shadow-lg` |
 
 ### Input Patterns
 
 | Pattern | shadcn/ui | Svelai |
 |---------|-----------|--------|
-| Basic input | `bg-input border border-input` | `bg-surface-light border border-surface-muted` |
-| Focused input | `bg-input border border-input focus:ring-ring` | `bg-surface-light border border-surface-muted focus:ring-primary` |
+| Basic input | `bg-input border border-input` | `bg-background-light border border-background-muted` |
+| Focused input | `bg-input border border-input focus:ring-ring` | `bg-background-light border border-background-muted focus:ring-primary` |
 
 

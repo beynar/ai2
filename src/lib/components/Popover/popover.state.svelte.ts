@@ -12,7 +12,8 @@ import {
 	flip,
 	type Placement,
 	type Alignment,
-	type Side
+	type Side,
+	type VirtualElement
 } from '@floating-ui/dom';
 import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 import { useScrollLock } from '$lib/utils/useScrollLock.svelte.js';
@@ -22,26 +23,16 @@ import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
 import { useHoverAction } from '$lib/utils/useHoverAction.svelte.js';
 
 type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
-interface PopoverOptions
-	extends MakeRequired<
-		Pick<
-			PopoverProps,
-			| 'id'
-			| 'size'
-			| 'position'
-			| 'transition'
-			| 'onClose'
-			| 'onOpen'
-			| 'offset'
-			| 'directedTransition'
-			| 'closeOnEscape'
-			| 'lockScroll'
-			| 'closeOnMouseLeave'
-			| 'closeOnClickOutside'
-			| 'openOnHover'
-			| 'hoverDelay'
-			| 'openOnClick'
-		>,
+interface PopoverOptions extends MakeRequired<
+	Pick<
+		PopoverProps,
+		| 'id'
+		| 'size'
+		| 'position'
+		| 'transition'
+		| 'onClose'
+		| 'onOpen'
+		| 'offset'
 		| 'directedTransition'
 		| 'closeOnEscape'
 		| 'lockScroll'
@@ -50,9 +41,19 @@ interface PopoverOptions
 		| 'openOnHover'
 		| 'hoverDelay'
 		| 'openOnClick'
-	> {
+	>,
+	| 'directedTransition'
+	| 'closeOnEscape'
+	| 'lockScroll'
+	| 'closeOnMouseLeave'
+	| 'closeOnClickOutside'
+	| 'openOnHover'
+	| 'hoverDelay'
+	| 'openOnClick'
+> {
 	isOpen: boolean;
-	externalRef?: HTMLElement | null;
+	// An HTMLElement, or a floating-ui virtual element (e.g. a point at the cursor for context menus).
+	externalRef?: HTMLElement | VirtualElement | null;
 	fitTrigger: boolean;
 }
 
@@ -73,8 +74,15 @@ export class PopoverState {
 		}
 	});
 	triggerReference: HTMLElement | null = $state(null);
-	referenceElement = $derived(this.triggerReference || this.externalRef);
+	referenceElement: HTMLElement | VirtualElement | null = $derived(
+		this.triggerReference || this.externalRef || null
+	);
 	dialogElement: HTMLElement | null = $state(null);
+	// Applied to the animated panel (not the portaled positioning wrapper) so the scale/fly
+	// transition originates from the edge nearest the trigger.
+	transformOrigin = $state('center center');
+	// Trigger-matched width (fitTrigger), applied to the panel.
+	triggerWidth = $state<number | null>(null);
 	parent = getContext<PopoverState | null>('popover');
 	children = $state<PopoverState[]>([]);
 	hasChildOpen = $derived(this.children.some((d) => d.isOpen));
@@ -191,7 +199,7 @@ export class PopoverState {
 		const transformOriginX =
 			alignment === 'start' ? 'left' : alignment === 'end' ? 'right' : 'center';
 
-		node.style.transformOrigin = `${transformOriginX} ${transformOriginY}`;
+		this.transformOrigin = `${transformOriginX} ${transformOriginY}`;
 		Object.assign(this.computedTransition.in, {
 			[axis]: value
 		});
@@ -205,9 +213,7 @@ export class PopoverState {
 			return;
 		}
 		if (this.fitTrigger) {
-			const { width } = this.referenceElement!.getBoundingClientRect();
-			node.style.width = `${width}px`;
-			node.style.maxWidth = `${width}px`;
+			this.triggerWidth = this.referenceElement!.getBoundingClientRect().width;
 		}
 
 		const { x, y, strategy, placement, middlewareData } = await computePosition(
@@ -219,7 +225,7 @@ export class PopoverState {
 
 				middleware: [
 					hide(),
-					offset(this.offset ?? 5),
+					offset(this.offset ?? 4),
 					// shift({
 					// 	mainAxis: true,
 					// 	crossAxis: true,
@@ -255,7 +261,7 @@ export class PopoverState {
 			this.triggerReference = node;
 
 			// Gather all cleanup callbacks
-			const cleanups: Array<(() => void) | void> = [];
+			const cleanups: Array<(() => void) | null | void> = [];
 			cleanups.push(this.clickOutside.reference?.(node));
 			cleanups.push(this.safeArea.reference?.(node));
 			cleanups.push(this.hoverAction.reference?.(node));

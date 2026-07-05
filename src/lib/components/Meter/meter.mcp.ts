@@ -241,7 +241,7 @@ The Meter component uses a theme object that can be customized using the \`theme
 ### Theme Structure
 
 The theme object contains the following parts:
-- **meter**: Main meter container styles
+- **root**: Main meter container styles
 - **header**: Header section styles
 - **container**: Progress container styles
 - **label**: Label text styles
@@ -258,7 +258,7 @@ The theme object contains the following parts:
 
 ### Available Variants
 
-**meter**:
+**root**:
 - base: Base classes for main container
 - Variants:
   - size: 'small' | 'normal' | 'large' - Container gap size
@@ -338,7 +338,7 @@ The theme object contains the following parts:
 <Meter 
   value={{ value: 75 }}
   theme={{
-    meter: {
+    root: {
       base: 'flex flex-col',
       size: {
         normal: 'gap-2'
@@ -387,7 +387,7 @@ The theme object contains the following parts:
   import { setMeterTheme } from 'svelai/meter';
   
   setMeterTheme({
-    meter: {
+    root: {
       base: 'flex flex-col',
       size: {
         normal: 'gap-2'

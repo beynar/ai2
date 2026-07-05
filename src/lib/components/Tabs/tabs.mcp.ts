@@ -12,7 +12,7 @@ The Tabs component combines a Tabbar for navigation with a Stepper for animated 
 	const tabs = ['Home', 'Profile', 'Settings'];
 </script>
 
-<Tabs {tabs}>
+<Tabs items={tabs}>
 	{#snippet tab1()}
 		<div>Home content</div>
 	{/snippet}
@@ -28,7 +28,7 @@ The Tabs component combines a Tabbar for navigation with a Stepper for animated 
 ## Props
 
 ### Core Props
-- **tabs**: Array<string | TabItem> (required)
+- **root**: Array<string | TabItem> (required)
   - Array of tab items. Each item can be:
     - A simple string (e.g., "Home")
     - A TabItem object with: { label, prefix?, suffix?, href?, disabled?, target?, rel? }
@@ -76,7 +76,7 @@ The Tabs component combines a Tabbar for navigation with a Stepper for animated 
 
 - **tabbarColor**: Colors (default: 'primary')
   - The color scheme of the tabs
-  - Available: primary, secondary, success, warning, danger, info, contrast, surface
+  - Available: primary, secondary, success, warning, danger, info, foreground, background
 
 - **tabbarAlignment**: 'start' | 'center' | 'end' (default: 'start')
   - The alignment of the tabs within the container
@@ -129,7 +129,7 @@ The Tabs component follows this DOM structure:
 	const tabs = ['Overview', 'Details', 'Settings'];
 </script>
 
-<Tabs {tabs} bind:activeTab>
+<Tabs items={tabs} bind:activeTab>
 	{#snippet tab1()}
 		<div class="p-4">
 			<h2>Overview</h2>
@@ -160,26 +160,26 @@ The Tabs component follows this DOM structure:
 	const tabs = ['Overview', 'Details', 'Settings'];
 </script>
 
-<Tabs {tabs} bind:activeTab>
+<Tabs items={tabs} bind:activeTab>
 	{#snippet tab({ index, item, stepper })}
 		{#if item === 'Overview'}
 			<div class="p-6">
 				<h3 class="mb-3 text-xl font-semibold">{item}</h3>
-				<p class="text-contrast/80">
+				<p class="text-foreground/80">
 					Content for Overview tab at index {index}
 				</p>
 			</div>
 		{:else if item === 'Details'}
 			<div class="p-6">
 				<h3 class="mb-3 text-xl font-semibold">{item}</h3>
-				<p class="text-contrast/80">
+				<p class="text-foreground/80">
 					Content for Details tab at index {index}
 				</p>
 			</div>
 		{:else if item === 'Settings'}
 			<div class="p-6">
 				<h3 class="mb-3 text-xl font-semibold">{item}</h3>
-				<p class="text-contrast/80">
+				<p class="text-foreground/80">
 					Content for Settings tab at index {index}
 				</p>
 			</div>
@@ -203,7 +203,7 @@ This approach allows you to conditionally render content based on the tab item v
 	];
 </script>
 
-<Tabs {tabs}>
+<Tabs items={tabs}>
 	{#snippet tab1()}
 		<div>Home dashboard content</div>
 	{/snippet}
@@ -227,7 +227,7 @@ This approach allows you to conditionally render content based on the tab item v
 	const tabs = ['Step 1', 'Step 2', 'Step 3'];
 </script>
 
-<Tabs {tabs} bind:stepper>
+<Tabs items={tabs} bind:stepper>
 	{#snippet tab1()}
 		<div class="p-4">
 			<p>First step content</p>
@@ -265,7 +265,7 @@ This approach allows you to conditionally render content based on the tab item v
 	}
 </script>
 
-<Tabs {tabs} bind:activeTab onChange={handleTabChange}>
+<Tabs items={tabs} bind:activeTab onChange={handleTabChange}>
 	{#snippet tab1()}
 		<div>Content 1</div>
 	{/snippet}
@@ -310,7 +310,7 @@ This approach allows you to conditionally render content based on the tab item v
 </script>
 
 <!-- Full width tabbar where tabs expand to fill available space -->
-<Tabs {tabs} tabbarFullWidth>
+<Tabs items={tabs} tabbarFullWidth>
 	{#snippet tab1()}
 		<div>First tab content</div>
 	{/snippet}
@@ -332,7 +332,7 @@ This approach allows you to conditionally render content based on the tab item v
 </script>
 
 <!-- Tabs on the left (sidebar style) -->
-<Tabs {tabs} placement="left">
+<Tabs items={tabs} placement="left">
 	{#snippet tab1()}
 		<div class="p-4">Section A content</div>
 	{/snippet}
@@ -345,7 +345,7 @@ This approach allows you to conditionally render content based on the tab item v
 </Tabs>
 
 <!-- Tabs on the right -->
-<Tabs {tabs} placement="right">
+<Tabs items={tabs} placement="right">
 	{#snippet tab1()}
 		<div class="p-4">Section A content</div>
 	{/snippet}
@@ -358,7 +358,7 @@ This approach allows you to conditionally render content based on the tab item v
 </Tabs>
 
 <!-- Tabs at the bottom -->
-<Tabs {tabs} placement="bottom">
+<Tabs items={tabs} placement="bottom">
 	{#snippet tab1()}
 		<div class="p-4">Section A content</div>
 	{/snippet}
@@ -383,7 +383,7 @@ This approach allows you to conditionally render content based on the tab item v
 	];
 </script>
 
-<Tabs {tabs}>
+<Tabs items={tabs}>
 	{#snippet tab1()}
 		<div>This tab is accessible</div>
 	{/snippet}
@@ -409,7 +409,7 @@ This approach allows you to conditionally render content based on the tab item v
 	};
 </script>
 
-<Tabs {tabs} {keyFramesOptions}>
+<Tabs items={tabs} {keyFramesOptions}>
 	{#snippet tab1()}
 		<div>Quick transition to this content</div>
 	{/snippet}
@@ -427,11 +427,11 @@ This approach allows you to conditionally render content based on the tab item v
 	const tabs = ['Info', 'Actions'];
 </script>
 
-<Tabs {tabs}>
+<Tabs items={tabs}>
 	{#snippet tab1({ stepper, index })}
 		<div class="p-4">
 			<p>Current tab: {index}</p>
-			<p>Total tabs: {stepper.items.length}</p>
+			<p>Total root: {stepper.items.length}</p>
 		</div>
 	{/snippet}
 	{#snippet tab2({ stepper, index })}
@@ -454,7 +454,7 @@ This approach allows you to conditionally render content based on the tab item v
 	const tabs = ['Personal', 'Contact', 'About'];
 </script>
 
-<Tabs {tabs}>
+<Tabs items={tabs}>
 	{#snippet tab1()}
 		<div class="p-4 space-y-4">
 			<TextInput label="Full Name" bind:value={formData.name} />
@@ -486,7 +486,7 @@ This approach allows you to conditionally render content based on the tab item v
 	};
 </script>
 
-<Tabs {tabs} {tabbarProps}>
+<Tabs items={tabs} {tabbarProps}>
 	{#snippet tab1()}
 		<div class="p-6">Dashboard overview</div>
 	{/snippet}
@@ -547,12 +547,12 @@ The Tabs component uses a theme object that can be customized using the \`theme\
 ### Theme Structure
 
 The theme object contains the following parts:
-- **tabs**: Main tabs container styles
+- **root**: Main tabs container styles
 - **content**: Tab content panel styles
 
 ### Available Variants
 
-**tabs**:
+**root**:
 - base: Base classes for main tabs container
 - Variants:
   - placement: 'top' | 'bottom' | 'left' | 'right' - Tab placement direction
@@ -566,10 +566,9 @@ The theme object contains the following parts:
 
 **Basic Theme Override**:
 \`\`\`svelte
-<Tabs 
-  tabs={tabs}
+<Tabs items={tabs}
   theme={{
-    tabs: {
+    root: {
       placement: {
         top: 'border-b-2 border-gray-200'
       }
@@ -587,11 +586,10 @@ The theme object contains the following parts:
 
 **Vertical Placement Customization**:
 \`\`\`svelte
-<Tabs 
-  tabs={tabs}
+<Tabs items={tabs}
   placement="left"
   theme={{
-    tabs: {
+    root: {
       placement: {
         left: 'border-r-2 border-gray-200'
       }
@@ -615,7 +613,7 @@ The theme object contains the following parts:
   import { setTabsTheme } from 'svelai/tabs';
   
   setTabsTheme({
-    tabs: {
+    root: {
       base: 'w-full',
       placement: {
         top: 'flex-col'

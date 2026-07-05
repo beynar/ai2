@@ -4,7 +4,7 @@
 	import Avatar from './Avatar.svelte';
 
 	let {
-		users,
+		items,
 		max,
 		class: className,
 		remainingCount,
@@ -21,8 +21,8 @@
 	const classes = $derived(useAvatarGroupTheme(theme));
 </script>
 
-<div data-size={size || 'normal'} class={classes.avatarGroup({ size, className })} {...attachments}>
-	{#each users.slice(0, max) as user, index}
+<div data-size={size || 'normal'} class={classes.root({ size, className })} {...attachments}>
+	{#each items.slice(0, max) as user, index}
 		{#if avatar}
 			{@render avatar({
 				user,
@@ -40,12 +40,12 @@
 			<Avatar {delay} {size} {loadingState} {prefix} {suffix} {theme} {user} />
 		{/if}
 	{/each}
-	{#if max && users.length > max}
+	{#if max && items.length > max}
 		<div class={classes.avatarGroupCount({ size })}>
 			{#if remainingCount}
-				{@render remainingCount({ users, remaining: users.length - max })}
+				{@render remainingCount({ items, remaining: items.length - max })}
 			{:else}
-				+{users.length - max}
+				+{items.length - max}
 			{/if}
 		</div>
 	{/if}

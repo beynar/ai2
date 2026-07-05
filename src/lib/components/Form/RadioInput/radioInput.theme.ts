@@ -1,5 +1,5 @@
-import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-import { type InferComponentTheme, cva } from '$lib/utils/cva.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultRadioInput = cva({
 	base: 'grid gap-3',
@@ -12,10 +12,10 @@ const defaultRadioInput = cva({
 });
 
 const defaultRadioInputItem = cva({
-	base: 'transition-all relative grid items-center min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
+	base: 'transition-all relative grid items-start min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
 	variants: {
 		mode: {
-			card: 'rounded bg-surface-light raised py-2 ',
+			card: 'rounded bg-background-light raised py-2 ',
 			normal: 'py-1'
 		},
 		checked: {
@@ -41,15 +41,15 @@ const defaultRadioInputItemLabel = cva({
 });
 
 const defaultRadioInputItemTrack = cva({
-	base: 'size-5 origin-center content-[""] bg-surface-light border border-surface-muted rounded-full absolute top-0 left-2 right-0 bottom-0 my-auto',
+	base: 'size-5 origin-center content-[""] bg-background-light border border-background-muted rounded-full absolute left-2',
 	variants: {
 		checked: {
 			true: '',
 			false: ''
 		},
 		mode: {
-			card: '',
-			normal: ''
+			card: 'top-2',
+			normal: 'top-1'
 		},
 		disabled: {
 			true: 'opacity-50',
@@ -59,15 +59,15 @@ const defaultRadioInputItemTrack = cva({
 });
 
 const defaultRadioInputItemThumb = cva({
-	base: 'size-5 my-auto origin-center radio bg-contrast rounded-full transition-all content-[""] absolute top-0 left-2 right-0 bottom-0 scale-[40%] opacity-0',
+	base: 'size-5 origin-center radio bg-foreground rounded-full transition-all content-[""] absolute left-2 scale-[40%] opacity-0',
 	variants: {
 		checked: {
 			true: 'bg-primary scale-[60%] opacity-100',
 			false: ''
 		},
 		mode: {
-			card: '',
-			normal: ''
+			card: 'top-2',
+			normal: 'top-1'
 		},
 		disabled: {
 			true: 'opacity-50',
@@ -81,11 +81,11 @@ const defaultRadioInputItemIcon = cva({
 });
 
 const defaultRadioInputItemDescription = cva({
-	base: 'text-xs text-contrast-muted'
+	base: 'text-xs text-foreground-muted'
 });
 
 const defaultRadioInputContainer = cva({
-	base: 'grid gap-3 grid-cols-1 md:grid-cols-2 items-start',
+	base: 'grid gap-3 grid-cols-1 items-start',
 	variants: {
 		mode: {
 			card: '',
@@ -98,8 +98,8 @@ const defaultRadioInputContainer = cva({
 	}
 });
 
-export const radiosInputTheme = {
-	radiosInput: defaultRadioInput,
+export const radioInputTheme = {
+	root: defaultRadioInput,
 	radiosInputItem: defaultRadioInputItem,
 	radiosInputItemLabel: defaultRadioInputItemLabel,
 	radiosInputItemTrack: defaultRadioInputItemTrack,
@@ -109,7 +109,10 @@ export const radiosInputTheme = {
 	radiosInputContainer: defaultRadioInputContainer
 };
 
-export type RadiosInputTheme = typeof radiosInputTheme;
-export type RadiosInputThemeProps = InferComponentTheme<RadiosInputTheme>;
-export const setRadioInputTheme = setComponentTheme<RadiosInputTheme>('radiosInput');
-export const useRadioInputTheme = useComponentTheme('radiosInput', radiosInputTheme);
+export type RadioInputTheme = typeof radioInputTheme;
+export type RadioInputThemeProps = InferComponentTheme<RadioInputTheme>;
+export const setRadioInputTheme = setComponentTheme<RadioInputTheme>('radio-input');
+export const useRadioInputTheme = useComponentTheme<RadioInputTheme>(
+	'radio-input',
+	radioInputTheme
+);

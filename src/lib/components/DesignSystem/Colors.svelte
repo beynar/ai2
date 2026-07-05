@@ -10,7 +10,7 @@
 				'bg-primary-light',
 				'bg-primary-lighter',
 				'bg-primary-muted',
-				'bg-primary-fg'
+				'bg-primary-contrast'
 			]
 		},
 		secondary: {
@@ -20,7 +20,7 @@
 				'bg-secondary-light',
 				'bg-secondary-lighter',
 				'bg-secondary-muted',
-				'bg-secondary-fg'
+				'bg-secondary-contrast'
 			]
 		},
 		success: {
@@ -30,7 +30,7 @@
 				'bg-success-light',
 				'bg-success-lighter',
 				'bg-success-muted',
-				'bg-success-fg'
+				'bg-success-contrast'
 			]
 		},
 		danger: {
@@ -40,7 +40,7 @@
 				'bg-danger-light',
 				'bg-danger-lighter',
 				'bg-danger-muted',
-				'bg-danger-fg'
+				'bg-danger-contrast'
 			]
 		},
 		warning: {
@@ -50,7 +50,7 @@
 				'bg-warning-light',
 				'bg-warning-lighter',
 				'bg-warning-muted',
-				'bg-warning-fg'
+				'bg-warning-contrast'
 			]
 		},
 		info: {
@@ -60,28 +60,28 @@
 				'bg-info-light',
 				'bg-info-lighter',
 				'bg-info-muted',
-				'bg-info-fg'
+				'bg-info-contrast'
 			]
 		},
-		surface: {
+		background: {
 			colors: [
-				'bg-surface',
-				'bg-surface-dark',
-				'bg-surface-light',
-				'bg-surface-lighter',
-				'bg-surface-muted',
-				'bg-surface-fg'
+				'bg-background',
+				'bg-background-dark',
+				'bg-background-light',
+				'bg-background-lighter',
+				'bg-background-muted',
+				'bg-background-contrast'
 			]
 		},
-		contrast: {
-			text: 'Contrast color is used to contrast text with a surface color. Its primary use is to make text readable on a background or to make an element stand out.',
+		foreground: {
+			text: 'Foreground color is the default text color used on top of a background color. Its primary use is to make text readable on a background or to make an element stand out.',
 			colors: [
-				'bg-contrast',
-				'bg-contrast-dark',
-				'bg-contrast-light',
-				'bg-contrast-lighter',
-				'bg-contrast-muted',
-				'bg-contrast-fg'
+				'bg-foreground',
+				'bg-foreground-dark',
+				'bg-foreground-light',
+				'bg-foreground-lighter',
+				'bg-foreground-muted',
+				'bg-foreground-contrast'
 			]
 		}
 	} as {
@@ -95,8 +95,8 @@
 <div class="grid gap-4 p-10">
 	{#each Object.entries(colorList) as [c, { colors, text }] (c)}
 		<div class="grid gap-2">
-			<Heading class="text-contrast">{c}</Heading>
-			<p class="text-contrast">
+			<Heading class="text-foreground">{c}</Heading>
+			<p class="text-foreground">
 				{text}
 			</p>
 			<div class="grid grid-cols-2 gap-4 md:grid-cols-6">
@@ -104,7 +104,7 @@
 					{@const name = color.split('-')[1]}
 					<div class="h-auto rounded-lg">
 						<div class={`w-full ${color} raised h-[100px] rounded-lg`}></div>
-						<div class="text-contrast p-2 text-center text-sm">
+						<div class="text-foreground p-2 text-center text-sm">
 							{color.replace('bg-', '').replace(`${color}-`, '')}
 						</div>
 					</div>
@@ -114,15 +114,15 @@
 	{/each}
 
 	<div class="grid gap-2">
-		{#each colorList.surface.colors as bgColor (bgColor)}
-			<Heading class="text-contrast">Contrast on surface {bgColor}</Heading>
+		{#each colorList.background.colors as bgColor (bgColor)}
+			<Heading class="text-foreground">Foreground on background {bgColor}</Heading>
 			<div class="grid grid-cols-2 gap-4 md:grid-cols-6">
-				{#each colorList.contrast.colors as color (color)}
+				{#each colorList.foreground.colors as color (color)}
 					<div class="h-auto rounded-lg">
 						<div
 							class={`${bgColor} text-${color.replace('bg-', '').replace(`${color}-`, '')} raised  flex h-[100px] w-full items-center justify-center rounded-lg`}
 						>
-							contrast-{color.replace('bg-', '').replace(`${color}-`, '')}
+							foreground-{color.replace('bg-', '').replace(`${color}-`, '')}
 						</div>
 					</div>
 				{/each}

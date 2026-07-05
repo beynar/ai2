@@ -19,7 +19,7 @@ The Popover component displays floating content positioned relative to a trigger
 ## Props
 
 ### Core Props
-- **isOpen**: boolean (bindable) - Controls popover visibility (optional when using trigger prop)
+- **open**: boolean (bindable) - Controls popover visibility (optional when using trigger prop)
 - **ref**: HTMLElement | null - Reference element to position popover against (optional when using trigger prop)
 - **id**: string - Unique identifier
 
@@ -264,13 +264,13 @@ The Popover component displays floating content positioned relative to a trigger
 	import { Avatar } from 'svelai/avatar';
 	
 	let avatarRef;
-	let isOpen = $state(false);
+	let open = $state(false);
 	let user = { name: 'John Doe', email: 'john@example.com' };
 </script>
 
-<Avatar bind:ref={avatarRef} user={user} onClick={() => isOpen = !isOpen} />
+<Avatar bind:ref={avatarRef} user={user} onClick={() => open = !open} />
 
-<Popover bind:isOpen ref={avatarRef} position="bottom">
+<Popover bind:open ref={avatarRef} position="bottom">
 	<div class="p-4">
 		<h3>{user.name}</h3>
 		<p>{user.email}</p>
@@ -283,7 +283,6 @@ The Popover component displays floating content positioned relative to a trigger
 
 The Popover component uses a \`PopoverState\` instance that is passed to all slot snippets. This state object provides:
 
-- **isOpen**: boolean - Current open state
 - **id**: string - Popover identifier
 - **size**: Size - Current popover size
 - **position**: Placement - Current popover position
@@ -324,7 +323,7 @@ import type { PopoverThemeProps } from 'svelai/popover';
 // Example theme customization
 const customTheme: PopoverThemeProps = {
   popover: {
-    base: 'z-[+50] fixed bg-surface-light w-fit rounded-large raised isolate h-fit',
+    base: 'z-[+50] fixed bg-background-light w-fit rounded-xl raised isolate h-fit',
     size: {
       small: 'max-w-3xs w-full p-2',
       normal: 'max-w-xs w-full p-3',

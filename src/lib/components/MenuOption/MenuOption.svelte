@@ -4,7 +4,7 @@
 	import { useMenuOptionTheme } from './menuOption.theme.js';
 
 	let {
-		color = 'contrast',
+		color = 'foreground',
 		size = 'normal',
 		class: className = '',
 		onClick,
@@ -14,11 +14,17 @@
 		target,
 		rel,
 		as,
+		role,
+		highlighted,
+		selected,
+		active = false,
+		disabled = false,
 		title,
 		description,
 		children,
 		prefix,
 		suffix,
+		attrs,
 		theme,
 		...attachments
 	}: MenuOptionProps = $props();
@@ -28,28 +34,45 @@
 	// Determine element type: custom 'as', link if href, button if interactive, otherwise div
 	const elementType = $derived(as || (href ? 'a' : 'button'));
 
-	// Determine role based on element type
-	const role = $derived(
-		elementType === 'button' ? 'button' : elementType === 'a' ? 'link' : 'menuitem'
+	// Explicit role wins (the listbox family passes 'option'); otherwise derive from the element.
+	const resolvedRole = $derived(
+		role ?? (elementType === 'button' ? 'button' : elementType === 'a' ? 'link' : 'menuitem')
 	);
+
+	// Attributes assembled conditionally so the menu family (which sets data-highlighted
+	// imperatively via useNavigation) is never clobbered by a reactive `undefined` binding — the
+	// key is simply absent unless a `highlighted` prop is passed (listbox/combobox family).
+	const dynamicAttrs: Record<string, any> = $derived({
+		...(highlighted !== undefined ? { 'data-highlighted': highlighted ? 'true' : undefined } : {}),
+		...(selected !== undefined
+			? { 'aria-selected': selected, 'data-selected': selected || undefined }
+			: {}),
+		...(disabled ? { 'aria-disabled': true } : {}),
+		...(disabled && elementType === 'button' ? { disabled: true } : {}),
+		...attrs
+	});
 </script>
 
 <svelte:element
 	this={elementType}
-	{role}
+	role={resolvedRole}
 	{href}
 	{target}
 	{rel}
 	data-color={color}
 	data-size={size}
-	onclick={onClick}
+	onclick={disabled ? undefined : onClick}
 	onpointerenter={onEnter}
 	onpointerleave={onLeave}
-	class={classes.menuOption({
+	class={classes.root({
 		color,
 		size,
+		disabled,
+		highlighted,
+		active,
 		className
 	})}
+	{...dynamicAttrs}
 	{...attachments}
 >
 	<Slot
@@ -61,12 +84,9 @@
 		<Slot render={children} />
 	{:else if title || description}
 		<div class={classes.content({ size })}>
-			{#if title}
-				<Slot render={title} class="{classes.title({ size })} leading-none" />
-			{/if}
-			{#if description}
-				<Slot render={description} class={classes.description({ size })} />
-			{/if}
+			<Slot renderIf={!!title} render={title} class="{classes.title({ size })} leading-none" />
+
+			<Slot renderIf={!!description} render={description} class={classes.description({ size })} />
 		</div>
 	{/if}
 

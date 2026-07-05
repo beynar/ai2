@@ -1,0 +1,97 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 7 0 R 9 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R /Annots [6 0 R] >>
+endobj
+5 0 obj
+<< /Length 344 >>
+stream
+BT
+/F1 28 Tf
+72 760 Td
+(svelai PDFViewer) Tj
+/F1 13 Tf
+0 -34 Td
+(Page 1 of 3 - a sample document rendered with pdf.js.) Tj
+0 -22 Td
+(This viewer supports continuous scrolling through every page.) Tj
+0 -22 Td
+(You can select this text, and search the whole document.) Tj
+0 -22 Td
+(Visit svelai.dev for the component library documentation.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Annot /Subtype /Link /Rect [72 656 260 674] /Border [0 0 0] /A << /Type /Action /S /URI /URI (https://svelai.dev) >> >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 360 >>
+stream
+BT
+/F1 28 Tf
+72 760 Td
+(Second page) Tj
+/F1 13 Tf
+0 -34 Td
+(Page 2 of 3 - use the toolbar to navigate, zoom and rotate.) Tj
+0 -22 Td
+(Search finds every match across the document and highlights it.) Tj
+0 -22 Td
+(The text layer overlays the canvas so selection stays crisp.) Tj
+0 -22 Td
+(This paragraph mentions the word document several times: document.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 300 >>
+stream
+BT
+/F1 28 Tf
+72 760 Td
+(Third page) Tj
+/F1 13 Tf
+0 -34 Td
+(Page 3 of 3 - download and print from the toolbar.) Tj
+0 -22 Td
+(Fit to width scales the page to the viewport automatically.) Tj
+0 -22 Td
+(Pinch to zoom works on touch devices.) Tj
+0 -22 Td
+(Thank you for reading this svelai document.) Tj
+ET
+endstream
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000197 00000 n 
+0000000339 00000 n 
+0000000734 00000 n 
+0000000879 00000 n 
+0000001005 00000 n 
+0000001416 00000 n 
+0000001543 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+1895
+%%EOF

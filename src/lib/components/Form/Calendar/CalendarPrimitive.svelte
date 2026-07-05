@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 	import { calendarTheme } from '$lib/components/Form/Calendar/calendar.theme.js';
 	export const setCalendarTheme = setComponentTheme<typeof calendarTheme>('calendar');
 	export const useCalendarTheme = useComponentTheme('calendar', calendarTheme);
@@ -120,7 +120,7 @@
 </script>
 
 <div
-	class={classes.container({ class: className })}
+	class={classes.root({ class: className })}
 	style="display: grid; grid-template-columns: repeat({view === 'single'
 		? '1'
 		: '2'}, minmax(0, 1fr)) "

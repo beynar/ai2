@@ -82,7 +82,7 @@ The Stepper component provides an animated multi-step content container with smo
   - vertical: Vertical step layout
 
 ### Advanced Props
-- **stepper**: StepperState<Item> (bindable)
+- **root**: StepperState<Item> (bindable)
   - Bindable reference to the stepper state
   - Provides methods: next(), previous(), goTo(index)
   - Allows programmatic control of step navigation
@@ -161,7 +161,7 @@ The Stepper component follows this DOM structure:
 		{#if item.type === 'form'}
 			<div class="p-6">
 				<h3 class="mb-3 text-xl font-semibold">{item.title}</h3>
-				<p class="text-contrast/80">
+				<p class="text-foreground/80">
 					Form content for {item.title} at step {index + 1}
 				</p>
 				<button onclick={() => stepper.next()}>Next</button>
@@ -169,7 +169,7 @@ The Stepper component follows this DOM structure:
 		{:else if item.type === 'summary'}
 			<div class="p-6">
 				<h3 class="mb-3 text-xl font-semibold">{item.title}</h3>
-				<p class="text-contrast/80">
+				<p class="text-foreground/80">
 					Summary content for {item.title} at step {index + 1}
 				</p>
 				<button onclick={() => stepper.previous()}>Previous</button>
@@ -389,13 +389,13 @@ The Stepper component uses a theme object that can be customized using the \`the
 ### Theme Structure
 
 The theme object contains the following parts:
-- **stepper**: Main stepper container styles
+- **root**: Main stepper container styles
 - **container**: Step container styles
 - **step**: Individual step panel styles
 
 ### Available Variants
 
-**stepper**:
+**root**:
 - base: Base classes for main stepper container
 - Variants:
   - mode: 'classic' | 'vertical' - Stepper layout mode
@@ -417,7 +417,7 @@ The theme object contains the following parts:
 <Stepper 
   items={items}
   theme={{
-    stepper: {
+    root: {
       base: 'relative overflow-hidden',
       mode: {
         classic: 'flex flex-col'
@@ -440,7 +440,7 @@ The theme object contains the following parts:
   items={items}
   mode="vertical"
   theme={{
-    stepper: {
+    root: {
       mode: {
         vertical: 'flex-row'
       }
@@ -464,7 +464,7 @@ The theme object contains the following parts:
   import { setStepperTheme } from 'svelai/stepper';
   
   setStepperTheme({
-    stepper: {
+    root: {
       base: 'relative overflow-hidden transition-all',
       mode: {
         classic: 'flex flex-col'

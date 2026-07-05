@@ -4,12 +4,14 @@
 	import type { ComboboxProps, ComboboxOption } from './combobox.props.js';
 	import Popover from '../../Popover/Popover.svelte';
 	import ScrollArea from '../../ScrollArea/ScrollArea.svelte';
+	import MenuOption from '../../MenuOption/MenuOption.svelte';
 	import { xIcon } from '../../Icons/x.js';
 	import { magnifyingGlassIcon } from '../../Icons/magnifyingGlass.js';
 	import { useDebounce } from '$lib/utils/useDebounce.svelte.js';
 	import type { PopoverState } from '../../Popover/popover.state.svelte.js';
 	import { useComboboxTheme } from './combobox.theme.js';
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
+	import { useListNavigation } from '$lib/utils/useListNavigation.svelte.js';
 	import { onMount, untrack } from 'svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 
@@ -22,7 +24,7 @@
 		required = false,
 		size = 'normal',
 		placeholder = '',
-		options,
+		items,
 		showAllOnFocus = false,
 		getValueOption,
 		loadingText = 'Loading...',
@@ -41,10 +43,8 @@
 
 	const id = $props.id();
 	const listboxId = `${id}-listbox`;
-	let highlightedIndex = $state(-1);
-	let currentOption = $state<ComboboxOption | null>(
-		typeof options === 'function' ? null : options.find((opt) => opt.value === value) || null
-	);
+	const optionId = (value: string) => `${id}-option-${value.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+	let currentOption = $state<ComboboxOption | null>(null);
 
 	const field = createFieldState({
 		id,
@@ -67,7 +67,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			onChange?.(v, currentOption);
+			onChange?.(v, selectedOption);
 		},
 		get disabled() {
 			return disabled;
@@ -75,30 +75,47 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		visible,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'combobox'
 	});
+
+	const selectedOption = $derived(
+		typeof items === 'function'
+			? currentOption
+			: (items.find((option) => option.value === field.value) ?? null)
+	);
 
 	// Load options state
 
 	// Keyboard navigation state
 
 	const getOptions = async (searchValue?: string | null, showAllOnFocus?: boolean) => {
-		const isOptionsAsync = typeof options === 'function';
+		const isOptionsAsync = typeof items === 'function';
 		if (!searchValue) {
 			if (!showAllOnFocus || isOptionsAsync) {
 				return { options: [] as ComboboxOption[], error: null };
 			} else {
-				return { options, error: null };
+				return { options: items, error: null };
 			}
 		} else {
 			if (isOptionsAsync) {
 				loading = true;
 				try {
-					const results = await options(searchValue);
+					const results = await items(searchValue);
 					return { options: results, error: null };
 				} catch (error) {
 					return {
@@ -109,7 +126,7 @@
 					loading = false;
 				}
 			} else {
-				const result = options.filter((option) =>
+				const result = items.filter((option) =>
 					option.label.toLowerCase().includes(searchValue.toLowerCase())
 				);
 
@@ -152,8 +169,6 @@
 	const handleSelectOption = (option: ComboboxOption) => {
 		field.value = option.value;
 		searchValue = '';
-		highlightedIndex = -1;
-		resetHighlightedIndex();
 		field.node?.blur();
 		currentOption = option;
 		// Focus the input after selection
@@ -163,28 +178,25 @@
 	const handleClear = () => {
 		field.value = null;
 		searchValue = '';
-		highlightedIndex = -1;
 		field.node?.blur();
 		currentOption = null;
 	};
 
-	// Handle popover state changes
-	const resetHighlightedIndex = () => {
-		highlightedIndex = -1;
-	};
-
-	$effect(() => {
-		optionsAsync.options.length;
-		optionsAsync.error;
-		untrack(() => {
-			resetHighlightedIndex();
-		});
+	// Keyboard navigation: value-driven virtual focus. Re-anchors the highlight to the first
+	// option whenever the (async) option set changes.
+	const nav = useListNavigation({
+		values: () => optionsAsync.options.map((option) => option.value),
+		optionId,
+		onSelect: (value) => {
+			const option = optionsAsync.options.find((opt) => opt.value === value);
+			if (option) handleSelectOption(option);
+		}
 	});
-	// Use useKeyDown hook for keyboard navigation
+
 	useKeyDown({
 		isActive: () => field.focused,
 		keys: ['Escape'],
-		callback: (event: KeyboardEvent) => {
+		callback: () => {
 			field.node?.blur();
 		},
 		onWindow: () => true
@@ -193,8 +205,7 @@
 		isActive: () => isOpen || field.focused,
 		keys: ['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Home', 'End'],
 		callback: (event: KeyboardEvent) => {
-			const filteredOptions = optionsAsync.options;
-			if (!isOpen || filteredOptions.length === 0) {
+			if (!isOpen || optionsAsync.options.length === 0) {
 				if (event.key === 'ArrowDown' || event.key === 'Enter') {
 					if (searchValue) {
 						field.focused = true;
@@ -203,75 +214,22 @@
 				return;
 			}
 
-			switch (event.key) {
-				case 'ArrowDown': {
-					// Wrap around: if at bottom, go to top
-					const newIndex =
-						highlightedIndex >= filteredOptions.length - 1 ? 0 : highlightedIndex + 1;
-					highlightedIndex = newIndex;
-					// Scroll highlighted option into view
-					const optionElement = document.getElementById(`${id}-option-${newIndex}`);
-					if (optionElement) {
-						optionElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-					}
-					break;
-				}
-				case 'ArrowUp': {
-					// Wrap around: if at top (-1 or 0), go to bottom
-					const newIndex =
-						highlightedIndex <= 0 ? filteredOptions.length - 1 : highlightedIndex - 1;
-					highlightedIndex = newIndex;
-					// Scroll highlighted option into view
-					const optionElement = document.getElementById(`${id}-option-${newIndex}`);
-					if (optionElement) {
-						optionElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-					}
-					break;
-				}
-				case 'Enter':
-					if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
-						handleSelectOption(filteredOptions[highlightedIndex]);
-					}
-					break;
-				case 'Escape':
-					field.focused = false;
-					highlightedIndex = -1;
-					resetHighlightedIndex();
-
-					break;
-				case 'Home': {
-					highlightedIndex = 0;
-					// Scroll to first option
-					const optionElement = document.getElementById(`${id}-option-0`);
-					if (optionElement) {
-						optionElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-					}
-					break;
-				}
-				case 'End': {
-					const newIndex = filteredOptions.length - 1;
-					highlightedIndex = newIndex;
-					// Scroll to last option
-					const optionElement = document.getElementById(`${id}-option-${newIndex}`);
-					if (optionElement) {
-						optionElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-					}
-					break;
-				}
+			if (event.key === 'Escape') {
+				field.focused = false;
+				return;
 			}
+			nav.onKeydown(event);
 		},
 		onWindow: () => false // Only attach to input element, not window
 	});
 
 	onMount(async () => {
 		if (field.value) {
-			if (typeof options === 'function') {
+			if (typeof items === 'function') {
 				currentOption = (await getValueOption?.(field.value)) || null;
 			}
 		}
 	});
-
-	const activeDescendantId = $derived(`${id}-option-${highlightedIndex}`);
 
 	// Determine if we should show clear button
 	const showClear = $derived(searchValue || field.value);
@@ -284,7 +242,7 @@
 	const classes = $derived(useComboboxTheme(theme));
 </script>
 
-<Popover closeOnClickOutside={false} fitTrigger position="bottom" size="small" offset={20} {isOpen}>
+<Popover closeOnClickOutside={false} fitTrigger position="bottom" size="small" open={isOpen}>
 	{#snippet children(popover)}
 		<div
 			id={listboxId}
@@ -306,30 +264,25 @@
 				<div class={classes.noOptions({ size })} role="status">{noOptionsText}</div>
 			{:else if optionsAsync.options.length > 0}
 				<ScrollArea scrollOnEdges type="auto" class="flex max-h-[200px] flex-col gap-1">
-					{#each optionsAsync.options as option, index}
-						<button
-							id={`${id}-option-${index}`}
+					{#each optionsAsync.options as option (option.value)}
+						<MenuOption
+							as="button"
 							role="option"
-							aria-selected={field.value === option.value}
-							class={classes.option({
-								highlighted: highlightedIndex === index,
-								selected: field.value === option.value
-							})}
-							onmousedown={(e) => {
-								e.stopPropagation();
-								e.preventDefault();
+							{size}
+							title={option.label}
+							description={option.description}
+							highlighted={nav.highlighted === option.value}
+							selected={field.value === option.value}
+							onClick={() => handleSelectOption(option)}
+							attrs={{
+								id: optionId(option.value),
+								onpointermove: () => nav.setHighlighted(option.value),
+								onmousedown: (e: MouseEvent) => {
+									e.stopPropagation();
+									e.preventDefault();
+								}
 							}}
-							onclick={(e) => {
-								e.stopPropagation();
-								e.preventDefault();
-								handleSelectOption(option);
-							}}
-						>
-							<span class={classes.optionLabel({ size })}>{option.label}</span>
-							{#if option.description}
-								<span class={classes.optionDescription({ size })}>{option.description}</span>
-							{/if}
-						</button>
+						/>
 					{/each}
 				</ScrollArea>
 			{/if}
@@ -371,7 +324,7 @@
 				{id}
 				name={field.name}
 				bind:value={searchValue}
-				placeholder={currentOption ? currentOption.label : placeholder}
+				placeholder={selectedOption ? selectedOption.label : placeholder}
 				bind:this={field.node}
 				bind:focused={field.focused}
 				{disabled}
@@ -379,12 +332,12 @@
 				aria-expanded={isOpen}
 				aria-controls={isOpen ? listboxId : undefined}
 				aria-autocomplete="list"
-				aria-activedescendant={isOpen && highlightedIndex >= 0 ? activeDescendantId : undefined}
+				aria-activedescendant={isOpen ? nav.activeDescendant : undefined}
 				aria-haspopup="listbox"
 				aria-invalid={!!optionsAsync.error}
 				autocomplete="off"
 				class={classes.input({ size, hasValue: field.value !== null })}
-				class:placeholder:text-contrast={currentOption && !searchValue}
+				class:placeholder:text-foreground={selectedOption && !searchValue}
 				{@attach keyDownHook.reference}
 			/>
 		</Field>

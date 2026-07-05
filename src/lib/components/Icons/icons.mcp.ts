@@ -17,7 +17,7 @@ They can receive the following props :
 type IconProps = {
 	size: number | string;
 	mirrored?: boolean;
-	color?: Colors | string; // primary, secondary, danger, success, warning, info, surface, contrast, or a hex color
+	color?: Colors | string; // primary, secondary, danger, success, warning, info, background, foreground, or a hex color
 } & SVGAttributes<SVGSVGElement>;
 \`\`\`
 

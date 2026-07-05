@@ -188,9 +188,8 @@ Each color in Svelai can have the following variants:
 - Focus ring on focus → `focus:ring-primary`
 
 ### For Radius
-- Small radius → `rounded-small`
-- Normal radius → `rounded-normal`
-- Large radius → `rounded-large`
+- Use the native Tailwind classes directly: `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`
+- The `radius` theme knob rescales all of them proportionally (no class renaming)
 
 ---
 

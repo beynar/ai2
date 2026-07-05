@@ -8,7 +8,9 @@
 		decorative = false,
 		class: className = '',
 		orientation = 'horizontal',
-		color = 'surface',
+		align = 'center',
+		line = true,
+		color = 'background',
 		size = 1,
 		theme,
 		...attachments
@@ -18,7 +20,7 @@
 </script>
 
 <div
-	class={classes.separator({ orientation, color, className })}
+	class={classes.root({ orientation, color, align, line, className })}
 	data-orientation={orientation}
 	data-color={color}
 	aria-orientation={orientation}

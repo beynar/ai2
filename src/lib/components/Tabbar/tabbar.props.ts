@@ -48,9 +48,9 @@ export type TabItem =
 
 export type TabbarProps = WithAttachments<{
 	/**
-	 * Array of tab items. Each item can be a simple string or an object with label, prefix, suffix, href, and disabled properties.
+	 * Items to render as tabs. Each item can be a simple string or an object with label, prefix, suffix, href, and disabled properties.
 	 */
-	tabs: TabItem[];
+	items: TabItem[];
 	/**
 	 * The index of the currently active tab. This is bindable.
 	 * @default 0

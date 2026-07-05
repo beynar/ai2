@@ -1,6 +1,6 @@
 <script
 	lang="ts"
-	generics="Buttons extends Record<string, Omit<ToggleButtonProps, 'variant' | 'color' | 'size'>>"
+	generics="Items extends Record<string, Omit<ToggleButtonProps, 'variant' | 'color' | 'size'>>"
 >
 	import ToggleButton from '../ToggleButton/ToggleButton.svelte';
 	import { type ToggleButtonProps } from '../ToggleButton/index.js';
@@ -8,33 +8,34 @@
 	import { useToggleButtonGroupTheme } from './toggleButtonGroup.theme.js';
 
 	let {
-		buttons = $bindable(),
+		items = $bindable(),
 		size,
 		value = $bindable(
-			Object.keys(buttons).reduce(
+			Object.keys(items).reduce(
 				(acc, key) => {
 					Object.assign(acc, {
-						[key]: buttons[key].checked || false
+						[key]: items[key].checked || false
 					});
 					return acc;
 				},
-				{} as { [key in keyof Buttons]: boolean }
+				{} as { [key in keyof Items]: boolean }
 			)
 		),
 		color,
 		variant,
 		disabled,
+		joined,
 		theme,
 		class: className,
 		onChange,
 		...attachments
-	}: ToggleButtonGroupProps<Buttons> = $props();
+	}: ToggleButtonGroupProps<Items> = $props();
 
 	const classes = $derived(useToggleButtonGroupTheme(theme));
 </script>
 
-<div data-color={color} class={classes.buttonGroup({ className })} {...attachments}>
-	{#each Object.entries(buttons) as [key, button]}
+<div data-color={color} class={classes.root({ className, joined })} {...attachments}>
+	{#each Object.entries(items) as [key, button]}
 		<ToggleButton
 			{size}
 			{color}
@@ -45,12 +46,8 @@
 			onChange={(checked) => {
 				button.checked = checked;
 				button.onChange?.(checked);
-				value =Object.entries(buttons).reduce((acc, [key, button]) => {
-					Object.assign(acc, {
-						[key]: button.checked||false
-					});
-					return acc;
-				}, {} as { [key in keyof Buttons]: boolean })
+				// Update only the toggled key: `value` is the single source of truth.
+				value = { ...value, [key]: checked };
 				onChange?.(value);
 			}}
 		/>
