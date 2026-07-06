@@ -4,7 +4,17 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 // The portaled positioning wrapper (fixed, placed by floating-ui). Resets <dialog> defaults so
 // it's an invisible box hugging the panel; the panel inside carries the visuals + transition.
 const defaultPopoverContainer = cva({
-	base: 'fixed top-0 left-0 z-[+50] m-0 h-fit w-fit border-none bg-transparent p-0 outline-none'
+	base: 'fixed z-[+50] m-0 border-none bg-transparent p-0 outline-none',
+	variants: {
+		mode: {
+			floating: 'top-0 left-0 h-fit w-fit',
+			mobileSheet:
+				'inset-0 flex h-dvh w-dvw max-w-none items-end justify-center overflow-hidden bg-background/40 backdrop-blur-xs'
+		}
+	},
+	defaultVariants: {
+		mode: 'floating'
+	}
 });
 
 // The visible, animated panel.
@@ -15,7 +25,15 @@ const defaultPopover = cva({
 			small: 'max-w-3xs w-full p-1',
 			normal: 'max-w-xs w-full p-2.5',
 			large: 'max-w-sm w-full p-4'
+		},
+		mode: {
+			floating: '',
+			mobileSheet:
+				'max-h-[85dvh] w-full max-w-none overflow-auto rounded-b-none rounded-t-xl pb-[calc(env(safe-area-inset-bottom)+1rem)]'
 		}
+	},
+	defaultVariants: {
+		mode: 'floating'
 	}
 });
 

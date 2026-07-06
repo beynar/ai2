@@ -3,7 +3,7 @@ import type { FieldValue, InputType } from './field.js';
 import * as v from 'valibot';
 import { schemas } from './schemas.js';
 import { getContext, untrack } from 'svelte';
-import type { FormState } from '../Form/formState.svelte.js';
+import type { FormState } from '../Form/form.state.svelte.js';
 
 type FieldStateStaticOptions<T extends InputType> = {
 	type: T;

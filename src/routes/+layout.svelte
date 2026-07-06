@@ -101,7 +101,12 @@
 				{@render sideNavigationButton({ href: '/components/marquee', text: 'Marquee' })}
 				{@render sideNavigationButton({ href: '/components/mermaid', text: 'Mermaid' })}
 				{@render sideNavigationButton({ href: '/components/map', text: 'Map' })}
+				{@render sideNavigationButton({ href: '/components/markdown', text: 'Markdown' })}
 				{@render sideNavigationButton({ href: '/components/meter', text: 'Meter' })}
+				{@render sideNavigationButton({
+					href: '/components/network-indicator',
+					text: 'Network indicator'
+				})}
 				{@render sideNavigationButton({ href: '/components/pagination', text: 'Pagination' })}
 				{@render sideNavigationButton({ href: '/components/pdf-viewer', text: 'PDF viewer' })}
 				{@render sideNavigationButton({ href: '/components/qr-code', text: 'QR code' })}
@@ -133,21 +138,26 @@
 				{@render sideNavigationButton({ href: '/components/select', text: 'Select' })}
 				{@render sideNavigationButton({ href: '/components/slider', text: 'Slider' })}
 				{@render sideNavigationButton({ href: '/components/switch', text: 'Switch' })}
+				{@render sideNavigationButton({ href: '/components/tags-input', text: 'Tags Input' })}
 				{@render sideNavigationButton({ href: '/components/textinput', text: 'Text input' })}
 				{@render sideNavigationButton({ href: '/components/textarea', text: 'Textarea' })}
 				{@render sideNavigationButton({ href: '/components/time-input', text: 'Time input' })}
 
+				<!-- Shells -->
+				<Separator line={false} align="start" class="mt-4" children="Shells" />
+				{@render sideNavigationButton({ href: '/components/app-shell', text: 'App shell' })}
+				{@render sideNavigationButton({ href: '/components/sidebar', text: 'Sidebar' })}
+				{@render sideNavigationButton({ href: '/components/page-shell', text: 'Page shell' })}
+
 				<!-- Menus & Navigation -->
 				<Separator line={false} align="start" class="mt-4" children="Menus & Navigation" />
-				{@render sideNavigationButton({ href: '/components/app-shell', text: 'App shell' })}
 				{@render sideNavigationButton({ href: '/components/command', text: 'Command' })}
 				{@render sideNavigationButton({ href: '/components/menu', text: 'Menu' })}
 				{@render sideNavigationButton({ href: '/components/context-menu', text: 'Context menu' })}
 				{@render sideNavigationButton({ href: '/components/menu-option', text: 'Menu option' })}
-				{@render sideNavigationButton({ href: '/components/page-shell', text: 'Page shell' })}
 				{@render sideNavigationButton({ href: '/components/popover', text: 'Popover' })}
 				{@render sideNavigationButton({ href: '/components/popup-menu', text: 'Popup menu' })}
-				{@render sideNavigationButton({ href: '/components/sidebar', text: 'Sidebar' })}
+				{@render sideNavigationButton({ href: '/components/resizable', text: 'Resizable' })}
 				{@render sideNavigationButton({ href: '/components/toast', text: 'Toast' })}
 				{@render sideNavigationButton({ href: '/components/tooltip', text: 'Tooltip' })}
 

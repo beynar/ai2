@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { SidebarProps } from './sidebar.props.js';
+	import { cx } from '$lib/utils/cva/index.js';
+	import type { SidebarFrame, SidebarProps, SidebarSide, SidebarVariant } from './sidebar.props.js';
 	import SidebarPanel from './SidebarPanel.svelte';
 	import { useMobileSidebarDialog } from './sidebar-dialog.svelte.js';
 	import { SidebarStateController } from './sidebar.state.svelte.js';
@@ -12,7 +13,8 @@
 		side = 'left',
 		variant = 'sidebar',
 		collapsible = 'offcanvas',
-		bare = false,
+		mode = 'layout',
+		frame = 'viewport',
 		dir,
 		width = '16rem',
 		widthIcon = '3rem',
@@ -22,12 +24,6 @@
 		edgeReveal = true,
 		items,
 		class: className,
-		sidebarClass,
-		insetClass,
-		contentClass,
-		headerClass,
-		footerClass,
-		menuClass,
 		collapseIcon = 'chevron',
 		tooltips = 'auto',
 		headerButton,
@@ -66,8 +62,8 @@
 	}
 
 	const controller = new SidebarStateController({
-		get bare() {
-			return bare;
+		get mode() {
+			return mode;
 		},
 		get keyboardShortcut() {
 			return keyboardShortcut;
@@ -87,8 +83,54 @@
 	const api = controller.api;
 	const classes = $derived(useSidebarTheme(theme));
 	const collapsibleState = $derived(controller.state === 'collapsed' ? collapsible : '');
+	const panelWidth = $derived(
+		mode === 'panel' && controller.displayState === 'collapsed' && collapsible === 'icon'
+			? widthIcon
+			: width
+	);
 	const showEdgeTrigger = $derived(edgeReveal && controller.displayState === 'hidden');
 	const withBanner = $derived(!!banner);
+	const rootClass = $derived(
+		cx(
+			'group/sidebar-wrapper flex w-full text-foreground',
+			frame === 'viewport'
+				? 'min-h-svh'
+				: 'relative h-full min-h-0 overflow-hidden rounded-[inherit]',
+			withBanner && 'flex-col',
+			className
+		)
+	);
+	const rowClass = $derived(cx('flex w-full flex-1', !withBanner && 'contents'));
+
+	function getGapClass(currentVariant: SidebarVariant) {
+		return cx(
+			'relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear group-data-[collapsible=offcanvas]:w-0',
+			currentVariant === 'sidebar'
+				? 'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]'
+				: 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+1rem)]'
+		);
+	}
+
+	function getContainerClass(
+		currentSide: SidebarSide,
+		currentVariant: SidebarVariant,
+		isEdgeRevealed: boolean,
+		currentFrame: SidebarFrame
+	) {
+		return cx(
+			'inset-y-0 z-10 hidden w-[var(--sidebar-width)] bg-transparent transition-[left,right,width] duration-200 ease-linear md:flex',
+			currentFrame === 'viewport' ? 'fixed h-svh' : 'absolute h-full',
+			currentSide === 'left'
+				? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
+				: 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
+			currentVariant === 'sidebar'
+				? 'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]'
+				: 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+1rem+2px)]',
+			isEdgeRevealed && 'z-40 shadow-xl',
+			currentSide === 'left' && isEdgeRevealed && '!left-0',
+			currentSide === 'right' && isEdgeRevealed && '!right-0'
+		);
+	}
 
 	$effect(() => {
 		if (showEdgeTrigger) return;
@@ -134,21 +176,26 @@
 		{footerButton}
 		{footerMenu}
 		{footer}
-		{contentClass}
-		{headerClass}
-		{footerClass}
-		{menuClass}
 		{collapseIcon}
 		{tooltips}
 		{theme}
 	/>
 {/snippet}
 
-{#if bare}
+{#if mode === 'panel'}
 	<div
 		bind:this={ref}
 		data-slot="sidebar"
-		class={classes.surface({ variant, className: sidebarClass })}
+		data-sidebar="sidebar"
+		data-state={controller.state}
+		data-display-state={controller.displayState}
+		data-collapsible={collapsibleState}
+		data-variant={variant}
+		data-side={side}
+		style:--sidebar-width={panelWidth}
+		style:--sidebar-width-icon={widthIcon}
+		style:--sidebar-width-mobile={widthMobile}
+		class={cx('group', classes.panel({ variant, placement: 'panel', className }))}
 		{...attachments}
 	>
 		{@render panel()}
@@ -160,13 +207,19 @@
 		style:--sidebar-width={width}
 		style:--sidebar-width-icon={widthIcon}
 		style:--sidebar-width-mobile={widthMobile}
-		class={classes.root({ withBanner, variant, className })}
+		data-frame={frame}
+		class={rootClass}
 		{...attachments}
 	>
 		{#if banner}{@render banner(api)}{/if}
-		<div class={classes.row({ withBanner })}>
+		<div class={rowClass}>
 			{#if collapsible === 'none'}
-				<div data-slot="sidebar" class={classes.surface({ variant, className: sidebarClass })}>
+				<div
+					data-slot="sidebar"
+					data-sidebar="sidebar"
+					data-side={side}
+					class={classes.panel({ variant, placement: 'static' })}
+				>
 					{@render panel()}
 				</div>
 			{:else if controller.isMobile}
@@ -187,7 +240,7 @@
 						aria-label="Sidebar navigation"
 						tabindex="-1"
 						{dir}
-						class={classes.mobilePanel({ side, className: sidebarClass })}
+						class={classes.mobilePanel({ side })}
 					>
 						{@render panel()}
 					</div>
@@ -203,17 +256,18 @@
 					data-variant={variant}
 					data-side={side}
 				>
-					<div data-slot="sidebar-gap" class={classes.gap({ variant })}></div>
+					<div data-slot="sidebar-spacer" class={getGapClass(variant)}></div>
 					<div
 						bind:this={desktopPanelRef}
 						data-slot="sidebar-container"
 						data-side={side}
-						class={classes.container({ side, variant, edgeRevealed, className: sidebarClass })}
+						class={getContainerClass(side, variant, edgeRevealed, frame)}
 					>
 						<div
 							data-sidebar="sidebar"
-							data-slot="sidebar-inner"
-							class={classes.inner({ variant })}
+							data-slot="sidebar-panel"
+							data-side={side}
+							class={classes.panel({ variant, placement: 'positioned' })}
 						>
 							{@render panel()}
 						</div>
@@ -251,9 +305,9 @@
 			{/if}
 
 			<main
-				data-slot="sidebar-inset"
+				data-slot="sidebar-main"
 				inert={controller.isMobile && controller.openMobile ? true : undefined}
-				class={classes.inset({ variant, className: insetClass })}
+				class="relative flex min-w-0 flex-1 flex-col bg-transparent"
 			>
 				{@render children?.(api)}
 			</main>

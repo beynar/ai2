@@ -3,11 +3,15 @@
 	import DocPage from '../../DocPage.svelte';
 	import AppShellActionsDemo from './demos/AppShellActionsDemo.svelte';
 	import AppShellBasicDemo from './demos/AppShellBasicDemo.svelte';
+	import AppShellDoubleSidebarDemo from './demos/AppShellDoubleSidebarDemo.svelte';
 	import AppShellFeatureShowcaseDemo from './demos/AppShellFeatureShowcaseDemo.svelte';
 	import AppShellVariantGalleryDemo from './demos/AppShellVariantGalleryDemo.svelte';
+	import ShellMentalModel from '../ShellMentalModel.svelte';
+	import rawDoubleSidebarCode from './demos/AppShellDoubleSidebarDemo.svelte?raw';
 	import rawFeatureShowcaseCode from './demos/AppShellFeatureShowcaseDemo.svelte?raw';
 	import rawVariantGalleryCode from './demos/AppShellVariantGalleryDemo.svelte?raw';
 
+	const doubleSidebarCode = toPublicExampleCode(rawDoubleSidebarCode);
 	const featureShowcaseCode = toPublicExampleCode(rawFeatureShowcaseCode);
 	const variantGalleryCode = toPublicExampleCode(rawVariantGalleryCode);
 
@@ -15,6 +19,8 @@
 		return code
 			.replaceAll('$lib/components/AppShell/index.js', 'svelai/app-shell')
 			.replaceAll('$lib/components/Breadcrumbs/index.js', 'svelai/breadcrumbs')
+			.replaceAll('$lib/components/Button/Button.svelte', 'svelai/button')
+			.replaceAll('$lib/components/PageShell/index.js', 'svelai/page-shell')
 			.replaceAll('$lib/components/Sidebar/index.js', 'svelai/sidebar')
 			.replace(/\$lib\/components\/Icons\/([A-Za-z0-9]+)\.js/g, 'svelai/icons/$1');
 	}
@@ -22,24 +28,16 @@
 
 <DocPage
 	title="App shell"
-	subtitle="A convenience wrapper that composes Sidebar for navigation with PageShell for page content chrome."
+	subtitle="Application layout that owns the app wall, sidebar composition, and page host surface."
 	component="AppShell"
 	features={[
-		'Wraps Sidebar and PageShell into one application frame',
-		'Keeps Sidebar responsive drawer and collapse behavior',
-		'Provides PageShell title, subtitle, header, and footer props',
+		'Owns the visible app wall and page host surface',
+		'Composes Sidebar navigation with PageShell page chrome',
+		'Keeps Sidebar responsive drawer, collapse, rail, and edge reveal behavior',
 		'Header, footer, and children snippets receive both APIs',
 		'Child routes can still use setPageShell through context'
 	]}
 >
-	<ComponentCard
-		description="A complete shell surface showing sidebar navigation, breadcrumbs or eyebrow context, a back affordance, content presets, responsive action overflow, and sticky footer actions."
-		class="!min-h-fit !items-start !p-4"
-		code={featureShowcaseCode}
-	>
-		<AppShellFeatureShowcaseDemo />
-	</ComponentCard>
-
 	<ComponentCard
 		description="Use AppShell when every route follows the same sidebar plus page-shell structure."
 		class="!min-h-fit !items-start !p-4"
@@ -102,6 +100,42 @@ ${'</' + 'script>'}
 	</ComponentCard>
 
 	{#snippet examples()}
+		<ShellMentalModel current="app-shell" />
+
+		<section
+			class="grid gap-3 rounded-xl border border-background-muted bg-background p-4 text-sm text-foreground/70"
+		>
+			<p class="font-medium text-foreground">Nested and two-sided sidebars</p>
+			<p>
+				AppShell intentionally manages one Sidebar. For one right-side navigation panel, pass <code
+					>side: 'right'</code
+				>
+				in the <code>sidebar</code> config.
+			</p>
+			<p>
+				For left and right sidebars, compose Sidebar manually and put PageShell in the innermost
+				children. Use <code>frame="contained"</code> for embedded regions, treat each Sidebar as an
+				independent controller, and avoid two competing mobile drawers until AppShell grows a
+				first-class <code>rightSidebar</code> or <code>sidebars</code> API.
+			</p>
+		</section>
+
+		<ComponentCard
+			description="Compose two Sidebar instances manually when a screen needs primary navigation and a contextual inspector."
+			class="!min-h-fit !items-start !p-4"
+			code={doubleSidebarCode}
+		>
+			<AppShellDoubleSidebarDemo />
+		</ComponentCard>
+
+		<ComponentCard
+			description="A complete shell surface showing sidebar navigation, breadcrumbs or eyebrow context, a back affordance, content presets, responsive action overflow, and sticky footer actions."
+			class="!min-h-fit !items-start !p-4"
+			code={featureShowcaseCode}
+		>
+			<AppShellFeatureShowcaseDemo />
+		</ComponentCard>
+
 		<ComponentCard
 			description="Toggle between practical AppShell variants, with notes for related states like icon rail and page-layout presets like prose width."
 			class="!min-h-fit !items-start !p-4"

@@ -29,7 +29,7 @@ const memoizedDerived = <T>(fn: () => T) => {
 type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 type CarouselOptions = MakeRequired<
-	Pick<CarouselProps, 'layout' | 'gaps' | 'partialDelta'>,
+	Pick<CarouselProps<unknown>, 'layout' | 'gaps' | 'partialDelta'>,
 	'layout' | 'gaps' | 'partialDelta'
 >;
 export interface CarouselState extends CarouselOptions {}
@@ -144,15 +144,35 @@ export class CarouselState {
 		bind(this, props);
 	}
 
+	private refreshSlideMetadata = () => {
+		if (!this.container) return;
+		const slideNodes = Array.from(this.container.children).filter(
+			(node): node is HTMLElement => node instanceof HTMLElement
+		);
+		slideNodes.forEach((node, index) => {
+			const slide = this.slides.get(node);
+			if (!slide) return;
+			node.setAttribute('id', `${this.id}-slide-${index + 1}`);
+			node.setAttribute('aria-roledescription', 'slide');
+			node.setAttribute('role', 'tabpanel');
+			node.setAttribute('data-carousel-slide', index.toString());
+			node.setAttribute('aria-label', `Slide ${index + 1} of ${slideNodes.length}`);
+			this.slides.set(node, {
+				...slide,
+				index
+			});
+		});
+	};
+
 	private onSlide = (node: HTMLElement) => {
 		if (!this.container) return;
+		if (this.slides.has(node)) {
+			this.refreshSlideMetadata();
+			return;
+		}
 		if (!this.slideWidth) this.slideWidth = node.clientWidth;
 		if (!this.slideHeight) this.slideHeight = node.clientHeight;
 		const index = Array.from(this.container.children).indexOf(node);
-		node.setAttribute('id', `${this.id}-slide-${index + 1}`);
-		node.setAttribute('aria-roledescription', 'slide');
-		node.setAttribute('role', 'tabpanel');
-		node.setAttribute('data-carousel-slide', index.toString());
 		const intersectionObserver = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
@@ -167,6 +187,7 @@ export class CarouselState {
 				});
 			},
 			{
+				root: this.container,
 				threshold: 0.9
 			}
 		);
@@ -177,10 +198,7 @@ export class CarouselState {
 			intersectionObserver,
 			inView: false
 		});
-
-		Array.from(this.slides.values()).forEach((slide) => {
-			slide.node.setAttribute('aria-label', `Slide ${slide.index + 1} of ${this.slides.size}`);
-		});
+		this.refreshSlideMetadata();
 	};
 
 	private onResize = () => {
@@ -216,7 +234,7 @@ export class CarouselState {
 					}
 				});
 				mutation.removedNodes.forEach((node) => {
-					if (node instanceof HTMLElement && node.parentElement === container) {
+					if (node instanceof HTMLElement) {
 						const slide = this.slides.get(node);
 						if (slide) {
 							slide.intersectionObserver.disconnect();
@@ -225,6 +243,7 @@ export class CarouselState {
 					}
 				});
 			});
+			this.refreshSlideMetadata();
 		});
 		// Initialize existing slides
 		Array.from(container.children).forEach((node) => {
@@ -239,6 +258,10 @@ export class CarouselState {
 
 		return () => {
 			directChildrenObserver.disconnect();
+			Array.from(this.slides.values()).forEach((slide) => {
+				slide.intersectionObserver.disconnect();
+			});
+			this.slides.clear();
 		};
 	};
 
@@ -250,7 +273,7 @@ export class CarouselState {
 		return untrack(() => {
 			this.container = container;
 			const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-			const blossom = Blossom(container);
+			const blossom = Blossom(container, {});
 			if (hasMouse) {
 				blossom.init();
 			}

@@ -1,6 +1,6 @@
 <script lang="ts" generics="Option extends RadioOption">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { RadioOption, RadioInputProps } from './radioInput.props.js';
 	import { useRadioInputTheme } from './radioInput.theme.js';
 	import Slot from '../../Slot/Slot.svelte';

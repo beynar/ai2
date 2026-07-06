@@ -12,8 +12,14 @@
 	let disabledActiveTab = $state(0);
 	let verticalActiveTab = $state(0);
 	let alignmentActiveTab = $state(0);
+	let pillActiveTab = $state(2);
+	let pillVerticalActiveTab = $state(0);
+	let variableActiveTab = $state(0);
 
 	const simpleTabs = ['Home', 'Profile', 'Settings'];
+	const pillTabs = ['Overview', 'Analytics', 'Reports'];
+	// Deliberately uneven label lengths: the indicator must resize as it slides.
+	const variableTabs = ['All', 'In progress', 'Done', 'Archived & deleted'];
 
 	const tabsWithIcons = [
 		{
@@ -86,6 +92,36 @@
 				onChange={handleTabChange}
 			/>
 			<p class="text-foreground/70 text-sm">Active tab: {simpleActiveTab}</p>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Pill variant"
+			description="A rounded track where the active tab is a raised pill. The pill slides and resizes between tabs with the same animation as the underline indicator."
+			class="max-w-md"
+		>
+			<Tabbar variant="pill" items={pillTabs} bind:activeTab={pillActiveTab} />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Variable tab widths"
+			description="The indicator measures the active tab, so it adapts to uneven label lengths — in both variants."
+			class="max-w-md"
+		>
+			<Tabbar items={variableTabs} bind:activeTab={variableActiveTab} />
+			<Tabbar variant="pill" items={variableTabs} bind:activeTab={variableActiveTab} />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Vertical pill"
+			description="The pill variant works on the vertical orientation too — the indicator slides along the column."
+			class="max-w-md"
+		>
+			<Tabbar
+				variant="pill"
+				orientation="vertical"
+				items={pillTabs}
+				bind:activeTab={pillVerticalActiveTab}
+			/>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

@@ -1,7 +1,7 @@
 export const numberInputDescription = `
 # NumberInput Component
 
-The NumberInput component is a numeric input field with optional step controls, min/max validation, and formatting options.
+The NumberInput component is a numeric input field with +/- controls, min/max validation, and formatting options.
 
 ## Basic Usage
 
@@ -21,11 +21,11 @@ Extends all Field component props plus:
 - **value**: number (bindable) - Input value
 - **min**: number - Minimum allowed value
 - **max**: number - Maximum allowed value
-- **step**: number (default: 1) - Increment/decrement step
+- **step**: number - Native number input step for keyboard and browser interactions
+- **increment**: number (default: step ?? 1) - Amount changed by the +/- buttons
 
 ### Display Props
 - **placeholder**: string - Placeholder text
-- **showControls**: boolean (default: true) - Show increment/decrement buttons
 
 ### Field Props (inherited)
 - **label**: string | Snippet - Field label
@@ -53,8 +53,8 @@ Extends all Field component props plus:
 		<Prefix />
 		<Input type="number" />
 		<Controls>
-			<IncrementButton />
-			<DecrementButton />
+			<Button label="Decrease value" />
+			<Button label="Increase value" />
 		</Controls>
 		<Suffix />
 	</InputContainer>
@@ -83,22 +83,23 @@ Extends all Field component props plus:
 />
 \`\`\`
 
-### With Step
+### With Step and Button Increment
 \`\`\`svelte
 <NumberInput 
 	label="Price"
 	bind:value={price}
 	step={0.01}
+	increment={1}
 	min={0}
 />
 \`\`\`
 
-### Without Controls
+### Custom Button Increment
 \`\`\`svelte
 <NumberInput 
-	label="Year"
-	bind:value={year}
-	showControls={false}
+	label="Quantity"
+	bind:value={quantity}
+	increment={5}
 />
 \`\`\`
 
@@ -248,7 +249,7 @@ NumberInput automatically validates:
 ## Notes
 
 - Native HTML number input for best compatibility
-- Step controls provide visual increment/decrement
+- +/- controls provide visual increment/decrement
 - Automatically respects min/max bounds
 - Supports decimal values with step
 - Can be styled with prefix/suffix for units

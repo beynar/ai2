@@ -37,9 +37,14 @@ const defaultInputContainer = cva({
 	}
 });
 
+const defaultPopover = cva({
+	base: 'w-[18rem] max-w-[calc(100vw-2rem)] p-0'
+});
+
 export const dateInputTheme = {
 	input: defaultInput,
-	inputContainer: defaultInputContainer
+	inputContainer: defaultInputContainer,
+	popover: defaultPopover
 };
 
 export type DateInputTheme = typeof dateInputTheme;

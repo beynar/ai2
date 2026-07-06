@@ -42,6 +42,11 @@ The Tabbar component is a flexible navigation component that displays a list of 
 - **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
   - Determines the color scheme of the active tab
 
+- **variant**: 'underline' | 'pill' (default: 'underline')
+  - underline: a colored bar slides along the active tab edge (side set by position)
+  - pill: a rounded track where the active tab is a raised pill; the pill slides and resizes between tabs with the same animation
+  - The indicator is a single shared element measured onto the active tab, so it adapts to variable tab widths and to the vertical orientation
+
 - **alignment**: 'start' | 'center' | 'end' (default: 'start')
   - start: Tabs aligned to the start of the container
   - center: Tabs centered in the container

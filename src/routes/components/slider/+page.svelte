@@ -27,6 +27,7 @@
 	features={[
 		'ARIA slider thumbs',
 		'Scalar or range values',
+		'Default and thick track variants',
 		'Vertical orientation',
 		'Draggable selected range'
 	]}
@@ -219,7 +220,7 @@
 
 		<ComponentCard description="small, normal, large">
 			<div class="grid w-full max-w-md gap-6">
-				{#each sizes as size}
+				{#each sizes as size (size)}
 					<Slider
 						{size}
 						label="Temperature ({size})"
@@ -234,9 +235,42 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard description="Thick variant: small, normal, large">
+			<div class="grid w-full max-w-md gap-8">
+				<div class="grid gap-6">
+					{#each sizes as size (size)}
+						<Slider
+							variant="thick"
+							{size}
+							label="Temperature ({size})"
+							value={temperature}
+							min={16}
+							max={30}
+							step={1}
+							showValue
+							formatValue={(value) => `${value} deg C`}
+						/>
+					{/each}
+				</div>
+				<div class="flex min-h-80 w-full items-center justify-center">
+					<Slider
+						variant="thick"
+						orientation="vertical"
+						label="Temperature (vertical)"
+						value={temperature}
+						min={16}
+						max={30}
+						step={1}
+						showValue
+						formatValue={(value) => `${value} deg C`}
+					/>
+				</div>
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Semantic colors">
 			<div class="grid w-full max-w-md gap-6">
-				{#each semanticColors as color}
+				{#each semanticColors as color (color)}
 					<Slider {color} label={formatColorLabel(color)} value={60} min={0} max={100} showValue />
 				{/each}
 			</div>

@@ -2,10 +2,11 @@
 	import {
 		AppShell,
 		type AppShellActions,
-		type AppShellSidebarProps
+		type AppShellSidebarProps,
+		type AppShellThemeProps
 	} from '$lib/components/AppShell/index.js';
 	import type { PageShellThemeProps } from '$lib/components/PageShell/index.js';
-	import type { SidebarGroup, SidebarThemeProps } from '$lib/components/Sidebar/index.js';
+	import type { SidebarGroup } from '$lib/components/Sidebar/index.js';
 	import { arrowClockwiseIcon } from '$lib/components/Icons/arrowClockwise.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
 	import { commandIcon } from '$lib/components/Icons/command.js';
@@ -23,46 +24,37 @@
 		title: string;
 		contentWidth: 'full' | 'narrow' | 'normal' | 'wide' | 'prose';
 		contentPadding: 'none' | 'small' | 'normal' | 'large';
-		sidebar: Pick<
-			AppShellSidebarProps,
-			'variant' | 'collapsible' | 'rail' | 'width' | 'widthIcon' | 'sidebarClass'
-		>;
-		sidebarTheme?: SidebarThemeProps;
+		sidebar: Pick<AppShellSidebarProps, 'variant' | 'collapsible' | 'rail' | 'width' | 'widthIcon'>;
+		appShellTheme?: AppShellThemeProps;
 		pageShellTheme?: PageShellThemeProps;
 		items: SidebarGroup[];
 	};
 
 	let selectedRecipeId = $state('inset');
 
-	const previewSidebarTheme = {
+	const previewAppShellTheme = {
 		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		container: { base: '!absolute !inset-y-0 !h-full' },
-		gap: { base: 'h-full shrink-0' },
-		inset: { base: 'min-w-0' }
-	} satisfies SidebarThemeProps;
+		page: { base: 'bg-background' }
+	} satisfies AppShellThemeProps;
 
-	const splitSidebarTheme = {
-		root: {
-			base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted bg-background-muted'
-		},
-		container: { base: '!absolute !inset-y-0 !h-full !p-0' },
-		gap: { base: 'h-full shrink-0' },
-		inner: {
-			variant: {
-				inset: '!rounded-none !border-0 !bg-transparent !shadow-none'
-			}
-		},
-		inset: {
-			base: 'min-w-0',
-			variant: {
-				inset:
-					'md:!m-2 md:!ml-0 md:!overflow-hidden md:!rounded-xl md:!border md:!border-background-muted md:!bg-background md:!shadow-none md:!peer-data-[state=collapsed]:ml-2'
-			}
-		},
-		rail: {
-			base: 'data-[side=left]:right-0'
+	const floatingAppShellTheme = {
+		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
+		page: { base: 'bg-background-muted' }
+	} satisfies AppShellThemeProps;
+
+	const insetAppShellTheme = {
+		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
+		page: {
+			base: 'm-2 ml-0 rounded-xl border border-background-muted bg-background shadow-sm'
 		}
-	} satisfies SidebarThemeProps;
+	} satisfies AppShellThemeProps;
+
+	const splitAppShellTheme = {
+		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
+		page: {
+			base: 'm-2 ml-0 rounded-xl border border-background-muted bg-background shadow-none'
+		}
+	} satisfies AppShellThemeProps;
 
 	const splitPageShellTheme = {
 		header: {
@@ -70,6 +62,15 @@
 		},
 		footer: {
 			base: 'bg-background/95 supports-[backdrop-filter]:bg-background/85'
+		}
+	} satisfies PageShellThemeProps;
+
+	const floatingPageShellTheme = {
+		header: {
+			base: 'bg-background-muted/95 supports-[backdrop-filter]:bg-background-muted/85'
+		},
+		footer: {
+			base: 'bg-background-muted/95 supports-[backdrop-filter]:bg-background-muted/85'
 		}
 	} satisfies PageShellThemeProps;
 
@@ -97,9 +98,9 @@
 			sidebar: {
 				variant: 'sidebar',
 				collapsible: 'none',
-				width: '16rem',
-				sidebarClass: '!bg-background-muted/35'
+				width: '16rem'
 			},
+			appShellTheme: previewAppShellTheme,
 			items: productGroups
 		},
 		{
@@ -110,6 +111,7 @@
 			contentWidth: 'wide',
 			contentPadding: 'normal',
 			sidebar: { variant: 'inset', collapsible: 'icon', rail: true, width: '16rem' },
+			appShellTheme: insetAppShellTheme,
 			items: productGroups
 		},
 		{
@@ -120,6 +122,8 @@
 			contentWidth: 'normal',
 			contentPadding: 'small',
 			sidebar: { variant: 'floating', collapsible: 'icon', rail: true, width: '15rem' },
+			appShellTheme: floatingAppShellTheme,
+			pageShellTheme: floatingPageShellTheme,
 			items: productGroups
 		},
 		{
@@ -130,8 +134,8 @@
 			title: 'Component browser',
 			contentWidth: 'normal',
 			contentPadding: 'normal',
-			sidebar: { variant: 'inset', collapsible: 'icon', rail: true, width: '17rem' },
-			sidebarTheme: splitSidebarTheme,
+			sidebar: { variant: 'split', collapsible: 'icon', rail: true, width: '17rem' },
+			appShellTheme: splitAppShellTheme,
 			pageShellTheme: splitPageShellTheme,
 			items: productGroups
 		}
@@ -151,7 +155,6 @@
 		...selectedRecipe.sidebar,
 		items: selectedRecipe.items,
 		widthIcon: selectedRecipe.sidebar.widthIcon ?? '3.5rem',
-		theme: selectedRecipe.sidebarTheme ?? previewSidebarTheme,
 		headerButton: {
 			icon: commandIcon,
 			title: selectedRecipe.name,
@@ -182,7 +185,7 @@
 			<p class="text-sm font-semibold text-foreground">Icon rail is a state</p>
 			<p class="mt-1 text-xs leading-5 text-foreground/65">
 				Use <code>collapsible="icon"</code>, <code>rail</code>, and optionally
-				<code>open={false}</code> on the inset or floating variant.
+				<code>open={false}</code> on the inset, floating, or split variant.
 			</p>
 		</div>
 		<div class="rounded-lg border border-background-muted bg-background-light p-3">
@@ -204,9 +207,9 @@
 			contentPadding={selectedRecipe.contentPadding}
 			contentWidth={selectedRecipe.contentWidth}
 			mobileActionCount={1}
-			pageShellClass="h-full"
+			frame="contained"
 			pageShellTheme={selectedRecipe.pageShellTheme}
-			theme={{ root: { base: 'h-full !min-h-0 overflow-hidden' } }}
+			theme={selectedRecipe.appShellTheme ?? previewAppShellTheme}
 		>
 			{#snippet children()}
 				<div class="grid gap-4">

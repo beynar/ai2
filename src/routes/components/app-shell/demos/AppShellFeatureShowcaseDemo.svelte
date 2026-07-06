@@ -5,7 +5,7 @@
 		type AppShellSidebarProps
 	} from '$lib/components/AppShell/index.js';
 	import type { BreadcrumbItem } from '$lib/components/Breadcrumbs/index.js';
-	import type { SidebarGroup, SidebarThemeProps } from '$lib/components/Sidebar/index.js';
+	import type { SidebarGroup } from '$lib/components/Sidebar/index.js';
 	import { arrowClockwiseIcon } from '$lib/components/Icons/arrowClockwise.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
 	import { checkIcon } from '$lib/components/Icons/check.js';
@@ -20,13 +20,6 @@
 	import { xIcon } from '$lib/components/Icons/x.js';
 
 	let contextMode = $state<'breadcrumbs' | 'eyebrow'>('breadcrumbs');
-
-	const previewSidebarTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		container: { base: '!absolute !inset-y-0 !h-full' },
-		gap: { base: 'h-full shrink-0' },
-		inset: { base: 'min-w-0' }
-	} satisfies SidebarThemeProps;
 
 	const items: SidebarGroup[] = [
 		{
@@ -66,7 +59,6 @@
 		rail: true,
 		width: '16rem',
 		widthIcon: '3.5rem',
-		theme: previewSidebarTheme,
 		headerButton: {
 			icon: commandIcon,
 			title: 'Acme Ops',
@@ -106,8 +98,10 @@
 		contentPadding="normal"
 		contentWidth="wide"
 		mobileActionCount={1}
-		pageShellClass="h-full"
-		theme={{ root: { base: 'h-full !min-h-0 overflow-hidden' } }}
+		frame="contained"
+		theme={{
+			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
+		}}
 	>
 		{#snippet footer()}
 			<span>Draft saved 14:32</span>

@@ -6,7 +6,7 @@
 	import type { FormInputs, FormSubmitHandler, FormInput, InferFormValue } from './form.js';
 	import type { FormProps } from './form.props.js';
 	import { useFormTheme } from './form.theme.js';
-	import { useForm } from './formState.svelte.js';
+	import { useForm } from './form.state.svelte.js';
 	import { isFieldVisible, prepareInputProps } from './visibility.js';
 	import TextArea from '../TextArea/TextArea.svelte';
 	import Select from '../Select/Select.svelte';

@@ -21,13 +21,9 @@
 		contentWidth,
 		actionOverflow,
 		mobileActionCount,
+		frame = 'viewport',
 		children: pageContent,
 		class: className,
-		pageShellClass,
-		headerClass,
-		contentClass,
-		contentInnerClass,
-		footerClass,
 		pageShellTheme,
 		theme,
 		...attachments
@@ -37,7 +33,7 @@
 </script>
 
 <div bind:this={ref} data-slot="app-shell" class={classes.root({ className })} {...attachments}>
-	<Sidebar {...sidebar} class={classes.sidebar({ className: sidebar.class })}>
+	<Sidebar {...sidebar} {frame} mode="layout">
 		{#snippet children(sidebarApi)}
 			{#snippet appHeader(pageShell: PageShellApi)}
 				{#if header}
@@ -102,11 +98,7 @@
 				{contentWidth}
 				{actionOverflow}
 				{mobileActionCount}
-				class={pageShellClass}
-				{headerClass}
-				{contentClass}
-				{contentInnerClass}
-				{footerClass}
+				class={classes.page()}
 				theme={pageShellTheme}
 			>
 				{#snippet children(pageShell)}

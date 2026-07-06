@@ -1,11 +1,15 @@
 <script lang="ts">
-	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { DateInputProps } from './dateInput.props.js';
-	import { useDateInputTheme } from './dateInput.theme.js';
 	import { Maskito } from '@maskito/core';
 	import { maskitoDateOptionsGenerator } from '@maskito/kit';
-	import { untrack } from 'svelte';
+	import CalendarPrimitive from '../Calendar/CalendarPrimitive.svelte';
+	import Field from '../Field/Field.svelte';
+	import { createFieldState } from '../Field/field.state.svelte.js';
+	import { calendarBlankIcon } from '../../Icons/calendarBlank.js';
+	import Button from '../../Button/Button.svelte';
+	import Popover from '../../Popover/Popover.svelte';
+	import type { PopoverState } from '../../Popover/popover.state.svelte.js';
+	import type { DateInputProps } from './dateInput.props.js';
+	import { useDateInputTheme } from './dateInput.theme.js';
 
 	let {
 		value = $bindable(null),
@@ -20,11 +24,15 @@
 		disabled,
 		name,
 		onValidate,
+		onChange,
 		visible,
 		...rest
 	}: DateInputProps = $props();
 
 	const id = $props.id();
+	const dateSeparator = $derived(separator || '/');
+	const calendarDisabledDates: (Date | [Date, Date])[] = [];
+	let isCalendarOpen = $state(false);
 
 	const field = createFieldState({
 		id,
@@ -46,7 +54,9 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: () => {},
+		onChange: (v) => {
+			onChange?.(v);
+		},
 		get disabled() {
 			return disabled;
 		},
@@ -72,20 +82,30 @@
 	});
 
 	const classes = $derived(useDateInputTheme(theme));
+	const calendarTriggerClass = $derived.by(() => {
+		if (rest.size === 'small') return '!size-5';
+		if (rest.size === 'large') return '!size-7';
+		return '!size-6';
+	});
 
 	const formatDate = (date: Date | null) => {
 		if (!date) return '';
-		const day = String(date.getDate()).padStart(2, '0');
-		const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-		const year = date.getFullYear();
+		const segments = {
+			dd: String(date.getDate()).padStart(2, '0'),
+			mm: String(date.getMonth() + 1).padStart(2, '0'),
+			yy: String(date.getFullYear()).slice(-2),
+			yyyy: String(date.getFullYear())
+		};
 
-		return `${day}/${month}/${year}`;
+		return format
+			.split('/')
+			.map((part) => segments[part as keyof typeof segments])
+			.join(dateSeparator);
 	};
 
-	const extractDate = (
-		value: string,
-		mask: 'dd/mm/yyyy' | 'mm/dd/yyyy' | 'mm/yy' | 'mm/yyyy' | 'yyyy' | 'yyyy/mm' | 'yyyy/mm/dd'
-	) => {
+	const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+	const extractDate = (inputValue: string) => {
 		const buildRegex = (mask: string) => {
 			const parts = mask.split('/');
 			const regexParts = parts.map((part) => {
@@ -101,42 +121,62 @@
 						return '\\' + part;
 				}
 			});
-			return new RegExp('^' + regexParts.join('\\/') + '$');
+			return new RegExp('^' + regexParts.join(escapeRegex(dateSeparator)) + '$');
 		};
-		const match = value.match(buildRegex(mask));
+		const match = inputValue.match(buildRegex(format));
 
 		if (!match) return null;
 
-		const parts = mask.split('/');
-		let year, month, day;
+		const parts = format.split('/');
+		let year: string | undefined;
+		let month: string | undefined;
+		let day: string | undefined;
 		parts.forEach((part, index) => {
-			const value = match[index + 1];
+			const segmentValue = match[index + 1];
 			switch (part) {
 				case 'dd':
-					day = value;
+					day = segmentValue;
 					break;
 				case 'mm':
-					month = value;
+					month = segmentValue;
 					break;
 				case 'yyyy':
-					year = value;
+					year = segmentValue;
 					break;
 				case 'yy':
-					year = '20' + value;
+					year = '20' + segmentValue;
 					break;
 			}
 		});
 
-		// Set default values for missing components
 		year = year || new Date().getFullYear().toString();
 		month = month || '01';
 		day = day || '01';
 
-		return new Date(Number(year), Number(month) - 1, Number(day));
+		const yearNumber = Number(year);
+		const monthNumber = Number(month);
+		const dayNumber = Number(day);
+		const date = new Date(yearNumber, monthNumber - 1, dayNumber);
+
+		if (
+			date.getFullYear() !== yearNumber ||
+			date.getMonth() !== monthNumber - 1 ||
+			date.getDate() !== dayNumber
+		) {
+			return null;
+		}
+
+		return date;
+	};
+
+	const syncInputValue = (date: Date | null) => {
+		if (field.node instanceof HTMLInputElement) {
+			field.node.value = formatDate(date);
+		}
 	};
 
 	const maskAction = (input: HTMLInputElement) => {
-		const mask = maskitoDateOptionsGenerator({ mode: format, separator: '/' });
+		const mask = maskitoDateOptionsGenerator({ mode: format, separator: dateSeparator });
 		const maskedElement = new Maskito(input, mask);
 
 		if (value) {
@@ -149,40 +189,108 @@
 
 	const handleInput = (e: Event) => {
 		const currentValue = (e.currentTarget as HTMLInputElement).value;
-		if (currentValue) {
-			const date = extractDate(currentValue, format);
+		if (!currentValue) {
+			field.value = null;
+			return;
+		}
+
+		const date = extractDate(currentValue);
+		if (date) {
 			field.value = date;
 		}
 	};
+
+	const handleCalendarChange = (date: Date | null, popover: PopoverState) => {
+		field.value = date;
+		field.focused = false;
+		syncInputValue(date);
+		popover.close();
+	};
+
+	$effect(() => {
+		if (!field.focused) {
+			syncInputValue(value);
+		}
+	});
 </script>
 
-<Field
-	{field}
-	size={rest.size}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({
-				class: theme?.inputContainer?.base,
-				disabled: field.disabled,
-				size: rest.size
-			})
-		}
-	}}
-	{...rest}
+<Popover
+	id={`${id}-calendar-popover`}
+	bind:open={isCalendarOpen}
+	position="bottom-start"
+	size="normal"
+	class={classes.popover({ class: theme?.popover?.base })}
 >
-	<input
-		data-1p-ignore
-		type="text"
-		inputmode="decimal"
-		{id}
-		name={field.name}
-		bind:this={field.node}
-		{placeholder}
-		disabled={field.disabled}
-		class={classes.input({ disabled: field.disabled, size: rest.size })}
-		{@attach maskAction}
-		oninput={handleInput}
-	/>
-</Field>
+	{#snippet children(popover: PopoverState)}
+		<div id={`${id}-calendar`} aria-label="Choose date">
+			<CalendarPrimitive
+				type="calendar"
+				value={field.value}
+				disabledDates={calendarDisabledDates}
+				onChange={(date) => handleCalendarChange(date, popover)}
+			/>
+		</div>
+	{/snippet}
+
+	{#snippet trigger(popover: PopoverState)}
+		<Field
+			{field}
+			size={rest.size}
+			theme={{
+				...(theme || {}),
+				inputContainer: {
+					...(theme?.inputContainer || {}),
+					base: classes.inputContainer({
+						class: theme?.inputContainer?.base,
+						disabled: field.disabled,
+						size: rest.size
+					})
+				}
+			}}
+			{...rest}
+			{@attach popover.reference}
+		>
+			<input
+				data-1p-ignore
+				type="text"
+				inputmode="decimal"
+				{id}
+				name={field.name}
+				bind:this={field.node}
+				{placeholder}
+				disabled={field.disabled}
+				class={classes.input({ disabled: field.disabled, size: rest.size })}
+				{@attach maskAction}
+				oninput={handleInput}
+				onfocus={() => {
+					field.focused = true;
+					if (!field.disabled) {
+						isCalendarOpen = true;
+					}
+				}}
+				onblur={() => {
+					field.focused = false;
+				}}
+			/>
+			<Button
+				type="button"
+				variant="ghost"
+				color={isCalendarOpen ? 'primary' : 'foreground'}
+				size={rest.size}
+				squared
+				label="Choose date"
+				aria-haspopup="dialog"
+				aria-expanded={isCalendarOpen}
+				aria-controls={isCalendarOpen ? `${id}-calendar` : undefined}
+				disabled={field.disabled}
+				class={calendarTriggerClass}
+				prefix={calendarBlankIcon}
+				onClick={() => {
+					if (!field.disabled) {
+						popover.toggle();
+					}
+				}}
+			/>
+		</Field>
+	{/snippet}
+</Popover>

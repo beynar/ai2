@@ -1,24 +1,22 @@
 import { cva } from '$lib/utils/cva/index.js';
 import type { Snippet } from 'svelte';
-import type { StepperState } from './stepperState.svelte.js';
+import type { StepperState } from './stepper.state.svelte.js';
+
+export type StepperRenderPayload<Item> = {
+	stepper: StepperState<Item>;
+	item: Item;
+	index: number;
+};
 
 export type StepperProps<Item> = {
 	/**
-	 * Data for each step, passed to step snippets as `item`.
+	 * Data for each step, passed to the repeated children snippet as `item`.
 	 */
 	items: Item[];
 	/**
-	 * Default snippet rendered for every step when no `step{N}` snippet is provided.
+	 * Repeated panel renderer. Called once for each item.
 	 */
-	step?: Snippet<
-		[
-			{
-				stepper: StepperState<Item>;
-				item: Item;
-				index: number;
-			}
-		]
-	>;
+	children?: Snippet<[StepperRenderPayload<Item>]>;
 	/**
 	 * Called when the active step changes, with the newly active item.
 	 */
@@ -56,18 +54,4 @@ export type StepperProps<Item> = {
 	 * Layout variant applied to the stepper, container, and step panels.
 	 */
 	mode?: 'classic' | 'vertical';
-	/**
-	 * Optional snippet receiving the bindable stepper state.
-	 */
-	children?: Snippet<[StepperState<Item>]>;
-} & {
-	[k in `step${number}`]: Snippet<
-		[
-			{
-				stepper: StepperState<Item>;
-				item: Item;
-				index: number;
-			}
-		]
-	>;
 };

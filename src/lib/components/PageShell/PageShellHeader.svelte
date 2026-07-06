@@ -42,31 +42,31 @@
 					<div data-slot="page-shell-header-meta" class={classes.meta()}>
 						{#if api.back}
 							{@const back = api.back}
-							<div class={classes.back()}>
-								{#if isBackSnippet(back)}
+							{#if isBackSnippet(back)}
+								<div data-slot="page-shell-back" class={classes.back()}>
 									{@render back(api)}
-								{:else}
-									{@const {
-										content: backLabel = 'Back',
-										label,
-										prefix = arrowLeftIcon,
-										variant = 'ghost',
-										size = 'small',
-										squared = true,
-										class: buttonClass = 'size-5 rounded-md',
-										...buttonProps
-									} = asBackAction(back)}
-									<Button
-										{...buttonProps}
-										{prefix}
-										{variant}
-										{size}
-										{squared}
-										class={buttonClass}
-										label={label ?? backLabel}
-									/>
-								{/if}
-							</div>
+								</div>
+							{:else}
+								{@const {
+									content: backLabel = 'Back',
+									label,
+									prefix = arrowLeftIcon,
+									variant = 'ghost',
+									size = 'small',
+									squared = true,
+									class: buttonClass,
+									...buttonProps
+								} = asBackAction(back)}
+								<Button
+									{...buttonProps}
+									{prefix}
+									{variant}
+									{size}
+									{squared}
+									class={classes.back({ className: buttonClass })}
+									label={label ?? backLabel}
+								/>
+							{/if}
 						{/if}
 
 						{#if api.breadcrumbs}

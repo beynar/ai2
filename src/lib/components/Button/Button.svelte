@@ -19,6 +19,7 @@
 		suffix,
 		children,
 		variant = 'solid',
+		type,
 		size = 'normal',
 		ref = $bindable(),
 		fullWidth = false,
@@ -28,6 +29,10 @@
 		target,
 		label,
 		role,
+		'aria-haspopup': ariaHaspopup,
+		'aria-expanded': ariaExpanded,
+		'aria-controls': ariaControls,
+		'aria-selected': ariaSelected,
 		...attachments
 	}: ButtonPrimitiveProps = $props();
 
@@ -41,10 +46,15 @@
 <svelte:element
 	this={as || href ? 'a' : 'button'}
 	aria-label={label}
+	aria-haspopup={ariaHaspopup}
+	aria-expanded={ariaExpanded}
+	aria-controls={ariaControls}
+	aria-selected={ariaSelected}
 	role={role ?? (as || href ? 'link' : 'button')}
 	{href}
 	{rel}
 	{target}
+	{type}
 	bind:this={ref}
 	data-color={color}
 	{disabled}
@@ -79,7 +89,7 @@
 		})}
 	{...attachments}
 >
-	<Slot render={prefix} class={classes.prefix({ size })} />
+	<Slot render={prefix} as="span" class={classes.prefix({ size })} />
 	<Slot render={children} />
-	<Slot render={suffix} class={classes.suffix({ size })} />
+	<Slot render={suffix} as="span" class={classes.suffix({ size })} />
 </svelte:element>

@@ -15,14 +15,12 @@
 	let {
 		group,
 		api,
-		menuClass,
 		collapseIcon,
 		tooltips,
 		theme
 	}: {
 		group: SidebarGroup;
 		api: SidebarApi;
-		menuClass?: string;
 		collapseIcon: SidebarCollapseIcon;
 		tooltips: SidebarTooltipMode;
 		theme?: SidebarThemeProps;
@@ -43,24 +41,13 @@
 		class={classes.groupContent()}
 	>
 		{#if group.tree}
-			<ul
-				data-slot="sidebar-menu"
-				data-sidebar="menu"
-				class={classes.menu({ className: menuClass })}
-			>
+			<ul data-slot="sidebar-menu" data-sidebar="menu" class={classes.menu()}>
 				{#each group.tree as node, index (node.label + index)}
 					<SidebarTreeNode {node} {theme} />
 				{/each}
 			</ul>
 		{:else}
-			<SidebarMenuList
-				items={group.items ?? []}
-				{api}
-				{menuClass}
-				{collapseIcon}
-				{tooltips}
-				{theme}
-			/>
+			<SidebarMenuList items={group.items ?? []} {api} {collapseIcon} {tooltips} {theme} />
 		{/if}
 	</div>
 {/snippet}

@@ -28,6 +28,7 @@ The Popover component displays floating content positioned relative to a trigger
   - Determines where popover appears relative to trigger
 - **offset**: number - Distance in pixels from the reference element
 - **fitTrigger**: boolean (default: false) - Whether popover should match the width of the trigger element
+- **mobileSheet**: boolean (default: false) - On mobile viewports (<768px), render as a bottom sheet instead of an anchored floating panel
 
 ### Event Props
 - **onClose**: (popover: PopoverState) => void - Called when popover closes, receives popover state
@@ -202,6 +203,22 @@ The Popover component displays floating content positioned relative to a trigger
 	fitTrigger
 >
 	Popover matches trigger width
+</Popover>
+\`\`\`
+
+### Mobile Bottom Sheet
+
+\`\`\`svelte
+<script>
+	import { Popover } from 'svelai/popover';
+</script>
+
+<Popover
+	trigger={{ content: "Open filters" }}
+	position="bottom"
+	mobileSheet
+>
+	Filters content
 </Popover>
 \`\`\`
 

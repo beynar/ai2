@@ -6,6 +6,7 @@
 	import PageShellHeaderChromeDemo from './demos/PageShellHeaderChromeDemo.svelte';
 	import PageShellInjectionDemo from './demos/PageShellInjectionDemo.svelte';
 	import PageShellOverflowDemo from './demos/PageShellOverflowDemo.svelte';
+	import ShellMentalModel from '../ShellMentalModel.svelte';
 </script>
 
 <DocPage
@@ -20,6 +21,8 @@
 		'Designed to live inside Sidebar children'
 	]}
 >
+	<ShellMentalModel current="page-shell" />
+
 	<ComponentCard
 		description="Use PageShell when navigation is already owned by Sidebar and the page needs stable content chrome."
 		class="!min-h-fit !items-start !p-4"

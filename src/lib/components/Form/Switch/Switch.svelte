@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Field, { useFieldTheme } from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { SwitchProps } from './switch.props.js';
 	import { useSwitchTheme } from './switch.theme.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';

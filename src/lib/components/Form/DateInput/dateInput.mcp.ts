@@ -47,7 +47,7 @@ Extends all Field component props plus:
 	<Description />
 	<InputContainer>
 		<DateInput />
-		<CalendarIcon />
+		<Button label="Choose date" />
 	</InputContainer>
 	<Error />
 </Field>

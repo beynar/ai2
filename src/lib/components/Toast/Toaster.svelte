@@ -2,7 +2,7 @@
 	import { useSafeArea } from '$lib/utils/safeArea.svelte.js';
 	import { Toaster, type ToasterProps } from './toast.state.svelte.js';
 	import Toast from './Toast.svelte';
-	import { defaultToastAnimation } from './toast.theme.js';
+	import { defaultToastAnimation, useToastTheme } from './toast.theme.js';
 	let {
 		theme,
 		collapseHorizontalAxis = (breakpoint) => (breakpoint === 'sm' ? true : false),
@@ -90,6 +90,8 @@
 			toaster.hovering = null;
 		}
 	});
+
+	const classes = $derived(useToastTheme(theme));
 </script>
 
 <dialog
@@ -97,7 +99,7 @@
 	tabIndex={-1}
 	open={toaster.isOpen}
 	aria-label="Notifications"
-	style="width: 100%; height: 100%; margin:0px; position: fixed; inset: 0px; overflow: hidden; z-index: 9999; background: transparent;pointer-events: none; left: 0px; top: 0px; right: 0px; bottom: 0px;"
+	class={classes.toaster()}
 	data-hovering={toaster.hovering}
 >
 	{#each toaster.toasts as toast (toast.id)}

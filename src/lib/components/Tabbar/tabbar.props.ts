@@ -6,6 +6,7 @@ import type { TabbarThemeProps } from './tabbar.theme.js';
 export type TabAlignment = 'start' | 'center' | 'end';
 export type TabOrientation = 'horizontal' | 'vertical';
 export type TabbarPosition = 'top' | 'bottom' | 'left' | 'right';
+export type TabbarVariant = 'underline' | 'pill';
 
 /**
  * A tab item can be either:
@@ -82,10 +83,17 @@ export type TabbarProps = WithAttachments<{
 	 */
 	alignment?: TabAlignment;
 	/**
-	 * The position of the tabbar (affects indicator placement).
+	 * The position of the tabbar (affects underline indicator placement).
 	 * @default 'top'
 	 */
 	position?: TabbarPosition;
+	/**
+	 * Visual variant: 'underline' shows a sliding bar along the tab edge;
+	 * 'pill' renders a rounded track where the active tab is a raised pill that
+	 * slides between tabs with the same animation.
+	 * @default 'underline'
+	 */
+	variant?: TabbarVariant;
 	/**
 	 * Additional CSS classes for the tabbar container.
 	 */

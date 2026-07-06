@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { Sizes } from '$lib/types/theme.js';
+	import type { Colors, Sizes } from '$lib/types/theme.js';
 	import type { Attachment } from 'svelte/attachments';
+	import type { SliderVariant } from './slider.props.js';
 	import type { SliderOrientation, SliderValuePayload } from './slider.state.svelte.js';
 	import type { useSliderTheme } from './slider.theme.js';
 
@@ -13,6 +14,8 @@
 		describedBy,
 		orientation,
 		disabled,
+		variant,
+		color,
 		size,
 		classes,
 		attachment
@@ -23,10 +26,42 @@
 		describedBy?: string;
 		orientation: SliderOrientation;
 		disabled?: boolean;
+		variant: SliderVariant;
+		color: Colors;
 		size?: Sizes;
 		classes: SliderClasses;
 		attachment: Attachment<HTMLButtonElement>;
 	} = $props();
+
+	const getThumbHalfSize = () => {
+		if (variant === 'thick') {
+			if (size === 'small') return '10px';
+			if (size === 'large') return '18px';
+			return '14px';
+		}
+		if (size === 'small') return '7px';
+		if (size === 'large') return '10px';
+		return '8px';
+	};
+
+	const getThickEdgeInset = () => '2px';
+	const getThumbMinPosition = () => {
+		const thumbHalfSize = getThumbHalfSize();
+		if (variant !== 'thick') return thumbHalfSize;
+		return `calc(${thumbHalfSize} + ${getThickEdgeInset()})`;
+	};
+	const getThumbMaxPosition = () => {
+		const thumbHalfSize = getThumbHalfSize();
+		if (variant !== 'thick') return `calc(100% - ${thumbHalfSize})`;
+		return `calc(100% - ${thumbHalfSize} - ${getThickEdgeInset()})`;
+	};
+
+	const thumbPositionStyle = $derived.by(() => {
+		const containedPosition = `clamp(${getThumbMinPosition()}, ${payload.percentage}%, ${getThumbMaxPosition()})`;
+		return orientation === 'vertical'
+			? `bottom: ${containedPosition};`
+			: `left: ${containedPosition};`;
+	});
 </script>
 
 <button
@@ -46,9 +81,9 @@
 	class={classes.thumb({
 		orientation,
 		disabled,
+		variant,
+		color,
 		size
 	})}
-	style={orientation === 'vertical'
-		? `bottom: ${payload.percentage}%;`
-		: `left: ${payload.percentage}%;`}
+	style={thumbPositionStyle}
 ></button>

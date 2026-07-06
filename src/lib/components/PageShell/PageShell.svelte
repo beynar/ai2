@@ -23,10 +23,6 @@
 		mobileActionCount = 1,
 		children,
 		class: className,
-		headerClass,
-		contentClass,
-		contentInnerClass,
-		footerClass,
 		theme,
 		...attachments
 	}: PageShellProps = $props();
@@ -96,20 +92,15 @@
 	{...attachments}
 >
 	{#if shell.hasHeader}
-		<PageShellHeader api={shell.api} class={headerClass} {theme} />
+		<PageShellHeader api={shell.api} {theme} />
 	{/if}
 
-	<main
-		data-slot="page-shell-content"
-		class={classes.content({ className: contentClass })}
-		onscroll={updateContentScroll}
-	>
+	<main data-slot="page-shell-content" class={classes.content()} onscroll={updateContentScroll}>
 		<div
 			data-slot="page-shell-content-inner"
 			class={classes.contentInner({
 				padding: shell.api.contentPadding ?? 'none',
-				width: shell.api.contentWidth ?? 'full',
-				className: contentInnerClass
+				width: shell.api.contentWidth ?? 'full'
 			})}
 		>
 			{@render children(shell.api)}
@@ -117,6 +108,6 @@
 	</main>
 
 	{#if shell.hasFooter}
-		<PageShellFooter api={shell.api} class={footerClass} {theme} />
+		<PageShellFooter api={shell.api} {theme} />
 	{/if}
 </div>

@@ -11,11 +11,11 @@ import type {
 } from '$lib/components/PageShell/index.js';
 import type { BreadcrumbItem } from '$lib/components/Breadcrumbs/index.js';
 import type { PageShellThemeProps } from '$lib/components/PageShell/pageShell.theme.js';
-import type { SidebarApi, SidebarProps } from '$lib/components/Sidebar/index.js';
+import type { SidebarApi, SidebarFrame, SidebarProps } from '$lib/components/Sidebar/index.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { AppShellThemeProps } from './appShell.theme.js';
 
-export type AppShellSidebarProps = Omit<SidebarProps, 'children'>;
+export type AppShellSidebarProps = Omit<SidebarProps, 'children' | 'mode' | 'frame'>;
 
 export type AppShellApi = {
 	/** Page shell API for title, header, footer, and scoped overrides. */
@@ -58,11 +58,15 @@ export type AppShellConfig = {
 	actionOverflow?: PageShellActionOverflow;
 	/** Number of action-array buttons to keep inline on mobile when overflow is auto. */
 	mobileActionCount?: PageShellMobileActionCount;
+	/** Use viewport sizing/fixed positioning or contained sizing/absolute positioning. */
+	frame?: SidebarFrame;
 };
 
-type AppShellRootAttributes = Pick<
-	HTMLAttributes<HTMLDivElement>,
-	'id' | 'role' | 'style' | 'aria-label' | 'aria-labelledby' | 'aria-describedby'
+type AppShellRootAttributes = Partial<
+	Pick<
+		HTMLAttributes<HTMLDivElement>,
+		'id' | 'role' | 'style' | 'aria-label' | 'aria-labelledby' | 'aria-describedby'
+	>
 > & {
 	[dataAttribute: `data-${string}`]: string | number | boolean | null | undefined;
 };
@@ -78,16 +82,6 @@ export type AppShellProps = WithAttachments<
 			children: Snippet<[AppShellApi]>;
 			/** Classes applied to the root app shell wrapper. */
 			class?: string;
-			/** Classes applied to the PageShell root. */
-			pageShellClass?: string;
-			/** Classes applied to the PageShell sticky header. */
-			headerClass?: string;
-			/** Classes applied to the PageShell scrollable content. */
-			contentClass?: string;
-			/** Classes applied to the PageShell content inner wrapper. */
-			contentInnerClass?: string;
-			/** Classes applied to the PageShell sticky footer. */
-			footerClass?: string;
 			/** Per-instance PageShell theme overrides. */
 			pageShellTheme?: PageShellThemeProps;
 			/** Per-instance AppShell theme overrides. */

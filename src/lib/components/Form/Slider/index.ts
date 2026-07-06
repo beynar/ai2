@@ -4,7 +4,8 @@ export type {
 	SliderMarkPayload,
 	SliderMode,
 	SliderProps,
-	SliderRangeLabelPayload
+	SliderRangeLabelPayload,
+	SliderVariant
 } from './slider.props.js';
 export { SliderState } from './slider.state.svelte.js';
 export type {

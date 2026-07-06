@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { ComboboxProps, ComboboxOption } from './combobox.props.js';
 	import Popover from '../../Popover/Popover.svelte';
 	import ScrollArea from '../../ScrollArea/ScrollArea.svelte';

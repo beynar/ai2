@@ -102,6 +102,20 @@
 				tooltip here
 			</Button>
 
+			<Popover
+				mobileSheet
+				position="bottom"
+				trigger={{
+					content: 'mobile sheet',
+					color: 'primary'
+				}}
+			>
+				<div class="grid gap-2">
+					<h2 class="text-foreground text-base font-semibold">Mobile sheet</h2>
+					<p class="text-foreground-muted text-sm">{text}</p>
+				</div>
+			</Popover>
+
 			<Popover trigger={false} open ref={buttonRef} position="bottom"
 				>default opened with external ref</Popover
 			>

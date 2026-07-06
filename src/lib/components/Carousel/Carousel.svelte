@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="Item">
 	import type { WithAttachments } from '$lib/types/props.js';
 	import { caretLeftIcon } from '../Icons/caretLeft.js';
 	import { caretRightIcon } from '../Icons/caretRight.js';
@@ -9,16 +9,17 @@
 	let {
 		class: className,
 		dragFree = false,
+		items = [] as Item[],
 		layout = { default: 1 },
 		gaps: gap = { default: 20 },
 		partialDelta = { default: 0 },
 		dots: dotsSnippet,
 		theme,
-		children,
+		children: slide,
 		navigationButton,
 		snapAlign = 'center',
 		...attachments
-	}: WithAttachments<CarouselProps> = $props();
+	}: WithAttachments<CarouselProps<Item>> = $props();
 
 	let id = $props.id();
 
@@ -76,7 +77,11 @@
 		style:width="100%"
 		style:--snap-align={snapAlign}
 	>
-		{@render children?.(carousel)}
+		{#each items as item, index}
+			<div class={classes.slide()}>
+				{@render slide?.({ carousel, item, index })}
+			</div>
+		{/each}
 	</div>
 
 	{#if navigationButton && canNavigate}
@@ -108,7 +113,7 @@
 			{@render navigationButton(
 				carousel,
 				{
-					'aria-controls': `${carousel.id}-slides`,
+					'aria-controls': carousel.id,
 					'aria-label': 'Previous slide'
 				},
 				'prev'
@@ -117,7 +122,7 @@
 			{@render navigationButton(
 				carousel,
 				{
-					'aria-controls': `${carousel.id}-slides`,
+					'aria-controls': carousel.id,
 					'aria-label': 'Next slide'
 				},
 				'next'

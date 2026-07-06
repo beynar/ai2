@@ -3,6 +3,12 @@ import type { Colors } from '$lib/types/theme.js';
 import type { CarouselThemeProps } from './carousel.theme.js';
 import type { CarouselState, ResponsiveProperty, Sizes } from './carousel.state.svelte.js';
 
+export type CarouselRenderPayload<Item = unknown> = {
+	carousel: CarouselState;
+	item: Item;
+	index: number;
+};
+
 /** ARIA attributes passed to a custom navigation button snippet. */
 type NavigationButton = {
 	'aria-controls': string;
@@ -21,13 +27,15 @@ type Dot = {
 	};
 };
 
-export interface CarouselProps {
+export interface CarouselProps<Item = unknown> {
 	/** CSS classes applied to the carousel's root element. */
 	class?: string;
 	/** Allow free-form dragging instead of snapping to slide boundaries. */
 	dragFree?: boolean;
-	/** The slides, rendered as direct children of the scroll track. */
-	children?: Snippet<[CarouselState]>;
+	/** Collection used to generate one carousel slide per item. */
+	items: Item[];
+	/** Renders the content inside each generated slide wrapper. */
+	children?: Snippet<[CarouselRenderPayload<Item>]>;
 	/** How slides align within the viewport when snapped. */
 	snapAlign?: 'start' | 'center' | 'end';
 	/**

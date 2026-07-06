@@ -88,12 +88,12 @@ const defaultButton = cva({
 });
 
 const defaultButtonPrefix = cva({
-	base: 'max-w-4 max-h-4',
+	base: 'inline-flex size-4 shrink-0 items-center justify-center overflow-hidden leading-none [&_svg:not([class*=size-])]:!size-full',
 	variants: {
 		size: {
-			normal: 'max-w-4 max-h-4',
-			large: 'max-w-5 max-h-5',
-			small: 'max-w-3.5 max-h-3.5'
+			normal: 'size-4',
+			large: 'size-5',
+			small: 'size-3.5'
 		}
 	},
 	defaultVariants: {
@@ -102,12 +102,12 @@ const defaultButtonPrefix = cva({
 });
 
 const defaultButtonSuffix = cva({
-	base: 'max-w-4 max-h-4',
+	base: 'inline-flex size-4 shrink-0 items-center justify-center overflow-hidden leading-none [&_svg:not([class*=size-])]:!size-full',
 	variants: {
 		size: {
-			normal: 'max-w-4 max-h-4',
-			large: 'max-w-5 max-h-5',
-			small: 'max-w-3.5 max-h-3.5'
+			normal: 'size-4',
+			large: 'size-5',
+			small: 'size-3.5'
 		}
 	},
 	defaultVariants: {

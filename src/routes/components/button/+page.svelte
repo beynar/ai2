@@ -2,10 +2,12 @@
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
+	import type { ButtonVariant } from '$lib/components/Button/index.js';
 	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 
 	let loading = $state(false);
+	const buttonVariants = [...variants, 'ghost', 'link'] satisfies ButtonVariant[];
 
 	const triggerLoading = () => {
 		loading = true;
@@ -25,16 +27,14 @@
 		'Prefix & suffix icon slots'
 	]}
 >
-	<ComponentCard
-		code={`<Button>Click me</Button>`}
-	>
+	<ComponentCard code={`<Button>Click me</Button>`}>
 		<Button>Click me</Button>
 	</ComponentCard>
 
 	{#snippet examples()}
 		<ComponentCard description="Five variants, from the prominent solid down to a minimal link.">
 			<div class="flex flex-wrap items-center justify-center gap-3">
-				{#each [...variants, 'ghost', 'link'] as variant (variant)}
+				{#each buttonVariants as variant (variant)}
 					<Button {variant}>{variant}</Button>
 				{/each}
 			</div>

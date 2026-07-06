@@ -1,5 +1,5 @@
 import { getContext, setContext } from 'svelte';
-import type { FieldState } from '../Field/fieldState.svelte.js';
+import type { FieldState } from '../Field/field.state.svelte.js';
 import type {
 	FormInputs,
 	FormSubmitHandler,
@@ -8,7 +8,7 @@ import type {
 	MaybePromise
 } from './form.js';
 import type { FormProps } from './form.props.js';
-import type { MultiStepFormState } from '../MultiStepForm/multiStepFormState.svelte.js';
+import type { MultiStepFormState } from '../MultiStepForm/multiStepForm.state.svelte.js';
 import { isFieldVisible } from './visibility.js';
 
 export class FormState<I extends FormInputs = FormInputs> {

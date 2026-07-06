@@ -29,7 +29,7 @@ type ToastOptions = {
 	closeIcon?: Slot; // The close button that shows inside the toast.
 	animation?: FSOProps;
 	loading?: boolean; // If true, the toast will show a spinner.
-	title?: Slot; // Toast's description, renders underneath the title.
+	title?: Slot; // Toast's title.
 	description?: Slot; // Toast's description, renders underneath the title.
 	color: Colors;
 	important?: boolean; // Control the sensitivity of the toast for screen readers
@@ -99,7 +99,8 @@ export class Toaster {
 	toastsPerPositions = $derived(
 		this.toasts.reduce(
 			(acc, toast) => {
-				const position = toast.opts?.position || 'bottom-center';
+				// addToast always resolves a concrete position.
+				const position = toast.opts.position;
 				if (!(position in acc)) {
 					Object.assign(acc, {
 						[position]: []
@@ -122,6 +123,11 @@ export class Toaster {
 		bind(this, opts);
 		onMount(() => {
 			window.toaster = this;
+			return () => {
+				// Don't leave a dangling reference if this Toaster unmounts (another
+				// mounted Toaster may have already replaced it).
+				if (window.toaster === this) window.toaster = undefined as unknown as Toaster;
+			};
 		});
 
 		// Track duration configuration changes
@@ -143,6 +149,10 @@ export class Toaster {
 						}
 					} else if (duration !== toast.timer?.delay && duration > 0 && toast.timer) {
 						toast.timer.update(duration);
+					} else if (toast.timer && duration <= 0) {
+						// duration switched to false/0: the toast became persistent.
+						toast.timer.destroy();
+						toast.timer = undefined;
 					}
 				});
 			});
@@ -201,8 +211,8 @@ export class Toast {
 		id: Math.random().toString(36).substring(7)
 	});
 
-	// @ts-ignore
-	position = $derived(this.opts.position || this.toaster.position);
+	// `addToast` always resolves a concrete position before constructing the Toast.
+	position = $derived(this.opts.position);
 
 	constructor(
 		opts: MakeRequired<ToastOptions, 'position'>,
@@ -222,16 +232,16 @@ export class Toast {
 		)
 	);
 
-	indexInStack = $derived.by(() => {
-		const index =
-			this.toaster?.toastsPerPositions?.[
-				this.opts?.position || ('bottom-center' as ToastPosition)
-			]?.indexOf(this);
-		const reversedIndex =
-			this.toaster?.toastsPerPositions?.[this.opts.position || ('bottom-center' as ToastPosition)]
-				.length - (index ?? 0 + 1);
+	// Cache the last in-stack coordinates: once the toast is removed from the array
+	// (outro playing), indexOf returns -1 — without the cache the leaving toast would
+	// jump to a huge reversedIndex, snap to opacity 0 and skip its exit animation.
+	private lastStack = { index: 0, reversedIndex: 0 };
 
-		return { index, reversedIndex };
+	indexInStack = $derived.by(() => {
+		const stack = this.toaster?.toastsPerPositions?.[this.opts.position] ?? [];
+		const index = stack.indexOf(this);
+		if (index === -1) return this.lastStack;
+		return (this.lastStack = { index, reversedIndex: stack.length - (index + 1) });
 	});
 
 	hovered = $derived.by(() => this.toaster?.hovering === this.opts.position);
@@ -247,30 +257,33 @@ export class Toast {
 			}, 0)
 	);
 
+	// `offset` is the distance from BOTH screen edges; `gap` only spaces toasts
+	// between each other (via absolutePosition) — it must not leak into the edge
+	// distance, or the offset prop silently stops working vertically.
 	actualizedPosition = $derived.by(() => {
-		const [vertical, horizontal] = (this.opts?.position || 'bottom-center').split('-');
+		const [vertical, horizontal] = this.opts.position.split('-');
 		const verticalPosition = vertical === 'top' ? 'top' : 'bottom';
 		const horizontalPosition = horizontal === 'left' ? 'left' : 'right';
+		const offset = this.toaster?.offset ?? 0;
 		if (horizontal === 'center') {
 			return [
 				verticalPosition,
 				horizontalPosition,
-				`${verticalPosition}: 0px; left: 0px; right:0px; margin: 0 auto;`
+				`${verticalPosition}: ${offset}px; left: 0px; right:0px; margin: 0 auto;`
 			];
 		}
 		return [
 			verticalPosition,
 			horizontalPosition,
-			`${verticalPosition}: 0px; ${horizontalPosition}: ${this.toaster?.offset ?? 0}px;`
+			`${verticalPosition}: ${offset}px; ${horizontalPosition}: ${offset}px;`
 		];
 	});
 	translateY = $derived.by(() =>
 		this.stacked
-			? (this.indexInStack.reversedIndex * (this.toaster?.perspectiveAmount ?? 0) +
-					(this.toaster?.gap ?? 0)) *
+			? this.indexInStack.reversedIndex *
+				(this.toaster?.perspectiveAmount ?? 0) *
 				(this.actualizedPosition[0] === 'top' ? 1 : -1)
-			: (this.absolutePosition + (this.toaster?.gap ?? 0)) *
-				(this.actualizedPosition[0] === 'top' ? 1 : -1)
+			: this.absolutePosition * (this.actualizedPosition[0] === 'top' ? 1 : -1)
 	);
 
 	remove = () => {
@@ -310,6 +323,11 @@ export const toast = new Proxy(
 		get(_obj, key) {
 			if (typeof key === 'string') {
 				return (payload: any) => {
+					if (typeof window === 'undefined' || !window.toaster) {
+						throw new Error(
+							'toast() called without a mounted <Toaster />. Add <Toaster /> to your root layout.'
+						);
+					}
 					const toast = window.toaster.addToast({
 						color: key as Colors,
 						...payload

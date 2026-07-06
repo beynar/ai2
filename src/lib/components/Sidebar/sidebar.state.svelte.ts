@@ -3,12 +3,13 @@ import type {
 	SidebarApi,
 	SidebarCollapsible,
 	SidebarDisplayState,
+	SidebarMode,
 	SidebarSide,
 	SidebarState
 } from './sidebar.props.js';
 
 type SidebarStateOptions = {
-	readonly bare: boolean;
+	readonly mode: SidebarMode;
 	readonly keyboardShortcut: string | false;
 	readonly open: boolean;
 	readonly side: SidebarSide;
@@ -65,7 +66,7 @@ export class SidebarStateController {
 
 		$effect(() => {
 			const shortcut = this.options.keyboardShortcut;
-			if (this.options.bare || shortcut === false) return;
+			if (this.options.mode === 'panel' || shortcut === false) return;
 
 			const onKeydown = (event: KeyboardEvent) => {
 				if (event.defaultPrevented || isEditableTarget(event.target)) return;

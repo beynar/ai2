@@ -31,7 +31,7 @@ const defaultMeta = cva({
 });
 
 const defaultBack = cva({
-	base: 'flex h-5 shrink-0 items-center'
+	base: 'inline-flex size-5 shrink-0 items-center justify-center rounded-md'
 });
 
 const defaultBreadcrumbs = cva({

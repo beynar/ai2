@@ -1,22 +1,22 @@
 import { bind } from '$lib/utils/state.svelte.js';
 import { useListNavigation } from '$lib/utils/useListNavigation.svelte.js';
 import { untrack } from 'svelte';
+import type { Attachment } from 'svelte/attachments';
 import type { CommandGroup, CommandItem, CommandProps } from './command.props.js';
 
-interface CommandOptions<Value extends string = string>
-	extends Pick<
-		CommandProps<Value>,
-		| 'items'
-		| 'dialog'
-		| 'shortcut'
-		| 'closeOnSelect'
-		| 'shouldFilter'
-		| 'filter'
-		| 'onSelect'
-		| 'onHighlightChange'
-		| 'onOpenChange'
-		| 'onSearchChange'
-	> {
+interface CommandOptions<Value extends string = string> extends Pick<
+	CommandProps<Value>,
+	| 'items'
+	| 'dialog'
+	| 'shortcut'
+	| 'closeOnSelect'
+	| 'shouldFilter'
+	| 'filter'
+	| 'onSelect'
+	| 'onHighlightChange'
+	| 'onOpenChange'
+	| 'onSearchChange'
+> {
 	id: string;
 	isOpen: boolean;
 	search: string;
@@ -26,6 +26,7 @@ export interface CommandState<Value extends string = string> extends CommandOpti
 export class CommandState<Value extends string = string> {
 	// Skips the first run of the isOpen effect so onOpenChange only fires on real changes.
 	private mounted = false;
+	private triggerElement = $state<HTMLElement | null>(null);
 
 	listId = $derived(`${this.id}-list`);
 
@@ -93,7 +94,26 @@ export class CommandState<Value extends string = string> {
 			window.addEventListener('keydown', onKeydown);
 			return () => window.removeEventListener('keydown', onKeydown);
 		});
+
+		$effect(() => {
+			const triggerElement = this.triggerElement;
+			const isOpen = this.isOpen;
+			untrack(() => triggerElement?.setAttribute('aria-expanded', String(isOpen)));
+		});
 	}
+
+	trigger: Attachment<HTMLElement> = (node) => {
+		return untrack(() => {
+			const triggerElement = node.querySelector<HTMLElement>('button, a[href], [tabindex]') ?? node;
+			triggerElement.setAttribute('aria-haspopup', 'dialog');
+			this.triggerElement = triggerElement;
+			return () => {
+				triggerElement.removeAttribute('aria-haspopup');
+				triggerElement.removeAttribute('aria-expanded');
+				this.triggerElement = null;
+			};
+		});
+	};
 
 	optionId = (value: string) => `${this.id}-opt-${value.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 

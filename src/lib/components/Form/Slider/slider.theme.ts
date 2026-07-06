@@ -5,9 +5,9 @@ const defaultInputContainer = cva({
 	base: 'w-full rounded text-foreground-light transition-all flex items-center gap-3',
 	variants: {
 		size: {
-			small: 'py-1.5 text-xs',
-			normal: 'py-2 text-sm',
-			large: 'py-2.5 text-base'
+			small: 'py-0 text-xs',
+			normal: 'py-0.5 text-sm',
+			large: 'py-1 text-base'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -56,8 +56,13 @@ const defaultTrack = cva({
 	base: 'relative touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-background',
 	variants: {
 		orientation: {
-			horizontal: 'h-2 w-full min-w-40',
-			vertical: 'h-56 w-2'
+			horizontal: 'w-full min-w-40',
+			vertical: 'h-56'
+		},
+		size: {
+			small: '',
+			normal: '',
+			large: ''
 		},
 		color: {
 			primary: 'text-primary',
@@ -72,44 +77,110 @@ const defaultTrack = cva({
 		disabled: {
 			true: 'cursor-not-allowed opacity-60',
 			false: 'cursor-pointer'
+		},
+		variant: {
+			default: '',
+			thick: ''
 		}
 	},
 	defaultVariants: {
 		orientation: 'horizontal',
+		size: 'normal',
 		color: 'primary',
-		disabled: false
-	}
+		disabled: false,
+		variant: 'default'
+	},
+	compoundVariants: [
+		{ orientation: 'horizontal', variant: 'default', class: 'h-2' },
+		{ orientation: 'vertical', variant: 'default', class: 'w-2' },
+		{ orientation: 'horizontal', variant: 'thick', size: 'small', class: 'h-4' },
+		{ orientation: 'horizontal', variant: 'thick', size: 'normal', class: 'h-5' },
+		{ orientation: 'horizontal', variant: 'thick', size: 'large', class: 'h-6' },
+		{ orientation: 'vertical', variant: 'thick', size: 'small', class: 'w-4' },
+		{ orientation: 'vertical', variant: 'thick', size: 'normal', class: 'w-5' },
+		{ orientation: 'vertical', variant: 'thick', size: 'large', class: 'w-6' }
+	]
 });
 
 const defaultTrackBackground = cva({
 	base: 'bg-foreground/15 absolute rounded-full',
 	variants: {
 		orientation: {
-			horizontal: 'inset-x-0 top-1/2 h-1.5 -translate-y-1/2',
-			vertical: 'inset-y-0 left-1/2 w-1.5 -translate-x-1/2'
+			horizontal: '',
+			vertical: ''
+		},
+		variant: {
+			default: '',
+			thick: 'inset-0'
 		}
 	},
 	defaultVariants: {
-		orientation: 'horizontal'
-	}
+		orientation: 'horizontal',
+		variant: 'default'
+	},
+	compoundVariants: [
+		{
+			orientation: 'horizontal',
+			variant: 'default',
+			class: 'inset-x-0 top-1/2 h-1.5 -translate-y-1/2'
+		},
+		{
+			orientation: 'vertical',
+			variant: 'default',
+			class: 'inset-y-0 left-1/2 w-1.5 -translate-x-1/2'
+		}
+	]
 });
 
 const defaultRange = cva({
 	base: 'absolute rounded-full bg-current',
 	variants: {
 		orientation: {
-			horizontal: 'top-1/2 h-1.5 -translate-y-1/2',
-			vertical: 'left-1/2 w-1.5 -translate-x-1/2'
+			horizontal: '',
+			vertical: ''
+		},
+		size: {
+			small: '',
+			normal: '',
+			large: ''
 		},
 		dragRange: {
 			true: 'cursor-grab active:cursor-grabbing',
 			false: ''
+		},
+		variant: {
+			default: '',
+			thick: ''
 		}
 	},
 	defaultVariants: {
 		orientation: 'horizontal',
-		dragRange: false
-	}
+		size: 'normal',
+		dragRange: false,
+		variant: 'default'
+	},
+	compoundVariants: [
+		{
+			orientation: 'horizontal',
+			variant: 'default',
+			class: 'top-1/2 h-1.5 -translate-y-1/2'
+		},
+		{
+			orientation: 'vertical',
+			variant: 'default',
+			class: 'left-1/2 w-1.5 -translate-x-1/2'
+		},
+		{
+			orientation: 'horizontal',
+			variant: 'thick',
+			class: 'inset-y-0'
+		},
+		{
+			orientation: 'vertical',
+			variant: 'thick',
+			class: 'inset-x-0'
+		}
+	]
 });
 
 const defaultThumb = cva({
@@ -127,13 +198,46 @@ const defaultThumb = cva({
 		disabled: {
 			true: 'cursor-not-allowed',
 			false: 'cursor-grab active:cursor-grabbing'
+		},
+		color: {
+			primary: '',
+			secondary: '',
+			danger: '',
+			success: '',
+			warning: '',
+			info: '',
+			foreground: '',
+			background: ''
+		},
+		variant: {
+			default: '',
+			thick: ''
 		}
 	},
 	defaultVariants: {
 		orientation: 'horizontal',
 		size: 'normal',
-		disabled: false
-	}
+		disabled: false,
+		color: 'primary',
+		variant: 'default'
+	},
+	compoundVariants: [
+		{ variant: 'thick', class: 'border-0 shadow-none' },
+		{ variant: 'thick', color: 'primary', class: 'bg-primary-contrast' },
+		{ variant: 'thick', color: 'secondary', class: 'bg-secondary-contrast' },
+		{ variant: 'thick', color: 'danger', class: 'bg-danger-contrast' },
+		{ variant: 'thick', color: 'success', class: 'bg-success-contrast' },
+		{ variant: 'thick', color: 'warning', class: 'bg-warning-contrast' },
+		{ variant: 'thick', color: 'info', class: 'bg-info-contrast' },
+		{ variant: 'thick', color: 'foreground', class: 'bg-foreground-contrast' },
+		{ variant: 'thick', color: 'background', class: 'bg-background' },
+		{ orientation: 'horizontal', variant: 'thick', size: 'small', class: 'h-3 w-5' },
+		{ orientation: 'horizontal', variant: 'thick', size: 'normal', class: 'h-4 w-7' },
+		{ orientation: 'horizontal', variant: 'thick', size: 'large', class: 'h-5 w-9' },
+		{ orientation: 'vertical', variant: 'thick', size: 'small', class: 'h-5 w-3' },
+		{ orientation: 'vertical', variant: 'thick', size: 'normal', class: 'h-7 w-4' },
+		{ orientation: 'vertical', variant: 'thick', size: 'large', class: 'h-9 w-5' }
+	]
 });
 
 const defaultValueLabels = cva({

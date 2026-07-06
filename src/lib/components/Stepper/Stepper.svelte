@@ -1,8 +1,9 @@
 <script lang="ts" generics="Item">
+	import { untrack } from 'svelte';
 	import BeforeHydratation from '../Utils/BeforeHydratation.svelte';
 	import { type StepperProps } from './stepper.props.js';
 	import { useStepperTheme } from './stepper.theme.js';
-	import { StepperState } from './stepperState.svelte.js';
+	import { StepperState } from './stepper.state.svelte.js';
 	export type { StepperState };
 	let {
 		items = [],
@@ -16,9 +17,7 @@
 			easing: 'ease-in-out',
 			fill: 'both'
 		},
-		mode = 'classic',
-		step: defaultStepSnippet,
-		...snippets
+		mode = 'classic'
 	}: StepperProps<Item> = $props();
 
 	const id = $props.id();
@@ -30,15 +29,26 @@
 		set activeStep(value) {
 			activeStep = value;
 		},
-		items,
-		onChange: (item) => {
-			onChange?.(item);
+		get items() {
+			return items;
 		},
-		keyFramesOptions
+		get onChange() {
+			return onChange;
+		},
+		get keyFramesOptions() {
+			return keyFramesOptions;
+		}
 	});
 
 	bindableStepper = stepper;
 	const classes = $derived(useStepperTheme());
+	const activeHeight = $derived(stepper.stepHeights[activeStep]);
+
+	$effect(() => {
+		const targetStep = activeStep;
+		if (items.length === 0) return;
+		untrack(() => stepper.syncActiveStep(targetStep));
+	});
 </script>
 
 <BeforeHydratation
@@ -65,7 +75,7 @@ container.style.height = firstSlide.clientHeight + 'px';
 	id="stepper-{id}"
 	style:overflow={stepper?.isAnimating ? 'hidden' : 'visible'}
 	style:will-change="height"
-	style:height="{stepper?.stepHeights?.[activeStep] || undefined}px"
+	style:height={activeHeight == null ? undefined : `${activeHeight}px`}
 	style:transition-duration={`${keyFramesOptions.duration}ms`}
 >
 	<div
@@ -73,9 +83,11 @@ container.style.height = firstSlide.clientHeight + 'px';
 		class={classes.container({
 			mode
 		})}
+		style:pointer-events="none"
 		style:grid-template-columns="repeat({items.length}, 100%)"
 	>
 		{#each items as item, index}
+			{@const isActiveStep = stepper.activeStep === index}
 			<div
 				bind:clientHeight={
 					() => stepper?.stepHeights?.[index] ?? undefined,
@@ -84,13 +96,14 @@ container.style.height = firstSlide.clientHeight + 'px';
 						stepper.stepHeights[index] = value || 0;
 					}
 				}
-				data-step-active={stepper.activeStep === index}
+				data-step-active={isActiveStep}
 				data-step={index}
-				tabindex={stepper.activeStep === index ? 0 : -1}
-				inert={stepper.activeStep !== index}
+				tabindex={isActiveStep ? 0 : -1}
+				inert={!isActiveStep}
 				role="tabpanel"
 				aria-labelledby={`stepper-${index}`}
-				style:opacity={stepper.activeStep === index ? 1 : 0}
+				style:opacity={isActiveStep ? 1 : 0}
+				style:pointer-events={isActiveStep ? 'auto' : 'none'}
 				style:transition-property="opacity"
 				style:transition-duration={`${keyFramesOptions.duration}ms`}
 				style:transition-timing-function={keyFramesOptions.easing}
@@ -98,11 +111,7 @@ container.style.height = firstSlide.clientHeight + 'px';
 					mode
 				})}
 			>
-				{#if snippets[`step${index + 1}`]}
-					{@render snippets[`step${index + 1}`]?.({ stepper, item, index })}
-				{:else if defaultStepSnippet}
-					{@render defaultStepSnippet({ stepper, item, index })}
-				{/if}
+				{@render children?.({ stepper, item, index })}
 			</div>
 		{/each}
 	</div>

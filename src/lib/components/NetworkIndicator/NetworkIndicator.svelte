@@ -16,25 +16,46 @@
 		}
 	}
 
-	export const toggleNetworkIndicator = () => {
-		const isLoading =
-			document.querySelector('.ui-network-indicator')?.getAttribute?.('data-loading') === 'true';
+	const dispatchNetworkIndicator = (loading: boolean) => {
+		if (typeof document === 'undefined') return;
 
 		document.dispatchEvent(
 			new CustomEvent('network:indicator', {
-				detail: !isLoading
+				detail: loading
 			})
 		);
+	};
+
+	export const showNetworkIndicator = () => {
+		dispatchNetworkIndicator(true);
+	};
+
+	export const hideNetworkIndicator = () => {
+		dispatchNetworkIndicator(false);
+	};
+
+	export const toggleNetworkIndicator = () => {
+		if (typeof document === 'undefined') return;
+
+		const isLoading =
+			document.querySelector('.ui-network-indicator')?.getAttribute?.('data-loading') === 'true';
+
+		dispatchNetworkIndicator(!isLoading);
 	};
 </script>
 
 <script lang="ts">
 	import { navigating } from '$app/state';
-	import { onMount, untrack } from 'svelte';
+	import { onMount } from 'svelte';
+	import {
+		finishBarAnimation,
+		startBarLoopAnimation,
+		startTrailAnimation,
+		stopNetworkIndicatorAnimation,
+		type NetworkIndicatorAnimationState
+	} from './networkIndicator.animation.js';
 	import type { NetworkIndicatorProps } from './networkIndicator.props.js';
 	import { useNetworkIndicatorTheme } from './networkIndicator.theme.js';
-	import { easingBezierStrings } from '$lib/transitions/easingFunctions.js';
-	import { fade } from 'svelte/transition';
 
 	let {
 		delay = 300,
@@ -42,50 +63,96 @@
 		color = 'foreground',
 		size = 3,
 		easing = 'cubicInOut',
+		loading = false,
+		variant = 'bar',
+		trailGap = 0,
+		trailDuration = 650,
+		label = 'Loading',
+		ref = $bindable(),
 		theme,
 		...attachments
 	}: NetworkIndicatorProps = $props();
 
-	const classes = $derived(useNetworkIndicatorTheme(theme));
-
-	let animation = $state<Animation>();
-	let show = $state<boolean>(false);
-
-	const animate = (node: HTMLDivElement) => {
-		return untrack(() => {
-			let transform = Math.random() * 0.35;
-			node!.style.transform = `scaleX(0)`;
-			animation?.cancel();
-			const animate = () => {
-				animation = node.animate(
-					{
-						opacity: 1,
-						transform: `scaleX(${transform})`
-					},
-					{
-						duration: delay,
-						easing: easingBezierStrings[easing],
-						fill: 'both'
-					}
-				);
-				animation.onfinish = () => {
-					if (transform > 1) {
-						transform = 0.02;
-					} else {
-						transform = transform + Math.random() * 0.15;
-					}
-					animate();
-				};
-			};
-			animate();
-
-			return () => {
-				animation?.cancel();
-				animation = undefined;
-				node!.style.transform = `scaleX(0)`;
-			};
-		});
+	const animationState: NetworkIndicatorAnimationState = {
+		node: null
 	};
+	let root = $state<HTMLDivElement | null>(null);
+	let show = $state<boolean>(false);
+	let shouldRender = $state(false);
+
+	const classes = $derived(useNetworkIndicatorTheme(theme));
+	const isActive = $derived(!!(navigating.from || show || loading));
+	const isTrailVariant = $derived(variant === 'trail' || variant === 'trail-bounce');
+
+	$effect(() => {
+		ref = root;
+	});
+
+	$effect(() => {
+		if (isActive) {
+			shouldRender = true;
+		}
+	});
+
+	$effect(() => {
+		const node = root;
+		if (!node || !shouldRender) return;
+		const signature = isTrailVariant
+			? `${variant}:${trailDuration}:${trailGap}`
+			: `bar:${delay}:${easing}`;
+
+		if (isTrailVariant) {
+			const trailMode = variant === 'trail-bounce' ? 'trail-bounce' : 'trail';
+
+			if (!isActive) {
+				stopNetworkIndicatorAnimation(animationState);
+				shouldRender = false;
+				return;
+			}
+			if (
+				animationState.mode !== trailMode ||
+				animationState.node !== node ||
+				animationState.signature !== signature
+			) {
+				stopNetworkIndicatorAnimation(animationState);
+				animationState.stop = startTrailAnimation(animationState, node, {
+					trailDuration,
+					trailGap,
+					shouldBounce: trailMode === 'trail-bounce'
+				});
+				animationState.mode = trailMode;
+				animationState.node = node;
+				animationState.signature = signature;
+			}
+			return;
+		}
+		if (isActive) {
+			if (
+				animationState.mode !== 'bar-loop' ||
+				animationState.node !== node ||
+				animationState.signature !== signature
+			) {
+				stopNetworkIndicatorAnimation(animationState);
+				animationState.stop = startBarLoopAnimation(animationState, node, { delay, easing });
+				animationState.mode = 'bar-loop';
+				animationState.node = node;
+				animationState.signature = signature;
+			}
+			return;
+		}
+		if (animationState.mode !== 'bar-finish') {
+			animationState.stop = finishBarAnimation(animationState, node, {
+				delay,
+				easing,
+				onFinish: () => {
+					shouldRender = false;
+				}
+			});
+			animationState.mode = 'bar-finish';
+			animationState.node = node;
+			animationState.signature = undefined;
+		}
+	});
 
 	const onNetworkIndicator = ({ detail }: CustomEvent<boolean>) => {
 		if (detail) {
@@ -99,18 +166,40 @@
 		document.addEventListener('network:indicator', onNetworkIndicator);
 		return () => {
 			document.removeEventListener('network:indicator', onNetworkIndicator);
+			stopNetworkIndicatorAnimation(animationState);
 		};
 	});
 </script>
 
-{#if navigating.from || show}
+{#if shouldRender}
 	<div
-		{@attach animate}
-		transition:fade={{ duration: delay }}
+		bind:this={root}
+		data-slot="network-indicator"
 		data-color={color}
-		data-loading={!!animation}
-		class={classes.root({ color, className })}
+		data-loading={isActive}
+		role="progressbar"
+		aria-label={label}
+		class={classes.root({ color, variant, className })}
 		style:height="{size}px"
+		style:opacity={!isTrailVariant ? '0' : undefined}
+		style:transform={!isTrailVariant ? 'scaleX(0)' : undefined}
 		{...attachments}
-	></div>
+	>
+		{#if isTrailVariant}
+			<span
+				data-slot="network-indicator-segment"
+				aria-hidden="true"
+				class={classes.segment({ color })}
+			></span>
+		{/if}
+	</div>
 {/if}
+
+<style>
+	[data-slot='network-indicator-segment'] {
+		left: 0;
+		width: 36%;
+		opacity: 0;
+		will-change: left, opacity;
+	}
+</style>

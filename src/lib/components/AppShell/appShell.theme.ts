@@ -2,16 +2,16 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultRoot = cva({
-	base: 'min-h-svh w-full bg-background text-foreground'
+	base: 'min-h-svh w-full bg-background-muted text-foreground'
 });
 
-const defaultSidebar = cva({
-	base: 'min-h-svh'
+const defaultPage = cva({
+	base: 'h-full min-h-0 overflow-hidden bg-background'
 });
 
 export const appShellTheme = {
 	root: defaultRoot,
-	sidebar: defaultSidebar
+	page: defaultPage
 };
 
 export type AppShellTheme = typeof appShellTheme;

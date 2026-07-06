@@ -4,6 +4,7 @@
 	import { useTabbarTheme } from './tabbar.theme.js';
 	import { useNavigation } from '$lib/utils/useNavigation.svelte.js';
 	import type { Snippet } from 'svelte';
+	import { untrack } from 'svelte';
 
 	let {
 		items,
@@ -14,6 +15,7 @@
 		color = 'primary',
 		alignment = 'start',
 		position = 'top',
+		variant = 'underline',
 		class: className = '',
 		theme,
 		fullWidth = false,
@@ -72,15 +74,99 @@
 			navigation.focusItem(index);
 		}
 	}
+
+	// --- Shared sliding indicator -------------------------------------------
+	// One absolutely-positioned element is measured onto the active tab and
+	// transitions there, so it adapts to variable tab sizes and both
+	// orientations. `pill` covers the whole tab; `underline` hugs the edge
+	// dictated by `position`.
+	let tabEls: Array<HTMLElement | undefined> = [];
+	let indicatorStyle = $state('opacity:0');
+	let indicatorReady = $state(false);
+
+	const placeIndicator = () => {
+		const el = tabEls[activeTab];
+		if (!el) {
+			indicatorStyle = 'opacity:0';
+			return;
+		}
+		// offsetLeft/Top are relative to the root (it is `relative`), so this is
+		// immune to page scroll and layout shifts above the tabbar.
+		const x = el.offsetLeft;
+		const y = el.offsetTop;
+		const w = el.offsetWidth;
+		const h = el.offsetHeight;
+		if (variant === 'pill') {
+			indicatorStyle = `transform:translate(${x}px, ${y}px);width:${w}px;height:${h}px`;
+		} else if (position === 'bottom') {
+			indicatorStyle = `transform:translate(${x}px, ${y}px);width:${w}px;height:2px`;
+		} else if (position === 'left') {
+			indicatorStyle = `transform:translate(${x + w - 2}px, ${y}px);width:2px;height:${h}px`;
+		} else if (position === 'right') {
+			indicatorStyle = `transform:translate(${x}px, ${y}px);width:2px;height:${h}px`;
+		} else {
+			// 'top' (default): underline along the bottom edge.
+			indicatorStyle = `transform:translate(${x}px, ${y + h - 2}px);width:${w}px;height:2px`;
+		}
+	};
+
+	// Re-place whenever anything that moves or resizes the tabs changes.
+	$effect(() => {
+		activeTab;
+		items;
+		size;
+		variant;
+		position;
+		orientation;
+		alignment;
+		fullWidth;
+		untrack(() => {
+			placeIndicator();
+			// Enable the transition only after the first real placement, in a
+			// microtask so the class lands in the same paint as the initial style
+			// (mount therefore never animates from the origin).
+			if (!indicatorReady && tabEls[activeTab]) {
+				queueMicrotask(() => (indicatorReady = true));
+			}
+		});
+	});
+
+	const collectTab = (index: number) => (node: HTMLElement) => {
+		return untrack(() => {
+			tabEls[index] = node;
+			return () => {
+				tabEls[index] = undefined;
+			};
+		});
+	};
+
+	const rootAttachment = (node: HTMLElement) => {
+		return untrack(() => {
+			// Container resizes (fullWidth, font load, responsive reflow) move the
+			// tabs without changing any reactive prop — re-measure on resize.
+			const observer = new ResizeObserver(() => placeIndicator());
+			observer.observe(node);
+			placeIndicator();
+			return () => observer.disconnect();
+		});
+	};
 </script>
 
 <div
-	class={classes.root({ orientation, alignment, size, className, fullWidth })}
+	class={classes.root({ orientation, alignment, size, variant, className, fullWidth })}
 	role="tablist"
 	aria-orientation={orientation}
 	{@attach navigation.containerReference}
+	{@attach rootAttachment}
 	{...attachments}
 >
+	<div
+		class={classes.indicator({ variant })}
+		style={indicatorStyle}
+		data-color={color}
+		data-ready={indicatorReady ? 'true' : 'false'}
+		aria-hidden="true"
+	></div>
 	{#each normalizedTabs as tab, index}
 		{@const isActive = activeTab === index}
 		{@const isFocused = navigation.focusedIndex === index}
@@ -107,10 +193,12 @@
 				disabled: tab.disabled,
 				orientation,
 				position,
+				variant,
 				fullWidth
 			})}
 			onclick={() => handleTabClick(index, tab)}
 			{@attach navigation.itemReference}
+			{@attach collectTab(index)}
 		>
 			<Slot render={tab.prefix} class={classes.prefix({ size })} />
 

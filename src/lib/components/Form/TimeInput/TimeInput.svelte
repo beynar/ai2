@@ -1,8 +1,19 @@
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import Popover from '../../Popover/Popover.svelte';
+	import TimeInputPicker from './TimeInputPicker.svelte';
+	import TimeInputTrigger from './TimeInputTrigger.svelte';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { TimeInputProps } from './timeInput.props.js';
 	import { useTimeInputTheme } from './timeInput.theme.js';
+	import {
+		HOUR_IN_MILLISECONDS,
+		MINUTE_IN_MILLISECONDS,
+		createTimeOptions,
+		denormalizeTimeValue,
+		getActiveTimeOption,
+		normalizeTimeValue
+	} from './timeInputValue.js';
 	import { Maskito } from '@maskito/core';
 	import {
 		maskitoTimeOptionsGenerator,
@@ -33,21 +44,7 @@
 	}: TimeInputProps = $props();
 
 	const id = $props.id();
-
-	const normalizeValue = (value: number) => {
-		return as === 'minuteSinceMidnight'
-			? value * 60000
-			: as === 'secondSinceMidnight'
-				? value * 1000
-				: value * 1;
-	};
-	const denormalizeValue = (value: number) => {
-		return as === 'minuteSinceMidnight'
-			? value / 60000
-			: as === 'secondSinceMidnight'
-				? value / 1000
-				: value / 1;
-	};
+	let pickerOpen = $state(false);
 
 	const field = createFieldState({
 		id,
@@ -88,7 +85,7 @@
 			name = v;
 		},
 		onValidate: (value) => {
-			const string = maskitoStringifyTime(normalizeValue(value), params);
+			const string = maskitoStringifyTime(normalizeTimeValue(value, as), params);
 			const parsed = maskitoParseTime(string, params);
 			if (parsed === 0) {
 				return true;
@@ -101,6 +98,20 @@
 		type: 'time'
 	});
 
+	const normalizedValue = $derived(
+		value === null || value === undefined ? null : normalizeTimeValue(value, as)
+	);
+
+	const selectedHour = $derived(
+		normalizedValue === null ? null : Math.floor(normalizedValue / HOUR_IN_MILLISECONDS)
+	);
+
+	const selectedMinute = $derived(
+		normalizedValue === null
+			? null
+			: Math.floor((normalizedValue % HOUR_IN_MILLISECONDS) / MINUTE_IN_MILLISECONDS)
+	);
+
 	const classes = $derived(useTimeInputTheme(theme));
 
 	const params = $derived({
@@ -109,17 +120,49 @@
 		mode: format
 	} satisfies MaskitoTimeParams);
 
+	const hourOptions = $derived(createTimeOptions(minValues?.hours ?? 0, maxValues?.hours ?? 23));
+
+	const minuteOptions = $derived(
+		createTimeOptions(minValues?.minutes ?? 0, maxValues?.minutes ?? 59)
+	);
+
+	const setPickerValue = (hour: number, minute: number) => {
+		const subMinuteMilliseconds = (normalizedValue ?? 0) % MINUTE_IN_MILLISECONDS;
+		const nextMilliseconds =
+			hour * HOUR_IN_MILLISECONDS + minute * MINUTE_IN_MILLISECONDS + subMinuteMilliseconds;
+		const nextDisplayValue = maskitoStringifyTime(nextMilliseconds, params);
+		const input = field.node instanceof HTMLInputElement ? field.node : null;
+
+		if (!input) {
+			const parsedValue = maskitoParseTime(nextDisplayValue, params);
+			field.value = denormalizeTimeValue(parsedValue, as);
+			return;
+		}
+
+		input.value = nextDisplayValue;
+		input.dispatchEvent(new Event('input', { bubbles: true }));
+		input.focus();
+	};
+
+	const selectHour = (hour: number) => {
+		setPickerValue(hour, getActiveTimeOption(minuteOptions, selectedMinute));
+	};
+
+	const selectMinute = (minute: number) => {
+		setPickerValue(getActiveTimeOption(hourOptions, selectedHour), minute);
+	};
+
 	const maskAction = (input: HTMLInputElement) => {
 		untrack(() => {
 			const mask = maskitoTimeOptionsGenerator(params);
 			const maskedElement = new Maskito(input, mask);
 
-			if (value && typeof value === 'number') {
-				input.value = maskitoStringifyTime(normalizeValue(value), params);
+			if (value !== null && value !== undefined && typeof value === 'number') {
+				input.value = maskitoStringifyTime(normalizeTimeValue(value, as), params);
 			}
 			const off = on(input, 'input', () => {
 				const parsed = maskitoParseTime(input.value, params);
-				field.value = denormalizeValue(parsed);
+				field.value = denormalizeTimeValue(parsed, as);
 			});
 
 			return () => {
@@ -130,31 +173,63 @@
 	};
 </script>
 
-<Field
-	{field}
-	size={rest.size}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({
-				class: theme?.inputContainer?.base,
-				disabled: field.disabled,
-				size: rest.size
-			})
-		}
-	}}
-	{...rest}
+<Popover
+	id={`${id}-time-popover`}
+	bind:open={pickerOpen}
+	position="bottom-start"
+	size="small"
+	class={classes.popover({ class: theme?.popover?.base })}
 >
-	<input
-		data-1p-ignore
-		inputmode="decimal"
-		{id}
-		name={field.name}
-		bind:this={field.node}
-		{placeholder}
-		class={classes.input({ disabled: field.disabled, size: rest.size })}
-		disabled={field.disabled}
-		{@attach maskAction}
-	/>
-</Field>
+	{#snippet children()}
+		<TimeInputPicker
+			id={`${id}-time-picker`}
+			{hourOptions}
+			{minuteOptions}
+			{selectedHour}
+			{selectedMinute}
+			size={rest.size}
+			{theme}
+			onSelectHour={selectHour}
+			onSelectMinute={selectMinute}
+		/>
+	{/snippet}
+	{#snippet trigger(popover)}
+		<Field
+			{field}
+			size={rest.size}
+			theme={{
+				...(theme || {}),
+				inputContainer: {
+					...(theme?.inputContainer || {}),
+					base: classes.inputContainer({
+						class: theme?.inputContainer?.base,
+						disabled: field.disabled,
+						size: rest.size
+					})
+				}
+			}}
+			{...rest}
+			{@attach popover.reference}
+		>
+			<input
+				data-1p-ignore
+				inputmode="decimal"
+				{id}
+				name={field.name}
+				bind:this={field.node}
+				bind:focused={field.focused}
+				{placeholder}
+				class={classes.input({ disabled: field.disabled, size: rest.size })}
+				disabled={field.disabled}
+				{@attach maskAction}
+			/>
+			<TimeInputTrigger
+				open={pickerOpen}
+				disabled={field.disabled}
+				controls={`${id}-time-picker`}
+				size={rest.size}
+				onToggle={popover.toggle}
+			/>
+		</Field>
+	{/snippet}
+</Popover>

@@ -1,5 +1,5 @@
 import type { FieldValue } from '../Field/field.js';
-import type { FieldState } from '../Field/fieldState.svelte.js';
+import type { FieldState } from '../Field/field.state.svelte.js';
 import type { TextInputProps } from '../TextInput/textInput.props.js';
 import type { NumberInputProps } from '../NumberInput/numberInput.props.js';
 import type { SliderProps } from '../Slider/slider.props.js';

@@ -2,7 +2,8 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultTabbar = cva({
-	base: 'flex w-full',
+	// relative: the shared active indicator is positioned against the root.
+	base: 'relative flex w-full',
 	variants: {
 		orientation: {
 			horizontal: 'flex-row',
@@ -18,15 +19,25 @@ const defaultTabbar = cva({
 			normal: 'gap-1',
 			large: 'gap-1.5'
 		},
+		variant: {
+			underline: '',
+			pill: 'w-fit rounded-full bg-background-muted/60 p-1'
+		},
 		fullWidth: {
 			true: 'w-full',
 			false: ''
 		}
 	},
+	compoundVariants: [
+		// A vertical pill track shouldn't be a stadium — soften to a large radius.
+		{ variant: 'pill', orientation: 'vertical', class: 'rounded-2xl' },
+		{ variant: 'pill', fullWidth: true, class: 'w-full' }
+	],
 	defaultVariants: {
 		orientation: 'horizontal',
 		alignment: 'start',
-		size: 'normal'
+		size: 'normal',
+		variant: 'underline'
 	}
 });
 
@@ -70,6 +81,10 @@ const defaultTab = cva({
 			left: '',
 			right: ''
 		},
+		variant: {
+			underline: '',
+			pill: 'rounded-full'
+		},
 		fullWidth: {
 			true: 'w-full',
 			false: ''
@@ -82,38 +97,32 @@ const defaultTab = cva({
 		focused: false,
 		disabled: false,
 		orientation: 'horizontal',
-		position: 'top'
+		position: 'top',
+		variant: 'underline'
 	},
 	compoundVariants: [
-		// Top position (horizontal) - indicator at bottom
-		{
-			active: true,
-			position: 'top',
-			class:
-				'before:content-["\x82"] before:block before:h-[2px] before:rounded-full before:w-full before:absolute before:bottom-0 before:left-0 before:bg-color'
-		},
-		// Bottom position (horizontal) - indicator at top
-		{
-			active: true,
-			position: 'bottom',
-			class:
-				'before:content-["\x82"] before:block before:h-[2px] before:rounded-full before:w-full before:absolute before:top-0 before:left-0 before:bg-color'
-		},
-		// Left position (vertical) - indicator at right
-		{
-			active: true,
-			position: 'left',
-			class:
-				'before:content-["\x82"] before:block before:h-full before:w-[2px] before:rounded-full before:absolute before:right-0 before:top-0 before:bg-color'
-		},
-		// Right position (vertical) - indicator at left
-		{
-			active: true,
-			position: 'right',
-			class:
-				'before:content-["\x82"] before:block before:h-full before:w-[2px] before:rounded-full before:absolute before:left-0 before:top-0 before:bg-color'
-		}
+		// The moving indicator (see the `indicator` part) carries the underline/pill
+		// visuals; the active tab itself only raises its text to full contrast.
+		{ active: true, class: 'text-foreground' },
+		{ variant: 'pill', focused: true, class: 'rounded-full' }
 	]
+});
+
+// The single shared active indicator. It is measured onto the active tab by the
+// component (inline transform/width/height) and slides there; `data-ready`
+// enables the transition only after the first placement so mount doesn't animate
+// from the origin.
+const defaultTabIndicator = cva({
+	base: 'pointer-events-none absolute left-0 top-0 will-change-transform data-[ready=true]:transition-[transform,width,height] data-[ready=true]:duration-300 data-[ready=true]:ease-[cubic-bezier(0.4,0,0.2,1)]',
+	variants: {
+		variant: {
+			underline: 'rounded-full bg-color',
+			pill: 'rounded-full bg-background shadow-sm border border-background-muted/50'
+		}
+	},
+	defaultVariants: {
+		variant: 'underline'
+	}
 });
 
 const defaultTabPrefix = cva({
@@ -147,6 +156,7 @@ const defaultTabSuffix = cva({
 export const tabbarTheme = {
 	root: defaultTabbar,
 	tab: defaultTab,
+	indicator: defaultTabIndicator,
 	prefix: defaultTabPrefix,
 	suffix: defaultTabSuffix
 };

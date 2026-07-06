@@ -37,9 +37,64 @@ const defaultInputContainer = cva({
 	}
 });
 
+const defaultPopover = cva({
+	base: 'w-48 max-w-[calc(100vw-2rem)]'
+});
+
+const defaultPicker = cva({
+	base: 'grid w-full grid-cols-2 gap-2'
+});
+
+const defaultPickerColumn = cva({
+	base: 'min-w-0'
+});
+
+const defaultPickerLabel = cva({
+	base: 'text-foreground-muted px-1.5 pb-1 font-medium',
+	variants: {
+		size: {
+			small: 'text-[0.6875rem]',
+			normal: 'text-xs',
+			large: 'text-sm'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultPickerScrollArea = cva({
+	base: 'flex max-h-44 flex-col'
+});
+
+const defaultPickerOption = cva({
+	base: 'w-full rounded font-mono text-center tabular-nums outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary',
+	variants: {
+		size: {
+			small: 'px-1.5 py-1 text-xs',
+			normal: 'px-2 py-1.5 text-sm',
+			large: 'px-2.5 py-2 text-base'
+		},
+		selected: {
+			true: 'bg-primary text-primary-contrast',
+			false: 'text-foreground hover:bg-background-muted'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		selected: false
+	}
+});
+
 export const timeInputTheme = {
 	input: defaultInput,
-	inputContainer: defaultInputContainer
+	inputContainer: defaultInputContainer,
+	popover: defaultPopover,
+	picker: defaultPicker,
+	pickerColumn: defaultPickerColumn,
+	pickerLabel: defaultPickerLabel,
+	pickerScrollArea: defaultPickerScrollArea,
+	pickerOption: defaultPickerOption
 };
 
 export type TimeInputTheme = typeof timeInputTheme;

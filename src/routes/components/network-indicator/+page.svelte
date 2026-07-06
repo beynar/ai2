@@ -1,0 +1,248 @@
+<script lang="ts">
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
+	import Button from '$lib/components/Button/Button.svelte';
+	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
+	import { colors } from '$lib/utils/tokens.js';
+	import NetworkIndicatorPreview from './NetworkIndicatorPreview.svelte';
+	import NetworkIndicatorTrailExamples from './NetworkIndicatorTrailExamples.svelte';
+	import type { Easing } from '$lib/transitions/easingFunctions.js';
+
+	const easingExamples: { label: string; easing: Easing; delay: number }[] = [
+		{ label: 'Cubic', easing: 'cubicInOut', delay: 300 },
+		{ label: 'Expo', easing: 'expoOut', delay: 450 },
+		{ label: 'Back', easing: 'backOut', delay: 500 }
+	];
+
+	let isPreviewLoading = $state(false);
+	let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+	function previewNetworkRequest() {
+		clearTimeout(timeoutId);
+		isPreviewLoading = true;
+
+		timeoutId = setTimeout(() => {
+			isPreviewLoading = false;
+		}, 1400);
+	}
+</script>
+
+<DocPage
+	title="Network indicator"
+	subtitle="A fixed top loading bar for SvelteKit navigations and explicit async work."
+	component="NetworkIndicator"
+	features={[
+		'Automatic SvelteKit navigation state',
+		'Explicit show/hide helper API',
+		'Indeterminate progressbar semantics',
+		'Bar and trail animation variants',
+		'Color, height, duration, and easing controls',
+		'Theme override support'
+	]}
+>
+	<ComponentCard
+		description="Trigger the mounted page indicator from explicit async work."
+		class="!min-h-[260px]"
+		code={`<script lang="ts">
+	import { Button } from 'svelai/button';
+	import { NetworkIndicator } from 'svelai/network-indicator';
+
+	let loading = $state(false);
+
+	function previewRequest() {
+		loading = true;
+		setTimeout(() => (loading = false), 1400);
+	}
+${'</' + 'script>'}
+
+<div class="relative overflow-hidden rounded-lg border">
+	<NetworkIndicator {loading} color="primary" class="!absolute" />
+	<Button onClick={previewRequest} loading={loading}>
+		{loading ? 'Syncing' : 'Preview async work'}
+	</Button>
+</div>`}
+	>
+		<div
+			class="border-background-muted bg-background relative flex min-h-24 w-full max-w-md flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border p-6"
+		>
+			<NetworkIndicator loading={isPreviewLoading} color="primary" class="!absolute !z-10" />
+			<Button onClick={previewNetworkRequest} loading={isPreviewLoading}>
+				{isPreviewLoading ? 'Syncing' : 'Preview async work'}
+			</Button>
+			<p class="text-foreground/60 text-sm">The local indicator runs for 1.4 seconds.</p>
+		</div>
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard
+			description="Controlled loading state keeps the indicator local to a panel and still plays the finish-to-100 animation when loading ends."
+			class="!min-h-[240px]"
+			code={`<script lang="ts">
+	import { Button } from 'svelai/button';
+	import { NetworkIndicator } from 'svelai/network-indicator';
+
+	let loading = $state(false);
+
+	function runTask() {
+		loading = true;
+		setTimeout(() => (loading = false), 1400);
+	}
+${'</' + 'script>'}
+
+<div class="relative overflow-hidden rounded-lg border p-6">
+	<NetworkIndicator {loading} color="primary" class="!absolute !z-10" />
+	<Button onClick={runTask} loading={loading}>
+		{loading ? 'Saving' : 'Run task'}
+	</Button>
+</div>`}
+		>
+			<div
+				class="border-background-muted bg-background relative flex min-h-24 w-full max-w-xl items-center justify-center overflow-hidden rounded-lg border p-6"
+			>
+				<NetworkIndicator loading={isPreviewLoading} color="primary" class="!absolute !z-10" />
+				<Button onClick={previewNetworkRequest} loading={isPreviewLoading}>
+					{isPreviewLoading ? 'Saving' : 'Run task'}
+				</Button>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Trail variant renders one randomly sized moving segment at a time. Use trailDuration for speed and trailGap for the pause between passes."
+			class="!min-h-[220px]"
+			code={`<NetworkIndicator loading variant="trail" color="primary" trailDuration={650} trailGap={0} />
+<NetworkIndicator loading variant="trail" color="success" size={5} trailDuration={450} trailGap={120} />
+<NetworkIndicator loading variant="trail-bounce" color="info" trailDuration={700} trailGap={80} />`}
+		>
+			<NetworkIndicatorTrailExamples />
+		</ComponentCard>
+
+		<ComponentCard
+			description="Use positioning utilities when the indicator should sit on a local surface edge instead of the viewport top."
+			class="!min-h-[220px]"
+			code={`<div class="relative overflow-hidden rounded-lg border">
+	<NetworkIndicator loading color="warning" size={4} class="!absolute !top-auto !bottom-0 !z-10" />
+	<div class="p-6">Panel content</div>
+</div>`}
+		>
+			<div class="w-full max-w-xl">
+				<NetworkIndicatorPreview label="Bottom edge indicator" class="h-28">
+					<NetworkIndicator
+						loading
+						color="warning"
+						size={4}
+						class="!absolute !top-auto !bottom-0 !z-10"
+					/>
+				</NetworkIndicatorPreview>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Color tokens let the indicator match navigation, saving, upload, or warning contexts."
+			class="!min-h-[260px]"
+			code={`<NetworkIndicator loading color="primary" />
+<NetworkIndicator loading color="success" />
+<NetworkIndicator loading color="warning" />`}
+		>
+			<div class="grid w-full max-w-xl gap-4">
+				{#each colors as color}
+					<NetworkIndicatorPreview label={color} class="h-10">
+						<NetworkIndicator loading {color} size={4} class="!absolute !z-10" />
+					</NetworkIndicatorPreview>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Use a 2-6px height range. Thin is quiet for navigation; thicker bars are better for explicit tasks."
+			class="!min-h-[240px]"
+			code={`<NetworkIndicator loading size={2} />
+<NetworkIndicator loading size={4} color="primary" />
+<NetworkIndicator loading size={6} color="info" />`}
+		>
+			<div class="grid w-full max-w-xl gap-4">
+				{#each [2, 4, 6] as size}
+					<NetworkIndicatorPreview label={`${size}px`}>
+						<NetworkIndicator
+							loading
+							{size}
+							color={size === 2 ? 'foreground' : size === 4 ? 'primary' : 'info'}
+							class="!absolute !z-10"
+						/>
+					</NetworkIndicatorPreview>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Delay controls each animation segment duration; easing changes the perceived momentum."
+			class="!min-h-[240px]"
+			code={`<NetworkIndicator loading delay={300} easing="cubicInOut" />
+<NetworkIndicator loading delay={450} easing="expoOut" />
+<NetworkIndicator loading delay={500} easing="backOut" />`}
+		>
+			<div class="grid w-full max-w-xl gap-4">
+				{#each easingExamples as example}
+					<NetworkIndicatorPreview label={`${example.label}: ${example.easing}`}>
+						<NetworkIndicator
+							loading
+							color="secondary"
+							size={4}
+							delay={example.delay}
+							easing={example.easing}
+							class="!absolute !z-10"
+						/>
+					</NetworkIndicatorPreview>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Provide a label when the default Loading announcement is not specific enough."
+			class="!min-h-[220px]"
+			code={`<NetworkIndicator loading label="Uploading files" color="info" />`}
+		>
+			<div class="w-full max-w-xl">
+				<NetworkIndicatorPreview label="Accessible label: Uploading files" class="h-14">
+					<NetworkIndicator
+						loading
+						label="Uploading files"
+						color="info"
+						size={4}
+						class="!absolute !z-10"
+					/>
+				</NetworkIndicatorPreview>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Theme overrides are useful when the top bar needs a custom visual treatment without changing global tokens."
+			class="!min-h-[220px]"
+			code={`<NetworkIndicator
+	loading
+	color="success"
+	size={5}
+	theme={{
+		root: {
+			base: 'ui-network-indicator fixed top-0 left-0 w-full z-[9999] origin-left rounded-none shadow-lg'
+		}
+	}}
+/>`}
+		>
+			<div class="w-full max-w-xl">
+				<NetworkIndicatorPreview label="Square edge with a stronger shadow" class="h-14">
+					<NetworkIndicator
+						loading
+						color="success"
+						size={5}
+						class="!absolute !z-10"
+						theme={{
+							root: {
+								base: 'ui-network-indicator fixed top-0 left-0 w-full z-[9999] origin-left rounded-none shadow-lg'
+							}
+						}}
+					/>
+				</NetworkIndicatorPreview>
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

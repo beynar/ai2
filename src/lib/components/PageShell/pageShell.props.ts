@@ -81,9 +81,11 @@ export type PageShellApi = Readonly<PageShellConfig> & {
 	reset: () => void;
 };
 
-type PageShellRootAttributes = Pick<
-	HTMLAttributes<HTMLDivElement>,
-	'id' | 'role' | 'style' | 'aria-label' | 'aria-labelledby' | 'aria-describedby'
+type PageShellRootAttributes = Partial<
+	Pick<
+		HTMLAttributes<HTMLDivElement>,
+		'id' | 'role' | 'style' | 'aria-label' | 'aria-labelledby' | 'aria-describedby'
+	>
 > & {
 	[dataAttribute: `data-${string}`]: string | number | boolean | null | undefined;
 };
@@ -95,14 +97,6 @@ export type PageShellProps = WithAttachments<
 			ref?: HTMLElement | null;
 			/** Classes applied to the root shell. */
 			class?: string;
-			/** Classes applied to the sticky header. */
-			headerClass?: string;
-			/** Classes applied to the scrollable content region. */
-			contentClass?: string;
-			/** Classes applied to the content inner wrapper. */
-			contentInnerClass?: string;
-			/** Classes applied to the sticky footer. */
-			footerClass?: string;
 			/** Main page content. Receives the resolved shell API. */
 			children: PageShellRegion;
 			/** Per-instance theme overrides. */

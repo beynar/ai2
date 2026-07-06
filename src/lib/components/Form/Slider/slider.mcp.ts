@@ -41,6 +41,7 @@ Extends all Field props plus:
 ### Core Props
 - **value**: number | number[] | null (bindable) - Current scalar or multi-thumb value
 - **mode**: 'single' | 'range' (default: 'single') - Range mode defaults to two thumbs
+- **variant**: 'default' | 'thick' (default: 'default') - Visual track style; \`thick\` renders a heavier track with an inset pill thumb
 - **thumbs**: number - Number of thumbs when the value is missing or scalar
 - **min**: number (default: 0) - Minimum selectable value
 - **max**: number (default: 100) - Maximum selectable value
@@ -142,6 +143,20 @@ Use \`type: 'slider'\` for scalar values and \`type: 'slider-range'\` for submit
 	min={0}
 	max={100}
 	step={10}
+	showValue
+/>
+\`\`\`
+
+### Thick Variant
+\`\`\`svelte
+<Slider
+	variant="thick"
+	size="normal"
+	label="Temperature"
+	bind:value={temperature}
+	min={16}
+	max={30}
+	step={1}
 	showValue
 />
 \`\`\`

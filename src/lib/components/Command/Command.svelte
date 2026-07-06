@@ -107,25 +107,6 @@
 		});
 	};
 
-	// Reflect the palette's popup semantics onto the actual focusable trigger element
-	// (aria-haspopup on mount, aria-expanded kept in sync below).
-	let triggerEl: HTMLElement | null = $state(null);
-	const triggerAria = (node: HTMLElement) => {
-		return untrack(() => {
-			const el = node.querySelector<HTMLElement>('button, a[href], [tabindex]') ?? node;
-			el.setAttribute('aria-haspopup', 'dialog');
-			triggerEl = el;
-			return () => {
-				el.removeAttribute('aria-haspopup');
-				el.removeAttribute('aria-expanded');
-				triggerEl = null;
-			};
-		});
-	};
-	$effect(() => {
-		triggerEl?.setAttribute('aria-expanded', String(open));
-	});
-
 	/**
 	 * The full command state machine, for externally driven palettes (`bind:this`):
 	 * `commandState.move(delta)`, `commandState.selectHighlighted()`, `commandState.highlighted`,
@@ -233,7 +214,7 @@
 		render={trigger}
 		payload={slotPayload}
 		class={classes.trigger()}
-		{@attach triggerAria}
+		{@attach command.trigger}
 	/>
 {/snippet}
 

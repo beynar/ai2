@@ -26,10 +26,6 @@
 		footerButton,
 		footerMenu,
 		footer,
-		contentClass,
-		headerClass,
-		footerClass,
-		menuClass,
 		collapseIcon,
 		tooltips,
 		theme
@@ -44,10 +40,6 @@
 		footerButton?: SidebarMenuButtonItem;
 		footerMenu?: SidebarMenuEntry[];
 		footer?: import('svelte').Snippet<[SidebarApi]>;
-		contentClass?: string;
-		headerClass?: string;
-		footerClass?: string;
-		menuClass?: string;
 		collapseIcon: SidebarCollapseIcon;
 		tooltips: SidebarTooltipMode;
 		theme?: SidebarThemeProps;
@@ -60,11 +52,7 @@
 </script>
 
 {#if headerButton || search || headerMenu || header}
-	<div
-		data-slot="sidebar-header"
-		data-sidebar="header"
-		class={classes.header({ className: headerClass })}
-	>
+	<div data-slot="sidebar-header" data-sidebar="header" class={classes.header()}>
 		{#if headerButton}
 			<SidebarMenuButton
 				{...headerButton}
@@ -91,7 +79,7 @@
 			</form>
 		{/if}
 		{#if headerMenu}
-			<SidebarMenuList items={headerMenu} {api} {menuClass} {collapseIcon} {tooltips} {theme} />
+			<SidebarMenuList items={headerMenu} {api} {collapseIcon} {tooltips} {theme} />
 		{/if}
 		{#if header}
 			{@render header(api)}
@@ -99,11 +87,7 @@
 	</div>
 {/if}
 
-<div
-	data-slot="sidebar-content"
-	data-sidebar="content"
-	class={classes.content({ className: contentClass })}
->
+<div data-slot="sidebar-nav" data-sidebar="nav" class={classes.nav()}>
 	{#if content}
 		{@render content(api)}
 	{:else if items}
@@ -115,17 +99,13 @@
 					class={classes.separator()}
 				></div>
 			{/if}
-			<SidebarGroupComponent {group} {api} {menuClass} {collapseIcon} {tooltips} {theme} />
+			<SidebarGroupComponent {group} {api} {collapseIcon} {tooltips} {theme} />
 		{/each}
 	{/if}
 </div>
 
 {#if footerButton || footerMenu || footer}
-	<div
-		data-slot="sidebar-footer"
-		data-sidebar="footer"
-		class={classes.footer({ className: footerClass })}
-	>
+	<div data-slot="sidebar-footer" data-sidebar="footer" class={classes.footer()}>
 		{#if footerButton}
 			<SidebarMenuButton
 				{...footerButton}
@@ -136,7 +116,7 @@
 			/>
 		{/if}
 		{#if footerMenu}
-			<SidebarMenuList items={footerMenu} {api} {menuClass} {collapseIcon} {tooltips} {theme} />
+			<SidebarMenuList items={footerMenu} {api} {collapseIcon} {tooltips} {theme} />
 		{/if}
 		{#if footer}
 			{@render footer(api)}

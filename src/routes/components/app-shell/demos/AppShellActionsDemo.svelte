@@ -5,20 +5,13 @@
 		type AppShellActions
 	} from '$lib/components/AppShell/index.js';
 	import type { BreadcrumbItem } from '$lib/components/Breadcrumbs/index.js';
-	import type { SidebarGroup, SidebarThemeProps } from '$lib/components/Sidebar/index.js';
+	import type { SidebarGroup } from '$lib/components/Sidebar/index.js';
 	import { arrowClockwiseIcon } from '$lib/components/Icons/arrowClockwise.js';
 	import { commandIcon } from '$lib/components/Icons/command.js';
 	import { downloadSimpleIcon } from '$lib/components/Icons/downloadSimple.js';
 	import { houseIcon } from '$lib/components/Icons/house.js';
 	import { plusIcon } from '$lib/components/Icons/plus.js';
 	import { trayIcon } from '$lib/components/Icons/tray.js';
-
-	const previewSidebarTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		container: { base: '!absolute !inset-y-0 !h-full' },
-		gap: { base: 'h-full shrink-0' },
-		inset: { base: 'min-w-0' }
-	} satisfies SidebarThemeProps;
 
 	const items: SidebarGroup[] = [
 		{
@@ -48,7 +41,6 @@
 		rail: true,
 		width: '15rem',
 		widthIcon: '3.5rem',
-		theme: previewSidebarTheme,
 		headerButton: {
 			icon: commandIcon,
 			title: 'Acme',
@@ -67,8 +59,10 @@
 		{headerActions}
 		contentPadding="normal"
 		contentWidth="normal"
-		pageShellClass="h-full"
-		theme={{ root: { base: 'h-full !min-h-0 overflow-hidden' } }}
+		frame="contained"
+		theme={{
+			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
+		}}
 	>
 		{#snippet children()}
 			<section class="rounded-lg border border-background-muted bg-background-light p-5">

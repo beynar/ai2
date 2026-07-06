@@ -19,6 +19,7 @@ import { sidebarDescription } from '$lib/components/Sidebar/sidebar.mcp.js';
 import { treeDescription } from '$lib/components/Tree/tree.mcp.js';
 import { mermaidDescription } from '$lib/components/Mermaid/mermaid.mcp.js';
 import { mapDescription } from '$lib/components/Map/map.mcp.js';
+import { markdownDescription } from '$lib/components/Markdown/markdown.mcp.js';
 import { emptyDescription } from '$lib/components/Empty/empty.mcp.js';
 import { kbdDescription } from '$lib/components/Kbd/kbd.mcp.js';
 import { dialogDescription } from '$lib/components/Dialog/dialog.mcp.js';
@@ -37,6 +38,7 @@ import { switchDescription } from '$lib/components/Form/Switch/switch.mcp.js';
 import { textAreaDescription } from '$lib/components/Form/TextArea/textArea.mcp.js';
 import { textInputDescription } from '$lib/components/Form/TextInput/textInput.mcp.js';
 import { comboboxDescription } from '$lib/components/Form/Combobox/combobox.mcp.js';
+import { tagsInputDescription } from '$lib/components/Form/TagsInput/tagsInput.mcp.js';
 import { headingDescription } from '$lib/components/Heading/heading.mcp.js';
 import { meterDescription } from '$lib/components/Meter/meter.mcp.js';
 import { popoverDescription } from '$lib/components/Popover/popover.mcp.js';
@@ -95,6 +97,7 @@ const components = {
 	tree: treeDescription,
 	mermaid: mermaidDescription,
 	map: mapDescription,
+	markdown: markdownDescription,
 	dialog: dialogDescription,
 	calendar: calendarDescription,
 	'date-input': dateInputDescription,
@@ -112,6 +115,7 @@ const components = {
 	'text-area': textAreaDescription,
 	'text-input': textInputDescription,
 	combobox: comboboxDescription,
+	'tags-input': tagsInputDescription,
 	heading: headingDescription,
 	meter: meterDescription,
 	popover: popoverDescription,

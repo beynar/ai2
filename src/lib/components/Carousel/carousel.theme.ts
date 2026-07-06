@@ -9,6 +9,10 @@ const defaultSlider = cva({
 	base: 'display-grid py-4 relative whitespace-nowrap overflow-x-auto overflow-y-clip scroll-behavior-smooth overscroll-behavior-x-contain inline-size-full max-inline-size-[100vw] box-border scrollbar-width-none'
 });
 
+const defaultSlide = cva({
+	base: 'inline-block whitespace-normal align-top'
+});
+
 const defaultNavigationButton = cva({
 	base: 'rounded cursor-pointer absolute inline-flex items-center justify-center transition-all duration-100 ease-in-out outline-none border-none',
 	variants: {
@@ -105,6 +109,7 @@ const defaultDot = cva({
 export const carouselTheme = {
 	root: defaultContainer,
 	slider: defaultSlider,
+	slide: defaultSlide,
 	navigationButton: defaultNavigationButton,
 	dots: defaultDots,
 	dot: defaultDot

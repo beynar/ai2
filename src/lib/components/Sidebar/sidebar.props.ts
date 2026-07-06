@@ -8,8 +8,10 @@ import type { SidebarThemeProps } from './sidebar.theme.js';
 export type SidebarState = 'expanded' | 'collapsed';
 export type SidebarDisplayState = 'expanded' | 'collapsed' | 'hidden';
 export type SidebarSide = 'left' | 'right';
-export type SidebarVariant = 'sidebar' | 'floating' | 'inset';
+export type SidebarVariant = 'sidebar' | 'floating' | 'inset' | 'split';
 export type SidebarCollapsible = 'offcanvas' | 'icon' | 'none';
+export type SidebarMode = 'layout' | 'panel';
+export type SidebarFrame = 'viewport' | 'contained';
 export type SidebarMenuButtonVariant = 'default' | 'outline';
 export type SidebarMenuButtonSize = 'default' | 'sm' | 'lg';
 export type SidebarCollapseIcon = 'chevron' | 'plus-minus';
@@ -235,7 +237,7 @@ export type SidebarMenuButtonItem =
 	SidebarMenuButtonLinkItem | SidebarMenuButtonActionItem | SidebarMenuButtonMenuItem;
 
 type SidebarOwnProps = {
-	/** Bindable reference to the root wrapper or bare surface. */
+	/** Bindable reference to the root wrapper or panel. */
 	ref?: HTMLElement | null;
 	/** Bindable desktop open state. */
 	open?: boolean;
@@ -243,12 +245,14 @@ type SidebarOwnProps = {
 	onOpenChange?: (open: boolean) => void;
 	/** Side the sidebar is anchored to. */
 	side?: SidebarSide;
-	/** Visual style. */
+	/** Sidebar geometry variant. */
 	variant?: SidebarVariant;
 	/** Collapse behavior. */
 	collapsible?: SidebarCollapsible;
-	/** Render only the sidebar surface without wrapper, rail, or inset. */
-	bare?: boolean;
+	/** Render a full resizing layout or only the visible navigation panel. */
+	mode?: SidebarMode;
+	/** Use viewport sizing/fixed positioning or contained sizing/absolute positioning. */
+	frame?: SidebarFrame;
 	/** Text direction forwarded to the mobile drawer. */
 	dir?: 'ltr' | 'rtl';
 	/** Expanded desktop width. */
@@ -267,18 +271,6 @@ type SidebarOwnProps = {
 	items?: SidebarGroup[];
 	/** Classes applied to the outer wrapper. */
 	class?: string;
-	/** Classes applied to the sidebar panel. */
-	sidebarClass?: string;
-	/** Classes applied to the main inset. */
-	insetClass?: string;
-	/** Classes applied to the scrollable nav body. */
-	contentClass?: string;
-	/** Classes applied to the sticky header wrapper. */
-	headerClass?: string;
-	/** Classes applied to the sticky footer wrapper. */
-	footerClass?: string;
-	/** Classes applied to each menu list. */
-	menuClass?: string;
 	/** Indicator style for collapsible menu items. */
 	collapseIcon?: SidebarCollapseIcon;
 	/** Tooltip behavior for icon rows. */
@@ -299,17 +291,19 @@ type SidebarOwnProps = {
 	footerMenu?: SidebarMenuEntry[];
 	/** Sticky bottom custom content. */
 	footer?: Snippet<[SidebarApi]>;
-	/** Main app content rendered in the inset. */
+	/** Main content rendered beside the sidebar in layout mode. */
 	children?: Snippet<[SidebarApi]>;
-	/** Full-width bar rendered above sidebar and inset. */
+	/** Full-width bar rendered above the sidebar row. */
 	banner?: Snippet<[SidebarApi]>;
 	/** Per-instance theme overrides. */
 	theme?: SidebarThemeProps;
 };
 
-type SidebarRootAttributes = Pick<
-	HTMLAttributes<HTMLDivElement>,
-	'id' | 'role' | 'style' | 'title' | 'aria-label' | 'aria-labelledby' | 'aria-describedby'
+type SidebarRootAttributes = Partial<
+	Pick<
+		HTMLAttributes<HTMLDivElement>,
+		'id' | 'role' | 'style' | 'title' | 'aria-label' | 'aria-labelledby' | 'aria-describedby'
+	>
 > & {
 	[dataAttribute: `data-${string}`]: string | number | boolean | null | undefined;
 };

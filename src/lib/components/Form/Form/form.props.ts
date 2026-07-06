@@ -2,7 +2,7 @@ import type { Snippet } from 'svelte';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { ButtonProps } from '$lib/components/Button/index.js';
 import type { FormInputs, FormSubmitHandler, InferFormValue } from './form.js';
-import type { FormState } from './formState.svelte.js';
+import type { FormState } from './form.state.svelte.js';
 import type { FormThemeProps } from './form.theme.js';
 
 export type FormProps<I extends FormInputs> = WithSlot<
@@ -43,4 +43,3 @@ export type FormProps<I extends FormInputs> = WithSlot<
 	},
 	'header' | 'title' | 'description' | 'footer'
 >;
-

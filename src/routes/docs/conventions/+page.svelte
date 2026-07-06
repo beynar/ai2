@@ -13,6 +13,7 @@ import { Dialog } from 'svelai/dialog';`;
 	const collectionCode = `<Accordion items={sections} />
 <Select items={roles} />
 <RadioInput items={plans} />
+<Carousel items={slides} />
 <Tabs items={views} />
 <ButtonGroup items={actions} />
 <MultiStepForm items={steps} />

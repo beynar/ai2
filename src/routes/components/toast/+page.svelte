@@ -63,24 +63,28 @@
 						confirm: 'Confirm',
 						cancel: 'Cancel'
 					});
-					[
-						'primary'
-						// 'secondary',
-						// 'danger',
-						// 'success',
-						// 'warning',
-						// 'info',
-						// 'foreground',
-						// 'background'
-					].forEach((color) => {
+					(
 						[
-							'bottom-center'
-							// 'bottom-left',
-							// 'bottom-right',
-							// 'top-center',
-							// 'top-left',
-							// 'top-right'
-						].forEach((position) => {
+							'primary'
+							// 'secondary',
+							// 'danger',
+							// 'success',
+							// 'warning',
+							// 'info',
+							// 'foreground',
+							// 'background'
+						] as const
+					).forEach((color) => {
+						(
+							[
+								'bottom-center'
+								// 'bottom-left',
+								// 'bottom-right',
+								// 'top-center',
+								// 'top-left',
+								// 'top-right'
+							] as const
+						).forEach((position) => {
 							toast[color]({
 								title: 'Hello',
 								description: 'This is a toast',

@@ -55,6 +55,9 @@ export type PopoverProps = WithAttachments<{
 	class?: string;
 	/** When true, sets the popover panel width to match the trigger element width. */
 	fitTrigger?: boolean;
+	/** When true, renders the popover as a bottom sheet on mobile viewports (<768px).
+	 *  Default `false`, so existing popovers stay anchored on every screen size. */
+	mobileSheet?: boolean;
 	/** Per-instance theme overrides for popover layout and styling class names. */
 	theme?: PopoverThemeProps;
 }>;

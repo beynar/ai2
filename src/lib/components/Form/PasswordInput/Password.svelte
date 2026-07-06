@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { PasswordInputProps } from './passwordInput.props.js';
 	import { usePasswordInputTheme } from './passwordInput.theme.js';
 	import ToggleButton from '$lib/components/ToggleButton/ToggleButton.svelte';

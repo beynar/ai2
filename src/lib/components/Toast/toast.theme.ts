@@ -4,7 +4,10 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import type { ToastPosition } from './toast.state.svelte.js';
 
 const defaultToast = cva({
-	base: 'cursor-default absolute pointer-events-auto bg-background-light border border-background-lighter text-foreground duration-500 max-w-[300px] px-2 py-1.5 flex items-center justify-between gap-2 rounded-md min-w-[250px]',
+	// Only the stack-reflow properties transition: a bare `duration-500` would fall
+	// back to `transition-property: all` and animate colors/borders on theme flips
+	// or hover too. (Toast.svelte listens for the `translate` transitionend.)
+	base: 'cursor-default absolute pointer-events-auto bg-background-light border border-background-lighter text-foreground transition-[translate,scale,opacity] duration-500 max-w-[300px] px-2 py-1.5 flex items-center justify-between gap-2 rounded-md min-w-[250px]',
 	variants: {
 		richColors: {
 			true: 'bg-color-muted border-color-light text-color',
@@ -210,7 +213,15 @@ const defaultToastDescription = cva({
 	}
 });
 
+// The fixed fullscreen <dialog> hosting every toast. Resets the UA dialog styles
+// (margins, border, padding, sizing) and lets pointer events fall through — the
+// toasts themselves re-enable pointer-events.
+const defaultToaster = cva({
+	base: 'pointer-events-none fixed inset-0 z-[9999] m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 bg-transparent p-0'
+});
+
 const toastTheme = {
+	toaster: defaultToaster,
 	root: defaultToast,
 	prefix: defaultToastPrefix,
 	suffix: defaultToastSuffix,

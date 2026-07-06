@@ -1,6 +1,6 @@
 import type { InputProps } from '../Field/field.js';
 import type { TextAreaThemeProps } from './textArea.theme.js';
-import type { FieldState } from '../Field/fieldState.svelte.js';
+import type { FieldState } from '../Field/field.state.svelte.js';
 
 export type TextAreaProps = InputProps<'text'> & {
 	/** Hint text shown in the empty textarea. */
@@ -14,4 +14,3 @@ export type TextAreaProps = InputProps<'text'> & {
 	/** Called when Enter is pressed without Shift; default submission is prevented. */
 	onPressEnter?: (field: FieldState<'text'>) => void;
 };
-

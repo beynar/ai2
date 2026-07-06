@@ -2,9 +2,9 @@ import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { Colors } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
 import type { FormInputs, InferFormValue } from '../Form/form.js';
-import type { FormState } from '../Form/formState.svelte.js';
+import type { FormState } from '../Form/form.state.svelte.js';
 import type { FormProps } from '../Form/form.props.js';
-import type { MultiStepFormState } from './multiStepFormState.svelte.js';
+import type { MultiStepFormState } from './multiStepForm.state.svelte.js';
 import type { MultiStepFormThemeProps } from './multiStepForm.theme.js';
 import type { ButtonProps } from '$lib/components/Button/index.js';
 

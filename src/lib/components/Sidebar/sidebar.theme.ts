@@ -1,121 +1,28 @@
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
-const defaultWrapper = cva({
-	base: 'group/sidebar-wrapper flex min-h-svh w-full',
+const defaultPanel = cva({
+	base: 'flex h-full flex-col text-foreground',
 	variants: {
-		withBanner: {
-			true: 'flex-col',
-			false: null
-		},
-		variant: {
-			sidebar: '',
-			floating: 'bg-background-muted',
-			inset: 'bg-background'
-		}
-	},
-	defaultVariants: {
-		withBanner: false,
-		variant: 'sidebar'
-	}
-});
-
-const defaultRow = cva({
-	base: 'flex w-full flex-1',
-	variants: {
-		withBanner: {
-			true: '',
-			false: 'contents'
-		}
-	},
-	defaultVariants: {
-		withBanner: false
-	}
-});
-
-const defaultSurface = cva({
-	base: 'flex h-full w-[var(--sidebar-width)] flex-col text-foreground',
-	variants: {
-		variant: {
-			sidebar: 'border-background-muted bg-background-muted',
-			floating: 'm-2 rounded-xl border border-background-muted bg-background shadow-sm',
-			inset: 'border-background-muted bg-background'
-		}
-	},
-	defaultVariants: {
-		variant: 'sidebar'
-	}
-});
-
-const defaultGap = cva({
-	base: 'relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear group-data-[collapsible=offcanvas]:w-0',
-	variants: {
-		variant: {
-			sidebar: 'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]',
-			floating: 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+1rem)]',
-			inset: 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+1rem)]'
-		}
-	},
-	defaultVariants: {
-		variant: 'sidebar'
-	}
-});
-
-const defaultContainer = cva({
-	base: 'fixed inset-y-0 z-10 hidden h-svh w-[var(--sidebar-width)] transition-[left,right,width] duration-200 ease-linear md:flex',
-	variants: {
-		side: {
-			left: 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]',
-			right: 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]'
-		},
 		variant: {
 			sidebar:
-				'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] data-[side=left]:border-r data-[side=right]:border-l',
-			floating: 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+1rem+2px)]',
-			inset: 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+1rem+2px)]'
+				'border-background-muted bg-background-muted data-[side=left]:border-r data-[side=right]:border-l',
+			floating: 'rounded-xl border border-background-muted bg-background shadow-sm',
+			inset: 'rounded-xl border border-background-muted bg-background shadow-sm',
+			split: 'border-0 bg-transparent shadow-none'
 		},
-		edgeRevealed: {
-			true: 'z-40 shadow-xl',
-			false: null
+		placement: {
+			panel: 'w-[var(--sidebar-width)]',
+			static: 'w-[var(--sidebar-width)]',
+			positioned: 'w-full'
 		}
 	},
 	compoundVariants: [
-		{ side: 'left', edgeRevealed: true, class: '!left-0' },
-		{ side: 'right', edgeRevealed: true, class: '!right-0' }
+		{ variant: ['floating', 'inset', 'split'], placement: 'static', class: 'm-2' }
 	],
 	defaultVariants: {
-		side: 'left',
 		variant: 'sidebar',
-		edgeRevealed: false
-	}
-});
-
-const defaultInner = cva({
-	base: 'flex size-full flex-col',
-	variants: {
-		variant: {
-			sidebar: 'bg-background-muted',
-			floating: 'rounded-xl border border-background-muted bg-background shadow-sm',
-			inset: 'rounded-xl border border-background-muted bg-background shadow-sm'
-		}
-	},
-	defaultVariants: {
-		variant: 'sidebar'
-	}
-});
-
-const defaultInset = cva({
-	base: 'relative flex w-full flex-1 flex-col',
-	variants: {
-		variant: {
-			sidebar: 'bg-background',
-			floating: 'bg-background',
-			inset:
-				'bg-background md:m-2 md:ml-0 md:overflow-hidden md:rounded-xl md:border md:border-background-muted md:shadow-sm md:peer-data-[state=collapsed]:ml-2'
-		}
-	},
-	defaultVariants: {
-		variant: 'sidebar'
+		placement: 'positioned'
 	}
 });
 
@@ -123,7 +30,7 @@ const defaultStackSection = cva({
 	base: 'flex flex-col gap-2 p-2'
 });
 
-const defaultContent = cva({
+const defaultNav = cva({
 	base: 'scrollbar scrollbar-none flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden'
 });
 
@@ -256,15 +163,9 @@ const defaultAvatar = cva({
 });
 
 export const sidebarTheme = {
-	root: defaultWrapper,
-	row: defaultRow,
-	surface: defaultSurface,
-	gap: defaultGap,
-	container: defaultContainer,
-	inner: defaultInner,
-	inset: defaultInset,
+	panel: defaultPanel,
 	header: defaultStackSection,
-	content: defaultContent,
+	nav: defaultNav,
 	footer: defaultStackSection,
 	group: defaultGroup,
 	groupLabel: defaultGroupLabel,

@@ -12,7 +12,7 @@
 	subtitle="Numeric entry with stepping and min/max constraints."
 	component="NumberInput"
 	features={[
-		'Native min, max & step',
+		'Native min, max & step plus +/- controls',
 		'Bindable value, errors & focus',
 		'Min/max checked in onValidate',
 		'Label linked via Field wrapper'
@@ -20,10 +20,10 @@
 >
 	<ComponentCard
 		description="A numeric input"
-		code={`<NumberInput label="Quantity" placeholder="0" bind:value={quantity} />`}
+		code={`<NumberInput label="Quantity" placeholder="0" increment={2} bind:value={quantity} />`}
 	>
 		<div class="w-full max-w-md">
-			<NumberInput label="Quantity" placeholder="0" bind:value={quantity} />
+			<NumberInput label="Quantity" placeholder="0" increment={2} bind:value={quantity} />
 			{#if quantity !== null}
 				<p class="text-foreground-muted mt-2 text-xs">Value: {quantity}</p>
 			{/if}
@@ -40,17 +40,13 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard
-			description="Constrain the range and increment"
-		>
+		<ComponentCard description="Constrain the range and increment">
 			<div class="w-full max-w-md">
-				<NumberInput label="Age" placeholder="18" min={18} max={120} step={1} />
+				<NumberInput label="Age" placeholder="18" min={18} max={120} step={1} increment={5} />
 			</div>
 		</ComponentCard>
 
-		<ComponentCard
-			description="Using type: 'number' inside a Form"
-		>
+		<ComponentCard description="Using type: 'number' inside a Form">
 			<div class="w-full max-w-md">
 				<Form
 					inputs={{

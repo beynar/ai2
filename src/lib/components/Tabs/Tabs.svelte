@@ -1,7 +1,8 @@
-<script lang="ts" generics="Item = any">
+<script lang="ts" generics="Item extends TabItem = TabItem">
 	import { Tabbar } from '$lib/components/Tabbar/index.js';
 	import { Stepper } from '$lib/components/Stepper/index.js';
-	import { StepperState } from '../Stepper/stepperState.svelte.js';
+	import type { TabItem } from '$lib/components/Tabbar/tabbar.props.js';
+	import { StepperState } from '../Stepper/stepper.state.svelte.js';
 	import type { TabsProps } from './tabs.props.js';
 	import { useTabsTheme } from './tabs.theme.js';
 
@@ -25,9 +26,7 @@
 		tabbarClass,
 		tabbarTheme,
 		tabbarFullWidth,
-		tab: defaultTabSnippet,
-
-		...snippets
+		children: panel
 	}: TabsProps<Item> = $props();
 
 	const classes = $derived(useTabsTheme(theme));
@@ -41,22 +40,6 @@
 		stepper?.goTo(index);
 		onChange?.(index);
 	}
-
-	const stepperSteps = $derived(
-		items.reduce(
-			(acc, _tab, index) => {
-				const tabKey = `tab${index + 1}` as const;
-				const stepKey = `step${index + 1}` as const;
-				if (snippets[tabKey]) {
-					Object.assign(acc, {
-						[stepKey]: snippets[tabKey]
-					});
-				}
-				return acc;
-			},
-			{} as Record<string, any>
-		)
-	);
 </script>
 
 <div class={classes.root({ placement, className })}>
@@ -74,12 +57,14 @@
 		theme={tabbarTheme}
 	/>
 	<Stepper
-		step={defaultTabSnippet}
 		class={classes.content({ placement })}
 		bind:stepper
 		{items}
 		bind:activeStep={activeTab}
 		{keyFramesOptions}
-		{...stepperSteps}
-	/>
+	>
+		{#snippet children(payload)}
+			{@render panel?.(payload)}
+		{/snippet}
+	</Stepper>
 </div>

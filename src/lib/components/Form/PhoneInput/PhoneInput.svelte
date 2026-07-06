@@ -1,12 +1,18 @@
 <script lang="ts">
+	import Popover from '../../Popover/Popover.svelte';
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import intlTelInput from 'intl-tel-input';
-	import 'intl-tel-input/styles';
+	import PhoneInputCountryPicker from './PhoneInputCountryPicker.svelte';
+	import PhoneInputCountryTrigger from './PhoneInputCountryTrigger.svelte';
 	import type { PhoneInputProps } from './phoneInput.props.js';
 	import { usePhoneInputTheme } from './phoneInput.theme.js';
+	import {
+		createPhoneCountryOptions,
+		getPhoneCountryOption,
+		type PhoneCountryOption
+	} from './phoneInputCountry.js';
 	import { untrack } from 'svelte';
-	import { fr } from 'intl-tel-input/locale';
 	import { on } from 'svelte/events';
 
 	let {
@@ -14,7 +20,7 @@
 		errors = $bindable([]),
 		focused = $bindable(false),
 		country = $bindable('fr'),
-		iti = $bindable<ReturnType<typeof intlTelInput>>(),
+		iti = $bindable<ReturnType<typeof intlTelInput> | undefined>(),
 		required = false,
 		strict = true,
 		separator,
@@ -30,11 +36,23 @@
 	}: PhoneInputProps = $props();
 
 	const id = $props.id();
+	const countryPickerId = `${id}-country-picker`;
+	let countryPickerOpen = $state(false);
+	let phoneInputNode = $state<HTMLInputElement | null>(null);
+	const countryOptions = createPhoneCountryOptions(intlTelInput.getAllCountries());
 
 	const getValue = () => {
+		if (!iti || !intlTelInput.utils) {
+			return (phoneInputNode?.value ?? '').replaceAll(' ', '');
+		}
+
 		const phoneValue = iti?.getNumber() || '';
 		return phoneValue.replaceAll(' ', '');
 	};
+
+	const selectedCountry = $derived(
+		getPhoneCountryOption(countryOptions, country) ?? getPhoneCountryOption(countryOptions, 'fr')
+	);
 
 	const field = createFieldState({
 		id,
@@ -76,7 +94,7 @@
 		},
 		onValidate: (value) => {
 			const customErrors = onValidate?.(value);
-			const isValid = country && iti?.isValidNumber();
+			const isValid = country && intlTelInput.utils && iti?.isValidNumber();
 			return customErrors || (isValid ? [] : ['Invalid phone number']);
 		},
 		get visible() {
@@ -87,226 +105,143 @@
 
 	const classes = $derived(usePhoneInputTheme(theme));
 
+	const syncSelectedCountry = () => {
+		const selectedIso2 = iti?.getSelectedCountry()?.iso2;
+
+		if (selectedIso2) {
+			country = selectedIso2;
+		}
+
+		field.value = getValue();
+	};
+
+	const selectCountry = (selectedCountry: PhoneCountryOption) => {
+		country = selectedCountry.iso2;
+		iti?.setSelectedCountry(selectedCountry.iso2);
+		field.value = getValue();
+		countryPickerOpen = false;
+		field.node?.focus();
+	};
+
+	const focusInputOnFieldClick = (node: HTMLElement) =>
+		on(node, 'click', (event) => {
+			const target = event.target;
+			if (target instanceof Element && target.closest('button')) return;
+			node.querySelector('input')?.focus();
+		});
+
 	const usePhoneInput = (node: HTMLInputElement) => {
-		untrack(() => {
+		return untrack(() => {
+			phoneInputNode = node;
+
 			if (value) {
 				node.value = value;
 			}
-			iti = intlTelInput(node, {
+			const instance = intlTelInput(node, {
 				strictMode: strict,
-				initialCountry: country as any,
+				initialCountry: selectedCountry?.iso2 ?? '',
 				allowPhonewords: false,
 				formatAsYouType: true,
-				separateDialCode: true,
-				countrySelectorMode: window.matchMedia('(max-width: 768px)').matches
-					? 'FULLSCREEN'
-					: 'DROPDOWN',
-				dropdownParent: document.body,
-				uiTranslations: {
-					...fr,
-					searchPlaceholder,
-					countryListAriaLabel: 'Liste des pays'
-				},
+				separateDialCode: false,
+				showFlags: false,
+				countrySelectorMode: 'OFF',
+				containerClass: 'min-w-0 w-full flex-1',
 				loadUtils: () => import('intl-tel-input/utils')
 			});
+			iti = instance;
 
-			node.addEventListener('countrychange', () => {
-				field.value = getValue();
+			syncSelectedCountry();
+			instance.promise.then(() => {
+				if (iti === instance) {
+					field.value = getValue();
+				}
 			});
+
+			const offCountryChange = on(node, 'countrychange', syncSelectedCountry);
+
+			return () => {
+				offCountryChange();
+				instance.destroy();
+				if (phoneInputNode === node) {
+					phoneInputNode = null;
+				}
+				if (iti === instance) {
+					iti = undefined;
+				}
+			};
 		});
 	};
+
+	$effect(() => {
+		const nextCountry = getPhoneCountryOption(countryOptions, country);
+		const activeCountry = iti?.getSelectedCountry()?.iso2;
+
+		if (iti && nextCountry && activeCountry !== nextCountry.iso2) {
+			iti.setSelectedCountry(nextCountry.iso2);
+		}
+	});
 </script>
 
-<Field
-	{field}
-	size={rest.size}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({
-				class: theme?.inputContainer?.base,
-				disabled: field.disabled,
-				size: rest.size
-			})
-		}
-	}}
-	{...rest}
-	{@attach (node: HTMLElement) => {
-		return on(node, 'click', () => {
-			const input = node.querySelector('input');
-			if (input) {
-				input.focus();
-			}
-		});
-	}}
+<Popover
+	id={`${id}-country-popover`}
+	bind:open={countryPickerOpen}
+	position="bottom-start"
+	size="normal"
+	class={classes.popover({ class: theme?.popover?.base })}
 >
-	<input
-		data-1p-ignore
-		{@attach usePhoneInput}
-		oninput={() => {
-			field.value = getValue();
-		}}
-		type="tel"
-		{id}
-		name={field.name}
-		bind:this={field.node}
-		{placeholder}
-		class={classes.input({ disabled: field.disabled, size: rest.size })}
-		disabled={field.disabled}
-	/>
-</Field>
-
-<style>
-	:global {
-		/* Reset intl-tel-input container styles */
-		.iti {
-			width: 100%;
-		}
-		.iti__selected-dial-code {
-			font-size: 0.875rem;
-			line-height: 1.5;
-		}
-		.iti__arrow {
-			margin-left: 4px;
-		}
-		.iti input {
-			margin: 0 !important;
-			height: auto !important;
-			line-height: 1.5 !important;
-		}
-
-		/* Webkit (Chrome, Safari, newer versions of Opera) */
-		.scroller::-webkit-scrollbar {
-			width: 4px;
-		}
-
-		.scroller::-webkit-scrollbar-track {
-			background: transparent;
-		}
-
-		.scroller::-webkit-scrollbar-thumb {
-			background-color: var(--color-background-dark);
-			border-radius: 2px;
-		}
-
-		/* For Internet Explorer */
-		.scroller {
-			padding-right: 0px !important;
-			padding-left: 10px !important;
-			scrollbar-width: thin;
-			scrollbar-color: var(--color-background-dark) transparent;
-			scrollbar-gutter: stable;
-		}
-
-		.iti__search-input {
-			border-top-left-radius: 0.5rem;
-			border-top-right-radius: 0.5rem;
-			border-bottom-right-radius: 0px;
-			border-bottom-left-radius: 0px;
-			border-bottom-width: 1px;
-			--tw-border-opacity: 1;
-			border-color: var(--color-background-muted);
-			--tw-bg-opacity: 1;
-			background-color: var(--color-background-dark);
-			padding: 0.25rem;
-			font-size: 0.875rem;
-			line-height: 1.25rem;
-			outline: 2px solid transparent;
-			outline-offset: 2px;
-			padding-left: 2rem !important;
-			--current-background: var(--color-background-light);
-			--current-border: var(--color-background-muted);
-		}
-		.iti__dropdown-content {
-			border: 1px solid
-				var(--light-raised-border, var(--current-border, var(--color-background-lighter))) !important;
-
-			border: var(--light-raised-border);
-			--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-			--tw-shadow-colored:
-				0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
-			box-shadow: var(--dark-raised-shadow);
-			margin-top: 0.5rem !important;
-			border-radius: 0.5rem;
-			--tw-bg-opacity: 1;
-			background-color: var(--color-background-DEFAULT);
-			scrollbar-width: thin;
-			scrollbar-color: var(--scrollbar-thumb, initial) var(--scrollbar-track, initial);
-			border-color: var(--color-background-muted);
-			--current-border: var(--color-background-muted);
-			background-color: var(--color-background-dark);
-			--current-background: var(--color-background-dark);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-track {
-			background-color: var(--scrollbar-track);
-			border-radius: var(--scrollbar-track-radius);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-track:hover {
-			background-color: var(--scrollbar-track-hover, var(--scrollbar-track));
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-track:active {
-			background-color: var(
-				--scrollbar-track-active,
-				var(--scrollbar-track-hover, var(--scrollbar-track))
-			);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-thumb {
-			background-color: var(--scrollbar-thumb);
-			border-radius: var(--scrollbar-thumb-radius);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-thumb:hover {
-			background-color: var(--scrollbar-thumb-hover, var(--scrollbar-thumb));
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-thumb:active {
-			background-color: var(
-				--scrollbar-thumb-active,
-				var(--scrollbar-thumb-hover, var(--scrollbar-thumb))
-			);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-corner {
-			background-color: var(--scrollbar-corner);
-			border-radius: var(--scrollbar-corner-radius);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-corner:hover {
-			background-color: var(--scrollbar-corner-hover, var(--scrollbar-corner));
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar-corner:active {
-			background-color: var(
-				--scrollbar-corner-active,
-				var(--scrollbar-corner-hover, var(--scrollbar-corner))
-			);
-		}
-
-		.iti__dropdown-content::-webkit-scrollbar {
-			display: block;
-			width: 8px;
-			height: 8px;
-		}
-		.iti__country-list {
-			font-size: 0.875rem;
-			line-height: 1.25rem;
-			--tw-text-opacity: 1;
-			color: var(--color-foreground-DEFAULT);
-			scrollbar-width: none;
-			--scrollbar-track: transparent;
-		}
-		.iti__country-list::-webkit-scrollbar {
-			display: none;
-		}
-		.iti__country.iti__highlight {
-			--tw-bg-opacity: 1;
-			background-color: var(--color-background-dark);
-			--current-background: var(--color-background-dark);
-		}
-	}
-</style>
+	{#snippet children()}
+		<PhoneInputCountryPicker
+			id={countryPickerId}
+			countries={countryOptions}
+			{selectedCountry}
+			{searchPlaceholder}
+			size={rest.size}
+			{theme}
+			onSelectCountry={selectCountry}
+		/>
+	{/snippet}
+	{#snippet trigger(popover)}
+		<Field
+			{field}
+			size={rest.size}
+			theme={{
+				...(theme || {}),
+				inputContainer: {
+					...(theme?.inputContainer || {}),
+					base: classes.inputContainer({
+						class: theme?.inputContainer?.base,
+						disabled: field.disabled,
+						size: rest.size
+					})
+				}
+			}}
+			{...rest}
+			{@attach popover.reference}
+			{@attach focusInputOnFieldClick}
+		>
+			<PhoneInputCountryTrigger
+				country={selectedCountry}
+				open={countryPickerOpen}
+				disabled={field.disabled}
+				controls={countryPickerId}
+				size={rest.size}
+				{theme}
+				onToggle={popover.toggle}
+			/>
+			<input
+				data-1p-ignore
+				{@attach usePhoneInput}
+				oninput={() => {
+					field.value = getValue();
+				}}
+				type="tel"
+				{id}
+				name={field.name}
+				bind:this={field.node}
+				{placeholder}
+				class={classes.input({ disabled: field.disabled, size: rest.size })}
+				disabled={field.disabled}
+			/>
+		</Field>
+	{/snippet}
+</Popover>

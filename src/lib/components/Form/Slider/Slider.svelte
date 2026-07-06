@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import SliderTrack from './SliderTrack.svelte';
 	import SliderValueLabels from './SliderValueLabels.svelte';
 	import type { SliderProps } from './slider.props.js';
@@ -28,6 +28,7 @@
 		valueLabel,
 		rangeLabel,
 		mode = 'single',
+		variant = 'default',
 		thumbs,
 		orientation = 'horizontal',
 		minStepsBetweenThumbs = 0,
@@ -36,6 +37,8 @@
 		type: _formType,
 		...rest
 	}: SliderProps & { type?: string } = $props();
+
+	void _formType;
 
 	const id = $props.id();
 
@@ -63,6 +66,18 @@
 		},
 		get orientation() {
 			return orientation;
+		},
+		get disabled() {
+			return disabled;
+		},
+		get dragRange() {
+			return dragRange;
+		},
+		get focused() {
+			return focused;
+		},
+		set focused(v) {
+			focused = v;
 		},
 		get formatValue() {
 			return formatValue;
@@ -135,16 +150,6 @@
 				? 'Maximum value'
 				: `Value ${index + 1}`;
 	};
-
-	const setFocused = (index: number) => {
-		field.focused = true;
-		slider.activeThumb = index;
-	};
-
-	const unsetFocused = () => {
-		field.focused = false;
-		slider.activeThumb = null;
-	};
 </script>
 
 <Field
@@ -156,7 +161,7 @@
 			...(theme?.inputContainer || {}),
 			base: classes.inputContainer({
 				class: theme?.inputContainer?.base,
-				disabled: field.disabled,
+				disabled: slider.disabled,
 				size: rest.size
 			})
 		}
@@ -164,8 +169,8 @@
 	{...rest}
 >
 	<div class={classes.root({ orientation: slider.orientationValue, size: rest.size })}>
-		{#each slider.values as hiddenValue}
-			<input type="hidden" name={field.name} value={hiddenValue} disabled={field.disabled} />
+		{#each slider.values as hiddenValue, index (index)}
+			<input type="hidden" name={field.name} value={hiddenValue} disabled={slider.disabled} />
 		{/each}
 
 		<div class={classes.control({ orientation: slider.orientationValue })}>
@@ -174,14 +179,11 @@
 				{slider}
 				{classes}
 				{color}
-				disabled={field.disabled}
+				{variant}
 				size={rest.size}
 				{marks}
-				{dragRange}
 				{groupLabel}
 				{getThumbLabel}
-				onThumbFocus={setFocused}
-				onThumbBlur={unsetFocused}
 			/>
 
 			{#if showValue || valueLabel || rangeLabel}

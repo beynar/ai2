@@ -41,6 +41,7 @@ interface PopoverOptions extends MakeRequired<
 		| 'openOnHover'
 		| 'hoverDelay'
 		| 'openOnClick'
+		| 'mobileSheet'
 	>,
 	| 'directedTransition'
 	| 'closeOnEscape'
@@ -59,20 +60,36 @@ interface PopoverOptions extends MakeRequired<
 
 export interface PopoverState extends PopoverOptions {}
 export class PopoverState {
-	defaultTransition = () => ({
-		in: {
-			x: 0,
-			y: 0,
-			scale: 0.98,
-			opacity: 0
-		},
-		out: {
-			x: 0,
-			y: 0,
-			scale: 0.98,
-			opacity: 0
-		}
-	});
+	defaultTransition = () =>
+		this.isMobileSheet
+			? {
+					in: {
+						x: 0,
+						y: '100%' as const,
+						scale: 1,
+						opacity: 1
+					},
+					out: {
+						x: 0,
+						y: '100%' as const,
+						scale: 1,
+						opacity: 1
+					}
+				}
+			: {
+					in: {
+						x: 0,
+						y: 0,
+						scale: 0.98,
+						opacity: 0
+					},
+					out: {
+						x: 0,
+						y: 0,
+						scale: 0.98,
+						opacity: 0
+					}
+				};
 	triggerReference: HTMLElement | null = $state(null);
 	referenceElement: HTMLElement | VirtualElement | null = $derived(
 		this.triggerReference || this.externalRef || null
@@ -101,6 +118,10 @@ export class PopoverState {
 
 	isLastOfStack = $derived(this.parent ? this.parent?.children.at(-1)?.id === this.id : true);
 	computedSize = $derived(this.theme.resolveResponsiveProps(this.size, 'normal'));
+	isMobileSheet = $derived(!!this.mobileSheet && this.theme.isMobile);
+	computedMode: 'floating' | 'mobileSheet' = $derived(
+		this.isMobileSheet ? 'mobileSheet' : 'floating'
+	);
 	computedTransition = $derived(
 		this.theme.resolveTransitionProps(this.transition, this.defaultTransition())
 	);
@@ -209,6 +230,10 @@ export class PopoverState {
 	};
 
 	place = async (node: HTMLElement, mount = false) => {
+		if (this.isMobileSheet || !this.referenceElement) {
+			this.triggerWidth = null;
+			return;
+		}
 		if (!mount && !this.hasTransitioned) {
 			return;
 		}
@@ -253,8 +278,34 @@ export class PopoverState {
 
 	dialog = (node: HTMLDialogElement) => {
 		this.dialogElement = node;
+		if (this.isMobileSheet) {
+			this.triggerWidth = null;
+			Object.assign(node.style, {
+				position: '',
+				left: '',
+				top: ''
+			});
+			return () => {
+				this.dialogElement = null;
+			};
+		}
+
 		void this.place(node, true);
-		return autoUpdate(this.referenceElement!, node, () => this.place(node));
+		const cleanup = autoUpdate(this.referenceElement!, node, () => this.place(node));
+		return () => {
+			cleanup();
+			this.dialogElement = null;
+		};
+	};
+	panel = (node: HTMLElement) => {
+		return untrack(() => {
+			const cleanups: Array<(() => void) | null | void> = [];
+			cleanups.push(this.clickOutside.reference?.(node));
+			cleanups.push(this.safeArea.reference?.(node));
+			return () => {
+				cleanups.forEach((cleanup) => cleanup?.());
+			};
+		});
 	};
 	reference = (node: HTMLElement) => {
 		return untrack(() => {

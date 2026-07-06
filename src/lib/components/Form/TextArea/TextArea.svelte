@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { TextAreaProps } from './textArea.props.js';
 	import { useTextAreaTheme } from './textArea.theme.js';
 	import { autosize } from './autosize.js';

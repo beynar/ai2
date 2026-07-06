@@ -1,8 +1,8 @@
 export const sidebarDescription = `
 # Sidebar Component
 
-Application shell sidebar with data-driven navigation groups, icon collapse, mobile drawer
-behavior, recursive tree groups, header/footer rows, search, actions, and snippet escape hatches.
+	Sidebar navigation with data-driven groups, icon collapse, mobile drawer behavior,
+	recursive tree groups, header/footer rows, search, actions, and snippet escape hatches.
 
 ## Import
 
@@ -50,7 +50,8 @@ behavior, recursive tree groups, header/footer rows, search, actions, and snippe
 5. Keep \`children\`, \`header\`, \`content\`, \`footer\`, \`banner\`, and action snippets pure; they receive \`SidebarApi\`.
 6. Use \`collapsible="icon"\` for icon rail behavior, \`collapsible="offcanvas"\` for hidden desktop panels, and \`collapsible="none"\` for fixed sidebars.
 7. Offcanvas sidebars reveal over the content from the screen edge by default when hidden; set \`edgeReveal={false}\` to disable that.
-8. Set \`keyboardShortcut={false}\` when embedding Sidebar inside another shortcut-heavy surface.
+	8. Set \`keyboardShortcut={false}\` when embedding Sidebar inside another shortcut-heavy surface.
+	9. Sidebar owns navigation and resize mechanics. Use AppShell for visible app/page surfaces.
 
 ## Data Model
 
@@ -98,10 +99,11 @@ Use for \`headerButton\`, \`footerButton\`, or direct \`<SidebarMenuButton />\` 
 
 ### Layout
 - **side**: 'left' | 'right' - Desktop and mobile side.
-- **variant**: 'sidebar' | 'floating' | 'inset' - Visual shell style.
-- **collapsible**: 'offcanvas' | 'icon' | 'none' - Collapse behavior.
-- **bare**: boolean - Render only the sidebar surface.
-- **width**: string - Expanded width.
+	- **variant**: 'sidebar' | 'floating' | 'inset' | 'split' - Sidebar geometry.
+	- **collapsible**: 'offcanvas' | 'icon' | 'none' - Collapse behavior.
+	- **mode**: 'layout' | 'panel' - Full resizing layout or only the visible navigation panel.
+	- **frame**: 'viewport' | 'contained' - Viewport/fixed layout or contained/absolute layout for embedded previews.
+	- **width**: string - Expanded width.
 - **widthIcon**: string - Icon-collapsed width.
 - **widthMobile**: string - Mobile drawer width.
 - **rail**: boolean - Edge toggle rail.
@@ -114,9 +116,9 @@ Use for \`headerButton\`, \`footerButton\`, or direct \`<SidebarMenuButton />\` 
 - **headerMenu** / **footerMenu**: SidebarMenuEntry[] - Sticky quick menus.
 - **header**, **content**, **footer**, **children**, **banner**: Snippet<[SidebarApi]> - Escape hatches.
 
-### Styling
-- **class**, **sidebarClass**, **insetClass**, **contentClass**, **headerClass**, **footerClass**, **menuClass**: string.
-- **theme**: SidebarThemeProps - Per-part class overrides.
+	### Styling
+	- **class**: string - Classes applied to the Sidebar root.
+	- **theme**: SidebarThemeProps - Semantic part overrides such as \`panel\`, \`header\`, \`nav\`, \`footer\`, menu, search, rail, and mobile drawer parts.
 
 ## Accessibility
 

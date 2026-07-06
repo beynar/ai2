@@ -1,7 +1,7 @@
 <script lang="ts" generics="Mode extends 'single' | 'multiple' = 'single'">
 	import Button from '../../Button/Button.svelte';
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import { FileDropzone } from './fileDropzone.svelte.js';
 	import type { FileInputProps, FileInputType, FileInputValue } from './fileInput.props.js';
 	import { useFileInputTheme } from './fileInput.theme.js';

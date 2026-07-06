@@ -1,7 +1,7 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 import type { Snippet } from 'svelte';
-import type { FieldState } from './fieldState.svelte.js';
+import type { FieldState } from './field.state.svelte.js';
 import type { Sizes } from '$lib/types/theme.js';
 
 export type TextInputType =

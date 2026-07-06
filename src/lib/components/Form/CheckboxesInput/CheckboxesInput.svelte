@@ -1,6 +1,6 @@
 <script lang="ts" generics="Option extends CheckboxOption">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { CheckboxOption, CheckboxesInputProps } from './checkboxesInput.props.js';
 	import { useCheckboxesInputTheme } from './checkboxesInput.theme.js';
 	import Slot from '../../Slot/Slot.svelte';

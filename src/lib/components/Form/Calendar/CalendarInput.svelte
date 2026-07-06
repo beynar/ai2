@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { CalendarInputProps, CalendarType } from './calendarInput.props.js';
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
 	import CalendarPrimitive from './CalendarPrimitive.svelte';
 	import { useCalendarInputTheme } from './calendar.theme.js';
 

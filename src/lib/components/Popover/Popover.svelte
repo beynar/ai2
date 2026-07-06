@@ -26,6 +26,7 @@
 		directedTransition = true,
 		lockScroll = true,
 		fitTrigger = false,
+		mobileSheet = false,
 		class: className,
 		trigger,
 		theme
@@ -61,6 +62,9 @@
 		get fitTrigger() {
 			return fitTrigger;
 		},
+		get mobileSheet() {
+			return mobileSheet;
+		},
 		get closeOnEscape() {
 			return closeOnEscape;
 		},
@@ -90,41 +94,48 @@
 
 	const in_out = fso();
 
-	const visible = $derived(popover.isOpen && (popover.referenceElement || popover.externalRef));
+	const visible = $derived(
+		popover.isOpen && (popover.isMobileSheet || popover.referenceElement || popover.externalRef)
+	);
 </script>
 
 {#if visible}
-	<dialog
-		{@attach portal()}
-		{@attach popover.dialog}
-		{@attach popover.clickOutside.reference}
-		{@attach popover.focusTrap.attachment}
-		{@attach popover.safeArea.reference}
-		open={true}
-		id={popover.id}
-		class={classes.root()}
-	>
-		<!-- The panel is a child of the portaled wrapper, so it is never re-parented mid-transition
-		     (which would break the intro). It carries the visuals, transform-origin, and animation. -->
-		<div
-			class={classes.popover({ size: popover.computedSize, className })}
-			style:transform-origin={popover.transformOrigin}
-			style:width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
-			style:max-width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
-			in:in_out={popover.computedTransition.in}
-			out:in_out={popover.computedTransition.out}
-			onintroend={() => {
-				popover.hasTransitioned = true;
-				onOpen?.(popover);
-			}}
-			onoutrostart={() => {
-				popover.hasTransitioned = false;
-			}}
-			onoutroend={() => onClose?.(popover)}
+	{#key popover.computedMode}
+		<dialog
+			{@attach portal()}
+			{@attach popover.dialog}
+			{@attach popover.focusTrap.attachment}
+			open={true}
+			id={popover.id}
+			class={classes.root({ mode: popover.computedMode })}
 		>
-			{@render children?.(popover)}
-		</div>
-	</dialog>
+			<!-- The panel is a child of the portaled wrapper, so it is never re-parented mid-transition
+			     (which would break the intro). It carries the visuals, transform-origin, and animation. -->
+			<div
+				{@attach popover.panel}
+				class={classes.popover({
+					size: popover.computedSize,
+					mode: popover.computedMode,
+					className
+				})}
+				style:transform-origin={popover.transformOrigin}
+				style:width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
+				style:max-width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
+				in:in_out={popover.computedTransition.in}
+				out:in_out={popover.computedTransition.out}
+				onintroend={() => {
+					popover.hasTransitioned = true;
+					onOpen?.(popover);
+				}}
+				onoutrostart={() => {
+					popover.hasTransitioned = false;
+				}}
+				onoutroend={() => onClose?.(popover)}
+			>
+				{@render children?.(popover)}
+			</div>
+		</dialog>
+	{/key}
 {/if}
 {#if trigger}
 	{#if typeof trigger === 'function'}

@@ -1,84 +1,133 @@
 <script lang="ts">
 	import Stepper from '$lib/components/Stepper/Stepper.svelte';
-	import { onMount } from 'svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
-	import Popover from '$lib/components/Popover/Popover.svelte';
 
-	let items = $state([
+	type StepperItem = {
+		title: string;
+		description: string;
+		content: string;
+		icon: string;
+	};
+
+	type StepperPanel = {
+		eyebrow: string;
+		title: string;
+		description: string;
+		detail: string;
+		height: string;
+		card: string;
+		accent: string;
+		text: string;
+		chips: string[];
+	};
+
+	let items = $state<StepperItem[]>([
 		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			title: 'Step 1',
+			description: 'Start the flow.',
+			content: 'First step content.',
 			icon: 'chevron'
-			// render: step1
 		},
 		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			title: 'Step 2',
+			description: 'Continue the flow.',
+			content: 'Second step content.',
 			icon: 'chevron'
-			// render: step2
 		},
 		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+			title: 'Step 3',
+			description: 'Finish the flow.',
+			content: 'Third step content.',
 			icon: 'chevron'
-			// render: step3
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step4
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step5
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step6
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step7
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step8
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step9
-		},
-		{
-			title: 'hello',
-			description: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
-			icon: 'chevron'
-			// render: step10
 		}
 	]);
 
-	let stepper = $state<any>();
+	let syncedStep = $state(0);
+
+	const syncedPanels = [
+		{
+			eyebrow: 'Brief',
+			title: 'Collect the signal',
+			description: 'A compact panel for the first step.',
+			detail: 'Both steppers read the same activeStep value.',
+			height: 'min-h-[170px]',
+			card: 'border-primary/30 bg-primary/10',
+			accent: 'bg-primary',
+			text: 'text-primary',
+			chips: ['shared state', 'compact']
+		},
+		{
+			eyebrow: 'Work',
+			title: 'Expand with content',
+			description: 'This step is intentionally taller, so the outer Stepper height should grow.',
+			detail:
+				'Use the controls inside either panel. The sibling Stepper should move and resize without blocking clicks.',
+			height: 'min-h-[270px]',
+			card: 'border-success/30 bg-success/10',
+			accent: 'bg-success',
+			text: 'text-success',
+			chips: ['dynamic height', 'clickable controls', 'sync']
+		},
+		{
+			eyebrow: 'Review',
+			title: 'Settle back down',
+			description: 'The final step is shorter again to show the height contraction.',
+			detail: 'Previous remains clickable even after the track has translated.',
+			height: 'min-h-[210px]',
+			card: 'border-warning/40 bg-warning/10',
+			accent: 'bg-warning',
+			text: 'text-warning',
+			chips: ['contract', 'finish']
+		}
+	] satisfies [StepperPanel, StepperPanel, StepperPanel];
+
+	const usageCode = `<script lang="ts">
+	const items = [
+		{
+			title: 'Collect the signal',
+			height: 'min-h-[170px]',
+			card: 'border-primary/30 bg-primary/10',
+			accent: 'bg-primary',
+			text: 'text-primary'
+		},
+		{
+			title: 'Expand with content',
+			height: 'min-h-[270px]',
+			card: 'border-success/30 bg-success/10',
+			accent: 'bg-success',
+			text: 'text-success'
+		},
+		{
+			title: 'Settle back down',
+			height: 'min-h-[210px]',
+			card: 'border-warning/40 bg-warning/10',
+			accent: 'bg-warning',
+			text: 'text-warning'
+		}
+	];
+${'</' + 'script>'}
+
+<Stepper {items} class="w-full rounded-lg border border-background-muted bg-background/30">
+	{#snippet children({ stepper, item, index })}
+		<div class="p-3">
+			<div class="{item.card} {item.height} grid gap-4 rounded-md border p-5">
+				<p class="{item.text} text-xs font-semibold uppercase tracking-wide">
+					Step {index + 1}
+				</p>
+				<h3 class="text-2xl font-semibold">{item.title}</h3>
+				<div class="mt-auto flex gap-2">
+					{#if index > 0}
+						<button onclick={() => stepper.previous()}>Previous</button>
+					{/if}
+					{#if index < items.length - 1}
+						<button class={item.accent} onclick={() => stepper.next()}>Next</button>
+					{/if}
+				</div>
+			</div>
+		</div>
+	{/snippet}
+</Stepper>`;
 </script>
 
 <DocPage
@@ -89,151 +138,187 @@
 		'Bindable activeStep and stepper state',
 		'tabpanel with inert inactive steps',
 		'Animated height and horizontal slide',
-		'Per-step snippet slots'
+		'Repeated children snippet payload'
 	]}
 >
 	<ComponentCard
-		description="Three-step flow with next and previous controls."
-		class="max-w-md"
-		code={`<Stepper bind:stepper items={[
-	{ title: 'Step 1', description: 'First step', content: 'First step', icon: 'chevron' },
-	{ title: 'Step 2', description: 'Second step', content: 'Second step', icon: 'chevron' },
-	{ title: 'Step 3', description: 'Third step', content: 'Third step', icon: 'chevron' }
-]} class="w-full max-w-md">
-	{#snippet step1({ stepper })}
-		<div class="p-4">
-			<p class="mb-2">Step 1</p>
-			<button onclick={stepper.next}>Next</button>
-		</div>
-	{/snippet}
-	{#snippet step2({ stepper })}
-		<div class="p-4">
-			<p class="mb-2">Step 2</p>
-			<button onclick={stepper.previous}>Previous</button>
-			<button onclick={stepper.next}>Next</button>
-		</div>
-	{/snippet}
-	{#snippet step3({ stepper })}
-		<div class="p-4">
-			<p class="mb-2">Step 3</p>
-			<button onclick={stepper.previous}>Previous</button>
-		</div>
-	{/snippet}
-</Stepper>`}
+		description="Each panel can carry its own content and height; the Stepper follows the active panel."
+		code={usageCode}
 	>
-		<Stepper bind:stepper items={items.slice(0, 3)} class="w-full max-w-md">
-			{#snippet step1({ stepper })}
-				<div class="p-4">
-					<p class="mb-2">Step 1</p>
-					<button onclick={stepper.next}>Next</button>
-				</div>
-			{/snippet}
-			{#snippet step2({ stepper })}
-				<div class="p-4">
-					<p class="mb-2">Step 2</p>
-					<button onclick={stepper.previous}>Previous</button>
-					<button onclick={stepper.next}>Next</button>
-				</div>
-			{/snippet}
-			{#snippet step3({ stepper })}
-				<div class="p-4">
-					<p class="mb-2">Step 3</p>
-					<button onclick={stepper.previous}>Previous</button>
+		<Stepper
+			items={syncedPanels}
+			class="w-full rounded-lg border border-background-muted bg-background/30"
+		>
+			{#snippet children({ stepper, item, index })}
+				<div class="p-3">
+					<div class="{item.card} {item.height} grid gap-4 rounded-md border p-5">
+						<div class="flex items-start justify-between gap-4">
+							<div>
+								<p class="{item.text} text-xs font-semibold uppercase tracking-wide">
+									Usage / {item.eyebrow}
+								</p>
+								<h3 class="mt-1 text-2xl font-semibold">{item.title}</h3>
+							</div>
+							<div class="{item.accent} h-12 w-12 rounded-full"></div>
+						</div>
+
+						<p class="text-foreground-muted max-w-xl">{item.description}</p>
+
+						<div class="flex flex-wrap gap-2">
+							{#each item.chips as chip}
+								<span class="{item.text} bg-background/60 rounded px-2 py-1 text-xs">
+									{chip}
+								</span>
+							{/each}
+						</div>
+
+						<div class="mt-auto flex gap-2">
+							{#if index > 0}
+								<button
+									class="rounded bg-background/70 px-3 py-1.5"
+									onclick={() => stepper.previous()}>previous</button
+								>
+							{/if}
+							{#if index < syncedPanels.length - 1}
+								<button class="{item.accent} rounded px-3 py-1.5" onclick={() => stepper.next()}
+									>next</button
+								>
+							{/if}
+						</div>
+					</div>
 				</div>
 			{/snippet}
 		</Stepper>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard class="!items-start">
-			<div class="bg-success-muted my-10 grid w-[800px] gap-10 transition-all duration-300">
-				<Stepper bind:stepper {items} class="bg-warning-muted w-full">
-					{#snippet step1({ stepper })}
-						<div class="bg-danger h-[200px] p-10">
-							<h1>1</h1>
-							<button onclick={stepper.next}>next</button>
-							<Popover class="bg-danger-muted max-w-[10000px]">
-								{#snippet children()}
-									<div>
-										<h1>Hello</h1>
-										<p>Hello</p>
+		<ComponentCard
+			description="Two steppers share activeStep while each step drives its own panel height."
+			class="!items-start"
+		>
+			<div class="grid w-full gap-5">
+				<div class="flex flex-wrap gap-2">
+					{#each items as item, index}
+						{@const panel = syncedPanels[index] ?? syncedPanels[0]}
+						<button
+							class="rounded border px-3 py-1.5 text-sm font-medium transition {syncedStep === index
+								? `${panel.card} ${panel.text}`
+								: 'border-background-muted bg-background-muted/60 text-foreground-muted'}"
+							onclick={() => {
+								syncedStep = index;
+							}}
+						>
+							{item.title}
+						</button>
+					{/each}
+				</div>
+
+				<div class="grid gap-4 md:grid-cols-2">
+					<Stepper
+						bind:activeStep={syncedStep}
+						{items}
+						class="rounded-lg border border-background-muted bg-background/30"
+					>
+						{#snippet children({ stepper, item, index })}
+							{@const panel = syncedPanels[index] ?? syncedPanels[0]}
+							<div class="p-3">
+								<div class="{panel.card} {panel.height} grid gap-4 rounded-md border p-5">
+									<div class="flex items-center justify-between gap-3">
+										<div>
+											<p class="{panel.text} text-xs font-semibold uppercase tracking-wide">
+												Left stepper / {panel.eyebrow}
+											</p>
+											<h3 class="mt-1 text-2xl font-semibold">{item.title}</h3>
+										</div>
+										<div class="{panel.accent} h-10 w-10 rounded-full"></div>
 									</div>
-								{/snippet}
-								{#snippet trigger(popover)}
-									<button {@attach popover.reference} onclick={() => popover.open()}>popover</button>
-								{/snippet}
-							</Popover>
-						</div>
-					{/snippet}
-					{#snippet step2({ stepper })}
-						<div class="bg-primary h-[300px] p-10">
-							<h1>2</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step3({ stepper })}
-						<div class="bg-success h-[400px] p-10">
-							<h1>3</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step4({ stepper })}
-						<div class="bg-info h-[250px] p-10">
-							<h1>4</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step5({ stepper })}
-						<div class="bg-warning h-[350px] p-10">
-							<h1>5</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step6({ stepper })}
-						<div class="bg-danger-muted h-[280px] p-10">
-							<h1>6</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step7({ stepper })}
-						<div class="bg-primary-muted h-[320px] p-10">
-							<h1>7</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step8({ stepper })}
-						<div class="bg-success-muted h-[290px] p-10">
-							<h1>8</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step9({ stepper })}
-						<div class="bg-info-muted h-[310px] p-10">
-							<h1>9</h1>
-							<button onclick={stepper.next}>next</button>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-					{#snippet step10({ stepper })}
-						<div class="bg-warning-muted h-[270px] p-10">
-							<h1>10</h1>
-							<button onclick={stepper.previous}>previous</button>
-						</div>
-					{/snippet}
-				</Stepper>
+
+									<div class="grid gap-2">
+										<p class="text-lg font-medium">{panel.title}</p>
+										<p class="text-foreground-muted max-w-xl">{panel.description}</p>
+									</div>
+
+									<div class="flex flex-wrap gap-2">
+										{#each panel.chips as chip}
+											<span class="{panel.text} bg-background/60 rounded px-2 py-1 text-xs">
+												{chip}
+											</span>
+										{/each}
+									</div>
+
+									<div class="mt-auto flex gap-2">
+										{#if index > 0}
+											<button
+												class="rounded bg-background/70 px-3 py-1.5"
+												onclick={() => stepper.previous()}>previous</button
+											>
+										{/if}
+										{#if index < items.length - 1}
+											<button
+												class="{panel.accent} rounded px-3 py-1.5"
+												onclick={() => stepper.next()}>next</button
+											>
+										{/if}
+									</div>
+								</div>
+							</div>
+						{/snippet}
+					</Stepper>
+
+					<Stepper
+						bind:activeStep={syncedStep}
+						{items}
+						class="rounded-lg border border-background-muted bg-background/30"
+					>
+						{#snippet children({ stepper, item, index })}
+							{@const panel = syncedPanels[index] ?? syncedPanels[0]}
+							<div class="p-3">
+								<div class="{panel.card} {panel.height} grid gap-4 rounded-md border p-5">
+									<div class="flex items-center justify-between gap-3">
+										<div>
+											<p class="{panel.text} text-xs font-semibold uppercase tracking-wide">
+												Right stepper / {panel.eyebrow}
+											</p>
+											<h3 class="mt-1 text-2xl font-semibold">{item.title}</h3>
+										</div>
+										<div class="{panel.accent} h-10 w-1 rounded-full"></div>
+									</div>
+
+									<div class="grid gap-2">
+										<p class="text-lg font-medium">{item.content}</p>
+										<p class="text-foreground-muted max-w-xl">{panel.detail}</p>
+									</div>
+
+									<div class="grid gap-2 text-sm">
+										<div class="bg-background/50 h-2 overflow-hidden rounded-full">
+											<div
+												class="{panel.accent} h-full"
+												style:width={`${(index + 1) * 33.33}%`}
+											></div>
+										</div>
+										<p class="text-foreground-muted">Active panel {index + 1} of 3</p>
+									</div>
+
+									<div class="mt-auto flex gap-2">
+										{#if index > 0}
+											<button
+												class="rounded bg-background/70 px-3 py-1.5"
+												onclick={() => stepper.previous()}>previous</button
+											>
+										{/if}
+										{#if index < items.length - 1}
+											<button
+												class="{panel.accent} rounded px-3 py-1.5"
+												onclick={() => stepper.next()}>next</button
+											>
+										{/if}
+									</div>
+								</div>
+							</div>
+						{/snippet}
+					</Stepper>
+				</div>
 			</div>
 		</ComponentCard>
-		<!-- <ComponentCard title="Iframe" class="flex !items-start ">
-			<div class="bg-success-muted my-10 grid w-[800px] gap-10">
-				<iframe src="/components/stepper" class="h-[400px] w-full"></iframe>
-			</div>
-		</ComponentCard> -->
 	{/snippet}
 </DocPage>

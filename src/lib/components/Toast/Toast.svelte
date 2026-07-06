@@ -20,29 +20,31 @@
 
 	const { reversedIndex, index } = $derived(toast.indexInStack);
 
-	const getIcon = () => {
-		if (toast.opts.icon) {
-			return toast.opts.icon;
-		}
-		if (toast.opts.prefix) {
-			return toast.opts.prefix;
-		}
-		return toast.opts.icon
-			? toast.opts.icon
-			: toast.opts.color === 'danger'
-				? triangleIcon
-				: toast.opts.color === 'warning'
-					? exclamationMarkIcon
-					: toast.opts.color === 'info'
-						? infoIcon
-						: checkCircleIcon;
-	};
+	// Beyond `visibleToasts`, a toast is faded out — it must also stop being
+	// interactive (no pointer events, not focusable) or it invisibly intercepts
+	// clicks and tab stops while aria-hidden.
+	const hidden = $derived(reversedIndex > toast.toaster.visibleToasts - 1);
+
+	// `prefix: false` explicitly disables the icon; otherwise a custom icon/prefix
+	// wins, then a semantic default per color.
+	const icon = $derived.by(() => {
+		if (toast.opts.prefix === false) return null;
+		if (toast.opts.icon) return toast.opts.icon;
+		if (toast.opts.prefix) return toast.opts.prefix;
+		return toast.opts.color === 'danger'
+			? triangleIcon
+			: toast.opts.color === 'warning'
+				? exclamationMarkIcon
+				: toast.opts.color === 'info'
+					? infoIcon
+					: checkCircleIcon;
+	});
 
 	const classes = $derived(useToastTheme(theme));
 
 	const in_out = fso();
 
-	const onPointerEnter = () => () => {
+	const onPointerEnter = () => {
 		const position = toast.opts.position;
 		if (toast.toaster.hovering === position) return;
 		toast.toaster.hovering = position;
@@ -51,22 +53,21 @@
 	};
 </script>
 
-<!-- {@const animationIn = customAnimation?.in || animation?.[position]?.in || animation?.in || {}}
-		{@const animationOut =
-			customAnimation?.out || animation?.[position]?.out || animation?.out || {}} -->
-
 <li
 	data-color={toast.opts.color || 'background'}
 	bind:this={toast.element}
 	bind:clientHeight={toast.height}
 	{...attachments}
-	onpointerenter={toast.hovered ? null : onPointerEnter()}
+	onpointerenter={onPointerEnter}
 	ontransitionend={(e) => {
 		if (e.propertyName === 'translate' && toast.hovered && index === 0) {
 			updateArea();
 		}
 	}}
-	onintroend={() => {
+	onintroend={updateArea}
+	onoutroend={() => {
+		// The toaster dialog can only close once the LAST toast has finished its
+		// exit animation — checking on intro (as before) never fires with 0 toasts.
 		toast.toaster.maybeCloseToaster();
 		updateArea();
 	}}
@@ -74,44 +75,46 @@
 	in:in_out={toast.animations.in}
 	aria-live={toast.opts.important ? 'assertive' : 'polite'}
 	aria-atomic="true"
-	role="status"
-	tabIndex={0}
-	aria-hidden={reversedIndex > toast.toaster.visibleToasts - 1}
-	style:opacity={reversedIndex > toast.toaster.visibleToasts - 1 ? 0 : 1}
+	role={toast.opts.important ? 'alert' : 'status'}
+	tabIndex={hidden ? -1 : 0}
+	aria-hidden={hidden}
+	style:opacity={hidden ? 0 : 1}
+	style:pointer-events={hidden ? 'none' : undefined}
 	class={classes.root({
 		richColors: toast.opts.richColors,
 		color: toast.opts.color,
 		size: toast.opts.size
 	})}
-	style:scale={toast.stacked ? `calc(pow(0.97, -1 * ${-reversedIndex}))` : `1`}
+	style:scale={toast.stacked ? Math.pow(0.97, reversedIndex).toFixed(4) : '1'}
 	style:translate="0px {toast.translateY}px"
 	style={toast.actualizedPosition[2]}
-	onclick={toast.opts.dismissible
-		? toast.opts.closeOnClick
-			? toast.remove
-			: !toast.opts.showCloseIcon
-				? toast.remove
-				: null
-		: null}
+	onclick={toast.opts.dismissible && toast.opts.closeOnClick ? toast.remove : null}
 >
 	{#if toast.opts.showCloseIcon && toast.opts.dismissible}
-		<button style="display:contents" onclick={toast.remove}>
-			<Slot
-				render={toast.opts.closeIcon || xIcon}
-				class={classes.closeIcon({ richColors: toast.opts.richColors, color: toast.opts.color })}
-			/>
+		<button
+			type="button"
+			aria-label="Dismiss notification"
+			class={classes.closeIcon({ richColors: toast.opts.richColors, color: toast.opts.color })}
+			onclick={(e) => {
+				e.stopPropagation();
+				toast.remove();
+			}}
+		>
+			<Slot render={toast.opts.closeIcon || xIcon} />
 		</button>
 	{/if}
-	<div
-		class={classes.prefix({
-			size: toast.opts.size,
-			color: toast.opts.color,
-			richColors: toast.opts.richColors
-		})}
-		{@attach spinnerOverlay({ loading: toast.loading })}
-	>
-		<Slot render={getIcon()} />
-	</div>
+	{#if icon || toast.loading}
+		<div
+			class={classes.prefix({
+				size: toast.opts.size,
+				color: toast.opts.color,
+				richColors: toast.opts.richColors
+			})}
+			{@attach spinnerOverlay({ loading: toast.loading })}
+		>
+			<Slot render={icon ?? undefined} />
+		</div>
+	{/if}
 	<div
 		class={classes.content({
 			size: toast.opts.size,

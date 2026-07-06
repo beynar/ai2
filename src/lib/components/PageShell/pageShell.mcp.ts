@@ -73,16 +73,12 @@ during component initialization for automatic cleanup.
 - **headerActions**: Snippet<[PageShellApi]> | PageShellAction[] - Actions on the right side of the default header. Use an array for standard Button props, or a snippet when the action needs shell API access.
 - **footer**: Snippet<[PageShellApi]> - Custom sticky footer content.
 - **footerActions**: Snippet<[PageShellApi]> | PageShellAction[] - Actions on the right side of the sticky footer.
-- **children**: Snippet<[PageShellApi]> - Scrollable page content.
-- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - Padding applied to the content inner wrapper.
-- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - Max-width preset for the content inner wrapper.
-- **contentInnerClass**: string - Classes applied to the content inner wrapper.
-- **actionOverflow**: 'auto' | 'never' - Mobile overflow behavior for action arrays.
-- **mobileActionCount**: 0 | 1 | 2 - Number of action-array buttons kept inline on mobile.
-- **headerClass**: string - Classes applied to the sticky header.
-- **contentClass**: string - Classes applied to the scrollable content region.
-- **footerClass**: string - Classes applied to the sticky footer.
-- **theme**: PageShellThemeProps - Per-instance theme overrides.
+	- **children**: Snippet<[PageShellApi]> - Scrollable page content.
+	- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - Padding applied to the content inner wrapper.
+	- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - Max-width preset for the content inner wrapper.
+	- **actionOverflow**: 'auto' | 'never' - Mobile overflow behavior for action arrays.
+	- **mobileActionCount**: 0 | 1 | 2 - Number of action-array buttons kept inline on mobile.
+	- **theme**: PageShellThemeProps - Per-instance theme overrides.
 
 ## API
 

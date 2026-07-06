@@ -1,9 +1,10 @@
 export const appShellDescription = `
 # AppShell Component
 
-Convenience wrapper for the common application layout: Sidebar owns navigation and
-responsive drawer behavior, while PageShell owns the page header, scrollable content,
-footer, and route-level injection.
+	Convenience wrapper for the common application layout: Sidebar owns navigation and
+	responsive drawer behavior, while PageShell owns the page header, scrollable content,
+	footer, and route-level injection. AppShell owns the visible app wall and page host
+	surfaces.
 
 Use AppShell when every route follows the same sidebar + page shell structure. Use
 Sidebar and PageShell directly when the frame needs custom composition.
@@ -68,15 +69,12 @@ AppShell renders PageShell internally, so child pages can use the PageShell cont
 - **headerActions**: Snippet<[AppShellApi]> | PageShellAction[] - Actions in the default PageShell header. Use an array for standard Button props, or a snippet when the action needs sidebar/page-shell API access.
 - **footer**: Snippet<[PageShellApi]> - Sticky PageShell footer.
 - **footerActions**: Snippet<[AppShellApi]> | PageShellAction[] - Sticky PageShell footer actions.
-- **children**: Snippet<[AppShellApi]> - Main content, with \`pageShell\` and \`sidebar\` APIs.
-- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - PageShell content padding preset.
-- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - PageShell content width preset.
-- **pageShellClass**: string - Classes applied to PageShell.
-- **headerClass**: string - Classes applied to the PageShell header.
-- **contentClass**: string - Classes applied to the PageShell content region.
-- **footerClass**: string - Classes applied to the PageShell footer.
-- **pageShellTheme**: PageShellThemeProps - PageShell theme overrides.
-- **theme**: AppShellThemeProps - AppShell wrapper theme overrides.
+	- **children**: Snippet<[AppShellApi]> - Main content, with \`pageShell\` and \`sidebar\` APIs.
+	- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - PageShell content padding preset.
+	- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - PageShell content width preset.
+	- **frame**: 'viewport' | 'contained' - Viewport/fixed or contained/absolute Sidebar layout mechanics.
+	- **pageShellTheme**: PageShellThemeProps - PageShell theme overrides.
+	- **theme**: AppShellThemeProps - AppShell \`root\` wall and \`page\` host surface overrides.
 
 ## Accessibility
 

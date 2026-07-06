@@ -3,7 +3,7 @@
 	import Combobox from '$lib/components/Form/Combobox/Combobox.svelte';
 	import { Form } from '$lib/components/Form/Form/index.js';
 	import type { FormStep } from '$lib/components/Form/MultiStepForm/multiStepForm.props.js';
-	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepFormState.svelte.js';
+	import { MultiStepFormState } from '$lib/components/Form/MultiStepForm/multiStepForm.state.svelte.js';
 	import { Select } from '$lib/components/Form/Select/index.js';
 	import Switch from '$lib/components/Form/Switch/Switch.svelte';
 	import { TimeInput } from '$lib/components/Form/TimeInput/index.js';

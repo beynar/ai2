@@ -1,3 +1,6 @@
+import type { Attachment } from 'svelte/attachments';
+import { on } from 'svelte/events';
+import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 import type { FieldValue } from '../Field/field.js';
 
@@ -48,6 +51,9 @@ type SliderStateOptions = {
 	minStepsBetweenThumbs?: number;
 	orientation?: SliderOrientation;
 	formatValue?: SliderFormatValue;
+	disabled?: boolean;
+	dragRange?: boolean;
+	focused?: boolean;
 };
 
 const DEFAULT_MIN = 0;
@@ -66,8 +72,26 @@ const getDecimalPlaces = (value: number) => {
 };
 
 export class SliderState extends createBindableStateClass<SliderStateOptions>() {
+	declare disabled?: boolean;
+	declare dragRange?: boolean;
+	declare focused?: boolean;
 	activeThumb = $state<number | null>(null);
 	dragState = $state<SliderDragState | null>(null);
+	private trackNode: HTMLElement | null = null;
+	private thumbAttachments = new Map<number, Attachment<HTMLButtonElement>>();
+	private trackDrag = createPointerDrag({
+		disabled: () => this.isDisabled(),
+		onStart: (payload) => this.startTrackPointerDrag(payload),
+		onMove: (payload) => this.updatePointerDrag(payload),
+		onEnd: () => this.endDrag()
+	});
+	private rangeDrag = createPointerDrag({
+		disabled: () => this.isDisabled(),
+		stopPropagation: true,
+		onStart: (payload) => this.startRangePointerDrag(payload),
+		onMove: (payload) => this.updatePointerDrag(payload),
+		onEnd: () => this.endDrag()
+	});
 
 	minValue = $derived(getFiniteNumber(this.min, DEFAULT_MIN));
 	maxValue = $derived(Math.max(this.minValue, getFiniteNumber(this.max, DEFAULT_MAX)));
@@ -120,6 +144,54 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 			.map((value, index) => this.getFormattedValue(value, index, this.values))
 			.join(' - ')
 	});
+
+	constructor(options: SliderStateOptions) {
+		super(options);
+	}
+
+	track: Attachment<HTMLElement> = (node) => {
+		this.trackNode = node;
+		const offDrag = this.trackDrag(node);
+
+		return () => {
+			offDrag?.();
+			this.trackNode = null;
+			this.endDrag();
+		};
+	};
+
+	range: Attachment<HTMLElement> = (node) => {
+		return this.rangeDrag(node);
+	};
+
+	thumb(index: number) {
+		const cachedAttachment = this.thumbAttachments.get(index);
+		if (cachedAttachment) return cachedAttachment;
+
+		const attachment: Attachment<HTMLButtonElement> = (node) => {
+			const drag = createPointerDrag<HTMLButtonElement>({
+				disabled: () => this.isDisabled(),
+				stopPropagation: true,
+				onStart: () => this.startThumbPointerDrag(index, node),
+				onMove: (payload) => this.updatePointerDrag(payload),
+				onEnd: () => this.endDrag()
+			});
+			const offFocus = on(node, 'focus', () => this.focusThumb(index));
+			const offBlur = on(node, 'blur', this.onThumbBlur);
+			const offDrag = drag(node);
+			const offKeyDown = on(node, 'keydown', (event) => this.onThumbKeyDown(event, index));
+
+			return () => {
+				offFocus();
+				offBlur();
+				offDrag?.();
+				offKeyDown();
+			};
+		};
+
+		this.thumbAttachments.set(index, attachment);
+		return attachment;
+	}
 
 	getNormalizedValues() {
 		const rawValues = this.getRawValues();
@@ -365,4 +437,79 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 		}
 		return onValidate?.(value) || false;
 	}
+
+	private isDisabled() {
+		return !!this.disabled;
+	}
+
+	private getPointerValue(event: PointerEvent) {
+		if (!this.trackNode) return null;
+
+		const rect = this.trackNode.getBoundingClientRect();
+		const size = this.orientationValue === 'vertical' ? rect.height : rect.width;
+		if (size <= 0) return null;
+
+		if (this.orientationValue === 'vertical') {
+			const offset = rect.bottom - event.clientY;
+			return this.getValueFromPercentage((offset / size) * 100);
+		}
+
+		const offset = event.clientX - rect.left;
+		return this.getValueFromPercentage((offset / size) * 100);
+	}
+
+	private focusThumbNode(index: number) {
+		const thumb = this.trackNode?.querySelectorAll<HTMLElement>('[data-slider-thumb]')[index];
+		thumb?.focus();
+	}
+
+	private focusThumb(index: number) {
+		this.focused = true;
+		this.activeThumb = index;
+	}
+
+	private startTrackPointerDrag(payload: PointerDragPayload) {
+		const pointerValue = this.getPointerValue(payload.event);
+		if (pointerValue === null) return false;
+
+		this.focusThumbNode(this.startTrackDrag(pointerValue));
+	}
+
+	private startThumbPointerDrag(index: number, node: HTMLButtonElement) {
+		node.focus();
+		this.startThumbDrag(index);
+	}
+
+	private startRangePointerDrag(payload: PointerDragPayload) {
+		if (!this.dragRange || !this.isRange) return false;
+
+		const pointerValue = this.getPointerValue(payload.event);
+		if (pointerValue === null) return false;
+
+		return this.startRangeDrag(pointerValue);
+	}
+
+	private updatePointerDrag(payload: PointerDragPayload) {
+		if (this.isDisabled() || !this.dragState) return;
+
+		const pointerValue = this.getPointerValue(payload.event);
+		if (pointerValue === null) return;
+
+		this.updateDrag(pointerValue);
+	}
+
+	private onThumbKeyDown(event: KeyboardEvent, index: number) {
+		if (this.isDisabled()) return;
+
+		if (this.applyThumbKey(index, event.key, event.shiftKey)) {
+			event.preventDefault();
+		}
+	}
+
+	private onThumbBlur = (event: FocusEvent) => {
+		const relatedTarget = event.relatedTarget;
+		if (relatedTarget instanceof Node && this.trackNode?.contains(relatedTarget)) return;
+		this.focused = false;
+		this.activeThumb = null;
+	};
 }

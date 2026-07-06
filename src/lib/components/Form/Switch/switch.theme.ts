@@ -34,33 +34,20 @@ const defaultSwitchThumb = cva({
 		}
 	},
 	compoundVariants: [
-		// Small size translations
 		{
-			size: 'small',
 			checked: false,
-			class: '-translate-x-0.5'
+			class: 'translate-x-0.5'
 		},
+		// Checked translations
 		{
 			size: 'small',
 			checked: true,
 			class: 'translate-x-4'
 		},
-		// Normal size translations
-		{
-			size: 'normal',
-			checked: false,
-			class: '-translate-x-0.5'
-		},
 		{
 			size: 'normal',
 			checked: true,
 			class: 'translate-x-5'
-		},
-		// Large size translations
-		{
-			size: 'large',
-			checked: false,
-			class: '-translate-x-0.5'
 		},
 		{
 			size: 'large',

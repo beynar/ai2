@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Colors, Sizes } from '$lib/types/theme.js';
-	import { SliderDragEngine } from './slider.drag.js';
-	import type { SliderMark } from './slider.props.js';
+	import type { SliderMark, SliderVariant } from './slider.props.js';
 	import type { SliderState } from './slider.state.svelte.js';
 	import SliderMarks from './SliderMarks.svelte';
 	import SliderThumb from './SliderThumb.svelte';
@@ -14,71 +13,87 @@
 		slider,
 		classes,
 		color,
-		disabled,
+		variant,
 		size,
 		marks,
-		dragRange,
 		groupLabel,
-		getThumbLabel,
-		onThumbFocus,
-		onThumbBlur
+		getThumbLabel
 	}: {
 		id: string;
 		slider: SliderState;
 		classes: SliderClasses;
 		color: Colors;
-		disabled?: boolean;
+		variant: SliderVariant;
 		size?: Sizes;
 		marks: SliderMark[];
-		dragRange: boolean;
 		groupLabel?: string;
 		getThumbLabel: (index: number) => string | undefined;
-		onThumbFocus: (index: number) => void;
-		onThumbBlur: () => void;
 	} = $props();
 
-	const drag = new SliderDragEngine({
-		getSlider: () => slider,
-		isDisabled: () => !!disabled,
-		isRangeDragEnabled: () => dragRange,
-		onThumbFocus: (index) => onThumbFocus(index),
-		onThumbBlur: () => onThumbBlur()
-	});
-
+	const getThickThumbHalfSize = () => {
+		if (size === 'small') return '10px';
+		if (size === 'large') return '18px';
+		return '14px';
+	};
+	const getThickThumbSize = () => {
+		if (size === 'small') return '20px';
+		if (size === 'large') return '36px';
+		return '28px';
+	};
+	const getThickEdgeInset = () => '2px';
+	const getThickRangeMinimum = () =>
+		`calc(${getThickThumbSize()} + ${getThickEdgeInset()} + ${getThickEdgeInset()})`;
+	const getThickRangeEndOffset = () => `calc(${getThickThumbHalfSize()} + ${getThickEdgeInset()})`;
 	const instructionsId = $derived(`${id}-instructions`);
 	const instructions = $derived(
 		slider.isRange
 			? 'Use arrow keys to adjust the active thumb. Shift plus arrow keys move by a larger step.'
 			: 'Use arrow keys to adjust the value. Shift plus arrow keys move by a larger step.'
 	);
+	const shouldFillFromStart = $derived(!slider.isRange && variant === 'thick');
+	const rangeStartPercentage = $derived(
+		slider.isRange || !shouldFillFromStart ? slider.startPercentage : 0
+	);
+	const rangeEndPercentage = $derived(
+		slider.isRange || !shouldFillFromStart ? slider.endPercentage : slider.valuePayload.percentage
+	);
+	const rangeLengthPercentage = $derived(Math.max(0, rangeEndPercentage - rangeStartPercentage));
+	const getRangeLength = () => {
+		if (!shouldFillFromStart) return `${rangeLengthPercentage}%`;
+		return `clamp(${getThickRangeMinimum()}, calc(${rangeLengthPercentage}% + ${getThickRangeEndOffset()}), 100%)`;
+	};
 	const rangeStyle = $derived(
 		slider.orientationValue === 'vertical'
-			? `bottom: ${slider.startPercentage}%; height: ${Math.max(0, slider.endPercentage - slider.startPercentage)}%;`
-			: `left: ${slider.startPercentage}%; width: ${Math.max(0, slider.endPercentage - slider.startPercentage)}%;`
+			? `bottom: ${rangeStartPercentage}%; height: ${getRangeLength()};`
+			: `left: ${rangeStartPercentage}%; width: ${getRangeLength()};`
 	);
 </script>
 
 <div class={slider.orientationValue === 'vertical' ? 'relative w-auto' : 'relative w-full'}>
 	<span id={instructionsId} class="sr-only">{instructions}</span>
 	<div
-		{@attach drag.track}
+		{@attach slider.track}
 		role="group"
 		class={classes.track({
 			orientation: slider.orientationValue,
+			size,
 			color,
-			disabled
+			variant,
+			disabled: slider.disabled
 		})}
 		aria-label={groupLabel}
-		aria-disabled={disabled}
+		aria-disabled={slider.disabled}
 		aria-describedby={instructionsId}
 	>
-		<div class={classes.trackBackground({ orientation: slider.orientationValue })}></div>
+		<div class={classes.trackBackground({ orientation: slider.orientationValue, variant })}></div>
 		<div
-			{@attach drag.range}
+			{@attach slider.range}
 			role="presentation"
 			class={classes.range({
 				orientation: slider.orientationValue,
-				dragRange: dragRange && slider.isRange
+				variant,
+				size,
+				dragRange: !!slider.dragRange && slider.isRange
 			})}
 			style={rangeStyle}
 		></div>
@@ -90,10 +105,12 @@
 				label={getThumbLabel(payload.index)}
 				describedBy={instructionsId}
 				orientation={slider.orientationValue}
-				{disabled}
+				disabled={slider.disabled}
+				{variant}
+				{color}
 				{size}
 				{classes}
-				attachment={drag.thumb(payload.index)}
+				attachment={slider.thumb(payload.index)}
 			/>
 		{/each}
 	</div>

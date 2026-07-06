@@ -18,6 +18,7 @@ Global theme setter: `import { setComponentNameTheme } from 'svelai/kebab-case-n
 - [TimeInput](#timeinput)
 - [Select](#select)
 - [Combobox](#combobox)
+- [TagsInput](#tagsinput)
 - [Switch](#switch)
 - [RadioInput](#radioinput)
 - [CheckboxesInput](#checkboxesinput)
@@ -182,6 +183,33 @@ Option format: `{ value: string, label: string, description?: string }`. Debounc
 
 ```svelte
 <Combobox options={async (q) => fetch(`/api?q=${q}`).then(r => r.json())} bind:value={val} />
+```
+
+---
+
+## TagsInput
+
+`import { TagsInput } from 'svelai/tags-input'`
+
+Multi-tag input: free text, or restricted to a searchable option list (like Combobox but multi-value). Tags render as animated `Chip`s.
+
+**Unique props:**
+- `value: string[] | null` (bindable, default `null`), `searchValue: string` (bindable), `loading: boolean` (bindable)
+- `items`: `ComboboxOption[]` or `(searchValue?) => MaybePromise<ComboboxOption[]>` (optional) — when provided, behaves like Combobox (debounced 100ms, dropdown, async/static, loading/error/empty states)
+- `allowCustom: boolean` (default `false`) — with `items`, also allow Enter to add free text not in the list
+- `maxTags: number` — once reached, further adds are ignored
+- `showAllOnFocus`, `getValueOption: (value) => MaybePromise<ComboboxOption>` (resolve labels for initial values)
+- `placeholder`, `loadingText`, `noOptionsText`
+- `onChange: (value: string[]) => void`, `onValidate`
+- `errors: string[] | boolean` (bindable), `focused: boolean` (bindable)
+
+Option format: `{ value: string, label: string, description?: string }` (reused from Combobox). Without `items` it is a plain free-text tag input; with `items` it is restricted to the list (unless `allowCustom`). Duplicate tags are never added. Keyboard: Enter (add current search), Backspace on empty input (remove last tag), Arrow keys / Home / End / Enter to navigate the dropdown, Escape blurs.
+
+**Theme parts:** `input`, `inputContainer` (flex-wrap layout), `tag` (animated wrapper), `loading`, `error`, `noOptions`
+
+```svelte
+<TagsInput placeholder="Add tags..." bind:value={tags} />
+<TagsInput items={technologies} showAllOnFocus allowCustom bind:value={tags} />
 ```
 
 ---

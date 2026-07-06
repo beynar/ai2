@@ -97,6 +97,7 @@
 		"runed": "^0.37.1",
 		"shiki": "^4.3.0",
 		"svelte-mcp": "^0.0.5",
+		"svelte-streamdown": "^3.1.2",
 		"svelte-themes": "^2.0.10",
 		"type-fest": "^5.7.0",
 		"valibot": "^1.4.2"
@@ -117,6 +118,11 @@
 			"types": "./dist/components/Form/Combobox/index.d.ts",
 			"svelte": "./dist/components/Form/Combobox/index.js",
 			"default": "./dist/components/Form/Combobox/index.js"
+		},
+		"./tags-input": {
+			"types": "./dist/components/Form/TagsInput/index.d.ts",
+			"svelte": "./dist/components/Form/TagsInput/index.js",
+			"default": "./dist/components/Form/TagsInput/index.js"
 		},
 		"./tabs": {
 			"types": "./dist/components/Tabs/index.d.ts",
@@ -390,6 +396,11 @@
 			"svelte": "./dist/components/Map/index.js",
 			"default": "./dist/components/Map/index.js"
 		},
+		"./markdown": {
+			"types": "./dist/components/Markdown/index.d.ts",
+			"svelte": "./dist/components/Markdown/index.js",
+			"default": "./dist/components/Markdown/index.js"
+		},
 		"./button-group": {
 			"types": "./dist/components/ButtonGroup/index.d.ts",
 			"svelte": "./dist/components/ButtonGroup/index.js",
@@ -525,6 +536,9 @@
 			],
 			"./map": [
 				"./dist/components/Map/index.d.ts"
+			],
+			"./markdown": [
+				"./dist/components/Markdown/index.d.ts"
 			],
 			"./globe": [
 				"./dist/components/Globe/index.d.ts"
