@@ -1,5 +1,5 @@
 export { default as Menu } from './Menu.svelte';
-export type { MenuProps, MenuItem } from './menu.props.js';
+export type { MenuProps, MenuItem, MenuSubmenuMode } from './menu.props.js';
 export {
 	menuTheme,
 	setMenuTheme,
@@ -7,4 +7,3 @@ export {
 	type MenuTheme,
 	type MenuThemeProps
 } from './menu.theme.js';
-

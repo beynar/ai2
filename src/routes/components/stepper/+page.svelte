@@ -136,7 +136,7 @@ ${'</' + 'script>'}
 	component="Stepper"
 	features={[
 		'Bindable activeStep and stepper state',
-		'tabpanel with inert inactive steps',
+		'tabpanel by default, neutral panels when needed',
 		'Animated height and horizontal slide',
 		'Repeated children snippet payload'
 	]}

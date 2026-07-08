@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { magnifyingGlassIcon } from '$lib/components/Icons/magnifyingGlass.js';
+	import { useI18n } from '$lib/i18n/context.svelte.js';
 	import type {
 		SidebarApi,
 		SidebarCollapseIcon,
@@ -46,9 +47,8 @@
 	} = $props();
 
 	const classes = $derived(useSidebarTheme(theme));
-	const collapsed = $derived(
-		api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile
-	);
+	const t = $derived(useI18n());
+	const collapsed = $derived(api.displayState === 'collapsed' && !api.isMobile);
 </script>
 
 {#if headerButton || search || headerMenu || header}
@@ -70,7 +70,7 @@
 			>
 				<input
 					placeholder={search.placeholder}
-					aria-label={search.label ?? 'Search'}
+					aria-label={search.label ?? t.search}
 					value={search.value}
 					oninput={search.onInput}
 					class={classes.search({ className: search.class })}

@@ -53,24 +53,44 @@ toast.warning({
 **Parameters (all optional):**
 - \`title\` (Slot or string): The toast title text
 - \`description\` (Slot or string) optional: The toast description/message text
-- \`position\` (ToastPosition, optional): Position on screen. Options: \`'top-left'\`, \`'top-right'\`, \`'top-center'\`, \`'bottom-left'\`, \`'bottom-right'\`, \`'bottom-center'\`. Default: \`'bottom-right'\`
+- \`position\` (ToastPosition, optional): Position on screen. Options: \`'top-left'\`, \`'top-right'\`, \`'top-center'\`, \`'bottom-left'\`, \`'bottom-right'\`, \`'bottom-center'\`, plus \`'banner-top'\` / \`'banner-bottom'\` which render a full screen-width bar flush to the top/bottom edge. Default: \`'bottom-right'\`. Swipe axis follows the anchor: left/right corners swipe horizontally, center + banner positions swipe vertically.
 - \`duration\` (number | false, optional): Time in milliseconds before auto-closing. Set to \`false\` to disable auto-close. Default: 4000ms
 - \`closeOnClick\` (boolean, optional): If true, clicking the toast closes it. Default: inherited from Toaster
 - \`showCloseIcon\` (boolean, optional): If true, shows a close button. Default: inherited from Toaster
 - \`dismissible\` (boolean, optional): If false, prevents user from dismissing. Default: inherited from Toaster
 - \`richColors\` (boolean, optional): If true, uses richer color variants. Default: inherited from Toaster
 - \`loading\` (boolean, optional): If true, shows a loading spinner
-- \`size\` (Sizes, optional): Size of the toast. Options: \`'small'\`, \`'medium'\`, \`'large'\`
-- \`prefix\` (Slot | false, optional): Content to display before the toast text
+- \`progress\` (boolean, optional): If true, shows a bar counting down the remaining duration (pauses on hover). Only appears when the toast has a finite \`duration\`. Can also be set on \`<Toaster progress />\` as a default.
+- \`swipeToDismiss\` (boolean, optional, default true): Drag the toast toward its anchored screen edge (down for bottom-*, up for top-*) past a threshold to dismiss it; dragging the other way rubber-bands. A manual dismiss (fires \`onClose\`, not \`onAutoClose\`).
+- \`closeOnClick\` (boolean, optional, default false): Dismiss when the toast body is clicked. Off by default now that swipe-to-dismiss exists; the close icon and swipe are the primary dismiss affordances.
+- \`size\` (Sizes, optional): Size of the toast — scales padding, corner radius, type and icon. Options: \`'small'\`, \`'normal'\`, \`'large'\` (default \`'normal'\`). Can be defaulted for all toasts with \`<Toaster size="..." />\`.
+- \`prefix\` (Slot | false, optional): Content before the text. \`false\` hides the default icon
 - \`suffix\` (Slot, optional): Content to display after the toast text
+- \`actions\` (ToastAction[], optional): Buttons rendered inside the toast. \`ToastAction\` is full Button props plus \`content\` (the label) and \`dismiss\` (default true — clicking dismisses the toast). Each button's \`onClick\` runs, then the toast dismisses (a manual dismiss → fires \`onClose\`, not \`onAutoClose\`)
 - \`closeIcon\` (Slot, optional): Custom close button component
 - \`icon\` (string, optional): Icon name to display before the toast text
-- \`important\` (boolean, optional): Controls screen reader sensitivity
+- \`important\` (boolean, optional): Uses \`role="alert"\` + assertive announcements for screen readers
 - \`animation\` (FSOProps, optional): Custom animation for this toast
 - \`id\` (string, optional): Custom ID for the toast. Auto-generated if not provided
-- \`onOpen\` (function, optional): Callback when toast opens: \`(toast: Toast) => void\`
-- \`onClose\` (function, optional): Callback when toast closes: \`(toast: Toast) => void\`
-- \`onAutoClose\` (function, optional): Callback when toast auto-closes after duration: \`(toast: Toast) => void\`
+- \`onOpen\` (function, optional): Called once the toast finishes entering: \`(toast: Toast) => void\`
+- \`onClose\` (function, optional): Called on MANUAL dismiss (close button, an action, or \`toast.remove()\`). NOT called on timeout: \`(toast: Toast) => void\`
+- \`onAutoClose\` (function, optional): Called ONLY when the toast times out after \`duration\`. Put deferred/irreversible work (the real delete of an Undo flow) here — it never runs if the toast is dismissed first: \`(toast: Toast) => void\`
+
+### Undo / deferred-commit pattern
+
+Remove the item from the UI immediately, defer the real (irreversible) action to \`onAutoClose\`, and offer an \`Undo\` action. Undo dismisses the toast manually, so \`onAutoClose\` never fires:
+
+\`\`\`ts
+function deleteItem(item) {
+  removeFromUI(item);                       // optimistic
+  toast.foreground({
+    title: \`Deleted "\${item.name}"\`,
+    duration: 5000,
+    actions: [{ content: 'Undo', onClick: () => restore(item) }],
+    onAutoClose: () => commitDelete(item)   // runs only if NOT undone
+  });
+}
+\`\`\`
 
 **Returns:**
 A \`Toast\` instance that you can use to programmatically control the root:

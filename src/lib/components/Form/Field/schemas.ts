@@ -27,6 +27,7 @@ const emptyArrayNull = (schema: v.BaseSchema<any, any, any>) =>
 const optional = (schema: v.BaseSchema<any, any, any>) =>
 	v.optional(v.nullable(schema, null), null);
 const sliderRangeValue = v.pipe(v.array(v.number()), v.minLength(2));
+const keyValuePair = v.object({ key: v.string(), value: v.string() });
 
 type Schemas = Record<InputType, v.BaseSchema<any, any, any>>;
 export const schemas: {
@@ -42,14 +43,21 @@ export const schemas: {
 		color: nonEmptyString,
 		textarea: nonEmptyString,
 		phone: nonEmptyString,
+		'rich-text': nonEmptyString,
 
 		// Number input types
 		number: v.number(),
 		slider: v.number(),
 		'slider-range': sliderRangeValue,
 
+		// Rating input type
+		rating: v.pipe(v.number(), v.minValue(0.5)),
+
 		// Tag input type
 		tag: nonEmptyArray(v.string()),
+
+		// Key/value input type
+		keyvalue: nonEmptyArray(keyValuePair),
 
 		// Date input types
 		datetime: v.date(),
@@ -86,13 +94,20 @@ export const schemas: {
 		color: optional(emptyStringNull(v.string())),
 		textarea: optional(emptyStringNull(v.string())),
 		phone: optional(emptyStringNull(v.string())),
+		'rich-text': optional(emptyStringNull(v.string())),
 		// Number input types
 		number: optional(v.number()),
 		slider: optional(v.number()),
 		'slider-range': optional(sliderRangeValue),
 
+		// Rating input type
+		rating: optional(v.number()),
+
 		// Tag input type
 		tag: optional(emptyArrayNull(v.array(v.string()))),
+
+		// Key/value input type
+		keyvalue: optional(emptyArrayNull(v.array(keyValuePair))),
 
 		// Date input types
 		datetime: optional(v.date()),

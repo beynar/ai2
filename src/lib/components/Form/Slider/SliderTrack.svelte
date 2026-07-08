@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Colors, Sizes } from '$lib/types/theme.js';
+	import type { Messages } from '$lib/i18n/en.js';
 	import type { SliderMark, SliderVariant } from './slider.props.js';
 	import type { SliderState } from './slider.state.svelte.js';
 	import SliderMarks from './SliderMarks.svelte';
@@ -17,7 +18,8 @@
 		size,
 		marks,
 		groupLabel,
-		getThumbLabel
+		getThumbLabel,
+		t
 	}: {
 		id: string;
 		slider: SliderState;
@@ -28,6 +30,7 @@
 		marks: SliderMark[];
 		groupLabel?: string;
 		getThumbLabel: (index: number) => string | undefined;
+		t: Messages;
 	} = $props();
 
 	const getThickThumbHalfSize = () => {
@@ -46,9 +49,7 @@
 	const getThickRangeEndOffset = () => `calc(${getThickThumbHalfSize()} + ${getThickEdgeInset()})`;
 	const instructionsId = $derived(`${id}-instructions`);
 	const instructions = $derived(
-		slider.isRange
-			? 'Use arrow keys to adjust the active thumb. Shift plus arrow keys move by a larger step.'
-			: 'Use arrow keys to adjust the value. Shift plus arrow keys move by a larger step.'
+		slider.isRange ? t.sliderInstructionsRange : t.sliderInstructionsSingle
 	);
 	const shouldFillFromStart = $derived(!slider.isRange && variant === 'thick');
 	const rangeStartPercentage = $derived(
@@ -111,6 +112,7 @@
 				{size}
 				{classes}
 				attachment={slider.thumb(payload.index)}
+				hitboxAttachment={slider.thumbHitbox(payload.index)}
 			/>
 		{/each}
 	</div>

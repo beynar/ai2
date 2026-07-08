@@ -27,12 +27,15 @@
 		theme,
 		rel,
 		target,
+		download,
 		label,
 		role,
 		'aria-haspopup': ariaHaspopup,
 		'aria-expanded': ariaExpanded,
 		'aria-controls': ariaControls,
 		'aria-selected': ariaSelected,
+		'aria-pressed': ariaPressed,
+		'data-active': dataActive,
 		...attachments
 	}: ButtonPrimitiveProps = $props();
 
@@ -50,12 +53,15 @@
 	aria-expanded={ariaExpanded}
 	aria-controls={ariaControls}
 	aria-selected={ariaSelected}
+	aria-pressed={ariaPressed}
 	role={role ?? (as || href ? 'link' : 'button')}
 	{href}
 	{rel}
 	{target}
+	{download}
 	{type}
 	bind:this={ref}
+	data-active={dataActive}
 	data-color={color}
 	{disabled}
 	class={classes.root({

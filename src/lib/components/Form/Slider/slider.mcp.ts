@@ -56,6 +56,7 @@ Extends all Field props plus:
 - **formatValue**: (value: number, index: number, values: number[]) => string - Formats thumb labels and aria-valuetext
 - **marks**: Array<{ value: number; label?: string | Snippet }> - Optional tick marks along the track
 - **thumbLabels**: string[] - Accessible labels for individual thumbs
+- **i18n**: Partial<Messages> - Per-instance i18n overrides
 
 ### Field Props
 - **label**: string | Snippet - Field label
@@ -203,7 +204,9 @@ Theme parts:
 - **track**: Pointer surface and color carrier
 - **trackBackground**: Unselected track
 - **range**: Selected range segment
-- **thumb**: Individual slider thumb
+- **thumb**: Individual slider thumb button
+- **thumbHitbox**: Invisible thick-variant thumb pointer target
+- **thumbVisual**: Visible thumb shape
 - **valueLabels**: Value chip group
 - **valueLabel**: Individual value chip
 - **marks**: Mark container

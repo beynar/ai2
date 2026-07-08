@@ -5,6 +5,8 @@ import type { MenuOptionProps } from '../MenuOption/menuOption.props.js';
 import type { SeparatorProps } from '../Separator/separator.props.js';
 import type { MenuThemeProps } from './menu.theme.js';
 
+export type MenuSubmenuMode = 'auto' | 'popover' | 'stack';
+
 export type SubMenuItemProps = Omit<MenuOptionProps, 'onClick' | 'onEnter' | 'onLeave'> & {
 	/**
 	 * Array of submenu items.
@@ -56,6 +58,14 @@ export type MenuProps = WithAttachments<{
 	 * Custom theme overrides for the menu container and child components.
 	 */
 	theme?: MenuThemeProps;
+	/**
+	 * How submenu items render.
+	 * - auto: floating popovers normally, stacked views inside mobile-sheet popovers.
+	 * - popover: always use nested PopupMenu instances.
+	 * - stack: navigate to submenu views inside the current menu.
+	 * @default 'auto'
+	 */
+	submenuMode?: MenuSubmenuMode;
 	/**
 	 * Optional header content rendered at the top of the menu.
 	 */

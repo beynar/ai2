@@ -11,10 +11,10 @@ import type {
 type SidebarStateOptions = {
 	readonly mode: SidebarMode;
 	readonly keyboardShortcut: string | false;
-	readonly open: boolean;
+	readonly displayState: SidebarDisplayState;
 	readonly side: SidebarSide;
 	readonly collapsible: SidebarCollapsible;
-	setOpen: (open: boolean) => void;
+	setDisplayState: (state: SidebarDisplayState) => void;
 };
 
 function isEditableTarget(target: EventTarget | null) {
@@ -61,6 +61,7 @@ export class SidebarStateController {
 			},
 			toggle: () => controller.toggle(),
 			setOpen: (open) => controller.setOpen(open),
+			setDisplayState: (state) => controller.setDisplayState(state),
 			setOpenMobile: (open) => controller.setOpenMobile(open)
 		};
 
@@ -83,16 +84,22 @@ export class SidebarStateController {
 	}
 
 	get open(): boolean {
-		return this.options.open;
+		return this.displayState === 'expanded';
 	}
 
 	get state(): SidebarState {
-		return this.open ? 'expanded' : 'collapsed';
+		return this.displayState;
 	}
 
 	get displayState(): SidebarDisplayState {
-		if (this.open || this.collapsible === 'none') return 'expanded';
-		return this.collapsible === 'offcanvas' ? 'hidden' : 'collapsed';
+		if (this.collapsible === 'none') return 'expanded';
+		return this.options.displayState;
+	}
+
+	get collapsibleState(): SidebarCollapsible | '' {
+		if (this.displayState === 'collapsed') return 'icon';
+		if (this.displayState === 'hidden') return 'offcanvas';
+		return '';
 	}
 
 	get isMobile(): boolean {
@@ -108,7 +115,12 @@ export class SidebarStateController {
 	}
 
 	setOpen = (open: boolean) => {
-		this.options.setOpen(open);
+		this.setDisplayState(open ? 'expanded' : this.defaultCollapsedState);
+	};
+
+	setDisplayState = (state: SidebarDisplayState) => {
+		const nextState = this.collapsible === 'none' ? 'expanded' : state;
+		this.options.setDisplayState(nextState);
 	};
 
 	setOpenMobile = (open: boolean) => {
@@ -120,6 +132,12 @@ export class SidebarStateController {
 			this.openMobile = !this.openMobile;
 			return;
 		}
-		this.setOpen(!this.open);
+		this.setDisplayState(
+			this.displayState === 'expanded' ? this.defaultCollapsedState : 'expanded'
+		);
 	};
+
+	private get defaultCollapsedState(): SidebarDisplayState {
+		return this.collapsible === 'offcanvas' ? 'hidden' : 'collapsed';
+	}
 }

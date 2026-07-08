@@ -1,0 +1,65 @@
+<script lang="ts">
+	import type { ProgressCircleProps } from './progressCircle.props.js';
+	import { useProgressCircleTheme } from './progressCircle.theme.js';
+
+	let {
+		ref = $bindable(),
+		class: className,
+		color = 'primary',
+		size = 'normal',
+		value = 0,
+		label = 'Progress',
+		decorative = false,
+		theme,
+		...attachments
+	}: ProgressCircleProps = $props();
+
+	const classes = $derived(useProgressCircleTheme(theme));
+	const themeSize = $derived(typeof size === 'number' ? undefined : size);
+	const numericSize = $derived(
+		typeof size === 'number' ? `${Number.isFinite(size) ? Math.max(size, 1) : 28}px` : undefined
+	);
+	const progressValue = $derived(Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0);
+	const indicatorOffset = $derived(100 - progressValue);
+</script>
+
+<span
+	bind:this={ref}
+	data-slot="progress-circle"
+	data-color={color}
+	data-size={size}
+	role={decorative ? undefined : 'progressbar'}
+	aria-hidden={decorative ? 'true' : undefined}
+	aria-label={decorative ? undefined : label}
+	aria-valuemin={decorative ? undefined : 0}
+	aria-valuemax={decorative ? undefined : 100}
+	aria-valuenow={decorative ? undefined : progressValue}
+	class={classes.root({ size: themeSize, color, className })}
+	style:--progress-circle-size={numericSize}
+	{...attachments}
+>
+	<svg data-slot="progress-circle-svg" viewBox="0 0 32 32" aria-hidden="true" class={classes.svg()}>
+		<circle
+			data-slot="progress-circle-track"
+			cx="16"
+			cy="16"
+			r="13"
+			fill="none"
+			stroke-width="4"
+			class={classes.track()}
+		/>
+		<circle
+			data-slot="progress-circle-indicator"
+			cx="16"
+			cy="16"
+			r="13"
+			fill="none"
+			stroke-width="4"
+			stroke-linecap="round"
+			pathLength="100"
+			stroke-dasharray="100"
+			style:stroke-dashoffset={`${indicatorOffset}`}
+			class={classes.indicator()}
+		/>
+	</svg>
+</span>

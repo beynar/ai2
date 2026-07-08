@@ -1,0 +1,99 @@
+<script lang="ts">
+	import Code from '$lib/components/Code/Code.svelte';
+	import Separator from '$lib/components/Separator/Separator.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
+
+	const usageCode = `<p class="shimmer text-foreground-muted">
+	Generating response...
+</p>`;
+
+	const colorCode = `<p class="shimmer shimmer-color-blue-500/60">
+	Generating response...
+</p>
+
+<p class="shimmer shimmer-color-[#378ADD]">
+	Generating response...
+</p>`;
+
+	const timingCode = `<p class="shimmer shimmer-duration-1000 shimmer-spread-24 shimmer-angle-45">
+	Generating response...
+</p>`;
+
+	const utilityRows = [
+		['shimmer', 'Applies the text shimmer animation.'],
+		['shimmer-once', 'Runs one sweep instead of looping.'],
+		['shimmer-reverse', 'Reverses the sweep direction.'],
+		['shimmer-none', 'Disables the shimmer and renders normal text.'],
+		['shimmer-color-<color>', 'Sets the highlight color. Opacity modifiers are supported.'],
+		['shimmer-duration-<number>', 'Sets one sweep duration in milliseconds.'],
+		['shimmer-spread-<number>', 'Sets highlight width from the spacing scale.'],
+		['shimmer-spread-[<value>]', 'Sets a one-off highlight width.'],
+		['shimmer-angle-<number>', 'Sets the highlight angle in degrees.']
+	];
+</script>
+
+{#snippet ic(text: string)}
+	<code class="bg-background-muted rounded px-1 py-0.5 text-sm">{text}</code>
+{/snippet}
+
+<article class="text-foreground mx-auto grid max-w-3xl gap-4 pb-20">
+	<header class="grid gap-2">
+		<h1 class="text-3xl font-semibold">Shimmer</h1>
+		<p class="text-foreground-muted text-balance">
+			Tailwind utilities for adding a shadcn-style shimmer effect to text.
+		</p>
+	</header>
+
+	<ComponentCard
+		description="Add the shimmer class to text that is waiting, loading, or streaming."
+		code={usageCode}
+		class="!min-h-[220px]"
+	>
+		<p class="shimmer text-foreground-muted text-sm">Generating response...</p>
+	</ComponentCard>
+
+	<Separator class="my-2" children="Usage" />
+
+	<p class="text-foreground-muted">
+		Use {@render ic('shimmer')} on the text element. The highlight is based on
+		{@render ic('currentColor')}, so it follows semantic text classes.
+	</p>
+	<Code language="html" code={usageCode} />
+
+	<div class="border-background-muted overflow-hidden rounded-xl border">
+		{#each utilityRows as [name, description], index (name)}
+			<div
+				class="grid gap-2 p-3 md:grid-cols-[14rem_1fr] {index % 2 === 0
+					? 'bg-background'
+					: 'bg-background-dark'}"
+			>
+				<code class="text-primary text-sm font-medium">{name}</code>
+				<p class="text-foreground-muted text-sm">{description}</p>
+			</div>
+		{/each}
+	</div>
+
+	<Separator class="my-2" children="Examples" />
+
+	<ComponentCard
+		description="Set a custom shimmer color with theme colors, opacity modifiers, or arbitrary colors."
+		code={colorCode}
+		class="!min-h-[240px]"
+	>
+		<div class="grid gap-3 text-sm">
+			<p class="shimmer shimmer-color-blue-500/60 text-foreground-muted">Generating response...</p>
+			<p class="shimmer shimmer-color-[#378ADD] text-foreground-muted">Generating response...</p>
+		</div>
+	</ComponentCard>
+
+	<ComponentCard
+		description="Tune timing, spread, and angle with numeric utilities."
+		code={timingCode}
+		class="!min-h-[240px]"
+	>
+		<div class="grid gap-3 text-center text-sm text-foreground-muted sm:grid-cols-2">
+			<p class="shimmer shimmer-duration-1000">shimmer-duration-1000</p>
+			<p class="shimmer shimmer-spread-24 shimmer-angle-45">spread 24 / angle 45</p>
+		</div>
+	</ComponentCard>
+</article>

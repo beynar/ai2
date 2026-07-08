@@ -75,21 +75,23 @@
 		}
 	}
 
-	// --- Shared sliding indicator -------------------------------------------
-	// One absolutely-positioned element is measured onto the active tab and
-	// transitions there, so it adapts to variable tab sizes and both
-	// orientations. `pill` covers the whole tab; `underline` hugs the edge
-	// dictated by `position`.
+	// --- Active indicator ----------------------------------------------------
+	// Two-part strategy so the bar is correct at every stage:
+	//  • SSR + pre-hydration: a CSS-only indicator rendered INSIDE the active tab
+	//    (`staticIndicator`), positioned purely by layout — no measurement needed.
+	//  • After hydration: a single absolutely-positioned element measured onto the
+	//    active tab that slides/resizes between tabs. It replaces the static one at
+	//    the identical spot, so the handoff is seamless.
 	let tabEls: Array<HTMLElement | undefined> = [];
-	let indicatorStyle = $state('opacity:0');
+	let indicatorStyle = $state('');
 	let indicatorReady = $state(false);
+	// Flips true once the measured indicator has been placed on the client; until
+	// then the static (SSR) indicator is shown.
+	let hydrated = $state(false);
 
-	const placeIndicator = () => {
+	const placeIndicator = (): boolean => {
 		const el = tabEls[activeTab];
-		if (!el) {
-			indicatorStyle = 'opacity:0';
-			return;
-		}
+		if (!el) return false;
 		// offsetLeft/Top are relative to the root (it is `relative`), so this is
 		// immune to page scroll and layout shifts above the tabbar.
 		const x = el.offsetLeft;
@@ -108,6 +110,7 @@
 			// 'top' (default): underline along the bottom edge.
 			indicatorStyle = `transform:translate(${x}px, ${y + h - 2}px);width:${w}px;height:2px`;
 		}
+		return true;
 	};
 
 	// Re-place whenever anything that moves or resizes the tabs changes.
@@ -120,15 +123,7 @@
 		orientation;
 		alignment;
 		fullWidth;
-		untrack(() => {
-			placeIndicator();
-			// Enable the transition only after the first real placement, in a
-			// microtask so the class lands in the same paint as the initial style
-			// (mount therefore never animates from the origin).
-			if (!indicatorReady && tabEls[activeTab]) {
-				queueMicrotask(() => (indicatorReady = true));
-			}
-		});
+		untrack(() => placeIndicator());
 	});
 
 	const collectTab = (index: number) => (node: HTMLElement) => {
@@ -146,8 +141,18 @@
 			// tabs without changing any reactive prop — re-measure on resize.
 			const observer = new ResizeObserver(() => placeIndicator());
 			observer.observe(node);
-			placeIndicator();
-			return () => observer.disconnect();
+			// Place the measured indicator, then hand off from the static SSR bar in
+			// the same update (identical position → no visible jump).
+			if (placeIndicator()) hydrated = true;
+			// Enable the slide transition only after the initial position has painted
+			// (two frames), so the handoff is instant and only later switches slide.
+			let raf = requestAnimationFrame(() => {
+				raf = requestAnimationFrame(() => (indicatorReady = true));
+			});
+			return () => {
+				observer.disconnect();
+				cancelAnimationFrame(raf);
+			};
 		});
 	};
 </script>
@@ -160,13 +165,16 @@
 	{@attach rootAttachment}
 	{...attachments}
 >
-	<div
-		class={classes.indicator({ variant })}
-		style={indicatorStyle}
-		data-color={color}
-		data-ready={indicatorReady ? 'true' : 'false'}
-		aria-hidden="true"
-	></div>
+	{#if hydrated}
+		<!-- Measured, animated indicator (client only). -->
+		<div
+			class={classes.indicator({ variant })}
+			style={indicatorStyle}
+			data-color={color}
+			data-ready={indicatorReady ? 'true' : 'false'}
+			aria-hidden="true"
+		></div>
+	{/if}
 	{#each normalizedTabs as tab, index}
 		{@const isActive = activeTab === index}
 		{@const isFocused = navigation.focusedIndex === index}
@@ -200,6 +208,10 @@
 			{@attach navigation.itemReference}
 			{@attach collectTab(index)}
 		>
+			{#if !hydrated && isActive}
+				<!-- CSS-only indicator for SSR / pre-hydration, positioned by layout. -->
+				<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"></span>
+			{/if}
 			<Slot render={tab.prefix} class={classes.prefix({ size })} />
 
 			{#if typeof tab.label === 'string'}

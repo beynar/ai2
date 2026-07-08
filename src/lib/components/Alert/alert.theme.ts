@@ -21,7 +21,9 @@ const defaultAlert = cva({
 		variant: {
 			solid: 'bg-color text-color-contrast border-color',
 			outline: 'bg-transparent border-color text-color',
-			soft: 'bg-color-muted text-color border-transparent'
+			// The soft "toast" look: muted tint, colored border and a legible on-tint
+			// accent (`muted-readable` = dark text light-mode, light text dark-mode).
+			soft: 'bg-color-muted text-color-muted-readable border-color/20'
 		},
 		size: {
 			small: 'px-3 py-2 text-xs',
@@ -62,7 +64,7 @@ const defaultAlert = cva({
 		{
 			color: 'background',
 			variant: 'soft',
-			class: 'bg-background-lighter text-color-contrast'
+			class: 'bg-background-lighter text-foreground border-background-muted'
 		},
 		{
 			color: 'foreground',
@@ -70,9 +72,9 @@ const defaultAlert = cva({
 			class: 'border-foreground/50'
 		},
 		{
-			color: 'danger',
+			color: 'foreground',
 			variant: 'soft',
-			class: '[&>svg]:text-danger *:data-[slot=alert-description]:text-danger/90'
+			class: 'bg-foreground text-background border-transparent'
 		},
 
 		{
@@ -85,16 +87,53 @@ const defaultAlert = cva({
 });
 
 const defaultAlertPrefix = cva({
-	base: '[&>svg]:text-current translate-y-0.5',
+	base: 'shrink-0 [&>svg]:text-current',
 	variants: {
 		size: {
 			small: '[&>svg]:size-4 ',
 			normal: '[&>svg]:size-5 ',
 			large: '[&>svg]:size-6 '
+		},
+		// Soft alerts show a vivid, saturated icon badge (like the toast) rather than
+		// inheriting the muted-readable text color.
+		variant: {
+			solid: '',
+			outline: '',
+			soft: '[&>svg]:text-color'
+		},
+		// Nudge the icon to the first text line only in multi-line alerts. A title-only
+		// alert centers its row (items-center), so no nudge — keeps icon/title/close level.
+		hasDescription: {
+			true: 'translate-y-0.5',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		variant: 'solid',
+		hasDescription: false
+	}
+});
+
+// Inline close button (top-right, aligned with the title). Subtle by default,
+// tinting on hover — mirrors the toast's close affordance.
+const defaultAlertClose = cva({
+	base: 'shrink-0 -mr-1 flex items-center justify-center rounded-md leading-none transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/40',
+	variants: {
+		size: {
+			small: 'size-5 [&>svg]:size-3.5',
+			normal: 'size-6 [&>svg]:size-4',
+			large: 'size-7 [&>svg]:size-5'
+		},
+		variant: {
+			solid: 'text-current/60 hover:bg-color/10 hover:text-current',
+			outline: 'text-current/60 hover:bg-color/10 hover:text-current',
+			soft: 'text-color-muted-readable/70 hover:bg-color/15 hover:text-color-muted-readable'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		variant: 'solid'
 	}
 });
 
@@ -102,9 +141,9 @@ const defaultAlertTitle = cva({
 	base: 'line-clamp-2 font-medium',
 	variants: {
 		size: {
-			small: 'text-sm',
-			normal: 'text-base',
-			large: 'text-md'
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
 		}
 	},
 	defaultVariants: {
@@ -135,7 +174,8 @@ export const alertTheme = {
 	prefix: defaultAlertPrefix,
 	content: defaultAlertContent,
 	title: defaultAlertTitle,
-	description: defaultAlertDescription
+	description: defaultAlertDescription,
+	close: defaultAlertClose
 };
 
 export type AlertTheme = typeof alertTheme;

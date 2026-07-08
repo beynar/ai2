@@ -12,6 +12,7 @@ Global theme setter: `import { setComponentNameTheme } from 'svelai/kebab-case-n
 - [TextInput](#textinput)
 - [TextArea](#textarea)
 - [NumberInput](#numberinput)
+- [RatingInput](#ratinginput)
 - [PasswordInput](#passwordinput)
 - [PhoneInput](#phoneinput)
 - [DateInput](#dateinput)
@@ -19,6 +20,7 @@ Global theme setter: `import { setComponentNameTheme } from 'svelai/kebab-case-n
 - [Select](#select)
 - [Combobox](#combobox)
 - [TagsInput](#tagsinput)
+- [KeyValueInput](#keyvalueinput)
 - [Switch](#switch)
 - [RadioInput](#radioinput)
 - [CheckboxesInput](#checkboxesinput)
@@ -75,6 +77,22 @@ Keyboard: ArrowUp/Down (step), PageUp/Down (step*10). Supports `prefix`/`suffix`
 <NumberInput label="Price" bind:value={price} min={0} step={0.01}>
   {#snippet prefix()}<span>$</span>{/snippet}
 </NumberInput>
+```
+
+---
+
+## RatingInput
+
+`import { RatingInput } from 'svelai/rating-input'`
+
+**Unique props:** `value: number | null` (bindable, default `null`), `max: number` (default 5, the star count and maximum value), `allowHalf: boolean` (default false, snaps to 0.5 increments), `readonly: boolean` (default false), `clearable: boolean` (default true, click the current value to clear), `dir` (`'ltr' | 'rtl'`, inherits ambient direction when omitted), `color` (default `'warning'`, the gold star fill)
+
+Star rating with layered outline/fill icons. `role="slider"`: ArrowRight/Up increase, ArrowLeft/Down decrease by the step (0.5 if `allowHalf`, else 1), Home clears, End sets `max`. In RTL the stars render and fill right-to-left, but the numeric value never flips (Right always increases).
+
+**Theme parts:** `container`, `star`, `starBase`, `starFill` (variants: `size`, `color`, `disabled`)
+
+```svelte
+<RatingInput label="Rating" bind:value={rating} allowHalf max={5} />
 ```
 
 ---
@@ -210,6 +228,33 @@ Option format: `{ value: string, label: string, description?: string }` (reused 
 ```svelte
 <TagsInput placeholder="Add tags..." bind:value={tags} />
 <TagsInput items={technologies} showAllOnFocus allowCustom bind:value={tags} />
+```
+
+---
+
+## KeyValueInput
+
+`import { KeyValueInput } from 'svelai/key-value-input'`
+
+An editable list of key/value string pairs. Each row is `[key input] [value input] [remove ×]`, with a full-width `Add` button below that appends an empty row. Rows animate on add/remove. No dropdown, async, or option list — it is a plain pair editor.
+
+**Unique props:**
+- `value: KeyValuePair[] | null` (bindable, default `null`) — `KeyValuePair` is `{ key: string; value: string }`. The value is an output mirror of the editor rows.
+- `keyPlaceholder: string` — key input placeholder (defaults to the localized "Key" label)
+- `valuePlaceholder: string` — value input placeholder (defaults to the localized "Value" label)
+- `addLabel: string` — text on the Add button (defaults to the localized "Add" label)
+- `maxRows: number` — once reached, the Add button is disabled
+- `onChange: (value: KeyValuePair[]) => void`, `onValidate`
+- `i18n: Partial<Messages>` — override the add/key/value/remove strings
+- `errors: string[] | boolean` (bindable), `focused: boolean` (bindable)
+
+Rows are keyed by a stable per-row id (not the key string), so empty or duplicate keys while typing are safe. Enter inside a row does not submit the enclosing form. Programmatically replacing `value` after mount is not reconciled back into the editor rows — seed the initial value instead. Convert to an object with `Object.fromEntries(value.map((p) => [p.key, p.value]))`.
+
+**Theme parts:** `inputContainer` (vertical stack), `row` (animated flex wrapper), `input` (bordered key/value text input), `removeButton`, `addButton` (variants: `size`)
+
+```svelte
+<KeyValueInput label="Headers" bind:value={pairs} />
+<KeyValueInput maxRows={5} addLabel="Add field" bind:value={pairs} />
 ```
 
 ---

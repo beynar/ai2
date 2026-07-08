@@ -2,7 +2,7 @@ import type { Sizes, Colors } from '$lib/types/theme.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { ButtonThemeProps } from './button.theme.js';
-import type { HTMLButtonAttributes } from 'svelte/elements';
+import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost' | 'link';
 type ButtonForwardedAttributes = Pick<
@@ -15,7 +15,9 @@ type ButtonForwardedAttributes = Pick<
 	| 'aria-expanded'
 	| 'aria-controls'
 	| 'aria-selected'
+	| 'aria-pressed'
 >;
+type ButtonForwardedAnchorAttributes = Pick<HTMLAnchorAttributes, 'download'>;
 export type ButtonPrimitiveProps = WithAttachments<
 	WithSlot<
 		{
@@ -100,7 +102,12 @@ export type ButtonPrimitiveProps = WithAttachments<
 			 * Theme overrides for button parts such as prefix and suffix.
 			 */
 			theme?: ButtonThemeProps;
-		} & ButtonForwardedAttributes,
+			/**
+			 * Active state marker used by composed controls for styling.
+			 */
+			'data-active'?: 'true';
+		} & ButtonForwardedAttributes &
+			ButtonForwardedAnchorAttributes,
 		'suffix' | 'prefix' | 'children'
 	>
 >;

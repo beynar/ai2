@@ -29,6 +29,7 @@ The Popover component displays floating content positioned relative to a trigger
 - **offset**: number - Distance in pixels from the reference element
 - **fitTrigger**: boolean (default: false) - Whether popover should match the width of the trigger element
 - **mobileSheet**: boolean (default: false) - On mobile viewports (<768px), render as a bottom sheet instead of an anchored floating panel
+- **mobileSheetSizeTransition**: boolean (default: true) - Whether mobile-sheet panels animate intrinsic size changes
 
 ### Event Props
 - **onClose**: (popover: PopoverState) => void - Called when popover closes, receives popover state

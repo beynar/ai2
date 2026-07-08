@@ -269,7 +269,10 @@ export class PopoverState {
 		Object.assign(node.style, {
 			position: strategy,
 			left: `${x}px`,
-			top: `${y}px`
+			top: `${y}px`,
+			// computePosition is async: unhide only once the first placement lands, so the
+			// panel never flashes at top-left (0,0) before floating-ui resolves.
+			visibility: ''
 		});
 		if (mount && !this.hasTransitioned && this.directedTransition) {
 			this.applyDirectedTransition(node, placement);
@@ -290,6 +293,8 @@ export class PopoverState {
 			};
 		}
 
+		// Hide until place() resolves (async computePosition), preventing the top-left flash.
+		node.style.visibility = 'hidden';
 		void this.place(node, true);
 		const cleanup = autoUpdate(this.referenceElement!, node, () => this.place(node));
 		return () => {

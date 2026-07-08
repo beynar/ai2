@@ -6,6 +6,7 @@
 	import type { SliderProps } from './slider.props.js';
 	import { SliderState } from './slider.state.svelte.js';
 	import { useSliderTheme } from './slider.theme.js';
+	import { useI18n } from '$lib/i18n/context.svelte.js';
 
 	let {
 		min = 0,
@@ -35,10 +36,15 @@
 		dragRange = false,
 		thumbLabels = [],
 		type: _formType,
+		size = 'normal',
+		i18n,
 		...rest
 	}: SliderProps & { type?: string } = $props();
 
+	// svelte-ignore state_referenced_locally
 	void _formType;
+
+	const t = $derived(useI18n(i18n));
 
 	const id = $props.id();
 
@@ -133,28 +139,29 @@
 	const groupLabel = $derived(
 		typeof rest.label === 'string' || typeof rest.label === 'number' ? `${rest.label}` : undefined
 	);
+	const hasMarks = $derived(marks.length > 0);
 
 	const getThumbLabel = (index: number) => {
 		if (thumbLabels[index]) return thumbLabels[index];
 		if (!slider.isRange) return undefined;
 		if (groupLabel) {
 			return index === 0
-				? `${groupLabel} minimum`
+				? t.sliderThumbGroupMin(groupLabel)
 				: index === slider.values.length - 1
-					? `${groupLabel} maximum`
-					: `${groupLabel} value ${index + 1}`;
+					? t.sliderThumbGroupMax(groupLabel)
+					: t.sliderThumbGroupValue(groupLabel, index + 1);
 		}
 		return index === 0
-			? 'Minimum value'
+			? t.minimumValue
 			: index === slider.values.length - 1
-				? 'Maximum value'
-				: `Value ${index + 1}`;
+				? t.maximumValue
+				: t.sliderThumbValue(index + 1);
 	};
 </script>
 
 <Field
 	{field}
-	size={rest.size}
+	{size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
@@ -162,32 +169,48 @@
 			base: classes.inputContainer({
 				class: theme?.inputContainer?.base,
 				disabled: slider.disabled,
-				size: rest.size
+				size: size
 			})
 		}
 	}}
 	{...rest}
 >
-	<div class={classes.root({ orientation: slider.orientationValue, size: rest.size })}>
+	<div class={classes.root({ orientation: slider.orientationValue, size })}>
 		{#each slider.values as hiddenValue, index (index)}
 			<input type="hidden" name={field.name} value={hiddenValue} disabled={slider.disabled} />
 		{/each}
 
-		<div class={classes.control({ orientation: slider.orientationValue })}>
+		<div
+			class={classes.control({
+				orientation: slider.orientationValue,
+				size,
+				variant,
+				marks: hasMarks
+			})}
+		>
 			<SliderTrack
 				{id}
 				{slider}
 				{classes}
 				{color}
 				{variant}
-				size={rest.size}
+				{size}
 				{marks}
 				{groupLabel}
 				{getThumbLabel}
+				{t}
 			/>
 
 			{#if showValue || valueLabel || rangeLabel}
-				<SliderValueLabels {slider} {classes} size={rest.size} {valueLabel} {rangeLabel} />
+				<SliderValueLabels
+					{slider}
+					{classes}
+					{size}
+					{variant}
+					marks={hasMarks}
+					{valueLabel}
+					{rangeLabel}
+				/>
 			{/if}
 		</div>
 	</div>

@@ -26,10 +26,10 @@ The Alert component displays important messages and notifications to users. It s
   - warning: For warning messages
   - info: For informational messages
 
-- **variant**: 'solid' | 'outline' | 'soft' (default: 'solid')
+- **variant**: 'solid' | 'outline' | 'soft' (default: 'outline')
   - solid: Filled background with color
   - outline: Transparent background with colored border
-  - soft: Muted color background
+  - soft: The tinted "toast" look — a muted-color surface with a colored border and a legible on-tint accent (readable in light and dark). For the status colors (success/info/warning/danger) a matching filled icon is shown automatically when no \`prefix\` is provided.
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
   - small: Reduced padding and smaller text
@@ -39,6 +39,10 @@ The Alert component displays important messages and notifications to users. It s
 ### Layout Props
 - **disabled**: boolean (default: false)
   - Disables interactions and applies opacity styling
+- **dismissible**: boolean (default: false)
+  - Renders a close button; clicking it calls \`onDismiss\`. The alert's visibility is owned by the caller.
+- **onDismiss**: () => void
+  - Called when the close button is clicked (hide the alert in this handler).
 
 ### Content Props (Slots)
 - **prefix**: Snippet - Icon or content before the alert text (typically an icon)

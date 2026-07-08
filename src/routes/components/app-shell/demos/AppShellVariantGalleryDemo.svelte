@@ -5,7 +5,6 @@
 		type AppShellSidebarProps,
 		type AppShellThemeProps
 	} from '$lib/components/AppShell/index.js';
-	import type { PageShellThemeProps } from '$lib/components/PageShell/index.js';
 	import type { SidebarGroup } from '$lib/components/Sidebar/index.js';
 	import { arrowClockwiseIcon } from '$lib/components/Icons/arrowClockwise.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
@@ -25,54 +24,14 @@
 		contentWidth: 'full' | 'narrow' | 'normal' | 'wide' | 'prose';
 		contentPadding: 'none' | 'small' | 'normal' | 'large';
 		sidebar: Pick<AppShellSidebarProps, 'variant' | 'collapsible' | 'rail' | 'width' | 'widthIcon'>;
-		appShellTheme?: AppShellThemeProps;
-		pageShellTheme?: PageShellThemeProps;
 		items: SidebarGroup[];
 	};
 
 	let selectedRecipeId = $state('inset');
 
 	const previewAppShellTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		page: { base: 'bg-background' }
+		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
 	} satisfies AppShellThemeProps;
-
-	const floatingAppShellTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		page: { base: 'bg-background-muted' }
-	} satisfies AppShellThemeProps;
-
-	const insetAppShellTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		page: {
-			base: 'm-2 ml-0 rounded-xl border border-background-muted bg-background shadow-sm'
-		}
-	} satisfies AppShellThemeProps;
-
-	const splitAppShellTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' },
-		page: {
-			base: 'm-2 ml-0 rounded-xl border border-background-muted bg-background shadow-none'
-		}
-	} satisfies AppShellThemeProps;
-
-	const splitPageShellTheme = {
-		header: {
-			base: 'bg-background/95 supports-[backdrop-filter]:bg-background/85'
-		},
-		footer: {
-			base: 'bg-background/95 supports-[backdrop-filter]:bg-background/85'
-		}
-	} satisfies PageShellThemeProps;
-
-	const floatingPageShellTheme = {
-		header: {
-			base: 'bg-background-muted/95 supports-[backdrop-filter]:bg-background-muted/85'
-		},
-		footer: {
-			base: 'bg-background-muted/95 supports-[backdrop-filter]:bg-background-muted/85'
-		}
-	} satisfies PageShellThemeProps;
 
 	const productGroups: SidebarGroup[] = [
 		{
@@ -100,7 +59,6 @@
 				collapsible: 'none',
 				width: '16rem'
 			},
-			appShellTheme: previewAppShellTheme,
 			items: productGroups
 		},
 		{
@@ -111,7 +69,6 @@
 			contentWidth: 'wide',
 			contentPadding: 'normal',
 			sidebar: { variant: 'inset', collapsible: 'icon', rail: true, width: '16rem' },
-			appShellTheme: insetAppShellTheme,
 			items: productGroups
 		},
 		{
@@ -122,8 +79,6 @@
 			contentWidth: 'normal',
 			contentPadding: 'small',
 			sidebar: { variant: 'floating', collapsible: 'icon', rail: true, width: '15rem' },
-			appShellTheme: floatingAppShellTheme,
-			pageShellTheme: floatingPageShellTheme,
 			items: productGroups
 		},
 		{
@@ -135,8 +90,6 @@
 			contentWidth: 'normal',
 			contentPadding: 'normal',
 			sidebar: { variant: 'split', collapsible: 'icon', rail: true, width: '17rem' },
-			appShellTheme: splitAppShellTheme,
-			pageShellTheme: splitPageShellTheme,
 			items: productGroups
 		}
 	];
@@ -208,8 +161,7 @@
 			contentWidth={selectedRecipe.contentWidth}
 			mobileActionCount={1}
 			frame="contained"
-			pageShellTheme={selectedRecipe.pageShellTheme}
-			theme={selectedRecipe.appShellTheme ?? previewAppShellTheme}
+			theme={previewAppShellTheme}
 		>
 			{#snippet children()}
 				<div class="grid gap-4">

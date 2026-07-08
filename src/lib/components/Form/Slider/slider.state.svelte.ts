@@ -78,7 +78,10 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 	activeThumb = $state<number | null>(null);
 	dragState = $state<SliderDragState | null>(null);
 	private trackNode: HTMLElement | null = null;
+	private thumbNodes = new Map<number, HTMLButtonElement>();
 	private thumbAttachments = new Map<number, Attachment<HTMLButtonElement>>();
+	private thumbHitboxAttachments = new Map<number, Attachment<HTMLElement>>();
+	private documentHitboxDragCleanup: (() => void) | null = null;
 	private trackDrag = createPointerDrag({
 		disabled: () => this.isDisabled(),
 		onStart: (payload) => this.startTrackPointerDrag(payload),
@@ -152,9 +155,14 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 	track: Attachment<HTMLElement> = (node) => {
 		this.trackNode = node;
 		const offDrag = this.trackDrag(node);
+		const offPointerDown = on(node.ownerDocument, 'pointerdown', (event) =>
+			this.onDocumentPointerDown(event)
+		);
 
 		return () => {
 			offDrag?.();
+			offPointerDown();
+			this.cleanupDocumentHitboxDrag();
 			this.trackNode = null;
 			this.endDrag();
 		};
@@ -180,16 +188,38 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 			const offBlur = on(node, 'blur', this.onThumbBlur);
 			const offDrag = drag(node);
 			const offKeyDown = on(node, 'keydown', (event) => this.onThumbKeyDown(event, index));
+			this.thumbNodes.set(index, node);
 
 			return () => {
 				offFocus();
 				offBlur();
 				offDrag?.();
 				offKeyDown();
+				this.thumbNodes.delete(index);
 			};
 		};
 
 		this.thumbAttachments.set(index, attachment);
+		return attachment;
+	}
+
+	thumbHitbox(index: number) {
+		const cachedAttachment = this.thumbHitboxAttachments.get(index);
+		if (cachedAttachment) return cachedAttachment;
+
+		const attachment: Attachment<HTMLElement> = (node) => {
+			const drag = createPointerDrag<HTMLElement>({
+				disabled: () => this.isDisabled(),
+				stopPropagation: true,
+				onStart: () => this.startThumbHitboxPointerDrag(index),
+				onMove: (payload) => this.updatePointerDrag(payload),
+				onEnd: () => this.endDrag()
+			});
+
+			return drag(node);
+		};
+
+		this.thumbHitboxAttachments.set(index, attachment);
 		return attachment;
 	}
 
@@ -459,7 +489,9 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 	}
 
 	private focusThumbNode(index: number) {
-		const thumb = this.trackNode?.querySelectorAll<HTMLElement>('[data-slider-thumb]')[index];
+		const thumb =
+			this.thumbNodes.get(index) ??
+			this.trackNode?.querySelectorAll<HTMLElement>('[data-slider-thumb]')[index];
 		thumb?.focus();
 	}
 
@@ -477,6 +509,11 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 
 	private startThumbPointerDrag(index: number, node: HTMLButtonElement) {
 		node.focus();
+		this.startThumbDrag(index);
+	}
+
+	private startThumbHitboxPointerDrag(index: number) {
+		this.focusThumbNode(index);
 		this.startThumbDrag(index);
 	}
 
@@ -498,6 +535,15 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 		this.updateDrag(pointerValue);
 	}
 
+	private updatePointerEvent(event: PointerEvent) {
+		if (this.isDisabled() || !this.dragState) return;
+
+		const pointerValue = this.getPointerValue(event);
+		if (pointerValue === null) return;
+
+		this.updateDrag(pointerValue);
+	}
+
 	private onThumbKeyDown(event: KeyboardEvent, index: number) {
 		if (this.isDisabled()) return;
 
@@ -512,4 +558,68 @@ export class SliderState extends createBindableStateClass<SliderStateOptions>() 
 		this.focused = false;
 		this.activeThumb = null;
 	};
+
+	private onDocumentPointerDown(event: PointerEvent) {
+		if (event.button !== 0 || this.dragState || this.isDisabled() || !this.trackNode) return;
+		if (event.target instanceof Node && this.trackNode.contains(event.target)) return;
+
+		const hitboxIndex = this.getDocumentHitboxIndex(event);
+		if (hitboxIndex === null) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+		this.focusThumbNode(hitboxIndex);
+		this.startThumbDrag(hitboxIndex);
+		this.startDocumentHitboxDrag(event);
+	}
+
+	private getDocumentHitboxIndex(event: PointerEvent) {
+		if (!this.trackNode) return null;
+
+		const hitboxes = this.trackNode.querySelectorAll<HTMLElement>('[data-slider-thumb-hitbox]');
+		for (const [index, hitbox] of hitboxes.entries()) {
+			const rect = hitbox.getBoundingClientRect();
+			if (rect.width <= 0 || rect.height <= 0) continue;
+			const isInside =
+				event.clientX >= rect.left &&
+				event.clientX <= rect.right &&
+				event.clientY >= rect.top &&
+				event.clientY <= rect.bottom;
+			if (isInside) return index;
+		}
+		return null;
+	}
+
+	private startDocumentHitboxDrag(startEvent: PointerEvent) {
+		const document = startEvent.view?.document ?? this.trackNode?.ownerDocument;
+		if (!document) return;
+
+		this.cleanupDocumentHitboxDrag();
+		const pointerId = startEvent.pointerId;
+		const onMove = (event: PointerEvent) => {
+			if (event.pointerId !== pointerId) return;
+			event.preventDefault();
+			this.updatePointerEvent(event);
+		};
+		const onEnd = (event: PointerEvent) => {
+			if (event.pointerId !== pointerId) return;
+			event.preventDefault();
+			this.cleanupDocumentHitboxDrag();
+			this.endDrag();
+		};
+
+		const offPointerMove = on(document, 'pointermove', onMove);
+		const offPointerUp = on(document, 'pointerup', onEnd);
+		const offPointerCancel = on(document, 'pointercancel', onEnd);
+		this.documentHitboxDragCleanup = () => {
+			offPointerMove();
+			offPointerUp();
+			offPointerCancel();
+			this.documentHitboxDragCleanup = null;
+		};
+	}
+
+	private cleanupDocumentHitboxDrag() {
+		this.documentHitboxDragCleanup?.();
+	}
 }

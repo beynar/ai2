@@ -32,6 +32,7 @@ The PopupMenu component is a wrapper around Popover that renders a Menu inside. 
   - items: MenuItem[] - Array of menu items (buttons, options, separators)
   - class: string - Custom class for the menu container
   - theme: MenuThemeProps - Theme overrides for menu and its items
+  - submenuMode: 'auto' | 'popover' | 'stack' - defaults to auto; mobileSheet menus stack submenus automatically
 
 - **closeOnItemClick**: boolean (default: true)
   - Whether to close the menu when a menu item (button or link) is clicked
@@ -78,6 +79,8 @@ The PopupMenu component is a wrapper around Popover that renders a Menu inside. 
 - **lockScroll**: boolean (default: true) - Lock body scroll when open
 
 - **class**: string - Custom class for popover dialog
+
+- **mobileSheet**: boolean (default: false) - Render as a bottom sheet on mobile viewports. With menu.submenuMode='auto', nested submenus become stacked views.
 
 #### Advanced
 - **id**: string - Custom ID for popover element

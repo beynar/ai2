@@ -176,6 +176,7 @@
 		'Popover + Menu composition',
 		'Bindable open for external control',
 		'Hover or click open, escape dismiss',
+		'Mobile-sheet submenus stack automatically',
 		'Closes on item click by default',
 		'Context menu via external ref'
 	]}
@@ -244,6 +245,19 @@
 				<PopupMenu
 					trigger={{ content: 'John Doe', variant: 'outline', prefix: userIcon }}
 					position="bottom-end"
+					menu={{ items: profileItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Mobile-sheet popup menus automatically switch nested submenus to stacked views."
+		>
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Mobile settings', variant: 'outline', prefix: gearIcon }}
+					position="bottom-end"
+					mobileSheet
 					menu={{ items: profileItems }}
 				/>
 			</div>

@@ -58,6 +58,8 @@ export type PopoverProps = WithAttachments<{
 	/** When true, renders the popover as a bottom sheet on mobile viewports (<768px).
 	 *  Default `false`, so existing popovers stay anchored on every screen size. */
 	mobileSheet?: boolean;
+	/** When true, mobile-sheet panels animate intrinsic height changes. */
+	mobileSheetSizeTransition?: boolean;
 	/** Per-instance theme overrides for popover layout and styling class names. */
 	theme?: PopoverThemeProps;
 }>;

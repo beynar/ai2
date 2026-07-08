@@ -6,7 +6,49 @@ const defaultRoot = cva({
 });
 
 const defaultPage = cva({
-	base: 'h-full min-h-0 overflow-hidden bg-background'
+	base: 'h-full min-h-0 overflow-hidden',
+	variants: {
+		variant: {
+			sidebar:
+				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)]',
+			floating:
+				'bg-background-muted [--page-shell-chrome:var(--color-background-muted)] [--page-shell-surface:var(--color-background-muted)]',
+			inset:
+				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)]',
+			split:
+				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)]'
+		},
+		side: {
+			left: '',
+			right: ''
+		}
+	},
+	compoundVariants: [
+		{
+			variant: 'inset',
+			side: 'left',
+			class: 'md:my-2 md:mr-2 md:ml-0 md:rounded-xl md:border md:border-background-muted md:shadow-sm'
+		},
+		{
+			variant: 'inset',
+			side: 'right',
+			class: 'md:my-2 md:mr-0 md:ml-2 md:rounded-xl md:border md:border-background-muted md:shadow-sm'
+		},
+		{
+			variant: 'split',
+			side: 'left',
+			class: 'md:rounded-l-xl md:border-y md:border-r md:border-background-muted md:shadow-sm'
+		},
+		{
+			variant: 'split',
+			side: 'right',
+			class: 'md:rounded-r-xl md:border-y md:border-l md:border-background-muted md:shadow-sm'
+		}
+	],
+	defaultVariants: {
+		variant: 'sidebar',
+		side: 'left'
+	}
 });
 
 export const appShellTheme = {

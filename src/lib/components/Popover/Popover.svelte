@@ -5,6 +5,7 @@
 	import Button from '../Button/Button.svelte';
 	import { fso } from '$lib/transitions/transition.js';
 	import { portal } from '$lib/attachments/portal.js';
+	import { transitionSize } from '$lib/attachments/transitionSize.js';
 
 	let {
 		id: customId,
@@ -27,6 +28,7 @@
 		lockScroll = true,
 		fitTrigger = false,
 		mobileSheet = false,
+		mobileSheetSizeTransition = true,
 		class: className,
 		trigger,
 		theme
@@ -100,42 +102,43 @@
 </script>
 
 {#if visible}
-	{#key popover.computedMode}
-		<dialog
-			{@attach portal()}
-			{@attach popover.dialog}
-			{@attach popover.focusTrap.attachment}
-			open={true}
-			id={popover.id}
-			class={classes.root({ mode: popover.computedMode })}
+	<dialog
+		{@attach portal()}
+		{@attach popover.dialog}
+		{@attach popover.focusTrap.attachment}
+		open={true}
+		id={popover.id}
+		class={classes.root({ mode: popover.computedMode })}
+	>
+		<!-- The panel is a child of the portaled wrapper, so it is never re-parented mid-transition
+		     (which would break the intro). It carries the visuals, transform-origin, and animation. -->
+		<div
+			{@attach popover.panel}
+			{@attach transitionSize({
+				isActive: () => popover.isMobileSheet && mobileSheetSizeTransition
+			})}
+			class={classes.popover({
+				size: popover.computedSize,
+				mode: popover.computedMode,
+				className
+			})}
+			style:transform-origin={popover.transformOrigin}
+			style:width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
+			style:max-width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
+			in:in_out={popover.computedTransition.in}
+			out:in_out={popover.computedTransition.out}
+			onintroend={() => {
+				popover.hasTransitioned = true;
+				onOpen?.(popover);
+			}}
+			onoutrostart={() => {
+				popover.hasTransitioned = false;
+			}}
+			onoutroend={() => onClose?.(popover)}
 		>
-			<!-- The panel is a child of the portaled wrapper, so it is never re-parented mid-transition
-			     (which would break the intro). It carries the visuals, transform-origin, and animation. -->
-			<div
-				{@attach popover.panel}
-				class={classes.popover({
-					size: popover.computedSize,
-					mode: popover.computedMode,
-					className
-				})}
-				style:transform-origin={popover.transformOrigin}
-				style:width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
-				style:max-width={popover.triggerWidth != null ? `${popover.triggerWidth}px` : undefined}
-				in:in_out={popover.computedTransition.in}
-				out:in_out={popover.computedTransition.out}
-				onintroend={() => {
-					popover.hasTransitioned = true;
-					onOpen?.(popover);
-				}}
-				onoutrostart={() => {
-					popover.hasTransitioned = false;
-				}}
-				onoutroend={() => onClose?.(popover)}
-			>
-				{@render children?.(popover)}
-			</div>
-		</dialog>
-	{/key}
+			{@render children?.(popover)}
+		</div>
+	</dialog>
 {/if}
 {#if trigger}
 	{#if typeof trigger === 'function'}

@@ -8,6 +8,9 @@ export type StepperRenderPayload<Item> = {
 	index: number;
 };
 
+export type StepperPanelAriaLabelledby<Item> =
+	string | false | ((payload: StepperRenderPayload<Item>) => string | undefined);
+
 export type StepperProps<Item> = {
 	/**
 	 * Data for each step, passed to the repeated children snippet as `item`.
@@ -54,4 +57,14 @@ export type StepperProps<Item> = {
 	 * Layout variant applied to the stepper, container, and step panels.
 	 */
 	mode?: 'classic' | 'vertical';
+	/**
+	 * ARIA role applied to each panel. Pass null for neutral semantic containers.
+	 * @default 'tabpanel'
+	 */
+	panelRole?: 'tabpanel' | null;
+	/**
+	 * aria-labelledby value for each panel. Defaults to `stepper-{index}` when
+	 * panelRole is `tabpanel`; pass false to omit it.
+	 */
+	panelAriaLabelledby?: StepperPanelAriaLabelledby<Item>;
 };

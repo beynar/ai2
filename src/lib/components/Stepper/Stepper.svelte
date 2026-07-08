@@ -17,7 +17,9 @@
 			easing: 'ease-in-out',
 			fill: 'both'
 		},
-		mode = 'classic'
+		mode = 'classic',
+		panelRole = 'tabpanel',
+		panelAriaLabelledby
 	}: StepperProps<Item> = $props();
 
 	const id = $props.id();
@@ -49,6 +51,16 @@
 		if (items.length === 0) return;
 		untrack(() => stepper.syncActiveStep(targetStep));
 	});
+
+	const getPanelAriaLabelledby = (item: Item, index: number) => {
+		if (panelAriaLabelledby === false) return undefined;
+		if (typeof panelAriaLabelledby === 'function') {
+			return panelAriaLabelledby({ stepper, item, index });
+		}
+		if (typeof panelAriaLabelledby === 'string') return panelAriaLabelledby;
+		if (panelRole === 'tabpanel') return `stepper-${index}`;
+		return undefined;
+	};
 </script>
 
 <BeforeHydratation
@@ -88,6 +100,9 @@ container.style.height = firstSlide.clientHeight + 'px';
 	>
 		{#each items as item, index}
 			{@const isActiveStep = stepper.activeStep === index}
+			{@const ariaLabelledby = getPanelAriaLabelledby(item, index)}
+			{@const panelTabindex = panelRole === 'tabpanel' ? (isActiveStep ? 0 : -1) : undefined}
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex - focusable tabpanels preserve Stepper's existing keyboard behavior; neutral panels omit tabindex. -->
 			<div
 				bind:clientHeight={
 					() => stepper?.stepHeights?.[index] ?? undefined,
@@ -98,10 +113,10 @@ container.style.height = firstSlide.clientHeight + 'px';
 				}
 				data-step-active={isActiveStep}
 				data-step={index}
-				tabindex={isActiveStep ? 0 : -1}
+				tabindex={panelTabindex}
 				inert={!isActiveStep}
-				role="tabpanel"
-				aria-labelledby={`stepper-${index}`}
+				role={panelRole ?? undefined}
+				aria-labelledby={ariaLabelledby}
 				style:opacity={isActiveStep ? 1 : 0}
 				style:pointer-events={isActiveStep ? 'auto' : 'none'}
 				style:transition-property="opacity"

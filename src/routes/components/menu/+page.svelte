@@ -137,6 +137,43 @@
 		{ type: 'option', title: 'Large Gap Item 2' },
 		{ type: 'option', title: 'Large Gap Item 3' }
 	];
+
+	const stackedItems: MenuItem[] = [
+		{ type: 'option', prefix: houseIcon, title: 'Dashboard' },
+		{
+			type: 'submenu',
+			prefix: gearIcon,
+			title: 'Settings',
+			description: 'Account and workspace',
+			menu: [
+				{ type: 'option', title: 'Profile' },
+				{
+					type: 'submenu',
+					prefix: lockIcon,
+					title: 'Security',
+					description: 'Password and sessions',
+					menu: [
+						{ type: 'option', title: 'Password' },
+						{ type: 'option', title: 'Two-factor authentication' },
+						{ type: 'option', title: 'Active sessions' }
+					]
+				},
+				{ type: 'option', title: 'Billing' }
+			]
+		},
+		{
+			type: 'submenu',
+			prefix: bellIcon,
+			title: 'Notifications',
+			menu: [
+				{ type: 'option', title: 'Email' },
+				{ type: 'option', title: 'Push' },
+				{ type: 'option', title: 'Weekly summary' }
+			]
+		},
+		{ type: 'separator' },
+		{ type: 'option', prefix: signOutIcon, title: 'Log Out', color: 'danger' }
+	];
 </script>
 
 <DocPage
@@ -146,7 +183,7 @@
 	features={[
 		'role=menu with menuitem children',
 		'Arrow key navigation with loop',
-		'Submenus with aria-haspopup & aria-expanded',
+		'Submenus as popovers or stacked views',
 		'Options, buttons, separators, submenus',
 		'Optional header and footer snippets'
 	]}
@@ -168,331 +205,346 @@
 	</ComponentCard>
 
 	{#snippet examples()}
-	<ComponentCard description="A simple vertical list of menu options.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={basicItems} />
-		</div>
-	</ComponentCard>
+		<ComponentCard description="A simple vertical list of menu options.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={basicItems} />
+			</div>
+		</ComponentCard>
 
-	<ComponentCard description="Menu options with prefix icons and descriptions.">
-		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
-			<Menu items={iconItems} />
-		</div>
-	</ComponentCard>
+		<ComponentCard description="Menu options with prefix icons and descriptions.">
+			<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
+				<Menu items={iconItems} />
+			</div>
+		</ComponentCard>
 
-	<ComponentCard description="Menu items rendered as full-width buttons.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={buttonItems} />
-		</div>
-	</ComponentCard>
+		<ComponentCard description="Menu items rendered as full-width buttons.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={buttonItems} />
+			</div>
+		</ComponentCard>
 
-	<ComponentCard description="Options, separators, and action buttons in one menu.">
-		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
-			<Menu items={mixedItems} />
-		</div>
-	</ComponentCard>
+		<ComponentCard description="Options, separators, and action buttons in one menu.">
+			<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
+				<Menu items={mixedItems} />
+			</div>
+		</ComponentCard>
 
-	<ComponentCard description="Small, normal, and large menu item sizes.">
-		<div class="flex gap-4">
-			<div class="flex-1">
-				<h3 class="text-foreground/70 mb-2 text-sm">Small</h3>
-				<div class="bg-background rounded-xl border-background-muted border p-2">
-					<Menu items={smallItems} />
+		<ComponentCard description="Small, normal, and large menu item sizes.">
+			<div class="flex gap-4">
+				<div class="flex-1">
+					<h3 class="text-foreground/70 mb-2 text-sm">Small</h3>
+					<div class="bg-background rounded-xl border-background-muted border p-2">
+						<Menu items={smallItems} />
+					</div>
+				</div>
+				<div class="flex-1">
+					<h3 class="text-foreground/70 mb-2 text-sm">Normal</h3>
+					<div class="bg-background rounded-xl border-background-muted border p-2">
+						<Menu items={normalItems} />
+					</div>
+				</div>
+				<div class="flex-1">
+					<h3 class="text-foreground/70 mb-2 text-sm">Large</h3>
+					<div class="bg-background rounded-xl border-background-muted border p-2">
+						<Menu items={largeItems} />
+					</div>
 				</div>
 			</div>
-			<div class="flex-1">
-				<h3 class="text-foreground/70 mb-2 text-sm">Normal</h3>
-				<div class="bg-background rounded-xl border-background-muted border p-2">
-					<Menu items={normalItems} />
+		</ComponentCard>
+
+		<ComponentCard description="Semantic color variants on menu options.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={colorItems} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Menu items that update state on each click.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={interactiveItems} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Full application menu with profile, navigation, and account actions."
+		>
+			<div class="bg-background rounded-xl border-background-muted w-80 border p-2">
+				<Menu items={appMenuItems} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Typical right-click context menu actions.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={contextMenuItems} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Wider spacing between items via a custom gap class.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={customGapItems} class="gap-2" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="File, edit, and view menus side by side.">
+			<div class="flex gap-4">
+				<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
+					<h3 class="mb-2 px-2 text-sm font-semibold">File Menu</h3>
+					<Menu
+						items={[
+							{ type: 'option', title: 'New File' },
+							{ type: 'option', title: 'Open...' },
+							{ type: 'option', title: 'Save' },
+							{ type: 'separator' },
+							{ type: 'option', title: 'Exit' }
+						]}
+					/>
+				</div>
+				<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
+					<h3 class="mb-2 px-2 text-sm font-semibold">Edit Menu</h3>
+					<Menu
+						items={[
+							{ type: 'option', title: 'Undo' },
+							{ type: 'option', title: 'Redo' },
+							{ type: 'separator' },
+							{ type: 'option', title: 'Cut' },
+							{ type: 'option', title: 'Copy' },
+							{ type: 'option', title: 'Paste' }
+						]}
+					/>
+				</div>
+				<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
+					<h3 class="mb-2 px-2 text-sm font-semibold">View Menu</h3>
+					<Menu
+						items={[
+							{ type: 'option', title: 'Zoom In' },
+							{ type: 'option', title: 'Zoom Out' },
+							{ type: 'separator' },
+							{ type: 'option', title: 'Full Screen' }
+						]}
+					/>
 				</div>
 			</div>
-			<div class="flex-1">
-				<h3 class="text-foreground/70 mb-2 text-sm">Large</h3>
-				<div class="bg-background rounded-xl border-background-muted border p-2">
-					<Menu items={largeItems} />
-				</div>
+		</ComponentCard>
+
+		<ComponentCard description="Nested submenu opened from a menu option.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu
+					items={[
+						{ type: 'option', prefix: houseIcon, title: 'Dashboard' },
+						{ type: 'option', prefix: userIcon, title: 'Profile' },
+						{
+							type: 'submenu',
+							prefix: gearIcon,
+							title: 'Settings',
+							menu: [
+								{ type: 'option', title: 'General' },
+								{ type: 'option', title: 'Privacy' },
+								{ type: 'option', title: 'Security' },
+								{ type: 'separator' },
+								{ type: 'option', title: 'Advanced' }
+							]
+						},
+						{ type: 'separator' },
+						{ type: 'option', prefix: signOutIcon, title: 'Log Out', color: 'danger' }
+					]}
+				/>
 			</div>
-		</div>
-	</ComponentCard>
+		</ComponentCard>
 
-	<ComponentCard description="Semantic color variants on menu options.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={colorItems} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Menu items that update state on each click.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={interactiveItems} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Full application menu with profile, navigation, and account actions.">
-		<div class="bg-background rounded-xl border-background-muted w-80 border p-2">
-			<Menu items={appMenuItems} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Typical right-click context menu actions.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={contextMenuItems} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Wider spacing between items via a custom gap class.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={customGapItems} class="gap-2" />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="File, edit, and view menus side by side.">
-		<div class="flex gap-4">
-			<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
-				<h3 class="mb-2 px-2 text-sm font-semibold">File Menu</h3>
+		<ComponentCard description="Submenus nested two levels deep.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
 				<Menu
 					items={[
 						{ type: 'option', title: 'New File' },
 						{ type: 'option', title: 'Open...' },
+						{
+							type: 'submenu',
+							title: 'Recent Files',
+							menu: [
+								{ type: 'option', title: 'document.txt' },
+								{ type: 'option', title: 'project.js' },
+								{
+									type: 'submenu',
+									title: 'More',
+									menu: [
+										{ type: 'option', title: 'file1.txt' },
+										{ type: 'option', title: 'file2.txt' },
+										{ type: 'option', title: 'file3.txt' }
+									]
+								}
+							]
+						},
+						{ type: 'separator' },
 						{ type: 'option', title: 'Save' },
-						{ type: 'separator' },
-						{ type: 'option', title: 'Exit' }
+						{ type: 'option', title: 'Save As...' }
 					]}
 				/>
 			</div>
-			<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
-				<h3 class="mb-2 px-2 text-sm font-semibold">Edit Menu</h3>
-				<Menu
-					items={[
-						{ type: 'option', title: 'Undo' },
-						{ type: 'option', title: 'Redo' },
-						{ type: 'separator' },
-						{ type: 'option', title: 'Cut' },
-						{ type: 'option', title: 'Copy' },
-						{ type: 'option', title: 'Paste' }
-					]}
-				/>
+		</ComponentCard>
+
+		<ComponentCard description="Submenus can render as stacked views inside one menu surface.">
+			<div class="bg-background rounded-xl border-background-muted w-80 border p-2">
+				<Menu items={stackedItems} submenuMode="stack" />
 			</div>
-			<div class="bg-background rounded-xl border-background-muted flex-1 border p-2">
-				<h3 class="mb-2 px-2 text-sm font-semibold">View Menu</h3>
-				<Menu
-					items={[
-						{ type: 'option', title: 'Zoom In' },
-						{ type: 'option', title: 'Zoom Out' },
-						{ type: 'separator' },
-						{ type: 'option', title: 'Full Screen' }
-					]}
-				/>
-			</div>
-		</div>
-	</ComponentCard>
+		</ComponentCard>
 
-	<ComponentCard description="Nested submenu opened from a menu option.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu
-				items={[
-					{ type: 'option', prefix: houseIcon, title: 'Dashboard' },
-					{ type: 'option', prefix: userIcon, title: 'Profile' },
-					{
-						type: 'submenu',
-						prefix: gearIcon,
-						title: 'Settings',
-						menu: [
-							{ type: 'option', title: 'General' },
-							{ type: 'option', title: 'Privacy' },
-							{ type: 'option', title: 'Security' },
-							{ type: 'separator' },
-							{ type: 'option', title: 'Advanced' }
-						]
-					},
-					{ type: 'separator' },
-					{ type: 'option', prefix: signOutIcon, title: 'Log Out', color: 'danger' }
-				]}
-			/>
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Submenus nested two levels deep.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu
-				items={[
-					{ type: 'option', title: 'New File' },
-					{ type: 'option', title: 'Open...' },
-					{
-						type: 'submenu',
-						title: 'Recent Files',
-						menu: [
-							{ type: 'option', title: 'document.txt' },
-							{ type: 'option', title: 'project.js' },
-							{
-								type: 'submenu',
-								title: 'More',
-								menu: [
-									{ type: 'option', title: 'file1.txt' },
-									{ type: 'option', title: 'file2.txt' },
-									{ type: 'option', title: 'file3.txt' }
-								]
-							}
-						]
-					},
-					{ type: 'separator' },
-					{ type: 'option', title: 'Save' },
-					{ type: 'option', title: 'Save As...' }
-				]}
-			/>
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Submenu opened on hover (default) vs click only.">
-		<div class="flex gap-4">
-			<div class="flex-1">
-				<h3 class="text-foreground/70 mb-2 text-sm">Hover Only (default)</h3>
-				<div class="bg-background rounded-xl border-background-muted border p-2">
-					<Menu
-						items={[
-							{ type: 'option', title: 'Option 1' },
-							{
-								type: 'submenu',
-								title: 'Hover Me',
-								openOnHover: true,
-								openOnClick: false,
-								menu: [
-									{ type: 'option', title: 'Sub 1' },
-									{ type: 'option', title: 'Sub 2' }
-								]
-							}
-						]}
-					/>
+		<ComponentCard description="Submenu opened on hover (default) vs click only.">
+			<div class="flex gap-4">
+				<div class="flex-1">
+					<h3 class="text-foreground/70 mb-2 text-sm">Hover Only (default)</h3>
+					<div class="bg-background rounded-xl border-background-muted border p-2">
+						<Menu
+							items={[
+								{ type: 'option', title: 'Option 1' },
+								{
+									type: 'submenu',
+									title: 'Hover Me',
+									openOnHover: true,
+									openOnClick: false,
+									menu: [
+										{ type: 'option', title: 'Sub 1' },
+										{ type: 'option', title: 'Sub 2' }
+									]
+								}
+							]}
+						/>
+					</div>
+				</div>
+				<div class="flex-1">
+					<h3 class="text-foreground/70 mb-2 text-sm">Click Only</h3>
+					<div class="bg-background rounded-xl border-background-muted border p-2">
+						<Menu
+							items={[
+								{ type: 'option', title: 'Option 1' },
+								{
+									type: 'submenu',
+									title: 'Click Me',
+									openOnHover: false,
+									openOnClick: true,
+									menu: [
+										{ type: 'option', title: 'Sub 1' },
+										{ type: 'option', title: 'Sub 2' }
+									]
+								}
+							]}
+						/>
+					</div>
 				</div>
 			</div>
-			<div class="flex-1">
-				<h3 class="text-foreground/70 mb-2 text-sm">Click Only</h3>
-				<div class="bg-background rounded-xl border-background-muted border p-2">
-					<Menu
-						items={[
-							{ type: 'option', title: 'Option 1' },
-							{
-								type: 'submenu',
-								title: 'Click Me',
-								openOnHover: false,
-								openOnClick: true,
-								menu: [
-									{ type: 'option', title: 'Sub 1' },
-									{ type: 'option', title: 'Sub 2' }
-								]
-							}
-						]}
-					/>
-				</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Every item type in a single menu: options, submenus, buttons, separators."
+		>
+			<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
+				<Menu
+					items={[
+						{
+							type: 'option',
+							prefix: userIcon,
+							title: 'John Doe',
+							description: 'john@example.com'
+						},
+						{ type: 'separator' },
+						{ type: 'option', prefix: houseIcon, title: 'Dashboard' },
+						{
+							type: 'submenu',
+							prefix: gearIcon,
+							title: 'Settings',
+							description: 'Configure your account',
+							menu: [
+								{ type: 'option', title: 'General' },
+								{ type: 'option', title: 'Privacy' },
+								{ type: 'option', prefix: lockIcon, title: 'Security' }
+							]
+						},
+						{
+							type: 'submenu',
+							prefix: bellIcon,
+							title: 'Notifications',
+							menu: [
+								{ type: 'option', title: 'Email Notifications' },
+								{ type: 'option', title: 'Push Notifications' },
+								{ type: 'separator' },
+								{ type: 'option', title: 'Notification Settings' }
+							]
+						},
+						{ type: 'separator', children: 'Actions' },
+						{ type: 'button', children: 'New Project', variant: 'outline', fullWidth: true },
+						{ type: 'separator' },
+						{ type: 'option', prefix: signOutIcon, title: 'Log Out', color: 'danger' }
+					]}
+				/>
 			</div>
-		</div>
-	</ComponentCard>
+		</ComponentCard>
 
-	<ComponentCard description="Every item type in a single menu: options, submenus, buttons, separators.">
-		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
-			<Menu
-				items={[
-					{ type: 'option', prefix: userIcon, title: 'John Doe', description: 'john@example.com' },
-					{ type: 'separator' },
-					{ type: 'option', prefix: houseIcon, title: 'Dashboard' },
-					{
-						type: 'submenu',
-						prefix: gearIcon,
-						title: 'Settings',
-						description: 'Configure your account',
-						menu: [
-							{ type: 'option', title: 'General' },
-							{ type: 'option', title: 'Privacy' },
-							{ type: 'option', prefix: lockIcon, title: 'Security' }
-						]
-					},
-					{
-						type: 'submenu',
-						prefix: bellIcon,
-						title: 'Notifications',
-						menu: [
-							{ type: 'option', title: 'Email Notifications' },
-							{ type: 'option', title: 'Push Notifications' },
-							{ type: 'separator' },
-							{ type: 'option', title: 'Notification Settings' }
-						]
-					},
-					{ type: 'separator', children: 'Actions' },
-					{ type: 'button', children: 'New Project', variant: 'outline', fullWidth: true },
-					{ type: 'separator' },
-					{ type: 'option', prefix: signOutIcon, title: 'Log Out', color: 'danger' }
-				]}
-			/>
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Custom header content above menu items.">
-		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
-			<Menu items={iconItems}>
-				{#snippet header()}
-					<div class="border-background-muted mb-2 border-b pb-2">
-						<div class="px-2">
-							<h3 class="text-sm font-semibold">User Menu</h3>
-							<p class="text-foreground/70 text-xs">Manage your account</p>
-						</div>
-					</div>
-				{/snippet}
-			</Menu>
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Custom footer content below menu items.">
-		<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
-			<Menu items={basicItems}>
-				{#snippet footer()}
-					<div class="border-background-muted mt-2 border-t pt-2">
-						<div class="text-foreground/60 px-2 text-xs">Version 1.0.0</div>
-					</div>
-				{/snippet}
-			</Menu>
-		</div>
-	</ComponentCard>
-
-	<ComponentCard description="Header and footer slots combined in one menu.">
-		<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
-			<Menu items={iconItems}>
-				{#snippet header()}
-					<div class="border-background-muted mb-2 border-b pb-2">
-						<div class="flex items-center gap-2 px-2">
-							<div
-								class="bg-primary text-primary-contrast flex h-10 w-10 items-center justify-center rounded-full"
-							>
-								JD
-							</div>
-							<div>
-								<div class="text-sm font-semibold">John Doe</div>
-								<div class="text-foreground/70 text-xs">john@example.com</div>
+		<ComponentCard description="Custom header content above menu items.">
+			<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
+				<Menu items={iconItems}>
+					{#snippet header()}
+						<div class="border-background-muted mb-2 border-b pb-2">
+							<div class="px-2">
+								<h3 class="text-sm font-semibold">User Menu</h3>
+								<p class="text-foreground/70 text-xs">Manage your account</p>
 							</div>
 						</div>
-					</div>
-				{/snippet}
-				{#snippet footer()}
-					<div class="border-background-muted mt-2 border-t pt-2">
-						<div class="text-foreground/60 px-2 text-center text-xs">
-							<a href="/privacy" class="hover:text-foreground hover:underline">Privacy</a>
-							·
-							<a href="/terms" class="hover:text-foreground hover:underline">Terms</a>
-						</div>
-					</div>
-				{/snippet}
-			</Menu>
-		</div>
-	</ComponentCard>
+					{/snippet}
+				</Menu>
+			</div>
+		</ComponentCard>
 
-	<ComponentCard description="Minimal three-item menu.">
-		<div class="bg-background rounded-xl border-background-muted w-48 border p-2">
-			<Menu
-				items={[
-					{ type: 'option', title: 'Item 1' },
-					{ type: 'option', title: 'Item 2' },
-					{ type: 'option', title: 'Item 3' }
-				]}
-			/>
-		</div>
-	</ComponentCard>
+		<ComponentCard description="Custom footer content below menu items.">
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu items={basicItems}>
+					{#snippet footer()}
+						<div class="border-background-muted mt-2 border-t pt-2">
+							<div class="text-foreground/60 px-2 text-xs">Version 1.0.0</div>
+						</div>
+					{/snippet}
+				</Menu>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Header and footer slots combined in one menu.">
+			<div class="bg-background rounded-xl border-background-muted w-72 border p-2">
+				<Menu items={iconItems}>
+					{#snippet header()}
+						<div class="border-background-muted mb-2 border-b pb-2">
+							<div class="flex items-center gap-2 px-2">
+								<div
+									class="bg-primary text-primary-contrast flex h-10 w-10 items-center justify-center rounded-full"
+								>
+									JD
+								</div>
+								<div>
+									<div class="text-sm font-semibold">John Doe</div>
+									<div class="text-foreground/70 text-xs">john@example.com</div>
+								</div>
+							</div>
+						</div>
+					{/snippet}
+					{#snippet footer()}
+						<div class="border-background-muted mt-2 border-t pt-2">
+							<div class="text-foreground/60 px-2 text-center text-xs">
+								<a href="/privacy" class="hover:text-foreground hover:underline">Privacy</a>
+								·
+								<a href="/terms" class="hover:text-foreground hover:underline">Terms</a>
+							</div>
+						</div>
+					{/snippet}
+				</Menu>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Minimal three-item menu.">
+			<div class="bg-background rounded-xl border-background-muted w-48 border p-2">
+				<Menu
+					items={[
+						{ type: 'option', title: 'Item 1' },
+						{ type: 'option', title: 'Item 2' },
+						{ type: 'option', title: 'Item 3' }
+					]}
+				/>
+			</div>
+		</ComponentCard>
 	{/snippet}
 </DocPage>

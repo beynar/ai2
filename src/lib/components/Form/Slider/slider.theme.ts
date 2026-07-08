@@ -5,9 +5,9 @@ const defaultInputContainer = cva({
 	base: 'w-full rounded text-foreground-light transition-all flex items-center gap-3',
 	variants: {
 		size: {
-			small: 'py-0 text-xs',
-			normal: 'py-0.5 text-sm',
-			large: 'py-1 text-base'
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -45,11 +45,34 @@ const defaultControl = cva({
 		orientation: {
 			horizontal: 'items-center',
 			vertical: 'w-auto flex-col items-center'
+		},
+		size: {
+			small: '',
+			normal: '',
+			large: ''
+		},
+		variant: {
+			default: '',
+			thick: ''
+		},
+		marks: {
+			true: '',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		orientation: 'horizontal'
-	}
+		orientation: 'horizontal',
+		marks: false
+	},
+	compoundVariants: [
+		{ orientation: 'horizontal', marks: true, class: 'h-auto items-start' },
+		{ variant: 'default', orientation: 'horizontal', size: 'small', marks: false, class: 'h-3.5' },
+		{ variant: 'default', orientation: 'horizontal', size: 'normal', marks: false, class: 'h-4' },
+		{ variant: 'default', orientation: 'horizontal', size: 'large', marks: false, class: 'h-5' },
+		{ variant: 'thick', orientation: 'horizontal', size: 'small', marks: false, class: 'h-4' },
+		{ variant: 'thick', orientation: 'horizontal', size: 'normal', marks: false, class: 'h-5' },
+		{ variant: 'thick', orientation: 'horizontal', size: 'large', marks: false, class: 'h-6' }
+	]
 });
 
 const defaultTrack = cva({
@@ -184,16 +207,16 @@ const defaultRange = cva({
 });
 
 const defaultThumb = cva({
-	base: 'absolute z-20 rounded-full border-2 border-background bg-current shadow-sm outline-none ring-offset-background transition-[box-shadow,transform] focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2',
+	base: 'group absolute z-20 flex size-11 touch-none appearance-none items-center justify-center rounded-full border-0 bg-transparent p-0 outline-none',
 	variants: {
 		orientation: {
 			horizontal: 'top-1/2 -translate-x-1/2 -translate-y-1/2',
 			vertical: 'left-1/2 -translate-x-1/2 translate-y-1/2'
 		},
 		size: {
-			small: 'size-3.5',
-			normal: 'size-4',
-			large: 'size-5'
+			small: '',
+			normal: '',
+			large: ''
 		},
 		disabled: {
 			true: 'cursor-not-allowed',
@@ -218,6 +241,70 @@ const defaultThumb = cva({
 		orientation: 'horizontal',
 		size: 'normal',
 		disabled: false,
+		color: 'primary',
+		variant: 'default'
+	}
+});
+
+const defaultThumbHitbox = cva({
+	base: 'absolute z-30 block touch-none rounded-full bg-transparent',
+	variants: {
+		orientation: {
+			horizontal: 'top-1/2 -translate-x-1/2 -translate-y-1/2',
+			vertical: 'left-1/2 -translate-x-1/2 translate-y-1/2'
+		},
+		size: {
+			small: 'size-12',
+			normal: 'size-14',
+			large: 'size-16'
+		},
+		disabled: {
+			true: 'pointer-events-none cursor-not-allowed',
+			false: 'cursor-grab active:cursor-grabbing'
+		},
+		variant: {
+			default: 'hidden',
+			thick: ''
+		}
+	},
+	defaultVariants: {
+		orientation: 'horizontal',
+		size: 'normal',
+		disabled: false,
+		variant: 'default'
+	}
+});
+
+const defaultThumbVisual = cva({
+	base: 'pointer-events-none rounded-full border-2 border-background bg-current shadow-sm ring-offset-background transition-[box-shadow,transform] group-focus-visible:ring-2 group-focus-visible:ring-current group-focus-visible:ring-offset-2',
+	variants: {
+		orientation: {
+			horizontal: '',
+			vertical: ''
+		},
+		size: {
+			small: 'size-3.5',
+			normal: 'size-4',
+			large: 'size-5'
+		},
+		color: {
+			primary: '',
+			secondary: '',
+			danger: '',
+			success: '',
+			warning: '',
+			info: '',
+			foreground: '',
+			background: ''
+		},
+		variant: {
+			default: '',
+			thick: ''
+		}
+	},
+	defaultVariants: {
+		orientation: 'horizontal',
+		size: 'normal',
 		color: 'primary',
 		variant: 'default'
 	},
@@ -246,11 +333,51 @@ const defaultValueLabels = cva({
 		orientation: {
 			horizontal: 'flex-wrap items-center',
 			vertical: 'items-center'
+		},
+		size: {
+			small: '',
+			normal: '',
+			large: ''
+		},
+		variant: {
+			default: '',
+			thick: ''
+		},
+		marks: {
+			true: '',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		orientation: 'horizontal'
-	}
+		orientation: 'horizontal',
+		size: 'normal',
+		variant: 'default',
+		marks: false
+	},
+	compoundVariants: [
+		{ orientation: 'horizontal', marks: true, variant: 'default', class: 'mt-1 -translate-y-1/2' },
+		{
+			orientation: 'horizontal',
+			marks: true,
+			variant: 'thick',
+			size: 'small',
+			class: 'mt-2 -translate-y-1/2'
+		},
+		{
+			orientation: 'horizontal',
+			marks: true,
+			variant: 'thick',
+			size: 'normal',
+			class: 'mt-2.5 -translate-y-1/2'
+		},
+		{
+			orientation: 'horizontal',
+			marks: true,
+			variant: 'thick',
+			size: 'large',
+			class: 'mt-3 -translate-y-1/2'
+		}
+	]
 });
 
 const defaultValueLabel = cva({
@@ -271,7 +398,7 @@ const defaultMarks = cva({
 	base: 'relative',
 	variants: {
 		orientation: {
-			horizontal: 'h-5 w-full',
+			horizontal: 'mt-1.5 h-5 w-full',
 			vertical: 'absolute inset-y-0 left-full ml-3 w-16'
 		},
 		size: {
@@ -315,6 +442,8 @@ export const sliderTheme = {
 	trackBackground: defaultTrackBackground,
 	range: defaultRange,
 	thumb: defaultThumb,
+	thumbHitbox: defaultThumbHitbox,
+	thumbVisual: defaultThumbVisual,
 	valueLabels: defaultValueLabels,
 	valueLabel: defaultValueLabel,
 	marks: defaultMarks,

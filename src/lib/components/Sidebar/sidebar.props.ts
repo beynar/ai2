@@ -5,8 +5,8 @@ import type { MenuItem } from '$lib/components/Menu/menu.props.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { SidebarThemeProps } from './sidebar.theme.js';
 
-export type SidebarState = 'expanded' | 'collapsed';
 export type SidebarDisplayState = 'expanded' | 'collapsed' | 'hidden';
+export type SidebarState = SidebarDisplayState;
 export type SidebarSide = 'left' | 'right';
 export type SidebarVariant = 'sidebar' | 'floating' | 'inset' | 'split';
 export type SidebarCollapsible = 'offcanvas' | 'icon' | 'none';
@@ -19,6 +19,30 @@ export type SidebarTooltipMode = 'auto' | 'always';
 export type SidebarMenuSide = 'top' | 'right' | 'bottom' | 'left';
 export type SidebarMenuAlign = 'start' | 'center' | 'end';
 export type SidebarIcon = Slot | string;
+
+export type SidebarResizeMeta = {
+	/** True when the width changed because of direct pointer or keyboard input. */
+	isUserInteraction: boolean;
+};
+
+export type SidebarResizableOptions = {
+	/** Minimum expanded width before the sidebar collapses to icons. */
+	minWidth?: string | number;
+	/** Maximum expanded width. */
+	maxWidth?: string | number;
+	/** Width below which dragging collapses the sidebar. Defaults to minWidth. */
+	collapseThreshold?: string | number;
+	/** Keyboard resize step in pixels. */
+	keyboardStep?: number;
+	/** Optional localStorage key used to persist the expanded width. */
+	storageKey?: string;
+	/** Fires continuously while the user resizes. */
+	onWidthChange?: (width: string) => void;
+	/** Fires when a resize interaction is committed or a stored width is restored. */
+	onWidthChanged?: (width: string, meta: SidebarResizeMeta) => void;
+};
+
+export type SidebarResizable = boolean | SidebarResizableOptions;
 
 export type SidebarApi = {
 	/** Desktop open state. */
@@ -39,6 +63,8 @@ export type SidebarApi = {
 	toggle: () => void;
 	/** Set the desktop open state. */
 	setOpen: (open: boolean) => void;
+	/** Set the semantic desktop display state. */
+	setDisplayState: (state: SidebarDisplayState) => void;
 	/** Set the mobile drawer open state. */
 	setOpenMobile: (open: boolean) => void;
 };
@@ -243,6 +269,10 @@ type SidebarOwnProps = {
 	open?: boolean;
 	/** Fires whenever the desktop open state changes. */
 	onOpenChange?: (open: boolean) => void;
+	/** Bindable semantic desktop display state. */
+	displayState?: SidebarDisplayState;
+	/** Fires whenever the semantic desktop display state changes. */
+	onDisplayStateChange?: (state: SidebarDisplayState) => void;
 	/** Side the sidebar is anchored to. */
 	side?: SidebarSide;
 	/** Sidebar geometry variant. */
@@ -257,6 +287,8 @@ type SidebarOwnProps = {
 	dir?: 'ltr' | 'rtl';
 	/** Expanded desktop width. */
 	width?: string;
+	/** Enable pointer and keyboard resizing for the expanded sidebar width. */
+	resizable?: SidebarResizable;
 	/** Width when collapsed to icons. */
 	widthIcon?: string;
 	/** Mobile drawer width. */

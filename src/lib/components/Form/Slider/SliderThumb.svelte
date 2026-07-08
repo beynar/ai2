@@ -18,7 +18,8 @@
 		color,
 		size,
 		classes,
-		attachment
+		attachment,
+		hitboxAttachment
 	}: {
 		id: string;
 		payload: SliderValuePayload;
@@ -31,6 +32,7 @@
 		size?: Sizes;
 		classes: SliderClasses;
 		attachment: Attachment<HTMLButtonElement>;
+		hitboxAttachment: Attachment<HTMLElement>;
 	} = $props();
 
 	const getThumbHalfSize = () => {
@@ -64,6 +66,19 @@
 	});
 </script>
 
+<span
+	{@attach hitboxAttachment}
+	aria-hidden="true"
+	data-slider-thumb-hitbox
+	class={classes.thumbHitbox({
+		orientation,
+		disabled,
+		variant,
+		size
+	})}
+	style={thumbPositionStyle}
+></span>
+
 <button
 	{@attach attachment}
 	{id}
@@ -86,4 +101,15 @@
 		size
 	})}
 	style={thumbPositionStyle}
-></button>
+>
+	<span
+		aria-hidden="true"
+		data-slider-thumb-visual
+		class={classes.thumbVisual({
+			orientation,
+			variant,
+			color,
+			size
+		})}
+	></span>
+</button>

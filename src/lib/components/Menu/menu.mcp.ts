@@ -55,6 +55,11 @@ The Menu component is a flexible container that renders an array of menu items i
   - separator: Theme forwarded to Separator components
   - submenu: Theme forwarded to submenu MenuOption triggers
 
+- **submenuMode**: 'auto' | 'popover' | 'stack' (default: 'auto')
+  - auto: floating submenus normally, stacked views inside mobile-sheet popovers
+  - popover: always open submenus as nested PopupMenu instances
+  - stack: navigate to submenu views inside the same menu surface
+
 ## MenuItem Types
 
 The Menu accepts a discriminated union of four item types:
@@ -272,6 +277,11 @@ The menu follows this DOM structure:
 </script>
 
 <Menu {items} />
+\`\`\`
+
+### Stacked Submenus
+\`\`\`svelte
+<Menu {items} submenuMode="stack" />
 \`\`\`
 
 ### Nested Submenus

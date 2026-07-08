@@ -1,6 +1,7 @@
 <script lang="ts" generics="I extends FormInputs">
 	import TextInput from '../TextInput/TextInput.svelte';
 	import NumberInput from '../NumberInput/NumberInput.svelte';
+	import RatingInput from '../RatingInput/RatingInput.svelte';
 	import Slider from '../Slider/Slider.svelte';
 	import type { SliderProps } from '../Slider/slider.props.js';
 	import type { FormInputs, FormSubmitHandler, FormInput, InferFormValue } from './form.js';
@@ -21,6 +22,7 @@
 	import DateInput from '../DateInput/DateInput.svelte';
 	import FileInput from '../File/FileInput.svelte';
 	import TimeInput from '../TimeInput/TimeInput.svelte';
+	import RichTextInput from '../../RichTextInput/RichTextInput.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	let {
 		inputs,
@@ -69,12 +71,16 @@
 			<TextInput {...inputProps as any} {name} />
 		{:else if input.type === 'number'}
 			<NumberInput {...inputProps as any} {name} />
+		{:else if input.type === 'rating'}
+			<RatingInput {...inputProps as any} {name} />
 		{:else if input.type === 'slider'}
 			<Slider {...inputProps as SliderProps} {name} />
 		{:else if input.type === 'slider-range'}
 			<Slider {...inputProps as SliderProps} {name} mode="range" />
 		{:else if input.type === 'textarea'}
 			<TextArea {...inputProps as any} {name} />
+		{:else if input.type === 'rich-text'}
+			<RichTextInput {...inputProps as any} {name} />
 		{:else if input.type === 'select'}
 			<Select {...inputProps as any} {name} />
 		{:else if input.type === 'combobox'}

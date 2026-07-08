@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { Button } from '$lib/components/Button/index.js';
 	import {
 		Sidebar,
+		type SidebarCollapsible,
 		type SidebarGroup,
 		type SidebarVariant
 	} from '$lib/components/Sidebar/index.js';
@@ -16,9 +18,11 @@
 		label: string;
 		variant: SidebarVariant;
 	};
+	type DemoState = 'expanded' | 'icon' | 'hidden';
 
 	let open = $state(true);
 	let selectedRecipeId = $state('sidebar');
+	let collapsedState = $state<Exclude<DemoState, 'expanded'>>('icon');
 
 	const variantRecipes: VariantRecipe[] = [
 		{ id: 'sidebar', label: 'sidebar', variant: 'sidebar' },
@@ -26,9 +30,14 @@
 		{ id: 'inset', label: 'inset', variant: 'inset' },
 		{ id: 'split', label: 'split', variant: 'split' }
 	];
+	const demoStates: DemoState[] = ['expanded', 'icon', 'hidden'];
 
 	const selectedRecipe = $derived(
 		variantRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? variantRecipes[0]
+	);
+	const sidebarState = $derived<DemoState>(open ? 'expanded' : collapsedState);
+	const sidebarCollapsible = $derived<SidebarCollapsible>(
+		collapsedState === 'hidden' ? 'offcanvas' : 'icon'
 	);
 
 	const items: SidebarGroup[] = [
@@ -42,23 +51,43 @@
 			]
 		}
 	];
+
+	function setSidebarState(nextState: DemoState) {
+		if (nextState === 'expanded') {
+			open = true;
+			return;
+		}
+
+		collapsedState = nextState;
+		open = false;
+	}
 </script>
 
 <div class="flex h-[500px] w-full flex-col gap-3">
-	<div class="flex flex-wrap items-center justify-center gap-2">
-		{#each variantRecipes as recipe}
-			<button
-				type="button"
-				class="border-background-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition {selectedRecipeId ===
-				recipe.id
-					? 'bg-primary text-primary-contrast'
-					: 'bg-background text-foreground hover:bg-background-muted'}"
-				aria-pressed={selectedRecipeId === recipe.id}
-				onclick={() => (selectedRecipeId = recipe.id)}
-			>
-				{recipe.label}
-			</button>
-		{/each}
+	<div class="flex flex-wrap items-center justify-center gap-4">
+		<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Sidebar variant">
+			{#each variantRecipes as recipe}
+				<Button
+					variant={selectedRecipeId === recipe.id ? 'solid' : 'outline'}
+					size="small"
+					onClick={() => (selectedRecipeId = recipe.id)}
+				>
+					{recipe.label}
+				</Button>
+			{/each}
+		</div>
+
+		<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Sidebar state">
+			{#each demoStates as state}
+				<Button
+					variant={sidebarState === state ? 'solid' : 'outline'}
+					size="small"
+					onClick={() => setSidebarState(state)}
+				>
+					{state}
+				</Button>
+			{/each}
+		</div>
 	</div>
 
 	<div
@@ -68,7 +97,7 @@
 			bind:open
 			{items}
 			variant={selectedRecipe.variant}
-			collapsible="icon"
+			collapsible={sidebarCollapsible}
 			frame="contained"
 			rail
 			width="16rem"

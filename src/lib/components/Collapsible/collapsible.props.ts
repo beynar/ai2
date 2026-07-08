@@ -33,9 +33,10 @@ type CollapsibleBaseProps = {
 	 */
 	size?: Sizes;
 	/**
-	 * The icon to display. Can be 'chevron', 'caret', a Slot, or false to hide.
+	 * The icon to display. `caret`/`chevron` rotate a chevron; `math` swaps a plus/minus.
+	 * Pass a Slot for a custom icon (receives `{ open }`), or `false` to hide it.
 	 */
-	icon?: 'chevron' | 'caret' | Slot | false;
+	icon?: 'chevron' | 'caret' | 'math' | Slot | false;
 	/**
 	 * Theme configuration overrides.
 	 */

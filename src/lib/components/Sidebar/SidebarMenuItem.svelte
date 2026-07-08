@@ -5,6 +5,7 @@
 	import { dotsThreeIcon } from '$lib/components/Icons/dotsThree.js';
 	import { minusIcon } from '$lib/components/Icons/minus.js';
 	import { plusIcon } from '$lib/components/Icons/plus.js';
+	import { useI18n } from '$lib/i18n/context.svelte.js';
 	import type {
 		SidebarApi,
 		SidebarCollapseIcon,
@@ -33,10 +34,9 @@
 
 	let open = $state<boolean | undefined>();
 	const classes = $derived(useSidebarTheme(theme));
+	const t = $derived(useI18n());
 	const isOpen = $derived(open ?? item.defaultOpen ?? false);
-	const isIconCollapsed = $derived(
-		api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile
-	);
+	const isIconCollapsed = $derived(api.displayState === 'collapsed' && !api.isMobile);
 	const showTooltip = $derived((tooltips === 'always' || isIconCollapsed) && !api.isMobile);
 	const tooltipContent = $derived(showTooltip ? (item.tooltip ?? item.label) : undefined);
 	const hasSubmenu = $derived(!!item.items?.length);
@@ -169,7 +169,7 @@
 						className: 'left-1 right-auto bg-background-muted data-[open=true]:rotate-90'
 					})}
 					data-open={isOpen ? 'true' : undefined}
-					aria-label="Toggle submenu"
+					aria-label={`${t.toggle} ${t.submenu}`}
 					aria-expanded={isOpen}
 					onclick={toggleSubmenu}
 				>

@@ -6,7 +6,7 @@
 	spacing: normal;
 	colorscheme: light;
 
-	background: #f7f8fa;
+	background: #f7fafa;
 
 	foreground: #1b1d29;
 	primary: #6d78d5;
@@ -37,6 +37,79 @@
 	);
 	background-size: 16px 16px;
 	background-position: -8px -8px;
+}
+
+/* Scrollable container with no visible scrollbar (Tabbar, Command, Sidebar). */
+@utility scrollbar-none {
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+[data-slot='video-player'] {
+	container: video-player / inline-size;
+}
+
+[data-slot='video-player-compact-transport'],
+[data-slot='video-player-compact-settings'] {
+	display: none;
+}
+
+@container video-player (max-width: 720px) {
+	[data-slot='video-player-compact-transport'] {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		z-index: 30;
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		transform: translate(-50%, -50%);
+	}
+
+	[data-slot='video-player-controls-bar'] {
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+	}
+
+	[data-slot='video-player-timeline-slider'] {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	[data-slot='video-player-timeline-rail'] {
+		top: 50%;
+		bottom: auto;
+		translate: 0 -50%;
+	}
+
+	[data-slot='video-player-timeline-thumb'] {
+		top: 50%;
+		bottom: auto;
+		translate: -50% -50%;
+	}
+
+	[data-slot='video-player-control-row'] {
+		display: contents;
+	}
+
+	[data-slot='video-player-control-end'] {
+		flex: 0 0 auto;
+		min-width: fit-content;
+		margin-left: 0;
+	}
+
+	[data-slot='video-player-control-start'],
+	[data-slot='video-player-control-center'],
+	[data-slot='video-player-secondary-controls'] {
+		display: none;
+	}
+
+	[data-slot='video-player-compact-settings'] {
+		display: flex;
+	}
 }
 
 meter {

@@ -32,7 +32,14 @@
 	const classes = $derived(useAppShellTheme(theme));
 </script>
 
-<div bind:this={ref} data-slot="app-shell" class={classes.root({ className })} {...attachments}>
+<div
+	bind:this={ref}
+	data-slot="app-shell"
+	data-sidebar-variant={sidebar.variant ?? 'sidebar'}
+	data-sidebar-side={sidebar.side ?? 'left'}
+	class={classes.root({ className })}
+	{...attachments}
+>
 	<Sidebar {...sidebar} {frame} mode="layout">
 		{#snippet children(sidebarApi)}
 			{#snippet appHeader(pageShell: PageShellApi)}
@@ -98,7 +105,10 @@
 				{contentWidth}
 				{actionOverflow}
 				{mobileActionCount}
-				class={classes.page()}
+				class={classes.page({
+					variant: sidebar.variant ?? 'sidebar',
+					side: sidebar.side ?? 'left'
+				})}
 				theme={pageShellTheme}
 			>
 				{#snippet children(pageShell)}

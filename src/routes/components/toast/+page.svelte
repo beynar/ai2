@@ -1,104 +1,408 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
-	import { Confirmation, confirmation } from '$lib/components/Confirmation/index.js';
 	import { Toaster, toast } from '$lib/components/Toast/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import type { ToastPosition } from '$lib/components/Toast/toast.state.svelte.js';
+
+	const positions: ToastPosition[] = [
+		'top-left',
+		'top-center',
+		'top-right',
+		'bottom-left',
+		'bottom-center',
+		'bottom-right'
+	];
+
+	const sizes = ['small', 'normal', 'large'] as const;
+
+	// Deferred delete + Undo — the real-world pattern. Deleting an item removes it
+	// from the UI optimistically and shows a toast with an Undo action. The actual
+	// (irreversible) delete is deferred to `onAutoClose`, which fires only if the
+	// toast times out — clicking Undo dismisses it first, so the delete never runs.
+	type Item = { id: number; name: string };
+	let items = $state<Item[]>([
+		{ id: 1, name: 'Design brief.pdf' },
+		{ id: 2, name: 'Q3 roadmap.md' },
+		{ id: 3, name: 'Invoice #1024.pdf' }
+	]);
+	const committed: string[] = [];
+
+	const deleteItem = (item: Item) => {
+		items = items.filter((i) => i.id !== item.id); // optimistic remove
+		toast.foreground({
+			title: `Deleted “${item.name}”`,
+			duration: 5000,
+			actions: [
+				{
+					content: 'Undo',
+					color: 'primary',
+					onClick: () => {
+						items = [...items, item].sort((a, b) => a.id - b.id); // restore
+					}
+				}
+			],
+			onAutoClose: () => {
+				// Not undone → commit the real deletion here (your API call).
+				committed.push(item.name);
+				console.log('Committed delete:', item.name);
+			}
+		});
+	};
+
+	// A pending toast that resolves into a success toast after a delay — the common
+	// "optimistic action" pattern.
+	const showLoadingToast = () => {
+		const t = toast.primary({
+			title: 'Saving changes…',
+			loading: true,
+			duration: false
+		});
+		setTimeout(() => {
+			t.loading = false;
+			t.opts = {
+				...t.opts,
+				color: 'success',
+				title: 'Changes saved',
+				description: 'Your changes are now live.',
+				duration: 3000
+			};
+		}, 1600);
+	};
 </script>
 
-<Toaster showCloseIcon position="top-left" />
-<Confirmation />
+<Toaster />
 
 <DocPage
 	title="Toast"
-	subtitle="Transient notifications for feedback, alerts, and confirmations."
+	subtitle="Transient notifications for feedback, alerts, and confirmations. Fire them imperatively from anywhere with the `toast` helper — a single <Toaster /> in your layout renders and stacks them."
 	component="Toast"
 	features={[
-		'role=status with aria-live announcements',
 		'Imperative toast.color() helper API',
-		'Stacked layout, hover pauses timers',
+		'Eight color variants, plain or rich',
 		'Six corner and center positions',
-		'FSO enter and exit transitions'
+		'Swipe / drag toward the edge to dismiss',
+		'Stacked layout, hover pauses timers',
+		'Loading spinner, progress bar & actions'
 	]}
 >
 	<ComponentCard
-		description="Trigger a toast notification from a button click."
-		code={`<Button
-	onClick={() => {
+		description="Fire a toast from anywhere with the toast helper. Mount a single <Toaster /> once in your layout. Drag a toast toward its screen edge to dismiss it."
+		code={`<script>
+	import { Toaster, toast } from 'svelai/toast';
+<\/script>
+
+<Toaster />
+
+<Button
+	onClick={() =>
 		toast.primary({
 			title: 'Hello',
 			description: 'This is a toast'
-		});
-	}}
+		})}
 >
 	Show toast
 </Button>`}
 	>
 		<Button
-			onClick={() => {
+			onClick={() =>
 				toast.primary({
 					title: 'Hello',
 					description: 'This is a toast'
-				});
-			}}>Show toast</Button
+				})}>Show toast</Button
 		>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard>
-			<Button
-				onClick={async () => {
-					return toast.danger({
-						title: 'Hello',
-						description: 'This is a toast',
-						richColors: true,
-						duration: 100000,
-						onClose: () => {
-							console.log('closed');
-						}
-					});
-					const { confirmed } = await confirmation({
-						title: 'Hello',
-						description: 'This is a toast',
-						confirm: 'Confirm',
-						cancel: 'Cancel'
-					});
-					(
-						[
-							'primary'
-							// 'secondary',
-							// 'danger',
-							// 'success',
-							// 'warning',
-							// 'info',
-							// 'foreground',
-							// 'background'
-						] as const
-					).forEach((color) => {
-						(
-							[
-								'bottom-center'
-								// 'bottom-left',
-								// 'bottom-right',
-								// 'top-center',
-								// 'top-left',
-								// 'top-right'
-							] as const
-						).forEach((position) => {
-							toast[color]({
-								title: 'Hello',
-								description: 'This is a toast',
-								richColors: true,
-								duration: 100000,
-								position: position,
-								onClose: () => {
-									console.log('closed');
-								}
-							});
-						});
-					});
-				}}>Show toast</Button
+		<ComponentCard
+			title="Types"
+			description="Each semantic color ships a matching default icon — a check, info, warning, or error glyph."
+			class="!min-h-fit"
+			code={`toast.success({ title: 'Saved', description: 'Your changes were saved.' });
+toast.info({ title: 'Heads up', description: 'A new version is available.' });
+toast.warning({ title: 'Careful', description: 'This needs a review first.' });
+toast.danger({ title: 'Something went wrong', description: 'Please try again.' });
+toast.foreground({ title: 'Note', description: 'Just so you know.' });`}
+		>
+			<div class="flex flex-wrap justify-center gap-2">
+				<Button
+					color="success"
+					variant="soft"
+					onClick={() => toast.success({ title: 'Saved', description: 'Your changes were saved.' })}
+				>
+					Success
+				</Button>
+				<Button
+					color="info"
+					variant="soft"
+					onClick={() =>
+						toast.info({ title: 'Heads up', description: 'A new version is available.' })}
+				>
+					Info
+				</Button>
+				<Button
+					color="warning"
+					variant="soft"
+					onClick={() =>
+						toast.warning({ title: 'Careful', description: 'This needs a review first.' })}
+				>
+					Warning
+				</Button>
+				<Button
+					color="danger"
+					variant="soft"
+					onClick={() =>
+						toast.danger({ title: 'Something went wrong', description: 'Please try again.' })}
+				>
+					Danger
+				</Button>
+				<Button
+					color="foreground"
+					variant="soft"
+					onClick={() => toast.foreground({ title: 'Note', description: 'Just so you know.' })}
+				>
+					Neutral
+				</Button>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Rich colors"
+			description="By default a toast is a neutral surface with a colored icon. Pass richColors to tint the whole toast in its semantic color."
+			class="!min-h-fit"
+			code={`// Default: neutral surface, colored icon
+toast.success({ title: 'Saved' });
+
+// Rich: fully tinted surface
+toast.success({ title: 'Saved', richColors: true });`}
+		>
+			<div class="flex flex-col items-stretch gap-6 sm:flex-row sm:gap-12">
+				<div class="flex flex-col items-center gap-2">
+					<span class="text-foreground-muted text-xs font-medium tracking-wide uppercase">
+						Default
+					</span>
+					<div class="flex flex-wrap justify-center gap-2">
+						<Button
+							color="success"
+							variant="soft"
+							onClick={() => toast.success({ title: 'Saved', description: 'Neutral surface.' })}
+						>
+							Success
+						</Button>
+						<Button
+							color="danger"
+							variant="soft"
+							onClick={() => toast.danger({ title: 'Failed', description: 'Neutral surface.' })}
+						>
+							Danger
+						</Button>
+						<Button
+							color="info"
+							variant="soft"
+							onClick={() => toast.info({ title: 'Info', description: 'Neutral surface.' })}
+						>
+							Info
+						</Button>
+					</div>
+				</div>
+				<div class="flex flex-col items-center gap-2">
+					<span class="text-foreground-muted text-xs font-medium tracking-wide uppercase">
+						Rich colors
+					</span>
+					<div class="flex flex-wrap justify-center gap-2">
+						<Button
+							color="success"
+							onClick={() =>
+								toast.success({ title: 'Saved', description: 'Tinted surface.', richColors: true })}
+						>
+							Success
+						</Button>
+						<Button
+							color="danger"
+							onClick={() =>
+								toast.danger({ title: 'Failed', description: 'Tinted surface.', richColors: true })}
+						>
+							Danger
+						</Button>
+						<Button
+							color="info"
+							onClick={() =>
+								toast.info({ title: 'Info', description: 'Tinted surface.', richColors: true })}
+						>
+							Info
+						</Button>
+					</div>
+				</div>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Positions"
+			description="Toasts anchor to any corner or edge-center. Set a default on the Toaster, or override per toast with the position option."
+			class="!min-h-fit"
+			code={`toast.info({ title: 'top-right', position: 'top-right' });
+toast.info({ title: 'bottom-center', position: 'bottom-center' });`}
+		>
+			<div class="grid grid-cols-3 gap-2">
+				{#each positions as position (position)}
+					<Button
+						variant="outline"
+						color="foreground"
+						size="small"
+						onClick={() => toast.info({ title: position, position })}
+					>
+						{position}
+					</Button>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Sizes"
+			description="Three sizes tune padding, radius, type and icon scale — small for dense UIs, large for prominent alerts."
+			class="!min-h-fit"
+			code={`toast.success({ title: 'Compact', size: 'small' });
+toast.success({ title: 'Default', size: 'normal' });
+toast.success({ title: 'Prominent', size: 'large' });
+
+// or default every toast:
+<Toaster size="large" />`}
+		>
+			<div class="flex flex-wrap justify-center gap-2">
+				{#each sizes as size (size)}
+					<Button
+						variant="soft"
+						color="success"
+						onClick={() =>
+							toast.success({
+								title: size,
+								description: 'The quick brown fox.',
+								size,
+								position: 'top-center'
+							})}
+					>
+						{size}
+					</Button>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Banners"
+			description="banner-top and banner-bottom render a full screen-width bar pinned flush to the edge — for app-wide announcements. Swipe toward the edge to dismiss."
+			class="!min-h-fit"
+			code={`toast.info({
+	title: 'Scheduled maintenance tonight at 2am UTC.',
+	position: 'banner-top'
+});
+
+toast.warning({ title: 'You are offline.', position: 'banner-bottom' });`}
+		>
+			<div class="flex flex-wrap justify-center gap-2">
+				<Button
+					variant="soft"
+					color="info"
+					onClick={() =>
+						toast.info({
+							title: 'Scheduled maintenance tonight at 2am UTC.',
+							position: 'banner-top'
+						})}
+				>
+					Top banner
+				</Button>
+				<Button
+					variant="soft"
+					color="warning"
+					onClick={() => toast.warning({ title: 'You are offline.', position: 'banner-bottom' })}
+				>
+					Bottom banner
+				</Button>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Action toast (Undo)"
+			description="The real-world Undo pattern. Deleting removes the item immediately; the toast carries an Undo action. The irreversible delete is deferred to onAutoClose — it runs only if the toast times out, so Undo (a manual dismiss) cancels it. Hovering pauses the timer."
+			class="!min-h-fit"
+			code={`const deleteItem = (item) => {
+	items = items.filter((i) => i.id !== item.id); // optimistic remove
+
+	toast.foreground({
+		title: \`Deleted "\${item.name}"\`,
+		duration: 5000,
+		actions: [
+			{ content: 'Undo', color: 'primary', onClick: () => restore(item) }
+		],
+		// Runs ONLY on timeout — never when the toast is dismissed (Undo).
+		onAutoClose: () => commitDelete(item)
+	});
+};`}
+		>
+			<div
+				class="border-background-muted w-full max-w-sm divide-y divide-background-muted rounded-lg border"
 			>
+				{#each items as item (item.id)}
+					<div class="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+						<span class="text-foreground truncate">{item.name}</span>
+						<Button size="small" variant="ghost" color="danger" onClick={() => deleteItem(item)}>
+							Delete
+						</Button>
+					</div>
+				{/each}
+				{#if !items.length}
+					<p class="text-foreground-muted px-3 py-6 text-center text-sm">
+						All items deleted. Reload the page to reset.
+					</p>
+				{/if}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Progress bar"
+			description="Set progress to render a bar counting down the remaining duration. It pauses when you hover the toast, like the timer. Set it on a single toast or on the Toaster to default it everywhere."
+			class="!min-h-fit"
+			code={`// per toast
+toast.info({ title: 'Auto-dismissing', duration: 6000, progress: true });
+
+// or as a default for every toast
+<Toaster progress />`}
+		>
+			<Button
+				color="info"
+				variant="soft"
+				onClick={() =>
+					toast.info({
+						title: 'Auto-dismissing',
+						description: 'Hover to pause the countdown.',
+						duration: 6000,
+						progress: true
+					})}
+			>
+				Show with progress
+			</Button>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Loading &amp; updates"
+			description="Show a spinner for a pending action, then mutate the same toast in place once it resolves — no second toast needed."
+			class="!min-h-fit"
+			code={`const t = toast.primary({
+	title: 'Saving changes…',
+	loading: true,
+	duration: false
+});
+
+// later, when the action resolves:
+t.loading = false;
+t.opts = {
+	...t.opts,
+	color: 'success',
+	title: 'Changes saved',
+	description: 'Your changes are now live.',
+	duration: 3000
+};`}
+		>
+			<Button color="primary" onClick={showLoadingToast}>Save changes</Button>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

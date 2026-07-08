@@ -1,182 +1,175 @@
 <script lang="ts">
 	import '../app.css';
-	import { ThemeState, useTheme } from '$lib/components/Theme/theme.state.svelte.js';
-	import Theme from '$lib/components/Theme/Theme.svelte';
 	import { page } from '$app/state';
-	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
-	import { Separator } from '$lib/components/Separator/index.js';
+	import {
+		AppShell,
+		type AppShellApi,
+		type AppShellSidebarProps
+	} from '$lib/components/AppShell/index.js';
+	import { Button } from '$lib/components/Button/index.js';
 	import Confirmation from '$lib/components/Confirmation/Confirmation.svelte';
+	import { commandIcon } from '$lib/components/Icons/command.js';
+	import { sidebarSimpleIcon } from '$lib/components/Icons/sidebarSimple.js';
+	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
+	import type {
+		SidebarApi,
+		SidebarCollapsible,
+		SidebarVariant
+	} from '$lib/components/Sidebar/index.js';
+	import Theme from '$lib/components/Theme/Theme.svelte';
+	import type { ThemeState } from '$lib/components/Theme/theme.state.svelte.js';
+	import { getSidebarGroups, headerLinks } from './appNavigation.js';
+	import SidebarCommandPalette from './SidebarCommandPalette.svelte';
+
 	const { children: childrenSnippet } = $props();
+
+	type SidebarFooterState = 'expanded' | 'icon' | 'hidden';
+
+	const sidebarVariants: SidebarVariant[] = ['sidebar', 'floating', 'inset', 'split'];
+	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
+	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
+	let sidebarOpen = $state(true);
+	let sidebarVariant = $state<SidebarVariant>('split');
+	let sidebarCollapsedState = $state<Exclude<SidebarFooterState, 'expanded'>>('hidden');
+
+	const sidebarGroups = $derived(getSidebarGroups(page.route.id));
+	const sidebarState = $derived<SidebarFooterState>(
+		sidebarOpen ? 'expanded' : sidebarCollapsedState
+	);
+	const sidebarCollapsible = $derived<SidebarCollapsible>(
+		sidebarCollapsedState === 'hidden' ? 'offcanvas' : 'icon'
+	);
+
+	function setSidebarState(nextState: SidebarFooterState) {
+		if (nextState === 'expanded') {
+			sidebarOpen = true;
+			return;
+		}
+
+		sidebarCollapsedState = nextState;
+		sidebarOpen = false;
+	}
+
+	const sidebar = $derived<AppShellSidebarProps>({
+		open: sidebarOpen,
+		onOpenChange: (nextOpen) => {
+			sidebarOpen = nextOpen;
+		},
+		variant: sidebarVariant,
+		collapsible: sidebarCollapsible,
+		rail: true,
+		edgeReveal: true,
+		width: '16rem',
+		widthMobile: '18rem',
+		items: sidebarGroups,
+		headerButton: {
+			icon: commandIcon,
+			title: 'Svelai',
+			subtitle: 'Components'
+		},
+		footer: sidebarFooter
+	});
 </script>
 
-{#snippet navigationButton({ href, text }: { href: string; text: string })}
+{#snippet headerLink({ href, text }: { href: string; text: string })}
 	{@const isActive = page.route.id === href}
 	<a
 		{href}
-		class="text-foreground {isActive
-			? 'bg-primary/20 text-primary'
-			: ''} rounded-md px-2 py-1 text-sm"
+		class="rounded-md px-2 py-1 text-sm font-medium text-foreground transition-colors hover:bg-background-muted hover:text-foreground {isActive
+			? 'bg-primary/15 text-primary'
+			: ''}"
 	>
 		{text}
 	</a>
 {/snippet}
 
-{#snippet sideNavigationButton({ href, text }: { href: string; text: string })}
-	{@const isActive = page.route.id === href}
-	<a
-		{href}
-		class="text-foreground {isActive
-			? 'bg-primary/20 text-primary'
-			: ''} rounded-md px-2 py-1 text-sm"
-	>
-		{text}
-	</a>
+{#snippet shellFooter()}
+	<div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+		<div class="flex min-w-0 flex-wrap items-center gap-1.5">
+			<span class="mr-1 text-xs font-medium text-foreground-muted">Variant</span>
+			<div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sidebar variant">
+				{#each sidebarVariants as variant}
+					<Button
+						variant={sidebarVariant === variant ? 'solid' : 'ghost'}
+						size="small"
+						onClick={() => (sidebarVariant = variant)}
+					>
+						{variant}
+					</Button>
+				{/each}
+			</div>
+		</div>
+
+		<div class="flex min-w-0 flex-wrap items-center gap-1.5">
+			<span class="mr-1 text-xs font-medium text-foreground-muted">State</span>
+			<div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sidebar state">
+				{#each sidebarStates as state}
+					<Button
+						variant={sidebarState === state ? 'solid' : 'ghost'}
+						size="small"
+						onClick={() => setSidebarState(state)}
+					>
+						{state}
+					</Button>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/snippet}
+
+{#snippet sidebarFooter(api: SidebarApi)}
+	<SidebarCommandPalette
+		groups={sidebarGroups}
+		collapsed={api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile}
+	/>
 {/snippet}
 
 <Theme>
 	{#snippet children(theme: ThemeState)}
-		<NetworkIndicator color="danger" />
-		<Confirmation />
-		<div class="relative grid grid-cols-12">
-			<div
-				class=" bg-background border-background-muted sticky top-0 z-10 col-span-12 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"
-			>
-				<div class="flex items-center gap-4">
-					{@render navigationButton({ href: '/docs', text: 'Docs' })}
-					{@render navigationButton({ href: '/components/accordion', text: 'Components' })}
-					{@render navigationButton({ href: '/', text: 'Sections' })}
-					{@render navigationButton({ href: '/', text: 'Examples' })}
-					{@render navigationButton({ href: '/playground', text: 'Playground' })}
-					{@render navigationButton({ href: '/colors', text: 'Colors' })}
-				</div>
-				<div class="flex items-center gap-2">
-					<!-- <Button suffix={githubLogo} variant="ghost" size="small" /> -->
-					<button
-						class="border-background-muted bg-background text-foreground hover:bg-background-muted hover:text-foreground inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50"
-						onclick={() => (theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark')}
+		{#if isPreviewRoute}
+			{@render childrenSnippet()}
+		{:else}
+			{#snippet shellHeader({ sidebar }: AppShellApi)}
+				<div class="flex min-h-12 items-center justify-between gap-3 px-3 py-2 sm:px-4">
+					<div class="flex min-w-0 items-center gap-2">
+						<Button
+							prefix={sidebarSimpleIcon}
+							label="Toggle sidebar"
+							variant="ghost"
+							size="small"
+							squared
+							class="md:hidden"
+							onClick={() => sidebar.toggle()}
+						/>
+						<nav aria-label="Primary" class="flex min-w-0 flex-wrap items-center gap-1">
+							{#each headerLinks as link}
+								{@render headerLink(link)}
+							{/each}
+						</nav>
+					</div>
+					<Button
+						variant="outline"
+						size="small"
+						onClick={() => (theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark')}
 					>
-						{theme?.resolvedTheme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-					</button>
+						{theme.resolvedTheme === 'dark' ? 'Light' : 'Dark'}
+					</Button>
 				</div>
-			</div>
-			<div
-				class="  border-background-muted scrollbar scrollbar-none bg-background sticky top-[45px] left-0 col-span-2 grid max-h-[calc(100vh-45px)] overflow-auto border-r border-dashed px-2 pb-10"
+			{/snippet}
+
+			<NetworkIndicator color="danger" />
+			<Confirmation />
+			<AppShell
+				{sidebar}
+				header={shellHeader}
+				footer={shellFooter}
+				contentPadding="large"
+				contentWidth="wide"
 			>
-				<!-- Getting started -->
-				<Separator line={false} align="start" class="mt-4" children="Getting Started" />
-				{@render sideNavigationButton({ href: '/docs', text: 'Theme & setup' })}
-				{@render sideNavigationButton({ href: '/docs/conventions', text: 'Conventions' })}
-
-				<!-- Actions -->
-				<Separator line={false} align="start" class="mt-4" children="Actions" />
-				{@render sideNavigationButton({ href: '/components/button', text: 'Button' })}
-				{@render sideNavigationButton({ href: '/components/button-group', text: 'Button group' })}
-				{@render sideNavigationButton({ href: '/components/toggle-button', text: 'Toggle button' })}
-				{@render sideNavigationButton({
-					href: '/components/toggle-button-group',
-					text: 'Toggle group'
-				})}
-
-				<!-- Disclosure -->
-				<Separator line={false} align="start" class="mt-4" children="Disclosure" />
-				{@render sideNavigationButton({ href: '/components/accordion', text: 'Accordion' })}
-				{@render sideNavigationButton({ href: '/components/alert', text: 'Alert' })}
-				{@render sideNavigationButton({ href: '/components/collapsible', text: 'Collapsible' })}
-
-				<!-- Display -->
-				<Separator line={false} align="start" class="mt-4" children="Display" />
-				{@render sideNavigationButton({ href: '/components/aspect-ratio', text: 'Aspect ratio' })}
-				{@render sideNavigationButton({ href: '/components/avatar', text: 'Avatar' })}
-				{@render sideNavigationButton({ href: '/components/badge', text: 'Badge' })}
-				{@render sideNavigationButton({ href: '/components/breadcrumbs', text: 'Breadcrumbs' })}
-				{@render sideNavigationButton({ href: '/components/card', text: 'Card' })}
-				{@render sideNavigationButton({ href: '/components/carousel', text: 'Carousel' })}
-				{@render sideNavigationButton({ href: '/components/chip', text: 'Chip' })}
-				{@render sideNavigationButton({ href: '/components/code', text: 'Code' })}
-				{@render sideNavigationButton({ href: '/components/diff', text: 'Diff' })}
-				{@render sideNavigationButton({ href: '/components/dialog', text: 'Dialog' })}
-				{@render sideNavigationButton({ href: '/components/empty', text: 'Empty' })}
-				{@render sideNavigationButton({ href: '/components/globe', text: 'Globe' })}
-				{@render sideNavigationButton({ href: '/components/kbd', text: 'Kbd' })}
-				{@render sideNavigationButton({ href: '/components/marquee', text: 'Marquee' })}
-				{@render sideNavigationButton({ href: '/components/mermaid', text: 'Mermaid' })}
-				{@render sideNavigationButton({ href: '/components/map', text: 'Map' })}
-				{@render sideNavigationButton({ href: '/components/markdown', text: 'Markdown' })}
-				{@render sideNavigationButton({ href: '/components/meter', text: 'Meter' })}
-				{@render sideNavigationButton({
-					href: '/components/network-indicator',
-					text: 'Network indicator'
-				})}
-				{@render sideNavigationButton({ href: '/components/pagination', text: 'Pagination' })}
-				{@render sideNavigationButton({ href: '/components/pdf-viewer', text: 'PDF viewer' })}
-				{@render sideNavigationButton({ href: '/components/qr-code', text: 'QR code' })}
-				{@render sideNavigationButton({ href: '/components/separator', text: 'Separator' })}
-				{@render sideNavigationButton({ href: '/components/skeleton', text: 'Skeleton' })}
-				{@render sideNavigationButton({ href: '/components/spinner', text: 'Spinner' })}
-				{@render sideNavigationButton({ href: '/components/stepper', text: 'Stepper' })}
-				{@render sideNavigationButton({ href: '/components/tabbar', text: 'Tabbar' })}
-				{@render sideNavigationButton({ href: '/components/table', text: 'Table' })}
-				{@render sideNavigationButton({ href: '/components/tabs', text: 'Tabs' })}
-				{@render sideNavigationButton({ href: '/components/tree', text: 'Tree' })}
-
-				<!-- Form -->
-				<Separator line={false} align="start" class="mt-4" children="Form" />
-				{@render sideNavigationButton({ href: '/components/calendar', text: 'Calendar' })}
-				{@render sideNavigationButton({ href: '/components/checkboxes', text: 'Checkboxes' })}
-				{@render sideNavigationButton({ href: '/components/combobox', text: 'Combobox' })}
-				{@render sideNavigationButton({ href: '/components/date-input', text: 'Date input' })}
-				{@render sideNavigationButton({ href: '/components/file', text: 'File' })}
-				{@render sideNavigationButton({ href: '/components/form', text: 'Form' })}
-				{@render sideNavigationButton({
-					href: '/components/multi-step-form',
-					text: 'Multi-step form'
-				})}
-				{@render sideNavigationButton({ href: '/components/number-input', text: 'Number input' })}
-				{@render sideNavigationButton({ href: '/components/password', text: 'Password' })}
-				{@render sideNavigationButton({ href: '/components/phone', text: 'Phone' })}
-				{@render sideNavigationButton({ href: '/components/radios', text: 'Radios' })}
-				{@render sideNavigationButton({ href: '/components/select', text: 'Select' })}
-				{@render sideNavigationButton({ href: '/components/slider', text: 'Slider' })}
-				{@render sideNavigationButton({ href: '/components/switch', text: 'Switch' })}
-				{@render sideNavigationButton({ href: '/components/tags-input', text: 'Tags Input' })}
-				{@render sideNavigationButton({ href: '/components/textinput', text: 'Text input' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'Textarea' })}
-				{@render sideNavigationButton({ href: '/components/time-input', text: 'Time input' })}
-
-				<!-- Shells -->
-				<Separator line={false} align="start" class="mt-4" children="Shells" />
-				{@render sideNavigationButton({ href: '/components/app-shell', text: 'App shell' })}
-				{@render sideNavigationButton({ href: '/components/sidebar', text: 'Sidebar' })}
-				{@render sideNavigationButton({ href: '/components/page-shell', text: 'Page shell' })}
-
-				<!-- Menus & Navigation -->
-				<Separator line={false} align="start" class="mt-4" children="Menus & Navigation" />
-				{@render sideNavigationButton({ href: '/components/command', text: 'Command' })}
-				{@render sideNavigationButton({ href: '/components/menu', text: 'Menu' })}
-				{@render sideNavigationButton({ href: '/components/context-menu', text: 'Context menu' })}
-				{@render sideNavigationButton({ href: '/components/menu-option', text: 'Menu option' })}
-				{@render sideNavigationButton({ href: '/components/popover', text: 'Popover' })}
-				{@render sideNavigationButton({ href: '/components/popup-menu', text: 'Popup menu' })}
-				{@render sideNavigationButton({ href: '/components/resizable', text: 'Resizable' })}
-				{@render sideNavigationButton({ href: '/components/toast', text: 'Toast' })}
-				{@render sideNavigationButton({ href: '/components/tooltip', text: 'Tooltip' })}
-
-				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">actions & utilities</Separator> -->
-
-				<!-- {@render sideNavigationButton({ href: '/components/textarea', text: 'autosize' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'usePrevious' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'trapFocus' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'clickOutside' })} -->
-
-				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">Tailwind utilities</Separator> -->
-
-				<!-- {@render sideNavigationButton({ href: '/utilities/raised', text: '.raised' })} -->
-			</div>
-			<main class="bg-background-dark col-span-10 p-4 md:p-10">
-				<div class="mx-auto w-full max-w-6xl">
+				{#snippet children()}
 					{@render childrenSnippet()}
-				</div>
-			</main>
-		</div>
+				{/snippet}
+			</AppShell>
+		{/if}
 	{/snippet}
 </Theme>

@@ -3,6 +3,7 @@
 	import { Toaster, type ToasterProps } from './toast.state.svelte.js';
 	import Toast from './Toast.svelte';
 	import { defaultToastAnimation, useToastTheme } from './toast.theme.js';
+	import { useI18n } from '$lib/i18n/context.svelte.js';
 	let {
 		theme,
 		collapseHorizontalAxis = (breakpoint) => (breakpoint === 'sm' ? true : false),
@@ -14,16 +15,20 @@
 		position = 'bottom-center',
 		perspectiveAmount = 15,
 		size,
-		closeOnClick = true,
+		closeOnClick = false,
+		swipeToDismiss = true,
 		showCloseIcon = true,
 		duration = 4000,
 		dismissible = true,
 		richColors = false,
+		progress = false,
 		prefix,
 		suffix,
 		closeIcon,
 		animation = defaultToastAnimation
 	}: ToasterProps = $props();
+
+	const t = $derived(useI18n());
 
 	const toaster = new Toaster({
 		get collapseHorizontalAxis() {
@@ -56,6 +61,9 @@
 		get closeOnClick() {
 			return closeOnClick;
 		},
+		get swipeToDismiss() {
+			return swipeToDismiss;
+		},
 		get showCloseIcon() {
 			return showCloseIcon;
 		},
@@ -67,6 +75,9 @@
 		},
 		get richColors() {
 			return richColors;
+		},
+		get progress() {
+			return progress;
 		},
 		get prefix() {
 			return prefix;
@@ -98,7 +109,7 @@
 	bind:this={toaster.element}
 	tabIndex={-1}
 	open={toaster.isOpen}
-	aria-label="Notifications"
+	aria-label={t.notifications}
 	class={classes.toaster()}
 	data-hovering={toaster.hovering}
 >

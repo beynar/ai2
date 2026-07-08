@@ -35,15 +35,16 @@
 	{/if}
 {/snippet}
 
-{#if disabled}
-	{@render children(noop)}
-{:else}
-	{@render children(
-		tooltipAttachment({
-			content: tooltipContent,
-			position: 'top',
-			offset: 8,
-			class: 'max-w-60 rounded-md px-2.5 py-1.5 text-xs'
-		})
-	)}
-{/if}
+<!-- Single call site: toggling `disabled` swaps only the attachment, so the trigger node is
+     never recreated. Recreating it would re-run the popup's reference attachment on a fresh
+     node, and the popup would place against the detached old node (top-left) before jumping. -->
+{@render children(
+	disabled
+		? noop
+		: tooltipAttachment({
+				content: tooltipContent,
+				position: 'top',
+				offset: 8,
+				class: 'max-w-60 rounded-md px-2.5 py-1.5 text-xs'
+			})
+)}

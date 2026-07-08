@@ -1,5 +1,6 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { Colors } from '$lib/types/theme.js';
+import type { Messages } from '$lib/i18n/en.js';
 import type { InputProps } from '../Field/field.js';
 import type {
 	SliderFormatValue,
@@ -56,6 +57,8 @@ export type SliderProps = Omit<InputProps<'slider'>, 'value' | 'onChange' | 'onV
 	rangeLabel?: Slot<SliderRangeLabelPayload>;
 	/** Per-thumb accessible labels. */
 	thumbLabels?: string[];
+	/** Per-instance i18n overrides, merged over the global catalog. */
+	i18n?: Partial<Messages>;
 	/** Called whenever the field value changes. */
 	onChange?: (value: number | number[]) => void;
 	/** Validates the current value, returning error messages (or false) when invalid. */

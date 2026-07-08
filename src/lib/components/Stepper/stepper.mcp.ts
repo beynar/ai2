@@ -52,6 +52,8 @@ Use items for the collection and a single children snippet for the repeated pane
 - onChange: called with the newly active item when the active step changes.
 - keyFramesOptions: Web Animations options used for the slide transition and timing. Default duration is 300ms.
 - mode: classic or vertical.
+- panelRole: role applied to each panel. Defaults to "tabpanel"; pass null when Stepper is only animating neutral containers.
+- panelAriaLabelledby: aria-labelledby value, callback, or false. Defaults to stepper-{index} when panelRole is "tabpanel".
 - class: extra classes applied to the root container.
 
 ## StepperState
@@ -73,7 +75,7 @@ Use items for the collection and a single children snippet for the repeated pane
 
 ## Accessibility
 
-Stepper renders each panel with role="tabpanel", marks inactive panels inert, disables pointer events on inactive panels, and keeps inactive panels out of the tab order.
+Stepper renders each panel with role="tabpanel" by default, marks inactive panels inert, disables pointer events on inactive panels, and keeps inactive panels out of the tab order. Use \`panelRole={null}\` with \`panelAriaLabelledby={false}\` when another primitive owns the semantics inside each panel.
 
 ## Theme Parts
 

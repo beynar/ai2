@@ -29,6 +29,7 @@ import { fileInputDescription } from '$lib/components/Form/File/fileInput.mcp.js
 import { formDescription } from '$lib/components/Form/Form/form.mcp.js';
 import { multiStepFormDescription } from '$lib/components/Form/MultiStepForm/multiStepForm.mcp.js';
 import { numberInputDescription } from '$lib/components/Form/NumberInput/numberInput.mcp.js';
+import { ratingInputDescription } from '$lib/components/Form/RatingInput/ratingInput.mcp.js';
 import { passwordInputDescription } from '$lib/components/Form/PasswordInput/passwordInput.mcp.js';
 import { phoneInputDescription } from '$lib/components/Form/PhoneInput/phoneInput.mcp.js';
 import { radioInputDescription } from '$lib/components/Form/RadioInput/radioInput.mcp.js';
@@ -39,6 +40,7 @@ import { textAreaDescription } from '$lib/components/Form/TextArea/textArea.mcp.
 import { textInputDescription } from '$lib/components/Form/TextInput/textInput.mcp.js';
 import { comboboxDescription } from '$lib/components/Form/Combobox/combobox.mcp.js';
 import { tagsInputDescription } from '$lib/components/Form/TagsInput/tagsInput.mcp.js';
+import { keyValueInputDescription } from '$lib/components/Form/KeyValueInput/keyValueInput.mcp.js';
 import { headingDescription } from '$lib/components/Heading/heading.mcp.js';
 import { meterDescription } from '$lib/components/Meter/meter.mcp.js';
 import { popoverDescription } from '$lib/components/Popover/popover.mcp.js';
@@ -105,6 +107,7 @@ const components = {
 	form: formDescription,
 	'multi-step-form': multiStepFormDescription,
 	'number-input': numberInputDescription,
+	'rating-input': ratingInputDescription,
 	'password-input': passwordInputDescription,
 	'phone-input': phoneInputDescription,
 	'radio-input': radioInputDescription,
@@ -116,6 +119,7 @@ const components = {
 	'text-input': textInputDescription,
 	combobox: comboboxDescription,
 	'tags-input': tagsInputDescription,
+	'key-value-input': keyValueInputDescription,
 	heading: headingDescription,
 	meter: meterDescription,
 	popover: popoverDescription,

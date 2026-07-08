@@ -1,227 +1,191 @@
 <script lang="ts">
 	import Alert from '$lib/components/Alert/Alert.svelte';
+	import Button from '$lib/components/Button/Button.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
-	import { checkCircleIcon } from '$lib/components/Icons/checkCircle.js';
-	import { xCircleIcon } from '$lib/components/Icons/xCircle.js';
 	import { infoIcon } from '$lib/components/Icons/info.js';
-	import { triangleIcon } from '$lib/components/Icons/triangle.js';
-	import { colors, sizes, variants } from '$lib/utils/tokens.js';
+
+	const statusColors = ['success', 'info', 'warning', 'danger'] as const;
+	const variants = ['solid', 'outline', 'soft'] as const;
+	const sizes = ['small', 'normal', 'large'] as const;
+
+	let dismissed = $state(false);
 </script>
 
 <DocPage
 	title="Alert"
-	subtitle="Contextual banners that communicate status, warnings, or important messages."
+	subtitle="Contextual banners that communicate status, warnings, or important messages. The `soft` variant is the tinted 'toast' look — a muted surface, colored border and filled status icon, readable in light and dark."
 	component="Alert"
 	features={[
-		'role=alert for live regions',
-		'prefix, title, description, children slots',
-		'color, variant, and size tokens',
-		'Layout adapts when icon is omitted'
+		'soft variant: tinted surface + filled status icon',
+		'solid / outline / soft variants',
+		'Eight colors, three sizes',
+		'Optional dismiss button',
+		'prefix, title, description & children slots'
 	]}
 >
 	<ComponentCard
-		description="A basic alert with title and description slots."
-		code={`<Alert>
-	{#snippet title()}
-		Heads up!
-	{/snippet}
-	{#snippet description()}
-		This is a basic alert message.
-	{/snippet}
-</Alert>`}
+		description="The soft variant gives the tinted status look. A matching filled icon is added automatically."
+		code={`<Alert variant="soft" color="success" title="Payment received" description="Your invoice has been paid in full." />`}
 	>
-		<Alert>
-			{#snippet title()}
-				Heads up!
-			{/snippet}
-			{#snippet description()}
-				This is a basic alert message.
-			{/snippet}
-		</Alert>
+		<div class="w-full max-w-md">
+			<Alert
+				variant="soft"
+				color="success"
+				title="Payment received"
+				description="Your invoice has been paid in full."
+			/>
+		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Basic alert with title and description.">
-			<div class="grid gap-4">
-				<Alert>
-					{#snippet title()}
-						Heads up!
-					{/snippet}
-					{#snippet description()}
-						This is a basic alert message.
-					{/snippet}
-				</Alert>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Alert with icon via the prefix slot.">
-			<div class="grid gap-4">
-				<Alert color="info">
-					{#snippet prefix()}
-						{@render infoIcon()}
-					{/snippet}
-					{#snippet title()}
-						Information
-					{/snippet}
-					{#snippet description()}
-						This alert includes an icon.
-					{/snippet}
-				</Alert>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Success alert.">
-			<div class="grid gap-4">
-				<Alert color="success">
-					{#snippet prefix()}
-						{@render checkCircleIcon()}
-					{/snippet}
-					{#snippet title()}
-						Success!
-					{/snippet}
-					{#snippet description()}
-						Your changes have been saved successfully.
-					{/snippet}
-				</Alert>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Warning alert.">
-			<div class="grid gap-4">
-				<Alert color="warning">
-					{#snippet prefix()}
-						{@render triangleIcon()}
-					{/snippet}
-					{#snippet title()}
-						Warning
-					{/snippet}
-					{#snippet description()}
-						Please review your input before proceeding.
-					{/snippet}
-				</Alert>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Danger alert.">
-			<div class="grid gap-4">
-				<Alert color="danger">
-					{#snippet prefix()}
-						{@render xCircleIcon()}
-					{/snippet}
-					{#snippet title()}
-						Error
-					{/snippet}
-					{#snippet description()}
-						Something went wrong. Please try again.
-					{/snippet}
-				</Alert>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Alert variants.">
-			<div class="grid gap-4">
-				{#each variants as variant}
-					<Alert {variant} color="primary">
-						{#snippet prefix()}
-							{@render infoIcon()}
-						{/snippet}
-						{#snippet title()}
-							{variant} Alert
-						{/snippet}
-						{#snippet description()}
-							This is a {variant} variant alert.
-						{/snippet}
-					</Alert>
+		<ComponentCard
+			title="Status colors"
+			description="With the soft variant the status colors each ship a matching filled icon and a legible on-tint accent — readable in both light and dark."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<Alert variant="soft" color="success" title="Saved" description="Your changes are live." />
+<Alert variant="soft" color="info" title="Heads up" description="A new version is available." />
+<Alert variant="soft" color="warning" title="Careful" description="This needs a review first." />
+<Alert variant="soft" color="danger" title="Failed" description="Something went wrong. Try again." />`}
+		>
+			<div class="grid w-full max-w-md gap-3">
+				{#each statusColors as color (color)}
+					<Alert
+						{color}
+						variant="soft"
+						title={color[0].toUpperCase() + color.slice(1)}
+						description="The quick brown fox jumps over the lazy dog."
+					/>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Alert sizes.">
-			<div class="grid gap-4">
-				{#each sizes as size}
-					<Alert {size} color="info">
-						{#snippet prefix()}
-							{@render infoIcon()}
-						{/snippet}
-						{#snippet title()}
-							{size} Alert
-						{/snippet}
-						{#snippet description()}
-							This is a {size} size alert.
-						{/snippet}
-					</Alert>
+		<ComponentCard
+			title="Variants"
+			description="solid / outline / soft. soft is the tinted status look; solid and outline are the classic flat styles."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<Alert variant="solid" color="primary" title="Solid" />
+<Alert variant="outline" color="primary" title="Outline" />
+<Alert variant="soft" color="primary" title="Soft" />`}
+		>
+			<div class="grid w-full max-w-md gap-3">
+				{#each variants as variant (variant)}
+					<Alert
+						{variant}
+						color="primary"
+						prefix={infoIcon}
+						title={variant[0].toUpperCase() + variant.slice(1)}
+						description="A {variant} variant alert."
+					/>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Alert colors.">
-			<div class="grid gap-4">
-				{#each colors as color}
-					<Alert {color}>
-						{#snippet prefix()}
-							{@render infoIcon()}
-						{/snippet}
-						{#snippet title()}
-							{color} Alert
-						{/snippet}
-						{#snippet description()}
-							This is a {color} colored alert.
-						{/snippet}
-					</Alert>
+		<ComponentCard
+			title="Sizes"
+			description="Three sizes scale padding, type and icon."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<Alert size="small" variant="soft" color="info" title="Small" />
+<Alert size="normal" variant="soft" color="info" title="Normal" />
+<Alert size="large" variant="soft" color="info" title="Large" />`}
+		>
+			<div class="grid w-full max-w-md gap-3">
+				{#each sizes as size (size)}
+					<Alert
+						{size}
+						variant="soft"
+						color="info"
+						title={size[0].toUpperCase() + size.slice(1)}
+						description="The quick brown fox."
+					/>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Alert with children slot only.">
-			<div class="grid gap-4">
-				<Alert color="info">
-					{#snippet children()}
-						Simple alert message without title or description slots.
-					{/snippet}
-				</Alert>
+		<ComponentCard
+			title="Dismissible"
+			description="Pass dismissible with an onDismiss handler to render a close button. The caller owns visibility."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<script>
+	let dismissed = $state(false);
+<\/script>
+
+{#if !dismissed}
+	<Alert
+		variant="soft"
+		color="warning"
+		dismissible
+		onDismiss={() => (dismissed = true)}
+		title="Storage almost full"
+		description="You've used 90% of your quota."
+	/>
+{/if}`}
+		>
+			<div class="grid w-full max-w-md gap-3">
+				{#if !dismissed}
+					<Alert
+						variant="soft"
+						color="warning"
+						dismissible
+						onDismiss={() => (dismissed = true)}
+						title="Storage almost full"
+						description="You've used 90% of your quota."
+					/>
+				{:else}
+					<Button
+						variant="soft"
+						color="foreground"
+						size="small"
+						onClick={() => (dismissed = false)}
+					>
+						Reset alert
+					</Button>
+				{/if}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Alert without icon — grid layout adjusts automatically.">
-			<div class="grid gap-4">
-				<Alert color="background" variant="soft">
-					{#snippet title()}
-						No Icon Alert
-					{/snippet}
+		<ComponentCard
+			title="With actions"
+			description="Drop buttons into the description slot for a call to action."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<Alert variant="soft" color="info" title="Update available">
+	{#snippet description()}
+		<p>Version 2.0 is ready to install.</p>
+		<div class="mt-2 flex gap-2">
+			<Button size="small" color="info">Update now</Button>
+			<Button size="small" variant="ghost" color="info">Later</Button>
+		</div>
+	{/snippet}
+</Alert>`}
+		>
+			<div class="w-full max-w-md">
+				<Alert variant="soft" color="info" title="Update available">
 					{#snippet description()}
-						The grid layout automatically adjusts when no icon is provided.
+						<p>Version 2.0 is ready to install.</p>
+						<div class="mt-2 flex gap-2">
+							<Button size="small" color="info">Update now</Button>
+							<Button size="small" variant="ghost" color="info">Later</Button>
+						</div>
 					{/snippet}
 				</Alert>
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Alert with title only.">
-			<div class="grid gap-4">
-				<Alert color="primary">
-					{#snippet prefix()}
-						{@render infoIcon()}
-					{/snippet}
-					{#snippet title()}
-						Alert Title Only
-					{/snippet}
-				</Alert>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Disabled alert.">
-			<div class="grid gap-4">
-				<Alert disabled={true} color="info">
-					{#snippet prefix()}
-						{@render infoIcon()}
-					{/snippet}
-					{#snippet title()}
-						Disabled Alert
-					{/snippet}
-					{#snippet description()}
-						This alert is disabled and non-interactive.
-					{/snippet}
-				</Alert>
+		<ComponentCard
+			title="Title only"
+			description="Description is optional; a single-line alert vertically centers its icon."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<Alert variant="soft" color="success" title="Profile updated" />`}
+		>
+			<div class="grid w-full max-w-md gap-3">
+				<Alert variant="soft" color="success" title="Profile updated" />
+				<Alert
+					variant="soft"
+					color="danger"
+					title="Connection lost"
+					dismissible
+					onDismiss={() => {}}
+				/>
 			</div>
 		</ComponentCard>
 	{/snippet}

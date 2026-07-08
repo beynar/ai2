@@ -146,6 +146,14 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 	// Update ARIA attributes on all items
 	const updateAriaAttributes = (focusIdx: number | null) => {
+		// The roving tab-stop (the single item reachable with Tab): the focused item
+		// when there is one, otherwise the default/active item, otherwise the first
+		// enabled one. This makes Tab land on the meaningful item WITHOUT any element
+		// being DOM-focused on mount (which would flash a focus ring). Virtual focus
+		// keeps every item out of the tab order.
+		const tabStop = opts.virtualFocus
+			? -1
+			: (focusIdx ?? opts.defaultFocusedIndex?.() ?? findFirstIndex());
 		items.forEach((item, index) => {
 			const isFocused = index === focusIdx;
 			const itemId = `${baseId}-item-${index}`;
@@ -155,8 +163,9 @@ export const useNavigation = (opts: NavigationOptions) => {
 				item.id = itemId;
 			}
 
-			// Roving tabindex follows focus; virtual focus keeps items out of the tab order.
-			item.setAttribute('tabindex', isFocused && !opts.virtualFocus ? '0' : '-1');
+			// Roving tabindex sits on the tab-stop; data-highlighted (below) tracks
+			// actual keyboard focus, which is a separate concern.
+			item.setAttribute('tabindex', index === tabStop ? '0' : '-1');
 
 			// Set data-highlighted for keyboard focus
 			if (isFocused) {
@@ -436,12 +445,13 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 				const pointerLeaveCleanup = on(node, 'pointerleave', handlePointerLeave);
 				const pointerDownCleanup = pointerDown.reference?.(node);
-				if (opts.defaultFocusedIndex) {
-					const defaultFocusedIndex = opts.defaultFocusedIndex();
-					if (defaultFocusedIndex !== null && defaultFocusedIndex !== -1) {
-						moveFocusTo(defaultFocusedIndex);
-					}
-				}
+				// NOTE: we intentionally do NOT move DOM focus to `defaultFocusedIndex`
+				// on mount — a tablist/menu must not steal focus just by existing (it
+				// caused a focus-visible ring on the first tab on page load). Consumers
+				// that want focus-on-mount opt in explicitly (e.g. Menu's `focusOnMount`
+				// via onMount). Tabbing into the container still focuses the active item
+				// through the `focusin` handler above, and the roving tab-stop
+				// (updateAriaAttributes) makes the active item directly Tab-reachable.
 				return () => {
 					cleanUp();
 					keyDownCleanup?.();

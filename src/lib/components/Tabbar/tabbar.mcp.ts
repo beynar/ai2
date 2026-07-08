@@ -45,7 +45,8 @@ The Tabbar component is a flexible navigation component that displays a list of 
 - **variant**: 'underline' | 'pill' (default: 'underline')
   - underline: a colored bar slides along the active tab edge (side set by position)
   - pill: a rounded track where the active tab is a raised pill; the pill slides and resizes between tabs with the same animation
-  - The indicator is a single shared element measured onto the active tab, so it adapts to variable tab widths and to the vertical orientation
+  - Both variants respect the color prop: the underline bar and the pill fill use color, and the active pill's label uses the color's contrast tone (use color='background' for a neutral pill)
+  - The indicator is correct during SSR (a CSS-only bar rendered in the active tab) and hands off to a single measured element that slides after hydration, so it adapts to variable tab widths and to the vertical orientation
 
 - **alignment**: 'start' | 'center' | 'end' (default: 'start')
   - start: Tabs aligned to the start of the container

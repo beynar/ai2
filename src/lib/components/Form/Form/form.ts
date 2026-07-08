@@ -2,6 +2,7 @@ import type { FieldValue } from '../Field/field.js';
 import type { FieldState } from '../Field/field.state.svelte.js';
 import type { TextInputProps } from '../TextInput/textInput.props.js';
 import type { NumberInputProps } from '../NumberInput/numberInput.props.js';
+import type { RatingInputProps } from '../RatingInput/ratingInput.props.js';
 import type { SliderProps } from '../Slider/slider.props.js';
 import type { TextAreaProps } from '../TextArea/textArea.props.js';
 import type { SelectProps } from '../Select/select.props.js';
@@ -14,6 +15,7 @@ import type { CalendarInputProps } from '../Calendar/calendarInput.props.js';
 import type { DateInputProps } from '../DateInput/dateInput.props.js';
 import type { FileInputProps } from '../File/fileInput.props.js';
 import type { TimeInputProps } from '../TimeInput/timeInput.props.js';
+import type { RichTextInputProps } from '../../RichTextInput/richTextInput.props.js';
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -28,6 +30,9 @@ type BaseFormInput =
 	| ({
 			type: 'number';
 	  } & NumberInputProps)
+	| ({
+			type: 'rating';
+	  } & RatingInputProps)
 	| ({
 			type: 'slider';
 	  } & SliderProps)
@@ -49,6 +54,9 @@ type BaseFormInput =
 	| ({
 			type: 'textarea';
 	  } & TextAreaProps)
+	| ({
+			type: 'rich-text';
+	  } & RichTextInputProps)
 	| ({
 			type: 'select';
 	  } & SelectProps)

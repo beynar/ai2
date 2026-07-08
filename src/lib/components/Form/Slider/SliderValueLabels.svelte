@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Sizes } from '$lib/types/theme.js';
-	import type { SliderProps } from './slider.props.js';
+	import type { SliderProps, SliderVariant } from './slider.props.js';
 	import type { SliderState } from './slider.state.svelte.js';
 	import type { useSliderTheme } from './slider.theme.js';
 
@@ -11,18 +11,22 @@
 		slider,
 		classes,
 		size,
+		variant,
+		marks,
 		valueLabel,
 		rangeLabel
 	}: {
 		slider: SliderState;
 		classes: SliderClasses;
 		size?: Sizes;
+		variant: SliderVariant;
+		marks: boolean;
 		valueLabel?: SliderProps['valueLabel'];
 		rangeLabel?: SliderProps['rangeLabel'];
 	} = $props();
 </script>
 
-<div class={classes.valueLabels({ orientation: slider.orientationValue })}>
+<div class={classes.valueLabels({ orientation: slider.orientationValue, size, variant, marks })}>
 	{#if slider.isRange && rangeLabel}
 		<Slot
 			as="span"

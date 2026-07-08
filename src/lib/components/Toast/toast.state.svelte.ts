@@ -5,6 +5,7 @@ import type { ResponsiveProps } from '../Theme/theme.js';
 import type { Slot } from '../Slot/slot.js';
 import type { FSOProps } from '$lib/transitions/transition.js';
 import type { Colors, Sizes } from '$lib/types/theme.js';
+import type { ButtonProps } from '../Button/index.js';
 import { bind } from '$lib/utils/state.svelte.js';
 import { defaultToastAnimation, type ToastThemeProps } from './toast.theme.js';
 
@@ -14,29 +15,50 @@ export type ToastPosition =
 	| 'bottom-left'
 	| 'bottom-right'
 	| 'top-center'
-	| 'bottom-center';
+	| 'bottom-center'
+	// Full screen-width bars pinned flush to the top or bottom edge.
+	| 'banner-top'
+	| 'banner-bottom';
+
+/**
+ * A button rendered inside the toast (full Button props, with its label as
+ * `content`). Clicking it runs its `onClick` and then — unless `dismiss: false` —
+ * dismisses the toast. Because a manual dismiss fires `onClose` and NOT
+ * `onAutoClose`, this is exactly what makes the deferred-commit / Undo pattern
+ * work: put the real destructive action in `onAutoClose` (runs only on timeout),
+ * and an Undo action here cancels it just by closing the toast early.
+ */
+export type ToastAction = ButtonProps & {
+	/** The button's label. */
+	content?: string;
+	/** Whether clicking the button dismisses the toast. @default true */
+	dismiss?: boolean;
+};
 
 type ToastOptions = {
 	id: string;
 	size?: Sizes;
-	closeOnClick?: boolean; // If true, the toast will close when clicked.
+	closeOnClick?: boolean; // If true, clicking the toast body dismisses it. @default false (use swipe/close-icon instead).
+	swipeToDismiss?: boolean; // If true, the toast can be dragged toward its screen edge to dismiss it. @default true
 	showCloseIcon?: boolean; // If true, the toast will show a close icon.
 	duration?: number | false; // Time in milliseconds that should elapse before automatically closing the toast.
 	dismissible?: boolean; // If false, it'll prevent the user from dismissing the toast.
 	richColors?: boolean; // If true, the toast will use rich colors.
 	prefix?: Slot | false;
 	suffix?: Slot;
+	actions?: ToastAction[]; // Buttons rendered in the toast (e.g. an "Undo" action).
 	closeIcon?: Slot; // The close button that shows inside the toast.
 	animation?: FSOProps;
 	loading?: boolean; // If true, the toast will show a spinner.
+	progress?: boolean; // If true, show a progress bar counting down the remaining duration (only when the toast auto-closes).
 	title?: Slot; // Toast's title.
 	description?: Slot; // Toast's description, renders underneath the title.
 	color: Colors;
 	important?: boolean; // Control the sensitivity of the toast for screen readers
 	icon?: string; // Icon displayed in front of toast's text, aligned vertically.
-	onClose?: (toast: Toast) => void; // Function that gets called when either the close button is clicked, or the toast is swiped.
-	onOpen?: (toast: Toast) => void; // Function that gets called when either the close button is clicked, or the toast is swiped.
-	onAutoClose?: (toast: Toast) => void; // Function that gets called when the toast disappears automatically after its timeout (duration prop).
+	onClose?: (toast: Toast) => void; // Called when the toast is dismissed manually (close button, an action, or toast.remove()). NOT called on timeout.
+	onOpen?: (toast: Toast) => void; // Called once the toast has finished entering.
+	onAutoClose?: (toast: Toast) => void; // Called when the toast closes on its own after `duration`. Put deferred/committed work (e.g. the real delete of an Undo flow) here — it never fires if the toast is dismissed first.
 	position?: ToastPosition;
 };
 
@@ -44,6 +66,7 @@ export type ToasterProps = Pick<
 	ToastOptions,
 	| 'size'
 	| 'closeOnClick'
+	| 'swipeToDismiss'
 	| 'showCloseIcon'
 	| 'duration'
 	| 'dismissible'
@@ -51,8 +74,11 @@ export type ToasterProps = Pick<
 	| 'prefix'
 	| 'suffix'
 	| 'closeIcon'
+	| 'progress'
 > & {
 	theme?: ToastThemeProps;
+	/** Per-instance i18n overrides, merged over the global catalog. */
+	i18n?: Partial<import('$lib/i18n/en.js').Messages>;
 	collapseHorizontalAxis?: ResponsiveProps<boolean>; // If true, the toast will collapse horizontally. Specially useful on mobile.
 	expand?: boolean; // If true, the toast will expand by default;
 	visibleToasts?: number; // If true, the toast will be visible by default;
@@ -137,7 +163,8 @@ export class Toaster {
 					toast,
 					position: toast.opts.position,
 					duration: toast.opts.duration || 0,
-					callback: toast.remove
+					// Timeout is the ONLY path that fires onAutoClose (the deferred-commit hook).
+					callback: () => toast.remove('auto')
 				};
 			});
 			untrack(() => {
@@ -170,11 +197,14 @@ export class Toaster {
 			{
 				...opts,
 				position: opts.position || this.currentPosition || 'bottom-right',
+				size: opts.size ?? this.size,
 				dismissible: opts.dismissible ?? this.dismissible,
-				closeOnClick: opts.closeOnClick ?? this.closeOnClick,
+				closeOnClick: opts.closeOnClick ?? this.closeOnClick ?? false,
+				swipeToDismiss: opts.swipeToDismiss ?? this.swipeToDismiss ?? true,
 				duration: opts.duration ?? this.duration,
 				richColors: opts.richColors ?? this.richColors,
 				showCloseIcon: opts.showCloseIcon ?? this.showCloseIcon ?? true,
+				progress: opts.progress ?? this.progress ?? false,
 				id: opts.id || Math.random().toString(36).substring(7)
 			},
 			this,
@@ -221,6 +251,9 @@ export class Toast {
 	) {
 		this.id = opts.id;
 		this.opts = opts;
+		// Seed the reactive spinner flag from the initial options; callers can still
+		// flip `toast.loading` later (e.g. resolve a pending action to a result).
+		this.loading = opts.loading ?? false;
 	}
 
 	animations = $derived(
@@ -245,7 +278,13 @@ export class Toast {
 	});
 
 	hovered = $derived.by(() => this.toaster?.hovering === this.opts.position);
-	stacked = $derived.by(() => !this.toaster?.expand && !this.hovered);
+	// Banners stack flat (full height, no perspective scale) — the collapsed
+	// perspective look doesn't suit full-width bars.
+	stacked = $derived.by(() => {
+		const position = this.opts.position;
+		if (position === 'banner-top' || position === 'banner-bottom') return false;
+		return !this.toaster?.expand && !this.hovered;
+	});
 	absolutePosition = $derived.by(() =>
 		(this.toaster?.toastsPerPositions?.[this.position] || [])
 			.toReversed()
@@ -261,7 +300,13 @@ export class Toast {
 	// between each other (via absolutePosition) — it must not leak into the edge
 	// distance, or the offset prop silently stops working vertically.
 	actualizedPosition = $derived.by(() => {
-		const [vertical, horizontal] = this.opts.position.split('-');
+		const position = this.opts.position;
+		// Banners span the full width, flush to the edge (no offset, no margin).
+		if (position === 'banner-top' || position === 'banner-bottom') {
+			const verticalPosition = position === 'banner-top' ? 'top' : 'bottom';
+			return [verticalPosition, 'center', `${verticalPosition}: 0px; left: 0px; right: 0px;`];
+		}
+		const [vertical, horizontal] = position.split('-');
 		const verticalPosition = vertical === 'top' ? 'top' : 'bottom';
 		const horizontalPosition = horizontal === 'left' ? 'left' : 'right';
 		const offset = this.toaster?.offset ?? 0;
@@ -286,10 +331,23 @@ export class Toast {
 			: this.absolutePosition * (this.actualizedPosition[0] === 'top' ? 1 : -1)
 	);
 
-	remove = () => {
+	private removed = false;
+
+	// `reason` distinguishes an automatic timeout ('auto' → onAutoClose, the commit
+	// hook) from every manual dismissal ('manual' → onClose). Guarded so a stray
+	// event object passed as the argument (e.g. onclick={toast.remove}) still counts
+	// as manual. Idempotent: an action-button click bubbles to the toast's own
+	// closeOnClick handler, so remove() can fire twice — callbacks must run once.
+	remove = (reason: 'manual' | 'auto' = 'manual') => {
+		if (this.removed) return;
+		this.removed = true;
 		this.toaster?.removeToast(this);
-		this.opts?.onClose?.(this);
 		this.timer?.destroy();
+		if (reason === 'auto') {
+			this.opts?.onAutoClose?.(this);
+		} else {
+			this.opts?.onClose?.(this);
+		}
 	};
 }
 

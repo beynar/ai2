@@ -6,8 +6,9 @@ const defaultTabbar = cva({
 	base: 'relative flex w-full',
 	variants: {
 		orientation: {
-			horizontal: 'flex-row',
-			vertical: 'flex-col w-fit'
+			// Scroll (no visible scrollbar) when the tabs overflow their track.
+			horizontal: 'flex-row overflow-x-auto scrollbar-none',
+			vertical: 'flex-col w-fit overflow-y-auto scrollbar-none'
 		},
 		alignment: {
 			start: 'justify-start',
@@ -42,7 +43,13 @@ const defaultTabbar = cva({
 });
 
 const defaultTab = cva({
-	base: 'rounded relative cursor-pointer inline-flex items-center justify-center relative transition-all duration-150 ease-in-out outline-none whitespace-nowrap text-foreground/70',
+	// focus-visible only matches keyboard-driven focus (arrows/Tab), so pointer
+	// clicks never show the ring. ring-inset: the scroll container's overflow-y
+	// (forced to auto by overflow-x) would otherwise clip an outset ring.
+	// whitespace-nowrap + default flex min-width:auto make tabs overflow (and
+	// scroll) rather than compress when they don't fit. No transition here: the
+	// active text color must snap instantly (a color transition lags the slide).
+	base: 'rounded relative cursor-pointer inline-flex items-center justify-center outline-none whitespace-nowrap text-foreground/70 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45',
 	variants: {
 		size: {
 			small: 'px-2 py-1 text-xs gap-1',
@@ -64,7 +71,10 @@ const defaultTab = cva({
 			false: ''
 		},
 		focused: {
-			true: 'bg-background-muted/50 text-foreground',
+			// No background change on focus — it clashes with the sliding indicator
+			// (especially the pill). Keyboard focus is still signalled by the text
+			// lifting to full contrast.
+			true: 'text-foreground',
 			false: ''
 		},
 		disabled: {
@@ -102,9 +112,11 @@ const defaultTab = cva({
 	},
 	compoundVariants: [
 		// The moving indicator (see the `indicator` part) carries the underline/pill
-		// visuals; the active tab itself only raises its text to full contrast.
-		{ active: true, class: 'text-foreground' },
-		{ variant: 'pill', focused: true, class: 'rounded-full' }
+		// visuals. Active-tab text: the underline leaves it on the page surface (full
+		// contrast foreground); the pill sits on a `color`-filled surface, so its text
+		// flips to that color's contrast tone.
+		{ active: true, variant: 'underline', class: 'text-foreground' },
+		{ active: true, variant: 'pill', class: 'text-color-contrast' }
 	]
 });
 
@@ -117,11 +129,44 @@ const defaultTabIndicator = cva({
 	variants: {
 		variant: {
 			underline: 'rounded-full bg-color',
-			pill: 'rounded-full bg-background shadow-sm border border-background-muted/50'
+			// Colored raised pill (driven by data-color on the indicator). color
+			// 'background' gives the neutral segmented-control look.
+			pill: 'rounded-full bg-color shadow-sm'
 		}
 	},
 	defaultVariants: {
 		variant: 'underline'
+	}
+});
+
+// The static (CSS-only) indicator, rendered INSIDE the active tab for SSR and the
+// pre-hydration window. It is positioned purely by layout (no JS measurement), so
+// it renders at the correct place on the server. Once hydrated, the component
+// swaps it for the measured `indicator` above at the identical spot.
+const defaultTabStaticIndicator = cva({
+	base: 'pointer-events-none absolute bg-color',
+	variants: {
+		variant: {
+			underline: 'rounded-full',
+			pill: 'inset-0 -z-10 rounded-full shadow-sm'
+		},
+		// Only consulted for the underline variant (pill covers the whole tab).
+		position: {
+			top: '',
+			bottom: '',
+			left: '',
+			right: ''
+		}
+	},
+	compoundVariants: [
+		{ variant: 'underline', position: 'top', class: 'inset-x-0 bottom-0 h-0.5' },
+		{ variant: 'underline', position: 'bottom', class: 'inset-x-0 top-0 h-0.5' },
+		{ variant: 'underline', position: 'left', class: 'inset-y-0 right-0 w-0.5' },
+		{ variant: 'underline', position: 'right', class: 'inset-y-0 left-0 w-0.5' }
+	],
+	defaultVariants: {
+		variant: 'underline',
+		position: 'top'
 	}
 });
 
@@ -157,6 +202,7 @@ export const tabbarTheme = {
 	root: defaultTabbar,
 	tab: defaultTab,
 	indicator: defaultTabIndicator,
+	staticIndicator: defaultTabStaticIndicator,
 	prefix: defaultTabPrefix,
 	suffix: defaultTabSuffix
 };

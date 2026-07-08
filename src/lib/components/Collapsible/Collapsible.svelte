@@ -65,7 +65,7 @@
 		<div style:transform="rotate({isOpen ? '180' : '0'}deg)" class={classes.icon({ size })}>
 			{@render (collapsibleState === 'open' ? plusIcon : minusIcon)({ size: 16 })}
 		</div>
-	{:else if icon === 'caret'}
+	{:else if icon === 'caret' || icon === 'chevron'}
 		<div style:transform="rotate({isOpen ? '180' : '0'}deg)" class={classes.icon({ size })}>
 			{@render caretDownIcon({ size: 16 })}
 		</div>

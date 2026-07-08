@@ -146,7 +146,7 @@ Pattern: `import { set{Component}Theme } from 'svelai/{kebab-name}'`
 
 **Display**: See [display.md](display.md) for Button, ButtonGroup, Badge, Avatar, Chip, Heading, Code, Meter, ToggleButton, ToggleButtonGroup, QRCode, PDFViewer, Icons.
 
-**Form Inputs**: See [form-inputs.md](form-inputs.md) for TextInput, TextArea, NumberInput, PasswordInput, PhoneInput, DateInput, TimeInput, Select, Combobox, TagsInput, Switch, RadioInput, CheckboxesInput, FileInput, Calendar, Form, MultiStepForm.
+**Form Inputs**: See [form-inputs.md](form-inputs.md) for TextInput, TextArea, NumberInput, RatingInput, PasswordInput, PhoneInput, DateInput, TimeInput, Select, Combobox, TagsInput, KeyValueInput, Switch, RadioInput, CheckboxesInput, FileInput, Calendar, Form, MultiStepForm.
 
 **Layout & Navigation**: See [layout.md](layout.md) for Tabs, Tabbar, Stepper, Breadcrumbs, Accordion, Collapsible, Separator, Menu, PopupMenu, MenuOption, Carousel, ScrollArea, AspectRatio, Marquee.
 

@@ -2,11 +2,11 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultShell = cva({
-	base: 'flex h-full min-h-0 w-full flex-col rounded-[inherit] bg-background text-foreground'
+	base: 'flex h-full min-h-0 w-full flex-col rounded-[inherit] bg-background !bg-[var(--page-shell-surface,var(--color-background))] text-foreground'
 });
 
 const defaultHeader = cva({
-	base: 'border-background-muted sticky top-0 z-10 shrink-0 rounded-t-[inherit] border-b bg-background/95 backdrop-blur transition-shadow supports-[backdrop-filter]:bg-background/80',
+	base: 'border-background-muted sticky top-0 z-10 shrink-0 rounded-t-[inherit] border-b bg-background !bg-[var(--page-shell-chrome,var(--color-background))] backdrop-blur transition-shadow',
 	variants: {
 		scrolled: {
 			true: 'shadow-sm',
@@ -82,7 +82,7 @@ const defaultContentInner = cva({
 });
 
 const defaultFooter = cva({
-	base: 'border-background-muted sticky bottom-0 z-10 shrink-0 rounded-b-[inherit] border-t bg-background/95 backdrop-blur transition-shadow supports-[backdrop-filter]:bg-background/80',
+	base: 'border-background-muted sticky bottom-0 z-10 shrink-0 rounded-b-[inherit] border-t bg-background !bg-[var(--page-shell-chrome,var(--color-background))] backdrop-blur transition-shadow',
 	variants: {
 		scrolled: {
 			true: 'shadow-[0_-1px_4px_rgba(0,0,0,0.04)]',

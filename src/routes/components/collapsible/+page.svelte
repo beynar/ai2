@@ -1,264 +1,206 @@
 <script lang="ts">
 	import Collapsible from '$lib/components/Collapsible/Collapsible.svelte';
+	import Button from '$lib/components/Button/Button.svelte';
 	import { sizes } from '$lib/utils/tokens.js';
 	import { caretUpDownIcon } from '$lib/components/Icons/caretUpDown.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 
-	let controlledOpen = false;
-	let shadcnOpen = false;
+	let controlledOpen = $state(false);
+	let peekOpen = $state(false);
 </script>
+
+{#snippet repo(name: string)}
+	<div
+		class="border-background-muted bg-background-light/40 text-foreground rounded-md border px-4 py-2 font-mono text-sm"
+	>
+		{name}
+	</div>
+{/snippet}
 
 <DocPage
 	title="Collapsible"
-	subtitle="Toggles the visibility of a single content region."
+	subtitle="Toggles the visibility of a single content region. Use the `peek` variant to tease long content behind a fading edge with a floating trigger."
 	component="Collapsible"
 	features={[
+		'default & peek variants',
 		'bind:open — controlled or uncontrolled',
-		'aria-expanded and aria-controls on trigger',
-		'Slide transition on open/close',
-		'onOpenChange callback'
+		'caret / chevron / math or a custom icon',
+		'Slide transition, three sizes',
+		'aria-expanded / aria-controls, onOpenChange'
 	]}
 >
 	<ComponentCard
-		description="Chevron icon trigger with slide transition."
-		code={`<Collapsible icon="chevron">
+		description="A shadcn-style disclosure: a trigger row that reveals its content with a slide."
+		code={`<Collapsible icon={caretUpDownIcon}>
 	{#snippet trigger()}
-		<span>Click to expand</span>
+		<span class="px-2 text-sm font-semibold">@peduarte starred 3 repositories</span>
 	{/snippet}
-
-	<p>This content will be shown when expanded. It uses Svelte's slide transition.</p>
+	<div class="flex flex-col gap-2 px-2 pb-1">
+		<div class="rounded-md border px-4 py-2 font-mono text-sm">@radix-ui/primitives</div>
+		<div class="rounded-md border px-4 py-2 font-mono text-sm">@radix-ui/colors</div>
+		<div class="rounded-md border px-4 py-2 font-mono text-sm">@stitches/react</div>
+	</div>
 </Collapsible>`}
 	>
-		<Collapsible icon="chevron">
-			{#snippet trigger()}
-				<span>Click to expand</span>
-			{/snippet}
-
-			<p>This content will be shown when expanded. It uses Svelte's slide transition.</p>
-		</Collapsible>
+		<div class="border-background-muted bg-background w-[360px] rounded-xl border p-2 shadow-sm">
+			<Collapsible icon={caretUpDownIcon}>
+				{#snippet trigger()}
+					<span class="text-foreground px-2 text-sm font-semibold">
+						@peduarte starred 3 repositories
+					</span>
+				{/snippet}
+				<div class="flex flex-col gap-2 px-2 pb-1">
+					{@render repo('@radix-ui/primitives')}
+					{@render repo('@radix-ui/colors')}
+					{@render repo('@stitches/react')}
+				</div>
+			</Collapsible>
+		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Shadcn-style collapsible with string trigger prop.">
-			<Collapsible
-				bind:open={shadcnOpen}
-				onOpenChange={(open) => (shadcnOpen = open)}
-				class="w-[350px]"
-				trigger="@peduarte starred 3 repositories"
-			>
-				<div class="flex flex-col gap-2">
-					<div class="border-background-muted rounded-md border px-4 py-2 font-mono text-sm">
-						@radix-ui/colors
-					</div>
-					<div class="border-background-muted rounded-md border px-4 py-2 font-mono text-sm">
-						@stitches/react
-					</div>
-				</div>
-			</Collapsible>
-		</ComponentCard>
-
-		<ComponentCard description="Basic collapsible with chevron icon.">
-			<Collapsible icon="chevron">
-				{#snippet trigger()}
-					<span>Click to expand</span>
-				{/snippet}
-
-				<p>This content will be shown when expanded. It uses Svelte's slide transition.</p>
-			</Collapsible>
-		</ComponentCard>
-
-		<ComponentCard description="Controlled collapsible with external toggle button.">
-			<div class="flex flex-col gap-4">
-				<Collapsible bind:open={controlledOpen} onOpenChange={(open) => console.log('State:', open)}>
+		<ComponentCard
+			title="Peek"
+			description="The content stays mounted, clipped to peekHeight with a faded edge, and a pill trigger floats over the fade to expand it. Great for long text."
+			code={`<Collapsible variant="peek" peekHeight={96}>
+	{#snippet trigger()}
+		<span>{open ? 'Show less' : 'Read more'}</span>
+	{/snippet}
+	<p>Long article content…</p>
+</Collapsible>`}
+		>
+			<div class="border-background-muted bg-background w-[440px] rounded-xl border p-5 shadow-sm">
+				<h4 class="text-foreground mb-3 font-semibold">Terms of Service</h4>
+				<Collapsible variant="peek" peekHeight={96} bind:open={peekOpen}>
 					{#snippet trigger()}
-						<div class="flex w-full items-center justify-between">
-							<span>Toggle (Currently: {controlledOpen ? 'Open' : 'Closed'})</span>
-						</div>
+						<span>{peekOpen ? 'Show less' : 'Read more'}</span>
 					{/snippet}
-
-					<p>This collapsible is controlled by external state.</p>
-					<p>Current state: {controlledOpen ? 'Open' : 'Closed'}</p>
+					<div class="text-foreground-muted flex flex-col gap-3 text-sm leading-relaxed">
+						<p>
+							By using this service you agree to be bound by the following terms. These terms govern
+							your access to and use of the product, including any content, functionality and
+							services offered.
+						</p>
+						<p>
+							You are responsible for maintaining the confidentiality of your account and for all
+							activities that occur under it. We reserve the right to suspend accounts that violate
+							these terms at any time.
+						</p>
+						<p>
+							We may update these terms from time to time. Continued use of the service after any
+							changes constitutes acceptance of the new terms.
+						</p>
+					</div>
 				</Collapsible>
-				<button
-					class="bg-primary text-primary-contrast rounded px-4 py-2"
-					onclick={() => (controlledOpen = !controlledOpen)}
-				>
-					Toggle from outside
-				</button>
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Collapsible with children slot.">
-			<Collapsible>
-				{#snippet trigger()}
-					<span>Show Details</span>
-				{/snippet}
-
-				<p>This uses the children slot instead of content.</p>
-				<ul class="list-disc pl-6">
-					<li>Item 1</li>
-					<li>Item 2</li>
-					<li>Item 3</li>
-				</ul>
-			</Collapsible>
+		<ComponentCard
+			title="Custom trigger"
+			description="The trigger slot accepts any markup — here a title and hint stacked on the left, with the caret on the right."
+			class="!min-h-fit !justify-center"
+			code={`<Collapsible>
+	{#snippet trigger()}
+		<div class="flex flex-col items-start">
+			<span class="font-medium">Can I change my plan later?</span>
+			<span class="text-foreground-muted text-sm">Tap to read the answer</span>
+		</div>
+	{/snippet}
+	<p>Yes — upgrade or downgrade at any time from billing settings.</p>
+</Collapsible>`}
+		>
+			<div
+				class="border-background-muted bg-background w-[440px] divide-y divide-dashed rounded-xl border shadow-sm [&>*]:px-4"
+			>
+				<Collapsible>
+					{#snippet trigger()}
+						<div class="flex flex-col items-start">
+							<span class="text-foreground font-medium">Can I change my plan later?</span>
+							<span class="text-foreground-muted text-sm">Tap to read the answer</span>
+						</div>
+					{/snippet}
+					<p class="text-foreground-muted text-sm">
+						Yes — upgrade or downgrade at any time from your billing settings. Changes are prorated
+						to the day.
+					</p>
+				</Collapsible>
+				<Collapsible>
+					{#snippet trigger()}
+						<div class="flex flex-col items-start">
+							<span class="text-foreground font-medium">Do you offer refunds?</span>
+							<span class="text-foreground-muted text-sm">Tap to read the answer</span>
+						</div>
+					{/snippet}
+					<p class="text-foreground-muted text-sm">
+						We offer a 30-day money-back guarantee, no questions asked.
+					</p>
+				</Collapsible>
+			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Disabled collapsible.">
-			<Collapsible disabled={true} icon="chevron">
-				{#snippet trigger()}
-					<span>Disabled Collapsible</span>
-				{/snippet}
-
-				<p>This content cannot be toggled.</p>
-			</Collapsible>
-		</ComponentCard>
-
-		<ComponentCard description="Different sizes.">
-			<div class="flex flex-col gap-4">
-				{#each sizes as size}
-					<Collapsible {size}>
-						{#snippet trigger()}
-							<div class="flex w-full items-center justify-between">
-								<span>{size} Collapsible</span>
-								<svg
-									class="h-4 w-4"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									stroke="currentColor"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="m19.5 8.25-7.5 7.5-7.5-7.5"
-									/>
-								</svg>
-							</div>
-						{/snippet}
-
-						<p>This is a {size} size collapsible.</p>
-					</Collapsible>
+		<ComponentCard
+			title="Sizes"
+			description="small, normal and large scale the trigger padding, text and icon."
+			class="!min-h-fit !justify-center"
+			code={`<Collapsible size="small">…</Collapsible>
+<Collapsible size="normal">…</Collapsible>
+<Collapsible size="large">…</Collapsible>`}
+		>
+			<div class="flex w-[360px] flex-col gap-3">
+				{#each sizes as size (size)}
+					<div class="border-background-muted bg-background rounded-xl border px-2 shadow-sm">
+						<Collapsible {size} icon="caret">
+							{#snippet trigger()}
+								<span class="text-foreground capitalize">{size}</span>
+							{/snippet}
+							<p class="text-foreground-muted text-sm">This is a {size} collapsible.</p>
+						</Collapsible>
+					</div>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Multiple independent collapsibles.">
-			<div class="flex flex-col gap-2">
-				<Collapsible>
-					{#snippet trigger()}
-						<div class="flex w-full items-center justify-between">
-							<span>Section 1</span>
-							<svg
-								class="h-4 w-4"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-							>
-								<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-							</svg>
-						</div>
-					{/snippet}
+		<ComponentCard
+			title="Controlled"
+			description="Bind open to drive it from outside — here a button toggles the same state."
+			class="!min-h-fit !justify-center"
+			code={`<script>
+	let open = $state(false);
+<\/script>
 
-					<p>Content for section 1</p>
-				</Collapsible>
-				<Collapsible>
-					{#snippet trigger()}
-						<div class="flex w-full items-center justify-between">
-							<span>Section 2</span>
-							<svg
-								class="h-4 w-4"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-							>
-								<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-							</svg>
-						</div>
-					{/snippet}
-
-					<p>Content for section 2</p>
-				</Collapsible>
-				<Collapsible>
-					{#snippet trigger()}
-						<div class="flex w-full items-center justify-between">
-							<span>Section 3</span>
-							<svg
-								class="h-4 w-4"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-							>
-								<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-							</svg>
-						</div>
-					{/snippet}
-
-					<p>Content for section 3</p>
-				</Collapsible>
+<Collapsible bind:open>…</Collapsible>
+<Button onClick={() => (open = !open)}>Toggle from outside</Button>`}
+		>
+			<div class="flex w-[360px] flex-col gap-4">
+				<div class="border-background-muted bg-background rounded-xl border px-2 shadow-sm">
+					<Collapsible bind:open={controlledOpen} icon="math">
+						{#snippet trigger()}
+							<span class="text-foreground">Status: {controlledOpen ? 'Open' : 'Closed'}</span>
+						{/snippet}
+						<p class="text-foreground-muted text-sm">This panel's state lives in the parent.</p>
+					</Collapsible>
+				</div>
+				<Button variant="soft" color="primary" onClick={() => (controlledOpen = !controlledOpen)}>
+					Toggle from outside
+				</Button>
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Default open state.">
-			<Collapsible defaultOpen={true}>
-				{#snippet trigger()}
-					<div class="flex w-full items-center justify-between">
-						<span>This starts open</span>
-						<svg
-							class="h-4 w-4"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-						</svg>
-					</div>
-				{/snippet}
-
-				<p>This collapsible starts in the open state.</p>
-			</Collapsible>
-		</ComponentCard>
-
-		<ComponentCard description="Rich content in trigger and panel.">
-			<Collapsible>
-				{#snippet trigger()}
-					<div class="flex w-full items-center justify-between">
-						<div class="flex flex-col items-start">
-							<span class="font-semibold">FAQ Item</span>
-							<span class="text-foreground-muted text-sm">Click to see the answer</span>
-						</div>
-						<svg
-							class="h-4 w-4"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-						</svg>
-					</div>
-				{/snippet}
-
-				<div class="flex flex-col gap-2">
-					<p>This is a detailed answer to the question.</p>
-					<p>It can contain multiple paragraphs and other content.</p>
-					<ul class="list-disc pl-6">
-						<li>Point 1</li>
-						<li>Point 2</li>
-						<li>Point 3</li>
-					</ul>
-				</div>
-			</Collapsible>
+		<ComponentCard
+			title="Disabled"
+			description="A disabled collapsible can't be toggled and dims its trigger."
+			class="!min-h-fit !justify-center"
+			code={`<Collapsible disabled icon="caret">…</Collapsible>`}
+		>
+			<div class="border-background-muted bg-background w-[360px] rounded-xl border px-2 shadow-sm">
+				<Collapsible disabled icon="caret">
+					{#snippet trigger()}
+						<span class="text-foreground">Disabled section</span>
+					{/snippet}
+					<p class="text-foreground-muted text-sm">You won't see this.</p>
+				</Collapsible>
+			</div>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

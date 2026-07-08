@@ -29,9 +29,7 @@
 	let open = $state<boolean | undefined>();
 	const classes = $derived(useSidebarTheme(theme));
 	const isOpen = $derived(open ?? group.defaultOpen ?? true);
-	const hiddenLabel = $derived(
-		api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile
-	);
+	const hiddenLabel = $derived(api.displayState === 'collapsed' && !api.isMobile);
 </script>
 
 {#snippet groupMenu()}

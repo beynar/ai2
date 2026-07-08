@@ -9,7 +9,7 @@ const defaultPanel = cva({
 				'border-background-muted bg-background-muted data-[side=left]:border-r data-[side=right]:border-l',
 			floating: 'rounded-xl border border-background-muted bg-background shadow-sm',
 			inset: 'rounded-xl border border-background-muted bg-background shadow-sm',
-			split: 'border-0 bg-transparent shadow-none'
+			split: 'border-0 bg-background-muted shadow-none'
 		},
 		placement: {
 			panel: 'w-[var(--sidebar-width)]',
@@ -121,7 +121,108 @@ const defaultSeparator = cva({
 });
 
 const defaultRail = cva({
-	base: 'absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear after:absolute after:inset-y-0 after:start-1/2 after:w-px after:bg-transparent hover:after:bg-background-muted sm:flex data-[side=left]:right-0 data-[side=right]:left-0 data-[side=left]:cursor-w-resize data-[side=right]:cursor-e-resize'
+	base: 'absolute z-20 hidden w-4 transition-all ease-linear after:absolute after:inset-y-0 after:start-1/2 after:w-px after:bg-transparent hover:after:bg-background-muted sm:flex',
+	variants: {
+		variant: {
+			sidebar: 'inset-y-0',
+			floating: 'inset-y-2',
+			inset: 'inset-y-2',
+			split: 'inset-y-0'
+		},
+		side: {
+			left: 'right-0 cursor-w-resize',
+			right: 'left-0 cursor-e-resize'
+		}
+	},
+	compoundVariants: [
+		{ variant: ['floating', 'inset'], side: 'left', class: 'right-2' },
+		{ variant: ['floating', 'inset'], side: 'right', class: 'left-2' }
+	],
+	defaultVariants: {
+		variant: 'sidebar',
+		side: 'left'
+	}
+});
+
+const defaultResizeHandle = cva({
+	base: 'absolute inset-y-0 z-30 hidden w-3 cursor-col-resize touch-none outline-none transition-opacity md:block after:absolute after:inset-y-2 after:left-1/2 after:w-px after:-translate-x-1/2 after:bg-transparent hover:after:bg-primary/45 focus-visible:ring-2 focus-visible:ring-primary/40 data-[dragging=true]:after:bg-primary',
+	variants: {
+		variant: {
+			sidebar: '',
+			floating: 'inset-y-2',
+			inset: 'inset-y-2',
+			split: ''
+		},
+		side: {
+			left: 'right-0',
+			right: 'left-0'
+		},
+		dragging: {
+			true: 'after:bg-primary',
+			false: ''
+		},
+		disabled: {
+			true: 'pointer-events-none opacity-0',
+			false: ''
+		}
+	},
+	compoundVariants: [
+		{ variant: ['floating', 'inset'], side: 'left', class: 'right-2' },
+		{ variant: ['floating', 'inset'], side: 'right', class: 'left-2' }
+	],
+	defaultVariants: {
+		variant: 'sidebar',
+		side: 'left',
+		dragging: false,
+		disabled: false
+	}
+});
+
+const defaultMain = cva({
+	base: 'relative flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent transition-transform duration-200 ease-linear',
+	variants: {
+		variant: {
+			sidebar: '',
+			floating: '',
+			inset: '',
+			split: ''
+		},
+		side: {
+			left: '',
+			right: ''
+		},
+		displayState: {
+			expanded: '',
+			collapsed: '',
+			hidden: ''
+		},
+		edgeRevealed: {
+			true: '',
+			false: ''
+		}
+	},
+	compoundVariants: [
+		{
+			variant: ['inset', 'split'],
+			side: 'left',
+			displayState: 'hidden',
+			edgeRevealed: true,
+			class: 'translate-x-[var(--sidebar-width)]'
+		},
+		{
+			variant: ['inset', 'split'],
+			side: 'right',
+			displayState: 'hidden',
+			edgeRevealed: true,
+			class: '-translate-x-[var(--sidebar-width)]'
+		}
+	],
+	defaultVariants: {
+		variant: 'sidebar',
+		side: 'left',
+		displayState: 'expanded',
+		edgeRevealed: false
+	}
 });
 
 const defaultEdgeTrigger = cva({
@@ -183,9 +284,11 @@ export const sidebarTheme = {
 	searchIcon: defaultSearchIcon,
 	separator: defaultSeparator,
 	rail: defaultRail,
+	resizeHandle: defaultResizeHandle,
 	edgeTrigger: defaultEdgeTrigger,
 	overlay: defaultOverlay,
 	mobilePanel: defaultMobilePanel,
+	main: defaultMain,
 	media: defaultMedia,
 	avatar: defaultAvatar
 };
