@@ -27,6 +27,7 @@ const emptyArrayNull = (schema: v.BaseSchema<any, any, any>) =>
 const optional = (schema: v.BaseSchema<any, any, any>) =>
 	v.optional(v.nullable(schema, null), null);
 const sliderRangeValue = v.pipe(v.array(v.number()), v.minLength(2));
+const tagGroupValue = v.union([nonEmptyString, nonEmptyArray(v.string())]);
 const keyValuePair = v.object({ key: v.string(), value: v.string() });
 
 type Schemas = Record<InputType, v.BaseSchema<any, any, any>>;
@@ -55,6 +56,7 @@ export const schemas: {
 
 		// Tag input type
 		tag: nonEmptyArray(v.string()),
+		'tag-group': tagGroupValue,
 
 		// Key/value input type
 		keyvalue: nonEmptyArray(keyValuePair),
@@ -105,6 +107,9 @@ export const schemas: {
 
 		// Tag input type
 		tag: optional(emptyArrayNull(v.array(v.string()))),
+		'tag-group': optional(
+			v.union([emptyStringNull(v.string()), emptyArrayNull(v.array(v.string()))])
+		),
 
 		// Key/value input type
 		keyvalue: optional(emptyArrayNull(v.array(keyValuePair))),

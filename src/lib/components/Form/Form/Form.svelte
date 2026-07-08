@@ -21,6 +21,7 @@
 	import CalendarInput from '../Calendar/CalendarInput.svelte';
 	import DateInput from '../DateInput/DateInput.svelte';
 	import FileInput from '../File/FileInput.svelte';
+	import TagGroup from '../TagGroup/TagGroup.svelte';
 	import TimeInput from '../TimeInput/TimeInput.svelte';
 	import RichTextInput from '../../RichTextInput/RichTextInput.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
@@ -103,6 +104,8 @@
 			<FileInput {...inputProps as any} {name} mode="single" />
 		{:else if input.type === 'files'}
 			<FileInput {...inputProps as any} {name} mode="multiple" />
+		{:else if input.type === 'tag-group'}
+			<TagGroup {...inputProps as any} {name} />
 		{:else if input.type === 'time'}
 			<TimeInput {...inputProps as any} {name} />
 		{:else}

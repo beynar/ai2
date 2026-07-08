@@ -3,9 +3,9 @@
 	import { maskitoDateOptionsGenerator } from '@maskito/kit';
 	import CalendarPrimitive from '../Calendar/CalendarPrimitive.svelte';
 	import Field from '../Field/Field.svelte';
+	import FieldActionButton from '../Field/FieldActionButton.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import { calendarBlankIcon } from '../../Icons/calendarBlank.js';
-	import Button from '../../Button/Button.svelte';
 	import Popover from '../../Popover/Popover.svelte';
 	import type { PopoverState } from '../../Popover/popover.state.svelte.js';
 	import type { DateInputProps } from './dateInput.props.js';
@@ -82,11 +82,6 @@
 	});
 
 	const classes = $derived(useDateInputTheme(theme));
-	const calendarTriggerClass = $derived.by(() => {
-		if (rest.size === 'small') return '!size-5';
-		if (rest.size === 'large') return '!size-7';
-		return '!size-6';
-	});
 
 	const formatDate = (date: Date | null) => {
 		if (!date) return '';
@@ -272,18 +267,14 @@
 					field.focused = false;
 				}}
 			/>
-			<Button
-				type="button"
-				variant="ghost"
-				color={isCalendarOpen ? 'primary' : 'foreground'}
+			<FieldActionButton
+				active={isCalendarOpen}
 				size={rest.size}
-				squared
 				label="Choose date"
 				aria-haspopup="dialog"
 				aria-expanded={isCalendarOpen}
 				aria-controls={isCalendarOpen ? `${id}-calendar` : undefined}
 				disabled={field.disabled}
-				class={calendarTriggerClass}
 				prefix={calendarBlankIcon}
 				onClick={() => {
 					if (!field.disabled) {

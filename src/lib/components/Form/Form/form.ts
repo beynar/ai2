@@ -14,6 +14,7 @@ import type { PhoneInputProps } from '../PhoneInput/phoneInput.props.js';
 import type { CalendarInputProps } from '../Calendar/calendarInput.props.js';
 import type { DateInputProps } from '../DateInput/dateInput.props.js';
 import type { FileInputProps } from '../File/fileInput.props.js';
+import type { TagGroupProps } from '../TagGroup/tagGroup.props.js';
 import type { TimeInputProps } from '../TimeInput/timeInput.props.js';
 import type { RichTextInputProps } from '../../RichTextInput/richTextInput.props.js';
 
@@ -77,7 +78,10 @@ type BaseFormInput =
 	  } & FileInputProps<'single'>)
 	| ({
 			type: 'files';
-	  } & FileInputProps<'multiple'>);
+	  } & FileInputProps<'multiple'>)
+	| ({
+			type: 'tag-group';
+	  } & TagGroupProps);
 
 // FormInput with dynamic visibility support
 // The visibility property can be a boolean or a function that receives the form value

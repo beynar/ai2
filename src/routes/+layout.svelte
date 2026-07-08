@@ -14,6 +14,7 @@
 	import type {
 		SidebarApi,
 		SidebarCollapsible,
+		SidebarDisplayState,
 		SidebarVariant
 	} from '$lib/components/Sidebar/index.js';
 	import Theme from '$lib/components/Theme/Theme.svelte';
@@ -28,39 +29,55 @@
 	const sidebarVariants: SidebarVariant[] = ['sidebar', 'floating', 'inset', 'split'];
 	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
 	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
-	let sidebarOpen = $state(true);
+	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
 	let sidebarVariant = $state<SidebarVariant>('split');
-	let sidebarCollapsedState = $state<Exclude<SidebarFooterState, 'expanded'>>('hidden');
+	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('hidden');
+	let sidebarWidth = $state('16rem');
 
 	const sidebarGroups = $derived(getSidebarGroups(page.route.id));
 	const sidebarState = $derived<SidebarFooterState>(
-		sidebarOpen ? 'expanded' : sidebarCollapsedState
+		sidebarDisplayState === 'collapsed' ? 'icon' : sidebarDisplayState
 	);
 	const sidebarCollapsible = $derived<SidebarCollapsible>(
-		sidebarCollapsedState === 'hidden' ? 'offcanvas' : 'icon'
+		sidebarCollapsedDisplayState === 'hidden' ? 'offcanvas' : 'icon'
 	);
 
 	function setSidebarState(nextState: SidebarFooterState) {
 		if (nextState === 'expanded') {
-			sidebarOpen = true;
+			sidebarDisplayState = 'expanded';
 			return;
 		}
 
-		sidebarCollapsedState = nextState;
-		sidebarOpen = false;
+		const nextDisplayState = nextState === 'icon' ? 'collapsed' : 'hidden';
+		sidebarCollapsedDisplayState = nextDisplayState;
+		sidebarDisplayState = nextDisplayState;
+	}
+
+	function handleSidebarDisplayStateChange(nextDisplayState: SidebarDisplayState) {
+		sidebarDisplayState = nextDisplayState;
+		if (nextDisplayState !== 'expanded') {
+			sidebarCollapsedDisplayState = nextDisplayState;
+		}
 	}
 
 	const sidebar = $derived<AppShellSidebarProps>({
-		open: sidebarOpen,
-		onOpenChange: (nextOpen) => {
-			sidebarOpen = nextOpen;
-		},
+		displayState: sidebarDisplayState,
+		onDisplayStateChange: handleSidebarDisplayStateChange,
 		variant: sidebarVariant,
 		collapsible: sidebarCollapsible,
 		rail: true,
 		edgeReveal: true,
-		width: '16rem',
+		width: sidebarWidth,
 		widthMobile: '18rem',
+		resizable: {
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			collapseThreshold: '10.5rem',
+			storageKey: 'svelai-docs-sidebar-width',
+			onWidthChange: (nextWidth) => {
+				sidebarWidth = nextWidth;
+			}
+		},
 		items: sidebarGroups,
 		headerButton: {
 			icon: commandIcon,

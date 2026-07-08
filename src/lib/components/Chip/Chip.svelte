@@ -16,6 +16,10 @@
 		rel,
 		prefix,
 		href,
+		type = 'button',
+		disabled,
+		'aria-pressed': ariaPressed,
+		'aria-disabled': ariaDisabled,
 		theme,
 		...attachments
 	}: ChipProps = $props();
@@ -33,6 +37,10 @@
 	{rel}
 	{target}
 	{href}
+	type={as === 'button' ? type : undefined}
+	disabled={as === 'button' ? disabled : undefined}
+	aria-pressed={ariaPressed}
+	aria-disabled={ariaDisabled}
 	onclick={onClick}
 	onpointerenter={onEnter}
 	onpointerleave={onLeave}

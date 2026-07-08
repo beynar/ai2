@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { minusIcon } from '../../Icons/minus.js';
 	import { plusIcon } from '../../Icons/plus.js';
-	import Button from '../../Button/Button.svelte';
 	import Field from '../Field/Field.svelte';
+	import FieldActionButton from '../Field/FieldActionButton.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { NumberInputProps } from './numberInput.props.js';
 	import { useNumberInputTheme } from './numberInput.theme.js';
@@ -98,11 +98,6 @@
 	const canIncrement = $derived(
 		!field.disabled && (numericValue === null || max === undefined || numericValue < max)
 	);
-	const controlButtonClass = $derived.by(() => {
-		if (rest.size === 'small') return '!size-5';
-		if (rest.size === 'large') return '!size-7';
-		return '!size-6';
-	});
 
 	const countDecimalPlaces = (value: number) => {
 		const valueText = String(value);
@@ -172,28 +167,19 @@
 		disabled={field.disabled}
 		class={classes.input({ disabled: field.disabled, size: rest.size })}
 	/>
-	<div class="flex shrink-0 items-center gap-0.5">
-		<Button
-			type="button"
-			variant="ghost"
-			color="foreground"
+	<div class="flex shrink-0 items-stretch gap-0.5 self-stretch">
+		<FieldActionButton
 			size={rest.size}
-			squared
+			edge="none"
 			label="Decrease value"
 			disabled={!canDecrement}
-			class={controlButtonClass}
 			prefix={minusIcon}
 			onClick={() => changeValue(-1)}
 		/>
-		<Button
-			type="button"
-			variant="ghost"
-			color="foreground"
+		<FieldActionButton
 			size={rest.size}
-			squared
 			label="Increase value"
 			disabled={!canIncrement}
-			class={controlButtonClass}
 			prefix={plusIcon}
 			onClick={() => changeValue(1)}
 		/>

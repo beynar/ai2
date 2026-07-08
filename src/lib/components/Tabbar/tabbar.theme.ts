@@ -47,9 +47,10 @@ const defaultTab = cva({
 	// clicks never show the ring. ring-inset: the scroll container's overflow-y
 	// (forced to auto by overflow-x) would otherwise clip an outset ring.
 	// whitespace-nowrap + default flex min-width:auto make tabs overflow (and
-	// scroll) rather than compress when they don't fit. No transition here: the
-	// active text color must snap instantly (a color transition lags the slide).
-	base: 'rounded relative cursor-pointer inline-flex items-center justify-center outline-none whitespace-nowrap text-foreground/70 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45',
+	// scroll) rather than compress when they don't fit. transition-colors (NOT
+	// transition-all) eases only the label colour as the indicator slides — scoped
+	// to colour so it never lags a layout/transform change.
+	base: 'rounded relative cursor-pointer inline-flex items-center justify-center outline-none whitespace-nowrap text-foreground/70 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45',
 	variants: {
 		size: {
 			small: 'px-2 py-1 text-xs gap-1',

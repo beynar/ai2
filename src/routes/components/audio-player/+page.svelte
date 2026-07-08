@@ -1,10 +1,18 @@
 <script lang="ts">
-	import { AudioPlayer, type AudioPlayerControl } from '$lib/components/AudioPlayer/index.js';
+	import {
+		AudioPlayer,
+		type AudioPlayerControl,
+		type AudioPlayerState
+	} from '$lib/components/AudioPlayer/index.js';
+	import { Button } from '$lib/components/Button/index.js';
+	import { Slider } from '$lib/components/Form/Slider/index.js';
+	import { pauseIcon } from '$lib/components/Icons/pause.js';
+	import { playIcon } from '$lib/components/Icons/play.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 
 	const sampleAudio = 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3';
-	const compactControls: AudioPlayerControl[] = ['play', 'time', 'volume'];
+	const trackControls: AudioPlayerControl[] = ['play', 'time', 'volume'];
 	const transportControls: AudioPlayerControl[] = [
 		'play',
 		'seekBackward',
@@ -19,6 +27,14 @@
 	const centeredWaveform = createWaveform(11, 80);
 	const histogramWaveform = createWaveform(29, 64);
 	const controlledWaveform = createWaveform(47, 72);
+	const customSeekTheme = {
+		root: { base: 'w-full gap-0' },
+		header: { base: 'sr-only' },
+		label: { base: 'sr-only' },
+		inputContainer: { base: 'w-full gap-0' },
+		control: { base: 'w-full' },
+		track: { base: 'min-w-0 focus-visible:ring-offset-0' }
+	};
 
 	const basicCode = `<AudioPlayer
 	src="${sampleAudio}"
@@ -34,11 +50,52 @@
 	waveform={waveform}
 />`;
 
-	const compactCode = `<AudioPlayer
+	const trackCode = `<AudioPlayer
 	src="${sampleAudio}"
-	title="Compact controls"
+	title="Track progress"
+	variant="track"
+	color="info"
 	controls={['play', 'time', 'volume']}
-	size="small"
+/>`;
+
+	const slotCode = `<script lang="ts">
+	import { AudioPlayer } from '$lib/components/AudioPlayer/index.js';
+	import { Button } from '$lib/components/Button/index.js';
+	import { Slider } from '$lib/components/Form/Slider/index.js';
+	import { pauseIcon } from '$lib/components/Icons/pause.js';
+	import { playIcon } from '$lib/components/Icons/play.js';
+${'</' + 'script>'}
+
+{#snippet controlsSlot(player)}
+	<Button
+		squared
+		color="success"
+		label={player.paused || player.ended ? 'Play' : 'Pause'}
+		prefix={player.paused || player.ended ? playIcon : pauseIcon}
+		onClick={() => player.runInteraction(() => player.togglePlay())}
+	/>
+{/snippet}
+
+{#snippet seek(player)}
+	<Slider
+		label="Seek"
+		value={player.currentTime}
+		min={0}
+		max={Math.max(player.duration, 0.1)}
+		step={0.1}
+		color="success"
+		variant="thick"
+		onChange={(value) => player.runInteraction(() => player.seekTo(Array.isArray(value) ? (value[0] ?? 0) : value))}
+	/>
+{/snippet}
+
+<AudioPlayer
+	src="${sampleAudio}"
+	title="Custom chrome"
+	variant="track"
+	color="success"
+	{controlsSlot}
+	{seek}
 />`;
 
 	const controlledCode = `<script lang="ts">
@@ -66,17 +123,63 @@ ${'</' + 'script>'}
 			);
 		});
 	}
+
+	function formatTime(value: number) {
+		if (!Number.isFinite(value) || value <= 0) return '0:00';
+		const minutes = Math.floor(value / 60);
+		const seconds = Math.floor(value % 60);
+		return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+	}
 </script>
+
+{#snippet customControlsSlot(player: AudioPlayerState)}
+	<div
+		data-slot="audio-player-controls"
+		class="flex min-w-0 flex-[1_1_100%] items-center justify-between gap-2 md:flex-[0_1_auto]"
+	>
+		<Button
+			squared
+			color="success"
+			label={player.paused || player.ended ? 'Play' : 'Pause'}
+			prefix={player.paused || player.ended ? playIcon : pauseIcon}
+			disabled={player.disabled}
+			onClick={() => player.runInteraction(() => player.togglePlay())}
+		/>
+		<span class="text-foreground-muted shrink-0 text-xs tabular-nums">
+			{formatTime(player.currentTime)} / {formatTime(player.duration)}
+		</span>
+	</div>
+{/snippet}
+
+{#snippet customSeek(player: AudioPlayerState)}
+	<Slider
+		label="Seek custom chrome"
+		value={Math.min(player.currentTime, Math.max(player.duration, 0.1))}
+		min={0}
+		max={Math.max(player.duration, 0.1)}
+		step={0.1}
+		color="success"
+		variant="thick"
+		size="small"
+		disabled={player.disabled || player.duration <= 0}
+		theme={customSeekTheme}
+		onChange={(value) =>
+			player.runInteraction(() => player.seekTo(Array.isArray(value) ? (value[0] ?? 0) : value))}
+	/>
+{/snippet}
 
 <DocPage
 	title="Audio player"
-	subtitle="Native audio playback with a waveform seek surface, compact controls, volume, loop, and download actions."
+	subtitle="Native audio playback with waveform or track progress, composable chrome, and bindable state."
 	component="AudioPlayer"
 	features={[
 		'Native audio element with bindable playback state',
-		'Waveform doubles as the progress and seek control',
-		'Centered and histogram waveform variants',
+		'Waveform and track progress variants',
+		'Centered and histogram waveform shapes',
+		'Color prop for controls, volume, and progress fill',
 		'Controls prop toggles transport, time, volume, loop, and download',
+		'Header, controls, leading, trailing, and seek snippets receive AudioPlayerState',
+		'Artwork is hidden when omitted',
 		'Theme parts for chrome, waveform, controls, and metadata'
 	]}
 >
@@ -93,53 +196,71 @@ ${'</' + 'script>'}
 		/>
 	</ComponentCard>
 
-	<ComponentCard
-		description="Histogram mode uses the same waveform as the clickable progress surface."
-		class="!min-h-fit !items-stretch !justify-start"
-		code={histogramCode}
-	>
-		<AudioPlayer
-			src={sampleAudio}
-			title="Histogram mode"
-			artist="Waveform as progress"
-			waveformVariant="histogram"
-			waveform={histogramWaveform}
-		/>
-	</ComponentCard>
-
-	<ComponentCard
-		description="Controls can be reduced to the commands a surface needs."
-		class="!min-h-fit !items-stretch !justify-start"
-		code={compactCode}
-	>
-		<AudioPlayer
-			src={sampleAudio}
-			title="Compact controls"
-			artist="No loop or download"
-			controls={compactControls}
-			waveformBars={48}
-			size="small"
-		/>
-	</ComponentCard>
-
-	<ComponentCard
-		description="Playback state can be bound while keeping the waveform interactive."
-		class="!min-h-fit !items-stretch !justify-start"
-		code={controlledCode}
-	>
-		<div class="grid w-full gap-3">
+	{#snippet examples()}
+		<ComponentCard
+			description="Histogram mode uses the same waveform as the clickable progress surface."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={histogramCode}
+		>
 			<AudioPlayer
 				src={sampleAudio}
-				title="Controlled playback"
-				artist="Bindable state"
-				bind:paused
-				bind:currentTime
-				controls={transportControls}
-				waveform={controlledWaveform}
+				title="Histogram mode"
+				artist="Waveform as progress"
+				waveformVariant="histogram"
+				waveform={histogramWaveform}
 			/>
-			<p class="text-foreground-muted text-sm">
-				{paused ? 'Paused' : 'Playing'} at {currentTime.toFixed(1)}s
-			</p>
-		</div>
-	</ComponentCard>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Track mode swaps the waveform for a simple progress surface while keeping the same controls."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={trackCode}
+		>
+			<AudioPlayer
+				src={sampleAudio}
+				title="Track progress"
+				artist="No artwork fallback"
+				variant="track"
+				color="info"
+				controls={trackControls}
+			/>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Slots can replace controls and the seek surface while still receiving player state."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={slotCode}
+		>
+			<AudioPlayer
+				src={sampleAudio}
+				title="Custom chrome"
+				artist="Snippet-composed controls"
+				variant="track"
+				color="success"
+				controlsSlot={customControlsSlot}
+				seek={customSeek}
+			/>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Playback state can be bound while keeping the waveform interactive."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={controlledCode}
+		>
+			<div class="grid w-full gap-3">
+				<AudioPlayer
+					src={sampleAudio}
+					title="Controlled playback"
+					artist="Bindable state"
+					bind:paused
+					bind:currentTime
+					controls={transportControls}
+					waveform={controlledWaveform}
+				/>
+				<p class="text-foreground-muted text-sm">
+					{paused ? 'Paused' : 'Playing'} at {currentTime.toFixed(1)}s
+				</p>
+			</div>
+		</ComponentCard>
+	{/snippet}
 </DocPage>

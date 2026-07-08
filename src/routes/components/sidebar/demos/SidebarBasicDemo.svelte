@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		Sidebar,
+		type SidebarDisplayState,
 		type SidebarGroup,
 		type SidebarMenuEntry
 	} from '$lib/components/Sidebar/index.js';
@@ -18,7 +19,8 @@
 	import { signOutIcon } from '$lib/components/Icons/signOut.js';
 	import { trayIcon } from '$lib/components/Icons/tray.js';
 
-	let open = $state(true);
+	let displayState = $state<SidebarDisplayState>('expanded');
+	let width = $state('17rem');
 	let query = $state('');
 
 	const accountMenu: MenuItem[] = [
@@ -93,15 +95,20 @@
 	class="h-[520px] w-full overflow-hidden rounded-lg border border-background-muted bg-background-muted"
 >
 	<Sidebar
-		bind:open
+		bind:displayState
+		bind:width
 		items={visibleGroups}
 		{search}
 		collapsible="icon"
 		variant="inset"
 		frame="contained"
 		rail
-		width="17rem"
 		widthIcon="3.5rem"
+		resizable={{
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			collapseThreshold: '10.5rem'
+		}}
 		headerButton={{
 			icon: commandIcon,
 			title: 'Acme Studio',

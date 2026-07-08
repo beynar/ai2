@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Sizes } from '$lib/types/theme.js';
+	import type { Colors, Sizes } from '$lib/types/theme.js';
 	import { downloadSimpleIcon } from '../Icons/downloadSimple.js';
 	import { pauseIcon } from '../Icons/pause.js';
 	import { playIcon } from '../Icons/play.js';
@@ -23,6 +23,7 @@
 		player,
 		classes,
 		size,
+		color,
 		controls,
 		src,
 		sources,
@@ -35,6 +36,7 @@
 		player: AudioPlayerState;
 		classes: AudioPlayerClasses;
 		size: Sizes;
+		color: Colors;
 		controls: AudioPlayerControl[];
 		src?: string;
 		sources: AudioPlayerSource[];
@@ -66,6 +68,7 @@
 			<AudioPlayerIconButton
 				{classes}
 				{size}
+				{color}
 				label={`Back ${seekStep} seconds`}
 				icon={skipBackIcon}
 				disabled={disabled || !canSeek}
@@ -77,6 +80,7 @@
 			<AudioPlayerIconButton
 				{classes}
 				{size}
+				{color}
 				play
 				label={player.paused || player.ended ? 'Play' : 'Pause'}
 				icon={player.paused || player.ended ? playIcon : pauseIcon}
@@ -89,6 +93,7 @@
 			<AudioPlayerIconButton
 				{classes}
 				{size}
+				{color}
 				label={`Forward ${seekStep} seconds`}
 				icon={skipForwardIcon}
 				disabled={disabled || !canSeek}
@@ -109,13 +114,14 @@
 
 	<div data-slot="audio-player-secondary-controls" class={classes.controlGroup()}>
 		{#if hasControl('volume')}
-			<AudioPlayerVolumeControl {player} {classes} {size} {volumeStep} {disabled} />
+			<AudioPlayerVolumeControl {player} {classes} {size} {color} {volumeStep} {disabled} />
 		{/if}
 
 		{#if hasControl('loop')}
 			<AudioPlayerIconButton
 				{classes}
 				{size}
+				{color}
 				label={player.loop ? 'Disable loop' : 'Loop'}
 				icon={repeatIcon}
 				active={player.loop}
@@ -129,6 +135,7 @@
 			<AudioPlayerIconButton
 				{classes}
 				{size}
+				{color}
 				label="Download"
 				icon={downloadSimpleIcon}
 				href={disabled ? undefined : downloadHref}

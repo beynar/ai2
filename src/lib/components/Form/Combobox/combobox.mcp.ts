@@ -184,7 +184,7 @@ A searchable dropdown component that supports both static arrays and async optio
 - **Option Format**: Options must have \`value\` (string) and \`label\` (string). Optional \`description\` displays below label
 - **Keyboard Navigation**: Wraps around - ArrowDown at bottom goes to top, ArrowUp at top goes to bottom
 - **Empty States**: Shows loading text, error message, or no options text appropriately
-- **Clear Button**: Automatically shown when value exists, uses danger variant Button component
+- **Clear Button**: Automatically shown when value exists, uses the shared field action button hitbox
 - **Default Prefix**: Magnifying glass icon shown by default unless \`prefix={false}\` or custom snippet provided
 - **Theme Size Mapping**: \`'normal'\` size maps to \`'medium'\` theme variant internally
 

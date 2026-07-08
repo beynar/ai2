@@ -50,16 +50,27 @@
 	import { sidebarIcon } from 'svelai/icons/sidebar';
 	import { trayIcon } from 'svelai/icons/tray';
 
-	let open = $state(true);
+	let sidebarDisplayState = $state<'expanded' | 'collapsed' | 'hidden'>('expanded');
+	let sidebarWidth = $state('17rem');
+	const isSidebarExpanded = $derived(sidebarDisplayState === 'expanded');
 
-	const sidebar: AppShellSidebarProps = {
-		open,
-		onOpenChange: (nextOpen) => {
-			open = nextOpen;
+	const sidebar = $derived<AppShellSidebarProps>({
+		displayState: sidebarDisplayState,
+		onDisplayStateChange: (nextDisplayState) => {
+			sidebarDisplayState = nextDisplayState;
 		},
 		collapsible: 'icon',
 		variant: 'inset',
 		rail: true,
+		width: sidebarWidth,
+		resizable: {
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			collapseThreshold: '10.5rem',
+			onWidthChange: (nextWidth) => {
+				sidebarWidth = nextWidth;
+			}
+		},
 		items: [
 			{
 				label: 'Workspace',
@@ -76,7 +87,7 @@
 			title: 'Acme',
 			subtitle: 'Operations'
 		}
-	};
+	});
 ${'</' + 'script>'}
 
 <AppShell {sidebar} title="Dashboard" subtitle="Sidebar navigation with sticky page chrome">
@@ -87,7 +98,7 @@ ${'</' + 'script>'}
 	{/snippet}
 
 	{#snippet footer()}
-		<span>Sidebar is {open ? 'expanded' : 'collapsed'}</span>
+		<span>Sidebar is {isSidebarExpanded ? 'expanded' : 'collapsed'}</span>
 		<span>Responsive drawer included</span>
 	{/snippet}
 

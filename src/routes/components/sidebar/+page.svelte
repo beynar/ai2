@@ -21,6 +21,8 @@
 
 	function toPublicExampleCode(code: string): string {
 		return code
+			.replaceAll('$lib/components/Button/index.js', 'svelai/button')
+			.replaceAll('$lib/components/AppShell/index.js', 'svelai/app-shell')
 			.replaceAll('$lib/components/Menu/index.js', 'svelai/menu')
 			.replaceAll('$lib/components/Sidebar/index.js', 'svelai/sidebar')
 			.replaceAll('$lib/components/Skeleton/index.js', 'svelai/skeleton')
@@ -34,6 +36,7 @@
 	component="Sidebar"
 	features={[
 		'Desktop icon and offcanvas collapse modes',
+		'Resizable desktop panels with drag and keyboard handles',
 		'Hidden offcanvas sidebars reveal from the screen edge',
 		'Mobile drawer state through the same API',
 		'Panel mode and contained frames for embedded previews',
@@ -48,9 +51,8 @@
 	>
 		<p>
 			These examples keep the page side inert with skeleton content so the focus stays on Sidebar.
-			The skeleton region uses <code>bg-background</code> to mirror AppShell's default page host;
-			Sidebar itself does not paint that page surface. For full application layouts, compose it
-			through
+			Sidebar itself owns navigation, state, rail, reveal, and resizing; AppShell owns the visible
+			app wall and page surface. For full application layouts, compose it through
 			<a class="font-medium text-primary hover:underline" href="/components/app-shell">AppShell</a>.
 			For page headers, content width, and sticky footers, use
 			<a class="font-medium text-primary hover:underline" href="/components/page-shell">PageShell</a

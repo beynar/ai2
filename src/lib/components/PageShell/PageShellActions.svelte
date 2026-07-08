@@ -38,10 +38,10 @@
 	const overflowItems = $derived(overflowActions.map(toMenuItem));
 
 	function toMenuItem(action: PageShellAction): MenuItem {
-		const { content, ...buttonProps } = action;
+		const { content, type: _buttonType, ...buttonProps } = action;
 		return {
-			type: 'button',
 			...buttonProps,
+			type: 'button',
 			children: buttonProps.children ?? content ?? action.label
 		};
 	}

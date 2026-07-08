@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { AppShell, type AppShellSidebarProps } from '$lib/components/AppShell/index.js';
 	import { Button } from '$lib/components/Button/index.js';
 	import {
-		Sidebar,
 		type SidebarCollapsible,
+		type SidebarDisplayState,
 		type SidebarGroup,
 		type SidebarVariant
 	} from '$lib/components/Sidebar/index.js';
@@ -20,9 +21,10 @@
 	};
 	type DemoState = 'expanded' | 'icon' | 'hidden';
 
-	let open = $state(true);
+	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
 	let selectedRecipeId = $state('sidebar');
-	let collapsedState = $state<Exclude<DemoState, 'expanded'>>('icon');
+	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('collapsed');
+	let sidebarWidth = $state('16rem');
 
 	const variantRecipes: VariantRecipe[] = [
 		{ id: 'sidebar', label: 'sidebar', variant: 'sidebar' },
@@ -35,9 +37,11 @@
 	const selectedRecipe = $derived(
 		variantRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? variantRecipes[0]
 	);
-	const sidebarState = $derived<DemoState>(open ? 'expanded' : collapsedState);
+	const sidebarState = $derived<DemoState>(
+		sidebarDisplayState === 'collapsed' ? 'icon' : sidebarDisplayState
+	);
 	const sidebarCollapsible = $derived<SidebarCollapsible>(
-		collapsedState === 'hidden' ? 'offcanvas' : 'icon'
+		sidebarCollapsedDisplayState === 'hidden' ? 'offcanvas' : 'icon'
 	);
 
 	const items: SidebarGroup[] = [
@@ -54,23 +58,61 @@
 
 	function setSidebarState(nextState: DemoState) {
 		if (nextState === 'expanded') {
-			open = true;
+			sidebarDisplayState = 'expanded';
 			return;
 		}
 
-		collapsedState = nextState;
-		open = false;
+		const nextDisplayState = nextState === 'icon' ? 'collapsed' : 'hidden';
+		sidebarCollapsedDisplayState = nextDisplayState;
+		sidebarDisplayState = nextDisplayState;
 	}
+
+	function handleSidebarDisplayStateChange(nextDisplayState: SidebarDisplayState) {
+		sidebarDisplayState = nextDisplayState;
+		if (nextDisplayState !== 'expanded') {
+			sidebarCollapsedDisplayState = nextDisplayState;
+		}
+	}
+
+	function selectRecipe(recipe: VariantRecipe) {
+		selectedRecipeId = recipe.id;
+		sidebarWidth =
+			recipe.variant === 'floating' ? '15rem' : recipe.variant === 'split' ? '17rem' : '16rem';
+	}
+
+	const sidebar = $derived<AppShellSidebarProps>({
+		items,
+		displayState: sidebarDisplayState,
+		onDisplayStateChange: handleSidebarDisplayStateChange,
+		variant: selectedRecipe.variant,
+		collapsible: sidebarCollapsible,
+		rail: true,
+		width: sidebarWidth,
+		widthIcon: '3.5rem',
+		resizable: {
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			collapseThreshold: '10.5rem',
+			onWidthChange: (nextWidth) => {
+				sidebarWidth = nextWidth;
+			}
+		},
+		headerButton: {
+			icon: commandIcon,
+			title: 'Variant Lab',
+			subtitle: selectedRecipe.label
+		}
+	});
 </script>
 
-<div class="flex h-[500px] w-full flex-col gap-3">
+<div class="flex h-[560px] w-full flex-col gap-3">
 	<div class="flex flex-wrap items-center justify-center gap-4">
 		<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Sidebar variant">
 			{#each variantRecipes as recipe}
 				<Button
 					variant={selectedRecipeId === recipe.id ? 'solid' : 'outline'}
 					size="small"
-					onClick={() => (selectedRecipeId = recipe.id)}
+					onClick={() => selectRecipe(recipe)}
 				>
 					{recipe.label}
 				</Button>
@@ -90,26 +132,23 @@
 		</div>
 	</div>
 
-	<div
-		class="min-h-0 flex-1 overflow-hidden rounded-lg border border-background-muted bg-background-muted"
-	>
-		<Sidebar
-			bind:open
-			{items}
-			variant={selectedRecipe.variant}
-			collapsible={sidebarCollapsible}
+	<div class="min-h-0 flex-1">
+		<AppShell
+			{sidebar}
+			title="Variant Lab"
+			subtitle="The page host and wall are painted by AppShell defaults."
+			eyebrow={`${selectedRecipe.label} / ${sidebarState}`}
+			contentPadding="normal"
+			contentWidth="normal"
 			frame="contained"
-			rail
-			width="16rem"
-			widthIcon="3.5rem"
-			headerButton={{
-				icon: commandIcon,
-				title: 'Variant Lab',
-				subtitle: selectedRecipe.label
+			theme={{
+				root: {
+					base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted'
+				}
 			}}
 		>
 			{#snippet children()}
-				<div class="grid h-full min-w-0 place-items-center bg-background p-8">
+				<div class="grid min-h-[22rem] place-items-center">
 					<div class="grid w-full max-w-2xl gap-3">
 						<Skeleton color="primary" class="h-3 w-11/12 rounded-full" />
 						<Skeleton class="h-3 w-8/12 rounded-full" />
@@ -118,6 +157,6 @@
 					</div>
 				</div>
 			{/snippet}
-		</Sidebar>
+		</AppShell>
 	</div>
 </div>

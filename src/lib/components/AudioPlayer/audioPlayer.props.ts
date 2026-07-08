@@ -1,11 +1,14 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
-import type { Sizes } from '$lib/types/theme.js';
+import type { Colors, Sizes } from '$lib/types/theme.js';
+import type { Snippet } from 'svelte';
+import type { AudioPlayerState } from './audioPlayer.state.svelte.js';
 import type { AudioPlayerThemeProps } from './audioPlayer.theme.js';
 
 export type AudioPlayerPreload = 'none' | 'metadata' | 'auto';
 export type AudioPlayerCrossOrigin = 'anonymous' | 'use-credentials' | '';
 export type AudioPlayerStateMode = 'idle' | 'loading' | 'ready' | 'error';
+export type AudioPlayerVariant = 'waveform' | 'track';
 export type AudioPlayerWaveformVariant = 'centered' | 'histogram';
 export type AudioPlayerControl =
 	'play' | 'seekBackward' | 'seekForward' | 'time' | 'volume' | 'loop' | 'download';
@@ -51,7 +54,7 @@ export type AudioPlayerProps = WithAttachments<{
 	/** Secondary artist/author label. */
 	artist?: string;
 	/** Optional artwork URL displayed beside the controls. */
-	artwork?: string;
+	artwork?: string | false;
 	/** Explicit accessible label; falls back to title. */
 	label?: string;
 	/** Native audio preload behavior. */
@@ -62,6 +65,10 @@ export type AudioPlayerProps = WithAttachments<{
 	autoplay?: boolean;
 	/** Custom controls to render. */
 	controls?: AudioPlayerControl[];
+	/** Primary progress surface. */
+	variant?: AudioPlayerVariant;
+	/** Theme color token used for controls and progress. */
+	color?: Colors;
 	/** Waveform samples from 0 to 1. When omitted, a deterministic fallback is generated. */
 	waveform?: number[];
 	/** Visual waveform shape. */
@@ -108,6 +115,16 @@ export type AudioPlayerProps = WithAttachments<{
 	volumeStep?: number;
 	/** Custom content rendered inside the audio element, after generated sources. */
 	children?: Slot;
+	/** Replaces the full default header row. */
+	header?: Snippet<[AudioPlayerState]>;
+	/** Replaces the default controls area. */
+	controlsSlot?: Snippet<[AudioPlayerState]>;
+	/** Renders before default metadata in the default header row. */
+	leading?: Snippet<[AudioPlayerState]>;
+	/** Renders after default controls in the default header row. */
+	trailing?: Snippet<[AudioPlayerState]>;
+	/** Replaces the default waveform or track progress surface. */
+	seek?: Snippet<[AudioPlayerState]>;
 	/** Called when the media starts playback. */
 	onPlay?: (snapshot: AudioPlayerSnapshot) => void;
 	/** Called when the media pauses. */

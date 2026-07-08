@@ -2,6 +2,7 @@ import type { Sizes, Colors } from '$lib/types/theme.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { ChipThemeProps } from './chip.theme.js';
+import type { HTMLButtonAttributes } from 'svelte/elements';
 
 export type ChipProps = WithAttachments<
 	WithSlot<
@@ -24,6 +25,14 @@ export type ChipProps = WithAttachments<
 			rel?: string;
 			/** Click handler; renders as a button when set without href. */
 			onClick?: (event: MouseEvent) => void;
+			/** Native button type when the chip renders as a button. */
+			type?: HTMLButtonAttributes['type'];
+			/** Disabled state when the chip renders as a button. */
+			disabled?: HTMLButtonAttributes['disabled'];
+			/** Pressed state for selectable chip buttons. */
+			'aria-pressed'?: HTMLButtonAttributes['aria-pressed'];
+			/** ARIA disabled marker for selectable chip buttons. */
+			'aria-disabled'?: HTMLButtonAttributes['aria-disabled'];
 			/** Pointer enter handler. */
 			onEnter?: (event: PointerEvent) => void;
 			/** Pointer leave handler. */

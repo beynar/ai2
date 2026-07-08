@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { Tabbar } from '$lib/components/Tabbar/index.js';
 	import PropsTable from './PropsTable.svelte';
 	import StructureSchema from './StructureSchema.svelte';
 	import ThemeSchema from './ThemeSchema.svelte';
@@ -61,7 +60,24 @@
 		</ul>
 	{/if}
 
-	<Tabbar items={tabs} bind:activeTab />
+	<div class="flex w-full gap-1" role="tablist" aria-label={`${title} sections`}>
+		{#each tabs as tab, index (tab)}
+			<button
+				type="button"
+				role="tab"
+				aria-selected={activeTab === index}
+				data-active={activeTab === index ? 'true' : 'false'}
+				class="relative cursor-pointer rounded px-3 py-1 text-sm whitespace-nowrap text-foreground/70 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/45 data-[active=true]:text-foreground"
+				onclick={() => (activeTab = index)}
+			>
+				{tab}
+				{#if activeTab === index}
+					<span class="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" aria-hidden="true"
+					></span>
+				{/if}
+			</button>
+		{/each}
+	</div>
 
 	<div class="mt-8">
 		{#if activeTab === 0}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Slot } from '$lib/components/Slot/slot.js';
 	import type { WithAttachments } from '$lib/types/props.js';
-	import type { Sizes } from '$lib/types/theme.js';
+	import type { Colors, Sizes } from '$lib/types/theme.js';
 	import Button from '../Button/Button.svelte';
 	import { tooltip } from '../Tooltip/tooltip.svelte.js';
 	import type { useAudioPlayerTheme } from './audioPlayer.theme.js';
@@ -10,6 +10,7 @@
 	type Props = WithAttachments<{
 		classes: AudioPlayerClasses;
 		size: Sizes;
+		color: Colors;
 		label: string;
 		icon: Slot;
 		active?: boolean;
@@ -27,6 +28,7 @@
 	let {
 		classes,
 		size,
+		color,
 		label,
 		icon,
 		active = false,
@@ -46,7 +48,7 @@
 <Button
 	squared
 	variant={play ? 'solid' : 'ghost'}
-	color={play ? 'primary' : 'background'}
+	color={play || active ? color : 'background'}
 	{size}
 	{label}
 	{disabled}

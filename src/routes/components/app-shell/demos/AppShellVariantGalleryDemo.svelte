@@ -28,6 +28,7 @@
 	};
 
 	let selectedRecipeId = $state('inset');
+	let sidebarWidth = $state('16rem');
 
 	const previewAppShellTheme = {
 		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
@@ -107,13 +108,27 @@
 	const sidebar = $derived<AppShellSidebarProps>({
 		...selectedRecipe.sidebar,
 		items: selectedRecipe.items,
+		width: sidebarWidth,
 		widthIcon: selectedRecipe.sidebar.widthIcon ?? '3.5rem',
+		resizable: {
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			collapseThreshold: '10.5rem',
+			onWidthChange: (nextWidth) => {
+				sidebarWidth = nextWidth;
+			}
+		},
 		headerButton: {
 			icon: commandIcon,
 			title: selectedRecipe.name,
 			subtitle: 'Workspace'
 		}
 	});
+
+	function selectRecipe(recipe: VariantRecipe) {
+		selectedRecipeId = recipe.id;
+		sidebarWidth = recipe.sidebar.width ?? '16rem';
+	}
 </script>
 
 <div class="grid gap-4">
@@ -125,7 +140,7 @@
 					? 'border-primary bg-primary/10 text-foreground'
 					: 'border-background-muted bg-background-light text-foreground/70 hover:border-primary/50 hover:text-foreground'}"
 				aria-pressed={selectedRecipeId === recipe.id}
-				onclick={() => (selectedRecipeId = recipe.id)}
+				onclick={() => selectRecipe(recipe)}
 			>
 				<span class="block text-sm font-semibold">{recipe.name}</span>
 				<span class="mt-1 block text-xs leading-5">{recipe.description}</span>
@@ -138,7 +153,7 @@
 			<p class="text-sm font-semibold text-foreground">Icon rail is a state</p>
 			<p class="mt-1 text-xs leading-5 text-foreground/65">
 				Use <code>collapsible="icon"</code>, <code>rail</code>, and optionally
-				<code>open={false}</code> on the inset, floating, or split variant.
+				<code>displayState="collapsed"</code> on the inset, floating, or split variant.
 			</p>
 		</div>
 		<div class="rounded-lg border border-background-muted bg-background-light p-3">

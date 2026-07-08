@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AppShell, type AppShellSidebarProps } from '$lib/components/AppShell/index.js';
-	import type { SidebarGroup } from '$lib/components/Sidebar/index.js';
+	import type { SidebarDisplayState, SidebarGroup } from '$lib/components/Sidebar/index.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
 	import { commandIcon } from '$lib/components/Icons/command.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
@@ -8,7 +8,9 @@
 	import { sidebarIcon } from '$lib/components/Icons/sidebar.js';
 	import { trayIcon } from '$lib/components/Icons/tray.js';
 
-	let open = $state(true);
+	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
+	let sidebarWidth = $state('17rem');
+	const open = $derived(sidebarDisplayState === 'expanded');
 
 	const items: SidebarGroup[] = [
 		{
@@ -23,16 +25,24 @@
 	];
 
 	const sidebar = $derived<AppShellSidebarProps>({
-		open,
-		onOpenChange: (nextOpen) => {
-			open = nextOpen;
+		displayState: sidebarDisplayState,
+		onDisplayStateChange: (nextDisplayState) => {
+			sidebarDisplayState = nextDisplayState;
 		},
 		items,
 		collapsible: 'icon',
 		variant: 'inset',
 		rail: true,
-		width: '17rem',
+		width: sidebarWidth,
 		widthIcon: '3.5rem',
+		resizable: {
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			collapseThreshold: '10.5rem',
+			onWidthChange: (nextWidth) => {
+				sidebarWidth = nextWidth;
+			}
+		},
 		headerButton: {
 			icon: commandIcon,
 			title: 'Acme',

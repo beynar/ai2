@@ -27,12 +27,14 @@ const defaultPage = cva({
 		{
 			variant: 'inset',
 			side: 'left',
-			class: 'md:my-2 md:mr-2 md:ml-0 md:rounded-xl md:border md:border-background-muted md:shadow-sm'
+			class:
+				'md:my-2 md:mr-2 md:ml-0 md:rounded-xl md:border md:border-background-muted md:shadow-sm'
 		},
 		{
 			variant: 'inset',
 			side: 'right',
-			class: 'md:my-2 md:mr-0 md:ml-2 md:rounded-xl md:border md:border-background-muted md:shadow-sm'
+			class:
+				'md:my-2 md:mr-0 md:ml-2 md:rounded-xl md:border md:border-background-muted md:shadow-sm'
 		},
 		{
 			variant: 'split',

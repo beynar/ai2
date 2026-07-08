@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Sizes } from '$lib/types/theme.js';
+	import type { Colors, Sizes } from '$lib/types/theme.js';
 	import { Slider } from '../Form/Slider/index.js';
 	import { speakerHighIcon } from '../Icons/speakerHigh.js';
 	import { speakerSlashIcon } from '../Icons/speakerSlash.js';
@@ -13,12 +13,14 @@
 		player,
 		classes,
 		size,
+		color,
 		volumeStep,
 		disabled = false
 	}: {
 		player: AudioPlayerState;
 		classes: AudioPlayerClasses;
 		size: Sizes;
+		color: Colors;
 		volumeStep: number;
 		disabled?: boolean;
 	} = $props();
@@ -44,10 +46,7 @@
 			base: 'w-full gap-2'
 		},
 		track: {
-			base: 'min-w-0 text-primary focus-visible:ring-primary/60 focus-visible:ring-offset-0'
-		},
-		range: {
-			base: 'bg-primary'
+			base: 'min-w-0 focus-visible:ring-offset-0'
 		},
 		valueLabels: {
 			base: 'ml-1'
@@ -67,6 +66,7 @@
 	<AudioPlayerIconButton
 		{classes}
 		{size}
+		{color}
 		label={player.muted || player.volume === 0 ? 'Unmute' : 'Mute'}
 		icon={volumeIcon}
 		active={player.muted || player.volume === 0}
@@ -86,7 +86,7 @@
 			showValue
 			formatValue={(value) => `${Math.round(value)}%`}
 			thumbLabels={['Volume']}
-			color="primary"
+			{color}
 			variant="thick"
 			{size}
 			theme={sliderTheme}

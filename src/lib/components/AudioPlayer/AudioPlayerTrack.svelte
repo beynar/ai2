@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { Colors, Sizes } from '$lib/types/theme.js';
-	import type { AudioPlayerWaveformVariant } from './audioPlayer.props.js';
 	import type { useAudioPlayerTheme } from './audioPlayer.theme.js';
 	import { formatAudioPlayerTime } from './audioPlayer.time.js';
-	import { getAudioPlayerBarFill, getAudioPlayerBarHeight } from './audioPlayer.waveform.js';
 
 	type AudioPlayerClasses = ReturnType<typeof useAudioPlayerTheme>;
 
@@ -11,8 +9,6 @@
 		classes,
 		size,
 		color,
-		variant,
-		samples,
 		currentTime,
 		duration,
 		buffered,
@@ -23,8 +19,6 @@
 		classes: AudioPlayerClasses;
 		size: Sizes;
 		color: Colors;
-		variant: AudioPlayerWaveformVariant;
-		samples: number[];
 		currentTime: number;
 		duration: number;
 		buffered: number;
@@ -41,7 +35,6 @@
 	);
 	const disabledInput = $derived(disabled || maxValue <= 0);
 	const formattedValue = $derived(formatAudioPlayerTime(currentValue, maxValue));
-	const gridStyle = $derived(`grid-template-columns: repeat(${samples.length}, minmax(2px, 1fr));`);
 
 	function handleInput(event: Event) {
 		const input = event.currentTarget;
@@ -55,40 +48,25 @@
 </script>
 
 <div
-	data-slot="audio-player-waveform"
+	data-slot="audio-player-track"
 	data-color={color}
-	class={classes.waveform({ size, variant, disabled: disabledInput })}
+	class={classes.track({ size, disabled: disabledInput })}
 >
-	<div
-		data-slot="audio-player-waveform-bars"
-		class={classes.waveformBars({ variant })}
-		style={gridStyle}
-		aria-hidden="true"
-	>
-		{#each samples as sample, index (index)}
-			<span
-				data-slot="audio-player-waveform-bar"
-				class={classes.waveformBar({ variant })}
-				style={`height: ${getAudioPlayerBarHeight(sample)};`}
-			>
-				<span
-					data-slot="audio-player-waveform-bar-buffered"
-					class={classes.waveformBarBuffered()}
-					style={`width: ${getAudioPlayerBarFill(index, samples.length, bufferedPercentage)};`}
-				></span>
-				<span
-					data-slot="audio-player-waveform-bar-fill"
-					data-color={color}
-					class={classes.waveformBarFill()}
-					style={`width: ${getAudioPlayerBarFill(index, samples.length, progressPercentage)};`}
-				></span>
-			</span>
-		{/each}
-	</div>
+	<span
+		data-slot="audio-player-track-buffered"
+		class={classes.trackBuffered({ size })}
+		style={`width: ${bufferedPercentage}%;`}
+	></span>
+	<span
+		data-slot="audio-player-track-range"
+		data-color={color}
+		class={classes.trackRange({ size })}
+		style={`width: ${progressPercentage}%;`}
+	></span>
 
 	<input
-		data-slot="audio-player-waveform-input"
-		class={classes.waveformInput()}
+		data-slot="audio-player-track-input"
+		class={classes.trackInput()}
 		type="range"
 		aria-label={label}
 		aria-valuetext={formattedValue}

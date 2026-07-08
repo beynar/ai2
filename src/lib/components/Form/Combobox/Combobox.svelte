@@ -13,7 +13,7 @@
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 	import { useListNavigation } from '$lib/utils/useListNavigation.svelte.js';
 	import { onMount, untrack } from 'svelte';
-	import Button from '$lib/components/Button/Button.svelte';
+	import FieldActionButton from '../Field/FieldActionButton.svelte';
 
 	let {
 		value = $bindable(null),
@@ -289,25 +289,11 @@
 		</div>
 	{/snippet}
 	{#snippet trigger(popover: PopoverState)}
-		{#snippet clearButtonSuffix()}
-			<Button
-				variant="ghost"
-				size="small"
-				color="danger"
-				onClick={handleClear}
-				label="Clear selection"
-				squared
-				class="flex h-[1lh] max-h-[1lh] items-center justify-center p-0.5"
-			>
-				{@render xIcon({ size: 18 })}
-			</Button>
-		{/snippet}
-
 		<Field
 			{field}
 			{description}
 			prefix={effectivePrefix}
-			suffix={suffix || (showClear ? clearButtonSuffix : undefined)}
+			{suffix}
 			theme={{
 				...(theme || {}),
 				inputContainer: {
@@ -340,6 +326,16 @@
 				class:placeholder:text-foreground={selectedOption && !searchValue}
 				{@attach keyDownHook.reference}
 			/>
+			{#if showClear && !suffix}
+				<FieldActionButton
+					{size}
+					color="danger"
+					label="Clear selection"
+					disabled={field.disabled}
+					prefix={xIcon}
+					onClick={handleClear}
+				/>
+			{/if}
 		</Field>
 	{/snippet}
 </Popover>

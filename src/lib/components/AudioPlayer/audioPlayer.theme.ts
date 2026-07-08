@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultAudioPlayerRoot = cva({
-	base: 'group/audio-player relative grid w-full min-w-0 gap-3 overflow-hidden rounded-lg border border-background-muted bg-background p-3 text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/60',
+	base: 'group/audio-player relative grid w-full min-w-0 gap-3 overflow-hidden rounded-lg border border-background-muted bg-background p-3 text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-color/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -21,7 +21,7 @@ const defaultAudioPlayerRoot = cva({
 });
 
 const defaultAudioPlayerHeader = cva({
-	base: 'grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto]',
+	base: 'flex min-w-0 flex-wrap items-center gap-3',
 	variants: {
 		size: {
 			small: 'gap-2',
@@ -35,7 +35,7 @@ const defaultAudioPlayerHeader = cva({
 });
 
 const defaultAudioPlayerArtwork = cva({
-	base: 'relative grid shrink-0 place-items-center overflow-hidden rounded-md border border-background-muted bg-secondary text-primary',
+	base: 'relative grid shrink-0 place-items-center overflow-hidden rounded-md border border-background-muted bg-background-muted text-foreground-muted',
 	variants: {
 		size: {
 			small: 'size-10',
@@ -53,7 +53,7 @@ const defaultAudioPlayerArtworkImage = cva({
 });
 
 const defaultAudioPlayerMeta = cva({
-	base: 'min-w-0'
+	base: 'min-w-0 flex-1'
 });
 
 const defaultAudioPlayerTitle = cva({
@@ -85,7 +85,7 @@ const defaultAudioPlayerArtist = cva({
 });
 
 const defaultAudioPlayerControls = cva({
-	base: 'col-span-2 grid min-w-0 gap-2 md:col-span-1 md:flex md:flex-wrap md:items-center md:justify-end md:gap-1',
+	base: 'grid min-w-0 flex-[1_1_100%] gap-2 md:flex md:flex-[0_1_auto] md:flex-wrap md:items-center md:justify-end md:gap-1',
 	variants: {
 		size: {
 			small: 'gap-0.5',
@@ -103,7 +103,7 @@ const defaultAudioPlayerControlGroup = cva({
 });
 
 const defaultAudioPlayerControlButton = cva({
-	base: '!border-background-muted data-[active=true]:!bg-primary/12 data-[active=true]:!text-primary',
+	base: '!border-background-muted data-[active=true]:!bg-color/12 data-[active=true]:!text-color-readable',
 	variants: {
 		size: {
 			small: '!size-7 !min-w-7',
@@ -117,7 +117,7 @@ const defaultAudioPlayerControlButton = cva({
 });
 
 const defaultAudioPlayerPlayButton = cva({
-	base: '!bg-primary !text-primary-contrast hover:!bg-primary-dark active:!bg-primary-dark',
+	base: '',
 	variants: {
 		size: {
 			small: '!size-8 !min-w-8',
@@ -131,7 +131,7 @@ const defaultAudioPlayerPlayButton = cva({
 });
 
 const defaultAudioPlayerWaveform = cva({
-	base: 'relative h-24 min-w-0 overflow-hidden rounded-md border border-background-muted bg-background-muted/45 p-3 outline-none has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-primary/60',
+	base: 'relative h-24 min-w-0 overflow-hidden rounded-md border border-background-muted bg-background-muted/45 p-3 outline-none has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-color/60',
 	variants: {
 		size: {
 			small: 'h-20 p-2',
@@ -181,7 +181,7 @@ const defaultAudioPlayerWaveformBar = cva({
 });
 
 const defaultAudioPlayerWaveformBarFill = cva({
-	base: 'absolute inset-y-0 left-0 rounded-full bg-primary'
+	base: 'absolute inset-y-0 left-0 rounded-full bg-color'
 });
 
 const defaultAudioPlayerWaveformBarBuffered = cva({
@@ -189,6 +189,57 @@ const defaultAudioPlayerWaveformBarBuffered = cva({
 });
 
 const defaultAudioPlayerWaveformInput = cva({
+	base: 'absolute inset-0 z-10 m-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 focus:outline-none disabled:cursor-not-allowed'
+});
+
+const defaultAudioPlayerTrack = cva({
+	base: 'relative min-w-0 rounded-full outline-none before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:rounded-full before:bg-foreground/15 has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-color/60',
+	variants: {
+		size: {
+			small: 'h-8 before:h-1.5',
+			normal: 'h-10 before:h-2',
+			large: 'h-12 before:h-2.5'
+		},
+		disabled: {
+			true: 'cursor-not-allowed opacity-60',
+			false: 'cursor-pointer'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		disabled: false
+	}
+});
+
+const defaultAudioPlayerTrackBuffered = cva({
+	base: 'absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-foreground/25',
+	variants: {
+		size: {
+			small: 'h-1.5',
+			normal: 'h-2',
+			large: 'h-2.5'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultAudioPlayerTrackRange = cva({
+	base: 'absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-color',
+	variants: {
+		size: {
+			small: 'h-1.5',
+			normal: 'h-2',
+			large: 'h-2.5'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultAudioPlayerTrackInput = cva({
 	base: 'absolute inset-0 z-10 m-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 focus:outline-none disabled:cursor-not-allowed'
 });
 
@@ -251,6 +302,10 @@ export const audioPlayerTheme = {
 	waveformBarFill: defaultAudioPlayerWaveformBarFill,
 	waveformBarBuffered: defaultAudioPlayerWaveformBarBuffered,
 	waveformInput: defaultAudioPlayerWaveformInput,
+	track: defaultAudioPlayerTrack,
+	trackBuffered: defaultAudioPlayerTrackBuffered,
+	trackRange: defaultAudioPlayerTrackRange,
+	trackInput: defaultAudioPlayerTrackInput,
 	time: defaultAudioPlayerTime,
 	volumeControl: defaultAudioPlayerVolumeControl,
 	volumeSlider: defaultAudioPlayerVolumeSlider,

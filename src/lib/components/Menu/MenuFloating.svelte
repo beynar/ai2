@@ -29,7 +29,6 @@
 	const parentPopover = usePopoverContext();
 	const classes = $derived(useMenuTheme(theme));
 	const t = $derived(useI18n());
-	const isMobileViewport = $derived(parentPopover?.theme.isMobile ?? false);
 	const isInMobileSheet = $derived(parentPopover?.isMobileSheet ?? false);
 	const hasParentMenu = $derived(!!parentPopover?.parent);
 	const showBackControl = $derived(isInMobileSheet && hasParentMenu);
@@ -147,13 +146,13 @@
 				onOpen={() => (submenuOpen[index] = true)}
 				onClose={() => (submenuOpen[index] = false)}
 				position={submenuPosition}
-				openOnHover={openOnHover && !isMobileViewport}
+				openOnHover={openOnHover && !isInMobileSheet}
 				{openOnClick}
 				{hoverDelay}
 				{closeOnMouseLeave}
 				closeOnEscape={true}
 				closeOnItemClick={false}
-				mobileSheet
+				mobileSheet={false}
 				class={popoverClass}
 				menu={{
 					items: menu,

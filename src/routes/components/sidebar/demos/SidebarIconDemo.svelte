@@ -1,5 +1,9 @@
 <script lang="ts">
-	import { Sidebar, type SidebarGroup } from '$lib/components/Sidebar/index.js';
+	import {
+		Sidebar,
+		type SidebarDisplayState,
+		type SidebarGroup
+	} from '$lib/components/Sidebar/index.js';
 	import { Skeleton } from '$lib/components/Skeleton/index.js';
 	import { bookOpenIcon } from '$lib/components/Icons/bookOpen.js';
 	import { chartPieIcon } from '$lib/components/Icons/chartPie.js';
@@ -10,7 +14,9 @@
 	import { lockIcon } from '$lib/components/Icons/lock.js';
 	import { robotIcon } from '$lib/components/Icons/robot.js';
 
-	let open = $state(false);
+	let displayState = $state<SidebarDisplayState>('collapsed');
+	let width = $state('16rem');
+	const open = $derived(displayState === 'expanded');
 
 	const items: SidebarGroup[] = [
 		{
@@ -31,7 +37,7 @@
 			type="button"
 			class="border-background-muted bg-background hover:bg-background-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium text-foreground transition"
 			aria-pressed={!open}
-			onclick={() => (open = !open)}
+			onclick={() => (displayState = open ? 'collapsed' : 'expanded')}
 		>
 			{open ? 'Collapse' : 'Expand'}
 		</button>
@@ -41,14 +47,19 @@
 		class="min-h-0 flex-1 overflow-hidden rounded-lg border border-background-muted bg-background-muted"
 	>
 		<Sidebar
-			bind:open
+			bind:displayState
+			bind:width
 			{items}
 			collapsible="icon"
 			tooltips="always"
 			variant="floating"
 			frame="contained"
-			width="16rem"
 			widthIcon="3.5rem"
+			resizable={{
+				minWidth: '12rem',
+				maxWidth: '22rem',
+				collapseThreshold: '10.5rem'
+			}}
 			headerButton={{
 				icon: commandIcon,
 				title: 'Control',

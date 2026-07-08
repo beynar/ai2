@@ -13,6 +13,7 @@ export type NumberInputType = 'number' | 'slider';
 export type RatingInputType = 'rating';
 export type SliderRangeInputType = 'slider-range';
 export type TagInputType = 'tag';
+export type TagGroupInputType = 'tag-group';
 export type KeyValueInputType = 'keyvalue';
 export type DateInputType = 'datetime' | 'date';
 export type TimeInputType = 'time';
@@ -34,6 +35,7 @@ export type InputType =
 	| BooleanInputType
 	| MultipleChoiceInputType
 	| TagInputType
+	| TagGroupInputType
 	| KeyValueInputType
 	| SingleOptionInputType
 	| CalendarInputType;
@@ -62,15 +64,17 @@ export type FieldValue<T extends InputType> = T extends 'file'
 											? string[]
 											: T extends TagInputType
 												? string[]
-												: T extends KeyValueInputType
-													? KeyValuePair[]
-													: T extends SingleOptionInputType
-														? string
-														: T extends 'calendar'
-															? Date
-															: T extends 'calendar-range'
-																? [Date, Date]
-																: never;
+												: T extends TagGroupInputType
+													? string | string[] | null
+													: T extends KeyValueInputType
+														? KeyValuePair[]
+														: T extends SingleOptionInputType
+															? string
+															: T extends 'calendar'
+																? Date
+																: T extends 'calendar-range'
+																	? [Date, Date]
+																	: never;
 
 export type InputProps<T extends InputType> = WithSlot<
 	{
@@ -240,6 +244,31 @@ const defaultFieldSuffix = cva({
 	}
 });
 
+const defaultFieldActionButton = cva({
+	base: 'h-auto min-h-0 self-stretch rounded-none border-0 bg-clip-border !px-0 active:translate-y-0',
+	variants: {
+		size: {
+			small: '-my-1.5 min-w-8',
+			normal: '-my-2 min-w-9',
+			large: '-my-2.5 min-w-10'
+		},
+		edge: {
+			start: '-ml-3 mr-1',
+			end: 'ml-1 -mr-3',
+			none: 'mx-0'
+		},
+		active: {
+			true: 'text-primary',
+			false: ''
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		edge: 'end',
+		active: false
+	}
+});
+
 const defaultFieldFooter = cva({
 	base: 'flex items-start gap-2 justify-between',
 	variants: {
@@ -333,6 +362,7 @@ export const fieldTheme = {
 	inputContainer: defaultFieldInputContainer,
 	prefix: defaultFieldPrefix,
 	suffix: defaultFieldSuffix,
+	actionButton: defaultFieldActionButton,
 	footer: defaultFieldFooter,
 	description: defaultFieldDescription,
 	helper: defaultFieldHelper

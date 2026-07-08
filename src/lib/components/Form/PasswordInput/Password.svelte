@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import Field from '../Field/Field.svelte';
+	import FieldActionButton from '../Field/FieldActionButton.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { PasswordInputProps } from './passwordInput.props.js';
 	import { usePasswordInputTheme } from './passwordInput.theme.js';
-	import ToggleButton from '$lib/components/ToggleButton/ToggleButton.svelte';
 	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { eyeIcon } from '$lib/components/Icons/eye.js';
 
@@ -70,6 +71,21 @@
 	});
 
 	const classes = $derived(usePasswordInputTheme(theme));
+
+	const togglePasswordVisibility = async () => {
+		const input = field.node instanceof HTMLInputElement ? field.node : null;
+		const selectionStart = input?.selectionStart;
+		const selectionEnd = input?.selectionEnd;
+		const selectionDirection = input?.selectionDirection ?? 'none';
+
+		showPassword = !showPassword;
+		await tick();
+
+		if (input && selectionStart != null && selectionEnd != null) {
+			input.focus({ preventScroll: true });
+			input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
+		}
+	};
 </script>
 
 <Field
@@ -88,15 +104,6 @@
 	}}
 	{...rest}
 >
-	{#snippet prefix()}
-		<ToggleButton size="small" bind:checked={showPassword}>
-			{#if showPassword}
-				{@render eyeIcon({})}
-			{:else}
-				{@render eyeClosedIcon({})}
-			{/if}
-		</ToggleButton>
-	{/snippet}
 	<input
 		data-1p-ignore
 		type={showPassword ? 'text' : 'password'}
@@ -107,5 +114,14 @@
 		{placeholder}
 		class={classes.input({ disabled: field.disabled, size: rest.size })}
 		disabled={field.disabled}
+	/>
+	<FieldActionButton
+		active={showPassword}
+		size={rest.size}
+		label={showPassword ? 'Hide password' : 'Show password'}
+		aria-pressed={showPassword}
+		disabled={field.disabled}
+		prefix={showPassword ? eyeIcon : eyeClosedIcon}
+		onClick={togglePasswordVisibility}
 	/>
 </Field>
