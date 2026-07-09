@@ -234,11 +234,11 @@ const defaultOverlay = cva({
 });
 
 const defaultMobilePanel = cva({
-	base: 'fixed inset-y-0 z-50 flex w-[var(--sidebar-width-mobile)] flex-col bg-background text-foreground shadow-xl md:hidden',
+	base: 'flex h-full min-h-0 w-[var(--sidebar-width-mobile)] flex-col bg-background text-foreground md:hidden',
 	variants: {
 		side: {
-			left: 'left-0',
-			right: 'right-0'
+			left: '',
+			right: ''
 		}
 	},
 	defaultVariants: {

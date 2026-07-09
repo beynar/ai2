@@ -37,6 +37,7 @@ interface PopoverOptions extends MakeRequired<
 		| 'closeOnEscape'
 		| 'lockScroll'
 		| 'closeOnMouseLeave'
+		| 'debugSafeArea'
 		| 'closeOnClickOutside'
 		| 'openOnHover'
 		| 'hoverDelay'
@@ -47,6 +48,7 @@ interface PopoverOptions extends MakeRequired<
 	| 'closeOnEscape'
 	| 'lockScroll'
 	| 'closeOnMouseLeave'
+	| 'debugSafeArea'
 	| 'closeOnClickOutside'
 	| 'openOnHover'
 	| 'hoverDelay'
@@ -132,7 +134,8 @@ export class PopoverState {
 		isActive: () =>
 			this.isOpen && this.closeOnMouseLeave && this.children.filter((d) => d.isOpen).length === 0,
 		callback: () => this.close(),
-		offset: 15
+		offset: 15,
+		debug: () => this.debugSafeArea
 	});
 
 	clickOutside = useClickOutside({
@@ -180,6 +183,7 @@ export class PopoverState {
 		useScrollLock({
 			isActive: () =>
 				this.lockScroll &&
+				!this.isMobileSheet &&
 				!this.parent &&
 				this.isOpen &&
 				this.theme.popovers.filter((d) => d.isOpen).length === 1
@@ -188,11 +192,18 @@ export class PopoverState {
 		useKeyDown({
 			isActive: () => {
 				const isActive =
-					this.closeOnEscape && this.isOpen && (this.isLastOfStack || this.isLastOpen);
+					this.closeOnEscape &&
+					!this.isMobileSheet &&
+					this.isOpen &&
+					(this.isLastOfStack || this.isLastOpen);
 
 				return isActive;
 			},
-			onWindow: () => this.closeOnEscape && this.isOpen && (this.isLastOfStack || this.isLastOpen),
+			onWindow: () =>
+				this.closeOnEscape &&
+				!this.isMobileSheet &&
+				this.isOpen &&
+				(this.isLastOfStack || this.isLastOpen),
 			keys: ['Escape'],
 			callback: () => {
 				this.close();
@@ -274,6 +285,7 @@ export class PopoverState {
 			// panel never flashes at top-left (0,0) before floating-ui resolves.
 			visibility: ''
 		});
+		this.safeArea.updateAreas();
 		if (mount && !this.hasTransitioned && this.directedTransition) {
 			this.applyDirectedTransition(node, placement);
 		}
@@ -306,7 +318,7 @@ export class PopoverState {
 		return untrack(() => {
 			const cleanups: Array<(() => void) | null | void> = [];
 			cleanups.push(this.clickOutside.reference?.(node));
-			cleanups.push(this.safeArea.reference?.(node));
+			cleanups.push(this.safeArea.floatingReference?.(node));
 			return () => {
 				cleanups.forEach((cleanup) => cleanup?.());
 			};
@@ -319,7 +331,7 @@ export class PopoverState {
 			// Gather all cleanup callbacks
 			const cleanups: Array<(() => void) | null | void> = [];
 			cleanups.push(this.clickOutside.reference?.(node));
-			cleanups.push(this.safeArea.reference?.(node));
+			cleanups.push(this.safeArea.anchorReference?.(node));
 			cleanups.push(this.hoverAction.reference?.(node));
 
 			// Return combined cleanup function

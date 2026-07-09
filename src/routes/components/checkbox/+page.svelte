@@ -42,6 +42,22 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large checkbox sizes."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<Checkbox size="small" label="Small" description="Compact checkbox" value={true} />
+	<Checkbox size="normal" label="Normal" description="Default checkbox" value={true} />
+	<Checkbox size="large" label="Large" description="Roomier checkbox" value={true} />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<Checkbox size="small" label="Small" description="Compact checkbox" value={true} />
+				<Checkbox size="normal" label="Normal" description="Default checkbox" value={true} />
+				<Checkbox size="large" label="Large" description="Roomier checkbox" value={true} />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="A checkbox rendered as a selectable card.">
 			<div class="w-full max-w-md">
 				<Checkbox

@@ -15,7 +15,6 @@ export class FormState<I extends FormInputs = FormInputs> {
 	fields = $state<FieldState<any>[]>([]);
 	loading = $state(false);
 	hasError = $state(false);
-	private inputs: I;
 	private opts: FormProps<I>;
 
 	getValue = () => {
@@ -41,11 +40,10 @@ export class FormState<I extends FormInputs = FormInputs> {
 
 	constructor(opts: FormProps<I>) {
 		this.opts = opts;
-		this.inputs = opts.inputs;
 	}
 
 	private isFieldVisible(fieldName: string, formValue?: InferFormValue<I>): boolean {
-		const input = this.inputs[fieldName];
+		const input = this.opts.inputs[fieldName];
 		if (!input) return true; // If input config not found, assume visible
 
 		// Check field's own visible property (boolean) first
@@ -78,7 +76,7 @@ export class FormState<I extends FormInputs = FormInputs> {
 			const [error, value] = field.validate();
 			if (error) {
 				hasError = true;
-				firstErroredNode = field.node;
+				firstErroredNode = firstErroredNode ?? field.node ?? field.rootNode;
 			}
 			return [error, value];
 		});

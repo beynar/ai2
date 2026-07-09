@@ -335,10 +335,20 @@
 			"svelte": "./dist/components/Badge/index.js",
 			"default": "./dist/components/Badge/index.js"
 		},
+		"./stat": {
+			"types": "./dist/components/Stat/index.d.ts",
+			"svelte": "./dist/components/Stat/index.js",
+			"default": "./dist/components/Stat/index.js"
+		},
 		"./meter": {
 			"types": "./dist/components/Meter/index.d.ts",
 			"svelte": "./dist/components/Meter/index.js",
 			"default": "./dist/components/Meter/index.js"
+		},
+		"./media-volume": {
+			"types": "./dist/components/MediaVolume/index.d.ts",
+			"svelte": "./dist/components/MediaVolume/index.js",
+			"default": "./dist/components/MediaVolume/index.js"
 		},
 		"./icons/*": {
 			"types": "./dist/components/Icons/*.d.ts",
@@ -593,8 +603,14 @@
 			"./badge": [
 				"./dist/components/Badge/index.d.ts"
 			],
+			"./stat": [
+				"./dist/components/Stat/index.d.ts"
+			],
 			"./meter": [
 				"./dist/components/Meter/index.d.ts"
+			],
+			"./media-volume": [
+				"./dist/components/MediaVolume/index.d.ts"
 			],
 			"./spinnerOverlay": [
 				"./dist/attachments/spinnerOverlay.svelte.d.ts"

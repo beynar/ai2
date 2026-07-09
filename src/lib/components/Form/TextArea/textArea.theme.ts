@@ -13,21 +13,27 @@ const defaultTextArea = cva({
 			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
+	},
+	defaultVariants: {
+		size: 'normal'
 	}
 });
 
 const defaultTextAreaContainer = cva({
-	base: 'px-2 bg-background-light border border-background-muted rounded text-foreground-light w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all p-1',
+	base: 'px-3 py-2 bg-background-light border border-background-muted rounded text-foreground w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all',
 	variants: {
 		size: {
-			small: 'min-h-20',
-			normal: 'min-h-24',
-			large: 'min-h-32'
+			small: 'min-h-20 py-1.5 text-xs',
+			normal: 'min-h-24 py-2 text-sm',
+			large: 'min-h-32 py-2.5 text-base'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
+	},
+	defaultVariants: {
+		size: 'normal'
 	}
 });
 

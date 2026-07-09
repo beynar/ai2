@@ -193,6 +193,22 @@
 		</ComponentCard>
 
 		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large rich text input sizes."
+			code={`<div class="grid w-full max-w-3xl gap-4">
+	<RichTextInput label="Small" size="small" toolbar="none" placeholder="Small prompt..." />
+	<RichTextInput label="Normal" size="normal" toolbar="none" placeholder="Normal prompt..." />
+	<RichTextInput label="Large" size="large" toolbar="none" placeholder="Large prompt..." />
+</div>`}
+		>
+			<div class="grid w-full max-w-3xl gap-4">
+				<RichTextInput label="Small" size="small" toolbar="none" placeholder="Small prompt..." />
+				<RichTextInput label="Normal" size="normal" toolbar="none" placeholder="Normal prompt..." />
+				<RichTextInput label="Large" size="large" toolbar="none" placeholder="Large prompt..." />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
 			title="Standalone Surface"
 			description="Set standalone to render the editor without Field chrome or the input background surface."
 			code={`<RichTextInput

@@ -41,7 +41,7 @@
 	this={as}
 	id="{field.id}-field"
 	class={classes.root({ className, hasError: field.hasError })}
-	bind:this={field.node}
+	bind:this={field.rootNode}
 	{...attrs}
 	{...attachments}
 >

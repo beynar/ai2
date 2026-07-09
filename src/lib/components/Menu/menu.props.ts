@@ -28,10 +28,15 @@ export type SubMenuItemProps = Omit<MenuOptionProps, 'onClick' | 'onEnter' | 'on
 	 */
 	hoverDelay?: number;
 	/**
-	 * Close when mouse leaves.
+	 * Close when the pointer leaves the submenu prediction cone and rectangle tolerance.
 	 * @default true
 	 */
 	closeOnMouseLeave?: boolean;
+	/**
+	 * Shows the submenu hover safe-area rectangle and prediction cone.
+	 * @default false
+	 */
+	debugSafeArea?: boolean;
 };
 
 export type MenuItem =

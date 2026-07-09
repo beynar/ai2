@@ -48,7 +48,8 @@ The Popover component displays floating content positioned relative to a trigger
 - **hoverDelay**: number (default: 100) - Delay in ms before opening on hover
 - **closeOnEscape**: boolean (default: true) - Close on Escape key
 - **closeOnClickOutside**: boolean (default: true) - Close when clicking outside
-- **closeOnMouseLeave**: boolean (default: false) - Close when mouse leaves
+- **closeOnMouseLeave**: boolean (default: false) - Close when the pointer leaves the hover safe area. The safe area is the trigger, the panel, and a prediction cone toward the panel, so a diagonal move to the panel keeps it open.
+- **debugSafeArea**: boolean (default: false) - Show hover safe-area overlays. Trigger/panel rectangles render in blue; the prediction cone toward the panel renders in orange.
 
 ### Visual Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
@@ -253,7 +254,7 @@ The Popover component displays floating content positioned relative to a trigger
 	openOnHover
 	closeOnMouseLeave
 >
-	Closes when you move mouse away
+	Closes when you move outside the rectangle tolerance
 </Popover>
 \`\`\`
 

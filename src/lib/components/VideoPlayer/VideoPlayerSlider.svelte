@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Sizes } from '$lib/types/theme.js';
 	import Slider from '../Form/Slider/Slider.svelte';
+	import { getVideoPlayerSliderTheme } from './videoPlayer.sliderTheme.js';
 	import type { useVideoPlayerTheme } from './videoPlayer.theme.js';
 
 	type VideoPlayerClasses = ReturnType<typeof useVideoPlayerTheme>;
@@ -16,6 +17,7 @@
 		buffered,
 		disabled = false,
 		showValue = false,
+		orientation = 'horizontal',
 		format = (nextValue: number) => `${nextValue}`,
 		onChange
 	}: {
@@ -29,6 +31,7 @@
 		buffered?: number;
 		disabled?: boolean;
 		showValue?: boolean;
+		orientation?: 'horizontal' | 'vertical';
 		format?: (value: number) => string;
 		onChange: (value: number) => void;
 	} = $props();
@@ -39,38 +42,7 @@
 		return Math.min(100, Math.max(0, ((buffered - min) / (maxValue - min)) * 100));
 	});
 	const bufferedStyle = $derived(`--video-player-slider-buffered: ${bufferedPercentage}%;`);
-	const sliderTheme = $derived({
-		root: {
-			base: 'w-full gap-0'
-		},
-		header: {
-			base: 'sr-only'
-		},
-		label: {
-			base: 'sr-only'
-		},
-		inputContainer: {
-			base: 'w-full gap-0 text-white'
-		},
-		control: {
-			base: 'w-full gap-2'
-		},
-		track: {
-			base: 'min-w-0 text-primary focus-visible:ring-white/60 focus-visible:ring-offset-0'
-		},
-		trackBackground: {
-			base: 'bg-white/25 [background:linear-gradient(to_right,rgba(255,255,255,0.35)_0_var(--video-player-slider-buffered),rgba(255,255,255,0.25)_var(--video-player-slider-buffered)_100%)]'
-		},
-		range: {
-			base: 'bg-primary'
-		},
-		valueLabels: {
-			base: 'ml-1'
-		},
-		valueLabel: {
-			base: 'border-white/10 bg-white/10 text-white/90'
-		}
-	});
+	const sliderTheme = $derived(getVideoPlayerSliderTheme(orientation));
 
 	function handleChange(nextValue: number | number[]) {
 		onChange(Array.isArray(nextValue) ? (nextValue[0] ?? min) : nextValue);
@@ -94,6 +66,7 @@
 		thumbLabels={[label]}
 		color="primary"
 		variant="thick"
+		{orientation}
 		{size}
 		theme={sliderTheme}
 		onChange={handleChange}

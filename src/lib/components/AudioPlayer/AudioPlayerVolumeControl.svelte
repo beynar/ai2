@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Colors, Sizes } from '$lib/types/theme.js';
-	import { Slider } from '../Form/Slider/index.js';
 	import { speakerHighIcon } from '../Icons/speakerHigh.js';
-	import { speakerSlashIcon } from '../Icons/speakerSlash.js';
+	import MediaVolumeControl from '../MediaVolume/MediaVolumeControl.svelte';
+	import type { AudioPlayerLayout } from './audioPlayer.props.js';
 	import type { AudioPlayerState } from './audioPlayer.state.svelte.js';
 	import type { useAudioPlayerTheme } from './audioPlayer.theme.js';
 	import AudioPlayerIconButton from './AudioPlayerIconButton.svelte';
@@ -14,6 +14,7 @@
 		classes,
 		size,
 		color,
+		layout,
 		volumeStep,
 		disabled = false
 	}: {
@@ -21,17 +22,14 @@
 		classes: AudioPlayerClasses;
 		size: Sizes;
 		color: Colors;
+		layout: AudioPlayerLayout;
 		volumeStep: number;
 		disabled?: boolean;
 	} = $props();
 
-	const volumeValue = $derived(player.muted ? 0 : player.volume * 100);
-	const volumeIcon = $derived(
-		player.muted || player.volume === 0 ? speakerSlashIcon : speakerHighIcon
-	);
 	const sliderTheme = $derived({
 		root: {
-			base: 'w-full gap-0'
+			base: 'w-auto justify-items-center gap-1'
 		},
 		header: {
 			base: 'sr-only'
@@ -40,57 +38,66 @@
 			base: 'sr-only'
 		},
 		inputContainer: {
-			base: 'w-full gap-0'
+			base: 'w-auto gap-0'
 		},
 		control: {
-			base: 'w-full gap-2'
+			base: 'w-auto gap-2'
 		},
 		track: {
-			base: 'min-w-0 focus-visible:ring-offset-0'
+			base: 'h-32 focus-visible:ring-offset-0'
 		},
 		valueLabels: {
-			base: 'ml-1'
+			base: 'justify-center'
 		},
 		valueLabel: {
 			base: 'border-background-muted bg-background text-foreground'
 		}
 	});
-
-	function handleChange(nextValue: number | number[]) {
-		const nextVolume = Array.isArray(nextValue) ? (nextValue[0] ?? 0) : nextValue;
-		player.runInteraction(() => player.setVolume(nextVolume / 100));
-	}
 </script>
 
-<div data-slot="audio-player-volume-control" class={classes.volumeControl()}>
-	<AudioPlayerIconButton
-		{classes}
-		{size}
-		{color}
-		label={player.muted || player.volume === 0 ? 'Unmute' : 'Mute'}
-		icon={volumeIcon}
-		active={player.muted || player.volume === 0}
-		pressed={player.muted || player.volume === 0}
-		{disabled}
-		onClick={() => player.runInteraction(() => player.toggleMuted())}
-	/>
-
-	<div data-slot="audio-player-volume-slider" class={classes.volumeSlider()}>
-		<Slider
-			label="Volume"
-			value={volumeValue}
-			min={0}
-			max={100}
-			step={Math.max(1, volumeStep * 100)}
-			{disabled}
-			showValue
-			formatValue={(value) => `${Math.round(value)}%`}
-			thumbLabels={['Volume']}
-			{color}
-			variant="thick"
+<MediaVolumeControl
+	volume={player.volume}
+	muted={player.muted}
+	{size}
+	{color}
+	{volumeStep}
+	{disabled}
+	lowVolumeIcon={speakerHighIcon}
+	class={classes.volumeControl({ layout })}
+	popoverClass={classes.popoverPanel({ className: 'p-2' })}
+	panelClass={classes.volumePanel({ size })}
+	sliderClass={classes.volumeSlider({ size })}
+	{sliderTheme}
+	onToggleMuted={() => player.runInteraction(() => player.toggleMuted())}
+	onVolumeChange={(nextVolume) => player.runInteraction(() => player.setVolume(nextVolume))}
+>
+	{#snippet trigger(context)}
+		<AudioPlayerIconButton
+			{classes}
 			{size}
-			theme={sliderTheme}
-			onChange={handleChange}
+			{color}
+			label={context.label}
+			icon={context.icon}
+			active={context.active}
+			{disabled}
+			aria-haspopup={context.ariaHaspopup}
+			aria-expanded={context.ariaExpanded}
+			onClick={context.onClick}
+			{@attach context.reference}
 		/>
-	</div>
-</div>
+	{/snippet}
+
+	{#snippet toggleButton(context)}
+		<AudioPlayerIconButton
+			{classes}
+			{size}
+			{color}
+			label={context.label}
+			icon={context.icon}
+			active={context.active}
+			pressed={context.pressed}
+			{disabled}
+			onClick={context.onClick}
+		/>
+	{/snippet}
+</MediaVolumeControl>

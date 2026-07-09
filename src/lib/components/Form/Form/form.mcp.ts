@@ -59,13 +59,16 @@ The Form component provides a comprehensive form system with built-in validation
 
 ### Number Input
 - **number** - Numeric input with step controls
+- **rating** - Star rating input
 - **slider** - Bounded scalar slider input (\`number\`)
 - **slider-range** - Bounded range or multi-thumb slider input (\`number[]\`)
 
 ### Selection Inputs
 - **select** - Dropdown selection
+- **combobox** - Searchable dropdown selection
 - **radio** - Radio button group
 - **checkboxes** - Checkbox group
+- **tag-group** - Selectable chip group
 
 ### Toggle Input
 - **switch** - Toggle switch
@@ -75,12 +78,20 @@ The Form component provides a comprehensive form system with built-in validation
 - **datetime** - Date and time picker
 - **calendar** - Calendar date picker
 - **calendar-range** - Date range picker
+- **time** - Time input
 
 ### Other Inputs
 - **textarea** - Multi-line text input
+- **rich-text** - Markdown rich text editor
 - **phone** - Phone number input with formatting
 - **file** - Single file upload
 - **files** - Multiple files upload
+
+### Standalone Field Inputs Not Yet Supported by Form
+- **checkbox** - Use \`Checkbox\` directly, or \`switch\` in Form for boolean values
+- **tag** - Use \`TagsInput\` directly
+- **keyvalue** - Use \`KeyValueInput\` directly
+- **pin** - Use \`PinInput\` directly
 
 ## Input Configuration
 
@@ -301,6 +312,78 @@ Each input in the \`inputs\` object supports:
 			label: 'Biography',
 			placeholder: 'Tell us about yourself...',
 			rows: 4
+		}
+	}}
+	onSubmit={handleSubmit}
+/>
+\`\`\`
+
+### Rich Text
+\`\`\`svelte
+<Form
+	inputs={{
+		notes: {
+			type: 'rich-text',
+			label: 'Notes',
+			placeholder: 'Write formatted notes...',
+			toolbar: 'fixed'
+		}
+	}}
+	onSubmit={handleSubmit}
+/>
+\`\`\`
+
+### Tag Group
+\`\`\`svelte
+<Form
+	inputs={{
+		category: {
+			type: 'tag-group',
+			label: 'Category',
+			required: true,
+			items: [
+				{ value: 'news', label: 'News' },
+				{ value: 'travel', label: 'Travel' },
+				{ value: 'gaming', label: 'Gaming' }
+			]
+		}
+	}}
+	onSubmit={handleSubmit}
+/>
+\`\`\`
+
+### Combobox
+\`\`\`svelte
+<Form
+	inputs={{
+		country: {
+			type: 'combobox',
+			label: 'Country',
+			placeholder: 'Search countries...',
+			items: [
+				{ value: 'us', label: 'United States' },
+				{ value: 'uk', label: 'United Kingdom' },
+				{ value: 'ca', label: 'Canada' }
+			]
+		}
+	}}
+	onSubmit={handleSubmit}
+/>
+\`\`\`
+
+### Time and Rating
+\`\`\`svelte
+<Form
+	inputs={{
+		startTime: {
+			type: 'time',
+			label: 'Start time',
+			format: 'HH:MM'
+		},
+		score: {
+			type: 'rating',
+			label: 'Score',
+			max: 5
 		}
 	}}
 	onSubmit={handleSubmit}

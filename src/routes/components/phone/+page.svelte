@@ -41,6 +41,20 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large phone input sizes."
+			code={`<PhoneInput label="Small" placeholder="Phone number" size="small" />
+<PhoneInput label="Normal" placeholder="Phone number" size="normal" />
+<PhoneInput label="Large" placeholder="Phone number" size="large" />`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<PhoneInput label="Small" placeholder="Phone number" size="small" />
+				<PhoneInput label="Normal" placeholder="Phone number" size="normal" />
+				<PhoneInput label="Large" placeholder="Phone number" size="large" />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Using type: 'phone' inside a Form">
 			<div class="w-full max-w-md">
 				<Form

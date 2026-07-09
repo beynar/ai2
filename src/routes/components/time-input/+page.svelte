@@ -44,9 +44,7 @@
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard
-			description="A masked time input, value as minutes since midnight"
-		>
+		<ComponentCard description="A masked time input, value as minutes since midnight">
 			<div class="w-full max-w-md">
 				<TimeInput
 					as="minuteSinceMidnight"
@@ -61,22 +59,29 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard
-			description="Use the HH:MM:SS format"
-		>
+		<ComponentCard description="Use the HH:MM:SS format">
 			<div class="w-full max-w-md">
-				<TimeInput
-					as="secondSinceMidnight"
-					label="Time"
-					format="HH:MM:SS"
-					placeholder="HH:MM:SS"
-				/>
+				<TimeInput as="secondSinceMidnight" label="Time" format="HH:MM:SS" placeholder="HH:MM:SS" />
 			</div>
 		</ComponentCard>
 
 		<ComponentCard
-			description="Using type: 'time' inside a Form"
+			title="Sizes"
+			description="Small, normal, and large time inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<TimeInput label="Small" size="small" />
+	<TimeInput label="Normal" size="normal" />
+	<TimeInput label="Large" size="large" />
+</div>`}
 		>
+			<div class="grid w-full max-w-md gap-6">
+				<TimeInput label="Small" size="small" />
+				<TimeInput label="Normal" size="normal" />
+				<TimeInput label="Large" size="large" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Using type: 'time' inside a Form">
 			<div class="w-full max-w-md">
 				<Form
 					inputs={{

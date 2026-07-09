@@ -35,6 +35,7 @@ export const createFieldState = <T extends InputType>(
 		declare name: string;
 		declare form?: FormState;
 		node = $state<HTMLElement | null>(null);
+		rootNode = $state<HTMLElement | null>(null);
 		hasError = $derived(typeof this.errors === 'boolean' ? this.errors : !!this.errors?.length);
 		mounted = $state(false);
 		constructor(options: FieldStateBindableOptions<T> & FieldStateStaticOptions<T>) {

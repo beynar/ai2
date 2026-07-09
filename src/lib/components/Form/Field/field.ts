@@ -6,8 +6,7 @@ import type { Sizes } from '$lib/types/theme.js';
 
 export type KeyValuePair = { key: string; value: string };
 
-export type TextInputType =
-	'text' | 'password' | 'email' | 'url' | 'color' | 'textarea' | 'color' | 'phone';
+export type TextInputType = 'text' | 'password' | 'email' | 'url' | 'textarea' | 'phone';
 export type RichTextInputType = 'rich-text';
 export type NumberInputType = 'number' | 'slider';
 export type RatingInputType = 'rating';
@@ -15,6 +14,7 @@ export type SliderRangeInputType = 'slider-range';
 export type TagInputType = 'tag';
 export type TagGroupInputType = 'tag-group';
 export type KeyValueInputType = 'keyvalue';
+export type PinInputType = 'pin';
 export type DateInputType = 'datetime' | 'date';
 export type TimeInputType = 'time';
 export type BooleanInputType = 'switch' | 'checkbox';
@@ -37,6 +37,7 @@ export type InputType =
 	| TagInputType
 	| TagGroupInputType
 	| KeyValueInputType
+	| PinInputType
 	| SingleOptionInputType
 	| CalendarInputType;
 
@@ -58,23 +59,25 @@ export type FieldValue<T extends InputType> = T extends 'file'
 								? string
 								: T extends RichTextInputType
 									? string
-									: T extends BooleanInputType
-										? boolean
-										: T extends MultipleChoiceInputType
-											? string[]
-											: T extends TagInputType
+									: T extends PinInputType
+										? string
+										: T extends BooleanInputType
+											? boolean
+											: T extends MultipleChoiceInputType
 												? string[]
-												: T extends TagGroupInputType
-													? string | string[] | null
-													: T extends KeyValueInputType
-														? KeyValuePair[]
-														: T extends SingleOptionInputType
-															? string
-															: T extends 'calendar'
-																? Date
-																: T extends 'calendar-range'
-																	? [Date, Date]
-																	: never;
+												: T extends TagInputType
+													? string[]
+													: T extends TagGroupInputType
+														? string | string[] | null
+														: T extends KeyValueInputType
+															? KeyValuePair[]
+															: T extends SingleOptionInputType
+																? string
+																: T extends 'calendar'
+																	? Date
+																	: T extends 'calendar-range'
+																		? [Date | null, Date | null]
+																		: never;
 
 export type InputProps<T extends InputType> = WithSlot<
 	{

@@ -3,6 +3,8 @@
 	import { usePopoverTheme } from './popover.theme.js';
 	import { PopoverState } from './popover.state.svelte.js';
 	import Button from '../Button/Button.svelte';
+	import Dialog from '../Dialog/Dialog.svelte';
+	import type { DialogThemeProps } from '../Dialog/dialog.theme.js';
 	import { fso } from '$lib/transitions/transition.js';
 	import { portal } from '$lib/attachments/portal.js';
 	import { transitionSize } from '$lib/attachments/transitionSize.js';
@@ -24,6 +26,7 @@
 		closeOnEscape = true,
 		closeOnClickOutside = true,
 		closeOnMouseLeave = false,
+		debugSafeArea = false,
 		directedTransition = true,
 		lockScroll = true,
 		fitTrigger = false,
@@ -36,7 +39,9 @@
 
 	const id = $props.id();
 	const popover = new PopoverState({
-		id: customId || id,
+		get id() {
+			return customId || id;
+		},
 		get isOpen() {
 			return open;
 		},
@@ -76,6 +81,9 @@
 		get closeOnMouseLeave() {
 			return closeOnMouseLeave;
 		},
+		get debugSafeArea() {
+			return debugSafeArea;
+		},
 		get closeOnClickOutside() {
 			return closeOnClickOutside;
 		},
@@ -88,8 +96,12 @@
 		get openOnClick() {
 			return openOnClick;
 		},
-		onClose,
-		onOpen
+		get onClose() {
+			return onClose;
+		},
+		get onOpen() {
+			return onOpen;
+		}
 	});
 
 	const classes = $derived(usePopoverTheme(theme));
@@ -99,9 +111,50 @@
 	const visible = $derived(
 		popover.isOpen && (popover.isMobileSheet || popover.referenceElement || popover.externalRef)
 	);
+
+	const mobileSheetDialogTheme = $derived({
+		content: {
+			base: classes.popover({
+				size: popover.computedSize,
+				mode: 'mobileSheet',
+				className
+			})
+		},
+		closeButton: { base: 'hidden' }
+	} satisfies DialogThemeProps);
 </script>
 
-{#if visible}
+{#snippet emptyCloseButton()}{/snippet}
+
+{#if popover.isMobileSheet}
+	<Dialog
+		id={popover.id}
+		bind:open
+		type="drawerBottom"
+		responsive={false}
+		{size}
+		{transition}
+		{closeOnEscape}
+		{closeOnClickOutside}
+		closable={closeOnEscape || closeOnClickOutside}
+		swipeToDismiss={closeOnClickOutside}
+		thumb={false}
+		closeButton={emptyCloseButton}
+		theme={mobileSheetDialogTheme}
+		onOpen={() => {
+			popover.hasTransitioned = true;
+			onOpen?.(popover);
+		}}
+		onClose={() => {
+			popover.hasTransitioned = false;
+			onClose?.(popover);
+		}}
+	>
+		<div {@attach transitionSize({ isActive: () => mobileSheetSizeTransition })}>
+			{@render children?.(popover)}
+		</div>
+	</Dialog>
+{:else if visible}
 	<dialog
 		{@attach portal()}
 		{@attach popover.dialog}
@@ -114,9 +167,6 @@
 		     (which would break the intro). It carries the visuals, transform-origin, and animation. -->
 		<div
 			{@attach popover.panel}
-			{@attach transitionSize({
-				isActive: () => popover.isMobileSheet && mobileSheetSizeTransition
-			})}
 			class={classes.popover({
 				size: popover.computedSize,
 				mode: popover.computedMode,

@@ -22,6 +22,9 @@
 		target?: string;
 		rel?: string;
 		download?: boolean | string;
+		'aria-haspopup'?: boolean | 'menu' | 'dialog' | 'listbox' | 'tree' | 'grid';
+		'aria-expanded'?: boolean;
+		'aria-controls'?: string;
 		onClick?: () => void;
 	}>;
 
@@ -40,6 +43,9 @@
 		target,
 		rel,
 		download,
+		'aria-haspopup': ariaHaspopup,
+		'aria-expanded': ariaExpanded,
+		'aria-controls': ariaControls,
 		onClick,
 		...attachments
 	}: Props = $props();
@@ -56,6 +62,9 @@
 	{target}
 	{rel}
 	{download}
+	aria-haspopup={ariaHaspopup}
+	aria-expanded={ariaExpanded}
+	aria-controls={ariaControls}
 	data-active={active ? 'true' : undefined}
 	aria-pressed={pressed}
 	class={play

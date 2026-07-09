@@ -370,6 +370,7 @@
 		{#snippet trigger(popover: PopoverState)}
 			<Field
 				{field}
+				{size}
 				{description}
 				{prefix}
 				{suffix}
@@ -377,7 +378,11 @@
 					...(theme || {}),
 					inputContainer: {
 						...(theme?.inputContainer || {}),
-						base: classes.inputContainer({ class: theme?.inputContainer?.base, size })
+						base: classes.inputContainer({
+							class: theme?.inputContainer?.base,
+							size,
+							disabled: field.disabled
+						})
 					}
 				}}
 				{...rest}
@@ -402,7 +407,7 @@
 					aria-haspopup="listbox"
 					aria-invalid={!!optionsAsync.error}
 					autocomplete="off"
-					class={classes.input({ size })}
+					class={classes.input({ size, disabled: field.disabled })}
 					{@attach keyDownHook.reference}
 				/>
 			</Field>
@@ -411,6 +416,7 @@
 {:else}
 	<Field
 		{field}
+		{size}
 		{description}
 		{prefix}
 		{suffix}
@@ -418,7 +424,11 @@
 			...(theme || {}),
 			inputContainer: {
 				...(theme?.inputContainer || {}),
-				base: classes.inputContainer({ class: theme?.inputContainer?.base, size })
+				base: classes.inputContainer({
+					class: theme?.inputContainer?.base,
+					size,
+					disabled: field.disabled
+				})
 			}
 		}}
 		{...rest}
@@ -435,7 +445,7 @@
 			bind:focused={field.focused}
 			{disabled}
 			autocomplete="off"
-			class={classes.input({ size })}
+			class={classes.input({ size, disabled: field.disabled })}
 			{@attach keyDownHook.reference}
 		/>
 	</Field>

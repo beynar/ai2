@@ -28,10 +28,7 @@
 		'Maps cleanly to an object with Object.fromEntries'
 	]}
 >
-	<ComponentCard
-		description="Empty — start by pressing Add"
-		code={`<KeyValueInput bind:value />`}
-	>
+	<ComponentCard description="Empty — start by pressing Add" code={`<KeyValueInput bind:value />`}>
 		<div class="w-full max-w-md">
 			<KeyValueInput bind:value={value1} />
 		</div>
@@ -62,7 +59,24 @@
 			</div>
 		</ComponentCard>
 
-		<!-- Example 3: maxRows of 3 -->
+		<!-- Example 3: Sizes -->
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large key value input sizes."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<KeyValueInput label="Small" size="small" value={[{ key: 'mode', value: 'preview' }]} />
+	<KeyValueInput label="Normal" size="normal" value={[{ key: 'mode', value: 'preview' }]} />
+	<KeyValueInput label="Large" size="large" value={[{ key: 'mode', value: 'preview' }]} />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<KeyValueInput label="Small" size="small" value={[{ key: 'mode', value: 'preview' }]} />
+				<KeyValueInput label="Normal" size="normal" value={[{ key: 'mode', value: 'preview' }]} />
+				<KeyValueInput label="Large" size="large" value={[{ key: 'mode', value: 'preview' }]} />
+			</div>
+		</ComponentCard>
+
+		<!-- Example 4: maxRows of 3 -->
 		<ComponentCard description="Limited to a maximum of 3 rows">
 			<div class="w-full max-w-md">
 				<KeyValueInput maxRows={3} addLabel="Add field" bind:value={value3} />
@@ -72,7 +86,7 @@
 			</div>
 		</ComponentCard>
 
-		<!-- Example 4: Object.fromEntries output -->
+		<!-- Example 5: Object.fromEntries output -->
 		<ComponentCard description="Convert the pairs to an object with Object.fromEntries">
 			<div class="w-full max-w-md">
 				<KeyValueInput label="Settings" bind:value={value4} />

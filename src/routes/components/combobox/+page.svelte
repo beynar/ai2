@@ -134,6 +134,58 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large combobox inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<Combobox
+		size="small"
+		label="Small"
+		placeholder="Search countries..."
+		items={arrayOptions}
+		showAllOnFocus
+	/>
+	<Combobox
+		size="normal"
+		label="Normal"
+		placeholder="Search countries..."
+		items={arrayOptions}
+		showAllOnFocus
+	/>
+	<Combobox
+		size="large"
+		label="Large"
+		placeholder="Search countries..."
+		items={arrayOptions}
+		showAllOnFocus
+	/>
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<Combobox
+					size="small"
+					label="Small"
+					placeholder="Search countries..."
+					items={arrayOptions}
+					showAllOnFocus
+				/>
+				<Combobox
+					size="normal"
+					label="Normal"
+					placeholder="Search countries..."
+					items={arrayOptions}
+					showAllOnFocus
+				/>
+				<Combobox
+					size="large"
+					label="Large"
+					placeholder="Search countries..."
+					items={arrayOptions}
+					showAllOnFocus
+				/>
+			</div>
+		</ComponentCard>
+
 		<!-- Example 2: Async Function Options -->
 		<ComponentCard description="Simulated API call with 300ms delay">
 			<div class="w-full max-w-md">

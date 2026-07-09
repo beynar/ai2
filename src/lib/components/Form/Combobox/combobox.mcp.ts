@@ -186,7 +186,6 @@ A searchable dropdown component that supports both static arrays and async optio
 - **Empty States**: Shows loading text, error message, or no options text appropriately
 - **Clear Button**: Automatically shown when value exists, uses the shared field action button hitbox
 - **Default Prefix**: Magnifying glass icon shown by default unless \`prefix={false}\` or custom snippet provided
-- **Theme Size Mapping**: \`'normal'\` size maps to \`'medium'\` theme variant internally
 
 ## Theme Customization
 
@@ -209,13 +208,13 @@ The theme object contains the following parts:
 **input**:
 - base: Base classes applied to the input element
 - Variants:
-  - size: 'small' | 'medium' | 'large' - Text size
+  - size: 'small' | 'normal' | 'large' - Text size
   - disabled: boolean - Disabled state styling
 
 **inputContainer**:
 - base: Base classes for the input container
 - Variants:
-  - size: 'small' | 'medium' | 'large' - Size-based styling
+  - size: 'small' | 'normal' | 'large' - Size-based styling
   - disabled: boolean - Disabled state styling
 
 **loading**:
@@ -249,7 +248,7 @@ The theme object contains the following parts:
     inputContainer: {
       base: 'border-2 rounded-lg',
       size: {
-        medium: 'px-4 py-2'
+        normal: 'px-4 py-2'
       }
     },
     option: {
@@ -293,7 +292,7 @@ The theme object contains the following parts:
     inputContainer: {
       base: 'rounded-lg border-2 transition-all',
       size: {
-        medium: 'px-4 py-2'
+        normal: 'px-4 py-2'
       }
     },
     option: {

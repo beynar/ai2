@@ -42,6 +42,22 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large file inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<FileInput size="small" label="Small" mode="single" types={['image/*']} />
+	<FileInput size="normal" label="Normal" mode="single" types={['image/*']} />
+	<FileInput size="large" label="Large" mode="single" types={['image/*']} />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<FileInput size="small" label="Small" mode="single" types={['image/*']} />
+				<FileInput size="normal" label="Normal" mode="single" types={['image/*']} />
+				<FileInput size="large" label="Large" mode="single" types={['image/*']} />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Upload up to 3 files with a size limit">
 			<div class="w-full max-w-md">
 				<FileInput

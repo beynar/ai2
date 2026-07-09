@@ -291,6 +291,7 @@
 	{#snippet trigger(popover: PopoverState)}
 		<Field
 			{field}
+			{size}
 			{description}
 			prefix={effectivePrefix}
 			{suffix}
@@ -298,7 +299,11 @@
 				...(theme || {}),
 				inputContainer: {
 					...(theme?.inputContainer || {}),
-					base: classes.inputContainer({ class: theme?.inputContainer?.base, size })
+					base: classes.inputContainer({
+						class: theme?.inputContainer?.base,
+						size,
+						disabled: field.disabled
+					})
 				}
 			}}
 			{...rest}
@@ -322,7 +327,7 @@
 				aria-haspopup="listbox"
 				aria-invalid={!!optionsAsync.error}
 				autocomplete="off"
-				class={classes.input({ size, hasValue: field.value !== null })}
+				class={classes.input({ size, hasValue: field.value !== null, disabled: field.disabled })}
 				class:placeholder:text-foreground={selectedOption && !searchValue}
 				{@attach keyDownHook.reference}
 			/>

@@ -19,6 +19,7 @@
 		onValidate,
 		visible,
 		field: providedField,
+		onChange,
 		onClick,
 		label,
 		...rest
@@ -46,7 +47,7 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: () => {},
+		onChange: (v) => onChange?.(v ?? []),
 		get disabled() {
 			return disabled;
 		},

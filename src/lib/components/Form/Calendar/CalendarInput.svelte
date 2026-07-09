@@ -19,7 +19,7 @@
 		onChange,
 		visible,
 		theme,
-		disabledDates,
+		disabledDates = [],
 		view,
 		weekStartsOnMonday,
 		weekdayLength,

@@ -16,6 +16,7 @@
 		onValidate,
 		visible,
 		onChange,
+		type = 'text',
 
 		...rest
 	}: TextInputProps = $props();
@@ -66,7 +67,9 @@
 		get visible() {
 			return visible;
 		},
-		type: 'text'
+		get type() {
+			return type;
+		}
 	});
 
 	const classes = $derived(useTextInputTheme(theme));
@@ -91,12 +94,20 @@
 	<input
 		disabled={field.disabled}
 		data-1p-ignore
-		type="text"
+		{type}
 		{id}
 		name={field.name}
-		bind:value={field.value}
+		value={field.value ?? ''}
+		oninput={(event) => {
+			field.value = event.currentTarget.value;
+		}}
 		bind:this={field.node}
-		bind:focused={field.focused}
+		onfocus={() => {
+			field.focused = true;
+		}}
+		onblur={() => {
+			field.focused = false;
+		}}
 		{placeholder}
 		class={classes.input({ disabled: field.disabled, size: rest.size })}
 	/>

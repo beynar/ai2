@@ -13,26 +13,25 @@ export const DIALOG_Z_BASE = 50;
 export const DIALOG_Z_STEP = 10;
 
 type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
-interface DialogOptions
-	extends MakeRequired<
-		Pick<
-			DialogProps,
-			| 'id'
-			| 'type'
-			| 'size'
-			| 'scroll'
-			| 'transition'
-			| 'onClose'
-			| 'onOpen'
-			| 'closeOnEscape'
-			| 'closeOnClickOutside'
-			| 'closable'
-			| 'swipeToDismiss'
-			| 'swipeFrom'
-			| 'responsive'
-		>,
-		'closeOnEscape' | 'closeOnClickOutside' | 'closable'
-	> {
+interface DialogOptions extends MakeRequired<
+	Pick<
+		DialogProps,
+		| 'id'
+		| 'type'
+		| 'size'
+		| 'scroll'
+		| 'transition'
+		| 'onClose'
+		| 'onOpen'
+		| 'closeOnEscape'
+		| 'closeOnClickOutside'
+		| 'closable'
+		| 'swipeToDismiss'
+		| 'swipeFrom'
+		| 'responsive'
+	>,
+	'closeOnEscape' | 'closeOnClickOutside' | 'closable'
+> {
 	isOpen: boolean;
 }
 
@@ -191,9 +190,12 @@ export class DialogState {
 	dragProgress = $derived(
 		this.dragSize > 0 ? Math.min(Math.abs(this.dragOffset) / this.dragSize, 1) : 0
 	);
-	contentTransform = $derived(
-		`translate3d(${this.swipeAxis === 'x' ? this.dragOffset : 0}px, ${this.swipeAxis === 'y' ? this.dragOffset : 0}px, 0) scale(${this.stackScale})`
-	);
+	contentTransform = $derived.by(() => {
+		if (this.dragOffset === 0 && this.stackDepth === 0) {
+			return undefined;
+		}
+		return `translate3d(${this.swipeAxis === 'x' ? this.dragOffset : 0}px, ${this.swipeAxis === 'y' ? this.dragOffset : 0}px, 0) scale(${this.stackScale})`;
+	});
 
 	// Hook instances
 	clickOutside = useClickOutside({

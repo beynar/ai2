@@ -47,8 +47,10 @@ export type PopoverProps = WithAttachments<{
 	closeOnClickOutside?: boolean;
 	/** When true, pressing Escape closes the topmost open popover. */
 	closeOnEscape?: boolean;
-	/** When true, moving the pointer outside the safe area closes the popover. */
+	/** When true, moving the pointer outside the hover safe area closes the popover. The safe area is the trigger, the panel, and a prediction cone toward the panel, so a diagonal move to the panel keeps it open. */
 	closeOnMouseLeave?: boolean;
+	/** When true, renders debug overlays for the hover safe-area rectangles (blue) and the prediction cone toward the panel (orange). */
+	debugSafeArea?: boolean;
 	/** When true, locks page scroll while a root-level popover is open. */
 	lockScroll?: boolean;
 	/** Additional CSS classes merged onto the popover dialog element. */

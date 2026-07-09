@@ -17,6 +17,11 @@ import type { FileInputProps } from '../File/fileInput.props.js';
 import type { TagGroupProps } from '../TagGroup/tagGroup.props.js';
 import type { TimeInputProps } from '../TimeInput/timeInput.props.js';
 import type { RichTextInputProps } from '../../RichTextInput/richTextInput.props.js';
+import type { PasswordInputProps } from '../PasswordInput/passwordInput.props.js';
+import type { CheckboxProps } from '../Checkbox/checkbox.props.js';
+import type { TagsInputProps } from '../TagsInput/tagsInput.props.js';
+import type { KeyValueInputProps } from '../KeyValueInput/keyValueInput.props.js';
+import type { PinInputProps } from '../PinInput/pinInput.props.js';
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -51,7 +56,7 @@ type BaseFormInput =
 	  } & TextInputProps)
 	| ({
 			type: 'password';
-	  } & TextInputProps)
+	  } & PasswordInputProps)
 	| ({
 			type: 'textarea';
 	  } & TextAreaProps)
@@ -71,6 +76,9 @@ type BaseFormInput =
 			type: 'checkboxes';
 	  } & CheckboxesInputProps)
 	| ({
+			type: 'checkbox';
+	  } & CheckboxProps)
+	| ({
 			type: 'switch';
 	  } & SwitchProps)
 	| ({
@@ -81,7 +89,16 @@ type BaseFormInput =
 	  } & FileInputProps<'multiple'>)
 	| ({
 			type: 'tag-group';
-	  } & TagGroupProps);
+	  } & TagGroupProps)
+	| ({
+			type: 'tag';
+	  } & TagsInputProps)
+	| ({
+			type: 'keyvalue';
+	  } & KeyValueInputProps)
+	| ({
+			type: 'pin';
+	  } & PinInputProps);
 
 // FormInput with dynamic visibility support
 // The visibility property can be a boolean or a function that receives the form value
@@ -94,42 +111,6 @@ export type FormInput = BaseFormInput extends infer T
 	: never;
 
 export type FormInputs = Record<string, FormInput>;
-// | ({
-// 		type: 'switch';
-//   } & SwitchProps)
-// | ({
-// 		type: 'textarea';
-//   } & TextAreaProps)
-// | ({
-// 		type: 'select';
-//   } & SelectProps<BaseOption>)
-// | ({
-// 		type: 'color';
-//   } & ColorInputProps)
-// | ({
-// 		type: 'tag';
-//   } & TagInputProps)
-// | ({
-// 		type: 'date' | 'datetime';
-//   } & DateInputProps)
-// | ({
-// 		type: CalendarType;
-//   } & CalendarProps<any, CalendarType>)
-// | ({
-// 		type: 'number';
-//   } & NumberInputProps)
-// | ({
-// 		type: 'file';
-//   } & FileInputProps<'file'>)
-// | ({
-// 		type: 'files';
-//   } & FileInputProps<'files'>)
-// | ({
-// 		type: 'radios';
-//   } & RadioInputProps)
-// | ({
-// 		type: 'checkboxes';
-//   } & CheckboxesInputProps);
 
 type FormState<T extends FormInputs> = {
 	[K in keyof T]: T[K] extends FormInput ? FieldState<T[K]['type']> : never;

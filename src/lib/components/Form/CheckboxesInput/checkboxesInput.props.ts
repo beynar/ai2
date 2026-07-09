@@ -9,6 +9,8 @@ export type CheckboxOption = {
 	/** Supporting content rendered below the option label. */
 	description?: Slot;
 };
+export type CheckboxMode = 'card' | 'normal';
+
 export type CheckboxesInputProps<T extends CheckboxOption = CheckboxOption> =
 	InputProps<'checkboxes'> & {
 		/** Selected option values, bindable with `bind:value`. */
@@ -16,7 +18,7 @@ export type CheckboxesInputProps<T extends CheckboxOption = CheckboxOption> =
 		/** Called when an option is clicked, with the clicked option's value. */
 		onClick?: (value: string) => void;
 		/** Visual layout style for the checkbox group (`normal` or `card`). */
-		mode?: 'card' | 'normal';
+		mode?: CheckboxMode;
 		/** Items to render as checkbox choices. */
 		items: T[];
 	} & Partial<Omit<FieldProps<'checkboxes'>, 'children' | 'type'>>;

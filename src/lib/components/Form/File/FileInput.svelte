@@ -120,6 +120,7 @@
 <Field
 	{@attach dropzone.zone}
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
@@ -127,7 +128,8 @@
 			base: classes.inputContainer({
 				class: theme?.inputContainer?.base,
 				state: dropzone.state,
-				disabled: field.disabled
+				disabled: field.disabled,
+				size: rest.size
 			})
 		}
 	}}
@@ -146,7 +148,7 @@
 		disabled={field.disabled}
 	/>
 	{#if dropzone.files.length === 0}
-		<div transition:slide class={classes.placeholder({ class: placeholderClass })}>
+		<div transition:slide class={classes.placeholder({ class: placeholderClass, size: rest.size })}>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="40"
@@ -162,16 +164,16 @@
 				<polyline points="14 2 14 8 20 8" />
 			</svg>
 			{#if placeholder}
-				<span class="text-foreground-muted mt-2 text-sm">{placeholder}</span>
+				<span class="mt-2">{placeholder}</span>
 			{/if}
 		</div>
 	{:else}
 		<div transition:slide class="h-fit w-full">
-			<Slot render={fileList} class={classes.fileList({ class: fileListClass })}>
+			<Slot render={fileList} class={classes.fileList({ class: fileListClass, size: rest.size })}>
 				{#each dropzone.files as fil, i (fil.name + fil.size)}
 					{@const size = dropzone.formatSize(fil.size)}
 					<div transition:slide={{ duration: 300 }}>
-						<Slot render={file} class={classes.file({ class: fileClass })}>
+						<Slot render={file} class={classes.file({ class: fileClass, size: rest.size })}>
 							{#if isImage(fil)}
 								{@const src = URL.createObjectURL(fil)}
 								<img

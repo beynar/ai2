@@ -1,135 +1,30 @@
 <script lang="ts">
-	import {
-		AudioPlayer,
-		type AudioPlayerControl,
-		type AudioPlayerState
-	} from '$lib/components/AudioPlayer/index.js';
+	import { AudioPlayer, type AudioPlayerState } from '$lib/components/AudioPlayer/index.js';
 	import { Button } from '$lib/components/Button/index.js';
 	import { Slider } from '$lib/components/Form/Slider/index.js';
 	import { pauseIcon } from '$lib/components/Icons/pause.js';
 	import { playIcon } from '$lib/components/Icons/play.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
-
-	const sampleAudio = 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3';
-	const trackControls: AudioPlayerControl[] = ['play', 'time', 'volume'];
-	const transportControls: AudioPlayerControl[] = [
-		'play',
-		'seekBackward',
-		'seekForward',
-		'time',
-		'loop'
-	];
+	import AudioPlayerDropDemo from './AudioPlayerDropDemo.svelte';
+	import {
+		basicCode,
+		controlledCode,
+		controlledWaveform,
+		customSeekTheme,
+		dropUploadCode,
+		formatTime,
+		histogramCode,
+		histogramWaveform,
+		sampleAudio,
+		slotCode,
+		trackCode,
+		trackControls,
+		transportControls
+	} from './audioPlayerDemoData.js';
 
 	let paused = $state(true);
 	let currentTime = $state(0);
-
-	const centeredWaveform = createWaveform(11, 80);
-	const histogramWaveform = createWaveform(29, 64);
-	const controlledWaveform = createWaveform(47, 72);
-	const customSeekTheme = {
-		root: { base: 'w-full gap-0' },
-		header: { base: 'sr-only' },
-		label: { base: 'sr-only' },
-		inputContainer: { base: 'w-full gap-0' },
-		control: { base: 'w-full' },
-		track: { base: 'min-w-0 focus-visible:ring-offset-0' }
-	};
-
-	const basicCode = `<AudioPlayer
-	src="${sampleAudio}"
-	title="Field recording"
-	artist="Svelai archives"
-	waveform={waveform}
-/>`;
-
-	const histogramCode = `<AudioPlayer
-	src="${sampleAudio}"
-	title="Histogram mode"
-	waveformVariant="histogram"
-	waveform={waveform}
-/>`;
-
-	const trackCode = `<AudioPlayer
-	src="${sampleAudio}"
-	title="Track progress"
-	variant="track"
-	color="info"
-	controls={['play', 'time', 'volume']}
-/>`;
-
-	const slotCode = `<script lang="ts">
-	import { AudioPlayer } from '$lib/components/AudioPlayer/index.js';
-	import { Button } from '$lib/components/Button/index.js';
-	import { Slider } from '$lib/components/Form/Slider/index.js';
-	import { pauseIcon } from '$lib/components/Icons/pause.js';
-	import { playIcon } from '$lib/components/Icons/play.js';
-${'</' + 'script>'}
-
-{#snippet controlsSlot(player)}
-	<Button
-		squared
-		color="success"
-		label={player.paused || player.ended ? 'Play' : 'Pause'}
-		prefix={player.paused || player.ended ? playIcon : pauseIcon}
-		onClick={() => player.runInteraction(() => player.togglePlay())}
-	/>
-{/snippet}
-
-{#snippet seek(player)}
-	<Slider
-		label="Seek"
-		value={player.currentTime}
-		min={0}
-		max={Math.max(player.duration, 0.1)}
-		step={0.1}
-		color="success"
-		variant="thick"
-		onChange={(value) => player.runInteraction(() => player.seekTo(Array.isArray(value) ? (value[0] ?? 0) : value))}
-	/>
-{/snippet}
-
-<AudioPlayer
-	src="${sampleAudio}"
-	title="Custom chrome"
-	variant="track"
-	color="success"
-	{controlsSlot}
-	{seek}
-/>`;
-
-	const controlledCode = `<script lang="ts">
-	let paused = $state(true);
-	let currentTime = $state(0);
-${'</' + 'script>'}
-
-<AudioPlayer
-	src="${sampleAudio}"
-	title="Controlled playback"
-	bind:paused
-	bind:currentTime
-	controls={['play', 'seekBackward', 'seekForward', 'time', 'loop']}
-/>`;
-
-	function createWaveform(seed: number, count: number) {
-		return Array.from({ length: count }, (_, index) => {
-			const position = count === 1 ? 0 : index / (count - 1);
-			const envelope = 0.36 + Math.sin(position * Math.PI) * 0.56;
-			const carrier = Math.sin((index + 1) * seed * 0.19);
-			const accent = Math.sin((index + 5) * (seed + 4) * 0.11);
-			return Math.min(
-				1,
-				Math.max(0.08, (0.2 + Math.abs(carrier * 0.68 + accent * 0.32)) * envelope)
-			);
-		});
-	}
-
-	function formatTime(value: number) {
-		if (!Number.isFinite(value) || value <= 0) return '0:00';
-		const minutes = Math.floor(value / 60);
-		const seconds = Math.floor(value % 60);
-		return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-	}
 </script>
 
 {#snippet customControlsSlot(player: AudioPlayerState)}
@@ -175,7 +70,11 @@ ${'</' + 'script>'}
 	features={[
 		'Native audio element with bindable playback state',
 		'Waveform and track progress variants',
+		'Block and inline layout modes',
+		'Automatic waveform generation from the audio source',
+		'Local MP3 drop example with object URL playback',
 		'Centered and histogram waveform shapes',
+		'Popover volume control with vertical slider',
 		'Color prop for controls, volume, and progress fill',
 		'Controls prop toggles transport, time, volume, loop, and download',
 		'Header, controls, leading, trailing, and seek snippets receive AudioPlayerState',
@@ -184,19 +83,22 @@ ${'</' + 'script>'}
 	]}
 >
 	<ComponentCard
-		description="Default chrome with a centered waveform, transport controls, volume, loop, and download."
+		description="Default chrome generates waveform peaks from the audio source when samples are omitted."
 		class="!min-h-fit !items-stretch !justify-start"
 		code={basicCode}
 	>
-		<AudioPlayer
-			src={sampleAudio}
-			title="Field recording"
-			artist="Svelai archives"
-			waveform={centeredWaveform}
-		/>
+		<AudioPlayer src={sampleAudio} title="Field recording" artist="Svelai archives" />
 	</ComponentCard>
 
 	{#snippet examples()}
+		<ComponentCard
+			description="Drop a local MP3 file to play it through the player and generate the waveform in the browser."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={dropUploadCode}
+		>
+			<AudioPlayerDropDemo />
+		</ComponentCard>
+
 		<ComponentCard
 			description="Histogram mode uses the same waveform as the clickable progress surface."
 			class="!min-h-fit !items-stretch !justify-start"
@@ -212,7 +114,7 @@ ${'</' + 'script>'}
 		</ComponentCard>
 
 		<ComponentCard
-			description="Track mode swaps the waveform for a simple progress surface while keeping the same controls."
+			description="Inline layout places controls beside the track when there is room."
 			class="!min-h-fit !items-stretch !justify-start"
 			code={trackCode}
 		>
@@ -221,6 +123,7 @@ ${'</' + 'script>'}
 				title="Track progress"
 				artist="No artwork fallback"
 				variant="track"
+				layout="inline"
 				color="info"
 				controls={trackControls}
 			/>

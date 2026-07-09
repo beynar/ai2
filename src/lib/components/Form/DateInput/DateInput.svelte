@@ -26,6 +26,7 @@
 		onValidate,
 		onChange,
 		visible,
+		type = 'date',
 		...rest
 	}: DateInputProps = $props();
 
@@ -78,7 +79,9 @@
 		get visible() {
 			return visible;
 		},
-		type: 'date'
+		get type() {
+			return type;
+		}
 	});
 
 	const classes = $derived(useDateInputTheme(theme));

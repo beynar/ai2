@@ -3,7 +3,7 @@ export const audioPlayerDescription = `
 
 AudioPlayer is a native HTML5 audio player with Svelai chrome. It can render a
 waveform or track seek/progress surface and composes controls from Button, Tooltip,
-and the shared Slider primitive.
+Popover, and the shared Slider primitive.
 
 ## Import
 
@@ -19,8 +19,9 @@ import { AudioPlayer } from 'svelai/audio-player';
 - **artist**: string - Secondary metadata line.
 - **artwork**: string | false - Optional artwork image URL. Omitted artwork renders no fallback.
 - **variant**: 'waveform' | 'track' - Primary progress surface.
+- **layout**: 'block' | 'inline' - Controls/progress arrangement. Block stacks the seek surface below the header; inline places controls and seek on the same row when space allows.
 - **color**: Colors - Theme color for controls and progress fill.
-- **waveform**: number[] - Amplitude samples from 0 to 1.
+- **waveform**: number[] - Amplitude samples from 0 to 1. When omitted, samples are generated from the selected audio source when possible.
 - **waveformVariant**: 'centered' | 'histogram' - Waveform visual mode.
 - **waveformBars**: number - Number of bars rendered after resampling.
 - **controls**: AudioPlayerControl[] - Toggle play, seek, time, volume, loop, download.
@@ -35,6 +36,8 @@ import { AudioPlayer } from 'svelai/audio-player';
 ## Notes
 
 The waveform and track surfaces are both seek inputs with an invisible range hitbox.
-When no waveform samples are provided, the component generates a deterministic fallback
-waveform from source and metadata.
+When no waveform samples are provided, the component fetches and decodes the selected
+audio source in the browser to generate peak samples. While generation is pending, or
+if fetch/decode is unavailable, it uses a deterministic fallback waveform from source
+and metadata. Generation failures are reported through onError.
 `;

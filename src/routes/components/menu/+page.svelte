@@ -433,6 +433,30 @@
 		</ComponentCard>
 
 		<ComponentCard
+			description="Debug overlays show the trigger/submenu safe-area rectangles in blue and the prediction cone in orange — it keeps the submenu open during the diagonal move while the other options stay hoverable."
+		>
+			<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+				<Menu
+					items={[
+						{ type: 'option', title: 'Option 1' },
+						{
+							type: 'submenu',
+							title: 'Debug hover',
+							openOnHover: true,
+							openOnClick: false,
+							debugSafeArea: true,
+							menu: [
+								{ type: 'option', title: 'Sub 1' },
+								{ type: 'option', title: 'Sub 2' }
+							]
+						},
+						{ type: 'option', title: 'Option 2' }
+					]}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
 			description="Every item type in a single menu: options, submenus, buttons, separators."
 		>
 			<div class="bg-background rounded-xl border-background-muted w-72 border p-2">

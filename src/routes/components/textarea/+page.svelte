@@ -34,6 +34,23 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large textarea sizes."
+			class="!min-h-fit"
+			code={`<div class="grid w-full max-w-md gap-6">
+	<TextArea label="Small" placeholder="Small textarea" size="small" />
+	<TextArea label="Normal" placeholder="Normal textarea" size="normal" />
+	<TextArea label="Large" placeholder="Large textarea" size="large" />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<TextArea label="Small" placeholder="Small textarea" size="small" />
+				<TextArea label="Normal" placeholder="Normal textarea" size="normal" />
+				<TextArea label="Large" placeholder="Large textarea" size="large" />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Control the height with rows and cap input with maxLength">
 			<div class="w-full max-w-md">
 				<TextArea

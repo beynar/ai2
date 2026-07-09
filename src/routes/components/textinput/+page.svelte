@@ -27,6 +27,22 @@
 
 	{#snippet examples()}
 		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large text inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<TextInput size="small" label="Small" placeholder="Small input" />
+	<TextInput size="normal" label="Normal" placeholder="Normal input" />
+	<TextInput size="large" label="Large" placeholder="Large input" />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<TextInput size="small" label="Small" placeholder="Small input" />
+				<TextInput size="normal" label="Normal" placeholder="Normal input" />
+				<TextInput size="large" label="Large" placeholder="Large input" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
 			description="Form integration plus helper and error states."
 			class="flex !items-start"
 		>

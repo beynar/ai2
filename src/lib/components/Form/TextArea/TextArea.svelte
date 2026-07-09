@@ -16,6 +16,7 @@
 		name,
 		onValidate,
 		visible,
+		onChange,
 		rows = 3,
 		maxLength,
 		onPressEnter,
@@ -44,7 +45,7 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: () => {},
+		onChange: (v) => onChange?.(v ?? ''),
 		get disabled() {
 			return disabled;
 		},
@@ -66,7 +67,7 @@
 		get visible() {
 			return visible;
 		},
-		type: 'text'
+		type: 'textarea'
 	});
 
 	const classes = $derived(useTextAreaTheme(theme));
@@ -74,11 +75,17 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
+		...(theme || {}),
 		inputContainer: {
-			base: classes.inputContainer({ disabled: field.disabled })
-		},
-		...(theme || {})
+			...(theme?.inputContainer || {}),
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
+		}
 	}}
 	{...rest}
 >
@@ -100,5 +107,5 @@
 		name={field.name}
 		id={field.id}
 		required={field.required}
-		class={classes.input({ disabled: field.disabled })}></textarea>
+		class={classes.input({ disabled: field.disabled, size: rest.size })}></textarea>
 </Field>

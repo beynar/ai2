@@ -53,6 +53,22 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large checkbox groups."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<CheckboxesInput label="Small" mode="normal" size="small" {items} />
+	<CheckboxesInput label="Normal" mode="normal" size="normal" {items} />
+	<CheckboxesInput label="Large" mode="normal" size="large" {items} />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<CheckboxesInput label="Small" mode="normal" size="small" {items} />
+				<CheckboxesInput label="Normal" mode="normal" size="normal" {items} />
+				<CheckboxesInput label="Large" mode="normal" size="large" {items} />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Options rendered as selectable cards">
 			<div class="w-full max-w-md">
 				<CheckboxesInput label="Notifications" mode="card" {items} bind:value={cardSelected} />

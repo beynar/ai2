@@ -16,6 +16,11 @@
 
 	const semanticColors = ['primary', 'secondary', 'success', 'warning', 'danger', 'info'] as const;
 	const sizes = ['small', 'normal', 'large'] as const;
+	const sizeLabels = {
+		small: 'Small',
+		normal: 'Normal',
+		large: 'Large'
+	} as const;
 	const formatColorLabel = (color: (typeof semanticColors)[number]) =>
 		`${color[0].toUpperCase()}${color.slice(1)} intensity`;
 </script>
@@ -218,12 +223,27 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="small, normal, large">
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large sliders."
+			code={`{#each ['small', 'normal', 'large'] as size}
+	<Slider
+		{size}
+		label={sizeLabels[size]}
+		value={temperature}
+		min={16}
+		max={30}
+		step={1}
+		showValue
+		formatValue={(value) => \`\${value} deg C\`}
+	/>
+{/each}`}
+		>
 			<div class="grid w-full max-w-md gap-6">
 				{#each sizes as size (size)}
 					<Slider
 						{size}
-						label="Temperature ({size})"
+						label={sizeLabels[size]}
 						value={temperature}
 						min={16}
 						max={30}
@@ -235,14 +255,35 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Thick variant: small, normal, large">
+		<ComponentCard
+			description="Thick variant: small, normal, large"
+			code={`<div class="grid gap-6">
+	{#each ['small', 'normal', 'large'] as size}
+		<Slider variant="thick" {size} label={sizeLabels[size]} />
+	{/each}
+</div>
+
+<div class="flex min-h-80 w-full items-center justify-center">
+	<Slider
+		variant="thick"
+		orientation="vertical"
+		label="Temperature (vertical)"
+		value={temperature}
+		min={16}
+		max={30}
+		step={1}
+		showValue
+		formatValue={(value) => \`\${value} deg C\`}
+	/>
+</div>`}
+		>
 			<div class="grid w-full max-w-md gap-8">
 				<div class="grid gap-6">
 					{#each sizes as size (size)}
 						<Slider
 							variant="thick"
 							{size}
-							label="Temperature ({size})"
+							label={sizeLabels[size]}
 							value={temperature}
 							min={16}
 							max={30}

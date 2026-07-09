@@ -55,6 +55,22 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large rating inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<RatingInput label="Small" size="small" value={3} />
+	<RatingInput label="Normal" size="normal" value={3} />
+	<RatingInput label="Large" size="large" value={3} />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<RatingInput label="Small" size="small" value={3} />
+				<RatingInput label="Normal" size="normal" value={3} />
+				<RatingInput label="Large" size="large" value={3} />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Read-only display">
 			<div class="w-full max-w-md">
 				<RatingInput label="Rating" readonly allowHalf value={4.5} />

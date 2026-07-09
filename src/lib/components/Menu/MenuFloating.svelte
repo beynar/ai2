@@ -9,6 +9,7 @@
 	import MenuOption from '../MenuOption/MenuOption.svelte';
 	import PopupMenu from '../PopupMenu/PopupMenu.svelte';
 	import { usePopoverContext } from '../Popover/popover.state.svelte.js';
+	import type { PopoverState } from '../Popover/popover.state.svelte.js';
 	import Separator from '../Separator/Separator.svelte';
 	import Slot from '../Slot/Slot.svelte';
 	import type { Breakpoint } from '../Theme/theme.js';
@@ -36,6 +37,7 @@
 		breakpoint === 'xs' || breakpoint === 'sm' ? 'bottom-start' : 'right-start';
 
 	let submenuOpen = $state<Record<number, boolean>>({});
+	let submenuPopovers = $state<Record<number, PopoverState>>({});
 	const anySubmenuOpen = $derived(Object.values(submenuOpen).some(Boolean));
 
 	const navigation = useNavigation({
@@ -82,6 +84,24 @@
 	const attachBackControl = (node: HTMLElement) => {
 		Object.assign(node, { onPrevious: goBack });
 	};
+
+	const pointerFrom = (e: unknown): { x: number; y: number } | undefined =>
+		e && typeof e === 'object' && 'clientX' in e
+			? { x: (e as PointerEvent).clientX, y: (e as PointerEvent).clientY }
+			: undefined;
+
+	const closeSubmenus = (exceptIndex?: number, pointer?: { x: number; y: number }) => {
+		for (const [key, popover] of Object.entries(submenuPopovers)) {
+			const index = Number(key);
+			if (index === exceptIndex) continue;
+			// Don't close a submenu the pointer is still travelling toward: its safe
+			// area (the trigger→panel corridor) has authority during the diagonal
+			// transit, so a sibling row you merely cross doesn't slam it shut.
+			if (pointer && popover.safeArea.containsPoint(pointer.x, pointer.y)) continue;
+			popover.close();
+			submenuOpen[index] = false;
+		}
+	};
 </script>
 
 <div
@@ -114,6 +134,10 @@
 				role="menuitem"
 				{...item}
 				theme={theme?.button}
+				onEnter={(payload) => {
+					item.onEnter?.(payload);
+					closeSubmenus(undefined, pointerFrom(payload));
+				}}
 				{@attach navigation.itemReference}
 				{@attach attachPrevious}
 			/>
@@ -122,6 +146,10 @@
 				role="menuitem"
 				{...item}
 				theme={theme?.option}
+				onEnter={(event) => {
+					item.onEnter?.(event);
+					closeSubmenus(undefined, pointerFrom(event));
+				}}
 				{@attach navigation.itemReference}
 				{@attach attachPrevious}
 			/>
@@ -136,8 +164,10 @@
 				openOnClick = true,
 				hoverDelay = 100,
 				closeOnMouseLeave = true,
+				debugSafeArea = false,
 				popoverClass,
 				onClick: itemOnClick,
+				onEnter: itemOnEnter,
 				suffix,
 				attrs,
 				...itemProps
@@ -150,6 +180,7 @@
 				{openOnClick}
 				{hoverDelay}
 				{closeOnMouseLeave}
+				{debugSafeArea}
 				closeOnEscape={true}
 				closeOnItemClick={false}
 				mobileSheet={false}
@@ -176,18 +207,28 @@
 						}}
 						onClick={(payload) => {
 							itemOnClick?.(payload);
+							closeSubmenus(index);
 							popover?.toggle();
+						}}
+						onEnter={(event) => {
+							itemOnEnter?.(event);
+							closeSubmenus(index, pointerFrom(event));
 						}}
 						{@attach popover.reference}
 						{@attach navigation.itemReference}
 						{@attach (node) => {
+							submenuPopovers[index] = popover;
 							Object.assign(node, {
 								onNext: () => {
+									closeSubmenus(index);
 									submenuOpen[index] = true;
 									popover.open();
 								},
 								onPrevious: goUp
 							});
+							return () => {
+								delete submenuPopovers[index];
+							};
 						}}
 					/>
 				{/snippet}

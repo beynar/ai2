@@ -146,5 +146,22 @@
 				/>
 			</div>
 		</ComponentCard>
+
+		<!-- Example 7: Sizes -->
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large tag inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<TagsInput size="small" label="Small" placeholder="Add tags..." />
+	<TagsInput size="normal" label="Normal" placeholder="Add tags..." />
+	<TagsInput size="large" label="Large" placeholder="Add tags..." />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<TagsInput size="small" label="Small" placeholder="Add tags..." />
+				<TagsInput size="normal" label="Normal" placeholder="Add tags..." />
+				<TagsInput size="large" label="Large" placeholder="Add tags..." />
+			</div>
+		</ComponentCard>
 	{/snippet}
 </DocPage>

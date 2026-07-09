@@ -1,4 +1,5 @@
 import { bind } from '$lib/utils/state.svelte.js';
+import { mediaVolume } from '../MediaVolume/index.js';
 import type {
 	VideoPlayerError,
 	VideoPlayerSnapshot,
@@ -127,9 +128,7 @@ export class VideoPlayerState {
 			this.callbacks.onDurationChange?.(this.snapshot);
 		}
 
-		const nextVolume = clamp(this.volume, 0, 1);
-		if (mediaElement.volume !== nextVolume) mediaElement.volume = nextVolume;
-		if (mediaElement.muted !== this.muted) mediaElement.muted = this.muted;
+		mediaVolume.sync(mediaElement, { volume: this.volume, muted: this.muted });
 		if (mediaElement.loop !== this.loop) mediaElement.loop = this.loop;
 		if (this.playbackRate > 0 && mediaElement.playbackRate !== this.playbackRate) {
 			mediaElement.playbackRate = this.playbackRate;
@@ -150,6 +149,7 @@ export class VideoPlayerState {
 		this.buffered = this.getBufferedEnd(mediaElement);
 		this.volume = mediaElement.volume;
 		this.muted = mediaElement.muted;
+		mediaVolume.rememberAudibleVolume(mediaElement);
 		this.paused = mediaElement.paused;
 		this.ended = mediaElement.ended;
 		this.playbackRate = mediaElement.playbackRate;
@@ -347,21 +347,24 @@ export class VideoPlayerState {
 
 	setVolume(volume: number) {
 		this.requireEnabled();
-		const mediaElement = this.requireMediaElement();
-		mediaElement.volume = clamp(volume, 0, 1);
-		if (mediaElement.volume > 0 && mediaElement.muted) mediaElement.muted = false;
+		mediaVolume.setVolume(this.requireMediaElement(), volume);
 		this.refreshMediaState();
 	}
 
 	setMuted(muted: boolean) {
 		this.requireEnabled();
-		const mediaElement = this.requireMediaElement();
-		mediaElement.muted = muted;
+		mediaVolume.setMuted(this.requireMediaElement(), muted, this.volumeStep);
 		this.refreshMediaState();
 	}
 
 	toggleMuted() {
-		this.setMuted(!this.muted);
+		this.requireEnabled();
+		mediaVolume.toggleMuted(this.requireMediaElement(), {
+			volume: this.volume,
+			muted: this.muted,
+			volumeStep: this.volumeStep
+		});
+		this.refreshMediaState();
 	}
 
 	setPlaybackRate(playbackRate: number) {

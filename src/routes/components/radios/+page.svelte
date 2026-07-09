@@ -82,6 +82,40 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large radio groups."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<RadioInput label="Small" mode="normal" name="small-radios" size="small" items={normalOptions} />
+	<RadioInput label="Normal" mode="normal" name="normal-size-radios" size="normal" items={normalOptions} />
+	<RadioInput label="Large" mode="normal" name="large-radios" size="large" items={normalOptions} />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<RadioInput
+					label="Small"
+					mode="normal"
+					name="small-radios"
+					size="small"
+					items={normalOptions}
+				/>
+				<RadioInput
+					label="Normal"
+					mode="normal"
+					name="normal-size-radios"
+					size="normal"
+					items={normalOptions}
+				/>
+				<RadioInput
+					label="Large"
+					mode="normal"
+					name="large-radios"
+					size="large"
+					items={normalOptions}
+				/>
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Options rendered as selectable cards.">
 			<div class="w-full max-w-md">
 				<RadioInput

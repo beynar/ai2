@@ -67,10 +67,19 @@
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Small, normal, and large sizes." class="!min-h-fit">
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large sizes."
+			code={`<div class="grid w-full max-w-xl gap-6">
+	<PinInput label="Small" size="small" value="123" pasteTransformer={digitsOnly} />
+	<PinInput label="Normal" size="normal" value="1234" pasteTransformer={digitsOnly} />
+	<PinInput label="Large" size="large" value="12345" pasteTransformer={digitsOnly} />
+</div>`}
+			class="!min-h-fit"
+		>
 			<div class="grid w-full max-w-xl gap-6">
 				<PinInput label="Small" size="small" value="123" pasteTransformer={digitsOnly} />
-				<PinInput label="Normal" value="1234" pasteTransformer={digitsOnly} />
+				<PinInput label="Normal" size="normal" value="1234" pasteTransformer={digitsOnly} />
 				<PinInput label="Large" size="large" value="12345" pasteTransformer={digitsOnly} />
 			</div>
 		</ComponentCard>

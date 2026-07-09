@@ -32,17 +32,13 @@
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard
-			description="A masked password input with visibility toggle"
-		>
+		<ComponentCard description="A masked password input with visibility toggle">
 			<div class="w-full max-w-md">
 				<PasswordInput label="Password" placeholder="Enter your password" bind:value={password} />
 			</div>
 		</ComponentCard>
 
-		<ComponentCard
-			description="Guide the user with requirements"
-		>
+		<ComponentCard description="Guide the user with requirements">
 			<div class="w-full max-w-md">
 				<PasswordInput
 					label="New password"
@@ -53,8 +49,22 @@
 		</ComponentCard>
 
 		<ComponentCard
-			description="Using type: 'password' inside a Form"
+			title="Sizes"
+			description="Small, normal, and large password input sizes."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<PasswordInput label="Small" placeholder="Small password" size="small" />
+	<PasswordInput label="Normal" placeholder="Normal password" size="normal" />
+	<PasswordInput label="Large" placeholder="Large password" size="large" />
+</div>`}
 		>
+			<div class="grid w-full max-w-md gap-6">
+				<PasswordInput label="Small" placeholder="Small password" size="small" />
+				<PasswordInput label="Normal" placeholder="Normal password" size="normal" />
+				<PasswordInput label="Large" placeholder="Large password" size="large" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="Using type: 'password' inside a Form">
 			<div class="w-full max-w-md">
 				<Form
 					inputs={{

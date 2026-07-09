@@ -22,9 +22,17 @@
 	import DateInput from '../DateInput/DateInput.svelte';
 	import FileInput from '../File/FileInput.svelte';
 	import TagGroup from '../TagGroup/TagGroup.svelte';
+	import TagsInput from '../TagsInput/TagsInput.svelte';
+	import KeyValueInput from '../KeyValueInput/KeyValueInput.svelte';
+	import PinInput from '../PinInput/PinInput.svelte';
+	import Checkbox from '../Checkbox/Checkbox.svelte';
 	import TimeInput from '../TimeInput/TimeInput.svelte';
 	import RichTextInput from '../../RichTextInput/RichTextInput.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
+	import type { TagsInputProps } from '../TagsInput/tagsInput.props.js';
+	import type { KeyValueInputProps } from '../KeyValueInput/keyValueInput.props.js';
+	import type { PinInputProps } from '../PinInput/pinInput.props.js';
+	import type { CheckboxProps } from '../Checkbox/checkbox.props.js';
 	let {
 		inputs,
 		onSubmit,
@@ -39,9 +47,18 @@
 	}: FormProps<I> = $props();
 
 	form = useForm({
-		inputs,
-		onSubmit,
-		value
+		get inputs() {
+			return inputs;
+		},
+		get onSubmit() {
+			return onSubmit;
+		},
+		get value() {
+			return value;
+		},
+		set value(v) {
+			value = v;
+		}
 	});
 	const inputsEntries = $derived(Object.entries<FormInput>(inputs));
 
@@ -65,11 +82,11 @@
 	{#each visibleInputsEntries as [name, input]}
 		{@const inputProps = prepareInputProps(input)}
 		{#if input.type === 'text'}
-			<TextInput {...inputProps as any} {name} />
+			<TextInput {...inputProps as any} type={input.type} {name} />
 		{:else if input.type === 'email'}
-			<TextInput {...inputProps as any} {name} />
+			<TextInput {...inputProps as any} type={input.type} {name} />
 		{:else if input.type === 'url'}
-			<TextInput {...inputProps as any} {name} />
+			<TextInput {...inputProps as any} type={input.type} {name} />
 		{:else if input.type === 'number'}
 			<NumberInput {...inputProps as any} {name} />
 		{:else if input.type === 'rating'}
@@ -90,6 +107,8 @@
 			<RadioInput {...inputProps as any} {name} />
 		{:else if input.type === 'checkboxes'}
 			<CheckboxesInput {...inputProps as any} {name} />
+		{:else if input.type === 'checkbox'}
+			<Checkbox {...inputProps as CheckboxProps} {name} />
 		{:else if input.type === 'switch'}
 			<Switch {...inputProps as any} {name} />
 		{:else if input.type === 'password'}
@@ -97,45 +116,26 @@
 		{:else if input.type === 'phone'}
 			<PhoneInput {...inputProps as any} {name} />
 		{:else if input.type === 'calendar' || input.type === 'calendar-range'}
-			<CalendarInput {...inputProps as any} {name} />
+			<CalendarInput {...inputProps as any} type={input.type} {name} />
 		{:else if input.type === 'date' || input.type === 'datetime'}
-			<DateInput {...inputProps as any} {name} />
+			<DateInput {...inputProps as any} type={input.type} {name} />
 		{:else if input.type === 'file'}
 			<FileInput {...inputProps as any} {name} mode="single" />
 		{:else if input.type === 'files'}
 			<FileInput {...inputProps as any} {name} mode="multiple" />
 		{:else if input.type === 'tag-group'}
 			<TagGroup {...inputProps as any} {name} />
+		{:else if input.type === 'tag'}
+			<TagsInput {...inputProps as TagsInputProps} {name} />
+		{:else if input.type === 'keyvalue'}
+			<KeyValueInput {...inputProps as KeyValueInputProps} {name} />
+		{:else if input.type === 'pin'}
+			<PinInput {...inputProps as PinInputProps} {name} />
 		{:else if input.type === 'time'}
 			<TimeInput {...inputProps as any} {name} />
 		{:else}
 			<p>Input type not supported: {input.type}</p>
 		{/if}
-		<!-- {#if input.type === 'switch'}
-			<Switch {...input} {name} />
-		{:else if input.type === 'email' || input.type === 'text'}
-			<TextInput {...input} {name} />
-		{:else if input.type === 'textarea'}
-			<TextAreaInput {...input} {name} />
-		{:else if input.type === 'select'}
-			<Select {...input} {name} />
-		{:else if input.type === 'number'}
-			<NumberInput {...input} {name} />
-		{:else if input.type === 'color'}
-			<ColorInput {...input} {name} />
-		{:else if input.type === 'tag'}
-			<TagInput {...input} {name} />
-		{:else if input.type === 'date' || input.type === 'datetime'}
-			<DateInput {...input} {name} />
-		{:else if input.type === 'calendar' || input.type === 'calendar-range'}
-			<CalendarInput {...input} {name} />
-		{:else if input.type === 'radios'}
-			<RadioInput {...input} {name} />
-		{:else if input.type === 'checkboxes'}
-			<CheckboxesInput {...input} {name} />
-		{:else}
-			<p>Input type not supported</p>
-		{/if} -->
 	{/each}
 	{@render children?.(form)}
 	{#if submitButton}

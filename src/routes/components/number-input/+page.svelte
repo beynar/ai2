@@ -46,6 +46,22 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large number inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<NumberInput size="small" label="Small" placeholder="0" />
+	<NumberInput size="normal" label="Normal" placeholder="0" />
+	<NumberInput size="large" label="Large" placeholder="0" />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<NumberInput size="small" label="Small" placeholder="0" />
+				<NumberInput size="normal" label="Normal" placeholder="0" />
+				<NumberInput size="large" label="Large" placeholder="0" />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Using type: 'number' inside a Form">
 			<div class="w-full max-w-md">
 				<Form

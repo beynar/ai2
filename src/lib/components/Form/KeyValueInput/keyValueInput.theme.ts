@@ -16,7 +16,7 @@ const defaultInputContainer = cva({
 });
 
 const defaultRow = cva({
-	base: 'flex items-center w-full',
+	base: 'grid w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center',
 	variants: {
 		size: {
 			small: 'gap-1.5',
@@ -30,7 +30,7 @@ const defaultRow = cva({
 });
 
 const defaultInput = cva({
-	base: 'flex-1 min-w-0 px-3 bg-background-light border border-background-muted rounded text-foreground outline-none appearance-none autofill:text-foreground-light focus:ring-1 focus:ring-primary ring-0 transition-all',
+	base: 'flex-1 min-w-0 px-3 bg-background-light border border-background-muted rounded text-foreground outline-none appearance-none autofill:text-foreground-light focus-within:ring-1 focus-within:ring-primary ring-0 transition-all',
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs placeholder:text-xs',
@@ -38,7 +38,7 @@ const defaultInput = cva({
 			large: 'py-2.5 text-base placeholder:text-base'
 		},
 		disabled: {
-			true: 'opacity-55 cursor-not-allowed pointer-events-none',
+			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
 	},
@@ -57,7 +57,7 @@ const defaultRemoveButton = cva({
 			large: 'size-9'
 		},
 		disabled: {
-			true: 'opacity-55 cursor-not-allowed pointer-events-none',
+			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
 	},
@@ -76,7 +76,7 @@ const defaultAddButton = cva({
 			large: 'py-2.5 text-base'
 		},
 		disabled: {
-			true: 'opacity-55 cursor-not-allowed pointer-events-none',
+			true: 'cursor-not-allowed opacity-50',
 			false: ''
 		}
 	},

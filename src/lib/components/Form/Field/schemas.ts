@@ -29,6 +29,8 @@ const optional = (schema: v.BaseSchema<any, any, any>) =>
 const sliderRangeValue = v.pipe(v.array(v.number()), v.minLength(2));
 const tagGroupValue = v.union([nonEmptyString, nonEmptyArray(v.string())]);
 const keyValuePair = v.object({ key: v.string(), value: v.string() });
+const calendarRangeValue = v.strictTuple([v.nullable(v.date()), v.nullable(v.date())]);
+const completeCalendarRangeValue = v.strictTuple([v.date(), v.date()]);
 
 type Schemas = Record<InputType, v.BaseSchema<any, any, any>>;
 export const schemas: {
@@ -41,10 +43,10 @@ export const schemas: {
 		password: v.pipe(nonEmptyString, v.minLength(6)),
 		email: v.pipe(nonEmptyString, v.email()),
 		url: v.pipe(nonEmptyString, v.url()),
-		color: nonEmptyString,
 		textarea: nonEmptyString,
 		phone: nonEmptyString,
 		'rich-text': nonEmptyString,
+		pin: nonEmptyString,
 
 		// Number input types
 		number: v.number(),
@@ -85,7 +87,7 @@ export const schemas: {
 		files: nonEmptyArray(v.instance(File)),
 		// Calendar input types
 		calendar: v.date(),
-		'calendar-range': v.tuple([v.date(), v.date()])
+		'calendar-range': completeCalendarRangeValue
 	},
 	optional: {
 		// Text input types
@@ -93,10 +95,10 @@ export const schemas: {
 		password: optional(emptyStringNull(v.pipe(v.string(), v.minLength(6)))),
 		email: optional(emptyStringNull(v.pipe(v.string(), v.email()))),
 		url: optional(emptyStringNull(v.pipe(v.string(), v.url()))),
-		color: optional(emptyStringNull(v.string())),
 		textarea: optional(emptyStringNull(v.string())),
 		phone: optional(emptyStringNull(v.string())),
 		'rich-text': optional(emptyStringNull(v.string())),
+		pin: optional(emptyStringNull(v.string())),
 		// Number input types
 		number: optional(v.number()),
 		slider: optional(v.number()),
@@ -138,6 +140,6 @@ export const schemas: {
 		files: optional(emptyArrayNull(v.array(v.instance(File)))),
 		// Calendar input types
 		calendar: optional(v.date()),
-		'calendar-range': optional(emptyArrayNull(v.strictTuple([v.date(), v.date()])))
+		'calendar-range': optional(calendarRangeValue)
 	}
 };

@@ -12,10 +12,15 @@ const defaultInput = cva({
 		hasValue: {
 			true: 'placeholder:text-foreground',
 			false: 'placeholder:text-foreground-muted'
+		},
+		disabled: {
+			true: 'cursor-not-allowed opacity-50',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		disabled: false
 	}
 });
 
@@ -26,10 +31,15 @@ const defaultInputContainer = cva({
 			small: 'py-1.5 text-xs',
 			normal: 'py-2 text-sm',
 			large: 'py-2.5 text-base'
+		},
+		disabled: {
+			true: 'cursor-not-allowed opacity-50',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		disabled: false
 	}
 });
 

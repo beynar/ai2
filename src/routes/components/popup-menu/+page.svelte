@@ -155,6 +155,22 @@
 		{ type: 'option', title: 'Delete Account', color: 'danger', prefix: trashIcon }
 	];
 
+	const debugSafeAreaItems: MenuItem[] = [
+		{ type: 'option', title: 'Option 1' },
+		{
+			type: 'submenu',
+			title: 'Debug hover',
+			openOnHover: true,
+			openOnClick: false,
+			debugSafeArea: true,
+			menu: [
+				{ type: 'option', title: 'Sub 1' },
+				{ type: 'option', title: 'Sub 2' }
+			]
+		},
+		{ type: 'option', title: 'Option 2' }
+	];
+
 	async function handleContextMenu(e: MouseEvent) {
 		e.preventDefault();
 		const x = e.clientX;
@@ -332,6 +348,18 @@
 					hoverDelay={200}
 					closeOnMouseLeave={true}
 					menu={{ items: settingsItems }}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Debug submenu hover safe areas: blue rectangles show pointer tolerance, orange shows the prediction cone."
+		>
+			<div class="flex gap-4">
+				<PopupMenu
+					trigger={{ content: 'Debug Safe Area', variant: 'outline' }}
+					position="bottom-start"
+					menu={{ items: debugSafeAreaItems }}
 				/>
 			</div>
 		</ComponentCard>

@@ -69,7 +69,9 @@ The PopupMenu component is a wrapper around Popover that renders a Menu inside. 
 
 - **closeOnEscape**: boolean (default: true) - Close on Escape key
 
-- **closeOnMouseLeave**: boolean (default: false) - Close when mouse leaves safe area
+- **closeOnMouseLeave**: boolean (default: false) - Close when the pointer leaves the hover safe area. The safe area is the trigger, the panel, and a prediction cone toward the submenu, so a diagonal move into the submenu keeps it open while sibling rows stay hoverable.
+
+- **debugSafeArea**: boolean (default: false) - Show hover safe-area overlays. Trigger/panel rectangles render in blue; the prediction cone toward the submenu renders in orange.
 
 #### Visual & Animation
 - **transition**: ResponsiveProps<FSOProps> - Custom transition configuration
@@ -381,6 +383,6 @@ The Menu inherits the Popover's dialog styling (background, border, shadow, etc.
 - PopupMenu is a lightweight wrapper - all Popover props work as expected
 - Menu styling inherits from Popover's dialog theme
 - Use \`closeOnClickOutside={true}\` (default) for typical dropdown menus
-- Use \`closeOnMouseLeave={true}\` for hover-triggered quick menus
+- Use \`closeOnMouseLeave={true}\` for hover-triggered quick menus; a prediction cone toward the submenu keeps it open during the diagonal move while sibling rows stay hoverable.
 - The \`menu\` prop accepts full MenuProps including theme forwarding to child components
 `;

@@ -9,6 +9,7 @@ export type AudioPlayerPreload = 'none' | 'metadata' | 'auto';
 export type AudioPlayerCrossOrigin = 'anonymous' | 'use-credentials' | '';
 export type AudioPlayerStateMode = 'idle' | 'loading' | 'ready' | 'error';
 export type AudioPlayerVariant = 'waveform' | 'track';
+export type AudioPlayerLayout = 'block' | 'inline';
 export type AudioPlayerWaveformVariant = 'centered' | 'histogram';
 export type AudioPlayerControl =
 	'play' | 'seekBackward' | 'seekForward' | 'time' | 'volume' | 'loop' | 'download';
@@ -67,9 +68,11 @@ export type AudioPlayerProps = WithAttachments<{
 	controls?: AudioPlayerControl[];
 	/** Primary progress surface. */
 	variant?: AudioPlayerVariant;
+	/** Controls and progress arrangement. */
+	layout?: AudioPlayerLayout;
 	/** Theme color token used for controls and progress. */
 	color?: Colors;
-	/** Waveform samples from 0 to 1. When omitted, a deterministic fallback is generated. */
+	/** Waveform samples from 0 to 1. When omitted, samples are generated from the selected audio source when possible. */
 	waveform?: number[];
 	/** Visual waveform shape. */
 	waveformVariant?: AudioPlayerWaveformVariant;
@@ -139,7 +142,7 @@ export type AudioPlayerProps = WithAttachments<{
 	onVolumeChange?: (snapshot: AudioPlayerSnapshot) => void;
 	/** Called when loop changes through the component API. */
 	onLoopChange?: (snapshot: AudioPlayerSnapshot) => void;
-	/** Called when native media or custom interaction errors occur. */
+	/** Called when native media, waveform generation, or custom interaction errors occur. */
 	onError?: (error: AudioPlayerError, snapshot: AudioPlayerSnapshot) => void;
 	/** Per-instance theme overrides. */
 	theme?: AudioPlayerThemeProps;

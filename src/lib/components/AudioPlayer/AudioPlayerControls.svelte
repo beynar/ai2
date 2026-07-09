@@ -8,6 +8,7 @@
 	import { skipForwardIcon } from '../Icons/skipForward.js';
 	import type {
 		AudioPlayerControl,
+		AudioPlayerLayout,
 		AudioPlayerSource,
 		AudioPlayerTimeVariant
 	} from './audioPlayer.props.js';
@@ -24,6 +25,7 @@
 		classes,
 		size,
 		color,
+		layout,
 		controls,
 		src,
 		sources,
@@ -37,6 +39,7 @@
 		classes: AudioPlayerClasses;
 		size: Sizes;
 		color: Colors;
+		layout: AudioPlayerLayout;
 		controls: AudioPlayerControl[];
 		src?: string;
 		sources: AudioPlayerSource[];
@@ -62,8 +65,8 @@
 	}
 </script>
 
-<div data-slot="audio-player-controls" class={classes.controls({ size })}>
-	<div data-slot="audio-player-primary-controls" class={classes.controlGroup()}>
+<div data-slot="audio-player-controls" class={classes.controls({ size, layout })}>
+	<div data-slot="audio-player-primary-controls" class={classes.controlGroup({ layout })}>
 		{#if hasControl('seekBackward')}
 			<AudioPlayerIconButton
 				{classes}
@@ -112,9 +115,17 @@
 		{/if}
 	</div>
 
-	<div data-slot="audio-player-secondary-controls" class={classes.controlGroup()}>
+	<div data-slot="audio-player-secondary-controls" class={classes.controlGroup({ layout })}>
 		{#if hasControl('volume')}
-			<AudioPlayerVolumeControl {player} {classes} {size} {color} {volumeStep} {disabled} />
+			<AudioPlayerVolumeControl
+				{player}
+				{classes}
+				{size}
+				{color}
+				{layout}
+				{volumeStep}
+				{disabled}
+			/>
 		{/if}
 
 		{#if hasControl('loop')}

@@ -5,7 +5,6 @@
 	import Form from '$lib/components/Form/Form/Form.svelte';
 
 	import type { SelectItems } from '$lib/components/Form/Select/index.js';
-	import { sizes } from '$lib/utils/tokens.js';
 
 	const roles = [
 		{ value: 'admin', label: 'Administrator' },
@@ -124,11 +123,19 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="small, normal, large">
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large selects."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<Select size="small" label="Small" placeholder="Select a role" items={roles} />
+	<Select size="normal" label="Normal" placeholder="Select a role" items={roles} />
+	<Select size="large" label="Large" placeholder="Select a role" items={roles} />
+</div>`}
+		>
 			<div class="grid w-full max-w-md gap-6">
-				{#each sizes as size}
-					<Select {size} label="Role ({size})" placeholder="Select a role" items={roles} />
-				{/each}
+				<Select size="small" label="Small" placeholder="Select a role" items={roles} />
+				<Select size="normal" label="Normal" placeholder="Select a role" items={roles} />
+				<Select size="large" label="Large" placeholder="Select a role" items={roles} />
 			</div>
 		</ComponentCard>
 

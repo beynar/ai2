@@ -18,6 +18,7 @@
 		disabled,
 		name,
 		onValidate,
+		onChange,
 		visible,
 		...rest
 	}: PasswordInputProps = $props();
@@ -45,7 +46,7 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: () => {},
+		onChange: (v) => onChange?.(v ?? ''),
 		get disabled() {
 			return disabled;
 		},

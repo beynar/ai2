@@ -5,6 +5,7 @@
 	import type {
 		AudioPlayerControl,
 		AudioPlayerCrossOrigin,
+		AudioPlayerLayout,
 		AudioPlayerPreload,
 		AudioPlayerSource,
 		AudioPlayerTimeVariant,
@@ -13,6 +14,7 @@
 	} from './audioPlayer.props.js';
 	import type { AudioPlayerState } from './audioPlayer.state.svelte.js';
 	import type { useAudioPlayerTheme } from './audioPlayer.theme.js';
+	import AudioPlayerControlsRegion from './AudioPlayerControlsRegion.svelte';
 	import AudioPlayerHeader from './AudioPlayerHeader.svelte';
 	import AudioPlayerMedia from './AudioPlayerMedia.svelte';
 	import AudioPlayerSeek from './AudioPlayerSeek.svelte';
@@ -53,6 +55,7 @@
 		seekStep,
 		volumeStep,
 		variant,
+		layout,
 		waveformVariant,
 		waveformSamples,
 		seek
@@ -89,6 +92,7 @@
 		seekStep: number;
 		volumeStep: number;
 		variant: AudioPlayerVariant;
+		layout: AudioPlayerLayout;
 		waveformVariant: AudioPlayerWaveformVariant;
 		waveformSamples: number[];
 		seek?: AudioPlayerSlot;
@@ -104,6 +108,7 @@
 	bind:this={player.rootElement}
 	data-slot="audio-player"
 	data-color={color}
+	data-layout={layout}
 	data-state={player.state}
 	data-paused={player.paused ? 'true' : undefined}
 	data-muted={player.muted ? 'true' : undefined}
@@ -133,6 +138,8 @@
 		{classes}
 		{size}
 		{color}
+		{layout}
+		showControls={layout === 'block'}
 		{title}
 		{artist}
 		{artwork}
@@ -150,18 +157,60 @@
 		{disabled}
 	/>
 
-	<AudioPlayerSeek
-		{player}
-		{classes}
-		{size}
-		{color}
-		{variant}
-		{waveformVariant}
-		{waveformSamples}
-		disabled={disabled || !hasSource}
-		{title}
-		{seek}
-	/>
+	{#if layout === 'inline'}
+		<div data-slot="audio-player-inline" class={classes.inline({ size })}>
+			<AudioPlayerControlsRegion
+				{player}
+				{classes}
+				{size}
+				{color}
+				{layout}
+				{controlsSlot}
+				{controls}
+				{src}
+				{sources}
+				{download}
+				{timeVariant}
+				{seekStep}
+				{volumeStep}
+				{disabled}
+			/>
+
+			<div data-slot="audio-player-inline-seek" class={classes.inlineSeek()}>
+				<AudioPlayerSeek
+					{player}
+					{classes}
+					{size}
+					{color}
+					{variant}
+					{waveformVariant}
+					{waveformSamples}
+					disabled={disabled || !hasSource}
+					{title}
+					{seek}
+				/>
+			</div>
+
+			{#if trailing}
+				<div data-slot="audio-player-inline-trailing" class={classes.inlineTrailing()}>
+					{@render trailing(player)}
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<AudioPlayerSeek
+			{player}
+			{classes}
+			{size}
+			{color}
+			{variant}
+			{waveformVariant}
+			{waveformSamples}
+			disabled={disabled || !hasSource}
+			{title}
+			{seek}
+		/>
+	{/if}
 
 	{#if player.state === 'loading' && hasSource}
 		<p data-slot="audio-player-status" class={classes.status({ size, tone: 'loading' })}>

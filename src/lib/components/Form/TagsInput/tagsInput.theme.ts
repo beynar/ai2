@@ -8,10 +8,15 @@ const defaultInput = cva({
 			small: 'text-xs placeholder:text-xs h-5',
 			normal: 'text-sm placeholder:text-sm h-6',
 			large: 'text-base placeholder:text-base h-7'
+		},
+		disabled: {
+			true: 'cursor-not-allowed opacity-50',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		disabled: false
 	}
 });
 
@@ -22,10 +27,15 @@ const defaultInputContainer = cva({
 			small: 'py-1.5 text-xs gap-1',
 			normal: 'py-2 text-sm gap-1.5',
 			large: 'py-2.5 text-base gap-2'
+		},
+		disabled: {
+			true: 'cursor-not-allowed opacity-50',
+			false: ''
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		disabled: false
 	}
 });
 

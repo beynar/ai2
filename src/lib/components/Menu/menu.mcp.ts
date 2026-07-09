@@ -124,7 +124,8 @@ The Menu accepts a discriminated union of four item types:
 	openOnHover?: boolean; // Open submenu on hover (default: true)
 	openOnClick?: boolean; // Open submenu on click (default: true)
 	hoverDelay?: number; // Hover delay in milliseconds (default: 100)
-	closeOnMouseLeave?: boolean; // Close when mouse leaves (default: true)
+	closeOnMouseLeave?: boolean; // Close when pointer leaves prediction cone + rectangle tolerance (default: true)
+	debugSafeArea?: boolean; // Show blue rectangle and orange cone debug overlays (default: false)
 	// ... and most other MenuOption props (except onClick, onEnter, onLeave)
 }
 \`\`\`
@@ -464,7 +465,7 @@ Submenu items automatically:
 Default submenu behavior:
 - Opens on hover (after 100ms delay)
 - Opens on click
-- Closes when mouse leaves the submenu area
+- Closes when the pointer leaves the submenu prediction cone and rectangle tolerance
 - Does not close when clicking items inside (allows multi-interaction)
 
 ## Notes

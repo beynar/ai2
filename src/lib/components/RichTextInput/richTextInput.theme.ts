@@ -70,7 +70,7 @@ const defaultRichTextInputViewport = cva({
 });
 
 const defaultRichTextInputScrollArea = cva({
-	base: 'group/rich-text-input flex min-w-0 flex-col overflow-hidden rounded-lg border border-background-muted bg-background-light text-foreground transition-all focus-within:ring-1 focus-within:ring-primary',
+	base: 'group/rich-text-input flex min-w-0 flex-col overflow-hidden rounded border border-background-muted bg-background-light text-foreground transition-all focus-within:ring-1 focus-within:ring-primary',
 	variants: {
 		size: {
 			small: 'max-h-40 min-h-20',

@@ -47,6 +47,22 @@
 			</div>
 		</ComponentCard>
 
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large date inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<DateInput label="Small" size="small" />
+	<DateInput label="Normal" size="normal" />
+	<DateInput label="Large" size="large" />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<DateInput label="Small" size="small" />
+				<DateInput label="Normal" size="normal" />
+				<DateInput label="Large" size="large" />
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Using type: 'date' inside a Form">
 			<div class="w-full max-w-md">
 				<Form

@@ -74,14 +74,14 @@
 	const fieldClasses = $derived(useFieldTheme(theme));
 	const onclick = () => {
 		if (disabled) return;
-		value = !value;
+		field.value = !field.value;
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (disabled) return;
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
-			value = !value;
+			field.value = !field.value;
 		}
 	};
 </script>
@@ -103,7 +103,7 @@
 >
 	<input
 		onchange={onclick}
-		name={field.id}
+		name={field.name}
 		id={'input-' + field.id}
 		{value}
 		hidden

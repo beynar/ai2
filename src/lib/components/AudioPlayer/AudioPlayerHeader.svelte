@@ -3,12 +3,13 @@
 	import type { Snippet } from 'svelte';
 	import type {
 		AudioPlayerControl,
+		AudioPlayerLayout,
 		AudioPlayerSource,
 		AudioPlayerTimeVariant
 	} from './audioPlayer.props.js';
 	import type { AudioPlayerState } from './audioPlayer.state.svelte.js';
 	import type { useAudioPlayerTheme } from './audioPlayer.theme.js';
-	import AudioPlayerControls from './AudioPlayerControls.svelte';
+	import AudioPlayerControlsRegion from './AudioPlayerControlsRegion.svelte';
 
 	type AudioPlayerClasses = ReturnType<typeof useAudioPlayerTheme>;
 	type AudioPlayerSlot = Snippet<[AudioPlayerState]>;
@@ -18,6 +19,8 @@
 		classes,
 		size,
 		color,
+		layout,
+		showControls,
 		title,
 		artist,
 		artwork,
@@ -38,6 +41,8 @@
 		classes: AudioPlayerClasses;
 		size: Sizes;
 		color: Colors;
+		layout: AudioPlayerLayout;
+		showControls: boolean;
 		title: string;
 		artist?: string;
 		artwork?: string | false;
@@ -79,14 +84,14 @@
 			{/if}
 		</div>
 
-		{#if controlsSlot}
-			{@render controlsSlot(player)}
-		{:else}
-			<AudioPlayerControls
+		{#if showControls}
+			<AudioPlayerControlsRegion
 				{player}
 				{classes}
 				{size}
 				{color}
+				{layout}
+				{controlsSlot}
 				{controls}
 				{src}
 				{sources}
@@ -98,7 +103,7 @@
 			/>
 		{/if}
 
-		{#if trailing}
+		{#if showControls && trailing}
 			{@render trailing(player)}
 		{/if}
 	</div>

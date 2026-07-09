@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import {
 		AUDIO_PLAYER_DEFAULT_CONTROLS as DEFAULT_CONTROLS,
 		type AudioPlayerError,
@@ -8,7 +9,10 @@
 	import AudioPlayerShell from './AudioPlayerShell.svelte';
 	import { AudioPlayerState } from './audioPlayer.state.svelte.js';
 	import { useAudioPlayerTheme } from './audioPlayer.theme.js';
-	import { getAudioPlayerWaveformSamples } from './audioPlayer.waveform.js';
+	import {
+		generateAudioPlayerWaveformSamples,
+		getAudioPlayerWaveformSamples
+	} from './audioPlayer.waveform.js';
 
 	let {
 		src,
@@ -23,6 +27,7 @@
 		autoplay = false,
 		controls = DEFAULT_CONTROLS,
 		variant = 'waveform',
+		layout = 'block',
 		color = 'primary',
 		waveform,
 		waveformVariant = 'centered',
@@ -144,6 +149,10 @@
 		}
 	});
 
+	let previousSourceSignature = $state('');
+	let generatedWaveform = $state<number[] | undefined>();
+	let waveformGenerationId = 0;
+
 	const classes = $derived(useAudioPlayerTheme(theme));
 	const hasSource = $derived(Boolean(src || sources.length || children));
 	const resolvedLabel = $derived(label ?? title ?? 'Audio player');
@@ -151,11 +160,16 @@
 	const sourceSignature = $derived(
 		JSON.stringify({ src, srcType, sources, children: Boolean(children) })
 	);
+	const waveformSource = $derived(src || sources[0]?.src);
+	const providedWaveformSamples = $derived(waveform && waveform.length > 0 ? waveform : undefined);
+	const displayedWaveformSamples = $derived(providedWaveformSamples ?? generatedWaveform);
 	const waveformSamples = $derived(
-		getAudioPlayerWaveformSamples(waveform, waveformBars, `${src ?? ''}:${title}:${artist ?? ''}`)
+		getAudioPlayerWaveformSamples(
+			displayedWaveformSamples,
+			waveformBars,
+			`${waveformSource ?? ''}:${title}:${artist ?? ''}`
+		)
 	);
-
-	let previousSourceSignature = $state('');
 
 	export function play() {
 		return player.play();
@@ -195,6 +209,38 @@
 
 	$effect(() => {
 		player.syncMediaProperties();
+	});
+
+	$effect(() => {
+		const currentSource = waveformSource;
+		const currentWaveform = providedWaveformSamples;
+		const currentWaveformBars = waveformBars;
+		const currentCrossOrigin = crossOrigin;
+
+		waveformGenerationId += 1;
+		const generationId = waveformGenerationId;
+		if (!browser || currentWaveform || !currentSource) {
+			generatedWaveform = undefined;
+			return;
+		}
+
+		generatedWaveform = undefined;
+		generateAudioPlayerWaveformSamples({
+			src: currentSource,
+			count: currentWaveformBars,
+			crossOrigin: currentCrossOrigin
+		})
+			.then((samples) => {
+				if (generationId !== waveformGenerationId) return;
+				generatedWaveform = samples;
+			})
+			.catch((cause: unknown) => {
+				if (generationId !== waveformGenerationId) return;
+				generatedWaveform = undefined;
+				const waveformError =
+					cause instanceof Error ? cause : new Error('Audio waveform generation failed.');
+				player.callbacks.onError?.(waveformError, player.snapshot);
+			});
 	});
 
 	$effect(() => {
@@ -242,6 +288,7 @@
 	{seekStep}
 	{volumeStep}
 	{variant}
+	{layout}
 	{waveformVariant}
 	{waveformSamples}
 	{seek}

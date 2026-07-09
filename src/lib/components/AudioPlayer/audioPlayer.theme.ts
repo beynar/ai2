@@ -85,21 +85,36 @@ const defaultAudioPlayerArtist = cva({
 });
 
 const defaultAudioPlayerControls = cva({
-	base: 'grid min-w-0 flex-[1_1_100%] gap-2 md:flex md:flex-[0_1_auto] md:flex-wrap md:items-center md:justify-end md:gap-1',
+	base: 'min-w-0 gap-2',
 	variants: {
 		size: {
 			small: 'gap-0.5',
 			normal: 'gap-1',
 			large: 'gap-1.5'
+		},
+		layout: {
+			block:
+				'grid flex-[1_1_100%] md:flex md:flex-[0_1_auto] md:flex-wrap md:items-center md:justify-end md:gap-1',
+			inline: 'flex shrink-0 flex-wrap items-center'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		layout: 'block'
 	}
 });
 
 const defaultAudioPlayerControlGroup = cva({
-	base: 'flex w-full min-w-0 flex-wrap items-center gap-1 md:w-auto'
+	base: 'flex min-w-0 flex-wrap items-center gap-1',
+	variants: {
+		layout: {
+			block: 'w-full md:w-auto',
+			inline: 'w-auto shrink-0'
+		}
+	},
+	defaultVariants: {
+		layout: 'block'
+	}
 });
 
 const defaultAudioPlayerControlButton = cva({
@@ -243,6 +258,28 @@ const defaultAudioPlayerTrackInput = cva({
 	base: 'absolute inset-0 z-10 m-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 focus:outline-none disabled:cursor-not-allowed'
 });
 
+const defaultAudioPlayerInline = cva({
+	base: 'flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center',
+	variants: {
+		size: {
+			small: 'gap-1.5',
+			normal: 'gap-2',
+			large: 'gap-3'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultAudioPlayerInlineSeek = cva({
+	base: 'min-w-0 flex-1'
+});
+
+const defaultAudioPlayerInlineTrailing = cva({
+	base: 'shrink-0'
+});
+
 const defaultAudioPlayerTime = cva({
 	base: 'min-w-fit tabular-nums text-foreground-muted',
 	variants: {
@@ -258,11 +295,48 @@ const defaultAudioPlayerTime = cva({
 });
 
 const defaultAudioPlayerVolumeControl = cva({
-	base: 'flex min-w-0 flex-[1_1_100%] items-center gap-2 sm:flex-[1_1_9rem] sm:max-w-56 md:min-w-36'
+	base: 'flex shrink-0 items-center',
+	variants: {
+		layout: {
+			block: '',
+			inline: ''
+		}
+	},
+	defaultVariants: {
+		layout: 'block'
+	}
+});
+
+const defaultAudioPlayerPopoverPanel = cva({
+	base: ''
+});
+
+const defaultAudioPlayerVolumePanel = cva({
+	base: 'flex min-w-0 flex-col items-center gap-2 p-1',
+	variants: {
+		size: {
+			small: 'gap-2',
+			normal: 'gap-3',
+			large: 'gap-4'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
 });
 
 const defaultAudioPlayerVolumeSlider = cva({
-	base: 'min-w-0 flex-1'
+	base: 'flex shrink-0 items-center justify-center',
+	variants: {
+		size: {
+			small: 'h-32',
+			normal: 'h-36',
+			large: 'h-40'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
 });
 
 const defaultAudioPlayerStatus = cva({
@@ -306,8 +380,13 @@ export const audioPlayerTheme = {
 	trackBuffered: defaultAudioPlayerTrackBuffered,
 	trackRange: defaultAudioPlayerTrackRange,
 	trackInput: defaultAudioPlayerTrackInput,
+	inline: defaultAudioPlayerInline,
+	inlineSeek: defaultAudioPlayerInlineSeek,
+	inlineTrailing: defaultAudioPlayerInlineTrailing,
 	time: defaultAudioPlayerTime,
 	volumeControl: defaultAudioPlayerVolumeControl,
+	popoverPanel: defaultAudioPlayerPopoverPanel,
+	volumePanel: defaultAudioPlayerVolumePanel,
 	volumeSlider: defaultAudioPlayerVolumeSlider,
 	status: defaultAudioPlayerStatus
 };

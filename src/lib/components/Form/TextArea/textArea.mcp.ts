@@ -272,13 +272,13 @@ The theme object contains the following parts:
 **input**:
 - base: Base classes applied to the textarea element
 - Variants:
-  - size: 'small' | 'medium' | 'large' - Text size
+  - size: 'small' | 'normal' | 'large' - Text size
   - disabled: boolean - Disabled state styling
 
 **inputContainer**:
 - base: Base classes for the textarea container (handles focus states, borders, padding)
 - Variants:
-  - size: 'small' | 'medium' | 'large' - Container height and size-based styling
+  - size: 'small' | 'normal' | 'large' - Container height and size-based styling
   - disabled: boolean - Disabled state styling
 
 ### Usage Examples
@@ -292,12 +292,12 @@ The theme object contains the following parts:
     inputContainer: {
       base: 'border-2 rounded-lg',
       size: {
-        medium: 'h-24 px-4 py-2'
+        normal: 'h-24 px-4 py-2'
       }
     },
     input: {
       size: {
-        medium: 'text-base'
+        normal: 'text-base'
       }
     }
   }}
@@ -326,7 +326,7 @@ The theme object contains the following parts:
     inputContainer: {
       base: 'rounded-lg border-2 transition-all',
       size: {
-        medium: 'h-24 px-4 py-2'
+        normal: 'h-24 px-4 py-2'
       }
     },
     input: {
