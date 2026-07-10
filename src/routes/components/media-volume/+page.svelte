@@ -164,12 +164,14 @@ ${'</' + 'script>'}
 		class="!min-h-fit"
 		code={usageCode}
 	>
-		<MediaVolumeControl
-			volume={defaultVolume.volume}
-			muted={defaultVolume.muted}
-			onVolumeChange={(nextVolume) => setVolume(defaultVolume, nextVolume)}
-			onToggleMuted={() => toggleMuted(defaultVolume)}
-		/>
+		<div class="flex min-h-80 items-start justify-center pt-6">
+			<MediaVolumeControl
+				volume={defaultVolume.volume}
+				muted={defaultVolume.muted}
+				onVolumeChange={(nextVolume) => setVolume(defaultVolume, nextVolume)}
+				onToggleMuted={() => toggleMuted(defaultVolume)}
+			/>
+		</div>
 	</ComponentCard>
 
 	{#snippet examples()}

@@ -35,6 +35,7 @@
 	{disabled}
 	color="primary"
 	orientation="vertical"
+	position="top"
 	popoverClass={classes.popoverPanel({ className: 'p-1.5' })}
 	panelClass={classes.volumePanel({
 		className: 'w-auto flex-col justify-center gap-1.5 px-0 py-0.5'

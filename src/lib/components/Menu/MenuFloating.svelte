@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Placement } from '@floating-ui/dom';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
+	import { on } from 'svelte/events';
 	import { useI18n } from '$lib/i18n/context.svelte.js';
 	import { useNavigation } from '$lib/utils/useNavigation.svelte.js';
 	import Button from '../Button/Button.svelte';
@@ -36,9 +37,11 @@
 	const submenuPosition = (breakpoint: Breakpoint): Placement =>
 		breakpoint === 'xs' || breakpoint === 'sm' ? 'bottom-start' : 'right-start';
 
-	let submenuOpen = $state<Record<number, boolean>>({});
 	let submenuPopovers = $state<Record<number, PopoverState>>({});
-	const anySubmenuOpen = $derived(Object.values(submenuOpen).some(Boolean));
+	// Derived from the popovers' own isOpen (which flips the instant open()/close()
+	// is called) — NOT from onOpen/onClose callbacks, which only fire after the
+	// intro/outro transitions and would keep the parent nav frozen during the fade.
+	const anySubmenuOpen = $derived(Object.values(submenuPopovers).some((p) => p.isOpen));
 
 	const navigation = useNavigation({
 		enabled: () => {
@@ -99,9 +102,20 @@
 			// transit, so a sibling row you merely cross doesn't slam it shut.
 			if (pointer && popover.safeArea.containsPoint(pointer.x, pointer.y)) continue;
 			popover.close();
-			submenuOpen[index] = false;
 		}
 	};
+
+	// The moment every submenu is closed (isOpen, not transition end), hand the
+	// hover highlight to the row actually under the mouse — the parent nav was
+	// disabled while a submenu was open, so the highlight froze on the trigger.
+	let hadSubmenuOpen = false;
+	$effect(() => {
+		const open = anySubmenuOpen;
+		untrack(() => {
+			if (hadSubmenuOpen && !open) navigation.syncPointerFocus();
+			hadSubmenuOpen = open;
+		});
+	});
 </script>
 
 <div
@@ -134,12 +148,10 @@
 				role="menuitem"
 				{...item}
 				theme={theme?.button}
-				onEnter={(payload) => {
-					item.onEnter?.(payload);
-					closeSubmenus(undefined, pointerFrom(payload));
-				}}
 				{@attach navigation.itemReference}
 				{@attach attachPrevious}
+				{@attach (node) =>
+					on(node, 'pointerenter', (e) => closeSubmenus(undefined, pointerFrom(e)))}
 			/>
 		{:else if item.type === 'option'}
 			<MenuOption
@@ -173,8 +185,6 @@
 				...itemProps
 			} = submenuItem}
 			<PopupMenu
-				onOpen={() => (submenuOpen[index] = true)}
-				onClose={() => (submenuOpen[index] = false)}
 				position={submenuPosition}
 				openOnHover={openOnHover && !isInMobileSheet}
 				{openOnClick}
@@ -198,11 +208,11 @@
 						{...itemProps}
 						suffix={suffix ?? caretRightIcon}
 						theme={theme?.submenu}
-						active={submenuOpen[index]}
+						active={popover.isOpen}
 						attrs={{
 							...attrs,
 							'aria-haspopup': 'menu',
-							'aria-expanded': submenuOpen[index] ? 'true' : 'false',
+							'aria-expanded': popover.isOpen ? 'true' : 'false',
 							'data-menu-keep-open': 'true'
 						}}
 						onClick={(payload) => {
@@ -221,7 +231,6 @@
 							Object.assign(node, {
 								onNext: () => {
 									closeSubmenus(index);
-									submenuOpen[index] = true;
 									popover.open();
 								},
 								onPrevious: goUp

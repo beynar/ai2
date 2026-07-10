@@ -310,6 +310,16 @@
 			"svelte": "./dist/components/HoverCard/index.js",
 			"default": "./dist/components/HoverCard/index.js"
 		},
+		"./image-zoom": {
+			"types": "./dist/components/ImageZoom/index.d.ts",
+			"svelte": "./dist/components/ImageZoom/index.js",
+			"default": "./dist/components/ImageZoom/index.js"
+		},
+		"./image-gallery": {
+			"types": "./dist/components/ImageGallery/index.d.ts",
+			"svelte": "./dist/components/ImageGallery/index.js",
+			"default": "./dist/components/ImageGallery/index.js"
+		},
 		"./empty": {
 			"types": "./dist/components/Empty/index.d.ts",
 			"svelte": "./dist/components/Empty/index.js",

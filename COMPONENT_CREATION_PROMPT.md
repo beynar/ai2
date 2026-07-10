@@ -23,7 +23,7 @@ ComponentName/
 - The main visual component
 - Destructures props with `$props()`
 - Uses `$derived` for computed values
-- Implements snippets with `{#snippet}`
+- Renders all content regions with the `Slot` component
 - Uses `{@attach}` for attachments
 
 #### 2. `componentName.props.ts`
@@ -58,6 +58,7 @@ ComponentName/
 
 - Public exports of the component and all its types/themes
 - Single entry point for users
+- Exports the main component, types, and theme helpers only by default
 
 ---
 
@@ -101,8 +102,9 @@ export type ComponentProps = WithAttachments<
 ### Type Helpers
 
 - **`WithSlot<Props, SlotNames, Payload>`**: Adds props for snippets
-  - Automatically adds `slotName?: Snippet<[Payload]>`
-  - Adds `slotNameProps?: Record<string, any>` for each slot
+  - Automatically adds `slotName?: Slot<Payload>`
+  - A `Slot` accepts either a string or a Svelte snippet
+  - Use one named slot prop for each visual content region (`label`, `value`, `indicator`, etc.)
 
 - **`WithAttachments<Props>`**: Allows accepting Svelte attachments
   - Enables the use of `{...attachments}` in the component
@@ -110,6 +112,93 @@ export type ComponentProps = WithAttachments<
 
 - **`ResponsiveProps<T>`**: For props that can vary by breakpoint
   - Allows `size="normal"` or `size={{ mobile: 'small', desktop: 'large' }}`
+
+---
+
+## 🧩 Public Composition Rule
+
+Svelai components compose through props and named slots rendered with `Slot.svelte`.
+
+Do not copy source-library compound subcomponents into the public API. If the source component exposes parts like `StatLabel`, `StatValue`, `StatIndicator`, or `CardHeader`, translate those parts into:
+
+- ordinary props for simple content and behavior,
+- named `Slot` props for rich content,
+- theme parts for styling those regions.
+
+Only create and export public child components when the existing Svelai component family already uses that pattern, or when the user explicitly asks for a public compound API.
+
+### Correct Slot Implementation
+
+```typescript
+// stat.props.ts
+import type { WithSlot } from '$lib/components/Slot/slot.js';
+import type { WithAttachments } from '$lib/types/props.js';
+import type { Sizes } from '$lib/types/theme.js';
+import type { StatThemeProps } from './stat.theme.js';
+
+export type StatProps = WithAttachments<
+	WithSlot<
+		{
+			class?: string;
+			size?: Sizes;
+			showSeparator?: boolean;
+			theme?: StatThemeProps;
+		},
+		'label' | 'value' | 'indicator' | 'trend' | 'description' | 'children'
+	>
+>;
+```
+
+```svelte
+<!-- Stat.svelte -->
+<script lang="ts">
+	import Slot from '../Slot/Slot.svelte';
+	import type { StatProps } from './stat.props.js';
+	import { useStatTheme } from './stat.theme.js';
+
+	let {
+		class: className,
+		size = 'normal',
+		theme,
+		label,
+		value,
+		indicator,
+		trend,
+		description,
+		children,
+		...attachments
+	}: StatProps = $props();
+
+	const classes = $derived(useStatTheme(theme));
+</script>
+
+<div class={classes.root({ size, className })} {...attachments}>
+	<Slot render={label} class={classes.label({ size })} />
+	<Slot render={value} class={classes.value({ size })} />
+	<Slot render={indicator} class={classes.indicator({ size })} />
+	<Slot render={trend} class={classes.trend({ size })} />
+	<Slot render={description} class={classes.description({ size })} />
+	<Slot render={children} />
+</div>
+```
+
+Consumer usage can stay compact with strings:
+
+```svelte
+<Stat label="Revenue" value="$45,231" trend="+20.1%" />
+```
+
+or use snippets for rich content:
+
+```svelte
+<Stat value="$45,231">
+	{#snippet label()}
+		<span class="uppercase tracking-wide">Revenue</span>
+	{/snippet}
+</Stat>
+```
+
+The implementation still renders both cases through `Slot`.
 
 ---
 
@@ -230,27 +319,33 @@ export interface ComponentState extends ComponentOptions {}
 
 ```svelte
 <script lang="ts">
-  import { ComponentState } from './component.state.svelte.js';
-  
-  let {
-    id: customId,
-    isOpen = $bindable(false),
-    size,
-    onOpen,
-    onClose,
-    ...
-  }: ComponentProps = $props();
-  
-  const id = $props.id();
-  
-  const state = new ComponentState({
-    id: customId || id,
-    get isOpen() { return isOpen; },
-    set isOpen(value) { isOpen = value; },
-    get size() { return size; },
-    onOpen,
-    onClose
-  });
+	import { ComponentState } from './component.state.svelte.js';
+
+	let {
+		id: customId,
+		isOpen = $bindable(false),
+		size,
+		onOpen,
+		onClose,
+		...rest
+	}: ComponentProps = $props();
+
+	const id = $props.id();
+
+	const state = new ComponentState({
+		id: customId || id,
+		get isOpen() {
+			return isOpen;
+		},
+		set isOpen(value) {
+			isOpen = value;
+		},
+		get size() {
+			return size;
+		},
+		onOpen,
+		onClose
+	});
 </script>
 
 <div {@attach state.attachment}>
@@ -633,7 +728,7 @@ constructor(options) {
 
 ## 🎯 Slot Component
 
-The `Slot` component is used to render snippets flexibly.
+The `Slot` component is the required implementation primitive for component content regions. It renders strings and snippets through the same API, so consumers can pass simple text or custom markup without needing public child components.
 
 ### Basic Usage
 
@@ -671,8 +766,35 @@ The `Slot` component is used to render snippets flexibly.
 <Slot
   as="header"              <!-- Render as <header> instead of <div> -->
   attrs={{ role: 'banner' }}  <!-- HTML attributes -->
-  render={header}
+	render={header}
 />
+```
+
+### Source Component Translation
+
+When porting from a source library, collapse visual child components into named slot props:
+
+```tsx
+// Source API - do not copy this public surface
+<Stat>
+	<StatLabel>Revenue</StatLabel>
+	<StatValue>$45,231</StatValue>
+</Stat>
+```
+
+```svelte
+<!-- Svelai API -->
+<Stat label="Revenue" value="$45,231" />
+```
+
+If a region needs custom markup, keep the same prop name and use a snippet:
+
+```svelte
+<Stat value="$45,231">
+	{#snippet label()}
+		<span class="uppercase tracking-wide">Revenue</span>
+	{/snippet}
+</Stat>
 ```
 
 ---
@@ -713,9 +835,9 @@ Brief description of the component and its purpose.
 - **onClick**: (payload?: Payload) => void - Event description
 
 ### Content Props (Slots)
-- **children**: Snippet - Main content
-- **prefix**: Snippet - Content before (typically icons)
-- **suffix**: Snippet - Content after
+- **children**: Slot - Main content; accepts a string or snippet
+- **prefix**: Slot - Content before; accepts a string or snippet
+- **suffix**: Slot - Content after; accepts a string or snippet
 
 ### Advanced Props
 - **payload**: any - Data passed to slots and handlers
@@ -767,11 +889,13 @@ Description of the component's DOM structure.
 - [ ] Define required props
 - [ ] Identify if complex state management is needed
 - [ ] List variants and style options
-- [ ] Define slots/snippets
+- [ ] Define one named `Slot` prop for every visual content region
+- [ ] Translate source compound child components into props/snippets unless a public compound API is explicitly required
 
 ### 2. Types (`*.props.ts`)
 
 - [ ] Create prop types with `WithSlot` and `WithAttachments`
+- [ ] Slot props accept strings and snippets through `Slot`, not snippet-only types unless there is a hard reason
 - [ ] Define variant types
 - [ ] Document complex props with JSDoc
 - [ ] Every props has top of the line comment
@@ -797,7 +921,8 @@ Description of the component's DOM structure.
 - [ ] Destructure props with `$props()`
 - [ ] Create state instance if needed
 - [ ] Use `$derived` for computed values
-- [ ] Implement slots with `Slot` component
+- [ ] Render every content region through `Slot`
+- [ ] Do not render snippet props directly with `{@render ...}` except inside the `Slot` component itself
 - [ ] Apply classes with theme
 - [ ] Use `{@attach}` for attachments
 - [ ] Handle events
@@ -806,7 +931,8 @@ Description of the component's DOM structure.
 
 - [ ] Write component description
 - [ ] Document all props
-- [ ] Provide usage examples
+- [ ] Provide usage examples using the public props/snippets API only
+- [ ] Do not document internal helper components or source-library compound components
 - [ ] Add accessibility notes
 - [ ] Mention special behaviors
 
@@ -815,6 +941,7 @@ Description of the component's DOM structure.
 - [ ] Export default component
 - [ ] Export all types
 - [ ] Export theme and helpers
+- [ ] Do not export visual child components unless the component intentionally has a public compound API
 
 ### 8. Tests (if applicable)
 
@@ -833,14 +960,19 @@ Description of the component's DOM structure.
 // badge.props.ts
 import type { WithAttachments } from '$lib/types/props.js';
 import type { Colors, Sizes } from '$lib/types/theme.js';
+import type { WithSlot } from '$lib/components/Slot/slot.js';
 
-export type BadgeProps = WithAttachments<{
-	class?: string;
-	color?: Colors;
-	size?: Sizes;
-	variant?: 'solid' | 'outline' | 'soft';
-	children?: Snippet;
-}>;
+export type BadgeProps = WithAttachments<
+	WithSlot<
+		{
+			class?: string;
+			color?: Colors;
+			size?: Sizes;
+			variant?: 'solid' | 'outline' | 'soft';
+		},
+		'children'
+	>
+>;
 ```
 
 ```typescript
@@ -881,6 +1013,7 @@ export const setBadgeTheme = setComponentTheme<typeof badgeTheme>('badge');
 ```svelte
 <!-- Badge.svelte -->
 <script lang="ts">
+	import Slot from '../Slot/Slot.svelte';
 	import type { BadgeProps } from './badge.props.js';
 	import { useBadgeTheme } from './badge.theme.js';
 
@@ -897,7 +1030,7 @@ export const setBadgeTheme = setComponentTheme<typeof badgeTheme>('badge');
 </script>
 
 <span class={classes.badge({ color, size, variant, className })} {...attachments}>
-	{@render children?.()}
+	<Slot render={children} />
 </span>
 ```
 

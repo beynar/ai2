@@ -10,15 +10,35 @@ const defaultImageZoomTrigger = cva({
 });
 
 const defaultImageZoomImage = cva({
-	base: 'block max-w-full rounded-inherit object-cover'
+	base: 'block max-w-full rounded-[inherit] object-cover'
 });
 
 const defaultImageZoomIndicator = cva({
-	base: 'bg-foreground/70 text-background pointer-events-none absolute top-2 right-2 inline-flex size-9 items-center justify-center rounded-full opacity-0 shadow-sm transition-opacity group-hover/image-zoom:opacity-100 group-focus-visible/image-zoom:opacity-100 [&_svg]:size-4'
+	base: 'bg-foreground/70 text-background pointer-events-none absolute inline-flex size-9 items-center justify-center rounded-full opacity-0 shadow-sm transition-opacity group-hover/image-zoom:opacity-100 group-focus-visible/image-zoom:opacity-100 [&_svg]:size-4',
+	variants: {
+		position: {
+			'top-left': 'top-2 left-2',
+			'top-right': 'top-2 right-2',
+			'bottom-left': 'bottom-2 left-2',
+			'bottom-right': 'right-2 bottom-2'
+		}
+	},
+	defaultVariants: {
+		position: 'top-right'
+	}
 });
 
 const defaultImageZoomPortal = cva({
-	base: 'fixed inset-0 z-[900] overflow-hidden'
+	base: 'fixed inset-0 z-[900] overflow-hidden',
+	variants: {
+		interactive: {
+			true: 'pointer-events-auto',
+			false: 'pointer-events-none'
+		}
+	},
+	defaultVariants: {
+		interactive: true
+	}
 });
 
 const defaultImageZoomOverlay = cva({
@@ -34,8 +54,8 @@ const defaultImageZoomOverlay = cva({
 	}
 });
 
-const defaultImageZoomModalImage = cva({
-	base: 'fixed max-w-none cursor-zoom-out select-none rounded-xl object-contain shadow-2xl transition-[top,left,width,height,opacity] ease-out will-change-[top,left,width,height] motion-reduce:transition-none',
+const defaultImageZoomModalButton = cva({
+	base: 'fixed m-0 max-w-none cursor-zoom-out select-none overflow-hidden rounded-xl border-0 bg-transparent p-0 shadow-2xl outline-none transition-[top,left,width,height,opacity] ease-out will-change-[top,left,width,height] focus-visible:ring-2 focus-visible:ring-primary/55 motion-reduce:transition-none',
 	variants: {
 		visible: {
 			true: 'opacity-100',
@@ -45,6 +65,10 @@ const defaultImageZoomModalImage = cva({
 	defaultVariants: {
 		visible: false
 	}
+});
+
+const defaultImageZoomModalImage = cva({
+	base: 'h-full w-full rounded-[inherit] object-contain'
 });
 
 const defaultImageZoomCloseButton = cva({
@@ -62,6 +86,7 @@ export const imageZoomTheme = {
 	indicator: defaultImageZoomIndicator,
 	portal: defaultImageZoomPortal,
 	overlay: defaultImageZoomOverlay,
+	modalButton: defaultImageZoomModalButton,
 	modalImage: defaultImageZoomModalImage,
 	closeButton: defaultImageZoomCloseButton,
 	caption: defaultImageZoomCaption

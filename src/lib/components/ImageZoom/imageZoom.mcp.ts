@@ -22,8 +22,8 @@ modal backdrop.
 
 ## Props
 
-- **src**: string - Thumbnail image source.
-- **alt**: string - Required accessible image text.
+- **src**: string - Thumbnail image source. Optional when the children slot renders an image.
+- **alt**: string - Accessible image text. Optional when the children slot image has alt text.
 - **zoomSrc**: string - Full-size image source. Defaults to \`src\`.
 - **open**: boolean (bindable, default: false) - Controls the zoom layer.
 - **disabled**: boolean (default: false) - Prevents opening.
@@ -32,9 +32,12 @@ modal backdrop.
 - **transitionDuration**: number (default: 240) - Zoom animation duration in milliseconds. Respects reduced-motion preferences.
 - **closeOnClickOutside**: boolean (default: true) - Closes from the backdrop.
 - **closeOnEscape**: boolean (default: true) - Closes on Escape.
-- **lockScroll**: boolean (default: true) - Locks page scroll while open.
+- **closeOnScroll**: boolean (default: true) - Closes when the page or a nested scroll container scrolls.
+- **lockScroll**: boolean (default: false) - Locks page scroll while open.
 - **buttonLabel**: string (default: "Zoom image") - Accessible trigger label.
 - **closeLabel**: string (default: "Close image zoom") - Accessible close/backdrop label.
+- **showIndicator**: boolean (default: true) - Toggles the thumbnail zoom indicator.
+- **indicatorPosition**: "top-left" | "top-right" | "bottom-left" | "bottom-right" (default: "top-right") - Corner used for the thumbnail zoom indicator.
 - **class**: string - Additional root classes.
 - **theme**: ImageZoomThemeProps - Per-instance theme overrides.
 - **onOpenChange**: (open, payload) => void - Fired when user interaction requests a new open state.
@@ -43,14 +46,16 @@ modal backdrop.
 
 ## Slots
 
-- **children**: custom thumbnail content. Receives \`ImageZoomPayload\`.
+- **children**: custom thumbnail content. Receives \`ImageZoomPayload\`. When \`src\` or \`alt\` are omitted, ImageZoom reads them from the first child \`img\`.
 - **caption**: caption rendered over the zoom layer. Receives \`ImageZoomPayload\`.
+- **indicator**: custom thumbnail zoom indicator content. Receives \`ImageZoomPayload\`.
 
 ## Accessibility
 
 - The thumbnail trigger is a native \`button type="button"\`.
 - The zoom layer uses \`role="dialog"\` and \`aria-modal="true"\`.
 - Escape closes the dialog by default.
+- Page or nested-container scroll closes the dialog by default.
 - Focus moves to the close button after opening and returns to the trigger after closing.
 - Reduced motion disables the zoom transition.
 
@@ -76,12 +81,32 @@ modal backdrop.
 />
 \`\`\`
 
+### Child image source
+
+\`\`\`svelte
+<ImageZoom>
+	{#snippet children()}
+		<img src="/image.jpg" alt="Architectural detail" />
+	{/snippet}
+</ImageZoom>
+\`\`\`
+
 ### Caption
 
 \`\`\`svelte
 <ImageZoom src="/image.jpg" alt="Mountain ridge">
 	{#snippet caption()}
 		<span>Shot in the late afternoon.</span>
+	{/snippet}
+</ImageZoom>
+\`\`\`
+
+### Custom indicator
+
+\`\`\`svelte
+<ImageZoom src="/image.jpg" alt="Mountain ridge" indicatorPosition="top-left">
+	{#snippet indicator()}
+		<span>2x</span>
 	{/snippet}
 </ImageZoom>
 \`\`\`

@@ -6,8 +6,8 @@ const defaultInput = cva({
 	variants: {
 		size: {
 			small: 'text-xs h-5',
-			normal: 'text-sm h-6',
-			large: 'text-base h-7'
+			normal: 'text-sm h-5',
+			large: 'text-sm h-6'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -24,8 +24,8 @@ const defaultInputContainer = cva({
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs',
-			normal: 'py-2 text-sm',
-			large: 'py-2.5 text-base'
+			normal: 'py-1.5 text-sm',
+			large: 'py-2 text-sm'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -42,8 +42,8 @@ const defaultCountryTrigger = cva({
 	variants: {
 		size: {
 			small: '-my-1.5 gap-1 text-xs',
-			normal: '-my-2 gap-1.5 text-sm',
-			large: '-my-2.5 gap-1.5 text-base'
+			normal: '-my-1.5 gap-1.5 text-sm',
+			large: '-my-2 gap-1.5 text-sm'
 		},
 		open: {
 			true: 'text-primary',
@@ -61,8 +61,8 @@ const defaultCountryFlag = cva({
 	variants: {
 		size: {
 			small: 'text-sm',
-			normal: 'text-base',
-			large: 'text-lg'
+			normal: 'text-sm',
+			large: 'text-base'
 		}
 	},
 	defaultVariants: {
@@ -76,7 +76,7 @@ const defaultCountryDialCode = cva({
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
-			large: 'text-base'
+			large: 'text-sm'
 		}
 	},
 	defaultVariants: {
@@ -114,8 +114,8 @@ const defaultCountrySearchInputContainer = cva({
 	variants: {
 		size: {
 			small: 'py-1',
-			normal: 'py-1.5',
-			large: 'py-2'
+			normal: 'py-1',
+			large: 'py-1.5'
 		}
 	},
 	defaultVariants: {
@@ -129,7 +129,7 @@ const defaultCountrySearchInput = cva({
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
-			large: 'text-base'
+			large: 'text-sm'
 		}
 	},
 	defaultVariants: {
@@ -150,8 +150,8 @@ const defaultCountryOption = cva({
 	variants: {
 		size: {
 			small: 'min-h-7 py-1 text-xs',
-			normal: 'min-h-8 py-1.5 text-sm',
-			large: 'min-h-9 py-2 text-base'
+			normal: 'min-h-7 py-1 text-sm',
+			large: 'min-h-8 py-1.5 text-sm'
 		},
 		highlighted: {
 			true: 'bg-background-muted',
@@ -175,7 +175,7 @@ const defaultCountryName = cva({
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
-			large: 'text-base'
+			large: 'text-sm'
 		}
 	},
 	defaultVariants: {
@@ -189,7 +189,7 @@ const defaultCountryOptionDialCode = cva({
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
-			large: 'text-base'
+			large: 'text-sm'
 		}
 	},
 	defaultVariants: {
@@ -207,7 +207,7 @@ const defaultCountryEmpty = cva({
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
-			large: 'text-base'
+			large: 'text-sm'
 		}
 	},
 	defaultVariants: {

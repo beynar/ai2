@@ -29,7 +29,7 @@
 
 	const sliderTheme = $derived({
 		root: {
-			base: 'w-auto justify-items-center gap-1'
+			base: 'w-auto justify-items-center gap-0'
 		},
 		header: {
 			base: 'sr-only'
@@ -41,16 +41,16 @@
 			base: 'w-auto gap-0'
 		},
 		control: {
-			base: 'w-auto gap-2'
+			base: 'w-auto flex-col items-center gap-2'
 		},
 		track: {
-			base: 'h-32 focus-visible:ring-offset-0'
+			base: 'h-36 focus-visible:ring-offset-0'
 		},
 		valueLabels: {
-			base: 'justify-center'
+			base: 'mt-1 ml-0 justify-center'
 		},
 		valueLabel: {
-			base: 'border-background-muted bg-background text-foreground'
+			base: 'min-w-14 border-background-muted bg-background text-center text-foreground'
 		}
 	});
 </script>
@@ -62,11 +62,15 @@
 	{color}
 	{volumeStep}
 	{disabled}
+	position="top"
 	lowVolumeIcon={speakerHighIcon}
 	class={classes.volumeControl({ layout })}
-	popoverClass={classes.popoverPanel({ className: 'p-2' })}
-	panelClass={classes.volumePanel({ size })}
-	sliderClass={classes.volumeSlider({ size })}
+	popoverClass={classes.popoverPanel({ className: 'p-1.5 pb-2.5' })}
+	panelClass={classes.volumePanel({
+		size,
+		className: 'w-auto justify-center gap-1.5 px-0 pt-0.5 pb-0'
+	})}
+	sliderClass={classes.volumeSlider({ size, className: 'h-auto' })}
 	{sliderTheme}
 	onToggleMuted={() => player.runInteraction(() => player.toggleMuted())}
 	onVolumeChange={(nextVolume) => player.runInteraction(() => player.setVolume(nextVolume))}

@@ -24,9 +24,12 @@
 		transitionDuration = 240,
 		closeOnClickOutside = true,
 		closeOnEscape = true,
-		lockScroll = true,
+		closeOnScroll = true,
+		lockScroll = false,
 		buttonLabel = 'Zoom image',
 		closeLabel = 'Close image zoom',
+		showIndicator = true,
+		indicatorPosition = 'top-right',
 		class: className,
 		onOpenChange,
 		onOpen,
@@ -34,6 +37,7 @@
 		theme,
 		children,
 		caption,
+		indicator,
 		...attachments
 	}: ImageZoomProps = $props();
 
@@ -68,6 +72,9 @@
 		get closeOnEscape() {
 			return closeOnEscape;
 		},
+		get closeOnScroll() {
+			return closeOnScroll;
+		},
 		get lockScroll() {
 			return lockScroll;
 		},
@@ -99,11 +106,11 @@
 	>
 		{#if children}
 			<Slot render={children} payload={state.payload} />
-		{:else}
+		{:else if src}
 			<img
 				bind:this={state.thumbnailImageElement}
 				{src}
-				{alt}
+				alt={alt ?? ''}
 				{width}
 				{height}
 				{srcset}
@@ -114,9 +121,15 @@
 			/>
 		{/if}
 
-		<span aria-hidden="true" class={classes.indicator()}>
-			{@render magnifyingGlassPlusIcon({ size: 18 })}
-		</span>
+		{#if showIndicator}
+			<span aria-hidden="true" class={classes.indicator({ position: indicatorPosition })}>
+				{#if indicator}
+					<Slot render={indicator} payload={state.payload} />
+				{:else}
+					{@render magnifyingGlassPlusIcon({ size: 18 })}
+				{/if}
+			</span>
+		{/if}
 	</button>
 </div>
 
@@ -126,32 +139,38 @@
 		{id}
 		role="dialog"
 		aria-modal="true"
-		aria-label={alt}
+		aria-label={state.dialogLabel}
 		class={classes.portal()}
 	>
 		<button
 			type="button"
 			class={classes.overlay({ visible: state.overlayVisible })}
-			aria-label={closeLabel}
+			aria-hidden="true"
 			tabindex="-1"
 			onclick={() => closeOnClickOutside && state.close()}
 			style:transition-duration={`${state.animationDuration}ms`}
 		></button>
 
-		<img
-			bind:this={state.modalImageElement}
-			src={state.zoomedSrc}
-			{alt}
-			class={classes.modalImage({ visible: state.overlayVisible })}
+		<button
+			type="button"
+			class={classes.modalButton({ visible: state.overlayVisible })}
 			style:left={`${imageRect.left}px`}
 			style:top={`${imageRect.top}px`}
 			style:width={`${imageRect.width}px`}
 			style:height={`${imageRect.height}px`}
 			style:transition-duration={`${state.animationDuration}ms`}
-			draggable="false"
-			onload={state.updateTargetRect}
 			onclick={state.close}
-		/>
+			aria-label={closeLabel}
+		>
+			<img
+				bind:this={state.modalImageElement}
+				src={state.zoomedSrc}
+				alt={state.resolvedAlt}
+				class={classes.modalImage()}
+				draggable="false"
+				onload={state.updateTargetRect}
+			/>
+		</button>
 
 		<button
 			type="button"

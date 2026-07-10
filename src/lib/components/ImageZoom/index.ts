@@ -1,5 +1,11 @@
 export { default as ImageZoom } from './ImageZoom.svelte';
-export type { ImageZoomCaption, ImageZoomPayload, ImageZoomProps } from './imageZoom.props.js';
+export type {
+	ImageZoomCaption,
+	ImageZoomIndicator,
+	ImageZoomIndicatorPosition,
+	ImageZoomPayload,
+	ImageZoomProps
+} from './imageZoom.props.js';
 export {
 	imageZoomTheme,
 	setImageZoomTheme,

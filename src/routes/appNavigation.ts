@@ -44,6 +44,8 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		label: 'Display',
 		links: [
 			{ href: '/components/aspect-ratio', text: 'Aspect ratio' },
+			{ href: '/components/image-gallery', text: 'Image gallery' },
+			{ href: '/components/image-zoom', text: 'Image zoom' },
 			{ href: '/components/audio-player', text: 'Audio player' },
 			{ href: '/components/avatar', text: 'Avatar' },
 			{ href: '/components/badge', text: 'Badge' },

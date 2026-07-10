@@ -29,7 +29,7 @@
 		orientation,
 		open = $bindable(false),
 		onOpenChange,
-		position = 'top',
+		position = 'bottom',
 		offset = 8,
 		popoverSize,
 		mobileSheet = true,
@@ -64,7 +64,7 @@
 	const defaultSliderTheme = $derived({
 		root: {
 			base:
-				resolvedOrientation === 'vertical' ? 'w-auto justify-items-center gap-1' : 'w-full gap-0'
+				resolvedOrientation === 'vertical' ? 'w-auto justify-items-center gap-0' : 'w-full gap-0'
 		},
 		header: {
 			base: 'sr-only'
@@ -76,7 +76,8 @@
 			base: resolvedOrientation === 'vertical' ? 'w-auto gap-0' : 'w-full gap-0'
 		},
 		control: {
-			base: resolvedOrientation === 'vertical' ? 'w-auto gap-2' : 'w-full gap-2'
+			base:
+				resolvedOrientation === 'vertical' ? 'w-auto flex-col items-center gap-2' : 'w-full gap-2'
 		},
 		track: {
 			base:
@@ -85,7 +86,7 @@
 					: 'min-w-0 focus-visible:ring-offset-0'
 		},
 		valueLabels: {
-			base: resolvedOrientation === 'vertical' ? 'justify-center' : 'ml-1'
+			base: resolvedOrientation === 'vertical' ? 'mt-1 ml-0 justify-center' : 'ml-1'
 		},
 		valueLabel: {
 			base: 'min-w-14 text-center'

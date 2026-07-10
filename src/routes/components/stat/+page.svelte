@@ -1,15 +1,7 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
-	import {
-		Stat,
-		StatDescription,
-		StatIndicator,
-		StatLabel,
-		StatSeparator,
-		StatTrend,
-		StatValue
-	} from '$lib/components/Stat/index.js';
+	import { Stat } from '$lib/components/Stat/index.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 	import { chartLineUpIcon } from '$lib/components/Icons/chartLineUp.js';
 	import { databaseIcon } from '$lib/components/Icons/database.js';
@@ -30,8 +22,8 @@
 	subtitle="A compact metric surface with label, value, trend, description, and indicator parts."
 	component="Stat"
 	features={[
-		'Convenience slots or compound subcomponents',
-		'Parent size and theme cascade to stat parts',
+		'Props and named snippets for composition',
+		'Single public component export',
 		'Semantic trend and indicator colors',
 		'Action indicators render as real buttons',
 		'Theme parts for every visual slot'
@@ -86,47 +78,61 @@
 
 	{#snippet examples()}
 		<ComponentCard
-			description="Compound composition mirrors the source stat-card structure."
+			description="Named snippets customize the metric while keeping a single Stat component."
 			class="!min-h-[280px]"
-			code={`<Stat size="large">
-	<StatLabel>Active users</StatLabel>
-	<StatValue>24,892</StatValue>
-	<StatIndicator variant="icon" color="info">
+			code={`<Stat
+	size="large"
+	label="Active users"
+	value="24,892"
+	indicatorVariant="icon"
+	indicatorColor="info"
+	trendDirection="up"
+	description="Trailing 30 days across all workspaces"
+	showSeparator
+>
+	{#snippet indicator()}
 		{@render usersIcon()}
-	</StatIndicator>
-	<StatSeparator />
-	<StatTrend trend="up">
+	{/snippet}
+	{#snippet trend()}
 		{@render trendUpIcon()}
 		12.4% growth
-	</StatTrend>
-	<StatDescription>Trailing 30 days across all workspaces</StatDescription>
+	{/snippet}
 </Stat>`}
 		>
 			<div class="grid w-full max-w-4xl gap-4 md:grid-cols-2">
-				<Stat size="large">
-					<StatLabel>Active users</StatLabel>
-					<StatValue>24,892</StatValue>
-					<StatIndicator variant="icon" color="info">
+				<Stat
+					size="large"
+					label="Active users"
+					value="24,892"
+					indicatorVariant="icon"
+					indicatorColor="info"
+					trendDirection="up"
+					description="Trailing 30 days across all workspaces"
+					showSeparator
+				>
+					{#snippet indicator()}
 						{@render usersIcon()}
-					</StatIndicator>
-					<StatSeparator />
-					<StatTrend trend="up">
+					{/snippet}
+					{#snippet trend()}
 						{@render trendUpIcon()}
 						12.4% growth
-					</StatTrend>
-					<StatDescription>Trailing 30 days across all workspaces</StatDescription>
+					{/snippet}
 				</Stat>
 
-				<Stat size="large">
-					<StatLabel>Paid invoices</StatLabel>
-					<StatValue>1,284</StatValue>
-					<StatIndicator variant="badge" color="success">Live</StatIndicator>
-					<StatSeparator />
-					<StatTrend trend="neutral">
+				<Stat
+					size="large"
+					label="Paid invoices"
+					value="1,284"
+					indicator="Live"
+					indicatorVariant="badge"
+					indicatorColor="success"
+					description="Settlement window remains within target"
+					showSeparator
+				>
+					{#snippet trend()}
 						{@render receiptIcon()}
 						No collection delay
-					</StatTrend>
-					<StatDescription>Settlement window remains within target</StatDescription>
+					{/snippet}
 				</Stat>
 			</div>
 		</ComponentCard>
@@ -194,10 +200,18 @@
 	{/snippet}
 </Stat>
 
-<Stat label="Action" value="7" trend="Open tasks">
-	<StatIndicator variant="action" color="foreground" onClick={() => undefined} aria-label="Open actions">
+<Stat
+	label="Action"
+	value="7"
+	trend="Open tasks"
+	indicatorVariant="action"
+	indicatorColor="foreground"
+	onIndicatorClick={() => undefined}
+	indicatorLabel="Open actions"
+>
+	{#snippet indicator()}
 		{@render dotsThreeIcon()}
-	</StatIndicator>
+	{/snippet}
 </Stat>`}
 		>
 			<div class="grid w-full max-w-4xl gap-4 md:grid-cols-4">
@@ -222,15 +236,18 @@
 						SLA
 					{/snippet}
 				</Stat>
-				<Stat label="Action" value="7" trend="Open tasks">
-					<StatIndicator
-						variant="action"
-						color="foreground"
-						onClick={() => undefined}
-						aria-label="Open actions"
-					>
+				<Stat
+					label="Action"
+					value="7"
+					trend="Open tasks"
+					indicatorVariant="action"
+					indicatorColor="foreground"
+					onIndicatorClick={() => undefined}
+					indicatorLabel="Open actions"
+				>
+					{#snippet indicator()}
 						{@render dotsThreeIcon()}
-					</StatIndicator>
+					{/snippet}
 				</Stat>
 			</div>
 		</ComponentCard>

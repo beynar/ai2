@@ -15,7 +15,7 @@ const defaultMediaVolumeControlRoot = cva({
 });
 
 const defaultMediaVolumeControlPopoverPanel = cva({
-	base: 'p-2'
+	base: 'p-1.5 pb-2.5'
 });
 
 const defaultMediaVolumeControlPanel = cva({
@@ -23,7 +23,7 @@ const defaultMediaVolumeControlPanel = cva({
 	variants: {
 		orientation: {
 			horizontal: 'w-full',
-			vertical: 'w-auto flex-col justify-center gap-2'
+			vertical: 'w-auto flex-col justify-center gap-1.5 px-0 pt-0.5 pb-0'
 		}
 	},
 	defaultVariants: {
@@ -36,7 +36,7 @@ const defaultMediaVolumeControlSlider = cva({
 	variants: {
 		orientation: {
 			horizontal: 'w-full',
-			vertical: 'h-36'
+			vertical: 'h-auto'
 		}
 	},
 	defaultVariants: {

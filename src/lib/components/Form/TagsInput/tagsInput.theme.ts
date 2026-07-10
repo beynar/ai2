@@ -6,8 +6,8 @@ const defaultInput = cva({
 	variants: {
 		size: {
 			small: 'text-xs placeholder:text-xs h-5',
-			normal: 'text-sm placeholder:text-sm h-6',
-			large: 'text-base placeholder:text-base h-7'
+			normal: 'text-sm placeholder:text-sm h-5',
+			large: 'text-sm placeholder:text-sm h-6'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -25,8 +25,8 @@ const defaultInputContainer = cva({
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs gap-1',
-			normal: 'py-2 text-sm gap-1.5',
-			large: 'py-2.5 text-base gap-2'
+			normal: 'py-1.5 text-sm gap-1.5',
+			large: 'py-2 text-sm gap-1.5'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -58,8 +58,8 @@ const defaultLoading = cva({
 	variants: {
 		size: {
 			small: 'text-xs p-1.5',
-			normal: 'text-sm p-2',
-			large: 'text-base p-2.5'
+			normal: 'text-sm p-1.5',
+			large: 'text-sm p-2'
 		}
 	}
 });
@@ -69,8 +69,8 @@ const defaultError = cva({
 	variants: {
 		size: {
 			small: 'text-xs p-1.5',
-			normal: 'text-sm p-2',
-			large: 'text-base p-2.5'
+			normal: 'text-sm p-1.5',
+			large: 'text-sm p-2'
 		}
 	}
 });
@@ -80,8 +80,8 @@ const defaultNoOptions = cva({
 	variants: {
 		size: {
 			small: 'text-xs p-1.5',
-			normal: 'text-sm p-2',
-			large: 'text-base p-2.5'
+			normal: 'text-sm p-1.5',
+			large: 'text-sm p-2'
 		}
 	}
 });

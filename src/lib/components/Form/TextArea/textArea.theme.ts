@@ -7,7 +7,7 @@ const defaultTextArea = cva({
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
-			large: 'text-base'
+			large: 'text-sm'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -24,8 +24,8 @@ const defaultTextAreaContainer = cva({
 	variants: {
 		size: {
 			small: 'min-h-20 py-1.5 text-xs',
-			normal: 'min-h-24 py-2 text-sm',
-			large: 'min-h-32 py-2.5 text-base'
+			normal: 'min-h-20 py-1.5 text-sm',
+			large: 'min-h-24 py-2 text-sm'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',

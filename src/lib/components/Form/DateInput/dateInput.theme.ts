@@ -6,8 +6,8 @@ const defaultInput = cva({
 	variants: {
 		size: {
 			small: 'text-xs h-5',
-			normal: 'text-sm h-6',
-			large: 'text-base h-7'
+			normal: 'text-sm h-5',
+			large: 'text-sm h-6'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -24,8 +24,8 @@ const defaultInputContainer = cva({
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs',
-			normal: 'py-2 text-sm',
-			large: 'py-2.5 text-base'
+			normal: 'py-1.5 text-sm',
+			large: 'py-2 text-sm'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',

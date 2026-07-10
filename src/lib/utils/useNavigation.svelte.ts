@@ -511,6 +511,20 @@ export const useNavigation = (opts: NavigationOptions) => {
 		clearFocus: () => {
 			clearFocus();
 		},
+		/**
+		 * Re-sync the pointer highlight with the browser's real :hover state. While a
+		 * submenu is open the parent nav is disabled, so the highlight freezes on the
+		 * trigger row; when the submenu closes, the row actually under the mouse (if
+		 * any) should be highlighted instead of the stale trigger.
+		 */
+		syncPointerFocus: () => {
+			const hovered = items.findIndex((item) => item.matches(':hover') && !isItemDisabled(item));
+			if (hovered !== -1) {
+				handleItemHover(items[hovered]);
+			} else if (focusSource === 'pointer') {
+				clearFocus();
+			}
+		},
 		get lastFocusedIndex() {
 			return lastFocusedIndex;
 		},

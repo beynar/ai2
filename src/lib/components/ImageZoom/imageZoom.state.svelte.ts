@@ -21,18 +21,25 @@ type ImageZoomStateOptions = MakeRequired<
 		| 'src'
 		| 'alt'
 		| 'zoomSrc'
-		| 'open'
 		| 'disabled'
 		| 'zoomMargin'
 		| 'transitionDuration'
 		| 'closeOnEscape'
+		| 'closeOnScroll'
 		| 'lockScroll'
 		| 'onOpenChange'
 		| 'onOpen'
 		| 'onClose'
 	>,
-	'open' | 'disabled' | 'zoomMargin' | 'transitionDuration' | 'closeOnEscape' | 'lockScroll'
->;
+	| 'disabled'
+	| 'zoomMargin'
+	| 'transitionDuration'
+	| 'closeOnEscape'
+	| 'closeOnScroll'
+	| 'lockScroll'
+> & {
+	isOpen: boolean;
+};
 
 export interface ImageZoomState extends ImageZoomStateOptions {}
 
@@ -45,15 +52,42 @@ export class ImageZoomState {
 	overlayVisible = $state(false);
 	imageRect: ImageZoomRect | null = $state(null);
 	prefersReducedMotion = $state(false);
+	private inferredSrc = $state('');
+	private inferredAlt = $state('');
 	private animationTimer: ReturnType<typeof setTimeout> | null = null;
 	private previousFocus: HTMLElement | null = null;
+	private lastTouchPoint: { x: number; y: number } | null = null;
 
-	zoomedSrc = $derived(this.zoomSrc || this.src);
+	resolvedSrc = $derived(this.src || this.inferredSrc);
+	resolvedAlt = $derived(this.alt ?? this.inferredAlt);
+	zoomedSrc = $derived(this.zoomSrc || this.resolvedSrc);
 	animationDuration = $derived(this.prefersReducedMotion ? 0 : this.transitionDuration);
+	dialogLabel = $derived(this.resolvedAlt || 'Image preview');
+
+	setOpen = (nextOpen: boolean) => {
+		if (this.disabled && nextOpen) return;
+		if (this.isOpen === nextOpen) return;
+		this.isOpen = nextOpen;
+		this.onOpenChange?.(nextOpen, this.payload);
+	};
+
+	open = () => {
+		if (!this.resolveImageMetadata()) return;
+		this.setOpen(true);
+	};
+
+	close = () => {
+		this.setOpen(false);
+	};
+
+	toggle = () => {
+		this.setOpen(!this.isOpen);
+	};
+
 	payload = $derived<ImageZoomPayload>({
-		src: this.src,
+		src: this.resolvedSrc,
 		zoomSrc: this.zoomedSrc,
-		alt: this.alt,
+		alt: this.resolvedAlt,
 		isOpen: this.isOpen,
 		open: this.open,
 		close: this.close,
@@ -93,35 +127,26 @@ export class ImageZoomState {
 			updateMotionPreference();
 			media.addEventListener('change', updateMotionPreference);
 			const offResize = on(window, 'resize', this.updateTargetRect);
+			document.addEventListener('scroll', this.handleScroll, {
+				capture: true,
+				passive: true
+			});
 
 			return () => {
 				media.removeEventListener('change', updateMotionPreference);
 				offResize();
+				document.removeEventListener('scroll', this.handleScroll, { capture: true });
 			};
 		});
 	}
 
-	open = () => {
-		this.setOpen(true);
-	};
-
-	close = () => {
-		this.setOpen(false);
-	};
-
-	toggle = () => {
-		this.setOpen(!this.isOpen);
-	};
-
-	setOpen = (nextOpen: boolean) => {
-		if (this.disabled && nextOpen) return;
-		if (this.isOpen === nextOpen) return;
-		this.isOpen = nextOpen;
-		this.onOpenChange?.(nextOpen, this.payload);
-	};
-
 	show = async () => {
 		if (!BROWSER || this.disabled) return;
+		if (!this.resolveImageMetadata()) {
+			this.isOpen = false;
+			return;
+		}
+
 		this.clearAnimationTimer();
 		this.previousFocus =
 			document.activeElement instanceof HTMLElement ? document.activeElement : this.triggerElement;
@@ -161,11 +186,56 @@ export class ImageZoomState {
 
 	updateTargetRect = () => {
 		if (!this.mounted || !this.isOpen) return;
+		this.resolveImageMetadata();
 		this.imageRect = this.getTargetRect(this.getSourceRect());
 	};
 
+	handleWheel = (event: WheelEvent) => {
+		if (event.deltaX === 0 && event.deltaY === 0 && event.deltaZ === 0) return;
+		if (!this.closeFromScroll()) return;
+		window.scrollBy(event.deltaX, event.deltaY);
+	};
+
+	handleTouchStart = (event: TouchEvent) => {
+		const touch = event.touches[0];
+		if (!touch) return;
+		this.lastTouchPoint = { x: touch.clientX, y: touch.clientY };
+	};
+
+	handleTouchMove = (event: TouchEvent) => {
+		const touch = event.touches[0];
+		if (!touch || !this.lastTouchPoint) return;
+		const deltaX = this.lastTouchPoint.x - touch.clientX;
+		const deltaY = this.lastTouchPoint.y - touch.clientY;
+		this.lastTouchPoint = { x: touch.clientX, y: touch.clientY };
+		if (deltaX === 0 && deltaY === 0) return;
+		if (!this.closeFromScroll()) return;
+		window.scrollBy(deltaX, deltaY);
+	};
+
+	private handleScroll = () => {
+		this.closeFromScroll();
+	};
+
+	private closeFromScroll() {
+		if (!this.mounted || !this.isOpen || !this.closeOnScroll) return false;
+		this.close();
+		return true;
+	}
+
+	private resolveImageMetadata() {
+		const sourceImage = this.getSourceImage();
+		this.inferredSrc = sourceImage?.currentSrc || sourceImage?.src || '';
+		this.inferredAlt = sourceImage?.alt ?? '';
+		return Boolean(this.zoomedSrc);
+	}
+
+	private getSourceImage() {
+		return this.thumbnailImageElement ?? this.triggerElement?.querySelector('img') ?? null;
+	}
+
 	private getSourceRect(): ImageZoomRect {
-		const source = this.thumbnailImageElement ?? this.triggerElement;
+		const source = this.getSourceImage() ?? this.triggerElement;
 		if (!source) {
 			return this.getFallbackRect();
 		}
@@ -208,7 +278,7 @@ export class ImageZoomState {
 
 	private getNaturalSize(sourceRect: ImageZoomRect) {
 		const modalImage = this.modalImageElement;
-		const thumbnailImage = this.thumbnailImageElement;
+		const thumbnailImage = this.getSourceImage();
 		const width = modalImage?.naturalWidth || thumbnailImage?.naturalWidth || sourceRect.width || 1;
 		const height =
 			modalImage?.naturalHeight || thumbnailImage?.naturalHeight || sourceRect.height || 1;
