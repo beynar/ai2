@@ -22,11 +22,13 @@ export type SingleOptionInputType = 'select' | 'radio' | 'combobox';
 export type MultipleChoiceInputType = 'checkboxes';
 export type FileInputType = 'file' | 'files';
 export type CalendarInputType = 'calendar' | 'calendar-range';
+export type ColorInputType = 'color';
 
 export type InputType =
 	| FileInputType
 	| SliderRangeInputType
 	| DateInputType
+	| ColorInputType
 	| NumberInputType
 	| RatingInputType
 	| TimeInputType
@@ -77,7 +79,9 @@ export type FieldValue<T extends InputType> = T extends 'file'
 																	? Date
 																	: T extends 'calendar-range'
 																		? [Date | null, Date | null]
-																		: never;
+																		: T extends ColorInputType
+																			? string
+																			: never;
 
 export type InputProps<T extends InputType> = WithSlot<
 	{

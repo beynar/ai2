@@ -54,8 +54,9 @@ const defaultButton = cva({
 		{
 			variant: 'ghost',
 			checked: false,
-			class: 'hover:bg-color-muted'
+			class: 'hover:bg-color-light'
 		},
+		// BACKGROUND SOFT
 		{
 			variant: 'soft',
 			color: 'background',
@@ -68,18 +69,20 @@ const defaultButton = cva({
 			checked: true,
 			class: '!bg-background-muted text-foreground'
 		},
+		// BACKGROUND GHOST
 		{
 			variant: 'ghost',
 			color: 'background',
 			checked: false,
-			class: 'hover:!bg-background-lighter/20 active:!bg-background-lighter/30 text-foreground'
+			class: 'hover:!bg-background-light active:!bg-background-lighter text-foreground'
 		},
 		{
 			variant: 'ghost',
 			color: 'background',
 			checked: true,
-			class: '!bg-background-lighter/30 text-foreground'
+			class: '!bg-background-muted text-foreground'
 		},
+		// BACKGROUND OUTLINE
 		{
 			variant: 'outline',
 			color: 'background',

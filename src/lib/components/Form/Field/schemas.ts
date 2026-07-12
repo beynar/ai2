@@ -67,6 +67,9 @@ export const schemas: {
 		datetime: v.date(),
 		date: v.date(),
 
+		// Color input type
+		color: nonEmptyString,
+
 		// Time input type
 		time: v.number(),
 
@@ -119,6 +122,9 @@ export const schemas: {
 		// Date input types
 		datetime: optional(v.date()),
 		date: optional(v.date()),
+
+		// Color input type
+		color: optional(emptyStringNull(v.string())),
 
 		// Time input type
 		time: optional(v.number()),

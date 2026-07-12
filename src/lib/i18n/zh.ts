@@ -1,6 +1,7 @@
 import type { Messages } from './en.js';
 
 export const zh: Messages = {
+	locale: 'zh-CN',
 	previous: '上一个',
 	next: '下一个',
 	page: '页',
@@ -81,6 +82,10 @@ export const zh: Messages = {
 	and: '和',
 	of: '共',
 	rating: '评分',
+	trueLabel: '是',
+	falseLabel: '否',
+	showLess: '收起',
+	showMoreItems: (count: string | number) => `显示另外 ${count} 项`,
 	carousel: '轮播',
 	breadcrumbs: '面包屑导航',
 	pagination: '分页',
@@ -142,5 +147,13 @@ export const zh: Messages = {
 	goToPage: (page: string | number) => `前往第 ${page} 页`,
 	expandPanel: (index: string | number) => `展开面板 ${index}`,
 	resizePanels: (indexA: string | number, indexB: string | number) =>
-		`调整面板 ${indexA} 和 ${indexB} 的大小`
+		`调整面板 ${indexA} 和 ${indexB} 的大小`,
+	color: '颜色',
+	hue: '色相',
+	saturation: '饱和度',
+	brightness: '亮度',
+	alpha: '透明度',
+	format: '格式',
+	percentage: '百分比',
+	pickColorFromScreen: '从屏幕拾取颜色'
 };

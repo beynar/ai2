@@ -24,6 +24,25 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		]
 	},
 	{
+		label: 'Layout',
+		links: [
+			{ href: '/components/aspect-ratio', text: 'Aspect ratio' },
+			{ href: '/components/card', text: 'Card' },
+			{ href: '/components/heading', text: 'Heading' },
+			{ href: '/components/resizable', text: 'Resizable' },
+			{ href: '/components/scroll-area', text: 'Scroll area' },
+			{ href: '/components/separator', text: 'Separator' }
+		]
+	},
+	{
+		label: 'Shells',
+		links: [
+			{ href: '/components/app-shell', text: 'App shell' },
+			{ href: '/components/page-shell', text: 'Page shell' },
+			{ href: '/components/sidebar', text: 'Sidebar' }
+		]
+	},
+	{
 		label: 'Actions',
 		links: [
 			{ href: '/components/button', text: 'Button' },
@@ -33,66 +52,19 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		]
 	},
 	{
-		label: 'Disclosure',
-		links: [
-			{ href: '/components/accordion', text: 'Accordion' },
-			{ href: '/components/alert', text: 'Alert' },
-			{ href: '/components/collapsible', text: 'Collapsible' }
-		]
-	},
-	{
-		label: 'Display',
-		links: [
-			{ href: '/components/aspect-ratio', text: 'Aspect ratio' },
-			{ href: '/components/image-gallery', text: 'Image gallery' },
-			{ href: '/components/image-zoom', text: 'Image zoom' },
-			{ href: '/components/audio-player', text: 'Audio player' },
-			{ href: '/components/avatar', text: 'Avatar' },
-			{ href: '/components/badge', text: 'Badge' },
-			{ href: '/components/breadcrumbs', text: 'Breadcrumbs' },
-			{ href: '/components/card', text: 'Card' },
-			{ href: '/components/carousel', text: 'Carousel' },
-			{ href: '/components/chip', text: 'Chip' },
-			{ href: '/components/code', text: 'Code' },
-			{ href: '/components/diff', text: 'Diff' },
-			{ href: '/components/dialog', text: 'Dialog' },
-			{ href: '/components/empty', text: 'Empty' },
-			{ href: '/components/globe', text: 'Globe' },
-			{ href: '/components/kbd', text: 'Kbd' },
-			{ href: '/components/marquee', text: 'Marquee' },
-			{ href: '/components/mermaid', text: 'Mermaid' },
-			{ href: '/components/map', text: 'Map' },
-			{ href: '/components/markdown', text: 'Markdown' },
-			{ href: '/components/media-volume', text: 'Media volume' },
-			{ href: '/components/meter', text: 'Meter' },
-			{ href: '/components/network-indicator', text: 'Network indicator' },
-			{ href: '/components/pagination', text: 'Pagination' },
-			{ href: '/components/pdf-viewer', text: 'PDF viewer' },
-			{ href: '/components/progress-circle', text: 'Progress circle' },
-			{ href: '/components/qr-code', text: 'QR code' },
-			{ href: '/components/separator', text: 'Separator' },
-			{ href: '/components/skeleton', text: 'Skeleton' },
-			{ href: '/components/spinner', text: 'Spinner' },
-			{ href: '/components/stepper', text: 'Stepper' },
-			{ href: '/components/stat', text: 'Stat' },
-			{ href: '/components/tabbar', text: 'Tabbar' },
-			{ href: '/components/table', text: 'Table' },
-			{ href: '/components/tabs', text: 'Tabs' },
-			{ href: '/components/tree', text: 'Tree' },
-			{ href: '/components/video-player', text: 'Video player' }
-		]
-	},
-	{
-		label: 'Form',
+		label: 'Forms',
 		links: [
 			{ href: '/components/calendar', text: 'Calendar' },
 			{ href: '/components/checkbox', text: 'Checkbox' },
 			{ href: '/components/checkboxes', text: 'Checkboxes' },
+			{ href: '/components/color-input', text: 'Color input' },
+			{ href: '/components/color-picker', text: 'Color picker' },
 			{ href: '/components/combobox', text: 'Combobox' },
 			{ href: '/components/date-input', text: 'Date input' },
 			{ href: '/components/file', text: 'File' },
 			{ href: '/components/form', text: 'Form' },
 			{ href: '/components/key-value-input', text: 'Key value input' },
+			{ href: '/components/mini-calendar', text: 'Mini calendar' },
 			{ href: '/components/multi-step-form', text: 'Multi-step form' },
 			{ href: '/components/number-input', text: 'Number input' },
 			{ href: '/components/password', text: 'Password' },
@@ -112,35 +84,101 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		]
 	},
 	{
-		label: 'Shells',
+		label: 'Data display',
 		links: [
-			{ href: '/components/app-shell', text: 'App shell' },
-			{ href: '/components/sidebar', text: 'Sidebar' },
-			{ href: '/components/page-shell', text: 'Page shell' }
+			{ href: '/components/avatar', text: 'Avatar' },
+			{ href: '/components/badge', text: 'Badge' },
+			{ href: '/components/chip', text: 'Chip' },
+			{ href: '/components/kbd', text: 'Kbd' },
+			{ href: '/components/metadata-list', text: 'Metadata list' },
+			{ href: '/components/rating', text: 'Rating' },
+			{ href: '/components/stat', text: 'Stat' },
+			{ href: '/components/table', text: 'Table' },
+			{ href: '/components/tree', text: 'Tree' }
 		]
 	},
 	{
-		label: 'Menus & Navigation',
+		label: 'Feedback',
 		links: [
+			{ href: '/components/alert', text: 'Alert' },
+			{ href: '/components/confirmation', text: 'Confirmation' },
+			{ href: '/components/empty', text: 'Empty' },
+			{ href: '/components/meter', text: 'Meter' },
+			{ href: '/components/network-indicator', text: 'Network indicator' },
+			{ href: '/components/progress-circle', text: 'Progress circle' },
+			{ href: '/components/skeleton', text: 'Skeleton' },
+			{ href: '/components/spinner', text: 'Spinner' },
+			{ href: '/components/toast', text: 'Toast' }
+		]
+	},
+	{
+		label: 'Disclosure',
+		links: [
+			{ href: '/components/accordion', text: 'Accordion' },
+			{ href: '/components/collapsible', text: 'Collapsible' }
+		]
+	},
+	{
+		label: 'Navigation',
+		links: [
+			{ href: '/components/breadcrumbs', text: 'Breadcrumbs' },
 			{ href: '/components/command', text: 'Command' },
-			{ href: '/components/menu', text: 'Menu' },
+			{ href: '/components/pagination', text: 'Pagination' },
+			{ href: '/components/stepper', text: 'Stepper' },
+			{ href: '/components/tabbar', text: 'Tabbar' },
+			{ href: '/components/tabs', text: 'Tabs' }
+		]
+	},
+	{
+		label: 'Menus',
+		links: [
 			{ href: '/components/context-menu', text: 'Context menu' },
+			{ href: '/components/menu', text: 'Menu' },
+			{ href: '/components/menu-option', text: 'Menu option' },
+			{ href: '/components/popup-menu', text: 'Popup menu' }
+		]
+	},
+	{
+		label: 'Overlays',
+		links: [
+			{ href: '/components/dialog', text: 'Dialog' },
 			{ href: '/components/hover-card', text: 'Hover card' },
 			{ href: '/components/link-preview', text: 'Link preview' },
-			{ href: '/components/menu-option', text: 'Menu option' },
 			{ href: '/components/popover', text: 'Popover' },
-			{ href: '/components/popup-menu', text: 'Popup menu' },
-			{ href: '/components/resizable', text: 'Resizable' },
-			{ href: '/components/toast', text: 'Toast' },
 			{ href: '/components/tooltip', text: 'Tooltip' }
+		]
+	},
+	{
+		label: 'Media',
+		links: [
+			{ href: '/components/audio-player', text: 'Audio player' },
+			{ href: '/components/carousel', text: 'Carousel' },
+			{ href: '/components/image-gallery', text: 'Image gallery' },
+			{ href: '/components/image-zoom', text: 'Image zoom' },
+			{ href: '/components/media-volume', text: 'Media volume' },
+			{ href: '/components/pdf-viewer', text: 'PDF viewer' },
+			{ href: '/components/video-player', text: 'Video player' }
+		]
+	},
+	{
+		label: 'Content & graphics',
+		links: [
+			{ href: '/components/code', text: 'Code' },
+			{ href: '/components/diff', text: 'Diff' },
+			{ href: '/components/globe', text: 'Globe' },
+			{ href: '/components/map', text: 'Map' },
+			{ href: '/components/markdown', text: 'Markdown' },
+			{ href: '/components/marquee', text: 'Marquee' },
+			{ href: '/components/mermaid', text: 'Mermaid' },
+			{ href: '/components/qr-code', text: 'QR code' }
 		]
 	},
 	{
 		label: 'Utilities',
 		links: [
 			{ href: '/utilities/raised', text: 'Raised' },
-			{ href: '/utilities/shimmer', text: 'Shimmer' },
-			{ href: '/utilities/scroll-fade', text: 'Scroll fade' }
+			{ href: '/utilities/scroll-fade', text: 'Scroll fade' },
+			{ href: '/utilities/shimmer', text: 'Shimmer' }
 		]
 	}
 ];

@@ -17,6 +17,8 @@ Global theme setter: `import { setComponentNameTheme } from 'svelai/kebab-case-n
 - [PhoneInput](#phoneinput)
 - [DateInput](#dateinput)
 - [TimeInput](#timeinput)
+- [ColorInput](#colorinput)
+- [ColorPicker](#colorpicker)
 - [Select](#select)
 - [Combobox](#combobox)
 - [TagsInput](#tagsinput)
@@ -26,6 +28,7 @@ Global theme setter: `import { setComponentNameTheme } from 'svelai/kebab-case-n
 - [CheckboxesInput](#checkboxesinput)
 - [FileInput](#fileinput)
 - [Calendar](#calendar)
+- [MiniCalendar](#minicalendar)
 - [Form](#form)
 - [MultiStepForm](#multistepform)
 
@@ -75,7 +78,7 @@ Keyboard: ArrowUp/Down (step), PageUp/Down (step*10). Supports `prefix`/`suffix`
 
 ```svelte
 <NumberInput label="Price" bind:value={price} min={0} step={0.01}>
-  {#snippet prefix()}<span>$</span>{/snippet}
+	{#snippet prefix()}<span>$</span>{/snippet}
 </NumberInput>
 ```
 
@@ -85,11 +88,11 @@ Keyboard: ArrowUp/Down (step), PageUp/Down (step*10). Supports `prefix`/`suffix`
 
 `import { RatingInput } from 'svelai/rating-input'`
 
-**Unique props:** `value: number | null` (bindable, default `null`), `max: number` (default 5, the star count and maximum value), `allowHalf: boolean` (default false, snaps to 0.5 increments), `readonly: boolean` (default false), `clearable: boolean` (default true, click the current value to clear), `dir` (`'ltr' | 'rtl'`, inherits ambient direction when omitted), `color` (default `'warning'`, the gold star fill)
+**Unique props:** `value: number | null` (bindable, default `null`), `max: number` (default 5, the star count and maximum value), `allowHalf: boolean` (default false, snaps to 0.5 increments), `readonly: boolean` (default false), `clearable: boolean` (default true, click the current value to clear), `dir` (`'ltr' | 'rtl'`, inherits ambient direction when omitted), `color` (default `'warning'`, the gold star fill), `star` (snippet, custom icon — see Rating in display.md)
 
-Star rating with layered outline/fill icons. `role="slider"`: ArrowRight/Up increase, ArrowLeft/Down decrease by the step (0.5 if `allowHalf`, else 1), Home clears, End sets `max`. In RTL the stars render and fill right-to-left, but the numeric value never flips (Right always increases).
+Builds on the `Rating` display component (display.md) — same star rendering and theme. `role="slider"`: ArrowRight/Up increase, ArrowLeft/Down decrease by the step (0.5 if `allowHalf`, else 1), Home clears, End sets `max`. In RTL the stars render and fill right-to-left, but the numeric value never flips (Right always increases).
 
-**Theme parts:** `container`, `star`, `starBase`, `starFill` (variants: `size`, `color`, `disabled`)
+**Theme parts:** shared with Rating — `container`, `star`, `starBase`, `starFill` (variants: `size`, `color`, `disabled`, `interactive`); `setRatingTheme` themes both.
 
 ```svelte
 <RatingInput label="Rating" bind:value={rating} allowHalf max={5} />
@@ -109,7 +112,7 @@ Extends TextInput. Built-in visibility toggle (eye icon). Only `prefix` slot (su
 
 ```svelte
 <PasswordInput label="Password" bind:value={password} required>
-  {#snippet prefix()}<Icon name="lock" />{/snippet}
+	{#snippet prefix()}<Icon name="lock" />{/snippet}
 </PasswordInput>
 ```
 
@@ -161,6 +164,48 @@ Opens calendar picker. Formats: `MM/DD/YYYY`, `DD/MM/YYYY`, `YYYY-MM-DD`.
 
 ---
 
+## ColorInput
+
+`import { ColorInput } from 'svelai/color-input'`
+
+**Unique props:** `value: string | null` (bindable, canonical hex `#rrggbb` / `#rrggbbaa`; accepts any parseable CSS color as typed input and normalizes to hex), `format` (`'hex' | 'rgb' | 'hsl'`, default `'hex'`, bindable -- the input's text representation; the value stays hex), `placeholder`, `i18n: Partial<Messages>` (also forwarded to the picker)
+
+Shows a color swatch and text input inside the shared Field frame; the swatch (or focusing the input) opens a full `ColorPicker` (see below) in a Popover. Typing any parseable CSS color commits it; clearing the input sets `null`; the popover stays open while picking (continuous) and closes on click-outside or Escape. The swatch renders the color over a checkerboard so alpha < 1 reads through, and is a neutral square when the value is `null`. Form type: `'color'` (value is a hex string). Global setter: `setColorInputTheme`.
+
+**Theme parts:** `input`, `inputContainer` (variants: `size`, `disabled`), `popover`, `swatch` (variants: `size`, `empty`). Field theme parts (`label`, `error`, ...) are accepted on the same `theme` prop.
+
+```svelte
+<ColorInput label="Brand color" bind:value={color} />
+<ColorInput label="Overlay" value="#00000080" format="rgb" />
+```
+
+---
+
+## ColorPicker
+
+`import { ColorPicker } from 'svelai/color-picker'`
+
+Standalone color picker panel (not Field-based) -- a saturation/brightness square, hue and alpha sliders, an eyedropper, and a format-aware text input. Used inside `ColorInput` or standalone.
+
+**Unique props:**
+
+- `value: string` (bindable, default `'#000000'`) -- canonical hex output (`#rrggbb`, or `#rrggbbaa` when alpha < 1); accepts any parseable CSS color as input
+- `format` (`'hex' | 'rgb' | 'hsl'`, default `'hex'`, bindable) -- the input's text representation only; the bound value stays hex
+- `size` (`'small' | 'normal' | 'large'`), `disabled`
+- `onChange: (value: string) => void` -- fires on every committed change, including continuously while dragging (receives hex)
+- `i18n: Partial<Messages>`
+
+The square and both sliders support click-to-jump and pointer drag; the area thumb and slider thumbs are focusable `role="slider"` controls (arrows adjust, Shift for a larger step, Home/End to min/max). The eyedropper uses `window.EyeDropper` and hides where unsupported (SSR-safe). Hue and saturation are preserved internally, so dragging a color to black/white never loses the chosen hue. Global setter: `setColorPickerTheme`.
+
+**Theme parts:** `root`, `area`, `areaSaturation`, `areaValue`, `areaThumb`, `controls`, `eyedropperButton`, `sliders`, `hueTrack`, `alphaTrack`, `alphaGradient`, `sliderThumb`, `inputs`, `select`, `input`, `alphaField`, `alphaInput`, `alphaSuffix` (each with a `size` variant).
+
+```svelte
+<ColorPicker bind:value={color} />
+<ColorPicker value="#22c55e80" format="rgb" size="large" />
+```
+
+---
+
 ## Select
 
 `import { Select } from 'svelai/select'`
@@ -172,10 +217,15 @@ Native HTML select. Supports `prefix`/`suffix` snippets.
 **Theme parts:** `input`, `inputContainer` (variants: `size`, `disabled`)
 
 ```svelte
-<Select label="Country" bind:value={country} placeholder="Choose..." options={[
-  { value: 'us', label: 'United States' },
-  { value: 'uk', label: 'United Kingdom' }
-]} />
+<Select
+	label="Country"
+	bind:value={country}
+	placeholder="Choose..."
+	options={[
+		{ value: 'us', label: 'United States' },
+		{ value: 'uk', label: 'United Kingdom' }
+	]}
+/>
 ```
 
 ---
@@ -187,6 +237,7 @@ Native HTML select. Supports `prefix`/`suffix` snippets.
 Searchable dropdown with async support.
 
 **Unique props:**
+
 - `options`: `ComboboxOption[]` or `(searchValue?) => MaybePromise<ComboboxOption[]>` (required)
 - `value: string | null` (bindable), `searchValue: string` (bindable), `loading: boolean` (bindable)
 - `showAllOnFocus`, `getValueOption: (value) => MaybePromise<ComboboxOption>` (async pre-selected)
@@ -200,7 +251,7 @@ Option format: `{ value: string, label: string, description?: string }`. Debounc
 **Theme parts:** `input`, `inputContainer`, `loading`, `error`, `noOptions`, `option` (variant: `highlighted`), `optionLabel`, `optionDescription`
 
 ```svelte
-<Combobox options={async (q) => fetch(`/api?q=${q}`).then(r => r.json())} bind:value={val} />
+<Combobox options={async (q) => fetch(`/api?q=${q}`).then((r) => r.json())} bind:value={val} />
 ```
 
 ---
@@ -212,6 +263,7 @@ Option format: `{ value: string, label: string, description?: string }`. Debounc
 Multi-tag input: free text, or restricted to a searchable option list (like Combobox but multi-value). Tags render as animated `Chip`s.
 
 **Unique props:**
+
 - `value: string[] | null` (bindable, default `null`), `searchValue: string` (bindable), `loading: boolean` (bindable)
 - `items`: `ComboboxOption[]` or `(searchValue?) => MaybePromise<ComboboxOption[]>` (optional) — when provided, behaves like Combobox (debounced 100ms, dropdown, async/static, loading/error/empty states)
 - `allowCustom: boolean` (default `false`) — with `items`, also allow Enter to add free text not in the list
@@ -239,6 +291,7 @@ Option format: `{ value: string, label: string, description?: string }` (reused 
 An editable list of key/value string pairs. Each row is `[key input] [value input] [remove ×]`, with a full-width `Add` button below that appends an empty row. Rows animate on add/remove. No dropdown, async, or option list — it is a plain pair editor.
 
 **Unique props:**
+
 - `value: KeyValuePair[] | null` (bindable, default `null`) — `KeyValuePair` is `{ key: string; value: string }`. The value is an output mirror of the editor rows.
 - `keyPlaceholder: string` — key input placeholder (defaults to the localized "Key" label)
 - `valuePlaceholder: string` — value input placeholder (defaults to the localized "Value" label)
@@ -280,16 +333,22 @@ Label rendered beside the toggle. Global setter: `setSwitchInputTheme`.
 `import { RadioInput } from 'svelai/radio-input'`
 
 **Unique props:**
+
 - `value: string` (bindable), `options: Array<{ value, label, description?, disabled? }>` (required)
 - `orientation: 'vertical' | 'horizontal'` (default `'vertical'`), `mode: 'normal' | 'card'`
 
 **Theme parts:** `radiosInput`, `radiosInputContainer`, `radiosInputItem`, `radiosInputItemTrack`, `radiosInputItemThumb`, `radiosInputItemLabel`, `radiosInputItemDescription`, `radiosInputItemIcon` (variants: `mode`, `checked`, `disabled`)
 
 ```svelte
-<RadioInput label="Plan" bind:value={plan} orientation="horizontal" options={[
-  { value: 'free', label: 'Free' },
-  { value: 'pro', label: 'Pro', description: '$10/mo' }
-]} />
+<RadioInput
+	label="Plan"
+	bind:value={plan}
+	orientation="horizontal"
+	options={[
+		{ value: 'free', label: 'Free' },
+		{ value: 'pro', label: 'Pro', description: '$10/mo' }
+	]}
+/>
 ```
 
 ---
@@ -299,6 +358,7 @@ Label rendered beside the toggle. Global setter: `setSwitchInputTheme`.
 `import { CheckboxesInput } from 'svelai/checkboxes-input'`
 
 **Unique props:**
+
 - `value: string[]` (bindable), `options: Array<{ value, label?, description? }>` (required)
 - `mode: 'normal' | 'card'` (default `'normal'`), `onValidate: (value) => string[] | boolean`
 
@@ -309,9 +369,15 @@ Extra slots: `header`, `helper`, `footer`, `actions`, `errorsContainer`
 **Theme parts:** `checkboxesInput`, `checkboxesInputContainer`, `checkboxesInputItem`, `checkboxesInputItemTrack`, `checkboxesInputItemThumb`, `checkboxesInputItemLabel`, `checkboxesInputItemDescription`, `checkboxesInputItemIcon`
 
 ```svelte
-<CheckboxesInput label="Skills" mode="card" bind:value={skills} options={[
-  { value: 'js', label: 'JavaScript' }, { value: 'py', label: 'Python' }
-]} />
+<CheckboxesInput
+	label="Skills"
+	mode="card"
+	bind:value={skills}
+	options={[
+		{ value: 'js', label: 'JavaScript' },
+		{ value: 'py', label: 'Python' }
+	]}
+/>
 ```
 
 ---
@@ -321,6 +387,7 @@ Extra slots: `header`, `helper`, `footer`, `actions`, `errorsContainer`
 `import { FileInput } from 'svelai/file-input'`
 
 **Unique props:**
+
 - `value: File | File[]` (bindable), `type: 'file' | 'files'`
 - `accept: string`, `maxSize: number` (bytes), `multiple: boolean`
 - `showPreview: boolean` (default true), `placeholder`, `onUpload: (files) => void`
@@ -342,6 +409,7 @@ Drag-and-drop supported. Images show thumbnail preview.
 Standalone calendar (not Field-based). Used inside DateInput or standalone.
 
 **Unique props:**
+
 - `value: Date | { start, end }` (bindable), `type: 'calendar' | 'calendar-range'`
 - `month`, `year`, `showWeekNumbers`, `firstDayOfWeek: 0 | 1`
 - `min`, `max: Date`, `disabledDates: Date[]`, `disabledDays: number[]`
@@ -355,6 +423,29 @@ Standalone calendar (not Field-based). Used inside DateInput or standalone.
 
 ---
 
+## MiniCalendar
+
+`import { MiniCalendar } from 'svelai/mini-calendar'`
+
+Compact horizontal strip of N consecutive days (not Field-based) with a prev/next chevron on each side that shifts the range by N days. Each cell stacks a short month label over the day number; the selected day gets an elevated fill and today is subtly highlighted.
+
+**Unique props:**
+
+- `value: Date | null` (bindable, default `null`), `startDate: Date` (bindable, default today), `days: number` (default 5)
+- `size` (`'small' | 'normal' | 'large'`), `color` (default `'primary'`, accent of the selected day), `disabled`
+- `locale: string` (month labels + date aria-labels; defaults to the active i18n catalog's locale), `dir` (`'ltr' | 'rtl'`, inherits ambient direction when omitted)
+- `onValueChange: (date) => void`, `onStartDateChange: (startDate) => void`
+
+Dates are handled at noon and compared by year/month/day (timezone-resistant). Navigation is chronological in both directions; in RTL the strip and chevrons mirror. Range shifts are a directional push — the old range slides out while the new slides in from the direction of travel (RTL-mirrored, reduced-motion aware). Custom cell content via the `day` snippet (payload `{ date, selected, today, monthLabel, dayNumber }`).
+
+**Theme parts:** `root`, `navButton`, `days`, `track`, `day`, `dayMonth`, `dayNumber` (day variants: `size`, `color`, `selected`, `today`, `disabled`)
+
+```svelte
+<MiniCalendar bind:value={date} days={7} color="success" />
+```
+
+---
+
 ## Form
 
 `import { Form } from 'svelai/form'`
@@ -362,6 +453,7 @@ Standalone calendar (not Field-based). Used inside DateInput or standalone.
 Declarative form from config. Manages state, validation, layout.
 
 **Unique props:**
+
 - `inputs: FormInputs` (required) -- `{ fieldName: { type, ...fieldProps } }`
 - `value` (bindable), `form: FormState` (bindable), `onSubmit: (value) => void | Promise`
 
@@ -376,13 +468,16 @@ Declarative form from config. Manages state, validation, layout.
 **Theme parts:** `form`, `field`
 
 ```svelte
-<Form inputs={{
-  name: { type: 'text', label: 'Name', required: true, class: 'col-span-1' },
-  email: { type: 'email', label: 'Email', required: true, class: 'col-span-1' }
-}} onSubmit={handleSubmit}>
-  {#snippet footer({ form })}
-    <Button type="submit" disabled={!form.isValid}>Submit</Button>
-  {/snippet}
+<Form
+	inputs={{
+		name: { type: 'text', label: 'Name', required: true, class: 'col-span-1' },
+		email: { type: 'email', label: 'Email', required: true, class: 'col-span-1' }
+	}}
+	onSubmit={handleSubmit}
+>
+	{#snippet footer({ form })}
+		<Button type="submit" disabled={!form.isValid}>Submit</Button>
+	{/snippet}
 </Form>
 ```
 
@@ -393,6 +488,7 @@ Declarative form from config. Manages state, validation, layout.
 `import { MultiStepForm } from 'svelai/multi-step-form'`
 
 **Unique props:**
+
 - `steps: Array<{ title, description?, inputs }>` (required)
 - `value` (bindable), `currentStep: number` (bindable)
 - `validateOnStepChange` (default true), `allowStepSkipping` (default false)
@@ -405,8 +501,12 @@ Uses Stepper for progress. Validates per step. Data persists across steps.
 **Theme parts:** `multiStepForm`, `form`
 
 ```svelte
-<MultiStepForm steps={[
-  { title: 'Account', inputs: { email: { type: 'email', label: 'Email', required: true } } },
-  { title: 'Profile', inputs: { name: { type: 'text', label: 'Name', required: true } } }
-]} bind:value={data} onSubmit={handleSubmit} />
+<MultiStepForm
+	steps={[
+		{ title: 'Account', inputs: { email: { type: 'email', label: 'Email', required: true } } },
+		{ title: 'Profile', inputs: { name: { type: 'text', label: 'Name', required: true } } }
+	]}
+	bind:value={data}
+	onSubmit={handleSubmit}
+/>
 ```

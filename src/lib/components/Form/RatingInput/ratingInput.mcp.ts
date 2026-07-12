@@ -26,6 +26,9 @@ Extends all Field component props plus:
 - **dir**: 'ltr' | 'rtl' - Reading direction override; inherits the ambient direction when omitted
 - **color**: Colors (default: 'warning') - Color of the filled stars (the classic gold/amber star)
 
+### Content Props (Slots)
+- **star**: Snippet<[{ index, fraction, layer }]> (optional) - Custom star icon, forwarded to the underlying Rating display component. Rendered twice per star: once for the muted outline (layer: 'base') and once for the colored fill overlay (layer: 'fill'). See the Rating component docs for an example.
+
 ### Field Props (inherited)
 - **label**: string | Snippet - Field label
 - **description**: string | Snippet - Helper text
@@ -93,6 +96,7 @@ Value semantics do NOT flip in RTL: Arrow Right always increases the numeric val
 - The row container carries \`role="slider"\` and is the single focusable element (\`tabindex\` 0 when interactive, -1 when readonly/disabled)
 - ARIA: \`aria-valuemin={0}\`, \`aria-valuemax={max}\`, \`aria-valuenow\`, \`aria-valuetext\`, \`aria-orientation="horizontal"\`, \`aria-readonly\`, \`aria-disabled\`
 - Individual stars are \`aria-hidden\` and not focusable; the pointer selects a value and half-star hits are computed from the pointer position within each star
+- Clicking a star focuses the slider container (native focus fixup), so arrow keys work immediately after a pointer selection and \`focused\` becomes true — same as clicking a text input
 
 ## RTL
 
@@ -128,11 +132,14 @@ The theme object contains the following parts:
 - color: Colors - Fill color of the star (defaults to 'warning')
 
 ### Global Theme Setting
+
+The star rendering lives in the \`Rating\` display component, so the theme is shared: set it once and both \`Rating\` and \`RatingInput\` pick it up.
+
 \`\`\`svelte
 <script>
-	import { setRatingInputTheme } from 'svelai/rating-input';
+	import { setRatingTheme } from 'svelai/rating-input'; // also exported from 'svelai/rating'
 
-	setRatingInputTheme({
+	setRatingTheme({
 		starFill: {
 			color: {
 				primary: 'text-primary'

@@ -7,6 +7,8 @@
 // Messages is derived from this object, so every locale must supply the same keys.
 
 export const en = {
+	/** BCP-47 tag of this catalog; date/number-formatting components default to it. */
+	locale: 'en',
 	previous: 'Previous',
 	next: 'Next',
 	page: 'page',
@@ -87,6 +89,10 @@ export const en = {
 	and: 'and',
 	of: 'of',
 	rating: 'Rating',
+	trueLabel: 'True',
+	falseLabel: 'False',
+	showLess: 'Show less',
+	showMoreItems: (count: string | number) => `Show ${count} more`,
 	carousel: 'carousel',
 	breadcrumbs: 'Breadcrumbs',
 	pagination: 'Pagination',
@@ -150,7 +156,15 @@ export const en = {
 	goToPage: (page: string | number) => `Go to page ${page}`,
 	expandPanel: (index: string | number) => `Expand panel ${index}`,
 	resizePanels: (indexA: string | number, indexB: string | number) =>
-		`Resize panels ${indexA} and ${indexB}`
+		`Resize panels ${indexA} and ${indexB}`,
+	color: 'Color',
+	hue: 'Hue',
+	saturation: 'Saturation',
+	brightness: 'brightness',
+	alpha: 'Alpha',
+	format: 'format',
+	percentage: 'percentage',
+	pickColorFromScreen: 'Pick a color from the screen'
 };
 
 export type Messages = typeof en;

@@ -1,6 +1,7 @@
 import type { Messages } from './en.js';
 
 export const ja: Messages = {
+	locale: 'ja',
 	previous: '前へ',
 	next: '次へ',
 	page: 'ページ',
@@ -81,6 +82,10 @@ export const ja: Messages = {
 	and: 'と',
 	of: '/',
 	rating: '評価',
+	trueLabel: 'はい',
+	falseLabel: 'いいえ',
+	showLess: '表示を減らす',
+	showMoreItems: (count: string | number) => `さらに${count}件を表示`,
 	carousel: 'カルーセル',
 	breadcrumbs: 'パンくずリスト',
 	pagination: 'ページネーション',
@@ -143,5 +148,13 @@ export const ja: Messages = {
 	goToPage: (page: string | number) => `ページ ${page} へ移動`,
 	expandPanel: (index: string | number) => `パネル ${index} を展開`,
 	resizePanels: (indexA: string | number, indexB: string | number) =>
-		`パネル ${indexA} と ${indexB} のサイズを変更`
+		`パネル ${indexA} と ${indexB} のサイズを変更`,
+	color: '色',
+	hue: '色相',
+	saturation: '彩度',
+	brightness: '明度',
+	alpha: 'アルファ',
+	format: '形式',
+	percentage: 'パーセント',
+	pickColorFromScreen: '画面から色を選択'
 };

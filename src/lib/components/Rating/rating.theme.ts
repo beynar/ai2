@@ -34,7 +34,7 @@ const defaultStar = cva({
 	},
 	defaultVariants: {
 		size: 'normal',
-		interactive: true
+		interactive: false
 	}
 });
 
@@ -61,14 +61,14 @@ const defaultStarFill = cva({
 	}
 });
 
-export const ratingInputTheme = {
+export const ratingTheme = {
 	container: defaultContainer,
 	star: defaultStar,
 	starBase: defaultStarBase,
 	starFill: defaultStarFill
 };
 
-export type RatingInputTheme = typeof ratingInputTheme;
-export type RatingInputThemeProps = InferComponentTheme<RatingInputTheme>;
-export const setRatingInputTheme = setComponentTheme<RatingInputTheme>('ratingInput');
-export const useRatingInputTheme = useComponentTheme('ratingInput', ratingInputTheme);
+export type RatingTheme = typeof ratingTheme;
+export type RatingThemeProps = InferComponentTheme<RatingTheme>;
+export const setRatingTheme = setComponentTheme<RatingTheme>('rating');
+export const useRatingTheme = useComponentTheme('rating', ratingTheme);

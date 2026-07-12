@@ -10,6 +10,8 @@
 - [Heading](#heading)
 - [Code](#code)
 - [Meter](#meter)
+- [MetadataList](#metadatalist)
+- [Rating](#rating)
 - [ToggleButton](#togglebutton)
 - [ToggleButtonGroup](#togglebuttongroup)
 - [QRCode](#qrcode)
@@ -297,6 +299,89 @@ Slots: `label`, `description`, `helper`, `header`, `indicator` (receives `{ valu
 		{ start: 50, end: 100, label: 'High', color: 'danger' }
 	]}
 />
+```
+
+---
+
+## MetadataList
+
+`import { MetadataList } from 'svelai/metadata-list'`
+
+Read-only key/value list (Notion page-properties panel). Muted key label (optional icon) on the left, a typed value on the right. Value `type` is auto-detected from the value and formatted (numbers/dates via `Intl`).
+
+### Unique Props
+
+| Prop        | Type                            | Default | Notes                                                                     |
+| ----------- | ------------------------------- | ------- | ------------------------------------------------------------------------- |
+| items       | MetadataListItem[]              | []      | `{ id?, key?, title?, value?, type?, icon?, color?, href? }`; label = `key ?? title ?? id` |
+| size        | 'small' \| 'normal' \| 'large'  | 'normal'| Typography, gaps, chip size                                               |
+| columns     | number                          | 1       | Items flow into N grid columns                                            |
+| maxItems    | number                          | -       | Collapse extras behind an animated "Show N more" toggle                   |
+| expanded    | boolean                         | false   | **Bindable.** Toggle state                                                |
+| i18n        | Partial\<Messages\>             | -       | Overrides `showMoreItems`, `showLess`, `trueLabel`, `falseLabel`          |
+
+Value types: `text`, `number`, `boolean`, `date`, `url`, `email`, `phone`, `chip`, `chips`. Auto-detected: boolean, number, `Date`, arrays (`chips`), `https?://` strings (`url`), emails. `phone` is never auto-detected — set `type: 'phone'`. Nullish values render a muted em dash. Slots `key`/`value` (payload `{ item, index, type, label, formatted }`) replace a cell for every item; `title`/`description` are plain header slots.
+
+### Theme Parts
+
+`root` (size), `header` (size), `title` (size), `description` (size), `list` (size), `item` (size), `key` (size), `keyIcon` (size), `value` (size), `link`, `chips` (size), `toggle` (size), `toggleIcon` (expanded)
+
+### Key Example
+
+```svelte
+<MetadataList
+	title="Project Details"
+	items={[
+		{ key: 'Name', value: 'Design System v2' },
+		{ key: 'Status', value: 'Active', type: 'chip', color: 'success' },
+		{ key: 'Created', value: new Date('2025-01-15') },
+		{ key: 'Repository', value: 'https://github.com/org/design-system' }
+	]}
+/>
+
+<MetadataList items={items}>
+	{#snippet value({ item, formatted })}
+		{#if item.key === 'Owner'}<span class="flex items-center gap-2"><span class="bg-primary size-2 rounded-full"></span>{formatted}</span>{:else}{formatted}{/if}
+	{/snippet}
+</MetadataList>
+```
+
+---
+
+## Rating
+
+`import { Rating } from 'svelai/rating'`
+
+Read-only star rating display: half/partial fills, configurable star count, RTL. `RatingInput` (see form-inputs.md) builds on it — they share the same theme.
+
+### Unique Props
+
+| Prop        | Type                            | Default     | Notes                                                        |
+| ----------- | ------------------------------- | ----------- | ------------------------------------------------------------ |
+| value       | number \| null                  | 0           | Fractions render as partial fills (e.g. 3.7)                 |
+| max         | number                          | 5           | Star count = maximum value                                   |
+| color       | Colors                          | 'warning'   | Fill color (default is the classic gold)                     |
+| size        | 'small' \| 'normal' \| 'large'  | 'normal'    | Star box size and gap                                        |
+| dir         | 'ltr' \| 'rtl'                  | ambient     | RTL orders and fills from the right                          |
+| star        | Snippet\<[{index, fraction, layer}]\> | star icons | Custom icon; rendered per layer (`'base'` \| `'fill'`) |
+| i18n        | Partial\<Messages\>             | -           | Per-instance i18n overrides                                  |
+
+Accessibility: the row is `role="img"` labelled "{value} of {max}" (localized); stars are aria-hidden.
+
+### Theme Parts
+
+`container` (size, disabled), `star` (size, interactive), `starBase`, `starFill` (color). Shared: `setRatingTheme` themes both `Rating` and `RatingInput`.
+
+### Key Example
+
+```svelte
+<Rating value={3.7} />
+<Rating value={7.5} max={10} color="primary" size="large" />
+<Rating value={3.5}>
+	{#snippet star({ layer })}
+		{#if layer === 'base'}{@render heartIcon({ class: 'size-full' })}{:else}{@render heartIconFill({ class: 'size-full' })}{/if}
+	{/snippet}
+</Rating>
 ```
 
 ---

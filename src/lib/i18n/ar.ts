@@ -1,6 +1,7 @@
 import type { Messages } from './en.js';
 
 export const ar: Messages = {
+	locale: 'ar',
 	previous: 'السابق',
 	next: 'التالي',
 	page: 'صفحة',
@@ -81,6 +82,10 @@ export const ar: Messages = {
 	and: 'و',
 	of: 'من',
 	rating: 'التقييم',
+	trueLabel: 'صحيح',
+	falseLabel: 'خطأ',
+	showLess: 'عرض أقل',
+	showMoreItems: (count: string | number) => `عرض ${count} إضافية`,
 	carousel: 'دوّار',
 	breadcrumbs: 'مسار التنقل',
 	pagination: 'ترقيم الصفحات',
@@ -144,5 +149,13 @@ export const ar: Messages = {
 	goToPage: (page: string | number) => `الانتقال إلى صفحة ${page}`,
 	expandPanel: (index: string | number) => `توسيع اللوحة ${index}`,
 	resizePanels: (indexA: string | number, indexB: string | number) =>
-		`تغيير حجم اللوحتين ${indexA} و${indexB}`
+		`تغيير حجم اللوحتين ${indexA} و${indexB}`,
+	color: 'اللون',
+	hue: 'درجة اللون',
+	saturation: 'التشبع',
+	brightness: 'السطوع',
+	alpha: 'ألفا',
+	format: 'التنسيق',
+	percentage: 'النسبة المئوية',
+	pickColorFromScreen: 'اختيار لون من الشاشة'
 };

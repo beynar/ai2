@@ -88,10 +88,7 @@
 		Object.assign(node, { onPrevious: goBack });
 	};
 
-	const pointerFrom = (e: unknown): { x: number; y: number } | undefined =>
-		e && typeof e === 'object' && 'clientX' in e
-			? { x: (e as PointerEvent).clientX, y: (e as PointerEvent).clientY }
-			: undefined;
+	const pointerFrom = (e: MouseEvent) => ({ x: e.clientX, y: e.clientY });
 
 	const closeSubmenus = (exceptIndex?: number, pointer?: { x: number; y: number }) => {
 		for (const [key, popover] of Object.entries(submenuPopovers)) {

@@ -13,6 +13,7 @@ import type { SwitchProps } from '../Switch/switch.props.js';
 import type { PhoneInputProps } from '../PhoneInput/phoneInput.props.js';
 import type { CalendarInputProps } from '../Calendar/calendarInput.props.js';
 import type { DateInputProps } from '../DateInput/dateInput.props.js';
+import type { ColorInputProps } from '../ColorInput/colorInput.props.js';
 import type { FileInputProps } from '../File/fileInput.props.js';
 import type { TagGroupProps } from '../TagGroup/tagGroup.props.js';
 import type { TimeInputProps } from '../TimeInput/timeInput.props.js';
@@ -51,6 +52,9 @@ type BaseFormInput =
 	| ({
 			type: 'date' | 'datetime';
 	  } & DateInputProps)
+	| ({
+			type: 'color';
+	  } & ColorInputProps)
 	| ({
 			type: 'text' | 'email' | 'url';
 	  } & TextInputProps)

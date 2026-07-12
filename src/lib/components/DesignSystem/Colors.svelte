@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Heading from '$lib/Components/Heading/Heading.svelte';
+	import Heading from '$lib/components/Heading/Heading.svelte';
 	import type { Colors } from '$lib/types/theme.js';
 
 	const colorList = {

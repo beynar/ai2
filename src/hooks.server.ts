@@ -25,11 +25,16 @@ import { kbdDescription } from '$lib/components/Kbd/kbd.mcp.js';
 import { dialogDescription } from '$lib/components/Dialog/dialog.mcp.js';
 import { calendarDescription } from '$lib/components/Form/Calendar/calendar.mcp.js';
 import { dateInputDescription } from '$lib/components/Form/DateInput/dateInput.mcp.js';
+import { colorPickerDescription } from '$lib/components/Form/ColorPicker/colorPicker.mcp.js';
+import { colorInputDescription } from '$lib/components/Form/ColorInput/colorInput.mcp.js';
 import { fileInputDescription } from '$lib/components/Form/File/fileInput.mcp.js';
 import { formDescription } from '$lib/components/Form/Form/form.mcp.js';
 import { multiStepFormDescription } from '$lib/components/Form/MultiStepForm/multiStepForm.mcp.js';
 import { numberInputDescription } from '$lib/components/Form/NumberInput/numberInput.mcp.js';
 import { ratingInputDescription } from '$lib/components/Form/RatingInput/ratingInput.mcp.js';
+import { ratingDescription } from '$lib/components/Rating/rating.mcp.js';
+import { miniCalendarDescription } from '$lib/components/MiniCalendar/miniCalendar.mcp.js';
+import { metadataListDescription } from '$lib/components/MetadataList/metadataList.mcp.js';
 import { passwordInputDescription } from '$lib/components/Form/PasswordInput/passwordInput.mcp.js';
 import { phoneInputDescription } from '$lib/components/Form/PhoneInput/phoneInput.mcp.js';
 import { radioInputDescription } from '$lib/components/Form/RadioInput/radioInput.mcp.js';
@@ -103,6 +108,8 @@ const components = {
 	dialog: dialogDescription,
 	calendar: calendarDescription,
 	'date-input': dateInputDescription,
+	'color-picker': colorPickerDescription,
+	'color-input': colorInputDescription,
 	'file-input': fileInputDescription,
 	form: formDescription,
 	'multi-step-form': multiStepFormDescription,
@@ -153,6 +160,9 @@ const components = {
 	// field: fieldDescription,
 	collapsible: collapsibleDescription,
 	'qr-code': qrCodeDescription,
+	rating: ratingDescription,
+	'mini-calendar': miniCalendarDescription,
+	'metadata-list': metadataListDescription,
 	globe: globeDescription,
 	'pdf-viewer': pdfViewerDescription
 };

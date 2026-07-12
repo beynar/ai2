@@ -1,6 +1,7 @@
 import type { Messages } from './en.js';
 
 export const fr: Messages = {
+	locale: 'fr',
 	previous: 'Précédent',
 	next: 'Suivant',
 	page: 'page',
@@ -81,6 +82,10 @@ export const fr: Messages = {
 	and: 'et',
 	of: 'sur',
 	rating: 'Note',
+	trueLabel: 'Vrai',
+	falseLabel: 'Faux',
+	showLess: 'Afficher moins',
+	showMoreItems: (count: string | number) => `Afficher ${count} de plus`,
 	carousel: 'carrousel',
 	breadcrumbs: "Fil d'Ariane",
 	pagination: 'Pagination',
@@ -144,5 +149,13 @@ export const fr: Messages = {
 	goToPage: (page: string | number) => `Aller à la page ${page}`,
 	expandPanel: (index: string | number) => `Développer le panneau ${index}`,
 	resizePanels: (indexA: string | number, indexB: string | number) =>
-		`Redimensionner les panneaux ${indexA} et ${indexB}`
+		`Redimensionner les panneaux ${indexA} et ${indexB}`,
+	color: 'Couleur',
+	hue: 'Teinte',
+	saturation: 'Saturation',
+	brightness: 'luminosité',
+	alpha: 'Alpha',
+	format: 'format',
+	percentage: 'pourcentage',
+	pickColorFromScreen: 'Choisir une couleur à l’écran'
 };

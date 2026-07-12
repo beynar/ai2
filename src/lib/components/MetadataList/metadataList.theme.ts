@@ -1,0 +1,194 @@
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
+
+const defaultRoot = cva({
+	base: 'flex flex-col',
+	variants: {
+		size: {
+			small: 'gap-2',
+			normal: 'gap-3',
+			large: 'gap-4'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultHeader = cva({
+	base: 'flex flex-col',
+	variants: {
+		size: {
+			small: 'gap-0.5',
+			normal: 'gap-1',
+			large: 'gap-1'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultTitle = cva({
+	base: 'font-medium text-foreground',
+	variants: {
+		size: {
+			small: 'text-sm',
+			normal: 'text-base',
+			large: 'text-lg'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultDescription = cva({
+	base: 'text-foreground-muted',
+	variants: {
+		size: {
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-sm'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultList = cva({
+	base: 'grid',
+	variants: {
+		size: {
+			small: 'gap-x-4 gap-y-2',
+			normal: 'gap-x-6 gap-y-2.5',
+			large: 'gap-x-8 gap-y-3'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultItem = cva({
+	base: 'flex items-start',
+	variants: {
+		size: {
+			small: 'gap-2',
+			normal: 'gap-3',
+			large: 'gap-4'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultKey = cva({
+	base: 'flex items-center w-[35%] min-w-24 shrink-0 text-foreground-muted',
+	variants: {
+		size: {
+			small: 'gap-1.5 text-xs',
+			normal: 'gap-2 text-sm',
+			large: 'gap-2 text-base'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultKeyIcon = cva({
+	base: 'shrink-0',
+	variants: {
+		size: {
+			small: 'size-4',
+			normal: 'size-5',
+			large: 'size-6'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultValue = cva({
+	base: 'flex-1 min-w-0 text-foreground',
+	variants: {
+		size: {
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultLink = cva({
+	base: 'underline decoration-foreground-muted/40 underline-offset-2 hover:decoration-current transition-colors'
+});
+
+const defaultChips = cva({
+	base: 'flex flex-wrap',
+	variants: {
+		size: {
+			small: 'gap-1',
+			normal: 'gap-1.5',
+			large: 'gap-2'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultToggle = cva({
+	base: 'inline-flex items-center self-start cursor-pointer rounded text-foreground-muted outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50',
+	variants: {
+		size: {
+			small: 'gap-1 text-xs',
+			normal: 'gap-1.5 text-sm',
+			large: 'gap-2 text-base'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultToggleIcon = cva({
+	base: 'inline-flex transition-transform duration-200',
+	variants: {
+		expanded: {
+			true: 'rotate-180',
+			false: ''
+		}
+	},
+	defaultVariants: {
+		expanded: false
+	}
+});
+
+export const metadataListTheme = {
+	root: defaultRoot,
+	header: defaultHeader,
+	title: defaultTitle,
+	description: defaultDescription,
+	list: defaultList,
+	item: defaultItem,
+	key: defaultKey,
+	keyIcon: defaultKeyIcon,
+	value: defaultValue,
+	link: defaultLink,
+	chips: defaultChips,
+	toggle: defaultToggle,
+	toggleIcon: defaultToggleIcon
+};
+
+export type MetadataListTheme = typeof metadataListTheme;
+export type MetadataListThemeProps = InferComponentTheme<MetadataListTheme>;
+export const setMetadataListTheme = setComponentTheme<MetadataListTheme>('metadataList');
+export const useMetadataListTheme = useComponentTheme('metadataList', metadataListTheme);

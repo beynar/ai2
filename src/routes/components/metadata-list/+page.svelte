@@ -1,0 +1,201 @@
+<script lang="ts">
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
+	import MetadataList from '$lib/components/MetadataList/MetadataList.svelte';
+	import type { MetadataListItem } from '$lib/components/MetadataList/metadataList.props.js';
+	import { userIcon } from '$lib/components/Icons/user.js';
+	import { calendarIcon } from '$lib/components/Icons/calendar.js';
+	import { tagIcon } from '$lib/components/Icons/tag.js';
+
+	const projectItems: MetadataListItem[] = [
+		{ key: 'Name', value: 'Design System v2' },
+		{ key: 'Status', value: 'Active', type: 'chip', color: 'success' },
+		{ key: 'Owner', value: 'Alice Johnson' },
+		{ key: 'Created', value: new Date('2025-01-15') },
+		{ key: 'Priority', value: 'High', type: 'chip', color: 'danger' },
+		{ key: 'Repository', value: 'https://github.com/org/design-system' }
+	];
+
+	// No explicit `type` — every value's type is auto-detected.
+	const autoItems: MetadataListItem[] = [
+		{ key: 'Name', value: 'Acme Handbook' },
+		{ key: 'Pages', value: 1284 },
+		{ key: 'Published', value: true },
+		{ key: 'Updated', value: new Date('2025-06-30') },
+		{ key: 'Tags', value: ['internal', 'draft', 'q3'] },
+		{ key: 'Homepage', value: 'https://acme.example.com/' },
+		{ key: 'Contact', value: 'team@acme.example.com' }
+	];
+
+	const iconItems: MetadataListItem[] = [
+		{ key: 'Owner', value: 'Alice Johnson', icon: userIcon },
+		{ key: 'Created', value: new Date('2025-01-15'), icon: calendarIcon },
+		{ key: 'Priority', value: 'High', type: 'chip', color: 'danger', icon: tagIcon }
+	];
+
+	const manyItems: MetadataListItem[] = [
+		{ key: 'Name', value: 'Design System v2' },
+		{ key: 'Status', value: 'Active', type: 'chip', color: 'success' },
+		{ key: 'Owner', value: 'Alice Johnson' },
+		{ key: 'Created', value: new Date('2025-01-15') },
+		{ key: 'Priority', value: 'High', type: 'chip', color: 'danger' },
+		{ key: 'Repository', value: 'https://github.com/org/design-system' },
+		{ key: 'License', value: 'MIT' },
+		{ key: 'Version', value: '2.4.1' }
+	];
+
+	const ownerItems: MetadataListItem[] = [
+		{ key: 'Owner', value: 'Alice Johnson' },
+		{ key: 'Reviewer', value: 'Bob Chen' },
+		{ key: 'Status', value: 'Active', type: 'chip', color: 'success' }
+	];
+
+	const heroCode = `<MetadataList
+	title="Project Details"
+	items={[
+		{ key: 'Name', value: 'Design System v2' },
+		{ key: 'Status', value: 'Active', type: 'chip', color: 'success' },
+		{ key: 'Owner', value: 'Alice Johnson' },
+		{ key: 'Created', value: new Date('2025-01-15') },
+		{ key: 'Priority', value: 'High', type: 'chip', color: 'danger' },
+		{ key: 'Repository', value: 'https://github.com/org/design-system' }
+	]}
+/>`;
+</script>
+
+<DocPage
+	title="Metadata list"
+	subtitle="A read-only key/value metadata list, like Notion's page-properties panel."
+	component="MetadataList"
+	features={[
+		'Auto-detects value types',
+		'Localized numbers and dates',
+		'Links, boolean and chip values',
+		'Multi-column layout',
+		'Collapse extras behind Show more'
+	]}
+>
+	<ComponentCard description="Typed key/value properties" code={heroCode}>
+		<MetadataList title="Project Details" class="w-full max-w-md" items={projectItems} />
+	</ComponentCard>
+
+	{#snippet examples()}
+		<!-- Example 1: Auto-detection -->
+		<ComponentCard
+			description="Raw values with no explicit type — string, number, boolean, date, array, url and email are all auto-detected"
+			code={`<MetadataList
+	items={[
+		{ key: 'Name', value: 'Acme Handbook' },
+		{ key: 'Pages', value: 1284 },
+		{ key: 'Published', value: true },
+		{ key: 'Updated', value: new Date('2025-06-30') },
+		{ key: 'Tags', value: ['internal', 'draft', 'q3'] },
+		{ key: 'Homepage', value: 'https://acme.example.com/' },
+		{ key: 'Contact', value: 'team@acme.example.com' }
+	]}
+/>`}
+		>
+			<MetadataList class="w-full max-w-md" items={autoItems} />
+		</ComponentCard>
+
+		<!-- Example 2: Key icons -->
+		<ComponentCard
+			description="An optional icon before each key label"
+			code={`<script>
+	import { userIcon } from 'svelai/icons/user';
+	import { calendarIcon } from 'svelai/icons/calendar';
+	import { tagIcon } from 'svelai/icons/tag';
+<\/script>
+
+<MetadataList
+	items={[
+		{ key: 'Owner', value: 'Alice Johnson', icon: userIcon },
+		{ key: 'Created', value: new Date('2025-01-15'), icon: calendarIcon },
+		{ key: 'Priority', value: 'High', type: 'chip', color: 'danger', icon: tagIcon }
+	]}
+/>`}
+		>
+			<MetadataList class="w-full max-w-md" items={iconItems} />
+		</ComponentCard>
+
+		<!-- Example 3: Columns -->
+		<ComponentCard
+			description="Items flow into multiple columns"
+			code={`<MetadataList columns={2} items={projectItems} />`}
+		>
+			<MetadataList class="w-full max-w-2xl" columns={2} items={projectItems} />
+		</ComponentCard>
+
+		<!-- Example 4: maxItems show more -->
+		<ComponentCard
+			description="Collapse the extra items behind an animated Show more toggle"
+			code={`<MetadataList maxItems={4} items={manyItems} />
+
+<!-- The open state is bindable -->
+<MetadataList maxItems={4} bind:expanded items={manyItems} />`}
+		>
+			<MetadataList class="w-full max-w-md" maxItems={4} items={manyItems} />
+		</ComponentCard>
+
+		<!-- Example 5: Sizes -->
+		<ComponentCard
+			description="Small, normal and large sizes"
+			code={`<MetadataList size="small" items={ownerItems} />
+<MetadataList size="normal" items={ownerItems} />
+<MetadataList size="large" items={ownerItems} />`}
+		>
+			<div class="flex w-full max-w-md flex-col gap-8">
+				<MetadataList size="small" items={ownerItems} />
+				<MetadataList size="normal" items={ownerItems} />
+				<MetadataList size="large" items={ownerItems} />
+			</div>
+		</ComponentCard>
+
+		<!-- Example 6: Custom value snippet -->
+		<ComponentCard
+			description="Replace the value cell with a custom snippet (payload lets you special-case items)"
+			code={`<MetadataList items={ownerItems}>
+	{#snippet value({ item, formatted })}
+		{#if item.key === 'Owner' || item.key === 'Reviewer'}
+			<span class="inline-flex items-center gap-2">
+				<span class="bg-primary size-2 rounded-full"></span>
+				{formatted}
+			</span>
+		{:else}
+			{formatted}
+		{/if}
+	{/snippet}
+</MetadataList>`}
+		>
+			<MetadataList class="w-full max-w-md" items={ownerItems}>
+				{#snippet value({ item, formatted })}
+					{#if item.key === 'Owner' || item.key === 'Reviewer'}
+						<span class="inline-flex items-center gap-2">
+							<span class="bg-primary size-2 rounded-full"></span>
+							{formatted}
+						</span>
+					{:else}
+						{formatted}
+					{/if}
+				{/snippet}
+			</MetadataList>
+		</ComponentCard>
+
+		<!-- Example 7: Header -->
+		<ComponentCard
+			description="An optional title and description header"
+			code={`<MetadataList
+	title="Project Details"
+	description="Read-only properties synced from the repository"
+	items={projectItems}
+/>`}
+		>
+			<MetadataList
+				class="w-full max-w-md"
+				title="Project Details"
+				description="Read-only properties synced from the repository"
+				items={projectItems}
+			/>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

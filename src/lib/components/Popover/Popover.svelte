@@ -158,7 +158,6 @@
 	<dialog
 		{@attach portal()}
 		{@attach popover.dialog}
-		{@attach popover.focusTrap.attachment}
 		open={true}
 		id={popover.id}
 		class={classes.root({ mode: popover.computedMode })}

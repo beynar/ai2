@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Heading from '$lib/Components/Heading/Heading.svelte';
-	import Collapsible from '$lib/Components/Collapsible/Collapsible.svelte';
+	import Heading from '$lib/components/Heading/Heading.svelte';
+	import Collapsible from '$lib/components/Collapsible/Collapsible.svelte';
 	import Code from '$lib/components/Code/Code.svelte';
 
 	let {

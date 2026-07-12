@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { starIcon, starIconFill } from '../../Icons/star.js';
+	import { untrack } from 'svelte';
+	import Rating from '../../Rating/Rating.svelte';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import { useI18n } from '$lib/i18n/context.svelte.js';
 	import type { RatingInputProps } from './ratingInput.props.js';
-	import { useRatingInputTheme } from './ratingInput.theme.js';
 
 	let {
 		value = $bindable(null),
@@ -23,6 +23,7 @@
 		clearable = true,
 		dir,
 		color = 'warning',
+		star,
 		i18n,
 		label,
 		...rest
@@ -76,29 +77,29 @@
 	});
 
 	const t = $derived(useI18n(i18n));
-	const classes = $derived(useRatingInputTheme(theme));
+
+	// onfocus/onblur only react to future events (unlike bind:focused, which syncs immediately on
+	// mount). If the slider was focused before hydration (e.g. a keyboard user tabbed onto the SSR
+	// markup), catch up once the node is bound.
+	$effect(() => {
+		const node = field.node;
+		untrack(() => {
+			if (node && document.activeElement === node && !field.focused) {
+				field.focused = true;
+			}
+		});
+	});
 
 	// The visible <label for={field.id}> associates with the slider (via id={id}) for focus, but a
 	// role="slider" div is not a labelable element, so <label for> does not name it. Adopt the visible
 	// label text as the accessible name when it is a plain string; otherwise fall back to t.rating.
 	const ariaLabel = $derived(typeof label === 'string' ? label : t.rating);
 
-	// Fixed star-box size (mirrors the `star` theme part). The clipped fill icon must keep this
-	// full width so the overflow-hidden clip reveals a fraction of a full-size star, not a shrunk one.
-	const boxSizeClass = $derived.by(() => {
-		if (rest.size === 'small') return 'size-5';
-		if (rest.size === 'large') return 'size-7';
-		return 'size-6';
-	});
-
 	// While hovering, preview the hovered value; otherwise show the committed value.
 	let previewValue = $state<number | null>(null);
 	const displayValue = $derived(previewValue ?? field.value ?? 0);
 	const step = $derived(allowHalf ? 0.5 : 1);
 	const interactive = $derived(!readonly && !field.disabled);
-
-	// Fraction of star `i` (1-based) that should be filled: 0 empty, 0.5 half, 1 full.
-	const fillFraction = (i: number) => Math.min(Math.max(displayValue - (i - 1), 0), 1);
 
 	// Resolve the effective reading direction: explicit prop, else the ambient direction.
 	const isRtl = () => {
@@ -172,12 +173,24 @@
 </script>
 
 <Field {field} size={rest.size} {theme} {label} {...rest}>
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-	<div
+	<!-- The Rating display renders the stars; the slider role/aria/keyboard spread here overrides
+	     its read-only defaults, turning it into the form control. -->
+	<Rating
+		bind:ref={field.node}
+		value={displayValue}
+		{max}
+		{color}
+		size={rest.size}
+		{dir}
+		{star}
+		{theme}
+		{interactive}
+		disabled={field.disabled}
+		onStarPointerMove={handlePointerMove}
+		onStarClick={handleClick}
 		{id}
 		role="slider"
 		tabindex={readonly || field.disabled ? -1 : 0}
-		{dir}
 		aria-label={ariaLabel}
 		aria-valuemin={0}
 		aria-valuemax={max}
@@ -186,35 +199,9 @@
 		aria-orientation="horizontal"
 		aria-readonly={readonly || undefined}
 		aria-disabled={field.disabled || undefined}
-		bind:this={field.node}
-		bind:focused={field.focused}
-		class={classes.container({ size: rest.size, disabled: field.disabled })}
 		onkeydown={handleKeydown}
 		onpointerleave={handlePointerLeave}
-	>
-		{#each Array.from({ length: max }, (_, index) => index + 1) as starIndex (starIndex)}
-			<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events, a11y_no_noninteractive_tabindex -->
-			<span
-				aria-hidden="true"
-				tabindex={-1}
-				class={classes.star({ size: rest.size, interactive })}
-				onpointermove={(event) => handlePointerMove(event, starIndex, event.currentTarget)}
-				onclick={(event) => handleClick(event, starIndex, event.currentTarget)}
-			>
-				<span class={classes.starBase()}>
-					{@render starIcon({ class: 'size-full' })}
-				</span>
-				<span
-					class={classes.starFill({ color })}
-					style="width: {fillFraction(starIndex) * 100}%; inset-inline-start: 0;"
-				>
-					<!-- Pinned to the leading edge at full star-box width so the clip reveals a
-					     fraction of a full-size star; inset-inline-start flips with RTL for free. -->
-					<span class="absolute top-0 {boxSizeClass}" style="inset-inline-start: 0;">
-						{@render starIconFill({ class: 'size-full' })}
-					</span>
-				</span>
-			</span>
-		{/each}
-	</div>
+		onfocus={() => (field.focused = true)}
+		onblur={() => (field.focused = false)}
+	/>
 </Field>

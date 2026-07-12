@@ -144,9 +144,9 @@ Pattern: `import { set{Component}Theme } from 'svelai/{kebab-name}'`
 
 **Theming & Config**: See [theming.md](theming.md) for full Tailwind plugin config and Theme component details.
 
-**Display**: See [display.md](display.md) for Button, ButtonGroup, Badge, Avatar, Chip, Heading, Code, Meter, ToggleButton, ToggleButtonGroup, QRCode, PDFViewer, Icons.
+**Display**: See [display.md](display.md) for Button, ButtonGroup, Badge, Avatar, Chip, Heading, Code, Meter, MetadataList, Rating, ToggleButton, ToggleButtonGroup, QRCode, PDFViewer, Icons.
 
-**Form Inputs**: See [form-inputs.md](form-inputs.md) for TextInput, TextArea, NumberInput, RatingInput, PasswordInput, PhoneInput, DateInput, TimeInput, Select, Combobox, TagsInput, KeyValueInput, Switch, RadioInput, CheckboxesInput, FileInput, Calendar, Form, MultiStepForm.
+**Form Inputs**: See [form-inputs.md](form-inputs.md) for TextInput, TextArea, NumberInput, RatingInput, PasswordInput, PhoneInput, DateInput, TimeInput, ColorInput, ColorPicker, Select, Combobox, TagsInput, KeyValueInput, Switch, RadioInput, CheckboxesInput, FileInput, Calendar, MiniCalendar, Form, MultiStepForm.
 
 **Layout & Navigation**: See [layout.md](layout.md) for Tabs, Tabbar, Stepper, Breadcrumbs, Accordion, Collapsible, Separator, Menu, PopupMenu, MenuOption, Carousel, ScrollArea, AspectRatio, Marquee.
 

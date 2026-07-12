@@ -20,6 +20,7 @@
 	import PhoneInput from '../PhoneInput/PhoneInput.svelte';
 	import CalendarInput from '../Calendar/CalendarInput.svelte';
 	import DateInput from '../DateInput/DateInput.svelte';
+	import ColorInput from '../ColorInput/ColorInput.svelte';
 	import FileInput from '../File/FileInput.svelte';
 	import TagGroup from '../TagGroup/TagGroup.svelte';
 	import TagsInput from '../TagsInput/TagsInput.svelte';
@@ -119,6 +120,8 @@
 			<CalendarInput {...inputProps as any} type={input.type} {name} />
 		{:else if input.type === 'date' || input.type === 'datetime'}
 			<DateInput {...inputProps as any} type={input.type} {name} />
+		{:else if input.type === 'color'}
+			<ColorInput {...inputProps as any} {name} />
 		{:else if input.type === 'file'}
 			<FileInput {...inputProps as any} {name} mode="single" />
 		{:else if input.type === 'files'}

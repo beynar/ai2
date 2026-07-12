@@ -1,6 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { mix, toHex, hasBadContrast } from 'color2k';
-import { darken, lighten, saturate, formatCSS, hex2oklch, oklch2hex } from 'colorizr';
+import { mix as mixRgb, toHex, hasBadContrast } from 'color2k';
+import {
+	darken,
+	lighten,
+	saturate,
+	formatCSS,
+	hex2oklch,
+	oklch2hex,
+	toGamut,
+	mix as mixPerceptual
+} from 'colorizr';
 
 const isHex = (color: string): color is `#${string}` => {
 	if (!color) {
@@ -473,14 +482,30 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		return text;
 	};
 
-	// The page background: where ghost/outline/link text sits.
-	const backgroundSurface = colors.background.DEFAULT || (isDark ? baseBlackColor : baseWhiteColor);
+	const backgroundLightness = isDark
+		? { DEFAULT: 0.18, dark: 0.14, light: 0.22, lighter: 0.27, muted: 0.32 }
+		: { DEFAULT: 0.98, dark: 0.95, light: 0.99, lighter: 1, muted: 0.92 };
 
-	const shades = (color: ColorRecord) => {
+	const setPerceptualLightness = (color: string, lightness: number) => {
+		const { c, h } = hex2oklch(toHex(color));
+		const oklch = formatCSS({ l: lightness, c, h }, { format: 'oklch' });
+		return toGamut(oklch, 'hex');
+	};
+
+	// The normalized page background: where ghost/outline/link text sits.
+	const backgroundSurface = setPerceptualLightness(
+		colors.background.DEFAULT,
+		backgroundLightness.DEFAULT
+	);
+
+	const generateSemanticPalette = (color: ColorRecord, surface: string) => {
 		const baseColor = adjustColor(color.DEFAULT as string);
 		const muted =
 			color.muted ||
-			(isDark ? mix(baseColor, baseBlackColor, 0.8) : mix(baseColor, baseWhiteColor, 0.9));
+			mixPerceptual(surface, baseColor, isDark ? 0.2 : 0.1, {
+				space: 'oklab',
+				format: 'hex'
+			});
 		return {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || darken(baseColor, 15),
@@ -494,20 +519,15 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		};
 	};
 
-	const generateWhiteShade = (color: ColorRecord) => {
-		const baseColor = color.DEFAULT || (isDark ? baseWhiteColor : baseBlackColor);
-		const muted =
-			color.muted ||
-			(!isDark
-				? // For background on light theme
-					mix(baseColor, baseBlackColor, 0.06)
-				: // For foreground on dark themes
-					mix(baseColor, baseBlackColor, 0.5));
+	const generateBackgroundPalette = (color: ColorRecord) => {
+		const seedColor = color.DEFAULT;
+		const baseColor = setPerceptualLightness(seedColor, backgroundLightness.DEFAULT);
+		const muted = color.muted || setPerceptualLightness(seedColor, backgroundLightness.muted);
 		return {
-			DEFAULT: color.DEFAULT,
-			dark: color.dark || darken(baseColor, 2),
-			light: color.light || lighten(baseColor, 5),
-			lighter: color.lighter || lighten(baseColor, 15),
+			DEFAULT: baseColor,
+			dark: color.dark || setPerceptualLightness(seedColor, backgroundLightness.dark),
+			light: color.light || setPerceptualLightness(seedColor, backgroundLightness.light),
+			lighter: color.lighter || setPerceptualLightness(seedColor, backgroundLightness.lighter),
 			muted,
 			contrast:
 				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
@@ -516,15 +536,11 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		};
 	};
 
-	const generateBlackShade = (color: ColorRecord) => {
+	const generateForegroundPalette = (color: ColorRecord) => {
 		const baseColor = color.DEFAULT || (isDark ? baseBlackColor : baseWhiteColor);
 		const muted =
 			color.muted ||
-			(isDark
-				? // For background on dark theme
-					mix(baseColor, baseWhiteColor, 0.1)
-				: // For foreground on light themes
-					mix(baseColor, baseWhiteColor, 0.5));
+			(isDark ? mixRgb(baseColor, baseBlackColor, 0.5) : mixRgb(baseColor, baseWhiteColor, 0.5));
 		return {
 			DEFAULT: color.DEFAULT,
 			dark: color.dark || darken(baseColor, 2),
@@ -539,18 +555,14 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 	};
 
 	const colorsPalette = {
-		primary: shades(colors.primary),
-		secondary: shades(colors.secondary),
-		danger: shades(colors.danger),
-		success: shades(colors.success),
-		warning: shades(colors.warning),
-		info: shades(colors.info),
-		background: isDark
-			? generateBlackShade(colors.background)
-			: generateWhiteShade(colors.background),
-		foreground: isDark
-			? generateWhiteShade(colors.foreground)
-			: generateBlackShade(colors.foreground)
+		primary: generateSemanticPalette(colors.primary, backgroundSurface),
+		secondary: generateSemanticPalette(colors.secondary, backgroundSurface),
+		danger: generateSemanticPalette(colors.danger, backgroundSurface),
+		success: generateSemanticPalette(colors.success, backgroundSurface),
+		warning: generateSemanticPalette(colors.warning, backgroundSurface),
+		info: generateSemanticPalette(colors.info, backgroundSurface),
+		background: generateBackgroundPalette(colors.background),
+		foreground: generateForegroundPalette(colors.foreground)
 	} satisfies Colors;
 
 	const cssVariables = paletteToCssVariables(colorsPalette);

@@ -74,7 +74,7 @@ const defaultImageGalleryNavigation = cva({
 });
 
 const defaultImageGalleryImage = cva({
-	base: 'block max-h-full w-full select-none rounded-xl object-contain shadow-2xl'
+	base: 'block max-h-[min(72vh,100%)] w-full select-none rounded-xl object-contain'
 });
 
 const defaultImageGalleryCloseButton = cva({

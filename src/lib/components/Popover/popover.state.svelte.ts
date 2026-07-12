@@ -19,7 +19,6 @@ import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 import { useScrollLock } from '$lib/utils/useScrollLock.svelte.js';
 import { useSafeArea } from '$lib/utils/safeArea.svelte.js';
 import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
-import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
 import { useHoverAction } from '$lib/utils/useHoverAction.svelte.js';
 
 type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -147,13 +146,6 @@ export class PopoverState {
 		},
 		callback: () => {
 			this.close();
-		}
-	});
-
-	focusTrap = useFocusTrap({
-		isActive: () => {
-			return false;
-			return this.isOpen && (this.isLastOfStack || this.isLastOpen);
 		}
 	});
 

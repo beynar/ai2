@@ -140,7 +140,6 @@
 		collapsed={api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile}
 	/>
 {/snippet}
-
 <Theme>
 	{#snippet children(theme: ThemeState)}
 		{#if isPreviewRoute}
