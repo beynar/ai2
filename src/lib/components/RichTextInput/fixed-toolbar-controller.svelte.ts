@@ -49,6 +49,10 @@ export class RichTextInputFixedToolbarController {
 		return this.selection?.linkUrl ?? '';
 	}
 
+	reset() {
+		this.selection = null;
+	}
+
 	update() {
 		const options = this.optionsSource();
 		this.selection = options.enabled

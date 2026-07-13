@@ -1,3 +1,5 @@
+import { untrack } from 'svelte';
+import type { Attachment } from 'svelte/attachments';
 import { bind } from '$lib/utils/state.svelte.js';
 import type { LexicalEditor } from 'lexical';
 import type { AnchoredReference } from './anchored-reference.js';
@@ -113,6 +115,35 @@ export class RichTextInputState {
 		this.lastMarkdown = this.value;
 	}
 
+	rootAttachment: Attachment<HTMLDivElement> = (node) =>
+		untrack(() => {
+			this.rootElement = node;
+			const nextEditor = mountAIComposerLexicalEditor({
+				rootElement: node,
+				value: this.value,
+				disabled: this.disabled,
+				getMenu: () => this.menu,
+				getSuggestions: () => this.suggestions,
+				getSubmitShortcut: () => this.submitShortcut,
+				getFormats: () => this.formats,
+				closeMenu: this.closeMenu,
+				onSubmitShortcut: this.onSubmitShortcut,
+				onChange: this.emitChange,
+				onSelectionChange: this.updateMenuFromSelection
+			});
+			this.editor = nextEditor.editor;
+			this.lastMarkdown = this.value;
+
+			return () => {
+				nextEditor.cleanup();
+				this.closeMenu();
+				this.fixedToolbar.reset();
+				this.selectionMenu.reset();
+				if (this.editor === nextEditor.editor) this.editor = null;
+				if (this.rootElement === node) this.rootElement = null;
+			};
+		});
+
 	updateMenuFromSelection = () => {
 		const nextMenu = readTriggerState(this.triggerCharacters);
 		if (!isSameTriggerState(this.menu, nextMenu)) {
@@ -217,24 +248,5 @@ export class RichTextInputState {
 		if (!this.editor || this.value === this.lastMarkdown) return;
 		loadComposerMarkdown(this.editor, this.value, this.formats);
 		this.lastMarkdown = this.value;
-	};
-
-	mount = () => {
-		const nextEditor = mountAIComposerLexicalEditor({
-			rootElement: this.rootElement,
-			value: this.value,
-			disabled: this.disabled,
-			getMenu: () => this.menu,
-			getSuggestions: () => this.suggestions,
-			getSubmitShortcut: () => this.submitShortcut,
-			getFormats: () => this.formats,
-			closeMenu: this.closeMenu,
-			onSubmitShortcut: this.onSubmitShortcut,
-			onChange: this.emitChange,
-			onSelectionChange: this.updateMenuFromSelection
-		});
-		this.editor = nextEditor.editor;
-		this.lastMarkdown = this.value;
-		return nextEditor.cleanup;
 	};
 }

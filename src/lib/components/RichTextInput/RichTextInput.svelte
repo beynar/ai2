@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import Field from '../Form/Field/Field.svelte';
 	import { createFieldState } from '../Form/Field/field.state.svelte.js';
 	import { AI_COMPOSER_DEFAULT_RICH_TEXT_FORMATS } from './composer/selection-formatting.js';
@@ -171,8 +170,6 @@
 	});
 	$effect(() => state.syncEditable());
 	$effect(() => state.syncValue());
-
-	onMount(() => state.mount());
 </script>
 
 {#snippet richTextInputChrome()}
@@ -181,6 +178,7 @@
 		bind:rootElement={state.rootElement}
 		bind:suggestions={state.suggestions}
 		bind:selectionMenuHandle={state.selectionMenuHandle}
+		editorAttachment={state.rootAttachment}
 		{size}
 		{theme}
 		showFixedToolbar={state.showFixedToolbar}

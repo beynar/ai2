@@ -1,4 +1,5 @@
-import { onMount } from 'svelte';
+import { untrack } from 'svelte';
+import type { Attachment } from 'svelte/attachments';
 
 export const PIN_INPUT_DIGITS_PATTERN = '^\\d+$';
 export const PIN_INPUT_CHARS_PATTERN = '^[a-zA-Z]+$';
@@ -51,24 +52,33 @@ export class PinInputState {
 	isFocused = $state(false);
 	selectionStart = $state<number | null>(null);
 	selectionEnd = $state<number | null>(null);
+	inputAttachment: Attachment<HTMLInputElement>;
 	#previousValue: string;
 	#previousSelection: PreviousSelection = [null, null, 'none'];
 
 	constructor(private options: PinInputStateOptions) {
 		this.#previousValue = this.value.slice(0, this.length);
+		this.inputAttachment = (node) =>
+			untrack(() => {
+				this.input = node;
+				this.syncInputValue(this.value.slice(0, this.length));
+				this.normalizeSelection();
 
-		onMount(() => {
-			this.syncInputValue(this.value.slice(0, this.length));
-			this.normalizeSelection();
+				const document = node.ownerDocument;
+				document.addEventListener('selectionchange', this.normalizeSelection, { capture: true });
 
-			const document = this.input?.ownerDocument;
-			if (!document) return;
-
-			document.addEventListener('selectionchange', this.normalizeSelection, { capture: true });
-			return () => {
-				document.removeEventListener('selectionchange', this.normalizeSelection, { capture: true });
-			};
-		});
+				return () => {
+					document.removeEventListener('selectionchange', this.normalizeSelection, {
+						capture: true
+					});
+					if (this.input === node) {
+						this.input = null;
+						this.selectionStart = null;
+						this.selectionEnd = null;
+						this.#previousSelection = [null, null, 'none'];
+					}
+				};
+			});
 
 		$effect(() => {
 			const value = this.value;

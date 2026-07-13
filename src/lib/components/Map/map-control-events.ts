@@ -1,17 +1,22 @@
+import { fromAction, type Attachment } from 'svelte/attachments';
+
 const STOPPED_CONTROL_EVENTS = ['pointerdown', 'mousedown', 'touchstart', 'dblclick', 'wheel'];
 
 export function stopMapControlEvent(event: Event): void {
 	event.stopPropagation();
 }
 
-export function customMapControlEvents(
+function attachCustomMapControlEvents(
 	node: HTMLElement,
 	onclick: (event: MouseEvent) => void
-): { update: (nextOnClick: (event: MouseEvent) => void) => void; destroy: () => void } {
-	let currentOnClick = onclick;
+): {
+	update: (nextOnclick: (event: MouseEvent) => void) => void;
+	destroy: () => void;
+} {
+	let currentOnclick = onclick;
 
 	function handleClick(event: MouseEvent): void {
-		currentOnClick(event);
+		currentOnclick(event);
 	}
 
 	for (const eventName of STOPPED_CONTROL_EVENTS) {
@@ -20,8 +25,8 @@ export function customMapControlEvents(
 	node.addEventListener('click', handleClick);
 
 	return {
-		update: (nextOnClick) => {
-			currentOnClick = nextOnClick;
+		update: (nextOnclick) => {
+			currentOnclick = nextOnclick;
 		},
 		destroy: () => {
 			for (const eventName of STOPPED_CONTROL_EVENTS) {
@@ -30,4 +35,10 @@ export function customMapControlEvents(
 			node.removeEventListener('click', handleClick);
 		}
 	};
+}
+
+export function customMapControlEvents(
+	onclick: (event: MouseEvent) => void
+): Attachment<HTMLElement> {
+	return fromAction(attachCustomMapControlEvents, () => onclick);
 }

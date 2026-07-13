@@ -1,6 +1,6 @@
 <script lang="ts" generics="TData = unknown">
 	import type { Snippet } from 'svelte';
-	import { onMount } from 'svelte';
+	import { fromAction, type Attachment } from 'svelte/attachments';
 	import { cx as cn } from '$lib/utils/cva/index.js';
 	import { removeMapClusterHull, syncMapClusterHull } from './map-cluster-hull.js';
 	import { toMapError } from './map-errors.js';
@@ -17,10 +17,15 @@
 		onerror?: (error: Error) => void;
 	};
 
-	let { map, Marker, cluster, content, zoomOnClick, onclusterclick, onerror }: Props<TData> = $props();
+	type ClusterMarkerAttachmentParams = {
+		map: MapLibreMap;
+		Marker: MapLibreMarkerConstructor;
+		lngLat: [number, number];
+	};
 
-	let element: HTMLDivElement | undefined;
-	let mapMarker: MapLibreMarker | null = null;
+	let { map, Marker, cluster, content, zoomOnClick, onclusterclick, onerror }: Props<TData> =
+		$props();
+
 	let lngLat = $derived(cluster.coordinates);
 	let defaultClusterClass = $derived(getDefaultClusterClass(cluster.count));
 
@@ -67,33 +72,64 @@
 		markerElement.removeAttribute('tabindex');
 	}
 
-	onMount(() => {
-		if (!element) {
-			return;
-		}
+	function createClusterMarker(
+		node: HTMLDivElement,
+		params: ClusterMarkerAttachmentParams
+	): MapLibreMarker {
+		const markerInstance = new params.Marker({ element: node, anchor: 'center' })
+			.setLngLat(params.lngLat)
+			.addTo(params.map);
+		resetMarkerRootAccessibility(node);
+		return markerInstance;
+	}
 
-		element.addEventListener('click', handleClusterClick);
-		element.addEventListener('mouseenter', handleClusterMouseEnter);
-		element.addEventListener('mouseleave', handleClusterMouseLeave);
-		mapMarker = new Marker({ element, anchor: 'center' }).setLngLat(cluster.coordinates).addTo(map);
-		resetMarkerRootAccessibility(element);
+	function attachClusterMarkerAction(node: HTMLDivElement, params: ClusterMarkerAttachmentParams) {
+		let currentParams = params;
+		let markerInstance = createClusterMarker(node, currentParams);
 
-		return () => {
-			element?.removeEventListener('click', handleClusterClick);
-			element?.removeEventListener('mouseenter', handleClusterMouseEnter);
-			element?.removeEventListener('mouseleave', handleClusterMouseLeave);
-			handleClusterMouseLeave();
-			mapMarker?.remove();
-			mapMarker = null;
+		node.addEventListener('click', handleClusterClick);
+		node.addEventListener('mouseenter', handleClusterMouseEnter);
+		node.addEventListener('mouseleave', handleClusterMouseLeave);
+
+		return {
+			update(nextParams: ClusterMarkerAttachmentParams) {
+				const shouldRecreateMarker =
+					nextParams.map !== currentParams.map || nextParams.Marker !== currentParams.Marker;
+
+				if (shouldRecreateMarker) {
+					markerInstance.remove();
+					markerInstance = createClusterMarker(node, nextParams);
+				} else {
+					markerInstance.setLngLat(nextParams.lngLat);
+				}
+
+				currentParams = nextParams;
+			},
+			destroy() {
+				node.removeEventListener('click', handleClusterClick);
+				node.removeEventListener('mouseenter', handleClusterMouseEnter);
+				node.removeEventListener('mouseleave', handleClusterMouseLeave);
+				handleClusterMouseLeave();
+				markerInstance.remove();
+			}
 		};
-	});
+	}
 
-	$effect(() => {
-		mapMarker?.setLngLat(lngLat);
-	});
+	const attachClusterMarker: Attachment<HTMLDivElement> = fromAction(
+		attachClusterMarkerAction,
+		() => ({
+			map,
+			Marker,
+			lngLat
+		})
+	);
 </script>
 
-<div bind:this={element} data-slot="map-cluster-marker" class="flex items-center justify-center">
+<div
+	{@attach attachClusterMarker}
+	data-slot="map-cluster-marker"
+	class="flex items-center justify-center"
+>
 	{#if content}
 		{@render content(cluster)}
 	{:else}

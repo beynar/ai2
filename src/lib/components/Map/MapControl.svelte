@@ -1,6 +1,6 @@
 <script lang="ts" generics="TData = unknown">
 	import type { Snippet } from 'svelte';
-	import { onMount } from 'svelte';
+	import { fromAction, type Attachment } from 'svelte/attachments';
 	import { arrowsInIcon } from '../Icons/arrowsIn.js';
 	import { gpsFixIcon } from '../Icons/gpsFix.js';
 	import { minusIcon } from '../Icons/minus.js';
@@ -40,6 +40,11 @@
 		onerror?: (error: Error) => void;
 	};
 
+	type ControlAttachmentParams = {
+		map: MapLibreMap;
+		controlPosition?: MapControlPosition;
+	};
+
 	let {
 		map,
 		controls,
@@ -55,9 +60,6 @@
 		onerror
 	}: Props<TData> = $props();
 
-	let element: HTMLDivElement | undefined;
-	let mapControl: MapLibreControl | null = null;
-	let isControlAttached = false;
 	let isLocating = false;
 	let hasUserLocation = false;
 	let actionList = $derived(resolveMapControlActions(controls));
@@ -67,7 +69,9 @@
 	}
 
 	function isActionDisabled(action: MapControlAction): boolean {
-		return isMapControlActionDisabled(action, markers.length) || (action === 'geolocate' && isLocating);
+		return (
+			isMapControlActionDisabled(action, markers.length) || (action === 'geolocate' && isLocating)
+		);
 	}
 
 	function isActionActive(action: MapControlAction): boolean {
@@ -132,7 +136,10 @@
 			const location = await getCurrentMapUserLocation();
 			hasUserLocation = true;
 			onuserlocationchange?.(location);
-			map.easeTo({ center: location.lngLat, zoom: getMapGeolocationZoom(map, geolocationConfig.zoom) });
+			map.easeTo({
+				center: location.lngLat,
+				zoom: getMapGeolocationZoom(map, geolocationConfig.zoom)
+			});
 		} finally {
 			isLocating = false;
 		}
@@ -157,55 +164,66 @@
 		map.easeTo({ center, zoom });
 	}
 
-	function attachControl(): void {
-		if (!element || mapControl) {
-			return;
-		}
-
+	function attachControlAction(node: HTMLDivElement, params: ControlAttachmentParams) {
+		let currentParams = params;
+		let isControlAttached = false;
 		const control: MapLibreControl = {
 			onAdd: () => {
-				if (!element) {
-					throw new Error('Map control element was not initialized.');
-				}
-
 				isControlAttached = true;
-				return element;
+				return node;
 			},
 			onRemove: () => {
 				isControlAttached = false;
-				element?.remove();
+				node.remove();
 			},
 			getDefaultPosition: () => 'top-right'
 		};
 
-		mapControl = control;
-		map.addControl(control, controlPosition);
-	}
-
-	function detachControl(): void {
-		if (!mapControl || !isControlAttached) {
-			mapControl = null;
-			return;
+		function addControl(nextParams: ControlAttachmentParams): void {
+			nextParams.map.addControl(control, nextParams.controlPosition);
 		}
 
-		try {
-			map.removeControl(mapControl);
-		} catch (error) {
-			reportError(toMapError(error, 'Failed to remove map control.'));
-		} finally {
-			mapControl = null;
-			isControlAttached = false;
+		function removeControl(nextParams: ControlAttachmentParams): void {
+			if (!isControlAttached) {
+				return;
+			}
+
+			try {
+				nextParams.map.removeControl(control);
+			} catch (error) {
+				reportError(toMapError(error, 'Failed to remove map control.'));
+			}
 		}
+
+		addControl(currentParams);
+
+		return {
+			update(nextParams: ControlAttachmentParams) {
+				if (
+					nextParams.map === currentParams.map &&
+					nextParams.controlPosition === currentParams.controlPosition
+				) {
+					return;
+				}
+
+				removeControl(currentParams);
+				currentParams = nextParams;
+				addControl(currentParams);
+			},
+			destroy() {
+				removeControl(currentParams);
+			}
+		};
 	}
 
-	onMount(() => {
-		attachControl();
-		return detachControl;
-	});
+	const attachControlElement: Attachment<HTMLDivElement> = fromAction(attachControlAction, () => ({
+		map,
+		controlPosition
+	}));
 </script>
 
 <div
-	bind:this={element}
+	{@attach attachControlElement}
 	data-slot="map-control"
 	role="group"
 	aria-label="Map controls"
@@ -215,7 +233,10 @@
 		{@const disabled = isActionDisabled(action)}
 		{@const buttonArg = getButtonArg(action, disabled)}
 		{#if controlButton}
-			<div use:customMapControlEvents={buttonArg.onclick} class="border-b border-background-muted last:border-b-0">
+			<div
+				{@attach customMapControlEvents(buttonArg.onclick)}
+				class="border-b border-background-muted last:border-b-0"
+			>
 				{@render controlButton(buttonArg)}
 			</div>
 		{:else}
@@ -232,15 +253,25 @@
 				onclick={buttonArg.onclick}
 			>
 				{#if action === 'zoom-in'}
-					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true">{@render plusIcon()}</span>
+					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true"
+						>{@render plusIcon()}</span
+					>
 				{:else if action === 'zoom-out'}
-					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true">{@render minusIcon()}</span>
+					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true"
+						>{@render minusIcon()}</span
+					>
 				{:else if action === 'fit-markers'}
-					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true">{@render arrowsInIcon()}</span>
+					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true"
+						>{@render arrowsInIcon()}</span
+					>
 				{:else if action === 'geolocate'}
-					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true">{@render gpsFixIcon()}</span>
+					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true"
+						>{@render gpsFixIcon()}</span
+					>
 				{:else}
-					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true">{@render arrowsCounterClockwiseIcon()}</span>
+					<span class="inline-flex items-center justify-center [&_svg]:size-4" aria-hidden="true"
+						>{@render arrowsCounterClockwiseIcon()}</span
+					>
 				{/if}
 			</button>
 		{/if}

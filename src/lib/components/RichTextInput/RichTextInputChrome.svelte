@@ -3,6 +3,7 @@
 	import type { CommandGroup } from '../Command/command.props.js';
 	import type { Sizes } from '$lib/types/theme.js';
 	import type { WithAttachments } from '$lib/types/props.js';
+	import type { Attachment } from 'svelte/attachments';
 	import type { RichTextInputFormat, RichTextInputMaxHeight } from './richTextInput.props.js';
 	import RichTextInputFormattingToolbar from './RichTextInputFormattingToolbar.svelte';
 	import RichTextInputSelectionMenu from './RichTextInputSelectionMenu.svelte';
@@ -19,6 +20,7 @@
 	type Props = WithAttachments<{
 		id?: string;
 		rootElement: HTMLDivElement | null;
+		editorAttachment?: Attachment<HTMLDivElement>;
 		suggestions: AIComposerSuggestionHandle | undefined;
 		selectionMenuHandle: { focusFirst: () => void } | undefined;
 		size: Sizes;
@@ -53,6 +55,7 @@
 	let {
 		id,
 		rootElement = $bindable<HTMLDivElement | null>(null),
+		editorAttachment,
 		suggestions = $bindable<AIComposerSuggestionHandle | undefined>(),
 		selectionMenuHandle = $bindable<{ focusFirst: () => void } | undefined>(),
 		size,
@@ -118,6 +121,7 @@
 	<RichTextInputViewport
 		{id}
 		bind:rootElement
+		{editorAttachment}
 		{size}
 		{theme}
 		{disabled}

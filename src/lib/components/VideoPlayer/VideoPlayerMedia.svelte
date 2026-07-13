@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Slot } from '$lib/components/Slot/slot.js';
 	import type { Sizes } from '$lib/types/theme.js';
+	import type { Attachment } from 'svelte/attachments';
 	import AspectRatio from '../AspectRatio/AspectRatio.svelte';
 	import type { AspectRatioRatio } from '../AspectRatio/aspectRatio.props.js';
 	import SlotComponent from '../Slot/Slot.svelte';
@@ -17,6 +18,7 @@
 
 	let {
 		state,
+		attachment,
 		classes,
 		size,
 		ratio,
@@ -38,6 +40,7 @@
 		children
 	}: {
 		state: VideoPlayerState;
+		attachment: Attachment<HTMLVideoElement>;
 		classes: VideoPlayerClasses;
 		size: Sizes;
 		ratio: AspectRatioRatio | 'auto';
@@ -69,7 +72,7 @@
 {#snippet media()}
 	<div data-slot="video-player-frame" class={classes.frame({ ratio: frameRatio })}>
 		<video
-			bind:this={state.mediaElement}
+			{@attach attachment}
 			data-slot="video-player-media"
 			class={classes.media({ disabled })}
 			{poster}

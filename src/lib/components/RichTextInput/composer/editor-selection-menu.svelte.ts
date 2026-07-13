@@ -95,6 +95,12 @@ export class AIComposerSelectionMenuController {
 		this.linkEditing = isEditing;
 	}
 
+	reset() {
+		this.currentSelection = null;
+		this.dismissedSignature = null;
+		this.linkEditing = false;
+	}
+
 	format(format: AIComposerSelectionFormat) {
 		const selection = this.currentSelection?.selection;
 		const editor = this.optionsSource().editor;

@@ -4,7 +4,8 @@
 </script>
 
 <script lang="ts" generics="TData = unknown">
-	import { onDestroy, onMount } from 'svelte';
+	import { untrack } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import { useTheme } from '../Theme/theme.state.svelte.js';
 	import { useMapTheme } from './map.theme.js';
 	import MapContent from './MapContent.svelte';
@@ -15,14 +16,24 @@
 	import { normalizeMapMarkers } from './map-data.js';
 	import { reportMapError, toMapError } from './map-errors.js';
 	import { applyMapInteractivity, getMapInteractionOptions } from './map-interactivity.js';
-	import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, resolveDefaultMapTheme, resolveMapStyle } from './map-theme.js';
+	import {
+		DEFAULT_MAP_CENTER,
+		DEFAULT_MAP_ZOOM,
+		resolveDefaultMapTheme,
+		resolveMapStyle
+	} from './map-theme.js';
 	import { bindMapStyleTokenChanges } from './map-token-style.js';
 	import { bindMapViewEvents } from './map-view-events.js';
 	import { getMapMarkerBounds, normalizeMapBounds } from './map-viewport.js';
 	import { loadMapLibreFromCdn } from './maplibre-cdn.js';
 	import type { NormalizedMapMarkers } from './map-data.js';
 	import type { MapProps } from './map.props.js';
-	import type { MapLibreErrorEvent, MapLibreMap, MapLibreMapOptions, MapLibreMarkerConstructor } from './maplibre-types.js';
+	import type {
+		MapLibreErrorEvent,
+		MapLibreMap,
+		MapLibreMapOptions,
+		MapLibreMarkerConstructor
+	} from './maplibre-types.js';
 
 	let {
 		markers,
@@ -64,22 +75,21 @@
 	const theme = useTheme();
 	const classes = $derived(useMapTheme(mapTheme));
 
-	let container: HTMLDivElement | undefined;
+	let container: HTMLDivElement | null = null;
 	let map = $state.raw<MapLibreMap | null>(null);
 	let MarkerConstructor = $state.raw<MapLibreMarkerConstructor | null>(null);
 	let isMapLoaded = $state(false);
 	// Surfaced when the map fails to create (e.g. MapLibre CDN unreachable) so the
 	// skeleton doesn't hang forever with no indication of what went wrong.
 	let loadError = $state<Error | null>(null);
-	let isMounted = false;
+	let attachmentId = 0;
 	let appliedStyleSignature: string | undefined;
 	let styleRequestId = 0;
-	let unbindStyleTokenChanges: (() => void) | undefined;
 	let normalizedMarkers: NormalizedMapMarkers<TData> = $derived(normalizeMapMarkers(markers));
 	let markerNodes = $derived(Array.from(normalizedMarkers.markerLookup.values()));
 	let markerBounds = $derived(getMapMarkerBounds(markerNodes));
 	let normalizedBounds = $derived(bounds ? normalizeMapBounds(bounds) : null);
-	let resolvedMapTheme = $derived(resolveDefaultMapTheme((theme.resolvedTheme === 'dark')));
+	let resolvedMapTheme = $derived(resolveDefaultMapTheme(theme.resolvedTheme === 'dark'));
 	let clusterConfig = $derived(resolveMapClusterConfig(cluster));
 
 	function reportError(error: Error): void {
@@ -91,8 +101,8 @@
 		reportError(toMapError(payload, 'MapLibre emitted a non-Error error payload.'));
 	}
 
-	async function createMap(): Promise<void> {
-		if (!container || map) {
+	async function createMap(node: HTMLDivElement, currentAttachmentId: number): Promise<void> {
+		if (container !== node || currentAttachmentId !== attachmentId || map) {
 			return;
 		}
 		loadError = null;
@@ -100,15 +110,15 @@
 		try {
 			const [maplibre, initialStyle] = await Promise.all([
 				loadMapLibreFromCdn(),
-				resolveMapStyle(resolvedMapTheme, container, styleUrl, styles)
+				resolveMapStyle(resolvedMapTheme, node, styleUrl, styles)
 			]);
-			if (!isMounted || !container || map) {
+			if (container !== node || currentAttachmentId !== attachmentId || map) {
 				return;
 			}
 
 			MarkerConstructor = maplibre.Marker;
 			const mapOptions: MapLibreMapOptions = {
-				container,
+				container: node,
 				style: initialStyle.style,
 				center,
 				zoom,
@@ -121,7 +131,7 @@
 
 			mapInstance.on('error', handleMapError);
 			mapInstance.on('load', () => {
-				if (!isMounted || map !== mapInstance) {
+				if (container !== node || currentAttachmentId !== attachmentId || map !== mapInstance) {
 					return;
 				}
 
@@ -132,6 +142,10 @@
 			appliedStyleSignature = initialStyle.signature;
 			map = mapInstance;
 		} catch (error) {
+			if (container !== node || currentAttachmentId !== attachmentId) {
+				return;
+			}
+
 			const mapError = toMapError(error, 'Failed to create MapLibre map.');
 			loadError = mapError;
 			reportError(mapError);
@@ -141,41 +155,60 @@
 	async function applyResolvedStyle(): Promise<void> {
 		if (!map || !container) return;
 		const requestId = ++styleRequestId;
+		const mapInstance = map;
+		const node = container;
 
 		try {
-			const nextStyle = await resolveMapStyle(resolvedMapTheme, container, styleUrl, styles);
-			if (!isMounted || !map || requestId !== styleRequestId || appliedStyleSignature === nextStyle.signature) return;
-			map.setStyle(nextStyle.style);
+			const nextStyle = await resolveMapStyle(resolvedMapTheme, node, styleUrl, styles);
+			if (
+				map !== mapInstance ||
+				container !== node ||
+				requestId !== styleRequestId ||
+				appliedStyleSignature === nextStyle.signature
+			) {
+				return;
+			}
+			mapInstance.setStyle(nextStyle.style);
 			appliedStyleSignature = nextStyle.signature;
 		} catch (error) {
+			if (map !== mapInstance || container !== node || requestId !== styleRequestId) {
+				return;
+			}
+
 			reportError(toMapError(error, 'Failed to apply MapLibre map style.'));
 		}
 	}
 
 	function removeMap(): void {
-		if (!map) {
-			return;
-		}
-
-		map.remove();
+		map?.remove();
 		map = null;
 		MarkerConstructor = null;
 		isMapLoaded = false;
 	}
 
-	onMount(() => {
-		isMounted = true;
-		if (container) {
-			unbindStyleTokenChanges = bindMapStyleTokenChanges(container, () => void applyResolvedStyle());
-		}
-		void createMap();
-	});
+	const attachMap: Attachment<HTMLDivElement> = (node) => {
+		return untrack(() => {
+			const currentAttachmentId = ++attachmentId;
+			const removeStyleTokenBinding = bindMapStyleTokenChanges(
+				node,
+				() => void applyResolvedStyle()
+			);
+			container = node;
+			void createMap(node, currentAttachmentId);
 
-	onDestroy(() => {
-		isMounted = false;
-		unbindStyleTokenChanges?.();
-		removeMap();
-	});
+			return () => {
+				if (currentAttachmentId !== attachmentId) {
+					return;
+				}
+
+				attachmentId += 1;
+				styleRequestId += 1;
+				removeStyleTokenBinding();
+				container = null;
+				removeMap();
+			};
+		});
+	};
 
 	$effect(() => {
 		resolvedMapTheme;
@@ -205,12 +238,7 @@
 	});
 </script>
 
-<div
-	bind:this={container}
-	data-slot="map"
-	class={classes.root({ size, className })}
-	{...rest}
->
+<div {@attach attachMap} data-slot="map" class={classes.root({ size, className })} {...rest}>
 	{#if loadError}
 		<div
 			role="alert"

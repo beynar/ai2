@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import { checkIcon } from '../Icons/check.js';
 	import { linkBreakIcon } from '../Icons/linkBreak.js';
 	import { xIcon } from '../Icons/x.js';
@@ -19,18 +19,19 @@
 
 	let { size, theme, linkUrl, onApply, onRemove, onCancel }: Props = $props();
 
-	let linkInput = $state<HTMLInputElement>();
 	let draftLink = $state('');
 
 	const classes = $derived(useRichTextInputTheme(theme));
 	const canRemoveLink = $derived(linkUrl.trim().length > 0);
+	const autofocusLinkInput: Attachment<HTMLInputElement> = (node) => {
+		const focusTimeout = setTimeout(() => {
+			node.focus({ preventScroll: true });
+		}, 0);
+		return () => clearTimeout(focusTimeout);
+	};
 
 	$effect(() => {
 		draftLink = linkUrl;
-	});
-
-	onMount(() => {
-		linkInput?.focus({ preventScroll: true });
 	});
 
 	function submitLink(event: SubmitEvent) {
@@ -47,7 +48,7 @@
 
 <form class={classes.linkForm({ size })} onsubmit={submitLink}>
 	<input
-		bind:this={linkInput}
+		{@attach autofocusLinkInput}
 		bind:value={draftLink}
 		aria-label="Link URL"
 		placeholder="Paste link"

@@ -3,7 +3,7 @@
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import type { TextAreaProps } from './textArea.props.js';
 	import { useTextAreaTheme } from './textArea.theme.js';
-	import { autosize } from './autosize.js';
+	import { autosize } from './autosize.svelte.js';
 
 	let {
 		value = $bindable(''),
@@ -71,6 +71,7 @@
 	});
 
 	const classes = $derived(useTextAreaTheme(theme));
+	const textareaAutosize = autosize(() => ({ value: field.value }));
 </script>
 
 <Field
@@ -94,7 +95,7 @@
 		disabled={field.disabled}
 		{rows}
 		data-1p-ignore
-		use:autosize={{ value: field.value }}
+		{@attach textareaAutosize}
 		bind:this={field.node}
 		{placeholder}
 		bind:value={field.value}

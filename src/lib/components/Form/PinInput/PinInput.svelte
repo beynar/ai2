@@ -122,6 +122,7 @@
 		class={classes.root({ size: rest.size, disabled: field.disabled })}
 	>
 		<input
+			{@attach state.inputAttachment}
 			data-slot="pin-input-input"
 			type="text"
 			{id}
@@ -133,7 +134,6 @@
 			disabled={field.disabled}
 			aria-label={label ? undefined : 'One-time code'}
 			class={classes.input()}
-			bind:this={state.input}
 			data-pin-input-input
 			data-pin-input-input-mss={state.selectionStart}
 			data-pin-input-input-mse={state.selectionEnd}

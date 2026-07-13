@@ -1,7 +1,6 @@
 <script lang="ts" generics="TData = unknown">
-	import type { Snippet } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
-	import { onMount } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
+	import { fromAction, type Attachment } from 'svelte/attachments';
 	import MapMarkerDefault from './MapMarkerDefault.svelte';
 	import MapMarkerPopup from './MapMarkerPopup.svelte';
 	import MapMarkerTooltip from './MapMarkerTooltip.svelte';
@@ -25,10 +24,14 @@
 		onmarkerclick?: (marker: MapMarker<TData>) => void;
 	};
 
+	type MarkerAttachmentParams = {
+		map: MapLibreMap;
+		Marker: MapLibreMarkerConstructor;
+		lngLat: [number, number];
+	};
+
 	let { map, Marker, marker, content, popup, tooltip, onmarkerclick }: Props<TData> = $props();
 
-	let element: HTMLDivElement | undefined;
-	let mapMarker: MapLibreMarker | null = null;
 	let popupOpen = $state(false);
 	let markerColor = $derived(marker.color ?? 'var(--foreground)');
 	let lngLat = $derived<[number, number]>([marker.lng, marker.lat]);
@@ -38,8 +41,8 @@
 		map,
 		lngLat
 	});
-	let popupContent = $derived(popup === true ? true : popup ?? marker.popup);
-	let tooltipContent = $derived(tooltip === true ? true : tooltip ?? marker.tooltip);
+	let popupContent = $derived(popup === true ? true : (popup ?? marker.popup));
+	let tooltipContent = $derived(tooltip === true ? true : (tooltip ?? marker.tooltip));
 	let hasPopup = $derived(popup !== false && popupContent != null);
 	let hasTooltip = $derived(tooltip !== false && tooltipContent != null);
 	let plainLabel = $derived(marker.label ? getPlainHtmlText(marker.label) : String(marker.id));
@@ -93,42 +96,67 @@
 		tooltipAttach: Attachment<HTMLElement>
 	): Attachment<HTMLElement> {
 		return (node) => {
-			const removeAccessibility = applyMapMarkerTriggerAccessibility(node, {
+			const accessibilityOptions = {
 				isInteractive,
 				isFocusable,
 				label: triggerLabel,
 				activate: activateCustomTriggerFromKeyboard
-			});
-			const removePopup = popupAttach(node);
-			const removeTooltip = tooltipAttach(node);
-
-			return () => {
-				removeTooltip?.();
-				removePopup?.();
-				removeAccessibility();
 			};
+
+			return untrack(() => {
+				const removeAccessibility = applyMapMarkerTriggerAccessibility(node, accessibilityOptions);
+				const removePopup = popupAttach(node);
+				const removeTooltip = tooltipAttach(node);
+
+				return () => {
+					removeTooltip?.();
+					removePopup?.();
+					removeAccessibility();
+				};
+			});
 		};
 	}
 
-	onMount(() => {
-		if (!element) {
-			return;
-		}
+	function createMarker(node: HTMLDivElement, params: MarkerAttachmentParams): MapLibreMarker {
+		const markerInstance = new params.Marker({ element: node, anchor: 'bottom' })
+			.setLngLat(params.lngLat)
+			.addTo(params.map);
+		resetMarkerRootAccessibility(node);
+		return markerInstance;
+	}
 
-		element.addEventListener('click', handleContainerClick);
-		mapMarker = new Marker({ element, anchor: 'bottom' }).setLngLat([marker.lng, marker.lat]).addTo(map);
-		resetMarkerRootAccessibility(element);
+	function attachMarkerAction(node: HTMLDivElement, params: MarkerAttachmentParams) {
+		let currentParams = params;
+		let markerInstance = createMarker(node, currentParams);
 
-		return () => {
-			element?.removeEventListener('click', handleContainerClick);
-			mapMarker?.remove();
-			mapMarker = null;
+		node.addEventListener('click', handleContainerClick);
+
+		return {
+			update(nextParams: MarkerAttachmentParams) {
+				const shouldRecreateMarker =
+					nextParams.map !== currentParams.map || nextParams.Marker !== currentParams.Marker;
+
+				if (shouldRecreateMarker) {
+					markerInstance.remove();
+					markerInstance = createMarker(node, nextParams);
+				} else {
+					markerInstance.setLngLat(nextParams.lngLat);
+				}
+
+				currentParams = nextParams;
+			},
+			destroy() {
+				node.removeEventListener('click', handleContainerClick);
+				markerInstance.remove();
+			}
 		};
-	});
+	}
 
-	$effect(() => {
-		mapMarker?.setLngLat(lngLat);
-	});
+	const attachMarker: Attachment<HTMLDivElement> = fromAction(attachMarkerAction, () => ({
+		map,
+		Marker,
+		lngLat
+	}));
 </script>
 
 {#snippet markerVisual()}
@@ -139,7 +167,10 @@
 	{/if}
 {/snippet}
 
-{#snippet markerTrigger(popupAttach: Attachment<HTMLElement>, tooltipAttach: Attachment<HTMLElement>)}
+{#snippet markerTrigger(
+	popupAttach: Attachment<HTMLElement>,
+	tooltipAttach: Attachment<HTMLElement>
+)}
 	{#if content}
 		<div
 			data-slot="map-marker-trigger"
@@ -171,7 +202,7 @@
 	{/if}
 {/snippet}
 
-<div bind:this={element} data-slot="map-marker" class="flex flex-col items-center">
+<div {@attach attachMarker} data-slot="map-marker" class="flex flex-col items-center">
 	{#if hasPopup && popupContent}
 		<MapMarkerPopup args={snippetArg} content={popupContent} bind:open={popupOpen}>
 			{#snippet children(popupAttach)}

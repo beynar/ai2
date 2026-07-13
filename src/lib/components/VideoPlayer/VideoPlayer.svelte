@@ -260,7 +260,7 @@
 		if (keyboardShortcuts) player.handleKeydown(event);
 	}
 
-	createVideoPlayerLifecycle({
+	const lifecycle = createVideoPlayerLifecycle({
 		player,
 		sourceSignature: () => sourceSignature,
 		onElementsChange: (mediaElement, rootElement) => {
@@ -272,7 +272,7 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
-	bind:this={player.rootElement}
+	{@attach lifecycle.rootAttachment}
 	data-slot="video-player"
 	data-state={player.state}
 	data-paused={paused ? 'true' : undefined}
@@ -294,6 +294,7 @@
 >
 	<VideoPlayerMedia
 		state={player}
+		attachment={lifecycle.mediaAttachment}
 		{classes}
 		{size}
 		{ratio}

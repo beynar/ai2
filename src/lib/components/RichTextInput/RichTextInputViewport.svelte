@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { untrack } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import ScrollArea from '../ScrollArea/ScrollArea.svelte';
 	import type { Sizes } from '$lib/types/theme.js';
 	import type { RichTextInputMaxHeight } from './richTextInput.props.js';
@@ -9,6 +10,7 @@
 	type Props = {
 		id?: string;
 		rootElement?: HTMLDivElement | null;
+		editorAttachment?: Attachment<HTMLDivElement>;
 		size: Sizes;
 		theme?: RichTextInputThemeProps;
 		disabled?: boolean;
@@ -24,6 +26,7 @@
 	let {
 		id,
 		rootElement = $bindable<HTMLDivElement | null>(null),
+		editorAttachment,
 		size,
 		theme,
 		disabled = false,
@@ -45,6 +48,7 @@
 	);
 	let editorShellElement = $state<HTMLDivElement | null>(null);
 	let showScrollComfortSpacer = $state(false);
+	let scheduleRefresh = $state<(() => void) | null>(null);
 
 	function getViewport() {
 		return editorShellElement?.closest<HTMLElement>('[data-scroll-area-viewport]') ?? null;
@@ -109,40 +113,54 @@
 		if (showScrollComfortSpacer) requestAnimationFrame(scrollCaretIntoComfortZone);
 	}
 
-	onMount(() => {
-		let frame: number | null = null;
-		const scheduleRefresh = () => {
-			if (frame !== null) cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(() => {
-				frame = null;
-				refreshScrollComfortSpacer();
+	const observeViewport: Attachment<HTMLDivElement> = (node) =>
+		untrack(() => {
+			editorShellElement = node;
+			let frame: number | null = null;
+			const schedule = () => {
+				if (frame !== null) cancelAnimationFrame(frame);
+				frame = requestAnimationFrame(() => {
+					frame = null;
+					refreshScrollComfortSpacer();
+				});
+			};
+			scheduleRefresh = schedule;
+
+			$effect(() => {
+				const editorElement = rootElement;
+				const viewport = node.closest<HTMLElement>('[data-scroll-area-viewport]');
+				schedule();
+				if (!editorElement || !viewport) return;
+
+				const resizeObserver = new ResizeObserver(schedule);
+				const mutationObserver = new MutationObserver(schedule);
+				resizeObserver.observe(node);
+				resizeObserver.observe(editorElement);
+				resizeObserver.observe(viewport);
+				mutationObserver.observe(editorElement, {
+					childList: true,
+					characterData: true,
+					subtree: true
+				});
+
+				return () => {
+					resizeObserver.disconnect();
+					mutationObserver.disconnect();
+				};
 			});
-		};
 
-		const shellElement = editorShellElement;
-		const editorElement = rootElement;
-		const viewport = getViewport();
-
-		scheduleRefresh();
-		if (!shellElement || !editorElement || !viewport) return;
-
-		const resizeObserver = new ResizeObserver(scheduleRefresh);
-		const mutationObserver = new MutationObserver(scheduleRefresh);
-
-		resizeObserver.observe(shellElement);
-		resizeObserver.observe(editorElement);
-		resizeObserver.observe(viewport);
-		mutationObserver.observe(editorElement, {
-			childList: true,
-			characterData: true,
-			subtree: true
+			return () => {
+				if (frame !== null) cancelAnimationFrame(frame);
+				if (scheduleRefresh === schedule) scheduleRefresh = null;
+				if (editorShellElement === node) editorShellElement = null;
+			};
 		});
 
-		return () => {
-			if (frame !== null) cancelAnimationFrame(frame);
-			resizeObserver.disconnect();
-			mutationObserver.disconnect();
-		};
+	$effect(() => {
+		size;
+		isEmpty;
+		maxHeightCss;
+		scheduleRefresh?.();
 	});
 </script>
 
@@ -157,13 +175,13 @@
 		class={classes.scrollArea({ size, disabled, standalone, height })}
 	>
 		<div
-			bind:this={editorShellElement}
+			{@attach observeViewport}
 			data-slot="rich-text-input-shell"
 			class={classes.editorShell({ size })}
 		>
 			<div
 				{id}
-				bind:this={rootElement}
+				{@attach editorAttachment}
 				data-slot="ai-composer-editor"
 				data-rich-text-input-editor="true"
 				contenteditable={disabled ? 'false' : 'true'}
