@@ -53,15 +53,20 @@ A rounded \`root\` panel containing, top to bottom:
 2. A \`controls\` row — a square \`eyedropperButton\` and a \`sliders\` column with a rainbow
    \`hueTrack\` (0–360) and a checkerboard \`alphaTrack\` (the \`alphaGradient\` overlays a pure-CSS
    checkerboard), each with a white \`sliderThumb\`.
-3. An \`inputs\` row — a native \`select\` (hex/rgb/hsl), the color \`input\`, and an \`alphaField\`
-   wrapping the \`alphaInput\` (0–100) and its \`alphaSuffix\` (\`%\`).
+3. An \`inputs\` row — a native \`select\` (hex/rgb/hsl), the color \`input\`, and an
+   \`alphaField\` wrapping the \`alphaInput\` (0–100) and its \`alphaSuffix\` (\`%\`). The text
+   input always shows the solid color (no alpha suffix); alpha lives in the % input and the
+   alpha slider, so the row is identical in every format.
 
 ## Interaction
 
 - The square and both sliders support click-to-jump and continuous pointer drag.
-- The color text input is masked (Maskito) for the selected format — hex auto-inserts the leading \`#\`
-  and accepts up to 8 hex digits; rgb/hsl constrain keystrokes to their notation — and commits on
-  Enter or blur; an incomplete entry reverts.
+- The color text input is masked (Maskito) for the selected format: hex auto-inserts the leading \`#\`
+  and takes up to 8 hex digits; rgb/hsl are structured templates auto-inserting the \`rgb(\`/\`hsl(\`
+  prefix, \`, \` separators and hsl's \`%\` suffixes as digits flow in (\`,\` ends a channel early; a
+  missing \`)\` is completed on commit). Entries commit on Enter or blur; an incomplete entry reverts.
+  The text always shows the solid form; a typed/eyedropped color without an explicit alpha keeps the
+  current alpha (pasting \`rgba()\`/8-digit hex still applies the pasted alpha).
 - The alpha input is masked to 0–100 and commits on change; the format select only changes the text representation.
 - The eyedropper uses the native \`window.EyeDropper\` API and is disabled where unsupported (SSR-safe).
 

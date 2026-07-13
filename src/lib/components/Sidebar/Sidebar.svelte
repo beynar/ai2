@@ -118,7 +118,7 @@
 	const withBanner = $derived(!!banner);
 	const rootClass = $derived(
 		cx(
-			'group/sidebar-wrapper flex w-full bg-background-muted text-foreground',
+			'group/sidebar-wrapper flex w-full text-foreground',
 			frame === 'viewport'
 				? 'h-svh min-h-0 overflow-hidden'
 				: 'relative h-full min-h-0 overflow-hidden rounded-[inherit]',

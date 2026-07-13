@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { addAlphaToHex, isValidColor, parseCSS, rgb2hex, rgb2hsl } from 'colorizr';
 	import ColorPicker from '../ColorPicker/ColorPicker.svelte';
-	import { colorMask } from '../ColorPicker/colorMask.js';
+	import { closeFunctional, colorMask } from '../ColorPicker/colorMask.js';
 	import Field from '../Field/Field.svelte';
 	import FieldActionButton from '../Field/FieldActionButton.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
@@ -79,6 +79,10 @@
 	const t = $derived(useI18n(i18n));
 	const classes = $derived(useColorInputTheme(theme));
 
+	// Like DateInput's format-pattern placeholder: hint the masked shape of the selected format.
+	const formatPlaceholders = { hex: '#rrggbb', rgb: 'rgb(r, g, b)', hsl: 'hsl(h, s%, l%)' } as const;
+	const effectivePlaceholder = $derived(placeholder || formatPlaceholders[format ?? 'hex']);
+
 	const round = (input: number, decimals: number) => {
 		const factor = 10 ** decimals;
 		return Math.round(input * factor) / factor;
@@ -115,7 +119,7 @@
 	// Parse any parseable CSS color into the canonical hex; null when unparseable (caller ignores it,
 	// leaving the draft text to be reverted on blur).
 	const toHex = (input: string): string | null => {
-		const trimmed = input?.trim();
+		const trimmed = input?.trim() ? closeFunctional(input.trim()) : '';
 		if (!trimmed || !isValidColor(trimmed)) return null;
 		let rgb;
 		try {
@@ -232,7 +236,7 @@
 				{id}
 				name={field.name}
 				bind:this={field.node}
-				{placeholder}
+				placeholder={effectivePlaceholder}
 				disabled={field.disabled}
 				spellcheck="false"
 				autocomplete="off"

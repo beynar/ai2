@@ -164,7 +164,8 @@ export const en = {
 	alpha: 'Alpha',
 	format: 'format',
 	percentage: 'percentage',
-	pickColorFromScreen: 'Pick a color from the screen'
+	pickColorFromScreen: 'Pick a color from the screen',
+	dragToReorder: 'Drag to reorder'
 };
 
 export type Messages = typeof en;

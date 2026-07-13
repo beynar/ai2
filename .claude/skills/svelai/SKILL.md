@@ -152,7 +152,7 @@ Pattern: `import { set{Component}Theme } from 'svelai/{kebab-name}'`
 
 **Overlays & Feedback**: See [overlays.md](overlays.md) for Dialog, Popover, Tooltip, Toast, Confirmation, Alert, NetworkIndicator.
 
-**Data & Utility**: See [data-utility.md](data-utility.md) for Table, Card, Skeleton, Slot.
+**Data & Utility**: See [data-utility.md](data-utility.md) for Table, SortableList, Card, Skeleton, Slot.
 
 ## Quick Patterns
 

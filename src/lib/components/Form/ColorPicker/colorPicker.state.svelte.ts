@@ -3,12 +3,14 @@ import type { Attachment } from 'svelte/attachments';
 import { addAlphaToHex, isValidColor, parseCSS, rgb2hex, rgb2hsl } from 'colorizr';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import { createBindableStateClass } from '$lib/utils/state.svelte.js';
+import { closeFunctional } from './colorMask.js';
 
 /** The text representation used by the color input; the canonical bound value stays hex regardless. */
 export type ColorFormat = 'hex' | 'rgb' | 'hsl';
 
 type Rgb = { r: number; g: number; b: number };
-type Hsva = { h: number; s: number; v: number; a: number };
+// `a` is null when the source string carried no explicit alpha (e.g. '#ff0000', 'rgb(...)').
+type Hsva = { h: number; s: number; v: number; a: number | null };
 
 type ColorPickerStateOptions = {
 	value?: string;
@@ -19,10 +21,6 @@ type ColorPickerStateOptions = {
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 const clampHue = (value: number) => Math.min(360, Math.max(0, value));
-const round = (value: number, decimals: number) => {
-	const factor = 10 ** decimals;
-	return Math.round(value * factor) / factor;
-};
 
 // HSV → RGB (0–255). colorizr covers hex/rgb/hsl/oklab/oklch but not HSV, so the square's
 // hue/saturation/value math is done here to keep hue & saturation when a color is desaturated.
@@ -108,18 +106,20 @@ export class ColorPickerState extends createBindableStateClass<ColorPickerStateO
 		const { h, s, l } = rgb2hsl([this.rgb.r, this.rgb.g, this.rgb.b]);
 		return { h: Math.round(h), s: Math.round(s), l: Math.round(l) };
 	});
-	// The color rendered as text in the currently selected format.
+	// The color rendered as text in the currently selected format — always the solid form:
+	// alpha is expressed exclusively by the % input and the alpha slider, keeping the bottom
+	// row visually consistent across formats.
 	formatted = $derived.by(() => {
 		const format = this.format ?? 'hex';
 		if (format === 'rgb') {
 			const { r, g, b } = this.rgb;
-			return this.a < 1 ? `rgba(${r}, ${g}, ${b}, ${round(this.a, 2)})` : `rgb(${r}, ${g}, ${b})`;
+			return `rgb(${r}, ${g}, ${b})`;
 		}
 		if (format === 'hsl') {
 			const { h, s, l } = this.hslParts;
-			return this.a < 1 ? `hsla(${h}, ${s}%, ${l}%, ${round(this.a, 2)})` : `hsl(${h}, ${s}%, ${l}%)`;
+			return `hsl(${h}, ${s}%, ${l}%)`;
 		}
-		return this.hex;
+		return this.solidColor;
 	});
 	alphaPercent = $derived(Math.round(this.a * 100));
 	// Solid hue backdrop for the saturation/value square.
@@ -141,14 +141,14 @@ export class ColorPickerState extends createBindableStateClass<ColorPickerStateO
 					this.mounted = true;
 					if (incoming) {
 						const parsed = this.parse(incoming);
-						if (parsed) this.applyParsed(parsed);
+						if (parsed) this.applyParsed(parsed, 1);
 					}
 					this.lastEmitted = incoming;
 					return;
 				}
 				if (incoming === this.lastEmitted) return;
 				const parsed = this.parse(incoming ?? '');
-				if (parsed) this.applyParsed(parsed);
+				if (parsed) this.applyParsed(parsed, 1);
 				this.lastEmitted = incoming;
 			});
 		});
@@ -161,7 +161,7 @@ export class ColorPickerState extends createBindableStateClass<ColorPickerStateO
 
 	// Parse any CSS color string into HSVA; returns null when it is not a valid/parseable color.
 	private parse(input: string): Hsva | null {
-		const trimmed = typeof input === 'string' ? input.trim() : '';
+		const trimmed = typeof input === 'string' ? closeFunctional(input.trim()) : '';
 		if (!trimmed || !isValidColor(trimmed)) return null;
 		let rgb: Rgb & { alpha?: number };
 		try {
@@ -169,22 +169,25 @@ export class ColorPickerState extends createBindableStateClass<ColorPickerStateO
 		} catch {
 			return null;
 		}
-		const a = typeof rgb.alpha === 'number' ? clamp01(rgb.alpha) : 1;
+		const a = typeof rgb.alpha === 'number' ? clamp01(rgb.alpha) : null;
 		const { h, s, v } = rgbToHsv(rgb.r, rgb.g, rgb.b);
 		return { h, s, v, a };
 	}
 
 	// Apply a parsed color, preserving hue when achromatic and hue+saturation when black.
-	private applyParsed(parsed: Hsva) {
+	// `fallbackAlpha` fills in when the source had no explicit alpha: 1 for canonical `value`
+	// writes, the current alpha for text edits (the picker's text input is alpha-less).
+	private applyParsed(parsed: Hsva, fallbackAlpha: number) {
+		const a = parsed.a ?? fallbackAlpha;
 		if (parsed.v === 0) {
 			this.v = 0;
-			this.a = parsed.a;
+			this.a = a;
 			return;
 		}
 		if (parsed.s !== 0) this.h = parsed.h;
 		this.s = parsed.s;
 		this.v = parsed.v;
-		this.a = parsed.a;
+		this.a = a;
 	}
 
 	// Push the current HSVA out as hex: records it, writes the bound value, fires onChange.
@@ -217,12 +220,14 @@ export class ColorPickerState extends createBindableStateClass<ColorPickerStateO
 		this.emit();
 	}
 
-	// Try to commit a typed/pasted/eyedropped CSS color. Returns false when unparseable (caller reverts).
+	// Try to commit a typed/pasted/eyedropped CSS color. Returns false when unparseable (caller
+	// reverts). Alpha-less input (the text input's solid form, the eyedropper's opaque hex) keeps
+	// the current alpha — alpha is owned by the % input and the alpha slider.
 	commitText = (input: string): boolean => {
 		if (this.disabled) return false;
 		const parsed = this.parse(input);
 		if (!parsed) return false;
-		this.applyParsed(parsed);
+		this.applyParsed(parsed, this.a);
 		this.emit();
 		return true;
 	};

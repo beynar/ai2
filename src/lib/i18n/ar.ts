@@ -157,5 +157,6 @@ export const ar: Messages = {
 	alpha: 'ألفا',
 	format: 'التنسيق',
 	percentage: 'النسبة المئوية',
-	pickColorFromScreen: 'اختيار لون من الشاشة'
+	pickColorFromScreen: 'اختيار لون من الشاشة',
+	dragToReorder: 'اسحب لإعادة الترتيب'
 };

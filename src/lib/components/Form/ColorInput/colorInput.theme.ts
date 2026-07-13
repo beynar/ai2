@@ -2,8 +2,9 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 // The color text input showing / accepting the value in the selected format (hex / rgb / hsl).
+// Negative word-spacing halves the mono font's full-width spaces after rgb()/hsl() commas.
 const defaultInput = cva({
-	base: 'outline-none flex-1 w-full rounded bg-transparent resize-none placeholder:text-foreground-muted autofill:text-foreground-light appearance-none font-mono text-sm leading-normal',
+	base: 'outline-none flex-1 w-full rounded bg-transparent resize-none placeholder:text-foreground-muted autofill:text-foreground-light appearance-none font-mono text-sm leading-normal [word-spacing:-0.5ch]',
 	variants: {
 		size: {
 			small: 'text-xs h-5',

@@ -30,7 +30,8 @@ Extends all Field component props plus:
   format change from the picker flows back out.
 
 ### Display Props
-- **placeholder**: \`string\` (default: \`''\`) - Hint text shown in the empty color input.
+- **placeholder**: \`string\` - Hint text shown in the empty color input. Defaults to the selected
+  format's pattern: \`#rrggbb\`, \`rgb(r, g, b)\` or \`hsl(h, s%, l%)\`.
 
 ### Field Props (inherited)
 - **label**: string | Snippet - Field label
@@ -88,11 +89,12 @@ Extends all Field component props plus:
 ## Interaction
 
 - The swatch button toggles the picker popover; focusing the text input also opens it (like DateInput).
-- The text input is masked (Maskito) for the selected format: in hex the leading \`#\` is auto-inserted
-  and only up to 8 hex digits are accepted; in rgb/hsl keystrokes are constrained to the notation's
-  characters. Valid entries commit immediately (normalized to hex); an incomplete entry does not
-  commit and the input text is restored from the canonical value on blur. Clearing the input sets
-  the value to \`null\`.
+- The text input is masked (Maskito) for the selected format: hex auto-inserts the leading \`#\` and
+  takes up to 8 hex digits; rgb/hsl are structured templates that auto-insert the \`rgb(\` / \`hsl(\`
+  prefix, the \`, \` separators and hsl's \`%\` suffixes as digits flow in (3 digits per channel, or
+  \`,\` to end a channel early — a missing closing \`)\` is completed on commit). Valid entries commit
+  immediately (normalized to hex); an incomplete entry does not commit and the input text is restored
+  from the canonical value on blur. Clearing the input sets the value to \`null\`.
 - Dragging inside the picker updates the value live. The popover does not close on pick (color picking
   is continuous); it closes on click-outside or Escape.
 - Changing the format select in the picker updates the input's text representation while keeping the

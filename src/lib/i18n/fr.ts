@@ -157,5 +157,6 @@ export const fr: Messages = {
 	alpha: 'Alpha',
 	format: 'format',
 	percentage: 'pourcentage',
-	pickColorFromScreen: 'Choisir une couleur à l’écran'
+	pickColorFromScreen: 'Choisir une couleur à l’écran',
+	dragToReorder: 'Glisser pour réorganiser'
 };

@@ -2,6 +2,7 @@
 
 ## Table of Contents
 - [Table](#table)
+- [SortableList](#sortablelist)
 - [Card](#card)
 - [Skeleton](#skeleton)
 - [Slot](#slot)
@@ -62,6 +63,53 @@ Data table with config-over-markup approach. Define structure via props, not mar
 `container`, `table`, `thead`, `tbody`, `tfoot`, `row` (variant: `selected`), `head`, `cell`, `caption`, `prefix`, `suffix`
 
 Global: `setTableTheme({...})`
+
+---
+
+## SortableList
+
+`import { SortableList } from 'svelai/sortable-list'`
+
+Vertical drag-and-drop reorderable list, animated by default (placeholder holds the slot, displaced rows slide into place). Generic over the item type `T`, built on @dnd-kit-svelte with a keyboard sensor. Items must have stable, unique ids.
+
+### Props
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `T[]` | - | **Required, bindable.** Items in display order; reordered in place as you drag |
+| `handle` | `boolean \| Snippet` | `false` | `false`: whole row drags. `true`: only a grip handle drags (row text stays selectable). Snippet: handle mode + custom grip content |
+| `disabled` | `boolean` | `false` | Renders rows but blocks reordering |
+| `size` | `'small' \| 'normal' \| 'large'` | `'normal'` | Row padding, gaps, typography |
+| `onReorder` | `(items: T[], d: { from, to, item }) => void` | - | Fired once on drop when the order changed (cancelled drags revert and do not fire) |
+| `i18n` | `Partial<Messages>` | - | Per-instance overrides (default handle aria-label `dragToReorder`) |
+
+### Slots
+- `item` -- `Snippet<[{ item: T, index: number, isDragging: boolean }]>`. Row content. Fallback when omitted: `String(item)` for primitives, else `item.label ?? item.title ?? item.id`.
+- `handle` (passed as the `handle` prop snippet) -- fills the grip button; the component owns the wrapper (drag ref, aria-label, grab cursor).
+
+### Example
+```svelte
+<script lang="ts">
+  import { SortableList } from 'svelai/sortable-list';
+  let items = $state([
+    { id: '1', title: 'First', description: 'The first item' },
+    { id: '2', title: 'Second', description: 'The second item' }
+  ]);
+</script>
+
+<SortableList bind:items handle onReorder={(next) => console.log(next)}>
+  {#snippet item({ item })}
+    <div class="flex flex-col">
+      <span class="font-medium">{item.title}</span>
+      <span class="text-foreground-muted text-sm">{item.description}</span>
+    </div>
+  {/snippet}
+</SortableList>
+```
+
+### Theme Parts
+`root` (variant: `size`), `item` (variants: `size`, `handle`, `dragging`, `disabled`), `content`, `handle` (variant: `size`)
+
+Global: `setSortableListTheme({...})`
 
 ---
 

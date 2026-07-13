@@ -2,8 +2,8 @@ export const imageGalleryDescription = `
 # ImageGallery
 
 ImageGallery enhances descendant images inside arbitrary HTML. It discovers matching \`img\`
-elements, makes them keyboard reachable, and opens a full-viewport Blossom-powered lightbox with
-cover-flow image navigation and a thumbnail rail.
+elements, makes them keyboard reachable, and initializes LightGallery against those real elements.
+LightGallery provides origin zoom, swipe navigation, thumbnails, pinch zoom, and image panning.
 
 ## Usage
 
@@ -28,6 +28,7 @@ Images are discovered from the DOM with \`imageSelector\`, defaulting to \`img\`
 - \`src\` comes from \`img.currentSrc || img.src\`.
 - \`alt\` comes from \`img.alt\`.
 - The default caption comes from \`img.title || img.alt\`.
+- The root attachment initializes LightGallery synchronously with the mounted wrapper and owns teardown.
 - There is no \`items\` prop and no high-resolution data attribute contract in v1.
 
 ## Props
@@ -45,6 +46,7 @@ Images are discovered from the DOM with \`imageSelector\`, defaulting to \`img\`
 - **closeLabel**: string (default: "Close image gallery") - Accessible close button label.
 - **previousLabel**: string (default: "Previous image") - Previous control label.
 - **nextLabel**: string (default: "Next image") - Next control label.
+- **licenseKey**: string (default: LightGallery evaluation key) - LightGallery license key. A production key is required unless the consuming project is GPLv3-compatible.
 - **class**: string - Additional root classes.
 - **theme**: ImageGalleryThemeProps - Per-instance theme overrides.
 - **onOpenChange**: (open, payload) => void - Fired when the gallery opens or closes.
@@ -61,8 +63,11 @@ Images are discovered from the DOM with \`imageSelector\`, defaulting to \`img\`
 - Previous attributes are restored when ImageGallery is destroyed or disabled.
 - Enter and Space open the gallery from a focused image.
 - The zoom layer uses \`role="dialog"\` and \`aria-modal="true"\`.
-- Focus moves to the close button after opening and returns to the source image after closing.
+- Focus moves into the LightGallery dialog after opening and returns to the source image after closing.
 - Escape closes the gallery by default.
+- LightGallery handles horizontal swipe and drag navigation.
+- Wheel, double-click, and two-finger pinch zoom the active image; drag pans while zoomed.
+- Static selector mode keeps LightGallery's \`zoomFromOrigin\` animation attached to the exact source image.
 
 ## Examples
 

@@ -156,5 +156,6 @@ export const ja: Messages = {
 	alpha: 'アルファ',
 	format: '形式',
 	percentage: 'パーセント',
-	pickColorFromScreen: '画面から色を選択'
+	pickColorFromScreen: '画面から色を選択',
+	dragToReorder: 'ドラッグして並べ替え'
 };

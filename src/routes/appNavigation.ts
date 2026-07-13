@@ -92,6 +92,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/kbd', text: 'Kbd' },
 			{ href: '/components/metadata-list', text: 'Metadata list' },
 			{ href: '/components/rating', text: 'Rating' },
+			{ href: '/components/sortable-list', text: 'Sortable list' },
 			{ href: '/components/stat', text: 'Stat' },
 			{ href: '/components/table', text: 'Table' },
 			{ href: '/components/tree', text: 'Tree' }

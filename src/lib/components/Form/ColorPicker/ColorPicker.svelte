@@ -206,6 +206,8 @@
 			onkeydown={onColorKeydown}
 		/>
 
+		<!-- The text input is alpha-less in every format; the % field carries alpha, so the row
+		     stays identical across hex/rgb/hsl. -->
 		<div class={classes.alphaField({ size })}>
 			<!-- Maskito needs a text input; the 0-100 number mask blocks out-of-range entry. -->
 			<input

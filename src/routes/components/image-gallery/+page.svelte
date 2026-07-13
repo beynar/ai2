@@ -26,8 +26,8 @@
 	features={[
 		'Wraps existing markup instead of requiring an items array',
 		'Discovers descendant images from the DOM',
-		'Zooms from the clicked image into a full-viewport layer',
-		'Blossom-powered cover-flow viewer with thumbnail navigation',
+		'LightGallery origin zoom from the exact clicked image',
+		'Swipe, thumbnail, wheel, and pinch navigation',
 		'Controlled open and active index support'
 	]}
 >
@@ -49,19 +49,19 @@
 					src={landscapeOne}
 					alt="Desert road with sandstone formations"
 					title="Desert road with sandstone formations"
-					class="h-56 w-full rounded-xl object-cover"
+					class="w-full rounded-xl object-cover h-auto"
 				/>
 				<img
 					src={landscapeTwo}
 					alt="Clear turquoise ocean water at a beach"
 					title="Clear turquoise ocean water"
-					class="h-56 w-full rounded-xl object-cover"
+					class="w-full rounded-xl object-cover h-auto"
 				/>
 				<img
 					src={landscapeThree}
 					alt="Night sky over snowy mountains"
 					title="Night sky over snowy mountains"
-					class="h-56 w-full rounded-xl object-cover"
+					class="w-full rounded-xl object-cover h-auto"
 				/>
 			</div>
 		</ImageGallery>

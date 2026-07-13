@@ -155,5 +155,6 @@ export const zh: Messages = {
 	alpha: '透明度',
 	format: '格式',
 	percentage: '百分比',
-	pickColorFromScreen: '从屏幕拾取颜色'
+	pickColorFromScreen: '从屏幕拾取颜色',
+	dragToReorder: '拖动以重新排序'
 };

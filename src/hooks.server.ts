@@ -35,6 +35,7 @@ import { ratingInputDescription } from '$lib/components/Form/RatingInput/ratingI
 import { ratingDescription } from '$lib/components/Rating/rating.mcp.js';
 import { miniCalendarDescription } from '$lib/components/MiniCalendar/miniCalendar.mcp.js';
 import { metadataListDescription } from '$lib/components/MetadataList/metadataList.mcp.js';
+import { sortableListDescription } from '$lib/components/SortableList/sortableList.mcp.js';
 import { passwordInputDescription } from '$lib/components/Form/PasswordInput/passwordInput.mcp.js';
 import { phoneInputDescription } from '$lib/components/Form/PhoneInput/phoneInput.mcp.js';
 import { radioInputDescription } from '$lib/components/Form/RadioInput/radioInput.mcp.js';
@@ -163,6 +164,7 @@ const components = {
 	rating: ratingDescription,
 	'mini-calendar': miniCalendarDescription,
 	'metadata-list': metadataListDescription,
+	'sortable-list': sortableListDescription,
 	globe: globeDescription,
 	'pdf-viewer': pdfViewerDescription
 };

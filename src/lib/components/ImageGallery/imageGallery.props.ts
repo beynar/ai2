@@ -38,12 +38,10 @@ export type ImageGalleryPayload = {
 	canNext: boolean;
 };
 
-export type ImageGalleryImageRelation = 'previous' | 'active' | 'next' | 'distant';
-
 export type ImageGalleryProps = WithAttachments<
 	WithSlot<
 		{
-			/** Stable DOM id for the zoom dialog root; falls back to a generated id. */
+			/** Stable DOM id for the gallery wrapper; falls back to a generated id. */
 			id?: string;
 			/** Controls whether the zoomed gallery is open; bindable for two-way control. */
 			open?: boolean;
@@ -71,6 +69,8 @@ export type ImageGalleryProps = WithAttachments<
 			previousLabel?: string;
 			/** Accessible label for next navigation. */
 			nextLabel?: string;
+			/** LightGallery license key. The default key is for evaluation only. */
+			licenseKey?: string;
 			/** Additional CSS classes merged onto the root element. */
 			class?: string;
 			/** Callback fired when user interaction requests a new open state. */

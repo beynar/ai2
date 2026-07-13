@@ -100,12 +100,12 @@ const defaultKey = cva({
 });
 
 const defaultKeyIcon = cva({
-	base: 'shrink-0',
+	base: 'shrink-0 [&>svg]:size-full',
 	variants: {
 		size: {
-			small: 'size-4',
-			normal: 'size-5',
-			large: 'size-6'
+			small: 'size-3.5',
+			normal: 'size-4',
+			large: 'size-5'
 		}
 	},
 	defaultVariants: {

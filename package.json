@@ -72,6 +72,8 @@
 	"dependencies": {
 		"@atlaskit/pragmatic-drag-and-drop": "^2.0.1",
 		"@blossom-carousel/core": "^1.1.7",
+		"@dnd-kit-svelte/svelte": "^0.1.6",
+		"@dnd-kit/helpers": "^0.2.4",
 		"@floating-ui/dom": "^1.7.6",
 		"@lexical/history": "^0.45.0",
 		"@lexical/link": "^0.45.0",
@@ -100,6 +102,7 @@
 		"intl-tel-input": "^29.1.1",
 		"lexical": "^0.45.0",
 		"libphonenumber-js": "^1.13.7",
+		"lightgallery": "^2.9.0",
 		"melt": "^0.44.0",
 		"pnpm": "^11.9.0",
 		"runed": "^0.37.1",
@@ -196,6 +199,11 @@
 			"types": "./dist/components/MetadataList/index.d.ts",
 			"svelte": "./dist/components/MetadataList/index.js",
 			"default": "./dist/components/MetadataList/index.js"
+		},
+		"./sortable-list": {
+			"types": "./dist/components/SortableList/index.d.ts",
+			"svelte": "./dist/components/SortableList/index.js",
+			"default": "./dist/components/SortableList/index.js"
 		},
 		"./slider": {
 			"types": "./dist/components/Form/Slider/index.d.ts",
