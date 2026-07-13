@@ -87,6 +87,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		label: 'Data display',
 		links: [
 			{ href: '/components/avatar', text: 'Avatar' },
+			{ href: '/components/avatar-group', text: 'Avatar group' },
 			{ href: '/components/badge', text: 'Badge' },
 			{ href: '/components/chip', text: 'Chip' },
 			{ href: '/components/kbd', text: 'Kbd' },

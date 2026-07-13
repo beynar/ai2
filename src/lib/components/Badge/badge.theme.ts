@@ -2,12 +2,12 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultBadge = cva({
-	base: 'rounded-full flex items-center justify-center bg-color text-color-contrast absolute z-10',
+	base: 'absolute z-10 box-border inline-flex w-fit max-w-fit min-w-min items-center justify-center whitespace-nowrap rounded-full border border-transparent bg-clip-padding font-medium transition-all',
 	variants: {
 		size: {
-			small: 'px-1 text-sm h-4 min-w-4',
-			normal: 'px-1.5 text-base h-5 min-w-5',
-			large: 'px-2 text-md h-6 min-w-6'
+			small: 'h-5 gap-1 px-2 text-xs',
+			normal: 'h-6 gap-1.5 px-2.5 text-xs',
+			large: 'h-7 gap-1.5 px-3 text-sm'
 		},
 		color: {
 			primary: 'bg-primary text-primary-contrast',
@@ -20,15 +20,15 @@ const defaultBadge = cva({
 			info: 'bg-info text-info-contrast'
 		},
 		variant: {
-			solid: 'text-color-contrast',
-			outline: 'bg-opacity-0 text-color border-color border',
-			soft: 'bg-color/20 text-color'
+			solid: 'bg-color text-color-contrast',
+			outline: 'border-color bg-color/0 text-color-readable',
+			soft: 'bg-color-muted text-color-muted-readable'
 		},
 		position: {
-			topRight: '-top-2 -right-2',
-			topLeft: '-top-2 -left-2',
-			bottomRight: '-bottom-2 -right-2',
-			bottomLeft: '-bottom-2 -left-2'
+			topRight: 'top-0 right-0 translate-x-1/2 -translate-y-1/2',
+			topLeft: 'top-0 left-0 -translate-x-1/2 -translate-y-1/2',
+			bottomRight: 'right-0 bottom-0 translate-x-1/2 translate-y-1/2',
+			bottomLeft: 'bottom-0 left-0 -translate-x-1/2 translate-y-1/2'
 		}
 	},
 	defaultVariants: {

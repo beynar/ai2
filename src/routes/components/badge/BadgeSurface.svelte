@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Card from '$lib/components/Card/Card.svelte';
 
 	let {
 		children,
-		title = 'Inbox',
-		detail = '24 unread',
+		title = 'Atlas launch',
+		detail = 'Product design - Updated 12 min ago',
 		class: className = ''
 	}: {
 		children: Snippet;
@@ -14,21 +15,25 @@
 	} = $props();
 </script>
 
-<div
-	class="border-background-muted bg-background raised relative flex aspect-square size-44 items-center justify-center overflow-visible rounded-2xl border p-5 shadow-sm {className}"
->
-	<div
-		class="border-background-muted bg-background-lighter/60 flex h-full w-full flex-col justify-between rounded-xl border p-4"
-	>
-		<div class="space-y-2">
-			<div class="bg-foreground/20 h-2.5 w-14 rounded-full"></div>
-			<div class="bg-foreground/10 h-2 w-24 rounded-full"></div>
+<div class="relative w-full max-w-sm {className}">
+	<Card class="w-full overflow-visible" {title} description={detail}>
+		<div class="grid gap-4">
+			<div class="flex items-end justify-between gap-4">
+				<div>
+					<p class="text-foreground-muted text-xs">Progress</p>
+					<p class="text-foreground mt-1 text-2xl font-semibold tabular-nums">72%</p>
+				</div>
+				<p class="text-foreground-muted text-xs">Due Friday</p>
+			</div>
+			<div class="bg-background-muted h-1.5 overflow-hidden rounded-full">
+				<div class="bg-primary h-full w-[72%] rounded-full"></div>
+			</div>
+			<div class="text-foreground-muted flex items-center justify-between text-xs">
+				<span>9 of 12 tasks</span>
+				<span>3 collaborators</span>
+			</div>
 		</div>
-		<div>
-			<p class="text-foreground text-sm font-semibold">{title}</p>
-			<p class="text-foreground/60 mt-0.5 text-xs">{detail}</p>
-		</div>
-	</div>
+	</Card>
 
 	{@render children()}
 </div>

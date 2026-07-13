@@ -71,34 +71,6 @@ const defaultAvatarInitials = cva({
 	}
 });
 
-const defaultAvatarGroup = cva({
-	base: 'flex gap-[-0.25rem] items-center isolate ml-[0.3rem]',
-	variants: {
-		size: {
-			normal: '[&>[data-avatar]]:ml-[-0.45rem]',
-			small: '[&>[data-avatar]]:ml-[-0.4rem]',
-			large: '[&>[data-avatar]]:ml-[-0.5rem]'
-		}
-	},
-	defaultVariants: {
-		size: 'normal'
-	}
-});
-
-const defaultAvatarGroupCount = cva({
-	base: 'bg-background-lighter border-background-muted text-foreground text-center rounded-full flex items-center justify-center uppercase font-bold  ml-[-0.75rem] z-[+1]',
-	variants: {
-		size: {
-			normal: 'size-8 text-sm',
-			small: 'size-6 text-xs',
-			large: 'size-10 text-base'
-		}
-	},
-	defaultVariants: {
-		size: 'normal'
-	}
-});
-
 export const avatarTheme = {
 	root: defaultAvatar,
 	avatarImage: defaultAvatarImage,
@@ -107,20 +79,7 @@ export const avatarTheme = {
 	avatarInitials: defaultAvatarInitials
 };
 
-export const avatarGroupTheme = {
-	root: defaultAvatarGroup,
-	avatarGroupCount: defaultAvatarGroupCount
-};
-
 export type AvatarTheme = typeof avatarTheme;
 export type AvatarThemeProps = InferComponentTheme<AvatarTheme>;
 export const setAvatarTheme = setComponentTheme<AvatarTheme>('avatar');
 export const useAvatarTheme = useComponentTheme<AvatarTheme>('avatar', avatarTheme);
-
-export type AvatarGroupTheme = typeof avatarGroupTheme;
-export type AvatarGroupThemeProps = InferComponentTheme<AvatarGroupTheme>;
-export const setAvatarGroupTheme = setComponentTheme<AvatarGroupTheme>('avatarGroup');
-export const useAvatarGroupTheme = useComponentTheme<AvatarGroupTheme>(
-	'avatarGroup',
-	avatarGroupTheme
-);

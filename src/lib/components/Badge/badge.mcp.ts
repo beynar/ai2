@@ -21,12 +21,12 @@ The Badge component is a small, positioned indicator element used to display not
 - **variant**: 'solid' | 'outline' | 'soft' (default: 'solid')
   - solid: Filled background with color
   - outline: Transparent background with colored border
-  - soft: Semi-transparent background with color text
+  - soft: Muted semantic background with a readable semantic foreground
 
-- **size**: 'small' | 'normal' | 'large' (default: 'small')
-  - small: 16px height, minimal padding
-  - normal: 20px height, standard padding
-  - large: 24px height, larger padding
+- **size**: 'small' | 'normal' | 'large' (default: 'normal')
+  - small: 20px height, 8px horizontal padding, 12px text
+  - normal: 24px height, 10px horizontal padding, 12px text
+  - large: 28px height, 12px horizontal padding, 14px text
 
 ### Position Props
 - **position**: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' (default: 'topRight')
@@ -151,8 +151,8 @@ The Badge component uses absolute positioning and requires its parent to have \`
 
 ## Notes
 
-- Badge uses absolute positioning with negative margins for proper overlap
-- Content automatically determines minimum width (circular for single characters)
+- Badge uses absolute positioning and half-size transforms for consistent corner overlap
+- Badge uses the same pill geometry, spacing, typography, and color treatments as Chip
 - Numbers are commonly used but any content (text, icons) is supported
 - Consider using appropriate colors for semantic meaning (danger for errors, success for completed states)
 
@@ -173,26 +173,26 @@ import type { BadgeThemeProps } from 'svelai/badge';
 // Example theme customization
 const customTheme: BadgeThemeProps = {
   root: {
-    base: 'custom-base-classes',
+    base: 'absolute inline-flex items-center rounded-full font-medium',
     size: {
-      small: 'px-1 text-sm h-4 min-w-4',
-      normal: 'px-1.5 text-base h-5 min-w-5',
-      large: 'px-2 text-md h-6 min-w-6'
+      small: 'h-5 gap-1 px-2 text-xs',
+      normal: 'h-6 gap-1.5 px-2.5 text-xs',
+      large: 'h-7 gap-1.5 px-3 text-sm'
     },
     color: {
       primary: 'bg-primary text-primary-contrast',
       danger: 'bg-danger text-danger-contrast'
     },
     variant: {
-      solid: 'text-color-contrast',
-      outline: 'bg-opacity-0 text-color border-color border',
-      soft: 'bg-color/20 text-color'
+      solid: 'bg-color text-color-contrast',
+      outline: 'border-color bg-color/0 text-color-readable',
+      soft: 'bg-color-muted text-color-muted-readable'
     },
     position: {
-      topRight: '-top-2 -right-2',
-      topLeft: '-top-2 -left-2',
-      bottomRight: '-bottom-2 -right-2',
-      bottomLeft: '-bottom-2 -left-2'
+      topRight: 'top-0 right-0 translate-x-1/2 -translate-y-1/2',
+      topLeft: 'top-0 left-0 -translate-x-1/2 -translate-y-1/2',
+      bottomRight: 'right-0 bottom-0 translate-x-1/2 translate-y-1/2',
+      bottomLeft: 'bottom-0 left-0 -translate-x-1/2 translate-y-1/2'
     }
   }
 };

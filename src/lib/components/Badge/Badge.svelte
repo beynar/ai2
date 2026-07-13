@@ -5,7 +5,7 @@
 
 	let {
 		position = 'topRight',
-		color = 'foreground',
+		color = 'primary',
 		size = 'normal',
 		variant = 'solid',
 		class: className,

@@ -1,6 +1,6 @@
 <script lang="ts" generics="Item extends object">
-	import type { AvatarGroupProps } from './avatar.props.js';
-	import { useAvatarGroupTheme } from './avatar.theme.js';
+	import type { AvatarGroupProps } from './avatarGroup.props.js';
+	import { useAvatarGroupTheme } from './avatarGroup.theme.js';
 	import Avatar from './Avatar.svelte';
 
 	let {
@@ -19,10 +19,15 @@
 	}: AvatarGroupProps<Item> = $props();
 
 	const classes = $derived(useAvatarGroupTheme(theme));
+	const visibleCount = $derived(
+		max === undefined || !Number.isFinite(max) ? items.length : Math.max(0, Math.floor(max))
+	);
+	const visibleItems = $derived(items.slice(0, visibleCount));
+	const remaining = $derived(Math.max(0, items.length - visibleItems.length));
 </script>
 
 <div data-size={size || 'normal'} class={classes.root({ size, className })} {...attachments}>
-	{#each items.slice(0, max) as user, index}
+	{#each visibleItems as user, index}
 		{#if avatar}
 			{@render avatar({
 				user,
@@ -40,12 +45,12 @@
 			<Avatar {delay} {size} {loadingState} {prefix} {suffix} {theme} {user} />
 		{/if}
 	{/each}
-	{#if max && items.length > max}
+	{#if remaining > 0}
 		<div class={classes.avatarGroupCount({ size })}>
 			{#if remainingCount}
-				{@render remainingCount({ items, remaining: items.length - max })}
+				{@render remainingCount({ items, remaining })}
 			{:else}
-				+{items.length - max}
+				+{remaining}
 			{/if}
 		</div>
 	{/if}
