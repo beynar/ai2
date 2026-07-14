@@ -10,7 +10,17 @@ const defaultScrollAreaViewport = cva({
 	// container for stable measurement); native bars are hidden via scoped CSS. Do not add
 	// `overflow-hidden` here — it would defeat native scrolling. Focus ring shows when the
 	// viewport is the focusable scroll region (keyboard scrolling).
-	base: 'relative outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
+	base: 'relative outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary',
+	variants: {
+		scrollFade: {
+			none: '',
+			y: 'scroll-fade',
+			x: 'scroll-fade-x'
+		}
+	},
+	defaultVariants: {
+		scrollFade: 'none'
+	}
 });
 
 const defaultScrollAreaContent = cva({

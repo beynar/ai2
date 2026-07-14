@@ -72,41 +72,41 @@
 <div class="flex">
 	<div class="flex">
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary">1</Badge>
+			<Chip color="primary">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="large">1</Badge>
+			<Chip color="primary" size="large">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="small">1</Badge>
-		</div>
-	</div>
-	<div class="flex">
-		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" position="topLeft">1</Badge>
-		</div>
-		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="large" position="topRight">1</Badge>
-		</div>
-		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="small" position="topRight">1</Badge>
+			<Chip color="primary" size="small">1</Chip>
 		</div>
 	</div>
 	<div class="flex">
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" position="bottomLeft">1</Badge>
+			<Chip color="primary" position="topLeft">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="large" position="bottomRight">1</Badge>
+			<Chip color="primary" size="large" position="topRight">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="danger" size="small" position="bottomRight">1</Badge>
+			<Chip color="primary" size="small" position="topRight">1</Chip>
+		</div>
+	</div>
+	<div class="flex">
+		<div class="bg-primary/20 m-10 size-20 shadow">
+			<Chip color="primary" position="bottomLeft">1</Chip>
+		</div>
+		<div class="bg-primary/20 m-10 size-20 shadow">
+			<Chip color="primary" size="large" position="bottomRight">1</Chip>
+		</div>
+		<div class="bg-primary/20 m-10 size-20 shadow">
+			<Chip color="danger" size="small" position="bottomRight">1</Chip>
 		</div>
 	</div>
 </div>
 
 <div class="bg-primary/20 m-10 size-20 shadow">
-	<Badge
+	<Chip
 		theme={{
 			root: {
 				position: {
@@ -118,9 +118,9 @@
 		size="small"
 		position="bottomRight"
 		>1
-		<Badge color="primary" size="small" position="bottomRight"
+		<Chip color="primary" size="small" position="bottomRight"
 			>1
-			<Badge color="success" size="small" position="bottomRight">1</Badge>
-		</Badge>
-	</Badge>
+			<Chip color="success" size="small" position="bottomRight">1</Chip>
+		</Chip>
+	</Chip>
 </div> -->

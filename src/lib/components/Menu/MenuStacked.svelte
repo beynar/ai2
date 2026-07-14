@@ -53,11 +53,11 @@
 	});
 
 	onMount(() => {
-		if (focusOnMount === 'container') {
-			navigation.focusContainer();
-			return;
-		}
-		if (focusOnMount) navigation.focusFirst();
+		void (async () => {
+			await tick();
+			if (focusOnMount === 'container') navigation.focusContainer();
+			else if (focusOnMount) navigation.focusFirst();
+		})();
 	});
 
 	const getPanelItems = (depth: number): MenuItem[] => {

@@ -60,10 +60,9 @@ The Marquee component creates an infinite scrolling animation for displaying con
   - If false, animation continues regardless of hover state
 
 ### Visual Props
-- **fade**: boolean (default: false)
-  - If true, adds a fade/mask effect at edges
-  - Creates gradient masks at start and end (10% transparent on each side)
-  - Helps create a more polished appearance
+- **fade**: boolean (default: true)
+  - If true, applies the shared scroll-fade utility at the marquee edges
+  - Uses a static scroll-fade mode because the marquee is clipped animation, not a native scroll container
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
   - Controls spacing between duplicated content copies
@@ -234,7 +233,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 ## Structure
 
 The Marquee component renders:
-- A container \`<div>\` with overflow hidden and optional mask gradient
+- A container \`<div>\` with overflow hidden and optional scroll-fade utility classes
 - Multiple copies of the content (default 2) based on \`numberOfCopies\`
 - Each copy has the animation applied independently
 - Parent component iterates over items in the slot
@@ -264,7 +263,7 @@ The Marquee component renders:
 - Custom speed values are specified in seconds (e.g., \`30\` = 30 seconds per cycle)
 - For vertical marquees, ensure the container has a defined height
 - Increasing \`numberOfCopies\` creates smoother appearance but uses more DOM elements
-- The fade effect uses CSS mask-image for smooth gradients at edges
+- The fade effect uses the shared scroll-fade utility classes
 
 ## Theme Customization
 
@@ -283,6 +282,7 @@ The theme object contains the following parts:
 - Variants:
   - direction: 'left' | 'up' - Scroll direction
   - size: 'small' | 'normal' | 'large' - Gap between duplicated content
+  - fade: boolean - Applies shared scroll-fade utility classes
 
 **inner**:
 - base: Base classes for scrolling content

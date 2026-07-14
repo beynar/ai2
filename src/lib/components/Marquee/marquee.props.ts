@@ -25,8 +25,8 @@ type MarqueeBaseProps = {
 	 */
 	pauseOnHover?: boolean;
 	/**
-	 * Add fade effect at edges
-	 * @default false
+	 * Applies the shared scroll-fade utility at the marquee edges
+	 * @default true
 	 */
 	fade?: boolean;
 	/**

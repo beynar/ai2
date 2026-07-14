@@ -1,5 +1,7 @@
 import type { PluginAPI } from 'tailwindcss/plugin';
 import { colors, variants } from './colors.js';
+import { addScrollFadeUtilities, scrollFadeKeyframes } from './scrollFade.js';
+import { addShimmerUtilities, shimmerKeyframes } from './shimmer.js';
 import { getSpinner } from './spinnner.js';
 import type { ThemeOptions } from './theme.js';
 
@@ -25,15 +27,17 @@ const dataColors = colors.reduce(
 );
 
 export const globalKeyframes = (options?: ThemeOptions) => ({
-	...getSpinner(options).keyframes
+	...getSpinner(options).keyframes,
+	...shimmerKeyframes,
+	...scrollFadeKeyframes
 });
 
 /**
- * Registers the palette-agnostic layer: custom color utilities, variants, the
- * `.ui-spinner` component and `raised-*` shadows. It must run exactly once per
- * build — the `theme` plugin bootstraps it from the default theme, and the
- * standalone `index` plugin calls it directly for consumers who want the engine
- * without a generated palette.
+ * Registers the palette-agnostic layer: custom color utilities, variants,
+ * `.ui-spinner`, `raised-*`, shimmer, and scroll-fade utilities. It must run
+ * exactly once per build — the `theme` plugin bootstraps it from the default
+ * theme, and the standalone `index` plugin calls it directly for consumers who
+ * want the engine without a generated palette.
  */
 export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 	const { addBase, addComponents, matchUtilities, addUtilities, theme, addVariant } = api;
@@ -107,7 +111,7 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 			'--dark-raised-border': '1px solid var(--current-border, var(--color-background-muted))',
 			'--dark-raised-shadow': 'none'
 		},
-		':has([data-badge])': {
+		':has([data-chip-position])': {
 			position: 'relative'
 		},
 		':focus': {
@@ -117,6 +121,8 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 	addComponents({
 		'.ui-spinner': getSpinner(options).style
 	});
+	addShimmerUtilities(api);
+	addScrollFadeUtilities(api);
 
 	addVariant('checked', ['&:checked', "&[data-checked='true']"]);
 	addVariant('not-checked', ['&:not(:checked)', "&[data-checked='false']"]);

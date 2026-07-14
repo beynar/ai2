@@ -13,6 +13,7 @@
 		delay = 0,
 		type = 'hover',
 		scrollOnEdges = false,
+		scrollFade = false,
 		theme
 	}: ScrollAreaProps = $props();
 
@@ -26,6 +27,12 @@
 		get scrollOnEdges() {
 			return scrollOnEdges;
 		}
+	});
+
+	const scrollFadeAxis = $derived.by(() => {
+		if (!scrollFade) return 'none';
+		if (scrollArea.visibleX && !scrollArea.visible) return 'x';
+		return 'y';
 	});
 
 	const classes = $derived(useScrollAreaTheme(theme));
@@ -45,7 +52,7 @@
 	<div
 		id="scroll-area-viewport"
 		data-scroll-area-viewport
-		class={classes.viewport()}
+		class={classes.viewport({ scrollFade: scrollFadeAxis })}
 		tabindex={scrollArea.viewportTabindex}
 		role="group"
 		aria-label="Scrollable content"

@@ -1,36 +1,10 @@
 export const scrollAreaDescription = `
 # ScrollArea Component
 
-The ScrollArea component provides a customizable scrollable container with enhanced scrollbar styling and behavior.
+The ScrollArea component provides a native scroll viewport with custom overlay scrollbars.
 
 ## Basic Usage
 
-\`\`\`svelte
-<ScrollArea>
-	<div class="content">
-		<!-- Long content that scrolls -->
-	</div>
-</ScrollArea>
-\`\`\`
-
-## Props
-
-### Core Props
-- **children**: Snippet - Scrollable content
-- **orientation**: 'vertical' | 'horizontal' | 'both' (default: 'vertical')
-  - Direction of scrolling
-
-### Behavior Props
-- **hideScrollbar**: boolean (default: false) - Hide scrollbar visually
-- **fadeScrollbar**: boolean (default: true) - Fade scrollbar when not scrolling
-
-### Styling Props
-- **class**: string - Additional CSS classes for container
-- **theme**: ComponentTheme - Custom theme overrides
-
-## Examples
-
-### Basic Vertical Scroll
 \`\`\`svelte
 <ScrollArea class="h-64">
 	{#each items as item}
@@ -39,136 +13,65 @@ The ScrollArea component provides a customizable scrollable container with enhan
 </ScrollArea>
 \`\`\`
 
-### Horizontal Scroll
-\`\`\`svelte
-<ScrollArea orientation="horizontal" class="w-full">
-	<div class="flex gap-4">
-		{#each images as image}
-			<img src={image} alt="" class="h-32" />
-		{/each}
-	</div>
-</ScrollArea>
-\`\`\`
+## Props
 
-### Both Directions
-\`\`\`svelte
-<ScrollArea orientation="both" class="h-96 w-full">
-	<div class="min-w-[2000px] min-h-[2000px]">
-		Large content that scrolls both ways
-	</div>
-</ScrollArea>
-\`\`\`
+### Core Props
+- **children**: Snippet - Content rendered inside the scrollable viewport
+- **type**: 'hover' | 'always' | 'scroll' | 'auto' (default: 'hover') - Controls scrollbar visibility behavior
+- **delay**: number (default: 0) - Milliseconds before hover mode treats the area as hovered
 
-### Hidden Scrollbar
-\`\`\`svelte
-<ScrollArea hideScrollbar class="h-64">
-	Content with hidden scrollbar
-</ScrollArea>
-\`\`\`
+### Behavior Props
+- **scrollOnEdges**: boolean (default: false) - Enables auto-scroll and up/down indicators when the pointer rests near the viewport edges
+- **scrollFade**: boolean (default: false) - Applies the shared \`scroll-fade\` utility to the scrollable viewport
 
-### Chat Messages
+### Styling Props
+- **class**: string - Additional CSS classes for the root scroll area
+- **theme**: ScrollAreaThemeProps - Custom theme overrides
+
+## Examples
+
+### With Scroll Fade
 \`\`\`svelte
-<ScrollArea class="h-96 flex flex-col-reverse">
-	{#each messages as message}
-		<div class="message">{message.text}</div>
+<ScrollArea class="h-64" scrollFade>
+	{#each items as item}
+		<div>{item}</div>
 	{/each}
+</ScrollArea>
+\`\`\`
+
+### Always Visible Scrollbar
+\`\`\`svelte
+<ScrollArea class="h-64" type="always">
+	Content
+</ScrollArea>
+\`\`\`
+
+### Edge Auto Scroll
+\`\`\`svelte
+<ScrollArea class="h-64" scrollOnEdges>
+	Content
 </ScrollArea>
 \`\`\`
 
 ## Notes
 
-- Provides consistent scrollbar styling across browsers
-- Scrollbar automatically fades when not in use
-- Supports touch scrolling on mobile devices
-- Can hide scrollbar while maintaining scroll functionality
+- The viewport is the native scroll container.
+- The \`scrollFade\` prop applies the utility to the viewport, not the outer wrapper.
+- Native browser scrollbars are hidden while custom scrollbar thumbs are rendered over the viewport.
+- Keyboard focus is applied only when the viewport overflows.
 
-## Theme Customization
+## Theme Structure
 
-The ScrollArea component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme.
-
-### Theme Structure
-
-The theme object contains the following parts:
+The theme object contains:
 - **root**: Main scroll area container styles
 - **viewport**: Scrollable viewport container styles
 - **content**: Scrollable content wrapper styles
-- **scrollbar**: Scrollbar track styles
-- **scrollbarThumb**: Scrollbar thumb/draggable part styles
+- **scrollbar**: Vertical scrollbar track styles
+- **scrollbarX**: Horizontal scrollbar track styles
+- **scrollbarThumb**: Scrollbar thumb styles
 
-### Available Variants
-
-**root**:
-- base: Base classes for main container
+## Available Variants
 
 **viewport**:
-- base: Base classes for viewport container
-
-**content**:
-- base: Base classes for scrollable content
-
-**scrollbar**:
-- base: Base classes for scrollbar track
-
-**scrollbarThumb**:
-- base: Base classes for scrollbar thumb
-
-### Usage Examples
-
-**Basic Theme Override**:
-\`\`\`svelte
-<ScrollArea 
-  theme={{
-    root: {
-      base: 'relative h-64'
-    },
-    scrollbar: {
-      base: 'w-2 bg-gray-200 rounded-full'
-    },
-    scrollbarThumb: {
-      base: 'bg-gray-400 rounded-full hover:bg-gray-500'
-    }
-  }}
->
-  {#snippet children()}
-    Long content here
-  {/snippet}
-</ScrollArea>
-\`\`\`
-
-**Custom Scrollbar Styling**:
-\`\`\`svelte
-<ScrollArea 
-  theme={{
-    scrollbar: {
-      base: 'w-3 bg-gray-100 rounded-full'
-    },
-    scrollbarThumb: {
-      base: 'bg-primary rounded-full hover:bg-primary/80 transition-colors'
-    }
-  }}
->
-  {#snippet children()}
-    Content
-  {/snippet}
-</ScrollArea>
-\`\`\`
-
-**Global Theme Setting**:
-\`\`\`svelte
-<script>
-  import { setScrollAreaTheme } from 'svelai/scroll-area';
-  
-  setScrollAreaTheme({
-    root: {
-      base: 'relative'
-    },
-    scrollbar: {
-      base: 'w-2 bg-gray-200 rounded-full'
-    },
-    scrollbarThumb: {
-      base: 'bg-gray-400 rounded-full hover:bg-gray-500'
-    }
-  });
-</script>
-\`\`\`
+- scrollFade: 'none' | 'y' | 'x' - Adds the shared vertical or horizontal scroll-fade utility
 `;

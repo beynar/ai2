@@ -7,8 +7,8 @@ const defaultTabbar = cva({
 	variants: {
 		orientation: {
 			// Scroll (no visible scrollbar) when the tabs overflow their track.
-			horizontal: 'flex-row overflow-x-auto scrollbar-none',
-			vertical: 'flex-col w-fit overflow-y-auto scrollbar-none'
+			horizontal: 'flex-row overflow-x-auto scrollbar-none scroll-fade-x',
+			vertical: 'flex-col w-fit overflow-y-auto scrollbar-none scroll-fade-y'
 		},
 		alignment: {
 			start: 'justify-start',

@@ -48,7 +48,6 @@
 	{...attachments}
 >
 	<Slot render={prefix} class={classes.prefix({ size, checked })} />
-	<!-- <Slot render={children} /> -->
-	{variant} - {color}
+	<Slot render={children} />
 	<Slot render={suffix} class={classes.suffix({ size, checked })} />
 </button>

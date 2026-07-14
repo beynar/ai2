@@ -20,29 +20,32 @@
 	]}
 >
 	<ComponentCard
-		description="Horizontal divider between two blocks of content."
-		code={`<p>Content above</p>
-<Separator />
-<p>Content below</p>`}
+		description="A horizontal separator dividing related content."
+		code={`<div class="w-full max-w-xl">
+	<div class="space-y-1">
+		<h4 class="text-sm font-medium leading-none">Svelai</h4>
+		<p class="text-foreground-muted text-sm">The foundation for your design system.</p>
+	</div>
+	<Separator class="my-4" />
+	<p class="text-sm leading-relaxed">
+		A set of beautifully designed Svelte components that you can customize, extend, and build on.
+	</p>
+</div>`}
 	>
-		<div class="space-y-4">
-			<p>Content above</p>
-			<Separator />
-			<p>Content below</p>
+		<div class="w-full max-w-xl">
+			<div class="space-y-1">
+				<h4 class="text-sm font-medium leading-none">Svelai</h4>
+				<p class="text-foreground-muted text-sm">The foundation for your design system.</p>
+			</div>
+			<Separator class="my-4" />
+			<p class="text-sm leading-relaxed">
+				A set of beautifully designed Svelte components that you can customize, extend, and build
+				on.
+			</p>
 		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Content above and below a horizontal rule.">
-			<div class="space-y-4">
-				<div>
-					<p>Content above</p>
-					<Separator />
-					<p>Content below</p>
-				</div>
-			</div>
-		</ComponentCard>
-
 		<ComponentCard description="Centered label between divider lines.">
 			<div class="space-y-6">
 				<div>
@@ -146,7 +149,10 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Section headings with labelled separators." class="!min-h-fit max-w-2xl">
+		<ComponentCard
+			description="Section headings with labelled separators."
+			class="!min-h-fit max-w-2xl"
+		>
 			<div class="space-y-4">
 				<section>
 					<h3 class="text-xl font-semibold">Personal Information</h3>

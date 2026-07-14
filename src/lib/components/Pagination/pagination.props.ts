@@ -5,7 +5,9 @@ import type { WithAttachments } from '$lib/types/props.js';
 import type { PaginationThemeProps } from './pagination.theme.js';
 import type { PaginationState } from './pagination.state.svelte.js';
 
-export type PaginationVariant = 'solid' | 'outline' | 'soft' | 'ghost';
+export type PaginationVariant = 'pages' | 'count' | 'compact' | 'dots' | 'none';
+
+export type PaginationControlVariant = 'solid' | 'outline' | 'soft' | 'ghost';
 
 export type PaginationGap = `ellipsis-${number}-${number}`;
 
@@ -158,9 +160,13 @@ type PaginationBaseProps = {
 	 */
 	size?: Sizes;
 	/**
-	 * Visual style for controls.
+	 * Content rendered between the previous and next controls.
 	 */
 	variant?: PaginationVariant;
+	/**
+	 * Visual style applied to page and navigation controls.
+	 */
+	controlVariant?: PaginationControlVariant;
 	/**
 	 * Accessible label for the pagination navigation landmark.
 	 */

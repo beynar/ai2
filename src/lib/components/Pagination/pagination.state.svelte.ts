@@ -23,6 +23,9 @@ type PaginationStateOptions = {
 export interface PaginationState extends PaginationStateOptions {}
 export class PaginationState {
 	pageCount = $derived(getPageCount(this.totalPages, this.totalItems, this.pageSize));
+	clampPage = (nextPage: number) => {
+		return clampPage(nextPage, this.pageCount);
+	};
 	currentPage = $derived(this.pageCount === 0 ? 0 : this.clampPage(this.page));
 	siblings = $derived(getVisibleCount(this.siblingCount));
 	boundaries = $derived(getVisibleCount(this.boundaryCount));
@@ -110,10 +113,6 @@ export class PaginationState {
 		};
 
 		return (this.getItemAriaLabel ?? getDefaultItemAriaLabel)(ariaLabelItem);
-	};
-
-	clampPage = (nextPage: number) => {
-		return clampPage(nextPage, this.pageCount);
 	};
 }
 

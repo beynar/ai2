@@ -1,7 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import Badge from './Badge/Badge.svelte';
 import Chip from './Chip/Chip.svelte';
 import Harness from './ConventionNormalizationHarness.test.svelte';
 import { fieldTheme } from './Form/Field/field.js';
@@ -30,18 +29,19 @@ describe('component convention normalization', () => {
 		expect(fieldTheme.inputContainer({ size: 'normal' })).toContain('gap-2');
 	});
 
-	test('root theme key styles component roots', () => {
-		render(Badge, {
+	test('positioned Chip uses the root theme and exposes its anchor', () => {
+		render(Chip, {
 			props: {
 				children: '7',
+				position: 'topRight',
 				theme: {
 					root: { base: 'canonical-root-class' }
 				}
 			}
 		});
 
-		const badge = screen.getByText('7').closest('[data-badge]');
-		expect(badge).toHaveClass('canonical-root-class');
+		const chip = screen.getByText('7').closest('[data-chip-position="topRight"]');
+		expect(chip).toHaveClass('canonical-root-class', 'absolute');
 	});
 
 	test('Chip fires canonical pointer enter and leave handlers', async () => {

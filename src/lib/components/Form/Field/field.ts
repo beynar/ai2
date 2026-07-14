@@ -256,8 +256,8 @@ const defaultFieldActionButton = cva({
 	variants: {
 		size: {
 			small: '-my-1.5 min-w-8',
-			normal: '-my-2 min-w-9',
-			large: '-my-2.5 min-w-10'
+			normal: '-my-1.5 min-w-9',
+			large: '-my-2 min-w-10'
 		},
 		edge: {
 			start: '-ml-3 mr-1',

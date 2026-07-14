@@ -230,6 +230,11 @@
 			"svelte": "./dist/components/ToggleButtonGroup/index.js",
 			"default": "./dist/components/ToggleButtonGroup/index.js"
 		},
+		"./segmented-control": {
+			"types": "./dist/components/SegmentedControl/index.d.ts",
+			"svelte": "./dist/components/SegmentedControl/index.js",
+			"default": "./dist/components/SegmentedControl/index.js"
+		},
 		"./switch": {
 			"types": "./dist/components/Form/Switch/index.d.ts",
 			"svelte": "./dist/components/Form/Switch/index.js",
@@ -373,11 +378,6 @@
 			"svelte": "./dist/components/Globe/index.js",
 			"default": "./dist/components/Globe/index.js"
 		},
-		"./badge": {
-			"types": "./dist/components/Badge/index.d.ts",
-			"svelte": "./dist/components/Badge/index.js",
-			"default": "./dist/components/Badge/index.js"
-		},
 		"./stat": {
 			"types": "./dist/components/Stat/index.d.ts",
 			"svelte": "./dist/components/Stat/index.js",
@@ -517,6 +517,11 @@
 			"svelte": "./dist/components/Menu/index.js",
 			"default": "./dist/components/Menu/index.js"
 		},
+		"./menu-bar": {
+			"types": "./dist/components/MenuBar/index.d.ts",
+			"svelte": "./dist/components/MenuBar/index.js",
+			"default": "./dist/components/MenuBar/index.js"
+		},
 		"./menu-option": {
 			"types": "./dist/components/MenuOption/index.d.ts",
 			"svelte": "./dist/components/MenuOption/index.js",
@@ -601,6 +606,9 @@
 			"./chip": [
 				"./dist/components/Chip/index.d.ts"
 			],
+			"./segmented-control": [
+				"./dist/components/SegmentedControl/index.d.ts"
+			],
 			"./tag-group": [
 				"./dist/components/Form/TagGroup/index.d.ts"
 			],
@@ -642,9 +650,6 @@
 			],
 			"./globe": [
 				"./dist/components/Globe/index.d.ts"
-			],
-			"./badge": [
-				"./dist/components/Badge/index.d.ts"
 			],
 			"./stat": [
 				"./dist/components/Stat/index.d.ts"

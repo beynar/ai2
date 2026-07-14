@@ -1,6 +1,7 @@
 export { default as Pagination } from './Pagination.svelte';
 export type {
 	PaginationControlType,
+	PaginationControlVariant,
 	PaginationGap,
 	PaginationItem,
 	PaginationItemAriaLabel,

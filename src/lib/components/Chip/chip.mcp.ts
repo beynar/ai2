@@ -1,7 +1,7 @@
 export const chipDescription = `
 # Chip Component
 
-The Chip component is a compact element for displaying tags, labels, categories, or filters. It supports various colors, variants, sizes, and can act as a button or link.
+The Chip component is a compact element for displaying tags, labels, categories, filters, or positioned indicators. It supports colors, variants, sizes, links, buttons, and optional corner placement.
 
 ## Basic Usage
 
@@ -26,6 +26,10 @@ The Chip component is a compact element for displaying tags, labels, categories,
   - small: Compact size for dense layouts
   - normal: Standard size
   - large: Larger for emphasis
+
+- **position**: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' (optional)
+  - Turns the Chip into an absolutely positioned overlay anchored to the selected corner
+  - Requires a containing element with a positioning context such as \`position: relative\`
 
 ### Interactive Props
 - **onClick**: (event: MouseEvent) => void - Click handler (makes chip a button)
@@ -80,6 +84,15 @@ The Chip component is a compact element for displaying tags, labels, categories,
 <Chip size="small">Small</Chip>
 <Chip size="normal">Normal</Chip>
 <Chip size="large">Large</Chip>
+\`\`\`
+
+### Positioned Indicator
+
+\`\`\`svelte
+<div class="relative">
+	<Button>Notifications</Button>
+	<Chip position="topRight" color="danger">3</Chip>
+</div>
 \`\`\`
 
 ### With Icons
@@ -191,6 +204,8 @@ The Chip component is a compact element for displaying tags, labels, categories,
 - Renders as \`<a>\` when \`href\` is provided
 - Renders as \`<div>\` otherwise
 
+- Becomes absolutely positioned only when \`position\` is set
+
 ## Accessibility
 
 - Automatically sets appropriate ARIA roles
@@ -204,6 +219,7 @@ The Chip component is a compact element for displaying tags, labels, categories,
 - Interactive chips have hover and focus states
 - Suffix is commonly used for close/remove actions
 - Prefix is typically used for icons or status indicators
+- Positioned Chips replace the need for a separate Badge component
 
 ## Theme Customization
 
@@ -238,6 +254,12 @@ const customTheme: ChipThemeProps = {
       solid: 'text-color-contrast bg-color',
       outline: 'bg-opacity-0 text-color border-color border',
       soft: 'bg-color-muted text-color'
+	},
+	position: {
+		topRight: 'absolute top-0 right-0 translate-x-1/2 -translate-y-1/2',
+		topLeft: 'absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2',
+		bottomRight: 'absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2',
+		bottomLeft: 'absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2'
     }
   },
   prefix: {
@@ -265,6 +287,7 @@ const customTheme: ChipThemeProps = {
   - size: 'small' | 'normal' | 'large' - Controls padding, height, text size, and gap
   - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' - Visual style variant
+  - position: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' - Optional absolute corner placement
 
 **prefix**:
 - base: Base classes for prefix content

@@ -5,7 +5,7 @@ import type { ButtonProps } from '$lib/components/Button/index.js';
 import type { Snippet } from 'svelte';
 import type { Event, CalendarType } from './useCalendar.svelte.js';
 import type { calendarTheme } from './calendar.theme.js';
-import type { BadgeProps } from '$lib/components/Badge/badge.props.js';
+import type { ChipProps } from '$lib/components/Chip/chip.props.js';
 
 // Re-export types and values from useCalendar
 export type { Event, Cell, CalendarType } from './useCalendar.svelte.js';
@@ -52,8 +52,8 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 		theme?: InferComponentTheme<typeof calendarTheme>;
 		/** Custom snippet renderer for each day cell. */
 		cell?: Snippet<[import('./useCalendar.svelte.js').Cell]>;
-		/** Badge props applied to mark the current day. */
-		todayBadge?: Pick<BadgeProps, 'size' | 'color' | 'class'>;
+		/** Chip props applied to mark the current day. */
+		todayBadge?: Pick<ChipProps, 'size' | 'color' | 'class'>;
 		/** Button props for month navigation, shared or split per direction. */
 		buttons?:
 			| {

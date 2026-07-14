@@ -12,10 +12,18 @@ const defaultPaginationList = cva({
 			small: 'gap-1',
 			normal: 'gap-1.5',
 			large: 'gap-2'
+		},
+		variant: {
+			pages: null,
+			count: 'gap-2',
+			compact: 'gap-2',
+			dots: 'gap-0',
+			none: 'gap-2'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		variant: 'pages'
 	}
 });
 
@@ -51,7 +59,7 @@ const defaultPaginationControl = cva({
 			warning: 'text-warning-readable',
 			info: 'text-info-readable'
 		},
-		variant: {
+		controlVariant: {
 			solid: 'border-transparent bg-color text-color-contrast hover:bg-color/90 active:bg-color/80',
 			outline:
 				'border-background-muted bg-background text-foreground hover:border-color hover:bg-color/10 hover:text-color-readable active:bg-color/20',
@@ -75,7 +83,7 @@ const defaultPaginationControl = cva({
 	defaultVariants: {
 		size: 'normal',
 		color: 'primary',
-		variant: 'outline',
+		controlVariant: 'ghost',
 		active: false,
 		disabled: false,
 		control: 'page'
@@ -83,7 +91,7 @@ const defaultPaginationControl = cva({
 	compoundVariants: [
 		{
 			color: 'background',
-			variant: 'outline',
+			controlVariant: 'outline',
 			class: 'text-foreground hover:bg-background-muted hover:text-foreground'
 		},
 		{
@@ -93,8 +101,50 @@ const defaultPaginationControl = cva({
 		},
 		{
 			color: 'foreground',
-			variant: 'ghost',
+			controlVariant: 'ghost',
 			class: 'hover:bg-foreground-muted/20'
+		}
+	]
+});
+
+const defaultPaginationDot = cva({
+	base: "relative inline-flex shrink-0 items-center justify-center rounded-full outline-none transition-colors before:block before:rounded-full before:content-[''] before:transition-colors focus-visible:ring-2 focus-visible:ring-color/50",
+	variants: {
+		size: {
+			small: 'size-3 before:size-1.5',
+			normal: 'size-4 before:size-2',
+			large: 'size-5 before:size-2.5'
+		},
+		color: {
+			background: null,
+			primary: null,
+			secondary: null,
+			foreground: null,
+			danger: null,
+			success: null,
+			warning: null,
+			info: null
+		},
+		active: {
+			true: 'before:bg-color',
+			false: 'before:bg-foreground-muted/30 hover:before:bg-color/50'
+		},
+		disabled: {
+			true: 'pointer-events-none cursor-not-allowed opacity-45',
+			false: 'cursor-pointer'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		color: 'primary',
+		active: false,
+		disabled: false
+	},
+	compoundVariants: [
+		{
+			color: 'background',
+			active: true,
+			class: 'before:bg-foreground'
 		}
 	]
 });
@@ -146,6 +196,7 @@ export const paginationTheme = {
 	list: defaultPaginationList,
 	item: defaultPaginationItem,
 	control: defaultPaginationControl,
+	dot: defaultPaginationDot,
 	icon: defaultPaginationIcon,
 	ellipsis: defaultPaginationEllipsis,
 	summary: defaultPaginationSummary

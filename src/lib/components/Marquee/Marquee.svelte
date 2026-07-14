@@ -25,22 +25,16 @@
 		if (speed === 'slow') return '80s';
 		return `${speed}s`;
 	});
-
-	const maskImage = $derived.by(() => {
-		if (!fade) return 'none';
-		const gradientDirection = direction === 'left' ? 'to right' : 'to bottom';
-		return `linear-gradient(${gradientDirection}, transparent 0%, rgba(0, 0, 0, 1.0) 10%, rgba(0, 0, 0, 1.0) 90%, transparent 100%)`;
-	});
 </script>
 
 <div
 	role="presentation"
-	class={classes.root({ direction, size, class: className })}
+	class={classes.root({ direction, size, fade, class: className })}
 	style="--animation-duration: {animationDuration}; --gap: {size === 'small'
 		? '0.5rem'
 		: size === 'large'
 			? '1.5rem'
-			: '1rem'}; mask-image: {maskImage}; -webkit-mask-image: {maskImage};"
+			: '1rem'};"
 	{...attachments}
 >
 	{#each Array(numberOfCopies).fill(0) as _, i (i)}
@@ -54,7 +48,7 @@
 			})}
 		>
 			{#if typeof children === 'function'}
-				{@render children({})}
+				{@render children()}
 			{:else if children}
 				{children}
 			{/if}

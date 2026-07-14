@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultButton = cva({
-	base: 'group/toggle inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap relative overflow-hidden cursor-pointer rounded-lg border border-transparent bg-clip-padding font-medium text-sm outline-none transition-all duration-100 ease-in-out focus-visible:ring-2 focus-visible:ring-color/50 active:translate-y-px [&_svg:not([class*=size-])]:size-4',
+	base: 'group/toggle relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center overflow-hidden whitespace-nowrap rounded-lg border border-transparent bg-clip-padding text-sm font-medium outline-none transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:ring-color/35 [&_svg:not([class*=size-])]:size-4',
 	variants: {
 		checked: {
 			true: '',
@@ -13,19 +13,21 @@ const defaultButton = cva({
 			false: null
 		},
 		color: {
-			background: '',
+			background: 'focus-visible:ring-foreground/25',
 			primary: '',
 			secondary: '',
-			foreground: '',
+			foreground: 'focus-visible:ring-foreground/25',
 			danger: '',
 			success: '',
 			warning: '',
 			info: ''
 		},
 		variant: {
-			outline: 'bg-color/0 border-color text-color-readable active:bg-color/20 checked:bg-color/20',
-			soft: 'text-color-muted-readable bg-color-muted active:bg-color/30 checked:bg-color/30',
-			ghost: 'text-color-readable bg-color/0 active:bg-color/20 checked:bg-color/20'
+			outline:
+				'border-color/35 bg-transparent text-color-readable hover:border-color/50 hover:bg-color/8 active:bg-color/12',
+			soft: 'border-transparent bg-color/8 text-color-readable hover:bg-color/12 active:bg-color/16',
+			ghost:
+				'border-transparent bg-transparent text-color-readable hover:bg-color/8 active:bg-color/12'
 		},
 		squared: {
 			true: 'aspect-square !px-0',
@@ -43,58 +45,99 @@ const defaultButton = cva({
 	compoundVariants: [
 		{
 			variant: 'outline',
-			checked: false,
-			class: 'hover:bg-color/10'
-		},
-		{
-			variant: 'soft',
-			checked: false,
-			class: 'hover:bg-color/20'
-		},
-		{
-			variant: 'ghost',
-			checked: false,
-			class: 'hover:bg-color-light'
-		},
-		// BACKGROUND SOFT
-		{
-			variant: 'soft',
-			color: 'background',
-			checked: false,
-			class: '!bg-background hover:!bg-background-light text-foreground'
-		},
-		{
-			variant: 'soft',
-			color: 'background',
 			checked: true,
-			class: '!bg-background-muted text-foreground'
-		},
-		// BACKGROUND GHOST
-		{
-			variant: 'ghost',
-			color: 'background',
-			checked: false,
-			class: 'hover:!bg-background-light active:!bg-background-lighter text-foreground'
+			class:
+				'border-color/55 bg-color/12 hover:border-color/70 hover:bg-color/16 active:bg-color/20'
 		},
 		{
-			variant: 'ghost',
-			color: 'background',
+			variant: 'soft',
 			checked: true,
-			class: '!bg-background-muted text-foreground'
+			class: 'bg-color/14 hover:bg-color/18 active:bg-color/22'
 		},
-		// BACKGROUND OUTLINE
+		{
+			variant: 'ghost',
+			checked: true,
+			class: 'bg-color/10 hover:bg-color/14 active:bg-color/18'
+		},
 		{
 			variant: 'outline',
 			color: 'background',
 			checked: false,
 			class:
-				'hover:!bg-background-lighter/20 active:!bg-background-lighter/30 border-background-lighter text-foreground'
+				'!border-background-muted !bg-transparent text-foreground hover:!border-background-muted hover:!bg-background-lighter/50 active:!bg-background-lighter/70'
 		},
 		{
 			variant: 'outline',
 			color: 'background',
 			checked: true,
-			class: '!bg-background-lighter/30 border-background-lighter text-foreground'
+			class:
+				'!border-background-muted !bg-background-lighter/70 text-foreground hover:!bg-background-muted/70 active:!bg-background-muted'
+		},
+		{
+			variant: 'soft',
+			color: 'background',
+			checked: false,
+			class:
+				'!bg-background-light/70 text-foreground hover:!bg-background-lighter active:!bg-background-muted/70'
+		},
+		{
+			variant: 'soft',
+			color: 'background',
+			checked: true,
+			class:
+				'!bg-background-lighter text-foreground hover:!bg-background-muted/70 active:!bg-background-muted'
+		},
+		{
+			variant: 'ghost',
+			color: 'background',
+			checked: false,
+			class:
+				'!bg-transparent text-foreground hover:!bg-background-light/70 active:!bg-background-lighter'
+		},
+		{
+			variant: 'ghost',
+			color: 'background',
+			checked: true,
+			class:
+				'!bg-background-lighter/70 text-foreground hover:!bg-background-muted/60 active:!bg-background-muted/80'
+		},
+		{
+			variant: 'outline',
+			color: 'foreground',
+			checked: false,
+			class:
+				'!border-foreground/20 !bg-transparent text-foreground hover:!border-foreground/30 hover:!bg-foreground/5 active:!bg-foreground/8'
+		},
+		{
+			variant: 'outline',
+			color: 'foreground',
+			checked: true,
+			class:
+				'!border-foreground/35 !bg-foreground/10 text-foreground hover:!border-foreground/45 hover:!bg-foreground/14 active:!bg-foreground/18'
+		},
+		{
+			variant: 'soft',
+			color: 'foreground',
+			checked: false,
+			class: '!bg-foreground/5 text-foreground hover:!bg-foreground/8 active:!bg-foreground/12'
+		},
+		{
+			variant: 'soft',
+			color: 'foreground',
+			checked: true,
+			class: '!bg-foreground/10 text-foreground hover:!bg-foreground/14 active:!bg-foreground/18'
+		},
+		{
+			variant: 'ghost',
+			color: 'foreground',
+			checked: false,
+			class: '!bg-transparent text-foreground hover:!bg-foreground/5 active:!bg-foreground/8'
+		},
+		{
+			variant: 'ghost',
+			color: 'foreground',
+			checked: true,
+			class: '!bg-foreground/8 text-foreground hover:!bg-foreground/12 active:!bg-foreground/16'
 		}
 	]
 });

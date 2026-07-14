@@ -44,6 +44,7 @@
 		['scroll-fade-t | scroll-fade-b', 'Adds a physical top or bottom edge fade.'],
 		['scroll-fade-l | scroll-fade-r', 'Adds a physical left or right edge fade.'],
 		['scroll-fade-s | scroll-fade-e', 'Adds a logical inline start or end edge fade.'],
+		['scroll-fade-static', 'Keeps both fade edges visible for clipped, non-scroll containers.'],
 		['scroll-fade-<number>', 'Sets fade size from the spacing scale.'],
 		['scroll-fade-[<value>]', 'Sets a one-off fade size.'],
 		['scroll-fade-{t,b,s,e}-<number>', 'Overrides one edge size.'],

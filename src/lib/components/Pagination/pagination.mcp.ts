@@ -1,7 +1,7 @@
 export const paginationDescription = `
 # Pagination Component
 
-Pagination renders accessible page navigation for long lists, tables, and server-routed result pages. It is controlled through a one-based \`page\` value and accepts either an explicit \`totalPages\` count or \`totalItems\` plus \`pageSize\`.
+Pagination renders accessible page navigation for long lists, tables, and server-routed result pages. It is controlled through a one-based \`page\` value, accepts either an explicit \`totalPages\` count or \`totalItems\` plus \`pageSize\`, and supports numbered, count, compact, dots, or navigation-only layouts.
 
 ## Basic Usage
 
@@ -26,6 +26,7 @@ Pagination renders accessible page navigation for long lists, tables, and server
   - Total item count. With \`pageSize\`, derives \`totalPages\` when \`totalPages\` is omitted and feeds the summary slot.
 - **pageSize**: number
   - Items per page. Required with \`totalItems\` when deriving page count.
+  - Also required with \`totalItems\` by the \`count\` variant.
 - **siblingCount**: number (default: 1)
   - Number of pages shown on each side of the current page.
 - **boundaryCount**: number (default: 1)
@@ -50,7 +51,10 @@ Pagination renders accessible page navigation for long lists, tables, and server
 ### Style Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
 - **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'primary')
-- **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'outline')
+- **variant**: 'pages' | 'count' | 'compact' | 'dots' | 'none' (default: 'pages')
+  - Controls what appears between previous and next. \`count\` requires \`totalItems\` and \`pageSize\`.
+- **controlVariant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'ghost')
+  - Visual appearance applied to page and navigation controls.
 - **class**: string
 - **theme**: PaginationThemeProps
 
@@ -69,7 +73,7 @@ Pagination renders accessible page navigation for long lists, tables, and server
 - **pageItem**: Snippet<{ page, active, disabled, totalPages }>
   - Custom content rendered inside page number controls.
 - **summary**: Snippet<{ page, totalPages, totalItems, pageSize, startItem, endItem }>
-  - Custom item range content rendered before the controls.
+  - Custom item range content rendered before the controls, or between them for the \`count\` variant.
 
 ### Pagination State
 The default child snippet receives a \`PaginationState\` instance. State is backed by the bindable \`page\` prop, so calling \`pagination.next()\`, \`pagination.previous()\`, or \`pagination.setPage(page)\` updates \`bind:page\` and fires \`onPageChange\`.
@@ -93,7 +97,29 @@ Useful state fields and methods:
 <Pagination bind:page totalPages={20} />
 \`\`\`
 
-### Compact Pagination
+### Layout Variants
+
+\`pages\` renders numbered controls with ellipsis:
+
+\`\`\`svelte
+<Pagination variant="pages" bind:page totalPages={40} />
+\`\`\`
+
+\`count\` renders the current item range:
+
+\`\`\`svelte
+<Pagination variant="count" bind:page totalItems={100} pageSize={10} />
+\`\`\`
+
+\`compact\`, \`dots\`, and \`none\` reduce the visible navigation chrome:
+
+\`\`\`svelte
+<Pagination variant="compact" bind:page totalPages={10} />
+<Pagination variant="dots" bind:page totalPages={10} />
+<Pagination variant="none" bind:page totalPages={10} />
+\`\`\`
+
+### Windowed Page Buttons
 \`\`\`svelte
 <Pagination bind:page totalPages={40} siblingCount={0} boundaryCount={1} size="small" />
 \`\`\`
@@ -182,6 +208,7 @@ The theme object contains:
 - **list**: list of controls
 - **item**: list item wrapper
 - **control**: page and icon controls
+- **dot**: dot controls used by the \`dots\` variant
 - **icon**: icon wrapper inside icon controls
 - **ellipsis**: gap indicator
 - **summary**: item range summary

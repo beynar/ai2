@@ -27,7 +27,8 @@
 		disabled = false,
 		color = 'primary',
 		size = 'normal',
-		variant = 'outline',
+		variant = 'pages',
+		controlVariant = 'ghost',
 		ariaLabel = 'Pagination',
 		getHref,
 		getItemAriaLabel,
@@ -92,7 +93,7 @@
 	{payload.startItem}-{payload.endItem} of {payload.totalItems}
 {/snippet}
 
-{#snippet pageControl(pageNumber: number)}
+{#snippet pageControl(pageNumber: number, display: 'page' | 'dot' = 'page')}
 	{@const isActive = pageNumber === pagination.currentPage}
 	{@const isDisabled = disabled || !pagination.hasPages}
 	<li class={classes.item({ size })}>
@@ -108,16 +109,27 @@
 			data-active={isActive}
 			data-disabled={isDisabled}
 			data-page={pageNumber}
-			class={classes.control({ size, color, variant, active: isActive, disabled: isDisabled })}
+			data-display={display}
+			class={display === 'dot'
+				? classes.dot({ size, color, active: isActive, disabled: isDisabled })
+				: classes.control({
+						size,
+						color,
+						controlVariant,
+						active: isActive,
+						disabled: isDisabled
+					})}
 			onclick={(event: MouseEvent) => pagination.handleControlClick(event, pageNumber, isDisabled)}
 		>
-			{#if pageItem}
-				<Slot
-					render={pageItem}
-					payload={pagination.getPageItemPayload(pageNumber, isActive, isDisabled)}
-				/>
-			{:else}
-				{pageNumber}
+			{#if display === 'page'}
+				{#if pageItem}
+					<Slot
+						render={pageItem}
+						payload={pagination.getPageItemPayload(pageNumber, isActive, isDisabled)}
+					/>
+				{:else}
+					{pageNumber}
+				{/if}
 			{/if}
 		</svelte:element>
 	</li>
@@ -142,7 +154,7 @@
 			class={classes.control({
 				size,
 				color,
-				variant,
+				controlVariant,
 				active: false,
 				disabled: isDisabled,
 				control: 'icon'
@@ -162,13 +174,14 @@
 		data-color={color}
 		data-size={size}
 		data-variant={variant}
+		data-control-variant={controlVariant}
 		class={classes.root({ className })}
 		{...attachments}
 	>
 		{#if children}
 			{@render children(pagination)}
 		{:else}
-			{#if pagination.summary && (showSummary || summary)}
+			{#if variant !== 'count' && pagination.summary && (showSummary || summary)}
 				<Slot
 					as="span"
 					render={summary ?? defaultSummary}
@@ -177,7 +190,7 @@
 				/>
 			{/if}
 
-			<ul class={classes.list({ size })}>
+			<ul class={classes.list({ size, variant })}>
 				{#if showFirstLast}
 					{@render iconControl('first', 1, pagination.isPreviousDisabled, first ?? firstIcon)}
 				{/if}
@@ -190,17 +203,42 @@
 					)}
 				{/if}
 
-				{#each pagination.items as item (item)}
-					{#if typeof item === 'number'}
-						{@render pageControl(item)}
-					{:else}
-						<li class={classes.item({ size })}>
-							<span aria-hidden="true" class={classes.ellipsis({ size })}>
-								<Slot as="span" render={ellipsis ?? ellipsisIcon} class={classes.icon({ size })} />
-							</span>
-						</li>
-					{/if}
-				{/each}
+				{#if variant === 'pages'}
+					{#each pagination.items as item (item)}
+						{#if typeof item === 'number'}
+							{@render pageControl(item)}
+						{:else}
+							<li class={classes.item({ size })}>
+								<span aria-hidden="true" class={classes.ellipsis({ size })}>
+									<Slot
+										as="span"
+										render={ellipsis ?? ellipsisIcon}
+										class={classes.icon({ size })}
+									/>
+								</span>
+							</li>
+						{/if}
+					{/each}
+				{:else if variant === 'count' && pagination.summary}
+					<li class={classes.item({ size })} aria-live="polite">
+						<Slot
+							as="span"
+							render={summary ?? defaultSummary}
+							class={classes.summary({ size })}
+							payload={pagination.summary}
+						/>
+					</li>
+				{:else if variant === 'compact'}
+					<li class={classes.item({ size })}>
+						<span aria-live="polite" class={classes.summary({ size })}>
+							Page {pagination.currentPage} of {pagination.pageCount}
+						</span>
+					</li>
+				{:else if variant === 'dots'}
+					{#each Array.from({ length: pagination.pageCount }, (_, index) => index + 1) as pageNumber (pageNumber)}
+						{@render pageControl(pageNumber, 'dot')}
+					{/each}
+				{/if}
 
 				{#if showPrevNext}
 					{@render iconControl(

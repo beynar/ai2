@@ -2,7 +2,7 @@
 	import { Tabs } from '$lib/components/Tabs/index.js';
 	import { Button } from '$lib/components/Button/index.js';
 	import { TextInput } from '$lib/components/Form/TextInput/index.js';
-	import { Badge } from '$lib/components/Badge/index.js';
+	import { Chip } from '$lib/components/Chip/index.js';
 	import { userIcon } from '$lib/components/Icons/user.js';
 	import { houseIcon } from '$lib/components/Icons/house.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
@@ -114,7 +114,7 @@
 								<h3 class="text-xl font-semibold">{item.title}</h3>
 								<p class="text-foreground/80 mt-1">{item.description}</p>
 							</div>
-							<Badge color="primary">{item.badge}</Badge>
+							<Chip color="primary">{item.badge}</Chip>
 						</div>
 					</section>
 				{/snippet}
@@ -194,7 +194,7 @@
 					<section class="space-y-4 p-6">
 						<div class="flex items-center justify-between gap-3">
 							<h3 class="text-xl font-semibold">{item.title}</h3>
-							<Badge color="secondary">{lastChangedTab}</Badge>
+							<Chip color="secondary">{lastChangedTab}</Chip>
 						</div>
 						{#if index === 0}
 							<TextInput label="Full Name" bind:value={formData.name} placeholder="John Doe" />

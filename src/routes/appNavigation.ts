@@ -47,6 +47,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		links: [
 			{ href: '/components/button', text: 'Button' },
 			{ href: '/components/button-group', text: 'Button group' },
+			{ href: '/components/segmented-control', text: 'Segmented control' },
 			{ href: '/components/toggle-button', text: 'Toggle button' },
 			{ href: '/components/toggle-button-group', text: 'Toggle group' }
 		]
@@ -88,7 +89,6 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		links: [
 			{ href: '/components/avatar', text: 'Avatar' },
 			{ href: '/components/avatar-group', text: 'Avatar group' },
-			{ href: '/components/badge', text: 'Badge' },
 			{ href: '/components/chip', text: 'Chip' },
 			{ href: '/components/kbd', text: 'Kbd' },
 			{ href: '/components/metadata-list', text: 'Metadata list' },
@@ -136,6 +136,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		links: [
 			{ href: '/components/context-menu', text: 'Context menu' },
 			{ href: '/components/menu', text: 'Menu' },
+			{ href: '/components/menu-bar', text: 'Menu bar' },
 			{ href: '/components/menu-option', text: 'Menu option' },
 			{ href: '/components/popup-menu', text: 'Popup menu' }
 		]

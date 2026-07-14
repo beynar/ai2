@@ -161,6 +161,7 @@
 		open={true}
 		id={popover.id}
 		class={classes.root({ mode: popover.computedMode })}
+		style="visibility: hidden"
 	>
 		<!-- The panel is a child of the portaled wrapper, so it is never re-parented mid-transition
 		     (which would break the intro). It carries the visuals, transform-origin, and animation. -->

@@ -258,6 +258,13 @@ const scrollFadeUtilities: UtilityRules = {
 		range: `calc(100% - ${revealSize}) 100%`,
 		fallbackProperty: '--scroll-fade-e'
 	}),
+	'.scroll-fade-static': {
+		animation: 'none',
+		'--scroll-fade-t': 'var(--_scroll-fade-size-t)',
+		'--scroll-fade-b': 'var(--_scroll-fade-size-b)',
+		'--scroll-fade-s': 'var(--_scroll-fade-size-s)',
+		'--scroll-fade-e': 'var(--_scroll-fade-size-e)'
+	},
 	'.scroll-fade-none': {
 		'--scroll-fade-mask': 'none'
 	}

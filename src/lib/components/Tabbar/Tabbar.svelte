@@ -3,8 +3,8 @@
 	import type { TabbarProps, TabItem } from './tabbar.props.js';
 	import { useTabbarTheme } from './tabbar.theme.js';
 	import { useNavigation } from '$lib/utils/useNavigation.svelte.js';
+	import { useSlidingIndicator } from '$lib/utils/useSlidingIndicator.svelte.js';
 	import type { Snippet } from 'svelte';
-	import { untrack } from 'svelte';
 
 	let {
 		items,
@@ -75,86 +75,30 @@
 		}
 	}
 
-	// --- Active indicator ----------------------------------------------------
-	// Two-part strategy so the bar is correct at every stage:
-	//  • SSR + pre-hydration: a CSS-only indicator rendered INSIDE the active tab
-	//    (`staticIndicator`), positioned purely by layout — no measurement needed.
-	//  • After hydration: a single absolutely-positioned element measured onto the
-	//    active tab that slides/resizes between tabs. It replaces the static one at
-	//    the identical spot, so the handoff is seamless.
-	let tabEls: Array<HTMLElement | undefined> = [];
-	let indicatorStyle = $state('');
-	let indicatorReady = $state(false);
-	// Flips true once the measured indicator has been placed on the client; until
-	// then the static (SSR) indicator is shown.
-	let hydrated = $state(false);
+	const indicator = useSlidingIndicator({
+		activeIndex: () => activeTab,
+		observe: () => [items, size, variant, position, orientation, alignment, fullWidth],
+		getStyle: (element) => {
+			const x = element.offsetLeft;
+			const y = element.offsetTop;
+			const width = element.offsetWidth;
+			const height = element.offsetHeight;
 
-	const placeIndicator = (): boolean => {
-		const el = tabEls[activeTab];
-		if (!el) return false;
-		// offsetLeft/Top are relative to the root (it is `relative`), so this is
-		// immune to page scroll and layout shifts above the tabbar.
-		const x = el.offsetLeft;
-		const y = el.offsetTop;
-		const w = el.offsetWidth;
-		const h = el.offsetHeight;
-		if (variant === 'pill') {
-			indicatorStyle = `transform:translate(${x}px, ${y}px);width:${w}px;height:${h}px`;
-		} else if (position === 'bottom') {
-			indicatorStyle = `transform:translate(${x}px, ${y}px);width:${w}px;height:2px`;
-		} else if (position === 'left') {
-			indicatorStyle = `transform:translate(${x + w - 2}px, ${y}px);width:2px;height:${h}px`;
-		} else if (position === 'right') {
-			indicatorStyle = `transform:translate(${x}px, ${y}px);width:2px;height:${h}px`;
-		} else {
-			// 'top' (default): underline along the bottom edge.
-			indicatorStyle = `transform:translate(${x}px, ${y + h - 2}px);width:${w}px;height:2px`;
+			if (variant === 'pill') {
+				return `transform:translate(${x}px, ${y}px);width:${width}px;height:${height}px`;
+			}
+			if (position === 'bottom') {
+				return `transform:translate(${x}px, ${y}px);width:${width}px;height:2px`;
+			}
+			if (position === 'left') {
+				return `transform:translate(${x + width - 2}px, ${y}px);width:2px;height:${height}px`;
+			}
+			if (position === 'right') {
+				return `transform:translate(${x}px, ${y}px);width:2px;height:${height}px`;
+			}
+			return `transform:translate(${x}px, ${y + height - 2}px);width:${width}px;height:2px`;
 		}
-		return true;
-	};
-
-	// Re-place whenever anything that moves or resizes the tabs changes.
-	$effect(() => {
-		activeTab;
-		items;
-		size;
-		variant;
-		position;
-		orientation;
-		alignment;
-		fullWidth;
-		untrack(() => placeIndicator());
 	});
-
-	const collectTab = (index: number) => (node: HTMLElement) => {
-		return untrack(() => {
-			tabEls[index] = node;
-			return () => {
-				tabEls[index] = undefined;
-			};
-		});
-	};
-
-	const rootAttachment = (node: HTMLElement) => {
-		return untrack(() => {
-			// Container resizes (fullWidth, font load, responsive reflow) move the
-			// tabs without changing any reactive prop — re-measure on resize.
-			const observer = new ResizeObserver(() => placeIndicator());
-			observer.observe(node);
-			// Place the measured indicator, then hand off from the static SSR bar in
-			// the same update (identical position → no visible jump).
-			if (placeIndicator()) hydrated = true;
-			// Enable the slide transition only after the initial position has painted
-			// (two frames), so the handoff is instant and only later switches slide.
-			let raf = requestAnimationFrame(() => {
-				raf = requestAnimationFrame(() => (indicatorReady = true));
-			});
-			return () => {
-				observer.disconnect();
-				cancelAnimationFrame(raf);
-			};
-		});
-	};
 </script>
 
 <div
@@ -162,16 +106,16 @@
 	role="tablist"
 	aria-orientation={orientation}
 	{@attach navigation.containerReference}
-	{@attach rootAttachment}
+	{@attach indicator.containerReference}
 	{...attachments}
 >
-	{#if hydrated}
+	{#if indicator.isHydrated}
 		<!-- Measured, animated indicator (client only). -->
 		<div
 			class={classes.indicator({ variant })}
-			style={indicatorStyle}
+			style={indicator.style}
 			data-color={color}
-			data-ready={indicatorReady ? 'true' : 'false'}
+			data-ready={indicator.isReady ? 'true' : 'false'}
 			aria-hidden="true"
 		></div>
 	{/if}
@@ -206,9 +150,9 @@
 			})}
 			onclick={() => handleTabClick(index, tab)}
 			{@attach navigation.itemReference}
-			{@attach collectTab(index)}
+			{@attach indicator.itemReference(index)}
 		>
-			{#if !hydrated && isActive}
+			{#if !indicator.isHydrated && isActive}
 				<!-- CSS-only indicator for SSR / pre-hydration, positioned by layout. -->
 				<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"></span>
 			{/if}

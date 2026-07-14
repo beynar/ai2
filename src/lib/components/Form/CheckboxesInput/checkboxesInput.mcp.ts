@@ -256,7 +256,7 @@ The component renders as a fieldset with the following DOM structure:
 ### Complex Options with Rich Labels
 \`\`\`svelte
 <script>
-	import { Badge } from 'svelai/badge';
+	import { Chip } from 'svelai/chip';
 	
 	let plans = $state([]);
 </script>
@@ -268,14 +268,14 @@ The component renders as a fieldset with the following DOM structure:
 		{ 
 			value: 'storage',
 			label: (props) => {
-				return \`Extra Storage <Badge color="primary">+$5/mo</Badge>\`;
+				return \`Extra Storage <Chip color="primary">+$5/mo</Chip>\`;
 			},
 			description: '100GB additional cloud storage'
 		},
 		{ 
 			value: 'users',
 			label: (props) => {
-				return \`Team Members <Badge color="success">+$10/mo</Badge>\`;
+				return \`Team Members <Chip color="success">+$10/mo</Chip>\`;
 			},
 			description: 'Add up to 10 team members'
 		}

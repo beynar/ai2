@@ -6,7 +6,6 @@ import { accordionDescription } from '$lib/components/Accordion/accordion.mcp.js
 import { alertDescription } from '$lib/components/Alert/alert.mcp.js';
 import { aspectRatioDescription } from '$lib/components/AspectRatio/aspectRatio.mcp.js';
 import { avatarDescription } from '$lib/components/Avatar/avatar.mcp.js';
-import { badgeDescription } from '$lib/components/Badge/badge.mcp.js';
 import { buttonDescription } from '$lib/components/Button/button.mcp.js';
 import { buttonGroupDescription } from '$lib/components/ButtonGroup/buttonGroup.mcp.js';
 import { chipDescription } from '$lib/components/Chip/chip.mcp.js';
@@ -42,6 +41,7 @@ import { radioInputDescription } from '$lib/components/Form/RadioInput/radioInpu
 import { selectDescription } from '$lib/components/Form/Select/select.mcp.js';
 import { sliderDescription } from '$lib/components/Form/Slider/slider.mcp.js';
 import { switchDescription } from '$lib/components/Form/Switch/switch.mcp.js';
+import { segmentedControlDescription } from '$lib/components/SegmentedControl/segmentedControl.mcp.js';
 import { textAreaDescription } from '$lib/components/Form/TextArea/textArea.mcp.js';
 import { textInputDescription } from '$lib/components/Form/TextInput/textInput.mcp.js';
 import { comboboxDescription } from '$lib/components/Form/Combobox/combobox.mcp.js';
@@ -90,7 +90,6 @@ const components = {
 	alert: alertDescription,
 	'aspect-ratio': aspectRatioDescription,
 	avatar: avatarDescription,
-	badge: badgeDescription,
 	button: buttonDescription,
 	'button-group': buttonGroupDescription,
 	chip: chipDescription,
@@ -123,6 +122,7 @@ const components = {
 	select: selectDescription,
 	slider: sliderDescription,
 	switch: switchDescription,
+	'segmented-control': segmentedControlDescription,
 	'text-area': textAreaDescription,
 	'text-input': textInputDescription,
 	combobox: comboboxDescription,

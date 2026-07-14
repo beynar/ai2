@@ -12,11 +12,20 @@ const defaultMarquee = cva({
 			small: 'gap-2',
 			normal: 'gap-4',
 			large: 'gap-6'
+		},
+		fade: {
+			true: 'scroll-fade-static',
+			false: ''
 		}
 	},
+	compoundVariants: [
+		{ fade: true, direction: 'left', class: 'scroll-fade-x' },
+		{ fade: true, direction: 'up', class: 'scroll-fade-y' }
+	],
 	defaultVariants: {
 		direction: 'left',
-		size: 'normal'
+		size: 'normal',
+		fade: true
 	}
 });
 

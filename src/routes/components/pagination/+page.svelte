@@ -3,15 +3,23 @@
 	import Pagination from '$lib/components/Pagination/Pagination.svelte';
 	import Table from '$lib/components/Table/Table.svelte';
 	import type {
+		PaginationControlVariant,
 		PaginationItemAriaLabel,
 		PaginationPageItemPayload,
-		PaginationSummaryPayload
+		PaginationSummaryPayload,
+		PaginationVariant
 	} from '$lib/components/Pagination/pagination.props.js';
 	import { colors, sizes } from '$lib/utils/tokens.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 
-	const variants = ['solid', 'outline', 'soft', 'ghost'] as const;
+	const variants = ['pages', 'count', 'compact', 'dots', 'none'] satisfies PaginationVariant[];
+	const controlVariants = [
+		'solid',
+		'outline',
+		'soft',
+		'ghost'
+	] satisfies PaginationControlVariant[];
 	const invoiceHeader = {
 		id: 'Invoice',
 		customer: 'Customer',
@@ -42,7 +50,8 @@
 	];
 
 	let page = $state(6);
-	let compactPage = $state(18);
+	let variantPage = $state(8);
+	let windowedPage = $state(18);
 	let tablePage = $state(2);
 	let linkedPage = $state(3);
 	let itemCountPage = $state(4);
@@ -70,6 +79,7 @@
 	component="Pagination"
 	features={[
 		'Bindable one-based page',
+		'Five layout variants',
 		'Ellipsis windowing',
 		'Button or anchor controls',
 		'Localized aria labels'
@@ -95,12 +105,37 @@
 		</ComponentCard>
 
 		<ComponentCard
-			description="Variants keep pagination aligned with nearby controls."
+			description="Variants control the content rendered between previous and next."
+			class="!min-h-fit"
+			code={`<Pagination variant="pages" totalPages={10} />
+<Pagination variant="count" totalItems={100} pageSize={10} />
+<Pagination variant="compact" totalPages={10} />
+<Pagination variant="dots" totalPages={10} />
+<Pagination variant="none" totalPages={10} />`}
+		>
+			<div class="grid w-full gap-6 sm:grid-cols-2">
+				{#each variants as variant}
+					<div class="flex min-h-24 flex-col items-center justify-center gap-3">
+						<span class="text-foreground-muted text-xs font-medium capitalize">{variant}</span>
+						<Pagination
+							{variant}
+							bind:page={variantPage}
+							totalItems={100}
+							pageSize={10}
+							color="background"
+						/>
+					</div>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Control appearance remains independent from the pagination layout."
 			class="!min-h-fit"
 		>
 			<div class="flex flex-col items-center gap-5">
-				{#each variants as variant}
-					<Pagination {variant} color="primary" page={4} totalPages={9} />
+				{#each controlVariants as controlVariant}
+					<Pagination {controlVariant} color="primary" page={4} totalPages={9} />
 				{/each}
 			</div>
 		</ComponentCard>
@@ -117,18 +152,18 @@
 		</ComponentCard>
 
 		<ComponentCard
-			description="Compact mode hides siblings but preserves boundaries."
+			description="Sibling and boundary counts tune the numbered page window."
 			class="!min-h-fit"
 		>
 			<div class="flex flex-col items-center gap-4">
 				<Pagination
-					bind:page={compactPage}
+					bind:page={windowedPage}
 					totalPages={40}
 					siblingCount={0}
 					boundaryCount={1}
 					size="small"
 				/>
-				<Chip color="background" variant="soft">Page {compactPage} of 40</Chip>
+				<Chip color="background" variant="soft">Page {windowedPage} of 40</Chip>
 			</div>
 		</ComponentCard>
 

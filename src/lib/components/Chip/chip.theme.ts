@@ -8,6 +8,10 @@ const defaultChip = cva({
 			true: 'cursor-pointer',
 			false: null
 		},
+		isEmpty: {
+			true: 'max-w-none min-w-0 !p-0',
+			false: null
+		},
 		size: {
 			small: 'h-5 px-2 gap-1 text-xs',
 			normal: 'h-6 px-2.5 gap-1.5 text-xs',
@@ -27,14 +31,36 @@ const defaultChip = cva({
 			solid: 'text-color-contrast bg-color',
 			outline: 'bg-color/0 text-color-readable border-color',
 			soft: 'bg-color-muted text-color-muted-readable'
+		},
+		position: {
+			topRight: 'absolute z-10 top-0 right-0 translate-x-1/2 -translate-y-1/2',
+			topLeft: 'absolute z-10 top-0 left-0 -translate-x-1/2 -translate-y-1/2',
+			bottomRight: 'absolute z-10 right-0 bottom-0 translate-x-1/2 translate-y-1/2',
+			bottomLeft: 'absolute z-10 bottom-0 left-0 -translate-x-1/2 translate-y-1/2'
 		}
 	},
 	defaultVariants: {
 		color: 'primary',
 		variant: 'solid',
-		size: 'small'
+		size: 'small',
+		isEmpty: false
 	},
 	compoundVariants: [
+		{
+			size: 'small',
+			isEmpty: true,
+			class: 'w-5'
+		},
+		{
+			size: 'normal',
+			isEmpty: true,
+			class: 'w-6'
+		},
+		{
+			size: 'large',
+			isEmpty: true,
+			class: 'w-7'
+		},
 		{
 			color: 'background',
 			variant: 'outline',

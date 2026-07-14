@@ -35,7 +35,7 @@
 	features={[
 		'CSS animation, no external library',
 		'Pause on hover toggle',
-		'Edge fade via mask gradient',
+		'Edge fade via the shared scroll-fade utility',
 		'Horizontal or vertical direction',
 		'Seamless loop via duplicated copies'
 	]}

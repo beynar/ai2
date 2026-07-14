@@ -17,6 +17,11 @@ export type ChipProps = WithAttachments<
 			size?: Sizes;
 			/** Visual style variant of the chip. */
 			variant?: 'solid' | 'outline' | 'soft';
+			/**
+			 * Corner anchor that turns the chip into an absolutely positioned overlay.
+			 * The containing element must establish a positioning context.
+			 */
+			position?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 			/** URL rendered as a link when set; chip becomes an anchor. */
 			href?: string;
 			/** Link target attribute when href is set. */

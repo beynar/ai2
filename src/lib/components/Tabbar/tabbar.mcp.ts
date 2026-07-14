@@ -242,7 +242,7 @@ The tabbar follows this DOM structure:
 ### Complex Tabs with Badges
 \`\`\`svelte
 <script>
-	import Badge from '../Badge/Badge.svelte';
+	import Chip from '../Chip/Chip.svelte';
 	
 	let activeTab = $state(0);
 	
@@ -252,7 +252,7 @@ The tabbar follows this DOM structure:
 			label: 'Messages',
 			suffix: () => ({
 				{#snippet()}
-					<Badge color="danger" size="small">5</Badge>
+					<Chip color="danger" size="small">5</Chip>
 				{/snippet}
 			})
 		},

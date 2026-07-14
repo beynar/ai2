@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Placement } from '@floating-ui/dom';
-	import { onMount, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import { on } from 'svelte/events';
 	import { useI18n } from '$lib/i18n/context.svelte.js';
 	import { useNavigation } from '$lib/utils/useNavigation.svelte.js';
@@ -57,11 +57,11 @@
 	});
 
 	onMount(() => {
-		if (focusOnMount === 'container') {
-			navigation.focusContainer();
-			return;
-		}
-		if (focusOnMount) navigation.focusFirst();
+		void (async () => {
+			await tick();
+			if (focusOnMount === 'container') navigation.focusContainer();
+			else if (focusOnMount) navigation.focusFirst();
+		})();
 	});
 
 	const closeParentMenu = () => {

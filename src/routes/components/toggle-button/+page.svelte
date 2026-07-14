@@ -19,25 +19,41 @@
 		'Prefix, suffix & children slots'
 	]}
 >
-	<ComponentCard
-		code={`<ToggleButton>Toggle me</ToggleButton>`}
-	>
+	<ComponentCard code={`<ToggleButton>Toggle me</ToggleButton>`}>
 		<ToggleButton>Toggle me</ToggleButton>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Outline, soft, and ghost variants. Click to toggle the pressed state.">
-			<div class="flex flex-wrap items-center justify-center gap-3">
+		<ComponentCard
+			description="Every variant and semantic color. Each pair shows the resting and pressed states."
+		>
+			<div class="grid w-full gap-6">
 				{#each variants as variant (variant)}
-					<ToggleButton {variant} color="foreground">{variant}</ToggleButton>
-				{/each}
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Eight semantic colors, shown pressed in the soft variant.">
-			<div class="flex flex-wrap items-center justify-center gap-3">
-				{#each colors as color (color)}
-					<ToggleButton {color} variant="soft" checked>{color}</ToggleButton>
+					<div class="grid gap-3">
+						<p class="text-foreground/60 text-sm font-medium capitalize">{variant}</p>
+						<div class="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+							{#each colors as color (color)}
+								<div class="flex min-w-0 items-center justify-between gap-2">
+									<span class="text-foreground/70 truncate text-sm capitalize">{color}</span>
+									<div class="flex shrink-0 gap-1.5">
+										<ToggleButton
+											{variant}
+											{color}
+											prefix={eyeClosedIcon}
+											aria-label={`${color} ${variant} resting`}
+										/>
+										<ToggleButton
+											{variant}
+											{color}
+											prefix={eyeClosedIcon}
+											aria-label={`${color} ${variant} pressed`}
+											checked
+										/>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
 				{/each}
 			</div>
 		</ComponentCard>

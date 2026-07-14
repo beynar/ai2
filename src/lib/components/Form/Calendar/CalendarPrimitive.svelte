@@ -12,7 +12,7 @@
 	import Button from '../../Button/Button.svelte';
 	import Slot from '../../Slot/Slot.svelte';
 	import { caretRightIcon } from '$lib/components/Icons/caretRight.js';
-	import Badge from '$lib/components/Badge/Badge.svelte';
+	import Chip from '$lib/components/Chip/Chip.svelte';
 
 	type T = $$Generic<CalendarType>;
 	type CalendarEvent = $$Generic<Event>;
@@ -189,9 +189,10 @@
 						})}
 					>
 						{#if cell.isToday}
-							<Badge
+							<Chip
 								size="small"
 								color="danger"
+								position="topRight"
 								{...todayBadge}
 								class="top-1 right-1 aspect-square !size-2 min-h-2 min-w-2 {todayBadge.class}"
 							/>

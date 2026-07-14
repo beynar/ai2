@@ -2,11 +2,25 @@ import type { Snippet } from 'svelte';
 import type { ScrollAreaThemeProps } from './scrollArea.theme.js';
 
 export type ScrollAreaProps = {
-	/** Controls when the vertical scrollbar is shown (`hover`, `always`, `scroll`, or `auto`). */
-	type: 'auto' | 'always' | 'scroll' | 'hover';
-	/** Enables auto-scroll and up/down indicators when the pointer rests near the viewport edges. */
+	/**
+	 * Controls when the vertical scrollbar is shown (`hover`, `always`, `scroll`, or `auto`).
+	 * @default 'hover'
+	 */
+	type?: 'auto' | 'always' | 'scroll' | 'hover';
+	/**
+	 * Enables auto-scroll and up/down indicators when the pointer rests near the viewport edges.
+	 * @default false
+	 */
 	scrollOnEdges?: boolean;
-	/** Milliseconds to wait before hover mode treats the scroll area as hovered. */
+	/**
+	 * Applies the shared scroll-fade utility to the scrollable viewport.
+	 * @default false
+	 */
+	scrollFade?: boolean;
+	/**
+	 * Milliseconds to wait before hover mode treats the scroll area as hovered.
+	 * @default 0
+	 */
 	delay?: number;
 	/** Content rendered inside the scrollable viewport. */
 	children?: Snippet;
