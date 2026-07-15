@@ -19,14 +19,19 @@
 	]}
 >
 	<ComponentCard
-		description="A star rating input"
-		code={`<RatingInput label="Rating" bind:value={rating} />`}
+		description="Collect a star rating with helper text"
+		code={`<RatingInput
+	label="Overall rating"
+	description="How would you rate your experience?"
+	bind:value={rating}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<RatingInput label="Rating" bind:value={rating} />
-			{#if rating !== null}
-				<p class="text-foreground-muted mt-2 text-xs">Value: {rating}</p>
-			{/if}
+			<RatingInput
+				label="Overall rating"
+				description="How would you rate your experience?"
+				bind:value={rating}
+			/>
 		</div>
 	</ComponentCard>
 

@@ -55,6 +55,7 @@
 
 <svelte:element
 	this={elementType}
+	type={elementType === 'button' ? 'button' : undefined}
 	role={resolvedRole}
 	{href}
 	{target}

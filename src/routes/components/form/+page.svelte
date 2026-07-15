@@ -338,6 +338,45 @@
 			</div>
 		{/snippet}
 
+		<ComponentCard
+			title="Display variants"
+			description="Some types offer an alternative control for the same value shape: display 'selector' renders the popover DateSelector for date / calendar-range, and display 'picker' renders the inline ColorPicker panel for color. Value binding and validation are identical to the default control."
+			code={`<Form
+	inputs={{
+		due: { type: 'date', display: 'selector', label: 'Due date' },
+		period: { type: 'calendar-range', display: 'selector', label: 'Period' },
+		brand: { type: 'color', display: 'picker', label: 'Brand color' }
+	}}
+	onSubmit={(data) => console.log(data)}
+/>`}
+		>
+			<div class="w-full max-w-md">
+				<Form
+					inputs={{
+						due: {
+							type: 'date',
+							display: 'selector',
+							label: 'Due date',
+							description: 'Rendered by the popover DateSelector'
+						},
+						period: {
+							type: 'calendar-range',
+							display: 'selector',
+							label: 'Period',
+							description: 'Range mode of the same selector'
+						},
+						brand: {
+							type: 'color',
+							display: 'picker',
+							label: 'Brand color',
+							description: 'Rendered by the inline ColorPicker panel'
+						}
+					}}
+					onSubmit={(data) => console.log(data)}
+				/>
+			</div>
+		</ComponentCard>
+
 		<ComponentCard description="Time input with minuteSinceMidnight value format.">
 			<TimeInput
 				as="minuteSinceMidnight"

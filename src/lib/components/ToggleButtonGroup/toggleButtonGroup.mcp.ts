@@ -12,7 +12,7 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 
 <ToggleButtonGroup
 	bind:value={formatting}
-	variant="soft"
+	ariaLabel="Text formatting"
 	color="foreground"
 	items={{
 		bold: { children: 'Bold' },
@@ -24,14 +24,15 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 
 ## Props
 
-- **items**: Record<string, ToggleButtonProps> (required) - Keyed toggle button configurations.
-- **value**: Record<keyof items, boolean> (bindable) - Checked state for each item key.
+- **items**: Record<string, ToggleButtonGroupItem> (required) - Immutable keyed button configurations. Items do not contain \`checked\`.
+- **ariaLabel**: string (required) - Accessible name for the group.
+- **value**: Partial<Record<keyof items, boolean>> (bindable) - The only checked-state source. Missing keys are false.
 - **onChange**: (value) => void - Called with the full checked map after a toggle.
 - **size**: 'small' | 'normal' | 'large' - Applied to every item.
 - **color**: Colors - Applied to every item.
-- **variant**: 'solid' | 'outline' | 'soft' | 'ghost' - Applied to every item.
+- **variant**: 'outline' | 'ghost' - Applied to every item. Defaults to 'ghost'.
 - **disabled**: boolean - Disables every item.
-- **joined**: boolean - Renders the items as joined segments.
+- **joined**: boolean (default: false) - Renders the buttons as contiguous segments.
 - **class**: string - Additional CSS classes for the root.
 - **theme**: ToggleButtonGroupThemeProps - Theme overrides.
 
@@ -42,10 +43,11 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 \`\`\`svelte
 <ToggleButtonGroup
 	bind:value={formatting}
+	ariaLabel="Text formatting"
 	items={{
-		bold: { prefix: textBIcon },
-		italic: { prefix: textItalicIcon },
-		underline: { prefix: textUnderlineIcon }
+		bold: { prefix: textBIcon, ariaLabel: 'Bold' },
+		italic: { prefix: textItalicIcon, ariaLabel: 'Italic' },
+		underline: { prefix: textUnderlineIcon, ariaLabel: 'Underline' }
 	}}
 />
 \`\`\`
@@ -57,10 +59,12 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 	joined
 	variant="outline"
 	color="foreground"
+	ariaLabel="Text formatting"
+	value={{ bold: true }}
 	items={{
-		left: { prefix: textAlignLeftIcon },
-		center: { prefix: textAlignCenterIcon },
-		right: { prefix: textAlignRightIcon }
+		bold: { prefix: textBIcon, ariaLabel: 'Bold' },
+		italic: { prefix: textItalicIcon, ariaLabel: 'Italic' },
+		underline: { prefix: textUnderlineIcon, ariaLabel: 'Underline' }
 	}}
 />
 \`\`\`
@@ -69,6 +73,7 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 
 \`\`\`svelte
 <ToggleButtonGroup
+	ariaLabel="Density options"
 	items={{
 		compact: { children: 'Compact' },
 		comfortable: { children: 'Comfortable' }
@@ -83,8 +88,11 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 
 - **root**: Main button group container styles.
 
+The root uses \`role="group"\` and \`ariaLabel\`; each ToggleButton exposes its independent state through \`aria-pressed\`. Use SegmentedControl rather than ToggleButtonGroup for mutually exclusive choices.
+
 \`\`\`svelte
 <ToggleButtonGroup
+	ariaLabel="Options"
 	items={items}
 	theme={{
 		root: {

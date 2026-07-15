@@ -1,7 +1,7 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
-	import { ColorPicker } from '$lib/components/Form/ColorPicker/index.js';
+	import { ColorPicker, ColorPickerInput } from '$lib/components/Form/ColorPicker/index.js';
 
 	let color = $state('#6366f1');
 	let alphaColor = $state('#22c55e80');
@@ -20,8 +20,21 @@
 		'hex / rgb / hsl text representations'
 	]}
 >
-	<ComponentCard description="A color picker panel" code={`<ColorPicker bind:value={color} />`}>
-		<ColorPicker bind:value={color} />
+	<ComponentCard
+		description="A color picker field with a label and description"
+		code={`<ColorPickerInput
+	label="Brand color"
+	description="Used for buttons and links across the app"
+	bind:value={color}
+/>`}
+	>
+		<div class="w-full max-w-md">
+			<ColorPickerInput
+				label="Brand color"
+				description="Used for buttons and links across the app"
+				bind:value={color}
+			/>
+		</div>
 	</ComponentCard>
 
 	{#snippet examples()}

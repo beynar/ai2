@@ -36,10 +36,6 @@ export class AIComposerSelectionMenuController {
 		return !!this.currentSelection && !options.suggestionMenuOpen && !options.disabled;
 	}
 
-	get anchor() {
-		return this.open ? (this.currentSelection?.anchor ?? null) : null;
-	}
-
 	get linkUrl() {
 		return this.currentSelection?.linkUrl ?? '';
 	}
@@ -71,7 +67,9 @@ export class AIComposerSelectionMenuController {
 			return;
 		}
 
-		const nextSelection = readAIComposerSelectionState(options.rootElement);
+		const nextSelection = readAIComposerSelectionState(options.rootElement, {
+			requireAnchor: false
+		});
 		if (!nextSelection) {
 			if (!this.linkEditing) this.currentSelection = null;
 			return;

@@ -56,9 +56,10 @@
 	]}
 >
 	<ComponentCard
-		description="A single-choice select with a placeholder and a disabled option (Viewer)"
+		description="Pick a role for a team member"
 		code={`<Select
 	label="Role"
+	description="Controls what this member can see and do"
 	placeholder="Select a role"
 	items={[
 		{ value: 'admin', label: 'Administrator' },
@@ -70,7 +71,13 @@
 />`}
 	>
 		<div class="w-full max-w-md">
-			<Select label="Role" placeholder="Select a role" items={roles} bind:value />
+			<Select
+				label="Role"
+				description="Controls what this member can see and do"
+				placeholder="Select a role"
+				items={roles}
+				bind:value
+			/>
 		</div>
 	</ComponentCard>
 

@@ -24,6 +24,7 @@ import { kbdDescription } from '$lib/components/Kbd/kbd.mcp.js';
 import { dialogDescription } from '$lib/components/Dialog/dialog.mcp.js';
 import { calendarDescription } from '$lib/components/Form/Calendar/calendar.mcp.js';
 import { dateInputDescription } from '$lib/components/Form/DateInput/dateInput.mcp.js';
+import { dateSelectorDescription } from '$lib/components/Form/DateSelector/dateSelector.mcp.js';
 import { colorPickerDescription } from '$lib/components/Form/ColorPicker/colorPicker.mcp.js';
 import { colorInputDescription } from '$lib/components/Form/ColorInput/colorInput.mcp.js';
 import { fileInputDescription } from '$lib/components/Form/File/fileInput.mcp.js';
@@ -49,6 +50,7 @@ import { tagsInputDescription } from '$lib/components/Form/TagsInput/tagsInput.m
 import { keyValueInputDescription } from '$lib/components/Form/KeyValueInput/keyValueInput.mcp.js';
 import { headingDescription } from '$lib/components/Heading/heading.mcp.js';
 import { meterDescription } from '$lib/components/Meter/meter.mcp.js';
+import { overlayDescription } from '$lib/components/Overlay/overlay.mcp.js';
 import { popoverDescription } from '$lib/components/Popover/popover.mcp.js';
 import { scrollAreaDescription } from '$lib/components/ScrollArea/scrollArea.mcp.js';
 import { slotDescription } from '$lib/components/Slot/slot.mcp.js';
@@ -56,6 +58,8 @@ import { stepperDescription } from '$lib/components/Stepper/stepper.mcp.js';
 import { themeDescription } from '$lib/components/Theme/theme.mcp.js';
 import { toggleButtonDescription } from '$lib/components/ToggleButton/toggleButton.mcp.js';
 import { toggleButtonGroupDescription } from '$lib/components/ToggleButtonGroup/toggleButtonGroup.mcp.js';
+import { toggleMenuDescription } from '$lib/components/ToggleMenu/toggleMenu.mcp.js';
+import { selectionMenuDescription } from '$lib/components/SelectionMenu/selectionMenu.mcp.js';
 import { tooltipDescription } from '$lib/components/Tooltip/tooltip.mcp.js';
 import { sequence } from '@sveltejs/kit/hooks';
 import { checkboxesInputDescription } from '$lib/components/Form/CheckboxesInput/checkboxesInput.mcp.js';
@@ -108,6 +112,7 @@ const components = {
 	dialog: dialogDescription,
 	calendar: calendarDescription,
 	'date-input': dateInputDescription,
+	'date-selector': dateSelectorDescription,
 	'color-picker': colorPickerDescription,
 	'color-input': colorInputDescription,
 	'file-input': fileInputDescription,
@@ -130,6 +135,7 @@ const components = {
 	'key-value-input': keyValueInputDescription,
 	heading: headingDescription,
 	meter: meterDescription,
+	overlay: overlayDescription,
 	popover: popoverDescription,
 	'scroll-area': scrollAreaDescription,
 	slot: slotDescription,
@@ -137,6 +143,8 @@ const components = {
 	theme: themeDescription,
 	'toggle-button': toggleButtonDescription,
 	'toggle-button-group': toggleButtonGroupDescription,
+	'toggle-menu': toggleMenuDescription,
+	'selection-menu': selectionMenuDescription,
 	tooltip: tooltipDescription,
 	confirmation: confirmationDescription,
 	toast: toastDescription,

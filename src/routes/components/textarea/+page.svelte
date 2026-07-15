@@ -20,10 +20,20 @@
 >
 	<ComponentCard
 		description="A multiline text input"
-		code={`<TextArea label="Message" placeholder="Write something..." bind:value={message} />`}
+		code={`<TextArea
+	label="Message"
+	description="Share as much detail as you like"
+	placeholder="Write something..."
+	bind:value={message}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<TextArea label="Message" placeholder="Write something..." bind:value={message} />
+			<TextArea
+				label="Message"
+				description="Share as much detail as you like"
+				placeholder="Write something..."
+				bind:value={message}
+			/>
 		</div>
 	</ComponentCard>
 

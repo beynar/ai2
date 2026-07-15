@@ -5,7 +5,6 @@
 	import { PIN_INPUT_ALPHANUMERIC_PATTERN, PinInput } from '$lib/components/Form/PinInput/index.js';
 
 	let code = $state('');
-	let completedCode = $state('');
 	let maskedCode = $state('');
 	let inviteCode = $state('');
 	let standaloneCode = $state('');
@@ -13,9 +12,6 @@
 
 	const digitsOnly = (text: string) => text.replace(/\D/g, '');
 	const alphanumericOnly = (text: string) => text.replace(/[^a-zA-Z0-9]/g, '');
-	const setCompletedCode = (value: string) => {
-		completedCode = value;
-	};
 	const setFormValue = (value: { otp: string | null }) => {
 		formValue = JSON.stringify(value);
 	};
@@ -36,20 +32,16 @@
 		description="Digits-only one-time code with paste cleanup."
 		code={`<PinInput
 	label="Verification code"
+	description="Enter the 6-digit code we sent you"
 	bind:value={code}
-	pasteTransformer={digitsOnly}
-	onComplete={(value) => verify(value)}
 />`}
 		class="!min-h-fit"
 	>
 		<div class="w-full max-w-md">
 			<PinInput
 				label="Verification code"
-				description="Paste a code with spaces or hyphens; only digits are inserted."
-				helper={`Value: ${code || 'empty'}${completedCode ? `, complete: ${completedCode}` : ''}`}
+				description="Enter the 6-digit code we sent you"
 				bind:value={code}
-				pasteTransformer={digitsOnly}
-				onComplete={setCompletedCode}
 			/>
 		</div>
 	</ComponentCard>

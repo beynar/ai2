@@ -1,10 +1,9 @@
 export const imageZoomDescription = `
 # ImageZoom
 
-ImageZoom renders an accessible image trigger that opens the image into a full-viewport zoom layer.
-It follows the interaction model of Kibo's React image-zoom wrapper over react-medium-image-zoom:
-thumbnail trigger, controlled or uncontrolled open state, Escape/backdrop dismissal, and a blurred
-modal backdrop.
+ImageZoom renders an accessible image trigger powered by LightGallery's Medium Zoom plugin. It
+animates the source image into a focused full-viewport view while preserving controlled state,
+high-resolution sources, slots, focus restoration, and configurable dismissal.
 
 ## Usage
 
@@ -16,6 +15,8 @@ modal backdrop.
 <ImageZoom
 	src="/photos/desk-thumb.jpg"
 	zoomSrc="/photos/desk.jpg"
+	zoomWidth={2400}
+	zoomHeight={1600}
 	alt="Desk setup with a laptop and notebook"
 />
 \`\`\`
@@ -25,17 +26,20 @@ modal backdrop.
 - **src**: string - Thumbnail image source. Optional when the children slot renders an image.
 - **alt**: string - Accessible image text. Optional when the children slot image has alt text.
 - **zoomSrc**: string - Full-size image source. Defaults to \`src\`.
+- **zoomWidth / zoomHeight**: number - Intrinsic dimensions of \`zoomSrc\`. Provide both when \`zoomSrc\` differs from the thumbnail so the origin transition and final image use the same rectangle.
 - **open**: boolean (bindable, default: false) - Controls the zoom layer.
 - **disabled**: boolean (default: false) - Prevents opening.
 - **width / height / srcset / sizes / loading / decoding** - Forwarded to the thumbnail image.
-- **zoomMargin**: number (default: 32) - Minimum viewport margin around the zoomed image.
-- **transitionDuration**: number (default: 240) - Zoom animation duration in milliseconds. Respects reduced-motion preferences.
+- **zoomMargin**: number (default: 40) - Minimum viewport margin around the zoomed image.
+- **transitionDuration**: number (default: 400) - Zoom animation duration in milliseconds. Matches LightGallery's Medium Zoom default and respects reduced-motion preferences.
 - **closeOnClickOutside**: boolean (default: true) - Closes from the backdrop.
 - **closeOnEscape**: boolean (default: true) - Closes on Escape.
-- **closeOnScroll**: boolean (default: true) - Closes when the page or a nested scroll container scrolls.
+- **closeOnScroll**: boolean (default: true) - Closes on wheel, touch-scroll, page scroll, or nested-container scroll.
 - **lockScroll**: boolean (default: false) - Locks page scroll while open.
 - **buttonLabel**: string (default: "Zoom image") - Accessible trigger label.
 - **closeLabel**: string (default: "Close image zoom") - Accessible close/backdrop label.
+- **backgroundColor**: string (default: theme background) - CSS color used by the Medium Zoom backdrop.
+- **licenseKey**: string (default: LightGallery evaluation key) - LightGallery license key. A production key is required unless the consuming project is GPLv3-compatible.
 - **showIndicator**: boolean (default: true) - Toggles the thumbnail zoom indicator.
 - **indicatorPosition**: "top-left" | "top-right" | "bottom-left" | "bottom-right" (default: "top-right") - Corner used for the thumbnail zoom indicator.
 - **class**: string - Additional root classes.
@@ -53,10 +57,10 @@ modal backdrop.
 ## Accessibility
 
 - The thumbnail trigger is a native \`button type="button"\`.
-- The zoom layer uses \`role="dialog"\` and \`aria-modal="true"\`.
+- LightGallery renders and manages the modal dialog layer.
 - Escape closes the dialog by default.
 - Page or nested-container scroll closes the dialog by default.
-- Focus moves to the close button after opening and returns to the trigger after closing.
+- Focus remains trapped in the zoom layer and returns to the prior control after closing.
 - Reduced motion disables the zoom transition.
 
 ## Examples
@@ -77,6 +81,8 @@ modal backdrop.
 <ImageZoom
 	src="/image-640.jpg"
 	zoomSrc="/image-2400.jpg"
+	zoomWidth={2400}
+	zoomHeight={1600}
 	alt="Architectural detail"
 />
 \`\`\`

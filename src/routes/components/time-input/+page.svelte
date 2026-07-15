@@ -3,6 +3,8 @@
 	import DocPage from '../../DocPage.svelte';
 	import { TimeInput } from '$lib/components/Form/TimeInput/index.js';
 	import Form from '$lib/components/Form/Form/Form.svelte';
+
+	let openingTime = $state<number | null>(540);
 </script>
 
 <DocPage
@@ -19,26 +21,16 @@
 	<ComponentCard
 		description="A masked time input, value as minutes since midnight"
 		code={`<TimeInput
-	as="minuteSinceMidnight"
-	value={1439}
-	label="Time"
-	format="HH:MM"
-	placeholder="HH:MM"
-	onChange={(value) => {
-		console.log('value', value);
-	}}
+	label="Opening time"
+	description="When the store opens on weekdays"
+	bind:value={openingTime}
 />`}
 	>
 		<div class="w-full max-w-md">
 			<TimeInput
-				as="minuteSinceMidnight"
-				value={1439}
-				label="Time"
-				format="HH:MM"
-				placeholder="HH:MM"
-				onChange={(value) => {
-					console.log('value', value);
-				}}
+				label="Opening time"
+				description="When the store opens on weekdays"
+				bind:value={openingTime}
 			/>
 		</div>
 	</ComponentCard>

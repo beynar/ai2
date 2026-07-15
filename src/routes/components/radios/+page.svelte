@@ -5,6 +5,7 @@
 	import Form from '$lib/components/Form/Form/Form.svelte';
 
 	let selectedOptions = $state(['option1']);
+	let usageValue = $state<string | null>('option1');
 	let cardSelectedOptions = $state(['card1']);
 
 	const normalOptions = [
@@ -33,8 +34,10 @@
 	]}
 >
 	<ComponentCard
-		description="Radio group with normal layout."
+		description="Choose a single option from a group"
 		code={`<RadioInput
+	label="Choose your option"
+	description="You can change this later in settings"
 	items={[
 		{ value: 'option1', label: 'Option 1', description: 'This is the first option' },
 		{ value: 'option2', label: 'Option 2', description: 'This is the second option' },
@@ -42,24 +45,18 @@
 	]}
 	mode="normal"
 	name="usage-radios"
-	label="Choose your option"
-	required
+	bind:value
 />`}
 	>
 		<div class="w-full max-w-md">
 			<RadioInput
-				onClick={(value) => {
-					console.log('clicked', value);
-				}}
+				label="Choose your option"
+				description="You can change this later in settings"
 				items={normalOptions}
 				mode="normal"
 				name="usage-radios"
-				label="Choose your option"
-				required
+				bind:value={usageValue}
 			/>
-			<div class="text-foreground-muted mt-4 text-sm">
-				Selected: {selectedOptions.join(', ')}
-			</div>
 		</div>
 	</ComponentCard>
 

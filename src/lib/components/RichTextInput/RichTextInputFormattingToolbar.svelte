@@ -1,16 +1,31 @@
 <script lang="ts">
-	import { xIcon } from '../Icons/x.js';
+	import type { Attachment } from 'svelte/attachments';
 	import type { Sizes } from '$lib/types/theme.js';
+	import Button from '../Button/Button.svelte';
+	import { xIcon } from '../Icons/x.js';
+	import type { MenuItem } from '../Menu/index.js';
+	import SelectionMenu from '../SelectionMenu/SelectionMenu.svelte';
+	import ToggleMenu from '../ToggleMenu/ToggleMenu.svelte';
+	import type {
+		ToggleMenuCustomPayload,
+		ToggleMenuGroupButtons,
+		ToggleMenuGroupItem,
+		ToggleMenuItem,
+		ToggleMenuRadioGroupButtons,
+		ToggleMenuRadioGroupItem
+	} from '../ToggleMenu/index.js';
+	import type { ToggleMenuThemeProps } from '../ToggleMenu/toggleMenu.theme.js';
+	import { tooltip } from '../Tooltip/tooltip.svelte.js';
 	import {
 		getRichTextInputBlockControls,
 		getRichTextInputInlineControls,
-		getRichTextInputListControls
+		getRichTextInputListControls,
+		type RichTextInputToolbarButtonConfig
 	} from './formatting-toolbar-controls.js';
 	import type { RichTextInputFormat } from './richTextInput.props.js';
 	import RichTextInputLinkForm from './RichTextInputLinkForm.svelte';
 	import type { RichTextInputThemeProps } from './richTextInput.theme.js';
 	import { useRichTextInputTheme } from './richTextInput.theme.js';
-	import RichTextInputToolbarButton from './RichTextInputToolbarButton.svelte';
 	import type {
 		AIComposerSelectionBlockType,
 		AIComposerSelectionFormat,
@@ -33,6 +48,11 @@
 		onLink: (url: string | null) => void;
 		onLinkEditingChange?: (isEditing: boolean) => void;
 		onDismiss?: () => void;
+		selectionTarget?: HTMLElement | null;
+		selectionEnabled?: boolean;
+		selectionPopoverClass?: string;
+		onSelectionClose?: () => void;
+		onSelectionFocusReturn?: () => void;
 		class?: string;
 	};
 
@@ -51,21 +71,24 @@
 		onLink,
 		onLinkEditingChange,
 		onDismiss,
+		selectionTarget,
+		selectionEnabled = false,
+		selectionPopoverClass,
+		onSelectionClose,
+		onSelectionFocusReturn,
 		class: className
 	}: Props = $props();
 
-	let root = $state<HTMLElement | null>(null);
 	let isEditingLink = $state(false);
+	let selectionMenu = $state<{ focusFirst: () => void } | null>(null);
+	let menuItems = $state<ToggleMenuItem[]>([]);
 
 	const classes = $derived(useRichTextInputTheme(theme));
 	const hasActiveLink = $derived(linkUrl.trim().length > 0);
-	const hasBlocks = $derived(hasAny(['heading1', 'heading2', 'heading3', 'quote']));
-	const hasInline = $derived(
-		hasAny(['bold', 'italic', 'code', 'strikethrough', 'highlight', 'link'])
-	);
-	const hasLists = $derived(hasAny(['bulletList', 'orderedList']));
 	const blockControls = $derived.by(() =>
-		getRichTextInputBlockControls({ hasFormat, blockType, onBlock })
+		hasAny(['heading1', 'heading2', 'heading3', 'quote'])
+			? getRichTextInputBlockControls({ hasFormat, blockType, onBlock })
+			: []
 	);
 	const inlineControls = $derived.by(() =>
 		getRichTextInputInlineControls({
@@ -79,13 +102,36 @@
 	const listControls = $derived.by(() =>
 		getRichTextInputListControls({ hasFormat, listType, onList })
 	);
+	const menuTheme = $derived({
+		override: true,
+		root: { base: classes.formattingToolbar({ size, className }) },
+		rail: { base: classes.formattingToolbarRail({ size }) }
+	} satisfies ToggleMenuThemeProps);
+	const preserveSelection: Attachment<HTMLElement> = (node) => {
+		const onPointerDown = (event: PointerEvent) => {
+			if (event.button === 0) event.preventDefault();
+		};
+		node.addEventListener('pointerdown', onPointerDown);
+		return () => node.removeEventListener('pointerdown', onPointerDown);
+	};
+	const restoreSelectionFocusOnEscape: Attachment<HTMLElement> = (node) => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') queueMicrotask(() => onSelectionFocusReturn?.());
+		};
+		node.addEventListener('keydown', onKeyDown);
+		return () => node.removeEventListener('keydown', onKeyDown);
+	};
+
+	$effect(() => {
+		menuItems = buildMenuItems();
+	});
 
 	function hasFormat(format: RichTextInputFormat) {
 		return availableFormats.includes(format);
 	}
 
-	function hasAny(formats: RichTextInputFormat[]) {
-		return formats.some((format) => hasFormat(format));
+	function hasAny(candidateFormats: RichTextInputFormat[]) {
+		return candidateFormats.some((format) => hasFormat(format));
 	}
 
 	function beginLinkEdit() {
@@ -111,33 +157,113 @@
 	function dismiss() {
 		closeLinkEdit();
 		onDismiss?.();
+		onSelectionFocusReturn?.();
 	}
 
-	function handleToolbarKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') {
-			if (showDismiss) {
-				event.preventDefault();
-				dismiss();
-			}
-			return;
+	export function focusFirst() {
+		selectionMenu?.focusFirst();
+	}
+
+	function buildMenuItems() {
+		const items: ToggleMenuItem[] = [];
+		pushRadioGroup(items, 'Block style', blockControls, blockType);
+		pushGroup(items, 'Inline formatting', inlineControls);
+		pushGroup(items, 'Lists', listControls);
+
+		if (showDismiss) {
+			items.push({
+				type: 'custom',
+				children: dismissControl,
+				overflowItems: getDismissOverflowItems
+			});
 		}
 
-		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-		const controls = [
-			...(root?.querySelectorAll<HTMLElement>('.rich-text-input-toolbar-control') ?? [])
+		return items;
+	}
+
+	function pushGroup(
+		items: ToggleMenuItem[],
+		ariaLabel: string,
+		controls: RichTextInputToolbarButtonConfig[]
+	) {
+		if (controls.length === 0) return;
+		const buttons: ToggleMenuGroupButtons = {};
+		const value: Record<string, boolean> = {};
+
+		for (const control of controls) {
+			buttons[control.id] = {
+				prefix: control.icon,
+				ariaLabel: control.shortcut ? `${control.label} (${control.shortcut})` : control.label,
+				onChange: control.onSelect
+			};
+			value[control.id] = control.active;
+		}
+
+		items.push({
+			type: 'group',
+			ariaLabel,
+			items: buttons,
+			value,
+			joined: false
+		} satisfies ToggleMenuGroupItem);
+	}
+
+	function pushRadioGroup(
+		items: ToggleMenuItem[],
+		ariaLabel: string,
+		controls: RichTextInputToolbarButtonConfig[],
+		value: string
+	) {
+		if (controls.length === 0) return;
+		const buttons: ToggleMenuRadioGroupButtons = {};
+
+		for (const control of controls) {
+			buttons[control.id] = {
+				prefix: control.icon,
+				ariaLabel: control.label
+			};
+		}
+
+		items.push({
+			type: 'radio-group',
+			ariaLabel,
+			items: buttons,
+			value: controls.some((control) => control.id === value) ? value : undefined,
+			onChange: (nextValue) => controls.find((control) => control.id === nextValue)?.onSelect(),
+			joined: false
+		} satisfies ToggleMenuRadioGroupItem);
+	}
+
+	function getDismissOverflowItems(): MenuItem[] {
+		return [
+			{
+				type: 'option',
+				title: 'Dismiss formatting toolbar',
+				prefix: xIcon,
+				onClick: dismiss
+			}
 		];
-		if (!(document.activeElement instanceof HTMLElement)) return;
-		const index = controls.indexOf(document.activeElement);
-		if (index === -1) return;
-		event.preventDefault();
-		const delta = event.key === 'ArrowRight' ? 1 : -1;
-		const nextIndex = (index + delta + controls.length) % controls.length;
-		controls[nextIndex]?.focus({ preventScroll: true });
 	}
 </script>
 
-<div bind:this={root} class={classes.formattingToolbar({ size, class: className })}>
-	{#if isEditingLink}
+{#snippet dismissControl({ reference, size, color, variant, disabled }: ToggleMenuCustomPayload)}
+	<Button
+		type="button"
+		label="Dismiss formatting toolbar"
+		prefix={xIcon}
+		color={color ?? 'foreground'}
+		variant={variant ?? 'ghost'}
+		{size}
+		{disabled}
+		squared
+		onClick={dismiss}
+		{@attach reference}
+		{@attach tooltip({ content: 'Dismiss formatting toolbar', delay: 350 })}
+	/>
+{/snippet}
+
+{#snippet linkEditor()}
+	<div class={classes.formattingToolbar({ size, class: className })}>
 		<RichTextInputLinkForm
 			{size}
 			{theme}
@@ -146,41 +272,38 @@
 			onRemove={removeLink}
 			onCancel={closeLinkEdit}
 		/>
-	{:else}
-		<div
-			role="toolbar"
-			aria-label="Rich text formatting"
-			tabindex="-1"
-			class={classes.formattingToolbar({ size })}
-			onkeydown={handleToolbarKeydown}
-		>
-			{#if hasBlocks}
-				{#each blockControls as control (control.label)}
-					<RichTextInputToolbarButton {size} {theme} {...control} />
-				{/each}
-			{/if}
-			{#if hasBlocks && hasInline}
-				<span aria-hidden="true" class={classes.toolbarSeparator({ size })}></span>
-			{/if}
-			{#each inlineControls as control (control.label)}
-				<RichTextInputToolbarButton {size} {theme} {...control} />
-			{/each}
-			{#if hasInline && hasLists}
-				<span aria-hidden="true" class={classes.toolbarSeparator({ size })}></span>
-			{/if}
-			{#each listControls as control (control.label)}
-				<RichTextInputToolbarButton {size} {theme} {...control} />
-			{/each}
-			{#if showDismiss}
-				<RichTextInputToolbarButton
-					{size}
-					{theme}
-					label="Dismiss formatting toolbar"
-					icon={xIcon}
-					active={false}
-					onSelect={dismiss}
-				/>
-			{/if}
-		</div>
-	{/if}
-</div>
+	</div>
+{/snippet}
+
+{#if selectionTarget !== undefined}
+	<SelectionMenu
+		bind:this={selectionMenu}
+		target={selectionTarget}
+		enabled={selectionEnabled}
+		bind:items={menuItems}
+		ariaLabel="Rich text formatting"
+		{size}
+		color="foreground"
+		variant="ghost"
+		theme={menuTheme}
+		position="top"
+		offset={8}
+		directedTransition={false}
+		popoverClass={selectionPopoverClass}
+		onClose={() => onSelectionClose?.()}
+		children={isEditingLink ? linkEditor : undefined}
+		{@attach restoreSelectionFocusOnEscape}
+	/>
+{:else if isEditingLink}
+	{@render linkEditor()}
+{:else}
+	<ToggleMenu
+		bind:items={menuItems}
+		ariaLabel="Rich text formatting"
+		{size}
+		color="foreground"
+		variant="ghost"
+		theme={menuTheme}
+		{@attach preserveSelection}
+	/>
+{/if}

@@ -45,6 +45,17 @@ export type TabItem =
 			 * Link rel attribute (only used when href is provided).
 			 */
 			rel?: string;
+			/**
+			 * Entries shown in a popover menu opened by this tab (overflow pattern).
+			 * Selecting an entry activates this tab and displays the entry's label on
+			 * it; the tab's own label is used as the menu header.
+			 */
+			menu?: string[];
+			/**
+			 * Called with the selected entry index when a menu entry is picked
+			 * (only used when menu is provided).
+			 */
+			onMenuSelect?: (menuIndex: number) => void;
 	  };
 
 export type TabbarProps = WithAttachments<{

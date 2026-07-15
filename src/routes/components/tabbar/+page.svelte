@@ -14,6 +14,14 @@
 	let pillVerticalActiveTab = $state(0);
 	let variableActiveTab = $state(0);
 	let scrollableActiveTab = $state(0);
+	let overflowActiveTab = $state(0);
+
+	// Overflow pattern: the last tab opens a popover menu with additional views.
+	const overflowTabs = [
+		'Home',
+		'Projects',
+		{ label: 'More', menu: ['Analytics', 'Reports', 'Billing'] }
+	];
 
 	const simpleTabs = ['Home', 'Profile', 'Settings'];
 	const pillTabs = ['Overview', 'Analytics', 'Reports'];
@@ -76,7 +84,12 @@
 />`}
 	>
 		<div class="flex flex-col items-center">
-			<Tabbar class="w-fit" items={simpleTabs} bind:activeTab={simpleActiveTab} onChange={handleTabChange} />
+			<Tabbar
+				class="w-fit"
+				items={simpleTabs}
+				bind:activeTab={simpleActiveTab}
+				onChange={handleTabChange}
+			/>
 		</div>
 	</ComponentCard>
 
@@ -85,12 +98,20 @@
 			description="Use Arrow keys (Left/Right for horizontal, Up/Down for vertical) to move focus; Home/End jump to first/last tab; Enter or Space activates the focused tab."
 		>
 			<div class="flex flex-col items-center gap-3">
-				<Tabbar class="w-fit" items={simpleTabs} bind:activeTab={simpleActiveTab} onChange={handleTabChange} />
+				<Tabbar
+					class="w-fit"
+					items={simpleTabs}
+					bind:activeTab={simpleActiveTab}
+					onChange={handleTabChange}
+				/>
 				<p class="text-foreground/70 text-sm">Active tab: {simpleActiveTab}</p>
 			</div>
 		</ComponentCard>
 
-		<ComponentCard title="With icons" description="Tabs accept prefix/suffix snippets, typically icons.">
+		<ComponentCard
+			title="With icons"
+			description="Tabs accept prefix/suffix snippets, typically icons."
+		>
 			<div class="flex flex-col items-center">
 				<Tabbar class="w-fit" items={tabsWithIcons} bind:activeTab={iconActiveTab} />
 			</div>
@@ -156,7 +177,21 @@
 		>
 			<div class="flex w-full max-w-sm flex-col items-center gap-3">
 				<Tabbar class="w-full" items={manyTabs} bind:activeTab={scrollableActiveTab} />
-				<Tabbar variant="pill" class="w-full" items={manyTabs} bind:activeTab={scrollableActiveTab} />
+				<Tabbar
+					variant="pill"
+					class="w-full"
+					items={manyTabs}
+					bind:activeTab={scrollableActiveTab}
+				/>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Menu tab"
+			description="A tab with menu opens a popover listing additional items that do not fit inline. Selecting one activates the tab and shows the selection's label on it."
+		>
+			<div class="flex flex-col items-center">
+				<Tabbar class="w-fit" items={overflowTabs} bind:activeTab={overflowActiveTab} />
 			</div>
 		</ComponentCard>
 

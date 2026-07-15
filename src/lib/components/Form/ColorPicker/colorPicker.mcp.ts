@@ -4,21 +4,37 @@ export const colorPickerDescription = `
 A standalone color picker panel (a faithful clone of the kibo-ui color picker). It is a
 self-contained rounded panel — a saturation/value square, a hue slider, an alpha slider, an
 eyedropper button, and a format select with a color text input and an alpha percentage input.
-It is the display/interaction panel that a form field can later wrap.
+\`ColorPicker\` is the raw panel primitive; \`ColorPickerInput\` wraps it in the standard field
+chrome (label, description, errors, form registration) and extends InputProps with type 'color'.
 
 ## Basic Usage
 
 \`\`\`svelte
 <script>
-	import { ColorPicker } from 'svelai';
+	import { ColorPicker, ColorPickerInput } from 'svelai';
 	let color = $state('#6366f1');
 </script>
 
+<!-- Field variant: label/description/errors like every other form input -->
+<ColorPickerInput
+	label="Brand color"
+	description="Used for buttons and links across the app"
+	bind:value={color}
+/>
+
+<!-- Raw panel primitive -->
 <ColorPicker bind:value={color} />
 <ColorPicker bind:value={color} format="rgb" size="large" />
 <ColorPicker value="#22c55e80" onChange={(hex) => console.log(hex)} />
 <ColorPicker value="#000000" disabled />
 \`\`\`
+
+## ColorPickerInput (field variant)
+
+Accepts every field prop from InputProps ('color') — \`label\`, \`description\`, \`name\`, \`required\`,
+\`errors\`, \`onValidate\`, \`helper\`, snippets, … — plus the panel props \`format\` and \`i18n\`.
+\`theme\` is split: \`theme.picker\` for the panel parts, \`theme.field\` for the field wrapper.
+\`bind:value\` is the canonical hex string (nullable).
 
 ## Props
 

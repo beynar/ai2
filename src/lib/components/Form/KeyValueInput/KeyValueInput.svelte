@@ -6,9 +6,12 @@
 	import { plusIcon } from '../../Icons/plus.js';
 	import { xIcon } from '../../Icons/x.js';
 	import { useI18n } from '$lib/i18n/context.svelte.js';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { scale } from 'svelte/transition';
+
+	type KeyValueRow = { id: string; key: string; value: string };
+	type InputField = 'key' | 'value';
 
 	let {
 		value = $bindable(null),
@@ -40,9 +43,13 @@
 	// keyed each crash Svelte.
 	let uid = 0;
 	const nextId = () => `${id}-row-${uid++}`;
+	const inputElements: Record<InputField, Map<string, HTMLInputElement>> = {
+		key: new Map(),
+		value: new Map()
+	};
 
 	// Internal source of truth for the editor. Seeded ONCE from the initial value (untracked).
-	let rows = $state<{ id: string; key: string; value: string }[]>(
+	let rows = $state<KeyValueRow[]>(
 		untrack(() => (value ?? []).map((pair) => ({ id: nextId(), key: pair.key, value: pair.value })))
 	);
 
@@ -117,9 +124,13 @@
 	const atMaxRows = $derived(maxRows !== undefined && rows.length >= maxRows);
 
 	// Append a fresh empty row. Never mutates the array in place.
-	const addRow = () => {
+	const addRow = async () => {
 		if (disabled || atMaxRows) return;
-		rows = [...rows, { id: nextId(), key: '', value: '' }];
+
+		const row = { id: nextId(), key: '', value: '' };
+		rows = [...rows, row];
+		await tick();
+		inputElements.key.get(row.id)?.focus();
 	};
 
 	// Remove a row by id. Never mutates the array in place; early-returns when disabled.
@@ -128,16 +139,96 @@
 		rows = rows.filter((row) => row.id !== rowId);
 	};
 
-	// Enter must not submit an enclosing form. Backspace on a fully empty row removes it.
-	const handleKeydown = (event: KeyboardEvent, row: { id: string; key: string; value: string }) => {
+	const registerInput = (rowId: string, field: InputField, input: HTMLInputElement) => {
+		const fieldInputs = inputElements[field];
+		fieldInputs.set(rowId, input);
+		return () => {
+			if (fieldInputs.get(rowId) === input) fieldInputs.delete(rowId);
+		};
+	};
+
+	const getInput = (rowIndex: number, field: InputField) => {
+		const row = rows[rowIndex];
+		return row ? inputElements[field].get(row.id) : undefined;
+	};
+
+	const getHorizontalInput = (rowIndex: number, field: InputField, direction: -1 | 1) => {
+		if (direction === -1) {
+			return field === 'value' ? getInput(rowIndex, 'key') : getInput(rowIndex - 1, 'value');
+		}
+		return field === 'key' ? getInput(rowIndex, 'value') : getInput(rowIndex + 1, 'key');
+	};
+
+	const focusInput = (input: HTMLInputElement, caret: number) => {
+		input.focus();
+		const offset = Math.max(0, Math.min(caret, input.value.length));
+		input.setSelectionRange(offset, offset);
+	};
+
+	const focusAfterRemoval = async (input: HTMLInputElement) => {
+		await tick();
+		if (input.isConnected) focusInput(input, input.value.length);
+	};
+
+	const handleKeydown = (event: KeyboardEvent, row: KeyValueRow, field: InputField) => {
+		if (event.isComposing) return;
+
 		if (event.key === 'Enter') {
 			event.preventDefault();
-			addRow();
+			if (field === 'value' && row.value.trim()) void addRow();
 			return;
 		}
-		if (event.key === 'Backspace' && !row.key && !row.value) {
+
+		const input = event.currentTarget;
+		if (!(input instanceof HTMLInputElement)) return;
+		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+		const rowIndex = rows.findIndex((candidate) => candidate.id === row.id);
+		const selectionStart = input.selectionStart;
+		const selectionEnd = input.selectionEnd;
+		if (rowIndex < 0 || selectionStart === null || selectionEnd === null) return;
+
+		if (event.key === 'ArrowRight') {
+			if (selectionStart !== selectionEnd || selectionEnd !== input.value.length) return;
+			const nextInput = getHorizontalInput(rowIndex, field, 1);
+			if (!nextInput) return;
 			event.preventDefault();
-			removeRow(row.id);
+			focusInput(nextInput, 0);
+			return;
+		}
+
+		if (event.key === 'ArrowLeft') {
+			if (selectionStart !== selectionEnd || selectionStart !== 0) return;
+			const previousInput = getHorizontalInput(rowIndex, field, -1);
+			if (!previousInput) return;
+			event.preventDefault();
+			focusInput(previousInput, previousInput.value.length);
+			return;
+		}
+
+		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+			const direction = event.key === 'ArrowUp' ? -1 : 1;
+			const verticalInput = getInput(rowIndex + direction, field);
+			if (!verticalInput) return;
+			event.preventDefault();
+			focusInput(verticalInput, selectionStart);
+			return;
+		}
+
+		if (event.key === 'Backspace' && !input.value) {
+			const isEmptyRow = !row.key && !row.value;
+			const previousInput = isEmptyRow
+				? getInput(rowIndex - 1, 'value')
+				: getHorizontalInput(rowIndex, field, -1);
+			if (!isEmptyRow && !previousInput) return;
+
+			event.preventDefault();
+			if (isEmptyRow) {
+				removeRow(row.id);
+				if (previousInput) void focusAfterRemoval(previousInput);
+				return;
+			}
+			if (previousInput) focusInput(previousInput, previousInput.value.length);
 		}
 	};
 
@@ -177,20 +268,22 @@
 					type="text"
 					autocomplete="off"
 					bind:value={row.key}
+					{@attach (node) => registerInput(row.id, 'key', node)}
 					placeholder={keyPlaceholder ?? t.keyLabel}
 					{disabled}
 					class={classes.input({ size, disabled })}
-					onkeydown={(event) => handleKeydown(event, row)}
+					onkeydown={(event) => handleKeydown(event, row, 'key')}
 				/>
 				<input
 					data-1p-ignore
 					type="text"
 					autocomplete="off"
 					bind:value={row.value}
+					{@attach (node) => registerInput(row.id, 'value', node)}
 					placeholder={valuePlaceholder ?? t.valueLabel}
 					{disabled}
 					class={classes.input({ size, disabled })}
-					onkeydown={(event) => handleKeydown(event, row)}
+					onkeydown={(event) => handleKeydown(event, row, 'value')}
 				/>
 				<button
 					type="button"
@@ -208,7 +301,7 @@
 		type="button"
 		disabled={disabled || atMaxRows}
 		class={classes.addButton({ size, disabled: disabled || atMaxRows })}
-		onclick={addRow}
+		onclick={() => void addRow()}
 	>
 		{@render plusIcon({ size: 16 })}
 		{addLabel ?? t.add}

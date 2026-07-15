@@ -1,192 +1,129 @@
 <script lang="ts">
 	import ToggleButtonGroup from '$lib/components/ToggleButtonGroup/ToggleButtonGroup.svelte';
-	import ComponentCard from '../../ComponentCard.svelte';
-	import DocPage from '../../DocPage.svelte';
-	import { colors, sizes } from '$lib/utils/tokens.js';
 	import { textBIcon } from '$lib/components/Icons/textB.js';
 	import { textItalicIcon } from '$lib/components/Icons/textItalic.js';
 	import { textUnderlineIcon } from '$lib/components/Icons/textUnderline.js';
-	import { textAlignLeftIcon } from '$lib/components/Icons/textAlignLeft.js';
-	import { textAlignCenterIcon } from '$lib/components/Icons/textAlignCenter.js';
-	import { textAlignRightIcon } from '$lib/components/Icons/textAlignRight.js';
-	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
+	import { colors, sizes } from '$lib/utils/tokens.js';
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 
-	const variants = ['outline', 'soft', 'ghost'] as const;
+	const variants = ['ghost', 'outline'] as const;
+	const formattingItems = {
+		bold: { prefix: textBIcon, ariaLabel: 'Bold' },
+		italic: { prefix: textItalicIcon, ariaLabel: 'Italic' },
+		underline: { prefix: textUnderlineIcon, ariaLabel: 'Underline' }
+	};
 
 	let formatting = $state({ bold: true, italic: false, underline: false });
-	let alignment = $state({ left: true, center: false, right: false });
 </script>
 
 <DocPage
 	title="Toggle group"
-	subtitle="A set of toggle buttons for single or multiple selection."
+	subtitle="A labeled group of independent pressed buttons."
 	component="ToggleButtonGroup"
 	features={[
-		'Bindable value map per button key',
-		'Joined mode for segmented controls',
-		'onChange emits full checked map',
+		'Value is the single checked-state source',
+		'Optional joined button layout',
+		'onChange emits the checked map',
 		'Composes ToggleButton primitives'
 	]}
 >
 	<ComponentCard
-		code={`<ToggleButtonGroup
-	variant="soft"
-	color="foreground"
-	items={{
-		bold: { prefix: textBIcon, checked: true },
-		italic: { prefix: textItalicIcon },
-		underline: { prefix: textUnderlineIcon }
-	}}
+		code={`let formatting = $state({ bold: true });
+
+<ToggleButtonGroup
+\tbind:value={formatting}
+\tariaLabel="Text formatting"
+\titems={{
+\t\tbold: { prefix: textBIcon, ariaLabel: 'Bold' },
+\t\titalic: { prefix: textItalicIcon, ariaLabel: 'Italic' },
+\t\tunderline: { prefix: textUnderlineIcon, ariaLabel: 'Underline' }
+\t}}
 />`}
 	>
-		<ToggleButtonGroup
-			bind:value={formatting}
-			variant="soft"
-			color="foreground"
-			items={{
-				bold: { prefix: textBIcon },
-				italic: { prefix: textItalicIcon },
-				underline: { prefix: textUnderlineIcon }
-			}}
-		/>
+		<div class="flex flex-col items-center gap-3">
+			<ToggleButtonGroup
+				bind:value={formatting}
+				ariaLabel="Text formatting"
+				color="foreground"
+				items={formattingItems}
+			/>
+			<code class="text-foreground-muted text-xs">{JSON.stringify(formatting)}</code>
+		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Icon-only toolbar with bound value.">
-			<div class="flex flex-col items-center gap-3">
-				<div class="flex items-center justify-center gap-6">
-					<ToggleButtonGroup
-						bind:value={formatting}
-						variant="soft"
-						color="foreground"
-						items={{
-							bold: { prefix: textBIcon },
-							italic: { prefix: textItalicIcon },
-							underline: { prefix: textUnderlineIcon }
-						}}
-					/>
-					<ToggleButtonGroup
-						bind:value={alignment}
-						variant="outline"
-						color="primary"
-						items={{
-							left: { prefix: textAlignLeftIcon },
-							center: { prefix: textAlignCenterIcon },
-							right: { prefix: textAlignRightIcon }
-						}}
-					/>
-				</div>
-				<code class="text-foreground-muted text-xs">
-					{JSON.stringify({ formatting, alignment })}
-				</code>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Outline, soft, and ghost variants.">
-			<div class="flex flex-wrap items-center justify-center gap-4">
+		<ComponentCard
+			title="Joined"
+			description="Joined is visual only. Ghost stays borderless; outline forms one continuous segmented border."
+			class="!min-h-fit"
+			code={`<ToggleButtonGroup
+\tjoined
+\tariaLabel="Text formatting"
+\titems={formattingItems}
+/>`}
+		>
+			<div class="flex flex-wrap items-center justify-center gap-6">
 				{#each variants as variant (variant)}
 					<ToggleButtonGroup
 						{variant}
+						joined
+						ariaLabel={`${variant} text formatting`}
 						color="foreground"
-						items={{
-							one: { children: 'One', checked: true },
-							two: { children: 'Two' },
-							three: { children: 'Three' }
-						}}
+						items={formattingItems}
+						value={{ bold: true }}
 					/>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Eight semantic colors, shown here in the soft variant.">
+		<ComponentCard
+			title="Colors"
+			description="Pressed state remains visible across every semantic color."
+		>
 			<div class="flex flex-wrap items-center justify-center gap-4">
 				{#each colors as color (color)}
 					<ToggleButtonGroup
 						{color}
-						variant="soft"
-						items={{
-							one: { children: 'One', checked: true },
-							two: { children: 'Two' }
-						}}
+						ariaLabel={`${color} options`}
+						items={{ one: { children: 'One' }, two: { children: 'Two' } }}
+						value={{ one: true }}
 					/>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Three sizes to match surrounding density.">
+		<ComponentCard
+			title="Sizes"
+			description="Icons and labels scale with the same size tokens as Button."
+		>
 			<div class="flex flex-wrap items-center justify-center gap-4">
 				{#each sizes as size (size)}
 					<ToggleButtonGroup
 						{size}
+						ariaLabel={`${size} text formatting`}
 						color="foreground"
 						items={{
-							one: { children: 'One', checked: true },
-							two: { children: 'Two' },
-							three: { children: 'Three' }
+							bold: { prefix: textBIcon, children: 'Bold' },
+							italic: { prefix: textItalicIcon, children: 'Italic' }
 						}}
+						value={{ bold: true }}
 					/>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Joined (segmented) toggle groups." class="!items-start">
-			<div class="grid gap-4">
-				{#each variants as variant}
-					<div class="flex items-center justify-center gap-4">
-						{#each sizes as size}
-							<ToggleButtonGroup
-								joined
-								{variant}
-								{size}
-								color="primary"
-								items={{
-									button1: { children: `${variant} - ${size}`, checked: true },
-									button2: { children: 'Button 2' },
-									button3: { children: 'Button 3', prefix: eyeClosedIcon }
-								}}
-							/>
-						{/each}
-					</div>
-				{/each}
-				<div class="flex items-center justify-center gap-6">
-					<ToggleButtonGroup
-						joined
-						variant="outline"
-						color="foreground"
-						items={{
-							left: { prefix: textAlignLeftIcon },
-							center: { prefix: textAlignCenterIcon },
-							right: { prefix: textAlignRightIcon }
-						}}
-					/>
-					<ToggleButtonGroup
-						joined
-						variant="soft"
-						color="foreground"
-						items={{
-							bold: { prefix: textBIcon },
-							italic: { prefix: textItalicIcon },
-							underline: { prefix: textUnderlineIcon }
-						}}
-					/>
-				</div>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Disabled toggle groups.">
-			<div class="flex items-center justify-center gap-4">
-				{#each variants as variant}
-					<ToggleButtonGroup
-						{variant}
-						color="primary"
-						disabled
-						items={{
-							button1: { children: 'Checked', checked: true },
-							button2: { children: 'Unchecked' }
-						}}
-					/>
-				{/each}
-			</div>
+		<ComponentCard
+			title="Selection Semantics"
+			description="ToggleButtonGroup represents independent pressed states. Use SegmentedControl for mutually exclusive choices such as text alignment."
+			class="!min-h-fit"
+		>
+			<ToggleButtonGroup
+				ariaLabel="Disabled text formatting"
+				disabled
+				items={formattingItems}
+				value={{ bold: true }}
+			/>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

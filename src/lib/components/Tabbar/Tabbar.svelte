@@ -1,5 +1,9 @@
 <script lang="ts">
 	import Slot from '../Slot/Slot.svelte';
+	import PopupMenu from '../PopupMenu/PopupMenu.svelte';
+	import { caretDownIcon } from '../Icons/caretDown.js';
+	import { caretUpIcon } from '../Icons/caretUp.js';
+	import { checkIcon } from '../Icons/check.js';
 	import type { TabbarProps, TabItem } from './tabbar.props.js';
 	import { useTabbarTheme } from './tabbar.theme.js';
 	import { useNavigation } from '$lib/utils/useNavigation.svelte.js';
@@ -33,6 +37,8 @@
 		disabled: boolean;
 		target?: string;
 		rel?: string;
+		menu?: string[];
+		onMenuSelect?: (menuIndex: number) => void;
 	};
 
 	// Normalize tab items to always work with objects
@@ -47,10 +53,32 @@
 						href: tab.href,
 						disabled: tab.disabled ?? false,
 						target: tab.target,
-						rel: tab.rel
+						rel: tab.rel,
+						menu: tab.menu,
+						onMenuSelect: tab.onMenuSelect
 					}
 		)
 	);
+
+	// Selected entry per menu tab (index into tab.menu). The trigger shows the
+	// selected entry's label; until one is picked it shows the tab's own label.
+	let menuSelections = $state<Record<number, number>>({});
+
+	const selectMenuEntry = (index: number, tab: NormalizedTab, menuIndex: number) => {
+		menuSelections[index] = menuIndex;
+		activeTab = index;
+		onChange?.(index);
+		tab.onMenuSelect?.(menuIndex);
+		navigation.focusItem(index);
+	};
+
+	const menuItemsFor = (index: number, tab: NormalizedTab) =>
+		(tab.menu ?? []).map((label, menuIndex) => ({
+			type: 'option' as const,
+			title: label,
+			suffix: menuSelections[index] === menuIndex ? checkIcon : undefined,
+			onClick: () => selectMenuEntry(index, tab, menuIndex)
+		}));
 
 	// Navigation hook for keyboard support
 	const navigation = useNavigation({
@@ -59,7 +87,9 @@
 		id,
 		enableHoverFocus: false,
 		onChange: (index) => {
-			if (index !== null && index !== activeTab) {
+			// Menu tabs activate manually (via entry selection), never by focus alone —
+			// arrowing onto the trigger must not slide the indicator to it.
+			if (index !== null && index !== activeTab && !normalizedTabs[index]?.menu) {
 				activeTab = index;
 				onChange?.(index);
 			}
@@ -77,7 +107,17 @@
 
 	const indicator = useSlidingIndicator({
 		activeIndex: () => activeTab,
-		observe: () => [items, size, variant, position, orientation, alignment, fullWidth],
+		observe: () => [
+			items,
+			size,
+			variant,
+			position,
+			orientation,
+			alignment,
+			fullWidth,
+			// A menu selection swaps the trigger label, changing the tab's width.
+			Object.values(menuSelections)
+		],
 		getStyle: (element) => {
 			const x = element.offsetLeft;
 			const y = element.offsetTop;
@@ -124,47 +164,109 @@
 		{@const isFocused = navigation.focusedIndex === index}
 		{@const elementType = tab.href ? 'a' : 'button'}
 
-		<svelte:element
-			this={elementType}
-			role="tab"
-			aria-disabled={tab.disabled}
-			disabled={tab.disabled}
-			href={tab.href}
-			target={tab.target}
-			tabindex={isFocused ? 0 : -1}
-			rel={tab.rel}
-			data-color={color}
-			data-active={isActive ? 'true' : 'false'}
-			data-focused={isFocused ? 'true' : 'false'}
-			data-orientation={orientation}
-			class={classes.tab({
-				size,
-				color,
-				active: isActive,
-				focused: isFocused,
-				disabled: tab.disabled,
-				orientation,
-				position,
-				variant,
-				fullWidth
-			})}
-			onclick={() => handleTabClick(index, tab)}
-			{@attach navigation.itemReference}
-			{@attach indicator.itemReference(index)}
-		>
-			{#if !indicator.isHydrated && isActive}
-				<!-- CSS-only indicator for SSR / pre-hydration, positioned by layout. -->
-				<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"></span>
-			{/if}
-			<Slot render={tab.prefix} class={classes.prefix({ size })} />
+		{#if tab.menu}
+			{#snippet menuHeader()}
+				{#if typeof tab.label === 'string'}
+					<span class="text-foreground/50 px-2 py-1 text-sm">{tab.label}</span>
+				{/if}
+			{/snippet}
+			<PopupMenu
+				position="bottom-start"
+				menu={{ items: menuItemsFor(index, tab), header: menuHeader }}
+			>
+				{#snippet trigger(popover)}
+					<button
+						type="button"
+						role="tab"
+						aria-disabled={tab.disabled}
+						disabled={tab.disabled}
+						aria-haspopup="menu"
+						aria-expanded={popover.isOpen ? 'true' : 'false'}
+						tabindex={isFocused ? 0 : -1}
+						data-color={color}
+						data-active={isActive ? 'true' : 'false'}
+						data-focused={isFocused ? 'true' : 'false'}
+						data-orientation={orientation}
+						class={classes.tab({
+							size,
+							color,
+							active: isActive,
+							focused: isFocused,
+							disabled: tab.disabled,
+							orientation,
+							position,
+							variant,
+							fullWidth
+						})}
+						onclick={() => !tab.disabled && popover.toggle()}
+						{@attach popover.reference}
+						{@attach navigation.itemReference}
+						{@attach indicator.itemReference(index)}
+					>
+						{#if !indicator.isHydrated && isActive}
+							<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"
+							></span>
+						{/if}
+						<Slot render={tab.prefix} class={classes.prefix({ size })} />
 
-			{#if typeof tab.label === 'string'}
-				{tab.label}
-			{:else}
-				<Slot render={tab.label} />
-			{/if}
+						{#if menuSelections[index] != null}
+							{tab.menu?.[menuSelections[index]]}
+						{:else if typeof tab.label === 'string'}
+							{tab.label}
+						{:else}
+							<Slot render={tab.label} />
+						{/if}
 
-			<Slot render={tab.suffix} class={classes.suffix({ size })} />
-		</svelte:element>
+						<Slot
+							render={popover.isOpen ? caretUpIcon : caretDownIcon}
+							class={classes.suffix({ size })}
+						/>
+					</button>
+				{/snippet}
+			</PopupMenu>
+		{:else}
+			<svelte:element
+				this={elementType}
+				role="tab"
+				aria-disabled={tab.disabled}
+				disabled={tab.disabled}
+				href={tab.href}
+				target={tab.target}
+				tabindex={isFocused ? 0 : -1}
+				rel={tab.rel}
+				data-color={color}
+				data-active={isActive ? 'true' : 'false'}
+				data-focused={isFocused ? 'true' : 'false'}
+				data-orientation={orientation}
+				class={classes.tab({
+					size,
+					color,
+					active: isActive,
+					focused: isFocused,
+					disabled: tab.disabled,
+					orientation,
+					position,
+					variant,
+					fullWidth
+				})}
+				onclick={() => handleTabClick(index, tab)}
+				{@attach navigation.itemReference}
+				{@attach indicator.itemReference(index)}
+			>
+				{#if !indicator.isHydrated && isActive}
+					<!-- CSS-only indicator for SSR / pre-hydration, positioned by layout. -->
+					<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"></span>
+				{/if}
+				<Slot render={tab.prefix} class={classes.prefix({ size })} />
+
+				{#if typeof tab.label === 'string'}
+					{tab.label}
+				{:else}
+					<Slot render={tab.label} />
+				{/if}
+
+				<Slot render={tab.suffix} class={classes.suffix({ size })} />
+			</svelte:element>
+		{/if}
 	{/each}
 </div>

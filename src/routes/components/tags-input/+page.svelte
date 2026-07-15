@@ -39,6 +39,7 @@
 	};
 
 	// State for each example
+	let skills = $state<string[] | null>(null);
 	let value1 = $state<string[] | null>(null);
 	let value2 = $state<string[] | null>(null);
 	let value3 = $state<string[] | null>(null);
@@ -62,12 +63,19 @@
 	<ComponentCard
 		description="Free mode — type and press Enter to add a tag"
 		code={`<TagsInput
-	placeholder="Add tags..."
-	bind:value
+	label="Skills"
+	description="Press Enter to add each skill."
+	placeholder="Add a skill..."
+	bind:value={skills}
 />`}
 	>
 		<div class="w-full max-w-md">
-			<TagsInput placeholder="Add tags..." bind:value={value1} />
+			<TagsInput
+				label="Skills"
+				description="Press Enter to add each skill."
+				placeholder="Add a skill..."
+				bind:value={skills}
+			/>
 		</div>
 	</ComponentCard>
 

@@ -3,6 +3,8 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 	import Form from '$lib/components/Form/Form/Form.svelte';
 	import TextInput from '$lib/components/Form/TextInput/TextInput.svelte';
+
+	let email = $state('');
 </script>
 
 <DocPage
@@ -18,10 +20,20 @@
 >
 	<ComponentCard
 		description="Single-line text entry with a label"
-		code={`<TextInput label="Text Input" placeholder="Type something..." />`}
+		code={`<TextInput
+	label="Email"
+	description="We'll only use this for receipts"
+	placeholder="you@example.com"
+	bind:value={email}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<TextInput label="Text Input" placeholder="Type something..." />
+			<TextInput
+				label="Email"
+				description="We'll only use this for receipts"
+				placeholder="you@example.com"
+				bind:value={email}
+			/>
 		</div>
 	</ComponentCard>
 

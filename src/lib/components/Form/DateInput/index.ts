@@ -7,4 +7,3 @@ export {
 	type DateInputTheme,
 	type DateInputThemeProps
 } from './dateInput.theme.js';
-

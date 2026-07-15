@@ -47,8 +47,10 @@ export function isFieldVisible<I extends FormInputs>(
  * @returns Input props without function-based visibility
  */
 export function prepareInputProps(input: FormInput) {
-	const { type, visible, ...rest } = input;
+	// `type` and `display` pick the component in Form.svelte; they are not props.
+	const { type, visible, ...rest } = input as FormInput & { display?: string };
 	void type;
+	if ('display' in rest) delete (rest as { display?: string }).display;
 	// Only include visible if it's a boolean, not a function
 	return typeof visible === 'boolean' ? { ...rest, visible } : rest;
 }

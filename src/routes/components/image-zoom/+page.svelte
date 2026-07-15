@@ -14,23 +14,58 @@
 		'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=800&q=80';
 	const architectureZoom =
 		'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=2200&q=90';
+	const oceanImage = {
+		src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80',
+		zoomSrc:
+			'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=90',
+		zoomWidth: 1800,
+		zoomHeight: 1197,
+		alt: 'Clear turquoise ocean water at a beach'
+	};
+	const mediumLandscape = {
+		src: 'https://images.unsplash.com/photo-1477322524744-0eece9e79640?auto=format&fit=crop&w=860&q=80',
+		zoomSrc:
+			'https://images.unsplash.com/photo-1477322524744-0eece9e79640?auto=format&fit=crop&w=1600&q=80',
+		zoomWidth: 1600,
+		zoomHeight: 1126,
+		alt: 'A person standing beside a lake beneath a mountain range'
+	};
+	const mediumCoast = {
+		src: 'https://images.unsplash.com/photo-1465311530779-5241f5a29892?auto=format&fit=crop&w=860&q=80',
+		zoomSrc:
+			'https://images.unsplash.com/photo-1465311530779-5241f5a29892?auto=format&fit=crop&w=1600&q=80',
+		zoomWidth: 1600,
+		zoomHeight: 1067,
+		alt: 'Rocky coastline beneath a pale sky'
+	};
+	const mediumPortrait = {
+		src: 'https://images.unsplash.com/photo-1610448721566-47369c768e70?auto=format&fit=crop&w=340&q=80',
+		zoomSrc:
+			'https://images.unsplash.com/photo-1610448721566-47369c768e70?auto=format&fit=crop&w=1600&q=80',
+		zoomWidth: 1600,
+		zoomHeight: 2400,
+		alt: 'Sunlight passing through a forest canopy'
+	};
 	const galleryImages = [
 		{
 			src: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80',
 			zoomSrc:
 				'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1800&q=90',
+			zoomWidth: 1800,
+			zoomHeight: 2700,
+			width: 700,
+			height: 1050,
 			alt: 'Desert road with sandstone formations'
 		},
-		{
-			src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80',
-			zoomSrc:
-				'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=90',
-			alt: 'Clear turquoise ocean water at a beach'
-		},
+		{ ...oceanImage, width: 700, height: 465 },
 		{
 			src: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=80',
 			zoomSrc:
 				'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1800&q=90',
+			zoomWidth: 1800,
+			zoomHeight: 1201,
+			width: 700,
+			height: 467,
 			alt: 'Night sky over snowy mountains'
 		}
 	];
@@ -38,34 +73,65 @@
 
 <DocPage
 	title="Image Zoom"
-	subtitle="A thumbnail image that expands into a full-viewport zoom layer."
+	subtitle="Medium-style image expansion powered by LightGallery."
 	component="ImageZoom"
 	features={[
 		'Controlled or uncontrolled open state',
-		'Smooth thumbnail-to-viewport zoom animation',
+		'LightGallery Medium Zoom origin transition',
 		'Optional high-resolution zoom source',
-		'Escape, backdrop, and close-button dismissal',
+		'Configurable image, backdrop, and Escape dismissal',
 		'Scroll dismissal for page and nested scroll containers',
 		'Focus restoration and reduced-motion support'
 	]}
 >
 	<ComponentCard
-		title="Basic Zoom"
-		description="Click the image to zoom it into a full-viewport layer."
-		class="max-w-xl"
+		title="Medium Zoom"
+		description="Full-resolution dimensions keep the source and zoomed image on the same animated geometry."
+		class="max-w-4xl"
 		code={`<ImageZoom
-	src="/photo-thumb.jpg"
-	zoomSrc="/photo-large.jpg"
-	alt="Mountain valley at sunrise"
+	src="/article-image-small.jpg"
+	zoomSrc="/article-image-large.jpg"
+	zoomWidth={1600}
+	zoomHeight={1126}
+	alt="Mountain ridge above a cloud layer"
 />`}
 	>
-		<ImageZoom
-			src={mountainThumb}
-			zoomSrc={mountainZoom}
-			alt="Mountain valley at sunrise"
-			width={640}
-			height={420}
-		/>
+		<article class="mx-auto max-w-2xl py-4 text-left">
+			<header class="grid gap-2">
+				<p class="text-primary text-sm font-medium">Field notes</p>
+				<h2 class="text-foreground text-3xl font-semibold">Along the waterline</h2>
+				<p class="text-foreground-muted text-sm">Three images embedded in a reading flow.</p>
+			</header>
+
+			<p class="text-foreground-muted my-6 text-base leading-7">
+				The path narrowed as it reached the lake. Click any photograph to expand it directly from
+				its position in the article.
+			</p>
+
+			<ImageZoom {...mediumLandscape} width={860} height={605} backgroundColor="#fff" />
+
+			<p class="text-foreground-muted my-6 text-base leading-7">
+				Farther north, the shoreline became rougher and the horizon less certain. The larger source
+				replaces the thumbnail without changing its final rectangle.
+			</p>
+
+			<ImageZoom {...mediumCoast} width={860} height={573} backgroundColor="rgb(22 37 44)" />
+
+			<p class="text-foreground-muted my-6 text-base leading-7">
+				The final image sits inside the prose rather than taking the full column. Its portrait
+				geometry uses the same origin transition as the wider photographs.
+			</p>
+
+			<div class="float-right mb-4 ml-6 w-[min(42%,21rem)]">
+				<ImageZoom {...mediumPortrait} width={340} height={510} backgroundColor="rgb(28 62 74)" />
+			</div>
+
+			<p class="text-foreground-muted text-base leading-7">
+				The forest held the remaining light above the trail. Beneath it, the air cooled quickly and
+				the details disappeared into a single dark plane.
+			</p>
+			<div class="clear-both"></div>
+		</article>
 	</ComponentCard>
 
 	{#snippet examples()}
@@ -76,15 +142,19 @@
 			code={`<ImageZoom
 	src="/architecture-800.jpg"
 	zoomSrc="/architecture-2200.jpg"
+	zoomWidth={2200}
+	zoomHeight={1468}
 	alt="Concrete house with large glass windows"
 />`}
 		>
 			<ImageZoom
 				src={architectureThumb}
 				zoomSrc={architectureZoom}
+				zoomWidth={2200}
+				zoomHeight={1468}
 				alt="Concrete house with large glass windows"
 				width={520}
-				height={640}
+				height={347}
 			/>
 		</ComponentCard>
 
@@ -101,9 +171,11 @@
 			<ImageZoom
 				src={mountainThumb}
 				zoomSrc={mountainZoom}
+				zoomWidth={2200}
+				zoomHeight={1467}
 				alt="Mountain valley at sunrise"
 				width={640}
-				height={420}
+				height={427}
 			>
 				{#snippet caption()}
 					<span>Shot at first light after rain.</span>
@@ -130,9 +202,11 @@
 			<ImageZoom
 				src={mountainThumb}
 				zoomSrc={mountainZoom}
+				zoomWidth={2200}
+				zoomHeight={1467}
 				alt="Mountain valley at sunrise"
 				width={640}
-				height={420}
+				height={427}
 				indicatorPosition="top-left"
 			>
 				{#snippet indicator()}
@@ -156,9 +230,11 @@
 					bind:open={controlledOpen}
 					src={mountainThumb}
 					zoomSrc={mountainZoom}
+					zoomWidth={2200}
+					zoomHeight={1467}
 					alt="Mountain valley at sunrise"
 					width={640}
-					height={420}
+					height={427}
 				/>
 			</div>
 		</ComponentCard>
@@ -206,7 +282,7 @@
 		>
 			<div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
 				{#each galleryImages as image (image.src)}
-					<ImageZoom {...image} width={360} height={260} />
+					<ImageZoom {...image} />
 				{/each}
 			</div>
 		</ComponentCard>

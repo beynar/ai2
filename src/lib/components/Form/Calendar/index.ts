@@ -4,6 +4,7 @@ export type {
 	CalendarPrimitiveProps,
 	BaseCalendarProps,
 	CalendarType,
+	CalendarValue,
 	Event,
 	Cell
 } from './calendarInput.props.js';

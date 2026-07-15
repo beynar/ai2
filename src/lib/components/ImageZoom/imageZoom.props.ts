@@ -26,7 +26,7 @@ export type ImageZoomIndicatorPosition = 'top-left' | 'top-right' | 'bottom-left
 export type ImageZoomProps = WithAttachments<
 	WithSlot<
 		{
-			/** Stable DOM id for the zoom dialog root; falls back to a generated id. */
+			/** Stable DOM id for the image zoom root; falls back to a generated id. */
 			id?: string;
 			/** Thumbnail image source. Required unless the children slot renders an image. */
 			src?: string;
@@ -34,6 +34,10 @@ export type ImageZoomProps = WithAttachments<
 			alt?: string;
 			/** Full-size image source. Defaults to `src`. */
 			zoomSrc?: string;
+			/** Intrinsic width of `zoomSrc`, used by LightGallery's origin transition. */
+			zoomWidth?: number;
+			/** Intrinsic height of `zoomSrc`, used by LightGallery's origin transition. */
+			zoomHeight?: number;
 			/** Controls whether the zoomed layer is open; bindable for two-way control. */
 			open?: boolean;
 			/** When true, prevents opening and marks the trigger disabled. */
@@ -58,14 +62,18 @@ export type ImageZoomProps = WithAttachments<
 			closeOnClickOutside?: boolean;
 			/** When true, pressing Escape closes the zoomed layer. */
 			closeOnEscape?: boolean;
-			/** When true, scrolling the page or a scroll container closes the zoomed layer. */
+			/** When true, wheel, touch-scroll, page scroll, or nested scroll closes the zoomed layer. */
 			closeOnScroll?: boolean;
 			/** When true, page scroll is locked while the zoomed layer is mounted. */
 			lockScroll?: boolean;
 			/** Accessible label for the thumbnail trigger. Defaults to `Zoom image`. */
 			buttonLabel?: string;
-			/** Accessible label for the close button. Defaults to `Close image zoom`. */
+			/** Accessible label for LightGallery's close action. Defaults to `Close image zoom`. */
 			closeLabel?: string;
+			/** CSS color used by the Medium Zoom backdrop. Defaults to the theme background color. */
+			backgroundColor?: string;
+			/** LightGallery license key. The default key is for evaluation only. */
+			licenseKey?: string;
 			/** When true, renders the thumbnail zoom indicator. */
 			showIndicator?: boolean;
 			/** Corner used for the thumbnail zoom indicator. */

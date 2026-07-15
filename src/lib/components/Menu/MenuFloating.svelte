@@ -151,9 +151,10 @@
 					on(node, 'pointerenter', (e) => closeSubmenus(undefined, pointerFrom(e)))}
 			/>
 		{:else if item.type === 'option'}
+			{@const { type: _type, ...optionProps } = item}
 			<MenuOption
 				role="menuitem"
-				{...item}
+				{...optionProps}
 				theme={theme?.option}
 				onEnter={(event) => {
 					item.onEnter?.(event);

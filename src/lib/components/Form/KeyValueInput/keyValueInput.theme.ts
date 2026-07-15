@@ -33,9 +33,9 @@ const defaultInput = cva({
 	base: 'flex-1 min-w-0 px-3 bg-background-light border border-background-muted rounded text-foreground outline-none appearance-none autofill:text-foreground-light focus-within:ring-1 focus-within:ring-primary ring-0 transition-all',
 	variants: {
 		size: {
-			small: 'py-1.5 text-xs placeholder:text-xs',
-			normal: 'py-2 text-sm placeholder:text-sm',
-			large: 'py-2.5 text-base placeholder:text-base'
+			small: 'py-2 text-xs placeholder:text-xs',
+			normal: 'py-1.5 text-sm placeholder:text-sm',
+			large: 'py-2.5 text-sm placeholder:text-sm'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',

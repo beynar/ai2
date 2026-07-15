@@ -1,4 +1,4 @@
-import { $insertList, $isListNode, ListNode } from '@lexical/list';
+import { $insertList, $isListNode, $removeList, ListNode } from '@lexical/list';
 import { $isLinkNode, $toggleLink } from '@lexical/link';
 import {
 	$createHeadingNode,
@@ -127,7 +127,12 @@ export function applyAIComposerSelectionList(
 	listType: AIComposerSelectionListType
 ) {
 	editor.update(() => {
-		if (!restoreSelection(selection)) return;
+		const currentSelection = restoreSelection(selection);
+		if (!currentSelection) return;
+		if (getSelectionListType(currentSelection) === listType) {
+			$removeList();
+			return;
+		}
 		$insertList(listType);
 	});
 }

@@ -5,6 +5,10 @@
 	import Form from '$lib/components/Form/Form/Form.svelte';
 
 	let date = $state<Date | null>(null);
+	const presets = [
+		{ label: 'Tomorrow', value: new Date(2026, 6, 16, 12) },
+		{ label: 'Next week', value: new Date(2026, 6, 22, 12) }
+	];
 </script>
 
 <DocPage
@@ -15,18 +19,26 @@
 		'Maskito date masking (@maskito/kit)',
 		'Configurable format masks',
 		'Bindable Date value',
+		'Reusable DateSelector popover',
+		'Optional presets and mobile sheet',
+		'Configurable close on selection',
 		'Label linked via Field wrapper'
 	]}
 >
 	<ComponentCard
 		description="A masked date input (dd/mm/yyyy)"
-		code={`<DateInput label="Date" bind:value={date} />`}
+		code={`<DateInput
+	label="Appointment date"
+	description="Type the date or pick one from the calendar"
+	bind:value={date}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<DateInput label="Date" bind:value={date} />
-			{#if date}
-				<p class="text-foreground-muted mt-2 text-xs">Value: {date.toLocaleDateString()}</p>
-			{/if}
+			<DateInput
+				label="Appointment date"
+				description="Type the date or pick one from the calendar"
+				bind:value={date}
+			/>
 		</div>
 	</ComponentCard>
 
@@ -44,6 +56,21 @@
 			<div class="grid w-full max-w-md gap-6">
 				<DateInput label="US format" format="mm/dd/yyyy" />
 				<DateInput label="Month & year" format="mm/yyyy" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Selector presets"
+			description="DateInput forwards shortcuts and calendar bounds to its DateSelector primitive and stays open after selection by default."
+			code={`<DateInput label="Delivery date" bind:value={date} {presets} minDate={new Date()} />`}
+		>
+			<div class="w-full max-w-md">
+				<DateInput
+					label="Delivery date"
+					bind:value={date}
+					{presets}
+					minDate={new Date(2026, 6, 15)}
+				/>
 			</div>
 		</ComponentCard>
 

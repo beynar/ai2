@@ -12,6 +12,7 @@ type LightGallery = {
 	items: ArrayLike<HTMLElement>;
 	galleryItems: Array<{ alt?: string; subHtml?: string }>;
 	outer: { get: () => HTMLElement };
+	getMediaContainerPosition: () => { top: number; bottom: number };
 	openGallery: (index?: number, element?: HTMLElement) => void;
 	closeGallery: (force?: boolean) => number;
 	slide: (index: number) => void;
@@ -242,6 +243,7 @@ export class ImageGalleryLightbox {
 			throw error;
 		}
 
+		this.attachMediaMargin(instance);
 		this.attachOriginAdapter(instance);
 		this.syncGalleryItems(instance);
 		this.instance = instance;
@@ -288,6 +290,18 @@ export class ImageGalleryLightbox {
 		};
 		outer.addEventListener('wheel', onWheel, { passive: false, capture: true });
 		this.eventCleanups.push(() => outer.removeEventListener('wheel', onWheel, { capture: true }));
+	}
+
+	private attachMediaMargin(instance: LightGallery) {
+		const getMediaContainerPosition = instance.getMediaContainerPosition.bind(instance);
+		instance.getMediaContainerPosition = () => {
+			const position = getMediaContainerPosition();
+			const margin = Math.max(0, this.gallery.zoomMargin);
+			return {
+				top: position.top + margin,
+				bottom: position.bottom + margin
+			};
+		};
 	}
 
 	private attachOriginAdapter(instance: LightGallery) {

@@ -34,15 +34,25 @@ const defaultPaginationItem = cva({
 			small: '',
 			normal: '',
 			large: ''
+		},
+		display: {
+			page: '',
+			dot: 'justify-center'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
-	}
+		size: 'normal',
+		display: 'page'
+	},
+	compoundVariants: [
+		{ size: 'small', display: 'dot', class: 'size-5' },
+		{ size: 'normal', display: 'dot', class: 'size-6' },
+		{ size: 'large', display: 'dot', class: 'size-7' }
+	]
 });
 
 const defaultPaginationControl = cva({
-	base: 'inline-flex shrink-0 select-none items-center justify-center rounded-lg border font-medium outline-none transition-all duration-100 ease-in-out focus-visible:ring-2 focus-visible:ring-color/50 active:translate-y-px [&_svg:not([class*=size-])]:size-4',
+	base: 'inline-flex shrink-0 select-none items-center justify-center rounded-lg border font-medium outline-none transition-all duration-100 ease-in-out focus-visible:ring-2 focus-visible:ring-color/50 [&:active]:translate-y-px [&_svg:not([class*=size-])]:size-4',
 	variants: {
 		size: {
 			small: 'h-7 min-w-7 px-2 text-xs',
@@ -60,12 +70,13 @@ const defaultPaginationControl = cva({
 			info: 'text-info-readable'
 		},
 		controlVariant: {
-			solid: 'border-transparent bg-color text-color-contrast hover:bg-color/90 active:bg-color/80',
+			solid:
+				'border-transparent bg-color text-color-contrast hover:bg-color/90 [&:active]:bg-color/80',
 			outline:
-				'border-background-muted bg-background text-foreground hover:border-color hover:bg-color/10 hover:text-color-readable active:bg-color/20',
-			soft: 'border-transparent bg-color-muted text-color-muted-readable hover:bg-color/30 active:bg-color/20',
+				'border-background-muted bg-background text-foreground hover:border-color hover:bg-color/10 hover:text-color-readable [&:active]:bg-color/20',
+			soft: 'border-transparent bg-color-muted text-color-muted-readable hover:bg-color/30 [&:active]:bg-color/20',
 			ghost:
-				'border-transparent bg-transparent text-foreground hover:bg-color-muted hover:text-color-readable active:bg-color-muted/70'
+				'border-transparent bg-transparent text-foreground hover:bg-color-muted hover:text-color-readable [&:active]:bg-color-muted/70'
 		},
 		active: {
 			true: 'border-color bg-color text-color-contrast hover:bg-color/90 hover:text-color-contrast',

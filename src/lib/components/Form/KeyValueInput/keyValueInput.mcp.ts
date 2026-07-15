@@ -118,8 +118,12 @@ The value is an array of pairs; convert it to a plain object with \`Object.fromE
 
 ## Keyboard Interactions
 
-- **Enter** (in a key or value input): Prevents the enclosing form from submitting and appends a new empty row.
-- **Backspace** (when both the key and value of a row are empty): Removes that row.
+- **Enter** (in a non-empty value input): Prevents the enclosing form from submitting, appends a new empty row, and focuses its key input.
+- **Enter** (in a key or empty value input): Prevents the enclosing form from submitting without adding a row.
+- **Arrow Right** (at the end of an input): Moves to the next input and places the caret at its start.
+- **Arrow Left** (at the start of an input): Moves to the previous input and places the caret at its end.
+- **Arrow Up / Arrow Down**: Moves to the same field in the previous or next row while preserving the caret offset when possible.
+- **Backspace** (in an empty input): Moves to the previous input. When the entire row is empty, removes the row and focuses the previous row's value input when available.
 
 ## Accessibility
 

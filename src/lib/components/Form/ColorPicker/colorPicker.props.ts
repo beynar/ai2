@@ -1,6 +1,8 @@
 import type { WithAttachments } from '$lib/types/props.js';
 import type { Sizes } from '$lib/types/theme.js';
 import type { Messages } from '$lib/i18n/en.js';
+import type { InferComponentTheme } from '$lib/utils/cva/index.js';
+import type { fieldTheme, InputProps } from '../Field/field.js';
 import type { ColorFormat } from './colorPicker.state.svelte.js';
 import type { ColorPickerThemeProps } from './colorPicker.theme.js';
 
@@ -24,3 +26,21 @@ export type ColorPickerProps = WithAttachments<{
 	/** Per-instance i18n overrides merged over the global catalog. */
 	i18n?: Partial<Messages>;
 }>;
+
+/**
+ * The ColorPicker panel wrapped in field chrome (label, description, errors,
+ * form registration) — the raw panel stays available as `ColorPicker`.
+ */
+export type ColorPickerInputProps = Omit<
+	ColorPickerProps,
+	'value' | 'onChange' | 'disabled' | 'class' | 'size' | 'theme'
+> &
+	Omit<InputProps<'color'>, 'theme'> & {
+		/** Theme overrides for the picker panel and its field wrapper. */
+		theme?: {
+			/** Theme overrides for the picker panel parts. */
+			picker?: ColorPickerThemeProps;
+			/** Theme overrides for the surrounding field. */
+			field?: InferComponentTheme<typeof fieldTheme>;
+		};
+	};

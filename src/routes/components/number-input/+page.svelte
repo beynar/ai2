@@ -20,13 +20,20 @@
 >
 	<ComponentCard
 		description="A numeric input"
-		code={`<NumberInput label="Quantity" placeholder="0" increment={2} bind:value={quantity} />`}
+		code={`<NumberInput
+	label="Quantity"
+	description="How many items to order"
+	placeholder="0"
+	bind:value={quantity}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<NumberInput label="Quantity" placeholder="0" increment={2} bind:value={quantity} />
-			{#if quantity !== null}
-				<p class="text-foreground-muted mt-2 text-xs">Value: {quantity}</p>
-			{/if}
+			<NumberInput
+				label="Quantity"
+				description="How many items to order"
+				placeholder="0"
+				bind:value={quantity}
+			/>
 		</div>
 	</ComponentCard>
 

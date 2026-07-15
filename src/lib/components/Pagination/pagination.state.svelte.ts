@@ -176,7 +176,7 @@ function getPaginationItems(
 		if (previousPage > 0 && pageNumber - previousPage === 2) {
 			items.push(previousPage + 1);
 		} else if (previousPage > 0 && pageNumber - previousPage > 2) {
-			items.push(`ellipsis-${previousPage}-${pageNumber}`);
+			items.push(previousPage < activePage ? 'ellipsis-start' : 'ellipsis-end');
 		}
 
 		items.push(pageNumber);

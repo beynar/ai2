@@ -5,7 +5,9 @@
 	let {
 		onChange = null,
 		class: className,
-		color = 'background',
+		ariaLabel,
+		type = 'button',
+		color = 'foreground',
 		prefix,
 		suffix,
 		children,
@@ -26,9 +28,12 @@
 </script>
 
 <button
+	{type}
 	bind:this={ref}
 	data-color={color}
 	data-checked={checked}
+	aria-label={ariaLabel}
+	aria-pressed={checked}
 	{disabled}
 	class={classes.root({
 		color,

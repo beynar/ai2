@@ -20,8 +20,8 @@ export type TransitionSizeOptions = {
 
 const defaultOptions = {
 	axis: 'height',
-	duration: 180,
-	easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+	duration: 220,
+	easing: 'ease-in-out'
 } satisfies Required<Pick<TransitionSizeOptions, 'axis' | 'duration' | 'easing'>>;
 
 const readSize = (node: HTMLElement): Size => {
@@ -77,6 +77,7 @@ export const transitionSize = (options: TransitionSizeOptions = {}): Attachment<
 		let frame: number | null = null;
 		let animation: Animation | null = null;
 		let animationId = 0;
+		let shouldRetarget = false;
 		const initialOverflow = node.style.overflow;
 
 		const restoreOverflow = (id: number) => {
@@ -86,22 +87,48 @@ export const transitionSize = (options: TransitionSizeOptions = {}): Attachment<
 			previousSize = readSize(node);
 		};
 
+		const cancelAnimation = () => {
+			if (!animation) return;
+			animationId += 1;
+			const currentAnimation = animation;
+			animation = null;
+			currentAnimation.cancel();
+		};
+
 		const animateToCurrentSize = () => {
 			frame = null;
+			const shouldInterrupt = shouldRetarget;
+			shouldRetarget = false;
+
+			if (animation && !shouldInterrupt) return;
+
+			const animationProgress = animation?.effect?.getComputedTiming().progress;
+			const remainingDuration =
+				typeof animationProgress === 'number' ? duration * (1 - animationProgress) : duration;
+			const previousVisualSize = animation ? readSize(node) : previousSize;
+			const previousTargetSize = previousSize;
+			cancelAnimation();
 
 			const nextSize = readSize(node);
 			if (!isActive() || prefersReducedMotion()) {
+				node.style.overflow = initialOverflow;
 				previousSize = nextSize;
 				return;
 			}
-			if (!hasSizeChanged(previousSize, nextSize, axis)) return;
+			if (!hasSizeChanged(previousVisualSize, nextSize, axis)) {
+				node.style.overflow = initialOverflow;
+				previousSize = nextSize;
+				return;
+			}
 
 			animationId += 1;
-			animation?.cancel();
 			const currentAnimationId = animationId;
+			const animationDuration = hasSizeChanged(previousTargetSize, nextSize, axis)
+				? duration
+				: remainingDuration;
 			node.style.overflow = 'hidden';
-			animation = node.animate(getKeyframes(previousSize, nextSize, axis), {
-				duration,
+			animation = node.animate(getKeyframes(previousVisualSize, nextSize, axis), {
+				duration: animationDuration,
 				easing
 			});
 			previousSize = nextSize;
@@ -109,22 +136,29 @@ export const transitionSize = (options: TransitionSizeOptions = {}): Attachment<
 			animation.oncancel = () => restoreOverflow(currentAnimationId);
 		};
 
-		const schedule = () => {
-			if (animation) return;
+		const schedule = (retarget = false) => {
+			shouldRetarget ||= retarget;
+			if (animation && !shouldRetarget) return;
 			if (frame !== null) cancelAnimationFrame(frame);
 			frame = requestAnimationFrame(animateToCurrentSize);
 		};
 
-		const observer = new ResizeObserver(schedule);
+		const observer = new ResizeObserver(() => schedule());
+		const mutationObserver = new MutationObserver(() => {
+			schedule(true);
+		});
+		const handleEvent = () => schedule(true);
+
 		observer.observe(node);
-		eventNames.forEach((eventName) => node.addEventListener(eventName, schedule));
+		mutationObserver.observe(node, { childList: true, characterData: true, subtree: true });
+		eventNames.forEach((eventName) => node.addEventListener(eventName, handleEvent));
 
 		return () => {
 			if (frame !== null) cancelAnimationFrame(frame);
-			animationId += 1;
-			animation?.cancel();
+			cancelAnimation();
 			observer.disconnect();
-			eventNames.forEach((eventName) => node.removeEventListener(eventName, schedule));
+			mutationObserver.disconnect();
+			eventNames.forEach((eventName) => node.removeEventListener(eventName, handleEvent));
 			node.style.overflow = initialOverflow;
 		};
 	};

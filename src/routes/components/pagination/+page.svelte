@@ -80,6 +80,7 @@
 	features={[
 		'Bindable one-based page',
 		'Five layout variants',
+		'Expanded dot hitboxes',
 		'Ellipsis windowing',
 		'Button or anchor controls',
 		'Localized aria labels'

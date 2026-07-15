@@ -21,10 +21,20 @@
 >
 	<ComponentCard
 		description="An international phone input with country selector"
-		code={`<PhoneInput label="Phone" placeholder="Phone number" bind:value={phone} />`}
+		code={`<PhoneInput
+	label="Phone"
+	description="We'll send delivery updates to this number"
+	placeholder="Phone number"
+	bind:value={phone}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<PhoneInput label="Phone" placeholder="Phone number" bind:value={phone} />
+			<PhoneInput
+				label="Phone"
+				description="We'll send delivery updates to this number"
+				placeholder="Phone number"
+				bind:value={phone}
+			/>
 		</div>
 	</ComponentCard>
 

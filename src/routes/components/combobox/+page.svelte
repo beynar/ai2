@@ -99,8 +99,10 @@
 	]}
 >
 	<ComponentCard
-		description="Static array, filtered client-side"
+		description="Search and pick a country"
 		code={`<Combobox
+	label="Country"
+	description="Used to localize dates and currency"
 	showAllOnFocus
 	placeholder="Search countries..."
 	items={[
@@ -113,6 +115,8 @@
 	>
 		<div class="w-full max-w-md">
 			<Combobox
+				label="Country"
+				description="Used to localize dates and currency"
 				showAllOnFocus
 				placeholder="Search countries..."
 				items={arrayOptions}

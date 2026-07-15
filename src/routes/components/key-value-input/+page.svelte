@@ -14,6 +14,9 @@
 		{ key: 'theme', value: 'dark' },
 		{ key: 'lang', value: 'en' }
 	]);
+	let envVars = $state<{ key: string; value: string }[] | null>([
+		{ key: 'NODE_ENV', value: 'production' }
+	]);
 </script>
 
 <DocPage
@@ -28,9 +31,20 @@
 		'Maps cleanly to an object with Object.fromEntries'
 	]}
 >
-	<ComponentCard description="Empty — start by pressing Add" code={`<KeyValueInput bind:value />`}>
+	<ComponentCard
+		description="Edit the environment variables of a deployment"
+		code={`<KeyValueInput
+	label="Environment variables"
+	description="Passed to the container at deploy time"
+	bind:value={envVars}
+/>`}
+	>
 		<div class="w-full max-w-md">
-			<KeyValueInput bind:value={value1} />
+			<KeyValueInput
+				label="Environment variables"
+				description="Passed to the container at deploy time"
+				bind:value={envVars}
+			/>
 		</div>
 	</ComponentCard>
 

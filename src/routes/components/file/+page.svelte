@@ -22,13 +22,22 @@
 >
 	<ComponentCard
 		description="Click or drag a single image file"
-		code={`<FileInput label="Avatar" mode="single" types={['image/*']} bind:value={single} />`}
+		code={`<FileInput
+	label="Avatar"
+	description="A square image works best."
+	mode="single"
+	types={['image/*']}
+	bind:value={single}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<FileInput label="Avatar" mode="single" types={['image/*']} bind:value={single} />
-			{#if single}
-				<p class="text-foreground-muted mt-2 text-xs">Selected: {single.name}</p>
-			{/if}
+			<FileInput
+				label="Avatar"
+				description="A square image works best."
+				mode="single"
+				types={['image/*']}
+				bind:value={single}
+			/>
 		</div>
 	</ComponentCard>
 

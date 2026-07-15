@@ -30,6 +30,7 @@
 		description="Select one or more notification channels"
 		code={`<CheckboxesInput
 	label="Notifications"
+	description="Pick the channels you want to hear from"
 	mode="normal"
 	items={[
 		{ value: 'email', label: 'Email', description: 'Receive updates by email' },
@@ -40,8 +41,13 @@
 />`}
 	>
 		<div class="w-full max-w-md">
-			<CheckboxesInput label="Notifications" mode="normal" {items} bind:value={selected} />
-			<p class="text-foreground-muted mt-4 text-sm">Selected: {selected.join(', ') || 'none'}</p>
+			<CheckboxesInput
+				label="Notifications"
+				description="Pick the channels you want to hear from"
+				mode="normal"
+				{items}
+				bind:value={selected}
+			/>
 		</div>
 	</ComponentCard>
 

@@ -182,7 +182,18 @@ const defaultRichTextInputFloatingPanel = cva({
 });
 
 const defaultRichTextInputFormattingToolbar = cva({
-	base: 'flex min-w-0 items-center gap-0.5',
+	base: 'flex min-w-0 max-w-full items-center gap-0.5',
+	variants: {
+		size: {
+			small: '',
+			normal: '',
+			large: ''
+		}
+	}
+});
+
+const defaultRichTextInputFormattingToolbarRail = cva({
+	base: 'flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap',
 	variants: {
 		size: {
 			small: '',
@@ -291,6 +302,7 @@ export const richTextInputTheme = {
 	scrollComfortSpacer: defaultRichTextInputScrollComfortSpacer,
 	floatingPanel: defaultRichTextInputFloatingPanel,
 	formattingToolbar: defaultRichTextInputFormattingToolbar,
+	formattingToolbarRail: defaultRichTextInputFormattingToolbarRail,
 	toolbarButton: defaultRichTextInputToolbarButton,
 	toolbarIcon: defaultRichTextInputToolbarIcon,
 	toolbarSeparator: defaultRichTextInputToolbarSeparator,

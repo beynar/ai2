@@ -1,5 +1,6 @@
 export { default as ColorPicker } from './ColorPicker.svelte';
-export type { ColorPickerProps, ColorFormat } from './colorPicker.props.js';
+export { default as ColorPickerInput } from './ColorPickerInput.svelte';
+export type { ColorPickerProps, ColorPickerInputProps, ColorFormat } from './colorPicker.props.js';
 export {
 	colorPickerTheme,
 	setColorPickerTheme,

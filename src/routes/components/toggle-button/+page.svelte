@@ -5,7 +5,8 @@
 	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes } from '$lib/utils/tokens.js';
 
-	const variants = ['outline', 'soft', 'ghost'] as const;
+	const variants = ['ghost', 'outline'] as const;
+	let formSubmissions = $state(0);
 </script>
 
 <DocPage
@@ -19,7 +20,7 @@
 		'Prefix, suffix & children slots'
 	]}
 >
-	<ComponentCard code={`<ToggleButton>Toggle me</ToggleButton>`}>
+	<ComponentCard code={`<ToggleButton type="button">Toggle me</ToggleButton>`}>
 		<ToggleButton>Toggle me</ToggleButton>
 	</ComponentCard>
 
@@ -40,13 +41,13 @@
 											{variant}
 											{color}
 											prefix={eyeClosedIcon}
-											aria-label={`${color} ${variant} resting`}
+											ariaLabel={`${color} off`}
 										/>
 										<ToggleButton
 											{variant}
 											{color}
 											prefix={eyeClosedIcon}
-											aria-label={`${color} ${variant} pressed`}
+											ariaLabel={`${color} on`}
 											checked
 										/>
 									</div>
@@ -61,16 +62,34 @@
 		<ComponentCard description="Three sizes to match surrounding density.">
 			<div class="flex flex-wrap items-center justify-center gap-3">
 				{#each sizes as size (size)}
-					<ToggleButton {size} color="foreground">{size}</ToggleButton>
+					<ToggleButton {size} color="foreground" prefix={eyeClosedIcon}>{size}</ToggleButton>
 				{/each}
 			</div>
 		</ComponentCard>
 
 		<ComponentCard description="With only an icon and no label, the toggle renders squared.">
 			<div class="flex flex-wrap items-center justify-center gap-3">
-				<ToggleButton prefix={eyeClosedIcon} />
-				<ToggleButton prefix={eyeClosedIcon} checked />
+				<ToggleButton prefix={eyeClosedIcon} ariaLabel="Visibility off" />
+				<ToggleButton prefix={eyeClosedIcon} ariaLabel="Visibility on" checked />
 			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="The native type defaults to button, so toggling inside a form never submits it."
+			code={`<form onsubmit={handleSubmit}>
+\t<ToggleButton>Formatting</ToggleButton>
+</form>`}
+		>
+			<form
+				class="flex items-center gap-3"
+				onsubmit={(event) => {
+					event.preventDefault();
+					formSubmissions += 1;
+				}}
+			>
+				<ToggleButton>Formatting</ToggleButton>
+				<span class="text-foreground-muted text-sm">Submissions: {formSubmissions}</span>
+			</form>
 		</ComponentCard>
 
 		<ComponentCard description="Disabled toggles are dimmed and ignore interaction.">

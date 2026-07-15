@@ -1,0 +1,63 @@
+export const selectionMenuDescription = `
+# SelectionMenu Component
+
+SelectionMenu renders ToggleMenu controls anchored to a non-collapsed document selection. It accepts the same toolbar item props directly, filters the selection to a target container, preserves the range while controls are pressed, and positions the toolbar through Popover.
+
+## Basic Usage
+
+\`\`\`svelte
+<script lang="ts">
+\timport { SelectionMenu } from 'svelai/selection-menu';
+\timport type { ToggleMenuItem } from 'svelai/toggle-menu';
+
+\tlet items = $state<ToggleMenuItem[]>([
+\t\t{ type: 'toggle', ariaLabel: 'Bold', prefix: boldIcon },
+\t\t{ type: 'toggle', ariaLabel: 'Comment', prefix: commentIcon }
+\t]);
+</script>
+
+<div>
+\t<article>Select text in this article.</article>
+\t<SelectionMenu bind:items ariaLabel="Selection tools" />
+</div>
+\`\`\`
+
+With no target prop, SelectionMenu watches its parent. Pass a selector or an HTMLElement when the selection container is elsewhere:
+
+\`\`\`svelte
+<SelectionMenu target="#editor" bind:items ariaLabel="Editor tools" />
+<SelectionMenu target={editorElement} bind:items ariaLabel="Editor tools" />
+\`\`\`
+
+## Props
+
+- **target**: HTMLElement | string | null - Parent by default; selectors resolve in the same Document or ShadowRoot. Null disables tracking.
+- **items**: ToggleMenuItem[] - Bindable toolbar configuration passed directly to ToggleMenu.
+- **ariaLabel**: string - Accessible name passed directly to ToggleMenu.
+- **color / variant / disabled**: ToggleMenu defaults inherited by every item.
+- **onChange**: (items) => void - Receives the complete updated toolbar configuration.
+- **class / theme**: ToggleMenu root class and theme overrides.
+- **children**: Optional temporary replacement for the ToggleMenu body while retaining the same selection tracker. Toolbar props remain required.
+- **enabled**: boolean = true - Temporarily suppresses the menu without changing the target.
+- **position**: Popover placement = 'top' - Preferred placement around the selected range.
+- **offset**: number = 8 - Gap from the selected range.
+- **size**: size token = 'normal' - Shared ToggleMenu item and Popover size.
+- **transition**: Popover transition options - Enter and exit transition overrides.
+- **directedTransition**: boolean = true - Enters from the resolved placement.
+- **closeOnEscape**: boolean = true - Escape dismisses the current selection.
+- **closeOnClickOutside**: boolean = true - Outside clicks dismiss the current selection.
+- **onSelectionChange**: (selection | null) => void - Receives cloned valid ranges and clear events.
+- **onOpen / onClose**: lifecycle callbacks receiving SelectionMenuPayload.
+- **popoverClass**: string - Additional classes for the floating Popover panel.
+- **contentClass**: string - Additional classes for the advanced custom-content wrapper.
+- **selectionTheme**: SelectionMenuThemeProps - Popover panel and custom-content theme overrides.
+- **popoverTheme**: PopoverThemeProps - Underlying Popover theme overrides.
+
+## Target Resolution
+
+Both selection endpoints must be inside the resolved target. Whitespace-only, collapsed, or non-rendered ranges do not open the menu. String selectors use standard querySelector semantics, so use a selector that uniquely identifies the intended container.
+
+## Accessibility
+
+Direct mode inherits ToggleMenu's toolbar semantics, roving keyboard focus, disabled-item handling, tooltips, and responsive More menu. Escape and click-outside dismissal are provided by Popover. Custom-content mode is responsible for its own accessible role and keyboard model.
+`;

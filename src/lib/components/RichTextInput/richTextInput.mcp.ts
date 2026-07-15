@@ -85,6 +85,8 @@ RichTextInput is a markdown rich text editor for AI-style composition. It suppor
 ## Accessibility
 
 - The editable root uses role="textbox" and aria-multiline.
-- Formatting controls are keyboard reachable and preserve editor selection on pointer interaction.
-- Suggestion and selection menus use the existing Command and Popover primitives.
+- Fixed and selected-text formatting controls use ToggleMenu toolbar semantics and roving focus.
+- Block styles use radio semantics, list controls toggle on and off, and command buttons do not expose pressed state.
+- The hover toolbar uses SelectionMenu's direct ToggleMenu pass-through for range containment, selection preservation, and Popover positioning.
+- Suggestion menus use the existing Command and Popover primitives.
 `;

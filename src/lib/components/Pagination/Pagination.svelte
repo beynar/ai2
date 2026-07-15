@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { flip } from 'svelte/animate';
+	import { scale } from 'svelte/transition';
+	import Hitbox from '../Hitbox/Hitbox.svelte';
 	import Slot from '../Slot/Slot.svelte';
 	import { caretDoubleLeftIcon } from '../Icons/caretDoubleLeft.js';
 	import { caretDoubleRightIcon } from '../Icons/caretDoubleRight.js';
@@ -12,6 +15,26 @@
 		PaginationSummaryPayload
 	} from './pagination.props.js';
 	import { usePaginationTheme } from './pagination.theme.js';
+
+	type NavigationControlType = Exclude<PaginationControlType, 'page'>;
+	type PaginationRenderItem =
+		| {
+				key: `control:${NavigationControlType}`;
+				kind: 'control';
+				control: NavigationControlType;
+				targetPage: number;
+				disabled: boolean;
+				icon: NonNullable<PaginationProps['first']>;
+		  }
+		| {
+				key: `page:${number}`;
+				kind: 'page';
+				pageNumber: number;
+				display: 'page' | 'dot';
+		  }
+		| { key: 'ellipsis-start' | 'ellipsis-end'; kind: 'ellipsis' }
+		| { key: 'summary:count'; kind: 'count'; payload: PaginationSummaryPayload }
+		| { key: 'summary:compact'; kind: 'compact' };
 
 	let {
 		ref = $bindable(),
@@ -87,83 +110,81 @@
 	const nextIcon = caretRightIcon.withProps({});
 	const lastIcon = caretDoubleRightIcon.withProps({});
 	const ellipsisIcon = dotsThreeIcon.withProps({});
+
+	const renderItems = $derived.by(() => {
+		const items: PaginationRenderItem[] = [];
+
+		if (showFirstLast) {
+			items.push({
+				key: 'control:first',
+				kind: 'control',
+				control: 'first',
+				targetPage: 1,
+				disabled: pagination.isPreviousDisabled,
+				icon: first ?? firstIcon
+			});
+		}
+		if (showPrevNext) {
+			items.push({
+				key: 'control:previous',
+				kind: 'control',
+				control: 'previous',
+				targetPage: pagination.currentPage - 1,
+				disabled: pagination.isPreviousDisabled,
+				icon: previous ?? previousIcon
+			});
+		}
+
+		if (variant === 'pages') {
+			for (const paginationItem of pagination.items) {
+				items.push(
+					typeof paginationItem === 'number'
+						? {
+								key: `page:${paginationItem}`,
+								kind: 'page',
+								pageNumber: paginationItem,
+								display: 'page'
+							}
+						: { key: paginationItem, kind: 'ellipsis' }
+				);
+			}
+		} else if (variant === 'count' && pagination.summary) {
+			items.push({ key: 'summary:count', kind: 'count', payload: pagination.summary });
+		} else if (variant === 'compact') {
+			items.push({ key: 'summary:compact', kind: 'compact' });
+		} else if (variant === 'dots') {
+			for (let pageNumber = 1; pageNumber <= pagination.pageCount; pageNumber += 1) {
+				items.push({ key: `page:${pageNumber}`, kind: 'page', pageNumber, display: 'dot' });
+			}
+		}
+
+		if (showPrevNext) {
+			items.push({
+				key: 'control:next',
+				kind: 'control',
+				control: 'next',
+				targetPage: pagination.currentPage + 1,
+				disabled: pagination.isNextDisabled,
+				icon: next ?? nextIcon
+			});
+		}
+		if (showFirstLast) {
+			items.push({
+				key: 'control:last',
+				kind: 'control',
+				control: 'last',
+				targetPage: pagination.pageCount,
+				disabled: pagination.isNextDisabled,
+				icon: last ?? lastIcon
+			});
+		}
+
+		return items;
+	});
 </script>
 
 {#snippet defaultSummary(payload: PaginationSummaryPayload)}
 	{payload.startItem}-{payload.endItem} of {payload.totalItems}
-{/snippet}
-
-{#snippet pageControl(pageNumber: number, display: 'page' | 'dot' = 'page')}
-	{@const isActive = pageNumber === pagination.currentPage}
-	{@const isDisabled = disabled || !pagination.hasPages}
-	<li class={classes.item({ size })}>
-		<svelte:element
-			this={pagination.controlElement}
-			role={pagination.controlElement === 'button' ? 'button' : 'link'}
-			type={pagination.controlElement === 'button' ? 'button' : undefined}
-			href={pagination.getPageHref(pageNumber, isDisabled)}
-			aria-label={pagination.getControlAriaLabel('page', pageNumber, isActive, isDisabled)}
-			aria-current={isActive ? 'page' : undefined}
-			aria-disabled={isDisabled ? 'true' : undefined}
-			disabled={pagination.controlElement === 'button' ? isDisabled : undefined}
-			data-active={isActive}
-			data-disabled={isDisabled}
-			data-page={pageNumber}
-			data-display={display}
-			class={display === 'dot'
-				? classes.dot({ size, color, active: isActive, disabled: isDisabled })
-				: classes.control({
-						size,
-						color,
-						controlVariant,
-						active: isActive,
-						disabled: isDisabled
-					})}
-			onclick={(event: MouseEvent) => pagination.handleControlClick(event, pageNumber, isDisabled)}
-		>
-			{#if display === 'page'}
-				{#if pageItem}
-					<Slot
-						render={pageItem}
-						payload={pagination.getPageItemPayload(pageNumber, isActive, isDisabled)}
-					/>
-				{:else}
-					{pageNumber}
-				{/if}
-			{/if}
-		</svelte:element>
-	</li>
-{/snippet}
-
-{#snippet iconControl(
-	type: PaginationControlType,
-	targetPage: number,
-	isDisabled: boolean,
-	icon: NonNullable<PaginationProps['first']>
-)}
-	<li class={classes.item({ size })}>
-		<svelte:element
-			this={pagination.controlElement}
-			role={pagination.controlElement === 'button' ? 'button' : 'link'}
-			type={pagination.controlElement === 'button' ? 'button' : undefined}
-			href={pagination.getPageHref(targetPage, isDisabled)}
-			aria-label={pagination.getControlAriaLabel(type, targetPage, false, isDisabled)}
-			aria-disabled={isDisabled ? 'true' : undefined}
-			disabled={pagination.controlElement === 'button' ? isDisabled : undefined}
-			data-disabled={isDisabled}
-			class={classes.control({
-				size,
-				color,
-				controlVariant,
-				active: false,
-				disabled: isDisabled,
-				control: 'icon'
-			})}
-			onclick={(event: MouseEvent) => pagination.handleControlClick(event, targetPage, isDisabled)}
-		>
-			<Slot as="span" render={icon} class={classes.icon({ size })} />
-		</svelte:element>
-	</li>
 {/snippet}
 
 {#if pagination.hasPages}
@@ -191,71 +212,107 @@
 			{/if}
 
 			<ul class={classes.list({ size, variant })}>
-				{#if showFirstLast}
-					{@render iconControl('first', 1, pagination.isPreviousDisabled, first ?? firstIcon)}
-				{/if}
-				{#if showPrevNext}
-					{@render iconControl(
-						'previous',
-						pagination.currentPage - 1,
-						pagination.isPreviousDisabled,
-						previous ?? previousIcon
-					)}
-				{/if}
-
-				{#if variant === 'pages'}
-					{#each pagination.items as item (item)}
-						{#if typeof item === 'number'}
-							{@render pageControl(item)}
-						{:else}
-							<li class={classes.item({ size })}>
-								<span aria-hidden="true" class={classes.ellipsis({ size })}>
+				{#each renderItems as item (item.key)}
+					<li
+						class={classes.item({
+							size,
+							display: item.kind === 'page' ? item.display : 'page'
+						})}
+						aria-live={item.kind === 'count' ? 'polite' : undefined}
+						animate:flip={{ duration: 200 }}
+						in:scale={{ duration: 150, start: 0.8 }}
+						out:scale={{ duration: 100, start: 0.8 }}
+					>
+						{#if item.kind === 'control'}
+							<svelte:element
+								this={pagination.controlElement}
+								role={pagination.controlElement === 'button' ? 'button' : 'link'}
+								type={pagination.controlElement === 'button' ? 'button' : undefined}
+								href={pagination.getPageHref(item.targetPage, item.disabled)}
+								aria-label={pagination.getControlAriaLabel(
+									item.control,
+									item.targetPage,
+									false,
+									item.disabled
+								)}
+								aria-disabled={item.disabled ? 'true' : undefined}
+								disabled={pagination.controlElement === 'button' ? item.disabled : undefined}
+								data-disabled={item.disabled}
+								class={classes.control({
+									size,
+									color,
+									controlVariant,
+									active: false,
+									disabled: item.disabled,
+									control: 'icon'
+								})}
+								onclick={(event: MouseEvent) =>
+									pagination.handleControlClick(event, item.targetPage, item.disabled)}
+							>
+								<Slot as="span" render={item.icon} class={classes.icon({ size })} />
+							</svelte:element>
+						{:else if item.kind === 'page'}
+							{@const isActive = item.pageNumber === pagination.currentPage}
+							{@const isDisabled = disabled || !pagination.hasPages}
+							<svelte:element
+								this={pagination.controlElement}
+								role={pagination.controlElement === 'button' ? 'button' : 'link'}
+								type={pagination.controlElement === 'button' ? 'button' : undefined}
+								href={pagination.getPageHref(item.pageNumber, isDisabled)}
+								aria-label={pagination.getControlAriaLabel(
+									'page',
+									item.pageNumber,
+									isActive,
+									isDisabled
+								)}
+								aria-current={isActive ? 'page' : undefined}
+								aria-disabled={isDisabled ? 'true' : undefined}
+								disabled={pagination.controlElement === 'button' ? isDisabled : undefined}
+								data-active={isActive}
+								data-disabled={isDisabled}
+								data-page={item.pageNumber}
+								data-display={item.display}
+								class={item.display === 'dot'
+									? classes.dot({ size, color, active: isActive, disabled: isDisabled })
+									: classes.control({
+											size,
+											color,
+											controlVariant,
+											active: isActive,
+											disabled: isDisabled
+										})}
+								onclick={(event: MouseEvent) =>
+									pagination.handleControlClick(event, item.pageNumber, isDisabled)}
+							>
+								{#if item.display === 'dot'}
+									<Hitbox {size} />
+								{:else if pageItem}
 									<Slot
-										as="span"
-										render={ellipsis ?? ellipsisIcon}
-										class={classes.icon({ size })}
+										render={pageItem}
+										payload={pagination.getPageItemPayload(item.pageNumber, isActive, isDisabled)}
 									/>
-								</span>
-							</li>
+								{:else}
+									{item.pageNumber}
+								{/if}
+							</svelte:element>
+						{:else if item.kind === 'ellipsis'}
+							<span aria-hidden="true" class={classes.ellipsis({ size })}>
+								<Slot as="span" render={ellipsis ?? ellipsisIcon} class={classes.icon({ size })} />
+							</span>
+						{:else if item.kind === 'count'}
+							<Slot
+								as="span"
+								render={summary ?? defaultSummary}
+								class={classes.summary({ size })}
+								payload={item.payload}
+							/>
+						{:else}
+							<span aria-live="polite" class={classes.summary({ size })}>
+								Page {pagination.currentPage} of {pagination.pageCount}
+							</span>
 						{/if}
-					{/each}
-				{:else if variant === 'count' && pagination.summary}
-					<li class={classes.item({ size })} aria-live="polite">
-						<Slot
-							as="span"
-							render={summary ?? defaultSummary}
-							class={classes.summary({ size })}
-							payload={pagination.summary}
-						/>
 					</li>
-				{:else if variant === 'compact'}
-					<li class={classes.item({ size })}>
-						<span aria-live="polite" class={classes.summary({ size })}>
-							Page {pagination.currentPage} of {pagination.pageCount}
-						</span>
-					</li>
-				{:else if variant === 'dots'}
-					{#each Array.from({ length: pagination.pageCount }, (_, index) => index + 1) as pageNumber (pageNumber)}
-						{@render pageControl(pageNumber, 'dot')}
-					{/each}
-				{/if}
-
-				{#if showPrevNext}
-					{@render iconControl(
-						'next',
-						pagination.currentPage + 1,
-						pagination.isNextDisabled,
-						next ?? nextIcon
-					)}
-				{/if}
-				{#if showFirstLast}
-					{@render iconControl(
-						'last',
-						pagination.pageCount,
-						pagination.isNextDisabled,
-						last ?? lastIcon
-					)}
-				{/if}
+				{/each}
 			</ul>
 		{/if}
 	</nav>

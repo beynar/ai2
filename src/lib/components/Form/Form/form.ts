@@ -13,7 +13,9 @@ import type { SwitchProps } from '../Switch/switch.props.js';
 import type { PhoneInputProps } from '../PhoneInput/phoneInput.props.js';
 import type { CalendarInputProps } from '../Calendar/calendarInput.props.js';
 import type { DateInputProps } from '../DateInput/dateInput.props.js';
+import type { DateSelectorInputProps } from '../DateSelector/dateSelector.props.js';
 import type { ColorInputProps } from '../ColorInput/colorInput.props.js';
+import type { ColorPickerInputProps } from '../ColorPicker/colorPicker.props.js';
 import type { FileInputProps } from '../File/fileInput.props.js';
 import type { TagGroupProps } from '../TagGroup/tagGroup.props.js';
 import type { TimeInputProps } from '../TimeInput/timeInput.props.js';
@@ -48,13 +50,31 @@ type BaseFormInput =
 	  } & SliderProps)
 	| ({
 			type: 'calendar' | 'calendar-range';
+			display?: undefined;
 	  } & CalendarInputProps<'calendar' | 'calendar-range'>)
 	| ({
+			type: 'calendar-range';
+			/** Renders the popover DateSelector (range mode) instead of the inline calendar. */
+			display: 'selector';
+	  } & Omit<DateSelectorInputProps<'range'>, 'mode'>)
+	| ({
 			type: 'date' | 'datetime';
+			display?: undefined;
 	  } & DateInputProps)
 	| ({
+			type: 'date';
+			/** Renders the popover DateSelector instead of the text date input. */
+			display: 'selector';
+	  } & Omit<DateSelectorInputProps<'date'>, 'mode'>)
+	| ({
 			type: 'color';
+			display?: undefined;
 	  } & ColorInputProps)
+	| ({
+			type: 'color';
+			/** Renders the inline ColorPicker panel instead of the swatch text input. */
+			display: 'picker';
+	  } & ColorPickerInputProps)
 	| ({
 			type: 'text' | 'email' | 'url';
 	  } & TextInputProps)

@@ -9,7 +9,7 @@ export type PaginationVariant = 'pages' | 'count' | 'compact' | 'dots' | 'none';
 
 export type PaginationControlVariant = 'solid' | 'outline' | 'soft' | 'ghost';
 
-export type PaginationGap = `ellipsis-${number}-${number}`;
+export type PaginationGap = 'ellipsis-start' | 'ellipsis-end';
 
 export type PaginationItem = number | PaginationGap;
 

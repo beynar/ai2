@@ -6,7 +6,6 @@
 	import type { Attachment } from 'svelte/attachments';
 	import type { RichTextInputFormat, RichTextInputMaxHeight } from './richTextInput.props.js';
 	import RichTextInputFormattingToolbar from './RichTextInputFormattingToolbar.svelte';
-	import RichTextInputSelectionMenu from './RichTextInputSelectionMenu.svelte';
 	import RichTextInputSuggestions from './RichTextInputSuggestions.svelte';
 	import type { AIComposerSelectionMenuController } from './composer/editor-selection-menu.svelte.js';
 	import type { AIComposerSuggestionHandle } from './composer/keyboard.js';
@@ -152,21 +151,25 @@
 	onHighlightChange={onSuggestionHighlightChange}
 />
 
-<RichTextInputSelectionMenu
+<RichTextInputFormattingToolbar
 	bind:this={selectionMenuHandle}
 	{size}
 	{theme}
-	open={showHoverToolbar && selectionMenu.open}
-	anchor={selectionMenu.anchor}
 	linkUrl={selectionMenu.linkUrl}
 	formats={selectionMenu.formats}
 	blockType={selectionMenu.blockType}
 	listType={selectionMenu.listType}
 	availableFormats={formats}
+	showDismiss
+	selectionTarget={rootElement}
+	selectionEnabled={showHoverToolbar && selectionMenu.open}
+	selectionPopoverClass={classes.floatingPanel({ size, width: 'toolbar', class: 'p-1' })}
 	onFormat={(format) => selectionMenu.format(format)}
 	onList={(listType) => selectionMenu.list(listType)}
 	onBlock={(blockType) => selectionMenu.block(blockType)}
 	onLink={(url) => selectionMenu.link(url)}
 	onLinkEditingChange={(isEditing) => selectionMenu.setLinkEditing(isEditing)}
 	onDismiss={() => selectionMenu.close()}
+	onSelectionClose={() => selectionMenu.close()}
+	onSelectionFocusReturn={() => rootElement?.focus({ preventScroll: true })}
 />

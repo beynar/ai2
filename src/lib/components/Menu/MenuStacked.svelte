@@ -184,9 +184,10 @@
 								{@attach attachPrevious}
 							/>
 						{:else if item.type === 'option'}
+							{@const { type: _type, ...optionProps } = item}
 							<MenuOption
 								role="menuitem"
-								{...item}
+								{...optionProps}
 								theme={theme?.option}
 								{@attach attachItemReference(isActivePanel)}
 								{@attach attachPrevious}

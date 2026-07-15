@@ -383,6 +383,19 @@ export const colors = [
 
 const baseBlackColor = '#000000';
 const baseWhiteColor = '#FFFFFF';
+const neutralChromaThreshold = 0.03;
+
+const generateComplementaryAccent = (primary: string) => {
+	const primaryHex = toHex(primary);
+	const { l, c, h } = hex2oklch(primaryHex);
+
+	if (c < neutralChromaThreshold) {
+		return primaryHex;
+	}
+
+	const accent = formatCSS({ l, c, h: (h + 180) % 360 }, { format: 'oklch' });
+	return toGamut(accent, 'hex');
+};
 
 const defaultColorsLight = {
 	primary: '#6366f1',
@@ -413,7 +426,7 @@ type ColorThemeOption = {
 
 export const generateBaseColors = (theme: ColorThemeOption) => {
 	const isDark = theme.colorscheme === 'dark';
-	return colors.reduce(
+	const baseColors = colors.reduce(
 		(acc, color) => {
 			const isTailwindColor = theme[color] && theme[color] in tailwindColors;
 			const isHexColor = isHex(theme[color]);
@@ -447,6 +460,12 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 			foreground: {}
 		} as Colors
 	);
+
+	if (!theme.secondary) {
+		baseColors.secondary.DEFAULT = generateComplementaryAccent(baseColors.primary.DEFAULT);
+	}
+
+	return baseColors;
 };
 
 export const generateColorPalette = (opts: ColorThemeOption) => {

@@ -125,10 +125,12 @@
 {/if}
 
 <style>
-	:global(.svelai-image-gallery .lg-image) {
-		max-width: calc(100vw - var(--image-gallery-margin, 32px) - var(--image-gallery-margin, 32px));
-		max-height: calc(
-			100dvh - var(--image-gallery-margin, 32px) - var(--image-gallery-margin, 32px)
-		);
+	:global(.svelai-image-gallery .lg-outer) {
+		box-sizing: border-box;
+		padding-inline: var(--image-gallery-margin, 32px);
+	}
+
+	:global(.svelai-image-gallery .lg-content) {
+		margin-inline: var(--image-gallery-margin, 32px);
 	}
 </style>

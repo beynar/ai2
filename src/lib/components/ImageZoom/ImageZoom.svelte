@@ -1,8 +1,8 @@
 <script lang="ts">
+	import 'lightgallery/css/lightgallery.css';
+	import 'lightgallery/css/lg-medium-zoom.css';
 	import Slot from '../Slot/Slot.svelte';
 	import { magnifyingGlassPlusIcon } from '../Icons/magnifyingGlassPlus.js';
-	import { xIcon } from '../Icons/x.js';
-	import { portal } from '$lib/attachments/portal.js';
 	import { ImageZoomState } from './imageZoom.state.svelte.js';
 	import type { ImageZoomProps } from './imageZoom.props.js';
 	import { useImageZoomTheme } from './imageZoom.theme.js';
@@ -12,6 +12,8 @@
 		src,
 		alt,
 		zoomSrc,
+		zoomWidth,
+		zoomHeight,
 		open = $bindable(false),
 		disabled = false,
 		width,
@@ -20,14 +22,16 @@
 		sizes,
 		loading = 'lazy',
 		decoding = 'async',
-		zoomMargin = 32,
-		transitionDuration = 240,
+		zoomMargin = 40,
+		transitionDuration = 400,
 		closeOnClickOutside = true,
 		closeOnEscape = true,
 		closeOnScroll = true,
 		lockScroll = false,
 		buttonLabel = 'Zoom image',
 		closeLabel = 'Close image zoom',
+		backgroundColor = 'var(--color-background)',
+		licenseKey = '0000-0000-000-0000',
 		showIndicator = true,
 		indicatorPosition = 'top-right',
 		class: className,
@@ -54,6 +58,12 @@
 		get zoomSrc() {
 			return zoomSrc;
 		},
+		get zoomWidth() {
+			return zoomWidth;
+		},
+		get zoomHeight() {
+			return zoomHeight;
+		},
 		get isOpen() {
 			return open;
 		},
@@ -69,6 +79,9 @@
 		get transitionDuration() {
 			return transitionDuration;
 		},
+		get closeOnClickOutside() {
+			return closeOnClickOutside;
+		},
 		get closeOnEscape() {
 			return closeOnEscape;
 		},
@@ -77,6 +90,15 @@
 		},
 		get lockScroll() {
 			return lockScroll;
+		},
+		get closeLabel() {
+			return closeLabel;
+		},
+		get backgroundColor() {
+			return backgroundColor;
+		},
+		get licenseKey() {
+			return licenseKey;
 		},
 		get onOpenChange() {
 			return onOpenChange;
@@ -88,27 +110,45 @@
 			return onClose;
 		}
 	});
-
-	const imageRect = $derived(state.imageRect);
 </script>
 
-<div class={classes.root({ className })} {...attachments}>
+<div
+	{@attach state.attachRoot({
+		src,
+		alt,
+		zoomSrc,
+		zoomWidth,
+		zoomHeight,
+		disabled,
+		zoomMargin,
+		transitionDuration,
+		closeOnClickOutside,
+		closeOnEscape,
+		closeOnScroll,
+		lockScroll,
+		closeLabel,
+		backgroundColor,
+		licenseKey
+	})}
+	{id}
+	class={classes.root({ className })}
+	data-image-zoom-root
+	{...attachments}
+>
 	<button
 		type="button"
-		bind:this={state.triggerElement}
 		class={classes.trigger()}
 		{disabled}
 		aria-label={buttonLabel}
 		aria-haspopup="dialog"
 		aria-expanded={open}
-		aria-controls={open ? id : undefined}
-		onclick={state.open}
+		data-image-zoom-trigger
+		data-src={zoomSrc || src || undefined}
 	>
 		{#if children}
 			<Slot render={children} payload={state.payload} />
 		{:else if src}
 			<img
-				bind:this={state.thumbnailImageElement}
 				{src}
 				alt={alt ?? ''}
 				{width}
@@ -133,55 +173,6 @@
 	</button>
 </div>
 
-{#if state.mounted && imageRect}
-	<div
-		{@attach portal()}
-		{id}
-		role="dialog"
-		aria-modal="true"
-		aria-label={state.dialogLabel}
-		class={classes.portal()}
-	>
-		<button
-			type="button"
-			class={classes.overlay({ visible: state.overlayVisible })}
-			aria-hidden="true"
-			tabindex="-1"
-			onclick={() => closeOnClickOutside && state.close()}
-			style:transition-duration={`${state.animationDuration}ms`}
-		></button>
-
-		<button
-			type="button"
-			class={classes.modalButton({ visible: state.overlayVisible })}
-			style:left={`${imageRect.left}px`}
-			style:top={`${imageRect.top}px`}
-			style:width={`${imageRect.width}px`}
-			style:height={`${imageRect.height}px`}
-			style:transition-duration={`${state.animationDuration}ms`}
-			onclick={state.close}
-			aria-label={closeLabel}
-		>
-			<img
-				bind:this={state.modalImageElement}
-				src={state.zoomedSrc}
-				alt={state.resolvedAlt}
-				class={classes.modalImage()}
-				draggable="false"
-				onload={state.updateTargetRect}
-			/>
-		</button>
-
-		<button
-			type="button"
-			bind:this={state.closeButtonElement}
-			class={classes.closeButton()}
-			aria-label={closeLabel}
-			onclick={state.close}
-		>
-			{@render xIcon({ size: 20 })}
-		</button>
-
-		<Slot render={caption} payload={state.payload} class={classes.caption()} />
-	</div>
+{#if open && caption}
+	<Slot render={caption} payload={state.payload} class={classes.caption()} />
 {/if}

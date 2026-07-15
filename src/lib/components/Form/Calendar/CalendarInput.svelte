@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { CalendarInputProps, CalendarType } from './calendarInput.props.js';
+	import type { CalendarInputProps } from './calendarInput.props.js';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import CalendarPrimitive from './CalendarPrimitive.svelte';
 	import { useCalendarInputTheme } from './calendar.theme.js';
 
-	type T = $$Generic<CalendarType>;
+	type T = $$Generic<'calendar' | 'calendar-range'>;
 
 	let {
-		value = $bindable(null),
+		value = $bindable(null as CalendarInputProps<T>['value']),
 		errors = $bindable([]),
 		focused = $bindable(false),
-		type = 'calendar',
+		type = 'calendar' as T,
 		required = false,
 		disabled,
 		name,
@@ -23,11 +23,15 @@
 		view,
 		weekStartsOnMonday,
 		weekdayLength,
+		locale,
+		ariaLabel,
 		minDate,
 		maxDate,
 		cell,
 		buttons,
 		header,
+		todayBadge,
+		onViewChange,
 		...rest
 	}: CalendarInputProps<T> = $props();
 
@@ -84,21 +88,38 @@
 </script>
 
 <Field {field} theme={theme?.field} {...rest}>
-	<CalendarPrimitive
-		onChange={(v: any) => {
-			field.value = v;
+	<!-- display:contents wrapper: zero layout impact, catches bubbled focus so
+	     bind:focused works like on the text inputs. -->
+	<div
+		class="contents"
+		onfocusin={() => (field.focused = true)}
+		onfocusout={(e) => {
+			if (!(e.relatedTarget instanceof Node) || !e.currentTarget.contains(e.relatedTarget)) {
+				field.focused = false;
+			}
 		}}
-		theme={theme?.calendar}
-		value={field.value as any}
-		type={type || 'calendar'}
-		{disabledDates}
-		{minDate}
-		{maxDate}
-		{view}
-		{weekStartsOnMonday}
-		{weekdayLength}
-		{cell}
-		{buttons}
-		{header}
-	/>
+	>
+		<CalendarPrimitive
+			onChange={(v: any) => {
+				field.value = v;
+			}}
+			theme={theme?.calendar}
+			value={field.value as any}
+			type={type || 'calendar'}
+			{disabledDates}
+			{minDate}
+			{maxDate}
+			{view}
+			{weekStartsOnMonday}
+			{weekdayLength}
+			{locale}
+			{ariaLabel}
+			disabled={field.disabled}
+			{cell}
+			{buttons}
+			{header}
+			{todayBadge}
+			{onViewChange}
+		/>
+	</div>
 </Field>

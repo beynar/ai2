@@ -2,13 +2,18 @@ import type { Sizes, Colors } from '$lib/types/theme.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { ToggleButtonThemeProps } from './toggleButton.theme.js';
+import type { HTMLButtonAttributes } from 'svelte/elements';
 
-export type ToggleButtonVariant = 'outline' | 'soft' | 'ghost';
+export type ToggleButtonVariant = 'outline' | 'ghost';
 export type ToggleButtonProps = WithAttachments<
 	WithSlot<
 		{
 			/** Bindable reference to the root button element. */
-			ref?: HTMLElement | null;
+			ref?: HTMLButtonElement | null;
+			/** Native button type. Defaults to `button` so toggles never submit a form accidentally. */
+			type?: HTMLButtonAttributes['type'];
+			/** Accessible name, required when the button has no visible text. */
+			ariaLabel?: string;
 			/** Theme color token applied to the button styling. */
 			color?: Colors;
 			/** Visual style variant of the toggle button. */

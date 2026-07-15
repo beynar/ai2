@@ -19,11 +19,12 @@ The ToggleButton component is a two-state button that can be toggled on and off,
 
 ### Core Props
 - **checked**: boolean (bindable) - Toggle state
-- **value**: any - Value when used in a group
+- **ariaLabel**: string - Accessible name for icon-only buttons
+- **type**: 'button' | 'submit' | 'reset' (default: 'button') - Native button type. The default prevents accidental form submission.
 
 ### Visual Props
-- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
-- **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'outline')
+- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'foreground')
+- **variant**: 'outline' | 'ghost' (default: 'ghost')
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
 
 ### State Props
@@ -70,10 +71,8 @@ The ToggleButton component is a two-state button that can be toggled on and off,
 
 ### Different Variants
 \`\`\`svelte
-<ToggleButton variant="solid" bind:checked>Solid</ToggleButton>
-<ToggleButton variant="outline" bind:checked>Outline</ToggleButton>
-<ToggleButton variant="soft" bind:checked>Soft</ToggleButton>
 <ToggleButton variant="ghost" bind:checked>Ghost</ToggleButton>
+<ToggleButton variant="outline" bind:checked>Outline</ToggleButton>
 \`\`\`
 
 ### Different Colors
@@ -129,7 +128,8 @@ The ToggleButton component is a two-state button that can be toggled on and off,
 
 ## Accessibility
 
-- Uses proper ARIA attributes
+- Exposes the checked state through \`aria-pressed\`
+- Renders \`type="button"\` unless explicitly overridden
 - Keyboard accessible (Space/Enter to toggle)
 - Focus states for keyboard navigation
 - Screen reader friendly
@@ -160,7 +160,7 @@ The theme object contains the following parts:
   - checked: boolean - Checked/toggled state styling
   - disabled: boolean - Disabled state styling
   - color: Color variants
-  - variant: 'outline' | 'soft' | 'ghost' - Button variant
+  - variant: 'outline' | 'ghost' - Button variant
   - squared: boolean - Square button styling
   - size: 'small' | 'normal' | 'large' - Button size
 
@@ -207,8 +207,7 @@ The theme object contains the following parts:
   theme={{
     root: {
       variant: {
-        outline: 'border-2',
-        soft: 'bg-color-muted'
+        outline: 'border-2'
       },
       checked: {
         true: 'border-primary bg-primary/10 text-primary',

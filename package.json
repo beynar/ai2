@@ -230,6 +230,16 @@
 			"svelte": "./dist/components/ToggleButtonGroup/index.js",
 			"default": "./dist/components/ToggleButtonGroup/index.js"
 		},
+		"./toggle-menu": {
+			"types": "./dist/components/ToggleMenu/index.d.ts",
+			"svelte": "./dist/components/ToggleMenu/index.js",
+			"default": "./dist/components/ToggleMenu/index.js"
+		},
+		"./selection-menu": {
+			"types": "./dist/components/SelectionMenu/index.d.ts",
+			"svelte": "./dist/components/SelectionMenu/index.js",
+			"default": "./dist/components/SelectionMenu/index.js"
+		},
 		"./segmented-control": {
 			"types": "./dist/components/SegmentedControl/index.d.ts",
 			"svelte": "./dist/components/SegmentedControl/index.js",
@@ -244,6 +254,11 @@
 			"types": "./dist/components/Form/DateInput/index.d.ts",
 			"svelte": "./dist/components/Form/DateInput/index.js",
 			"default": "./dist/components/Form/DateInput/index.js"
+		},
+		"./date-selector": {
+			"types": "./dist/components/Form/DateSelector/index.d.ts",
+			"svelte": "./dist/components/Form/DateSelector/index.js",
+			"default": "./dist/components/Form/DateSelector/index.js"
 		},
 		"./color-picker": {
 			"types": "./dist/components/Form/ColorPicker/index.d.ts",
@@ -343,10 +358,20 @@
 			"svelte": "./dist/components/Chip/index.js",
 			"default": "./dist/components/Chip/index.js"
 		},
+		"./hitbox": {
+			"types": "./dist/components/Hitbox/index.d.ts",
+			"svelte": "./dist/components/Hitbox/index.js",
+			"default": "./dist/components/Hitbox/index.js"
+		},
 		"./hover-card": {
 			"types": "./dist/components/HoverCard/index.d.ts",
 			"svelte": "./dist/components/HoverCard/index.js",
 			"default": "./dist/components/HoverCard/index.js"
+		},
+		"./overlay": {
+			"types": "./dist/components/Overlay/index.d.ts",
+			"svelte": "./dist/components/Overlay/index.js",
+			"default": "./dist/components/Overlay/index.js"
 		},
 		"./image-zoom": {
 			"types": "./dist/components/ImageZoom/index.d.ts",
@@ -591,6 +616,9 @@
 			"./stepper": [
 				"./dist/components/Stepper/index.d.ts"
 			],
+			"./selection-menu": [
+				"./dist/components/SelectionMenu/index.d.ts"
+			],
 			"./text-area": [
 				"./dist/components/Form/TextArea/index.d.ts"
 			],
@@ -606,6 +634,9 @@
 			"./chip": [
 				"./dist/components/Chip/index.d.ts"
 			],
+			"./hitbox": [
+				"./dist/components/Hitbox/index.d.ts"
+			],
 			"./segmented-control": [
 				"./dist/components/SegmentedControl/index.d.ts"
 			],
@@ -614,6 +645,9 @@
 			],
 			"./hover-card": [
 				"./dist/components/HoverCard/index.d.ts"
+			],
+			"./overlay": [
+				"./dist/components/Overlay/index.d.ts"
 			],
 			"./empty": [
 				"./dist/components/Empty/index.d.ts"
@@ -692,6 +726,9 @@
 			],
 			"./calendar": [
 				"./dist/components/Form/Calendar/index.d.ts"
+			],
+			"./date-selector": [
+				"./dist/components/Form/DateSelector/index.d.ts"
 			]
 		}
 	}

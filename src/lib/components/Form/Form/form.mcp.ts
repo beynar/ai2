@@ -74,13 +74,14 @@ The Form component provides a comprehensive form system with built-in validation
 - **switch** - Toggle switch
 
 ### Date/Time Inputs
-- **date** - Date picker
+- **date** - Date picker. Add \`display: 'selector'\` to render the popover DateSelector instead of the text date input.
 - **datetime** - Date and time picker
 - **calendar** - Calendar date picker
-- **calendar-range** - Date range picker
+- **calendar-range** - Date range picker. Add \`display: 'selector'\` to render the popover DateSelector (range mode) instead of the inline calendar.
 - **time** - Time input
 
 ### Other Inputs
+- **color** - Color input (swatch + text + popover picker). Add \`display: 'picker'\` to render the inline ColorPicker panel instead.
 - **textarea** - Multi-line text input
 - **rich-text** - Markdown rich text editor
 - **phone** - Phone number input with formatting
@@ -97,6 +98,7 @@ The Form component provides a comprehensive form system with built-in validation
 
 Each input in the \`inputs\` object supports:
 - **type**: Input type (required)
+- **display**: Alternative control for the same value type — \`'picker'\` on \`color\`, \`'selector'\` on \`date\` and \`calendar-range\`. Omit for the default control; the bound value shape and validation are identical either way.
 - **label**: Field label
 - **description**: Helper text
 - **placeholder**: Placeholder text

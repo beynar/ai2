@@ -3,12 +3,14 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultTabbar = cva({
 	// relative: the shared active indicator is positioned against the root.
-	base: 'relative flex w-full',
+	// w-fit: the bar (and its baseline) hugs the tabs — fit-content still clamps
+	// to the parent, so overflow scrolling keeps working. fullWidth opts into w-full.
+	base: 'relative flex w-fit',
 	variants: {
 		orientation: {
 			// Scroll (no visible scrollbar) when the tabs overflow their track.
 			horizontal: 'flex-row overflow-x-auto scrollbar-none scroll-fade-x',
-			vertical: 'flex-col w-fit overflow-y-auto scrollbar-none scroll-fade-y'
+			vertical: 'flex-col overflow-y-auto scrollbar-none scroll-fade-y'
 		},
 		alignment: {
 			start: 'justify-start',
@@ -22,7 +24,7 @@ const defaultTabbar = cva({
 		},
 		variant: {
 			underline: '',
-			pill: 'w-fit rounded-full bg-background-muted/60 p-1'
+			pill: 'rounded-full bg-background-muted/60 p-1'
 		},
 		fullWidth: {
 			true: 'w-full',
@@ -30,9 +32,22 @@ const defaultTabbar = cva({
 		}
 	},
 	compoundVariants: [
+		// Muted baseline under the tab row, drawn as an INSET shadow line (not a
+		// border): it lives inside the padding box, so the active underline overlaps
+		// it exactly — a border sits outside the box and shows a subpixel seam at
+		// fractional zoom (and the scroll container would clip any overlap).
+		{
+			variant: 'underline',
+			orientation: 'horizontal',
+			class: 'shadow-[inset_0_-1px_0_0_var(--color-background-muted)]'
+		},
+		{
+			variant: 'underline',
+			orientation: 'vertical',
+			class: 'shadow-[inset_-1px_0_0_0_var(--color-background-muted)]'
+		},
 		// A vertical pill track shouldn't be a stadium — soften to a large radius.
-		{ variant: 'pill', orientation: 'vertical', class: 'rounded-2xl' },
-		{ variant: 'pill', fullWidth: true, class: 'w-full' }
+		{ variant: 'pill', orientation: 'vertical', class: 'rounded-2xl' }
 	],
 	defaultVariants: {
 		orientation: 'horizontal',

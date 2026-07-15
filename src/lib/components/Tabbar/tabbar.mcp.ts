@@ -74,7 +74,20 @@ type TabItem = {
   disabled?: boolean;            // Disable the tab
   target?: string;               // Link target (e.g., "_blank")
   rel?: string;                  // Link relationship
+  menu?: string[];               // Entries shown in a popover menu (overflow pattern)
+  onMenuSelect?: (menuIndex: number) => void; // Called when a menu entry is picked
 }
+\`\`\`
+
+### Menu tab (overflow pattern)
+
+A tab with \`menu\` renders with a chevron and opens a popover menu instead of activating directly. Selecting an entry activates the tab, displays the entry's label on it (the tab's own label becomes the menu header), slides the indicator to it, and calls \`onMenuSelect(menuIndex)\`. The selected entry shows a check mark in the menu.
+
+\`\`\`svelte
+<Tabbar
+	items={['Home', 'Projects', { label: 'More', menu: ['Analytics', 'Reports', 'Billing'] }]}
+	bind:activeTab
+/>
 \`\`\`
 
 ## Structure

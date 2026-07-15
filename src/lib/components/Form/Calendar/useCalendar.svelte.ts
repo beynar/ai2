@@ -2,7 +2,15 @@ import { bind } from '$lib/utils/state.svelte.js';
 import { untrack } from 'svelte';
 import { on } from 'svelte/events';
 
-export type CalendarType = 'calendar' | 'calendar-range';
+export type CalendarType = 'calendar' | 'calendar-range' | 'calendar-multiple';
+
+export type CalendarValue<T extends CalendarType> = T extends 'calendar'
+	? Date | null
+	: T extends 'calendar-range'
+		? [Date | null, Date | null] | null
+		: Date[];
+
+export type CalendarChangeHandler<T extends CalendarType> = (value: CalendarValue<T>) => void;
 
 export interface Event {
 	start: Date;
@@ -11,7 +19,7 @@ export interface Event {
 	description?: string;
 }
 
-export interface Cell {
+export interface Cell<E extends Event = Event> {
 	isStartOfRange: boolean;
 	isEndOfRange: boolean;
 	visible: boolean;
@@ -23,14 +31,14 @@ export interface Cell {
 	day: number;
 	date: Date;
 	isToday: boolean;
-	events: Event[];
+	events: E[];
 	corner: string | null;
 	attributes: Record<string, string | number | boolean | undefined>;
 	disabled: boolean;
 }
 
-export interface Row<E extends Event> {
-	cells: Cell[];
+export interface Row<E extends Event = Event> {
+	cells: Cell<E>[];
 	events: E[];
 }
 
@@ -42,492 +50,480 @@ export interface CalendarStateOptions<E extends Event, T extends CalendarType> {
 	weekStartsOnMonday?: boolean;
 	view?: 'single' | 'double';
 	disabledDates?: (Date | [Date, Date])[];
-	onChange?: T extends 'calendar'
-		? (value: Date | null) => void
-		: (value: [Date | null, Date | null] | null) => void;
-	value?: T extends 'calendar' ? Date | null : [Date | null, Date | null] | null;
+	disabled?: boolean;
+	locale?: string;
+	onChange?: CalendarChangeHandler<T>;
+	value?: CalendarValue<T>;
 }
 
-const getMonthName = (date: Date, locale?: string): string => {
-	return date.toLocaleString(locale || undefined, { month: 'long' });
+export const createCalendarDate = (year: number, month: number, day: number) =>
+	new Date(year, month, day, 12, 0, 0, 0);
+
+export const normalizeCalendarDate = (date: Date) =>
+	createCalendarDate(date.getFullYear(), date.getMonth(), date.getDate());
+
+export const isSameCalendarDay = (first: Date, second: Date) =>
+	first.getFullYear() === second.getFullYear() &&
+	first.getMonth() === second.getMonth() &&
+	first.getDate() === second.getDate();
+
+export const getCalendarDateKey = (date: Date) =>
+	`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+		date.getDate()
+	).padStart(2, '0')}`;
+
+const parseCalendarDateKey = (dateKey: string) => {
+	const [year, month, day] = dateKey.split('-').map(Number);
+	return createCalendarDate(year, month - 1, day);
 };
 
-/**
- * Creates a date at noon local time to avoid timezone boundary issues.
- * 
- * **Why noon instead of midnight?**
- * 
- * When dates are created at midnight (00:00:00), they can shift to the previous or next day
- * when converted between timezones. For example:
- * - A date at midnight in Tokyo (UTC+9) might be interpreted as the previous day in London (UTC+0)
- * - A date at midnight in New York (UTC-5) might shift to the next day when sent to a server in UTC
- * 
- * By using noon (12:00:00), we ensure that:
- * - The date always represents the same calendar day regardless of timezone conversion
- * - January 15 at noon is always January 15 in any timezone
- * - No ambiguous date boundaries that could cause selection bugs
- * 
- * @param year - Full year (e.g., 2025)
- * @param month - Month index (0-11, where 0 = January)
- * @param day - Day of month (1-31)
- * @returns Date object at 12:00:00 local time
- * 
- * @example
- * ```typescript
- * // Creates January 15, 2025 at 12:00:00 PM local time
- * const date = createDateAtNoon(2025, 0, 15);
- * ```
- */
-function createDateAtNoon(year: number, month: number, day: number): Date {
-	return new Date(year, month, day, 12, 0, 0, 0);
-}
+const addDays = (date: Date, amount: number) =>
+	createCalendarDate(date.getFullYear(), date.getMonth(), date.getDate() + amount);
 
-/**
- * Compares two dates by year/month/day components (ignores time).
- * 
- * **Why compare by components instead of milliseconds?**
- * 
- * Comparing dates using `getTime()` includes the time component, which can cause issues
- * when dates have different times but represent the same calendar day. This function
- * compares only the date components (year, month, day), ignoring hours, minutes, seconds.
- * 
- * **Timezone Note:** This function compares dates in local time. For timezone-resistant
- * comparisons, ensure both dates are normalized to noon using `normalizeToNoon()` first.
- * 
- * @param date1 - First date to compare
- * @param date2 - Second date to compare
- * @returns true if both dates represent the same calendar day
- * 
- * @example
- * ```typescript
- * const date1 = new Date(2025, 0, 15, 12, 0, 0); // Jan 15 at noon
- * const date2 = new Date(2025, 0, 15, 0, 0, 0);  // Jan 15 at midnight
- * isSameDay(date1, date2); // true - same calendar day
- * ```
- */
-function isSameDay(date1: Date, date2: Date): boolean {
-	return (
-		date1.getFullYear() === date2.getFullYear() &&
-		date1.getMonth() === date2.getMonth() &&
-		date1.getDate() === date2.getDate()
-	);
-}
+const addMonths = (date: Date, amount: number) => {
+	const targetMonth = date.getMonth() + amount;
+	const lastDay = new Date(date.getFullYear(), targetMonth + 1, 0).getDate();
+	return createCalendarDate(date.getFullYear(), targetMonth, Math.min(date.getDate(), lastDay));
+};
 
-/**
- * Normalizes a date to noon for comparison purposes
- * 
- * **Why noon?** Creating dates at noon (12:00:00) instead of midnight avoids timezone boundary issues.
- * When dates cross timezone boundaries, midnight can shift to the previous or next day, but noon
- * always remains on the same calendar day regardless of timezone conversion.
- * 
- * @param date - The date to normalize
- * @returns A new Date object set to noon (12:00:00) on the same calendar day
- */
-function normalizeToNoon(date: Date): Date {
-	return createDateAtNoon(date.getFullYear(), date.getMonth(), date.getDate());
-}
+const addYears = (date: Date, amount: number) => {
+	const year = date.getFullYear() + amount;
+	const lastDay = new Date(year, date.getMonth() + 1, 0).getDate();
+	return createCalendarDate(year, date.getMonth(), Math.min(date.getDate(), lastDay));
+};
 
-/**
- * Calendar state management for date selection components.
- * 
- * ## Timezone Handling
- * 
- * This calendar component is designed to be timezone-resistant:
- * 
- * - **All dates are created at noon (12:00:00) local time** - This prevents timezone boundary issues
- *   when dates are converted between timezones. A date at noon will always represent the same calendar
- *   day regardless of timezone conversion.
- * 
- * - **Date comparisons use date components** - Instead of comparing milliseconds (which includes time),
- *   this component compares dates by their year/month/day components using `isSameDay()` or normalized
- *   noon dates. This ensures consistent behavior across timezones.
- * 
- * - **Input dates are normalized** - All dates passed to the component (via props, constructor, or
- *   `setRange()`) are automatically normalized to noon to ensure consistency.
- * 
- * - **Date storage uses YYYY-MM-DD format** - The `data-date` attribute stores dates in YYYY-MM-DD
- *   format instead of ISO strings, avoiding timezone conversion issues when parsing.
- * 
- * ## Best Practices for Consumers
- * 
- * When using this component:
- * 
- * 1. **Provide dates at noon** - While the component will normalize dates, it's best practice for
- *    consumers to provide dates at noon (12:00:00) to avoid any edge cases.
- * 
- * 2. **Use Date objects, not strings** - Always pass Date objects, not date strings. The component
- *    handles timezone conversions internally.
- * 
- * 3. **Normalize dates before comparison** - When comparing dates returned from `onChange`, normalize
- *    them to noon first if you need to compare dates across timezones.
- * 
- * @example
- * ```typescript
- * // ✅ Good - Create date at noon
- * const selectedDate = new Date(2025, 0, 15, 12, 0, 0, 0);
- * 
- * // ❌ Avoid - Midnight can cause timezone issues
- * const badDate = new Date(2025, 0, 15, 0, 0, 0, 0);
- * ```
- */
-export interface CalendarState<E extends Event = Event, T extends CalendarType = 'calendar'>
-	extends CalendarStateOptions<E, T> {}
+const getFirstValueDate = <T extends CalendarType>(type: T, value?: CalendarValue<T>) => {
+	if (!value) return null;
+	if (type === 'calendar') return value as Date;
+	if (type === 'calendar-range') return (value as [Date | null, Date | null])[0] ?? null;
+	return (value as Date[])[0] ?? null;
+};
+
+const getElementWithDate = (event: globalThis.Event) =>
+	event
+		.composedPath()
+		.find(
+			(target): target is HTMLElement =>
+				target instanceof HTMLElement && target.hasAttribute('data-date')
+		);
+
+export interface CalendarState<
+	E extends Event = Event,
+	T extends CalendarType = 'calendar'
+> extends CalendarStateOptions<E, T> {}
+
 export class CalendarState<E extends Event = Event, T extends CalendarType = 'calendar'> {
 	view: 'single' | 'double' = 'single';
-	today: Date = new Date();
 	events: E[] = [];
-	date = $state(this.today);
-	selected = $state(this.today);
-	currentMonth = $derived(this.date.getMonth());
-	currentMonthName = $derived(getMonthName(this.date));
-	minDate = $state<Date | null>(null);
-	maxDate = $state<Date | null>(null);
-	nextMonthName = $derived(
-		getMonthName(new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1))
-	);
-	currentYear = $derived(this.date.getFullYear());
-	nextYear = $derived(new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1).getFullYear());
-	weekStartsOnMonday = $state(false);
-	rangeStart = $state<Date | null>(null);
-	rangeEnd = $state<Date | null>(null);
-	displayedMonthLabel = $derived.by((): string => {
-		if (this.view === 'single') {
-			return `${this.currentMonthName} ${this.currentYear}`;
-		} else if (this.currentYear === this.nextYear) {
-			return `${this.currentMonthName} - ${this.nextMonthName} ${this.currentYear}`;
-		} else {
-			return `${this.currentMonthName} ${this.currentYear} - ${this.nextMonthName} ${this.nextYear}`;
-		}
-	});
-	eventsMap = $derived.by(() =>
-		this.events.reduce((acc: Record<string, E[]>, event: E) => {
-			const date = event.start.toDateString();
-			if (!acc[date]) {
-				acc[date] = [];
-			}
-			acc[date].push(event);
-			return acc;
-		}, {})
-	);
-	/**
-	 * Map of disabled dates for quick lookup.
-	 * 
-	 * **Timezone Note:** All dates in this map are normalized to noon to ensure consistent
-	 * comparison regardless of the time component of the input disabled dates.
-	 */
+	minDate: Date | null = null;
+	maxDate: Date | null = null;
+	weekStartsOnMonday = true;
 	disabledDates: (Date | [Date, Date])[] = [];
-	/**
-	 * Derived map for efficient disabled date checking.
-	 * 
-	 * **Timezone Handling:** 
-	 * - Single dates are normalized to noon before being added to the map
-	 * - Date ranges are iterated day-by-day using date components (not milliseconds)
-	 * - Each date in the range is normalized to noon
-	 * - Comparison uses `toDateString()` as a key, which compares by date components
-	 */
-	disabledDatesMap = $derived.by(() =>
-		this.disabledDates.reduce((acc: Map<string, boolean>, date) => {
-			const range: Date[] = [];
-			if (Array.isArray(date)) {
-				// the array is a range. Iterate over the range and add the dates to the map
-				const [start, end] = date;
-				// Normalize both dates to noon for comparison
-				const normalizedStart = normalizeToNoon(start);
-				const normalizedEnd = normalizeToNoon(end);
-				
-				// Iterate day by day using date components instead of milliseconds
-				let currentDate = normalizedStart;
-				while (currentDate <= normalizedEnd) {
-					range.push(currentDate);
-					// Create next day at noon
-					currentDate = createDateAtNoon(
-						currentDate.getFullYear(),
-						currentDate.getMonth(),
-						currentDate.getDate() + 1
-					);
-				}
-			} else {
-				range.push(normalizeToNoon(date));
-			}
-			range.forEach((d) => {
-				acc.set(d.toDateString(), true);
-			});
-			return acc;
-		}, new Map<string, boolean>())
+	disabled = false;
+	locale: string | undefined;
+
+	today = normalizeCalendarDate(new Date());
+	date = $state(this.today);
+	focusedDate = $state(this.today);
+
+	currentMonth = $derived(this.date.getMonth());
+	currentYear = $derived(this.date.getFullYear());
+	nextMonthDate = $derived(createCalendarDate(this.currentYear, this.currentMonth + 1, 1));
+	viewKey = $derived(`${this.currentYear}-${this.currentMonth}-${this.view}`);
+
+	rangeStart = $derived.by(() => {
+		if (this.type === 'calendar') return (this.value as Date | null | undefined) ?? null;
+		if (this.type === 'calendar-range') {
+			return (this.value as [Date | null, Date | null] | null | undefined)?.[0] ?? null;
+		}
+		return null;
+	});
+
+	rangeEnd = $derived.by(() => {
+		if (this.type !== 'calendar-range') return null;
+		return (this.value as [Date | null, Date | null] | null | undefined)?.[1] ?? null;
+	});
+
+	multipleValues = $derived.by(() =>
+		this.type === 'calendar-multiple' ? ((this.value as Date[] | undefined) ?? []) : []
 	);
 
-	/**
-	 * Generates calendar rows for a given month view.
-	 * 
-	 * **Timezone Handling:**
-	 * - All cell dates are created at noon using `createDateAtNoon()`
-	 * - Date comparisons use `isSameDay()` or normalized noon dates
-	 * - Min/max date comparisons normalize both dates to noon before comparing
-	 * - Range comparisons normalize dates to noon before comparison
-	 * 
-	 * @param date - The date representing the month to display (defaults to current view date)
-	 * @param weekStartsOnMonday - Whether weeks start on Monday (true) or Sunday (false)
-	 * @param isNextMonth - Internal flag for double-month view
-	 * @returns Array of rows, each containing cells for the calendar grid
-	 */
-	getCalendarRows = (
-		date: Date = this.date,
-		weekStartsOnMonday: boolean = this.weekStartsOnMonday,
-		isNextMonth: boolean = false
-	): Row<E>[] => {
-		const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-		const weeks = Math.ceil(daysInMonth / 7) + 1;
-		const daysInPreviousMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
-		let firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-		const rows: Row<E>[] = [];
-
-		if (weekStartsOnMonday) {
-			firstDay = firstDay === 0 ? 6 : firstDay - 1;
-		}
-
-		let day = 1;
-		let daysAfter = 1;
-
-		for (let i = 0; i < weeks; i++) {
-			const row: Row<E> = {
-				cells: [],
-				events: []
-			};
-
-			for (let j = 0; j < 7; j++) {
-				const events: E[] = [];
-				let inMonth = false;
-				let isInNextMonth = false;
-				let isInPreviousMonth = false;
-				const corner =
-					(i === 0 && j === 0 && 't-l') ||
-					(i === 0 && j === 6 && 't-r') ||
-					(i === weeks - 1 && j === 0 && 'b-l') ||
-					(i === weeks - 1 && j === 6 && 'b-r') ||
-					null;
-
-				let cellDate = createDateAtNoon(date.getFullYear(), date.getMonth(), day);
-				let cellDay = Number(String(day));
-
-				if (i === 0 && j < firstDay) {
-					cellDay = daysInPreviousMonth - firstDay + j + 1;
-					cellDate = createDateAtNoon(
-						date.getFullYear(),
-						date.getMonth() - 1,
-						daysInPreviousMonth - firstDay + j + 1
-					);
-					isInPreviousMonth = true;
-				} else if (day > daysInMonth) {
-					cellDay = daysAfter;
-					cellDate = createDateAtNoon(date.getFullYear(), date.getMonth() + 1, daysAfter);
-					daysAfter++;
-					isInNextMonth = true;
-				} else {
-					inMonth = true;
-					cellDay = day;
-					day++;
-				}
-
-				const dateString = cellDate.toDateString();
-				// Use isSameDay for consistent date comparison (replaces toDateString() comparison)
-				const isStartOfRange = this.rangeStart
-					? isSameDay(cellDate, this.rangeStart)
-					: false;
-				const isEndOfRange = this.rangeEnd ? isSameDay(cellDate, this.rangeEnd) : false;
-				const isInRange =
-					(this.type === 'calendar-range' &&
-						this.rangeEnd &&
-						this.rangeStart &&
-						!isStartOfRange &&
-						!isEndOfRange &&
-						normalizeToNoon(cellDate) < normalizeToNoon(this.rangeEnd) &&
-						normalizeToNoon(cellDate) > normalizeToNoon(this.rangeStart)) ||
-					false;
-				// Use isSameDay to compare with today (replaces toDateString() comparison)
-				const isToday = isSameDay(cellDate, new Date());
-				// Normalize dates to noon before comparison to avoid timezone issues
-				const isBeforeMinDate = this.minDate && normalizeToNoon(cellDate) < normalizeToNoon(this.minDate);
-				const isAfterMaxDate = this.maxDate && normalizeToNoon(cellDate) > normalizeToNoon(this.maxDate);
-				const isDisabled =
-					this.disabledDatesMap.get(dateString) || isBeforeMinDate || isAfterMaxDate;
-
-				row.cells.push({
-					isStartOfRange: this.type === 'calendar-range' ? isStartOfRange : false,
-					isEndOfRange: this.type === 'calendar-range' ? isEndOfRange : false,
-					visible:
-						this.view === 'single' ? true : isNextMonth ? !isInPreviousMonth : !isInNextMonth,
-					isInNextMonth,
-					isInRange,
-					isInPreviousMonth,
-					selected: this.type === 'calendar' ? isStartOfRange : isStartOfRange || isEndOfRange,
-					inMonth,
-					day: cellDay,
-					date: cellDate,
-					isToday,
-					events,
-					corner,
-					disabled: !!isDisabled,
-					attributes: {
-						style: `grid-row-start:${2 + i}; grid-column-start:${j + 1};`,
-						'data-in-range': isInRange,
-						'data-in-month': inMonth,
-						'data-disabled': isDisabled ? true : undefined,
-						disabled: isDisabled ? true : undefined,
-						'data-is-today': isToday,
-						'data-selected':
-							this.type === 'calendar' ? isStartOfRange : isStartOfRange || isEndOfRange,
-						'data-start-of-range':
-							this.type === 'calendar' ? false : this.rangeComplete && isStartOfRange,
-						'data-end-of-range':
-							this.type === 'calendar' ? false : this.rangeComplete && isEndOfRange,
-						'data-date': `${cellDate.getFullYear()}-${String(cellDate.getMonth() + 1).padStart(2, '0')}-${String(cellDate.getDate()).padStart(2, '0')}`,
-						'data-is-past': !isToday && normalizeToNoon(cellDate) < normalizeToNoon(new Date())
-					}
-				});
-			}
-
-			if (!row.cells.every((cell) => !cell.inMonth)) {
-				rows.push(row);
-			}
-		}
-		return rows;
-	};
-
-	/**
-	 * Sets the selected date range.
-	 * 
-	 * **Timezone Note:** Both start and end dates are automatically normalized to noon
-	 * to ensure consistent behavior across timezones.
-	 * 
-	 * @param start - Start date of the range (or null to clear)
-	 * @param end - End date of the range (optional, defaults to null)
-	 */
-	setRange = (start: Date | null, end?: Date | null): void => {
-		this.rangeStart = start ? normalizeToNoon(start) : null;
-		this.rangeEnd = end ? normalizeToNoon(end) : null;
-	};
-
-	rows = $derived.by(this.getCalendarRows);
-	nextMonthRows = $derived.by(() =>
-		this.getCalendarRows(
-			new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1),
-			this.weekStartsOnMonday,
-			true
-		)
+	firstSelectedDate = $derived.by(() =>
+		getFirstValueDate(this.type ?? ('calendar' as T), this.value)
 	);
 	rangeComplete = $derived(!!(this.rangeStart && this.rangeEnd));
 
-	/**
-	 * Creates a new CalendarState instance.
-	 * 
-	 * **Timezone Handling:** All input dates (value, minDate, maxDate, disabledDates) are
-	 * automatically normalized to noon to ensure consistent behavior. This means:
-	 * - Dates can be provided at any time, but will be normalized to noon internally
-	 * - Dates returned from onChange will always be at noon
-	 * - Comparisons and validations work correctly across timezones
-	 * 
-	 * @param options - Configuration options for the calendar
-	 */
+	displayedMonthLabel = $derived.by(() => {
+		const startLabel = this.date.toLocaleDateString(this.locale, {
+			month: 'long',
+			year: 'numeric'
+		});
+		if (this.view === 'single') return startLabel;
+
+		const endLabel = this.nextMonthDate.toLocaleDateString(this.locale, {
+			month: 'long',
+			year: this.currentYear === this.nextMonthDate.getFullYear() ? undefined : 'numeric'
+		});
+		return `${startLabel} - ${endLabel}`;
+	});
+
+	eventsMap = $derived.by(() => {
+		const eventsByDate = new Map<string, E[]>();
+		for (const calendarEvent of this.events) {
+			let date = normalizeCalendarDate(calendarEvent.start);
+			const end = normalizeCalendarDate(calendarEvent.end);
+			while (date <= end) {
+				const dateKey = getCalendarDateKey(date);
+				const events = eventsByDate.get(dateKey) ?? [];
+				events.push(calendarEvent);
+				eventsByDate.set(dateKey, events);
+				date = addDays(date, 1);
+			}
+		}
+		return eventsByDate;
+	});
+
+	disabledDateKeys = $derived.by(() => {
+		const disabledDateKeys = new Set<string>();
+		for (const disabledDate of this.disabledDates) {
+			if (!Array.isArray(disabledDate)) {
+				disabledDateKeys.add(getCalendarDateKey(disabledDate));
+				continue;
+			}
+
+			let date = normalizeCalendarDate(disabledDate[0]);
+			const end = normalizeCalendarDate(disabledDate[1]);
+			while (date <= end) {
+				disabledDateKeys.add(getCalendarDateKey(date));
+				date = addDays(date, 1);
+			}
+		}
+		return disabledDateKeys;
+	});
+
+	rows = $derived.by(() => this.getCalendarRows(this.date));
+	nextMonthRows = $derived.by(() => this.getCalendarRows(this.nextMonthDate, true));
+
 	constructor(options: CalendarStateOptions<E, T>) {
 		bind(this, options);
-
-		if (options.type === 'calendar-range') {
-			const value = options.value as [Date | null, Date | null] | null;
-			this.rangeStart = value?.[0] ? normalizeToNoon(value[0]) : null;
-			this.rangeEnd = value?.[1] ? normalizeToNoon(value[1]) : null;
-		} else {
-			this.rangeStart = options.value ? normalizeToNoon(options.value as Date) : null;
+		const initialDate = getFirstValueDate(options.type ?? ('calendar' as T), options.value);
+		if (initialDate) {
+			this.date = createCalendarDate(initialDate.getFullYear(), initialDate.getMonth(), 1);
+			this.focusedDate = normalizeCalendarDate(initialDate);
 		}
 	}
 
-	goNextMonth = (): void => {
-		this.date = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1);
+	private isInVisibleMonths(date: Date) {
+		const firstMonth = this.currentYear * 12 + this.currentMonth;
+		const targetMonth = date.getFullYear() * 12 + date.getMonth();
+		return (
+			targetMonth >= firstMonth && targetMonth <= firstMonth + (this.view === 'double' ? 1 : 0)
+		);
+	}
+
+	private getTabStopDate() {
+		if (this.isInVisibleMonths(this.focusedDate) && !this.isDateDisabled(this.focusedDate)) {
+			return this.focusedDate;
+		}
+		if (
+			this.firstSelectedDate &&
+			this.isInVisibleMonths(this.firstSelectedDate) &&
+			!this.isDateDisabled(this.firstSelectedDate)
+		) {
+			return this.firstSelectedDate;
+		}
+		if (this.isInVisibleMonths(this.today) && !this.isDateDisabled(this.today)) return this.today;
+
+		let candidateDate = createCalendarDate(this.currentYear, this.currentMonth, 1);
+		const endDate = createCalendarDate(
+			this.currentYear,
+			this.currentMonth + (this.view === 'double' ? 2 : 1),
+			0
+		);
+		while (candidateDate <= endDate) {
+			if (!this.isDateDisabled(candidateDate)) return candidateDate;
+			candidateDate = addDays(candidateDate, 1);
+		}
+
+		return null;
+	}
+
+	private isDateSelected(date: Date) {
+		if (this.type === 'calendar')
+			return !!this.rangeStart && isSameCalendarDay(date, this.rangeStart);
+		if (this.type === 'calendar-range') {
+			return (
+				(!!this.rangeStart && isSameCalendarDay(date, this.rangeStart)) ||
+				(!!this.rangeEnd && isSameCalendarDay(date, this.rangeEnd))
+			);
+		}
+		return this.multipleValues.some((selectedDate) => isSameCalendarDay(date, selectedDate));
+	}
+
+	private isDateInRange(date: Date) {
+		if (!this.rangeStart || !this.rangeEnd) return false;
+		const normalizedDate = normalizeCalendarDate(date);
+		return (
+			normalizedDate > normalizeCalendarDate(this.rangeStart) &&
+			normalizedDate < normalizeCalendarDate(this.rangeEnd)
+		);
+	}
+
+	isDateDisabled = (date: Date) => {
+		if (this.disabled) return true;
+		const normalizedDate = normalizeCalendarDate(date);
+		if (this.minDate && normalizedDate < normalizeCalendarDate(this.minDate)) return true;
+		if (this.maxDate && normalizedDate > normalizeCalendarDate(this.maxDate)) return true;
+		return this.disabledDateKeys.has(getCalendarDateKey(normalizedDate));
 	};
 
-	goPrevMonth = (): void => {
-		this.date = new Date(this.date.getFullYear(), this.date.getMonth() - 1, 1);
-	};
+	getCalendarRows = (date: Date = this.date, isNextMonth = false): Row<E>[] => {
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const daysInPreviousMonth = new Date(year, month, 0).getDate();
+		const nativeFirstDay = new Date(year, month, 1).getDay();
+		const firstDay = this.weekStartsOnMonday
+			? nativeFirstDay === 0
+				? 6
+				: nativeFirstDay - 1
+			: nativeFirstDay;
+		const weekCount = Math.ceil((firstDay + daysInMonth) / 7);
+		const tabStopDate = this.getTabStopDate();
+		const rows: Row<E>[] = [];
 
-	goToToday = (): void => {
-		this.date = this.today;
-	};
+		for (let rowIndex = 0; rowIndex < weekCount; rowIndex += 1) {
+			const row: Row<E> = { cells: [], events: [] };
+			for (let columnIndex = 0; columnIndex < 7; columnIndex += 1) {
+				const calendarIndex = rowIndex * 7 + columnIndex;
+				const monthDay = calendarIndex - firstDay + 1;
+				const isInPreviousMonth = monthDay < 1;
+				const isInNextMonth = monthDay > daysInMonth;
+				const cellDate = isInPreviousMonth
+					? createCalendarDate(year, month - 1, daysInPreviousMonth + monthDay)
+					: isInNextMonth
+						? createCalendarDate(year, month + 1, monthDay - daysInMonth)
+						: createCalendarDate(year, month, monthDay);
+				const dateKey = getCalendarDateKey(cellDate);
+				const selected = this.isDateSelected(cellDate);
+				const isStartOfRange =
+					this.type === 'calendar-range' &&
+					!!this.rangeStart &&
+					isSameCalendarDay(cellDate, this.rangeStart);
+				const isEndOfRange =
+					this.type === 'calendar-range' &&
+					!!this.rangeEnd &&
+					isSameCalendarDay(cellDate, this.rangeEnd);
+				const disabled = this.isDateDisabled(cellDate);
+				const events = this.eventsMap.get(dateKey) ?? [];
+				const visible =
+					this.view === 'single' || (isNextMonth ? !isInPreviousMonth : !isInNextMonth);
 
-	/**
-	 * Normalizes a date to noon for consistent handling.
-	 * 
-	 * **Timezone Note:** This method creates a new date at noon (12:00:00) local time,
-	 * which prevents timezone boundary issues when dates are converted between timezones.
-	 * 
-	 * @param date - The date to clean/normalize
-	 * @returns A new Date object set to noon on the same calendar day
-	 */
-	cleanDate = (date: Date): Date => {
-		return normalizeToNoon(date);
-	};
-
-	/**
-	 * Sets up click handling for calendar cell selection.
-	 * 
-	 * **Timezone Handling:**
-	 * - Parses YYYY-MM-DD format from data-date attribute (avoids ISO string timezone issues)
-	 * - Creates date at noon using extracted year/month/day components
-	 * - All returned dates are at noon, ensuring consistent behavior
-	 * - Range comparisons normalize dates to noon before comparing
-	 * 
-	 * @param node - The HTML element containing the calendar grid
-	 * @returns Cleanup function for the event listener
-	 */
-	calendar = (node: HTMLElement) => {
-		untrack(() => {
-			const onClick = (e: PointerEvent) => {
-				const maybeCell = e
-					.composedPath()
-					.find(
-						(node: EventTarget) => node instanceof HTMLElement && node.getAttribute('data-date')
-					);
-
-				if (!maybeCell || !(maybeCell instanceof HTMLElement)) {
-					return;
-				}
-
-				if (maybeCell.getAttribute('data-disabled')) {
-					return;
-				}
-
-				// Parse YYYY-MM-DD format and create date at noon
-				// This format avoids timezone conversion issues compared to ISO strings
-				const dateString = maybeCell.getAttribute('data-date')!;
-				const [year, month, day] = dateString.split('-').map(Number);
-				const date = createDateAtNoon(year, month - 1, day);
-
-				if (this.type === 'calendar') {
-					this.rangeStart = date;
-					(this.onChange as (value: Date | null) => void)?.(date);
-				} else if (this.type === 'calendar-range') {
-					if (this.rangeStart && this.rangeEnd) {
-						this.rangeStart = date;
-						this.rangeEnd = null;
-					} else if (this.rangeStart) {
-						// Normalize dates to noon for comparison
-						const normalizedDate = normalizeToNoon(date);
-						const normalizedRangeStart = normalizeToNoon(this.rangeStart);
-						if (normalizedDate < normalizedRangeStart) {
-							this.rangeEnd = this.rangeStart;
-							this.rangeStart = date;
-						} else {
-							this.rangeEnd = date;
-						}
-					} else {
-						this.rangeStart = date;
+				row.events.push(...events);
+				row.cells.push({
+					isStartOfRange,
+					isEndOfRange,
+					visible,
+					isInNextMonth,
+					isInRange: this.isDateInRange(cellDate),
+					isInPreviousMonth,
+					selected,
+					inMonth: !isInPreviousMonth && !isInNextMonth,
+					day: cellDate.getDate(),
+					date: cellDate,
+					isToday: isSameCalendarDay(cellDate, this.today),
+					events,
+					corner: null,
+					disabled,
+					attributes: {
+						'data-date': dateKey,
+						'data-in-range': this.isDateInRange(cellDate) || undefined,
+						'data-in-month': !isInPreviousMonth && !isInNextMonth,
+						'data-disabled': disabled || undefined,
+						'data-is-today': isSameCalendarDay(cellDate, this.today) || undefined,
+						'data-selected': selected || undefined,
+						'data-start-of-range': isStartOfRange || undefined,
+						'data-end-of-range': isEndOfRange || undefined,
+						'data-is-past': cellDate < this.today || undefined,
+						'aria-selected': selected,
+						'aria-current': isSameCalendarDay(cellDate, this.today) ? 'date' : undefined,
+						tabindex:
+							!disabled && visible && !!tabStopDate && isSameCalendarDay(cellDate, tabStopDate)
+								? 0
+								: -1,
+						disabled: disabled || undefined
 					}
-					(this.onChange as (value: [Date | null, Date | null] | null) => void)?.([
-						this.rangeStart || null,
-						this.rangeEnd || null
-					]);
-				}
+				});
+			}
+			rows.push(row);
+		}
+
+		return rows;
+	};
+
+	private commitValue(value: CalendarValue<T>) {
+		this.value = value;
+		this.onChange?.(value);
+	}
+
+	selectDate = (date: Date) => {
+		if (this.isDateDisabled(date)) return;
+		const selectedDate = normalizeCalendarDate(date);
+		this.focusedDate = selectedDate;
+
+		if (this.type === 'calendar') {
+			this.commitValue(selectedDate as CalendarValue<T>);
+			return;
+		}
+
+		if (this.type === 'calendar-multiple') {
+			const currentValues = this.multipleValues;
+			const isSelected = currentValues.some((value) => isSameCalendarDay(value, selectedDate));
+			const nextValues = isSelected
+				? currentValues.filter((value) => !isSameCalendarDay(value, selectedDate))
+				: [...currentValues, selectedDate].sort(
+						(first, second) => first.getTime() - second.getTime()
+					);
+			this.commitValue(nextValues as CalendarValue<T>);
+			return;
+		}
+
+		let nextRange: [Date | null, Date | null];
+		if (!this.rangeStart || this.rangeEnd) {
+			nextRange = [selectedDate, null];
+		} else if (selectedDate < normalizeCalendarDate(this.rangeStart)) {
+			nextRange = [selectedDate, this.rangeStart];
+		} else {
+			nextRange = [this.rangeStart, selectedDate];
+		}
+		this.commitValue(nextRange as CalendarValue<T>);
+	};
+
+	goNextMonth = () => {
+		this.goToMonth(this.currentYear, this.currentMonth + 1);
+	};
+
+	goPrevMonth = () => {
+		this.goToMonth(this.currentYear, this.currentMonth - 1);
+	};
+
+	goToMonth = (year: number, month: number) => {
+		this.date = createCalendarDate(year, month, 1);
+	};
+
+	goToToday = () => {
+		this.date = createCalendarDate(this.today.getFullYear(), this.today.getMonth(), 1);
+		this.focusedDate = this.today;
+	};
+
+	goToDate = (date: Date) => {
+		const normalizedDate = normalizeCalendarDate(date);
+		this.date = createCalendarDate(normalizedDate.getFullYear(), normalizedDate.getMonth(), 1);
+		this.focusedDate = normalizedDate;
+	};
+
+	cleanDate = normalizeCalendarDate;
+
+	private getEnabledDate(targetDate: Date, direction: number) {
+		let date = normalizeCalendarDate(targetDate);
+		for (let attempts = 0; attempts < 3660; attempts += 1) {
+			if (!this.isDateDisabled(date)) return date;
+			date = addDays(date, direction);
+			if (this.minDate && date < normalizeCalendarDate(this.minDate)) return null;
+			if (this.maxDate && date > normalizeCalendarDate(this.maxDate)) return null;
+		}
+		return null;
+	}
+
+	private moveFocus(node: HTMLElement, targetDate: Date, direction: number) {
+		const enabledDate = this.getEnabledDate(targetDate, direction);
+		if (!enabledDate) return;
+
+		this.focusedDate = enabledDate;
+		if (!this.isInVisibleMonths(enabledDate)) {
+			this.date = createCalendarDate(enabledDate.getFullYear(), enabledDate.getMonth(), 1);
+		}
+
+		requestAnimationFrame(() => {
+			node
+				.querySelector<HTMLButtonElement>(`[data-date="${getCalendarDateKey(enabledDate)}"]`)
+				?.focus();
+		});
+	}
+
+	calendar = (node: HTMLElement) =>
+		untrack(() => {
+			const handleClick = (event: MouseEvent) => {
+				const cell = getElementWithDate(event);
+				if (!cell || cell.hasAttribute('disabled')) return;
+				this.selectDate(parseCalendarDateKey(cell.dataset.date!));
 			};
 
-			return on(node, 'click', onClick);
+			const handleFocus = (event: FocusEvent) => {
+				const cell = getElementWithDate(event);
+				if (!cell?.dataset.date) return;
+				this.focusedDate = parseCalendarDateKey(cell.dataset.date);
+			};
+
+			const handleKeydown = (event: KeyboardEvent) => {
+				const cell = getElementWithDate(event);
+				if (!cell?.dataset.date) return;
+				const currentDate = parseCalendarDateKey(cell.dataset.date);
+				const isRtl = getComputedStyle(node).direction === 'rtl';
+				let targetDate: Date | null = null;
+				let direction = 1;
+
+				switch (event.key) {
+					case 'ArrowLeft':
+						direction = isRtl ? 1 : -1;
+						targetDate = addDays(currentDate, direction);
+						break;
+					case 'ArrowRight':
+						direction = isRtl ? -1 : 1;
+						targetDate = addDays(currentDate, direction);
+						break;
+					case 'ArrowUp':
+						direction = -1;
+						targetDate = addDays(currentDate, -7);
+						break;
+					case 'ArrowDown':
+						targetDate = addDays(currentDate, 7);
+						break;
+					case 'Home': {
+						direction = -1;
+						const weekStart = this.weekStartsOnMonday ? 1 : 0;
+						const offset = (currentDate.getDay() - weekStart + 7) % 7;
+						targetDate = addDays(currentDate, -offset);
+						break;
+					}
+					case 'End': {
+						const weekStart = this.weekStartsOnMonday ? 1 : 0;
+						const offset = (currentDate.getDay() - weekStart + 7) % 7;
+						targetDate = addDays(currentDate, 6 - offset);
+						break;
+					}
+					case 'PageUp':
+						direction = -1;
+						targetDate = event.shiftKey ? addYears(currentDate, -1) : addMonths(currentDate, -1);
+						break;
+					case 'PageDown':
+						targetDate = event.shiftKey ? addYears(currentDate, 1) : addMonths(currentDate, 1);
+						break;
+				}
+
+				if (!targetDate) return;
+				event.preventDefault();
+				this.moveFocus(node, targetDate, direction);
+			};
+
+			const removeClick = on(node, 'click', handleClick);
+			const removeFocus = on(node, 'focusin', handleFocus);
+			const removeKeydown = on(node, 'keydown', handleKeydown);
+
+			return () => {
+				removeClick();
+				removeFocus();
+				removeKeydown();
+			};
 		});
-	};
 }

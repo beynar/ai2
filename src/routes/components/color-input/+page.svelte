@@ -21,13 +21,18 @@
 >
 	<ComponentCard
 		description="A color field with a swatch and picker popover"
-		code={`<ColorInput label="Brand color" bind:value={color} />`}
+		code={`<ColorInput
+	label="Brand color"
+	description="Used for buttons and links across the app."
+	bind:value={color}
+/>`}
 	>
 		<div class="w-full max-w-md">
-			<ColorInput label="Brand color" bind:value={color} />
-			{#if color}
-				<p class="text-foreground-muted mt-2 text-xs">Value: {color}</p>
-			{/if}
+			<ColorInput
+				label="Brand color"
+				description="Used for buttons and links across the app."
+				bind:value={color}
+			/>
 		</div>
 	</ComponentCard>
 

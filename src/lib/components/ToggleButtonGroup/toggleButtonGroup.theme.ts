@@ -5,11 +5,7 @@ const defaultToggleButtonGroup = cva({
 	base: 'flex items-center',
 	variants: {
 		joined: {
-			// Segmented control, nova-style: square inner corners, drop the left border of
-			// non-first segments (single 1px divider for outline, no background overlap for
-			// tinted variants), tighten item padding, lift the focused segment's ring, and
-			// disable the per-button press-translate.
-			true: 'first-child:rounded-r-none last-child:rounded-l-none not-first-not-last-child:rounded-none not-first-child:border-l-0 [&>button]:px-2 [&>*:focus-visible]:z-10 [&>*]:active:translate-y-0',
+			true: 'first-child:rounded-r-none last-child:rounded-l-none not-first-not-last-child:rounded-none not-first-child:-ml-px [&>*:focus-visible]:z-10 [&>*]:active:translate-y-0',
 			false: 'gap-1'
 		}
 	},

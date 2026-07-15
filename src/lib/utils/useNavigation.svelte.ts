@@ -219,20 +219,11 @@ export const useNavigation = (opts: NavigationOptions) => {
 
 	// Clear focus state when container loses focus
 	const clearFocus = () => {
-		// Set focusedIndex to null
 		focusedIndex = null;
 		focusSource = null;
 
-		// Clear all focus attributes
-		items.forEach((item) => {
-			item.setAttribute('tabindex', '-1');
-			item.removeAttribute('data-highlighted');
-		});
-
-		// Clear aria-activedescendant from container
-		if (containerRef) {
-			containerRef.removeAttribute('aria-activedescendant');
-		}
+		// Restore the default roving tab stop while removing the active highlight.
+		updateAriaAttributes(null);
 	};
 
 	// Handle item hover - only set visual focus (no DOM focus yet)
@@ -469,6 +460,16 @@ export const useNavigation = (opts: NavigationOptions) => {
 				itemsSet.add(node);
 
 				// ARIA attributes are now batch-updated via $effect
+				const handleFocus = () => {
+					const index = items.findIndex((item) => item === node);
+					if (index === -1 || isItemDisabled(node)) return;
+
+					focusSource = 'keyboard';
+					focusedIndex = index;
+					updateAriaAttributes(index);
+				};
+
+				const focusCleanup = on(node, 'focus', handleFocus);
 
 				// Handle hover - only move focus if enabled
 				const handleHover = () => {
@@ -482,6 +483,7 @@ export const useNavigation = (opts: NavigationOptions) => {
 				return () => {
 					// Remove item from set
 					itemsSet.delete(node);
+					focusCleanup();
 					hoverCleanup();
 				};
 			});

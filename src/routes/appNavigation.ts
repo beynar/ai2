@@ -49,7 +49,9 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/button-group', text: 'Button group' },
 			{ href: '/components/segmented-control', text: 'Segmented control' },
 			{ href: '/components/toggle-button', text: 'Toggle button' },
-			{ href: '/components/toggle-button-group', text: 'Toggle group' }
+			{ href: '/components/toggle-button-group', text: 'Toggle group' },
+			{ href: '/components/toggle-menu', text: 'Toggle menu' },
+			{ href: '/components/selection-menu', text: 'Selection menu' }
 		]
 	},
 	{
@@ -62,10 +64,10 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/color-picker', text: 'Color picker' },
 			{ href: '/components/combobox', text: 'Combobox' },
 			{ href: '/components/date-input', text: 'Date input' },
+			{ href: '/components/date-selector', text: 'Date selector' },
 			{ href: '/components/file', text: 'File' },
 			{ href: '/components/form', text: 'Form' },
 			{ href: '/components/key-value-input', text: 'Key value input' },
-			{ href: '/components/mini-calendar', text: 'Mini calendar' },
 			{ href: '/components/multi-step-form', text: 'Multi-step form' },
 			{ href: '/components/number-input', text: 'Number input' },
 			{ href: '/components/password', text: 'Password' },
@@ -92,6 +94,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/chip', text: 'Chip' },
 			{ href: '/components/kbd', text: 'Kbd' },
 			{ href: '/components/metadata-list', text: 'Metadata list' },
+			{ href: '/components/mini-calendar', text: 'Mini calendar' },
 			{ href: '/components/rating', text: 'Rating' },
 			{ href: '/components/sortable-list', text: 'Sortable list' },
 			{ href: '/components/stat', text: 'Stat' },
@@ -147,6 +150,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/dialog', text: 'Dialog' },
 			{ href: '/components/hover-card', text: 'Hover card' },
 			{ href: '/components/link-preview', text: 'Link preview' },
+			{ href: '/components/overlay', text: 'Overlay' },
 			{ href: '/components/popover', text: 'Popover' },
 			{ href: '/components/tooltip', text: 'Tooltip' }
 		]
@@ -179,6 +183,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 	{
 		label: 'Utilities',
 		links: [
+			{ href: '/utilities/hitbox', text: 'Hitbox' },
 			{ href: '/utilities/raised', text: 'Raised' },
 			{ href: '/utilities/scroll-fade', text: 'Scroll fade' },
 			{ href: '/utilities/shimmer', text: 'Shimmer' }

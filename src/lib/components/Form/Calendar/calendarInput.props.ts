@@ -3,32 +3,25 @@ import type { InferComponentTheme } from '$lib/utils/cva/index.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { ButtonProps } from '$lib/components/Button/index.js';
 import type { Snippet } from 'svelte';
-import type { Event, CalendarType } from './useCalendar.svelte.js';
+import type { Event, CalendarType, CalendarValue } from './useCalendar.svelte.js';
 import type { calendarTheme } from './calendar.theme.js';
 import type { ChipProps } from '$lib/components/Chip/chip.props.js';
 
 // Re-export types and values from useCalendar
-export type { Event, Cell, CalendarType } from './useCalendar.svelte.js';
+export type { Event, Cell, CalendarType, CalendarValue } from './useCalendar.svelte.js';
 export { CalendarState } from './useCalendar.svelte.js';
 
-export type CalendarPrimitiveProps<E extends Event, T extends CalendarType> = BaseCalendarProps<E> &
-	(T extends 'calendar'
-		? {
-				/** Sets the input mode to single-date selection. */
-				type: 'calendar';
-				/** Currently selected date, or null when none is chosen. */
-				value?: Date | null;
-				/** Called when the selected date changes. */
-				onChange?: (value: Date | null) => void;
-			}
-		: {
-				/** Sets the input mode to date-range selection. */
-				type: 'calendar-range';
-				/** Selected start and end dates, or null when the range is cleared. */
-				value?: [Date | null, Date | null] | null;
-				/** Called when the selected date range changes. */
-				onChange?: (value: [Date | null, Date | null] | null) => void;
-			});
+export type CalendarPrimitiveProps<
+	E extends Event,
+	T extends CalendarType
+> = BaseCalendarProps<E> & {
+	/** Selection model used by the calendar. */
+	type: T;
+	/** Current selection for the chosen calendar type. */
+	value?: CalendarValue<T>;
+	/** Called whenever the calendar selection changes. */
+	onChange?: (value: CalendarValue<T>) => void;
+};
 
 export type BaseCalendarProps<E extends Event> = WithSlot<
 	{
@@ -36,11 +29,17 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 		events?: E[];
 		/** When true, the week starts on Monday instead of Sunday. */
 		weekStartsOnMonday?: boolean;
+		/** Locale used for month, weekday, and accessible day labels. */
+		locale?: string;
+		/** Accessible label applied to the calendar group. Visible month grids use their month and year. */
+		ariaLabel?: string;
+		/** Disables navigation, focus, and date selection. */
+		disabled?: boolean;
 		/** Earliest date that can be selected. */
 		minDate?: Date;
 		/** Latest date that can be selected. */
 		maxDate?: Date;
-		/** Shows one month or two months side by side. */
+		/** Prefers two months side by side, falling back to one below 576px container width. */
 		view?: 'single' | 'double';
 		/** Additional CSS classes for the calendar container. */
 		class?: string;
@@ -63,7 +62,7 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 					next: ButtonProps;
 			  }
 			| ButtonProps;
-		/** Called after month navigation with the newly visible month range. */
+		/** Called after the visible month changes through pointer, keyboard, or controlled-value navigation. */
 		onViewChange?: (params: {
 			/** Year of the first visible month. */
 			startYear: number;

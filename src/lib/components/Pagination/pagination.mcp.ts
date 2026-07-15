@@ -119,6 +119,8 @@ Useful state fields and methods:
 <Pagination variant="none" bind:page totalPages={10} />
 \`\`\`
 
+Dot controls keep their compact visual marker while the shared \`Hitbox\` utility expands each pointer target. The list reserves the same dimensions, so adjacent page targets never overlap.
+
 ### Windowed Page Buttons
 \`\`\`svelte
 <Pagination bind:page totalPages={40} siblingCount={0} boundaryCount={1} size="small" />
@@ -208,7 +210,7 @@ The theme object contains:
 - **list**: list of controls
 - **item**: list item wrapper
 - **control**: page and icon controls
-- **dot**: dot controls used by the \`dots\` variant
+- **dot**: visual dot controls used by the \`dots\` variant; pointer target sizing belongs to \`Hitbox\`
 - **icon**: icon wrapper inside icon controls
 - **ellipsis**: gap indicator
 - **summary**: item range summary

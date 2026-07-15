@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { Maskito } from '@maskito/core';
 	import { maskitoDateOptionsGenerator } from '@maskito/kit';
-	import CalendarPrimitive from '../Calendar/CalendarPrimitive.svelte';
+	import DateSelector from '../DateSelector/DateSelector.svelte';
 	import Field from '../Field/Field.svelte';
 	import FieldActionButton from '../Field/FieldActionButton.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import { calendarBlankIcon } from '../../Icons/calendarBlank.js';
-	import Popover from '../../Popover/Popover.svelte';
 	import type { PopoverState } from '../../Popover/popover.state.svelte.js';
 	import type { DateInputProps } from './dateInput.props.js';
 	import { useDateInputTheme } from './dateInput.theme.js';
@@ -19,6 +18,13 @@
 		placeholder = format,
 		locale,
 		separator,
+		presets = [],
+		disabledDates = [],
+		minDate,
+		maxDate,
+		calendarView = 'single',
+		mobileSheet = false,
+		closeOnSelect = false,
 		required = false,
 		theme,
 		disabled,
@@ -32,7 +38,6 @@
 
 	const id = $props.id();
 	const dateSeparator = $derived(separator || '/');
-	const calendarDisabledDates: (Date | [Date, Date])[] = [];
 	let isCalendarOpen = $state(false);
 
 	const field = createFieldState({
@@ -198,11 +203,10 @@
 		}
 	};
 
-	const handleCalendarChange = (date: Date | null, popover: PopoverState) => {
+	const handleCalendarChange = (date: Date | null) => {
 		field.value = date;
 		field.focused = false;
 		syncInputValue(date);
-		popover.close();
 	};
 
 	$effect(() => {
@@ -212,24 +216,25 @@
 	});
 </script>
 
-<Popover
+<DateSelector
 	id={`${id}-calendar-popover`}
 	bind:open={isCalendarOpen}
 	position="bottom-start"
-	size="normal"
+	mode="date"
+	value={field.value}
+	{presets}
+	{disabledDates}
+	{minDate}
+	{maxDate}
+	view={calendarView}
+	{mobileSheet}
+	{closeOnSelect}
+	{locale}
+	disabled={field.disabled}
+	calendarLabel="Choose date"
+	onChange={handleCalendarChange}
 	class={classes.popover({ class: theme?.popover?.base })}
 >
-	{#snippet children(popover: PopoverState)}
-		<div id={`${id}-calendar`} aria-label="Choose date">
-			<CalendarPrimitive
-				type="calendar"
-				value={field.value}
-				disabledDates={calendarDisabledDates}
-				onChange={(date) => handleCalendarChange(date, popover)}
-			/>
-		</div>
-	{/snippet}
-
 	{#snippet trigger(popover: PopoverState)}
 		<Field
 			{field}
@@ -287,4 +292,4 @@
 			/>
 		</Field>
 	{/snippet}
-</Popover>
+</DateSelector>

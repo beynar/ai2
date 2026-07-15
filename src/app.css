@@ -5,12 +5,9 @@
 	default: true;
 	spacing: normal;
 	colorscheme: light;
-
 	background: #f7fafa;
-
 	foreground: #1b1d29;
 	primary: #6d78d5;
-	secondary: #eceef4;
 	danger: #dc2626;
 	success: #16a34a;
 	warning: #d97706;
@@ -23,7 +20,6 @@
 	background: #15161c;
 	foreground: #ffffff;
 	primary: #6b77ff;
-	secondary: #272a3a;
 	danger: #7f1d1d;
 	success: #22c55e;
 	warning: #f5a623;
