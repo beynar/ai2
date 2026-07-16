@@ -97,6 +97,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/avatar', text: 'Avatar' },
 			{ href: '/components/avatar-group', text: 'Avatar group' },
 			{ href: '/components/chip', text: 'Chip' },
+			{ href: '/components/kanban', text: 'Kanban' },
 			{ href: '/components/kbd', text: 'Kbd' },
 			{ href: '/components/metadata-list', text: 'Metadata list' },
 			{ href: '/components/mini-calendar', text: 'Mini calendar' },
