@@ -1,4 +1,4 @@
-import type { Sizes, Colors } from '$lib/types/theme.js';
+import type { Sizes, Colors, Density } from '$lib/types/theme.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { MenuOptionThemeProps } from './menuOption.theme.js';
@@ -16,10 +16,16 @@ export type MenuOptionProps = WithAttachments<
 			 */
 			color?: Colors;
 			/**
-			 * The size of the menu option.
+			 * The size of the menu option — scales typography and icons only.
 			 * @default 'normal'
 			 */
 			size?: Sizes;
+			/**
+			 * Spacing density of the row — owns paddings, gaps and min-height.
+			 * 'small' for dense menus, 'large' for roomy ones. Combine freely with size.
+			 * @default 'normal'
+			 */
+			density?: Density;
 			/**
 			 * URL to navigate to. If provided, renders as an anchor element.
 			 */

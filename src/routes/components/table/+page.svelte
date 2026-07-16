@@ -5,6 +5,15 @@
 	import { Button } from '$lib/components/Button/index.js';
 	import { TextInput } from '$lib/components/Form/TextInput/index.js';
 	import type { TableCell, TableRow } from '$lib/components/Table/index.js';
+	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
+	import type { Density } from '$lib/types/theme.js';
+
+	const densitySegments = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
+	let tableDensity = $state<Density>('normal');
 
 	// Simplified syntax with strings
 	const basicHeader = {
@@ -162,6 +171,23 @@
 	{#snippet examples()}
 		<ComponentCard description="Simple table with header and rows using simplified string syntax.">
 			<Table header={basicHeader} items={basicRows} />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Density"
+			description="density scales cell paddings and row heights — small for dense data grids, large for roomy detail surfaces."
+			code={`<SegmentedControl items={densities} bind:value={density} />
+<Table {density} header={basicHeader} items={basicRows} />`}
+		>
+			<div class="flex w-full flex-col items-center gap-5">
+				<SegmentedControl
+					items={densitySegments}
+					bind:value={tableDensity}
+					size="small"
+					ariaLabel="Table density"
+				/>
+				<Table density={tableDensity} header={basicHeader} items={basicRows} />
+			</div>
 		</ComponentCard>
 
 		<ComponentCard description="Demonstrates using strings, snippets, and full objects for cells.">

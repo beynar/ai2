@@ -28,16 +28,17 @@ The Accordion component provides an interactive collapsible container for organi
 
 ### Layout Props
 - **variant**: 'classic' | 'card' | 'outlined' (default: 'classic')
-  - classic: Traditional accordion with borders
-  - card: Card-style design
-  - outlined: Each item has visible borders
+  - classic: flat rows separated by a muted border (nova/shadcn look) — the title underlines on hover, the chevron rotates
+  - card: the rows wrapped in a raised surface (rows inset with px-4)
+  - outlined: the rows wrapped in a muted border (rows inset with px-4)
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
-  - small: Compact accordion items
-  - normal: Standard accordion items
-  - large: Larger accordion items
+  - Scales typography only: title, description and content text sizes plus the icon size. Spacing is controlled by density.
 
-- **splitted**: boolean (default: false) - Adds spacing between accordion items
+- **density**: 'small' | 'normal' | 'large' (default: 'normal')
+  - Scales paddings and gaps only: trigger vertical padding, content bottom padding, header gap, and the gap between splitted items. Combine freely with size.
+
+- **splitted**: boolean (default: false) - Breaks the list into one surface per item with a gap: each item gets its own raised card (card), its own border (outlined), or its own underline (classic)
 
 ### Event Props
 - **onToggle**: (options: { item: Item; index: number; open: boolean }) => void - Callback when item is toggled
@@ -53,7 +54,7 @@ The Accordion component provides an interactive collapsible container for organi
 - **oneAtATime**: boolean (default: true) - Whether only one item can be expanded at a time
 
 ### Visual Props
-- **icon**: 'chevron' | 'math' | Snippet | false (default: 'math')
+- **icon**: 'chevron' | 'math' | Snippet | false (default: 'chevron')
   - chevron: Down chevron that rotates
   - math: Plus/minus icon
   - Custom snippet for custom icons
@@ -147,14 +148,17 @@ The Accordion component provides an interactive collapsible container for organi
 	];
 </script>
 
-<!-- Classic variant -->
-<Accordion variant="classic" {items} />
+<!-- Default flat look -->
+<Accordion {items} />
 
-<!-- Card variant -->
+<!-- Raised card container -->
 <Accordion variant="card" {items} />
 
-<!-- Outlined variant -->
+<!-- Bordered container -->
 <Accordion variant="outlined" {items} />
+
+<!-- One surface per item -->
+<Accordion variant="card" splitted {items} />
 \`\`\`
 
 ### Different Icons
@@ -198,25 +202,6 @@ The Accordion component provides an interactive collapsible container for organi
 	items={faqs}
 	titleKey="question"
 	contentKey="answer"
-/>
-\`\`\`
-
-### Splitted Layout
-
-\`\`\`svelte
-<script>
-	import { Accordion } from 'svelai/accordion';
-	
-	let items = [
-		{ title: 'Section 1', content: 'Content 1' },
-		{ title: 'Section 2', content: 'Content 2' }
-	];
-</script>
-
-<Accordion 
-	{items}
-	splitted
-	variant="outlined"
 />
 \`\`\`
 
@@ -300,93 +285,80 @@ The theme object contains the following parts:
 **root**:
 - base: Base classes for main container
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Spacing between items
-  - variant: 'classic' | 'card' | 'outlined' - Visual style variant
-  - splitted: boolean - Whether items are visually separated
+  - size: 'small' | 'normal' | 'large'
+  - density: 'small' | 'normal' | 'large' - Gap between splitted items (via compounds)
+  - variant: 'classic' | 'card' | 'outlined' - Container surface (raised / bordered / none)
+  - splitted: boolean - Gap layout for per-item surfaces
 
 **item**:
-- base: Base classes for individual items
+- base: Base classes for individual items (muted separator when not splitted; own surface when splitted)
 - Variants:
   - size: 'small' | 'normal' | 'large' - Item size
-  - variant: 'classic' | 'card' | 'outlined' - Item style variant
-  - splitted: boolean - Separation styling
+  - density: 'small' | 'normal' | 'large'
+  - variant: 'classic' | 'card' | 'outlined' - Per-item surface when splitted
+  - splitted: boolean
   - expanded: boolean - Expanded state styling
 
 **trigger**:
 - base: Base classes for trigger button
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Trigger size
-  - variant: 'classic' | 'card' | 'outlined' - Variant styling
-  - splitted: boolean - Border radius based on splitting
+  - size: 'small' | 'normal' | 'large'
+  - density: 'small' | 'normal' | 'large' - Vertical padding
+  - variant: 'classic' | 'card' | 'outlined' - Horizontal inset on contained variants
 
 **header**:
 - base: Base classes for header section
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Gap between title and description
-  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+  - size: 'small' | 'normal' | 'large'
+  - density: 'small' | 'normal' | 'large' - Gap between title and description
 
 **title**:
-- base: Base classes for title text
+- base: Base classes for title text (underlines on trigger hover)
 - Variants:
   - size: 'small' | 'normal' | 'large' - Text size
-  - variant: 'classic' | 'card' | 'outlined' - Variant styling
 
 **description**:
 - base: Base classes for description text
 - Variants:
   - size: 'small' | 'normal' | 'large' - Text size
-  - variant: 'classic' | 'card' | 'outlined' - Variant styling
 
 **icon**:
-- base: Base classes for expand/collapse icon
+- base: Base classes for expand/collapse icon (muted, rotates for the chevron)
 - Variants:
   - size: 'small' | 'normal' | 'large' - Icon size
-  - variant: 'classic' | 'card' | 'outlined' - Variant styling
 
 **content**:
 - base: Base classes for content panel
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Text size and padding
-  - variant: 'classic' | 'card' | 'outlined' - Variant styling
+  - size: 'small' | 'normal' | 'large' - Text size
+  - density: 'small' | 'normal' | 'large' - Bottom padding
+  - variant: 'classic' | 'card' | 'outlined' - Horizontal inset on contained variants
 
 ### Usage Examples
 
-**Basic Theme Override**:
+**Bordered look (composition)**:
 \`\`\`svelte
-<Accordion 
+<Accordion
   items={items}
+  class="rounded-lg border border-background-muted"
   theme={{
-    root: {
-      base: 'rounded-lg border-2',
-      variant: {
-        outlined: 'border-primary'
-      }
-    },
-    trigger: {
-      base: 'hover:bg-primary/10'
-    }
+    item: { base: 'px-4' },
+    content: { base: 'px-4' }
   }}
 />
 \`\`\`
 
-**Card Variant Customization**:
+**Basic Theme Override**:
 \`\`\`svelte
-<Accordion 
-  variant="card"
-  splitted
+<Accordion
   items={items}
   theme={{
+    trigger: {
+      base: 'hover:bg-primary/10'
+    },
     item: {
-      variant: {
-        card: 'rounded-xl shadow-md hover:shadow-lg'
-      },
       expanded: {
         true: 'bg-primary/5'
-      }
-    },
-    title: {
-      size: {
-        large: 'text-xl font-bold'
       }
     }
   }}
@@ -397,17 +369,11 @@ The theme object contains the following parts:
 \`\`\`svelte
 <script>
   import { setAccordionTheme } from 'svelai/accordion';
-  
+
   setAccordionTheme({
-    root: {
-      base: 'gap-4',
-      variant: {
-        card: 'rounded-lg'
-      }
-    },
     trigger: {
       base: 'transition-colors',
-      size: {
+      density: {
         normal: 'px-4 py-3'
       }
     }

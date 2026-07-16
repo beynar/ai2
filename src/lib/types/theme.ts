@@ -68,4 +68,11 @@ export type DesignSystem = {
 
 export type Sizes = 'small' | 'normal' | 'large';
 
+/**
+ * Spacing density of a component: paddings and gaps, independent of the
+ * typography scale (`Sizes`) but sharing its vocabulary. 'small' for dense
+ * dashboards, 'normal' for everyday UI, 'large' for roomy detail surfaces.
+ */
+export type Density = 'small' | 'normal' | 'large';
+
 export type Easing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';

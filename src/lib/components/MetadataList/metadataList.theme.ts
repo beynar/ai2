@@ -1,31 +1,35 @@
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
+// `size` scales typography and icons only; `density` owns every gap (section,
+// row, label/value, chip-list). 'normal' density matches the previous
+// normal-size spacing, 'small' the previous small, 'large' the
+// previous large — defaults render identically to before the split.
 const defaultRoot = cva({
 	base: 'flex flex-col',
 	variants: {
-		size: {
+		density: {
 			small: 'gap-2',
 			normal: 'gap-3',
 			large: 'gap-4'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		density: 'normal'
 	}
 });
 
 const defaultHeader = cva({
 	base: 'flex flex-col',
 	variants: {
-		size: {
+		density: {
 			small: 'gap-0.5',
 			normal: 'gap-1',
 			large: 'gap-1'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		density: 'normal'
 	}
 });
 
@@ -60,28 +64,28 @@ const defaultDescription = cva({
 const defaultList = cva({
 	base: 'grid',
 	variants: {
-		size: {
+		density: {
 			small: 'gap-x-4 gap-y-2',
 			normal: 'gap-x-6 gap-y-2.5',
 			large: 'gap-x-8 gap-y-3'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		density: 'normal'
 	}
 });
 
 const defaultItem = cva({
 	base: 'flex items-start',
 	variants: {
-		size: {
+		density: {
 			small: 'gap-2',
 			normal: 'gap-3',
 			large: 'gap-4'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		density: 'normal'
 	}
 });
 
@@ -89,13 +93,19 @@ const defaultKey = cva({
 	base: 'flex items-center w-[35%] min-w-24 shrink-0 text-foreground-muted',
 	variants: {
 		size: {
-			small: 'gap-1.5 text-xs',
-			normal: 'gap-2 text-sm',
-			large: 'gap-2 text-base'
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
+		},
+		density: {
+			small: 'gap-1.5',
+			normal: 'gap-2',
+			large: 'gap-2'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		density: 'normal'
 	}
 });
 
@@ -134,14 +144,14 @@ const defaultLink = cva({
 const defaultChips = cva({
 	base: 'flex flex-wrap',
 	variants: {
-		size: {
+		density: {
 			small: 'gap-1',
 			normal: 'gap-1.5',
 			large: 'gap-2'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		density: 'normal'
 	}
 });
 
@@ -149,13 +159,19 @@ const defaultToggle = cva({
 	base: 'inline-flex items-center self-start cursor-pointer rounded text-foreground-muted outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50',
 	variants: {
 		size: {
-			small: 'gap-1 text-xs',
-			normal: 'gap-1.5 text-sm',
-			large: 'gap-2 text-base'
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
+		},
+		density: {
+			small: 'gap-1',
+			normal: 'gap-1.5',
+			large: 'gap-2'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		density: 'normal'
 	}
 });
 

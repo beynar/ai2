@@ -3,6 +3,8 @@
 	import DocPage from '../../DocPage.svelte';
 	import MetadataList from '$lib/components/MetadataList/MetadataList.svelte';
 	import type { MetadataListItem } from '$lib/components/MetadataList/metadataList.props.js';
+	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
+	import type { Density } from '$lib/types/theme.js';
 	import { userIcon } from '$lib/components/Icons/user.js';
 	import { calendarIcon } from '$lib/components/Icons/calendar.js';
 	import { tagIcon } from '$lib/components/Icons/tag.js';
@@ -43,6 +45,13 @@
 		{ key: 'License', value: 'MIT' },
 		{ key: 'Version', value: '2.4.1' }
 	];
+
+	const densitySegments = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
+	let listDensity = $state<Density>('normal');
 
 	const ownerItems: MetadataListItem[] = [
 		{ key: 'Owner', value: 'Alice Johnson' },
@@ -139,7 +148,7 @@
 
 		<!-- Example 5: Sizes -->
 		<ComponentCard
-			description="Small, normal and large sizes"
+			description="size scales the typography only — labels, values, icons and chips; spacing is owned by density"
 			code={`<MetadataList size="small" items={ownerItems} />
 <MetadataList size="normal" items={ownerItems} />
 <MetadataList size="large" items={ownerItems} />`}
@@ -151,7 +160,25 @@
 			</div>
 		</ComponentCard>
 
-		<!-- Example 6: Custom value snippet -->
+		<!-- Example 6: Density -->
+		<ComponentCard
+			title="Density"
+			description="density scales the row and label gaps — small for dense panels, large for roomy detail surfaces. Combine freely with size."
+			code={`<SegmentedControl items={densities} bind:value={density} />
+<MetadataList {density} items={ownerItems} />`}
+		>
+			<div class="flex w-full max-w-md flex-col items-center gap-5">
+				<SegmentedControl
+					items={densitySegments}
+					bind:value={listDensity}
+					size="small"
+					ariaLabel="List density"
+				/>
+				<MetadataList density={listDensity} title="Document" items={ownerItems} />
+			</div>
+		</ComponentCard>
+
+		<!-- Example 7: Custom value snippet -->
 		<ComponentCard
 			description="Replace the value cell with a custom snippet (payload lets you special-case items)"
 			code={`<MetadataList items={ownerItems}>
@@ -181,7 +208,7 @@
 			</MetadataList>
 		</ComponentCard>
 
-		<!-- Example 7: Header -->
+		<!-- Example 8: Header -->
 		<ComponentCard
 			description="An optional title and description header"
 			code={`<MetadataList

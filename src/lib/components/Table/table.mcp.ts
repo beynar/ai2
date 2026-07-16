@@ -86,6 +86,9 @@ You can also use the full object syntax when you need additional properties:
 - **caption**: Slot (optional) - Table caption rendered as a <caption> element
 
 ### Styling Props
+- **density**: 'small' | 'normal' | 'large' (optional, default: 'normal') - Spacing density controlling cell paddings and row heights only
+  - 'small' for dense data grids, 'normal' is the everyday scale, 'large' for roomy detail surfaces
+  - Cascades from the root to header cells, body cells, rows, and caption; the wrapper exposes it as a \`data-density\` attribute
 - **class**: string (optional) - Additional CSS classes applied to the table wrapper
 - **theme**: TableThemeProps (optional) - Theme overrides for custom styling
 
@@ -136,7 +139,7 @@ type TableRow = {
 ## Structure
 
 \`\`\`
-<div data-slot="table-wrapper">
+<div data-slot="table-wrapper" data-density="small | normal | large">
 	{#if prefix}
 		<div data-slot="table-prefix">
 			<Prefix />
@@ -416,6 +419,28 @@ type TableRow = {
 <Table {header} items={rows} />
 \`\`\`
 
+### Table Density
+
+\`\`\`svelte
+<script>
+	import { Table } from 'svelai/table';
+
+	const header = { name: 'Name', email: 'Email' };
+	const rows = [
+		{ cells: { name: 'John Doe', email: 'john@example.com' } }
+	];
+</script>
+
+<!-- Dense data grid -->
+<Table {header} items={rows} density="small" />
+
+<!-- Default everyday scale -->
+<Table {header} items={rows} density="normal" />
+
+<!-- Roomy detail surface -->
+<Table {header} items={rows} density="large" />
+\`\`\`
+
 ### Table with RowSpan and ColSpan
 
 \`\`\`svelte
@@ -466,7 +491,7 @@ type TableRow = {
 - The table container includes horizontal scroll for responsive design
 - Rows have a subtle hover effect with \`bg-background-muted/40\`
 - All borders use \`border-background-muted\` for consistency
-- Rows have \`py-0.5\` padding for better spacing
+- Row/cell spacing follows the \`density\` prop; the default 'normal' keeps rows at \`py-0.5\` with \`p-2\` cells
 
 ## Theme Customization
 
@@ -507,16 +532,23 @@ The theme object contains the following parts:
 **row**:
 - base: Base classes for table rows
 - Variants:
+  - density: 'small' | 'normal' | 'large' - Vertical row padding (py-0 / py-0.5 / py-1)
   - selected: boolean - Selected row styling (via data-state)
 
 **head**:
 - base: Base classes for header cells
+- Variants:
+  - density: 'small' | 'normal' | 'large' - Header cell height and horizontal padding (h-8 px-1.5 / h-10 px-2 / h-12 px-3)
 
 **cell**:
 - base: Base classes for data cells
+- Variants:
+  - density: 'small' | 'normal' | 'large' - Cell padding (px-1.5 py-1 / p-2 / p-3)
 
 **caption**:
 - base: Base classes for table caption
+- Variants:
+  - density: 'small' | 'normal' | 'large' - Caption top margin (mt-3 / mt-4 / mt-6)
 
 **prefix**:
 - base: Base classes for prefix slot

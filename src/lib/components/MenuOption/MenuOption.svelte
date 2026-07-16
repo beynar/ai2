@@ -6,6 +6,7 @@
 	let {
 		color = 'foreground',
 		size = 'normal',
+		density = 'normal',
 		class: className = '',
 		onClick,
 		onEnter,
@@ -62,12 +63,14 @@
 	{rel}
 	data-color={color}
 	data-size={size}
+	data-density={density}
 	onclick={disabled ? undefined : onClick}
 	onpointerenter={onEnter}
 	onpointerleave={onLeave}
 	class={classes.root({
 		color,
 		size,
+		density,
 		disabled,
 		highlighted,
 		active,
@@ -84,7 +87,7 @@
 	{#if children}
 		<Slot render={children} />
 	{:else if title || description}
-		<div class={classes.content({ size })}>
+		<div class={classes.content({ density })}>
 			<Slot renderIf={!!title} render={title} class="{classes.title({ size })} leading-none" />
 
 			<Slot renderIf={!!description} render={description} class={classes.description({ size })} />

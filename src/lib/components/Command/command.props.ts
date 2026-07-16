@@ -1,5 +1,5 @@
 import type { Snippet } from 'svelte';
-import type { Sizes } from '$lib/types/index.js';
+import type { Density, Sizes } from '$lib/types/index.js';
 import type { Slot, WithSlot } from '../Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { CommandThemeProps } from './command.theme.js';
@@ -120,6 +120,11 @@ export type CommandProps<Value extends string = string> = WithAttachments<
 			 * The size of the command palette (typography and spacing).
 			 */
 			size?: Sizes;
+			/**
+			 * Spacing density forwarded to the option rows (paddings, gaps, min-height).
+			 * @default 'normal'
+			 */
+			density?: Density;
 			/**
 			 * Theme overrides for the command palette parts (command, input, list, group, item, ...).
 			 */

@@ -1,6 +1,6 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
-import type { Colors, Sizes } from '$lib/types/theme.js';
+import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 import type { HTMLButtonAttributes } from 'svelte/elements';
 import type { StatThemeProps } from './stat.theme.js';
 
@@ -17,8 +17,13 @@ type StatBaseProps = {
 	color?: Colors;
 	/** Visual treatment of the stat surface. */
 	variant?: StatVariant;
-	/** Size token controlling padding, spacing, and typography. */
+	/** Size token controlling the typography and icon scale. */
 	size?: Sizes;
+	/**
+	 * Spacing density controlling the surface padding and gaps between regions.
+	 * 'small' for dense dashboards, 'large' for roomy detail surfaces.
+	 */
+	density?: Density;
 	/** Theme overrides for stat parts. */
 	theme?: StatThemeProps;
 };

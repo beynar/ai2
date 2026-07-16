@@ -10,6 +10,7 @@
 		color = 'background',
 		variant = 'solid',
 		size = 'normal',
+		density = 'normal',
 		theme,
 		label,
 		value,
@@ -37,7 +38,8 @@
 	data-color={color}
 	data-variant={variant}
 	data-size={size}
-	class={classes.root({ color, variant, size, className })}
+	data-density={density}
+	class={classes.root({ color, variant, size, density, className })}
 	{...attachments}
 >
 	<Slot
@@ -97,7 +99,7 @@
 	{/if}
 
 	{#if showSeparator}
-		<div data-slot="stat-separator" data-size={size} class={classes.separator({ size })}>
+		<div data-slot="stat-separator" data-density={density} class={classes.separator({ density })}>
 			<Separator decorative class="my-0" />
 		</div>
 	{/if}

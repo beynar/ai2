@@ -1,13 +1,24 @@
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
+// The default (classic) variant is the nova/shadcn look: flat rows separated by
+// a muted border, a plain trigger whose title underlines on hover, a small muted
+// chevron, quiet content. `card` wraps the list in a raised surface, `outlined`
+// in a muted border; `splitted` breaks the list into one surface per item.
+// `size` scales typography (title/description/content text, icon) only;
+// `density` owns paddings and gaps.
 const defaultAccordion = cva({
-	base: 'grid h-fit',
+	base: 'w-full h-fit',
 	variants: {
 		size: {
-			small: 'data-[splitted="true"]:gap-2',
-			normal: 'data-[splitted="true"]:gap-4',
-			large: 'data-[splitted="true"]:gap-6'
+			small: '',
+			normal: '',
+			large: ''
+		},
+		density: {
+			small: '',
+			normal: '',
+			large: ''
 		},
 		variant: {
 			classic: '',
@@ -15,34 +26,42 @@ const defaultAccordion = cva({
 			outlined: ''
 		},
 		splitted: {
-			true: '',
+			true: 'flex flex-col',
 			false: ''
 		}
 	},
 	compoundVariants: [
-		{
-			splitted: false,
-			variant: 'outlined',
-			class: 'border border-background-muted rounded'
-		},
-		{
-			splitted: false,
-			variant: 'card',
-			class: 'raised rounded'
-		}
-	]
+		// One container surface holding all rows (same surface as the Card component).
+		{ variant: 'card', splitted: false, class: 'raised rounded-lg bg-background-light' },
+		{ variant: 'outlined', splitted: false, class: 'rounded-lg border border-background-muted' },
+		// Gap between the per-item surfaces.
+		{ splitted: true, density: 'small', class: 'gap-2' },
+		{ splitted: true, density: 'normal', class: 'gap-3' },
+		{ splitted: true, density: 'large', class: 'gap-4' }
+	],
+	defaultVariants: {
+		size: 'normal',
+		density: 'normal',
+		variant: 'classic',
+		splitted: false
+	}
 });
 
 const defaultAccordionItem = cva({
-	base: 'w-full isolate relative ',
+	base: 'w-full isolate relative',
 	variants: {
 		size: {
-			normal: '',
 			small: '',
+			normal: '',
+			large: ''
+		},
+		density: {
+			small: '',
+			normal: '',
 			large: ''
 		},
 		variant: {
-			classic: 'border-b border-background-muted last:border-0',
+			classic: '',
 			card: '',
 			outlined: ''
 		},
@@ -56,123 +75,129 @@ const defaultAccordionItem = cva({
 		}
 	},
 	compoundVariants: [
-		{
-			variant: 'outlined',
-			splitted: true,
-			className: 'border border-background-muted rounded'
-		},
-		{
-			variant: 'card',
-			splitted: true,
-			className: 'raised rounded'
-		},
-		{
-			variant: 'classic',
-			splitted: true,
-			className: ''
-		}
-	]
+		// Shared container (any variant): muted separator between rows.
+		{ splitted: false, class: 'border-b border-background-muted last:border-b-0' },
+		// One surface per item.
+		{ variant: 'classic', splitted: true, class: 'border-b border-background-muted' },
+		{ variant: 'card', splitted: true, class: 'raised rounded-lg bg-background-light' },
+		{ variant: 'outlined', splitted: true, class: 'rounded-lg border border-background-muted' }
+	],
+	defaultVariants: {
+		size: 'normal',
+		density: 'normal',
+		variant: 'classic',
+		splitted: false,
+		expanded: false
+	}
 });
 
 const defaultAccordionTrigger = cva({
-	base: 'group/accordion-trigger cursor-pointer py-2.5 transition-all w-full flex items-center gap-2 outline-none rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50',
+	// items-start + the icon wrapper's slight downward nudge keep the chevron
+	// aligned to the first title line when titles wrap or a description exists.
+	base: 'group/accordion-trigger cursor-pointer w-full flex items-start justify-between gap-4 text-left transition-all outline-none rounded-md focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50',
 	variants: {
 		size: {
+			small: '',
 			normal: '',
+			large: ''
+		},
+		density: {
 			small: 'py-2',
-			large: 'py-3'
+			normal: 'py-2.5',
+			large: 'py-3.5'
 		},
 		variant: {
-			// Nova default: flush trigger, no hover background — the title underlines on hover.
-			classic: 'px-0',
-			card: 'px-2 hover:bg-background-lighter',
-			outlined: 'px-2 hover:bg-background-lighter'
-		},
-		splitted: {
-			true: 'rounded',
-			false: ''
+			classic: '',
+			// Contained surfaces inset their rows (variant chrome, not density).
+			card: 'px-4',
+			outlined: 'px-4'
 		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		density: 'normal',
+		variant: 'classic'
 	}
 });
 
 const defaultAccordionHeader = cva({
-	base: 'flex-1 text-left flex flex-col items-start',
+	base: 'flex-1 flex flex-col items-start',
 	variants: {
 		size: {
-			normal: 'gap-0',
-			small: 'gap-0.5',
-			large: 'gap-1'
+			small: '',
+			normal: '',
+			large: ''
 		},
-		variant: {
-			classic: '',
-			card: '',
-			outlined: ''
+		density: {
+			small: 'gap-0',
+			normal: 'gap-0.5',
+			large: 'gap-1'
 		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		density: 'normal'
 	}
 });
 
 const defaultAccordionTitle = cva({
-	base: 'text-foreground font-medium',
+	base: 'text-foreground font-medium group-hover/accordion-trigger:underline',
 	variants: {
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
 			large: 'text-base'
-		},
-		variant: {
-			classic: 'group-hover/accordion-trigger:underline',
-			card: '',
-			outlined: ''
 		}
 	}
 });
 
 const defaultAccordionDescription = cva({
-	base: 'text-foreground-muted text-sm',
+	base: 'text-foreground-muted',
 	variants: {
 		size: {
-			normal: 'text-xs',
 			small: 'text-xs',
+			normal: 'text-xs',
 			large: 'text-sm'
-		},
-		variant: {
-			classic: '',
-			card: '',
-			outlined: ''
 		}
 	}
 });
 
+// Layout (shrink/nudge) and open-state rotation live on the span wrapper in the
+// component — this part only styles the glyph itself.
 const defaultAccordionIcon = cva({
-	base: 'transition-all text-foreground-muted shrink-0',
+	base: 'text-foreground-muted block',
 	variants: {
 		size: {
-			small: 'size-3',
+			small: 'size-3.5',
 			normal: 'size-4',
 			large: 'size-5'
-		},
-		variant: {
-			classic: '',
-			card: '',
-			outlined: ''
 		}
 	}
 });
 
 const defaultAccordionContent = cva({
-	base: 'pt-0 pb-2.5 origin-top w-full',
+	base: 'pt-0 origin-top w-full',
 	variants: {
 		size: {
-			normal: 'text-sm',
 			small: 'text-xs',
+			normal: 'text-sm',
 			large: 'text-base'
 		},
+		density: {
+			small: 'pb-2',
+			normal: 'pb-2.5',
+			large: 'pb-3.5'
+		},
 		variant: {
-			// Nova default: content flush with the trigger text.
-			classic: 'px-0',
-			card: 'px-2',
-			outlined: 'px-2'
+			classic: '',
+			card: 'px-4',
+			outlined: 'px-4'
 		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		density: 'normal',
+		variant: 'classic'
 	}
 });
 

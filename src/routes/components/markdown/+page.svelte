@@ -63,6 +63,26 @@ Use \`Markdown\` inline like any other component.`;
 		'```'
 	].join('\n');
 
+	const mdxLayout = [
+		'## Product health',
+		'',
+		'<Grid columns={2} gap={3}>',
+		'<GridSpan columns="full">',
+		'<Card title="Release readiness" description="The current production candidate." variant="outline">',
+		'<VStack gap={3}>',
+		'<HStack gap={3} align="center" wrap="wrap">',
+		'<Stat label="Checks" value="24 / 24" trend="Passing" trendDirection="up" color="success" variant="soft" />',
+		'<Stat label="Reviewers" value="6" trend="2 active" color="info" variant="soft" />',
+		'</HStack>',
+		'Everything is **ready for review**.',
+		'</VStack>',
+		'</Card>',
+		'</GridSpan>',
+		'<Stat label="Coverage" value="94%" trend="+3.2%" trendDirection="up" color="primary" variant="soft" />',
+		'<Stat label="Open issues" value="3" trend="-8" trendDirection="down" color="warning" variant="soft" />',
+		'</Grid>'
+	].join('\n');
+
 	// Sizes: the same markdown rendered at the selected scale (code fence included
 	// so the Code block scaling is visible too).
 	const sizeSample = [
@@ -142,11 +162,11 @@ Use \`Markdown\` inline like any other component.`;
 	component="Markdown"
 	features={[
 		'Wraps svelte-streamdown, themed with svelai tokens',
+		'Built-in Card, Stat, Stack, and Grid MDX components',
 		'Code fences render via svelai Code (copy button)',
 		'Mermaid fences render via svelai Mermaid (pan/zoom)',
 		'Streaming-friendly: partial markdown never crashes',
-		'small / normal / large type and spacing scales',
-		'Adapts to light and dark automatically'
+		'small / normal / large type and spacing scales'
 	]}
 >
 	<ComponentCard
@@ -170,6 +190,17 @@ Use \`Markdown\` inline like any other component.`;
 		</ComponentCard>
 
 		<ComponentCard
+			title="Built-in MDX components"
+			description="Card, Stat, HStack, VStack, Grid, and GridSpan are available directly in Markdown content without a component map."
+			class="!min-h-fit !items-stretch !justify-start"
+			code={`<Markdown content={mdxLayout} />`}
+		>
+			<div class="w-full max-w-3xl">
+				<Markdown content={mdxLayout} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
 			description="Fenced code renders through svelai's Code component (syntax highlighting + copy button), and a mermaid fence renders through svelai's Mermaid (pan, zoom, and design-token theming)."
 			class="!min-h-fit !items-stretch !justify-start"
 		>
@@ -184,7 +215,11 @@ Use \`Markdown\` inline like any other component.`;
 			class="!min-h-fit !items-stretch !justify-start"
 		>
 			<div class="grid w-full max-w-3xl gap-4">
-				{@render segmented(mdSize, ['small', 'normal', 'large'], (v) => (mdSize = v as typeof mdSize))}
+				{@render segmented(
+					mdSize,
+					['small', 'normal', 'large'],
+					(v) => (mdSize = v as typeof mdSize)
+				)}
 				<Markdown content={sizeSample} size={mdSize} />
 			</div>
 		</ComponentCard>

@@ -32,9 +32,14 @@ The Card component is a flexible container component used to display content in 
   - ghost: Transparent background, no border
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
-  - small: Reduced padding (py-4) and gap (gap-4)
-  - normal: Standard padding (py-6) and gap (gap-6)
-  - large: Increased padding (py-8) and gap (gap-8)
+  - Scales the typography only: title (text-sm / text-base / text-lg), description and body text
+  - Combine with density to control spacing independently
+
+- **density**: 'small' | 'normal' | 'large' (default: 'normal')
+  - Controls paddings and gaps between header/content/footer
+  - small: p-3 / gap-3 for dense dashboards
+  - normal: p-4 / gap-4 everyday scale
+  - large: p-6 / gap-6 roomy marketing/detail surfaces (vega default)
 
 ### Layout Props
 - **disabled**: boolean (default: false)
@@ -47,9 +52,13 @@ The Card component is a flexible container component used to display content in 
 - **href**: string - Makes the card a link (renders as <a>)
 - **target**: string - Link target attribute (e.g., '_blank')
 - **rel**: string - Link rel attribute (e.g., 'noopener noreferrer')
-- **onClick**: () => void - Click handler (renders as <div> with cursor-pointer)
+- **onClick**: () => void - Click handler (renders as role="button" with keyboard activation via Enter/Space)
 - **onEnter**: () => void - Pointer enter handler
 - **onLeave**: () => void - Pointer leave handler
+
+Cards with href or onClick automatically get the internal \`clickable\` styling: pointer cursor, a hover effect matched to the surface (solids lift with a stronger ring and shadow, outline/ghost gain a translucent wash of the card color, soft deepens its tint), a pressed translate, and a keyboard focus ring. No prop needed — it follows from the interactivity.
+
+Interactive descendants stay independent: clicks (and Enter/Space) on buttons, links, form controls, or role="button|link|checkbox|radio|switch|menuitem" elements inside the card never trigger the card's own onClick, and on href cards they don't navigate — only clicks on the card surface itself do.
 
 ### Content Props (Slots)
 - **header**: Snippet - Custom header content (overrides default header structure)
@@ -242,25 +251,17 @@ The Card component uses a flexible slot-based structure:
 </Card>
 \`\`\`
 
-### Card Sizes
+### Sizes and Density
 \`\`\`svelte
-<Card size="small">
-	{#snippet children()}
-		Small card
-	{/snippet}
-</Card>
+<!-- size scales the typography -->
+<Card size="small" title="Small type" />
+<Card size="normal" title="Normal type (default)" />
+<Card size="large" title="Large type" />
 
-<Card size="normal">
-	{#snippet children()}
-		Normal card (default)
-	{/snippet}
-</Card>
-
-<Card size="large">
-	{#snippet children()}
-		Large card
-	{/snippet}
-</Card>
+<!-- density scales the paddings and gaps -->
+<Card density="small" title="Dense dashboard card" />
+<Card density="normal" title="Everyday card (default)" />
+<Card density="large" title="Roomy detail card" />
 \`\`\`
 
 ### Card with Border Separators
@@ -388,9 +389,11 @@ const customTheme: CardThemeProps = {
 **root**:
 - base: Base classes applied to all cards
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Controls padding and gap spacing
+  - size: 'small' | 'normal' | 'large' - Typography scale
+  - density: 'small' | 'normal' | 'large' - Padding and gap spacing
   - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' | 'ghost' - Visual style variant
+  - clickable: boolean - Internal; set automatically when href/onClick is present (hover, press, focus ring)
   - disabled: boolean - Disabled state styling
 
 **header**:

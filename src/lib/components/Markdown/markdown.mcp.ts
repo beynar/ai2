@@ -5,6 +5,8 @@ Renders Markdown as themed HTML, built for streaming LLM output. Wraps the user'
 
 Fenced code blocks render through svelai's own Code component (syntax highlighting + copy button), and \\\`mermaid\\\` fences render through svelai's Mermaid component (pan/zoom, brand theming, and errorForgiving so a diagram being streamed in doesn't flash errors between chunks).
 
+Card, Stat, HStack, VStack, Grid, and GridSpan are also available as built-in MDX components. They can be used directly inside the Markdown source without passing an MDX component map.
+
 ## Basic Usage
 
 \\\`\\\`\\\`svelte
@@ -25,6 +27,7 @@ Fenced code blocks render through svelai's own Code component (syntax highlighti
 ### Advanced Props
 - **class**: string - Additional CSS classes on the root wrapper.
 - **theme**: MarkdownThemeProps - Overrides for the root wrapper part (size variants live here).
+- **mdxComponents**: StreamdownProps['mdxComponents'] - Custom MDX components. Matching names override the built-in svelai components.
 - **...streamdown passthroughs**: every other svelte-streamdown prop is forwarded except the ones svelai controls (\\\`content\\\`, \\\`theme\\\`, \\\`baseTheme\\\`, \\\`mergeTheme\\\`, \\\`class\\\`, \\\`code\\\`, \\\`mermaid\\\`, \\\`children\\\`, \\\`streamdown\\\`, \\\`element\\\`). Use these for streamdown features such as controlling which block types are parsed, link/image handling, and other renderer options — see the svelte-streamdown docs.
 
 ## Rendering
@@ -34,6 +37,28 @@ Fenced code blocks render through svelai's own Code component (syntax highlighti
 - **Inline code** (\\\`codespan\\\`): styled as a subtle chip; its text size scales with \\\`size\\\`.
 - **Code fences**: rendered by svelai's Code component — syntax highlighting and a copy button. The code block sizing follows \\\`size\\\`.
 - **Mermaid fences**: a fence tagged \\\`mermaid\\\` renders through svelai's Mermaid component with \\\`errorForgiving\\\` enabled, so a diagram that is still streaming in holds its last valid frame instead of flashing parse errors. Diagram size maps from the Markdown \\\`size\\\`.
+
+## Built-in MDX components
+
+The built-in tags are **Card**, **Stat**, **HStack**, **VStack**, **Grid**, and **GridSpan**:
+
+~~~svelte
+const content = [
+  '<Grid columns={2} gap={3}>',
+  '<GridSpan columns="full">',
+  '<Card title="Release readiness" variant="outline">',
+  '<VStack gap={2}>Everything is **ready**.</VStack>',
+  '</Card>',
+  '</GridSpan>',
+  '<Stat label="Coverage" value="94%" trend="+3.2%" trendDirection="up" />',
+  '<Stat label="Issues" value="3" trend="-8" trendDirection="down" />',
+  '</Grid>'
+].join('\\n');
+
+<Markdown {content} />
+~~~
+
+MDX attributes support string, number, and boolean values. Imperative event handlers and root styling or link props are not forwarded from Markdown content. Caller-provided mdxComponents take priority, and the custom mdx snippet remains the fallback for unknown tags.
 
 ## Theming
 

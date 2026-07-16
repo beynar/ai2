@@ -1,4 +1,4 @@
-import type { Colors, Sizes } from '$lib/types/theme.js';
+import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 import type { Slot, WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { Messages } from '$lib/i18n/en.js';
@@ -50,8 +50,14 @@ type MetadataListBaseProps = {
 	class?: string;
 	/** Key/value rows to display. */
 	items?: MetadataListItem[];
-	/** Size token controlling typography, gaps, and chip sizing. */
+	/** Size token controlling typography only — key/value/toggle text, key icons, and chip sizing. */
 	size?: Sizes;
+	/**
+	 * Spacing density controlling all gaps — section, row, label/value, and
+	 * chip-list gaps. 'normal' matches the previous normal-size spacing,
+	 * 'small' the previous small, 'large' the previous large.
+	 */
+	density?: Density;
 	/** Number of grid columns the items flow into. */
 	columns?: number;
 	/** When set and `items.length` exceeds it, the extra items collapse behind a "Show more" toggle. */

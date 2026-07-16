@@ -41,7 +41,7 @@ Extends all Field props plus:
 ### Core Props
 - **value**: number | number[] | null (bindable) - Current scalar or multi-thumb value
 - **mode**: 'single' | 'range' (default: 'single') - Range mode defaults to two thumbs
-- **variant**: 'default' | 'thick' (default: 'default') - Visual track style; \`thick\` renders a heavier track with an inset pill thumb
+- **variant**: 'default' | 'thick' | 'contained' (default: 'default') - Visual track style; \`thick\` renders a heavier track with an inset pill thumb, while \`contained\` places the label and optional value inside an input-like rail
 - **thumbs**: number - Number of thumbs when the value is missing or scalar
 - **min**: number (default: 0) - Minimum selectable value
 - **max**: number (default: 100) - Maximum selectable value
@@ -162,6 +162,23 @@ Use \`type: 'slider'\` for scalar values and \`type: 'slider-range'\` for submit
 />
 \`\`\`
 
+### Contained Variant
+
+\`contained\` is intended for compact settings panels. It keeps the native Field label association while rendering the label inside the rail. Add \`showValue\` to place the formatted value at the opposite edge.
+
+\`\`\`svelte
+<Slider
+  variant="contained"
+  label="Background glow"
+  bind:value={glow}
+  min={0}
+  max={3}
+  step={0.1}
+  showValue
+  formatValue={(value) => value.toFixed(1)}
+/>
+\`\`\`
+
 ### Three Thumbs
 \`\`\`svelte
 <Slider
@@ -209,6 +226,9 @@ Theme parts:
 - **thumbVisual**: Visible thumb shape
 - **valueLabels**: Value chip group
 - **valueLabel**: Individual value chip
+- **containedLabel**: Label rendered inside the contained rail
+- **containedTicks**: Decorative scale wrapper for the contained rail
+- **containedTick**: Individual decorative scale line
 - **marks**: Mark container
 - **mark**: Individual mark positioning wrapper
 - **markDot**: Mark dot

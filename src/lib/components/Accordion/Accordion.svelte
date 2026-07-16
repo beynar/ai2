@@ -17,10 +17,11 @@
 		descriptionKey,
 		oneAtATime = true,
 		onToggle: ot,
+		icon = 'chevron',
 		variant = 'classic',
-		icon = 'math',
-		splitted,
+		splitted = false,
 		size = 'normal',
+		density = 'normal',
 		class: className,
 		theme,
 		actions,
@@ -37,6 +38,9 @@
 
 	const themeState = useTheme();
 	const split = $derived(themeState.splitTransition<SlideTransitionParams>(transitions));
+	// slide is a factory: it captures the theme context at init because Svelte
+	// runs transition functions outside component initialisation.
+	const slideTransition = slide();
 
 	const resolve = (item: Item, key: keyof Item) => {
 		return item[key] as any;
@@ -77,52 +81,61 @@
 
 {#snippet renderIcon(isOpen: boolean)}
 	{#if icon && icon === 'chevron'}
-		{@render caretDownIcon({
-			class: classes.icon({ variant, size }),
-			transform: `rotate(${isOpen ? '180deg' : '0deg'})`
-		})}
+		{@render caretDownIcon({ class: classes.icon({ size }) })}
 	{:else if icon && icon === 'math'}
-		{@render (isOpen ? minusIcon : plusIcon)({ class: classes.icon({ variant, size }) })}
+		{@render (isOpen ? minusIcon : plusIcon)({ class: classes.icon({ size }) })}
 	{:else if icon}
-		<Slot class={classes.icon({ variant, size })} render={icon} />
+		<Slot class={classes.icon({ size })} render={icon} />
 	{/if}
 {/snippet}
 
 <div
 	{...accordion.root}
-	data-splitted={splitted}
-	data-variant={variant}
 	data-size={size}
-	class={classes.root({ variant, size, splitted, className })}
+	data-density={density}
+	data-variant={variant}
+	data-splitted={splitted}
+	class={classes.root({ size, density, variant, splitted, className })}
 	{...attachments}
 >
 	{#each items as accordionItem}
 		{@const item = accordion.getItem(accordionItem)}
-		<div class={classes.item({ variant, size, splitted, expanded: item.isExpanded })}>
-			<button {...item.trigger} class={classes.trigger({ variant, size, splitted })}>
-				<div {...item.heading} class={classes.header({ variant, size })}>
+		<div class={classes.item({ size, density, variant, splitted, expanded: item.isExpanded })}>
+			<button {...item.trigger} class={classes.trigger({ size, density, variant })}>
+				<div {...item.heading} class={classes.header({ size, density })}>
 					<Slot
 						render={title || resolve(accordionItem, titleKey || 'title')}
-						class={classes.title({ variant, size })}
+						class={classes.title({ size })}
 						payload={{ item }}
 					/>
 					<Slot
 						render={description || resolve(accordionItem, descriptionKey || 'description')}
-						class={classes.description({ variant, size })}
+						class={classes.description({ size })}
 						payload={{ item }}
 					/>
 				</div>
 				{#if icon}
-					{@render renderIcon(item.isExpanded)}
+					<!-- Rotation lives on a span wrapper: the CSS rotate property is not
+					     applied to SVG elements, and dynamic classes don't belong on icon
+					     props (span-wrapper house pattern). -->
+					<span
+						aria-hidden="true"
+						class="shrink-0 translate-y-0.5 transition-transform {icon === 'chevron' &&
+						item.isExpanded
+							? 'rotate-180'
+							: ''}"
+					>
+						{@render renderIcon(item.isExpanded)}
+					</span>
 				{/if}
 			</button>
 
 			{#if item.isExpanded}
 				<div
-					in:slide={split.in}
-					out:slide={split.out}
+					in:slideTransition={split.in}
+					out:slideTransition={split.out}
 					{...item.content}
-					class={classes.content({ variant, size })}
+					class={classes.content({ size, density, variant })}
 				>
 					<Slot
 						render={content || resolve(accordionItem, contentKey || 'content')}

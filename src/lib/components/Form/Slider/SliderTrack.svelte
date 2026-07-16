@@ -47,11 +47,19 @@
 	const getThickRangeMinimum = () =>
 		`calc(${getThickThumbSize()} + ${getThickEdgeInset()} + ${getThickEdgeInset()})`;
 	const getThickRangeEndOffset = () => `calc(${getThickThumbHalfSize()} + ${getThickEdgeInset()})`;
+	const getContainedRangeMinimum = () => {
+		if (size === 'small') return '5px';
+		if (size === 'large') return '8px';
+		return '6px';
+	};
+	const getContainedRangeEndOffset = () => getContainedRangeMinimum();
 	const instructionsId = $derived(`${id}-instructions`);
 	const instructions = $derived(
 		slider.isRange ? t.sliderInstructionsRange : t.sliderInstructionsSingle
 	);
-	const shouldFillFromStart = $derived(!slider.isRange && variant === 'thick');
+	const shouldFillFromStart = $derived(
+		!slider.isRange && (variant === 'thick' || variant === 'contained')
+	);
 	const rangeStartPercentage = $derived(
 		slider.isRange || !shouldFillFromStart ? slider.startPercentage : 0
 	);
@@ -61,7 +69,10 @@
 	const rangeLengthPercentage = $derived(Math.max(0, rangeEndPercentage - rangeStartPercentage));
 	const getRangeLength = () => {
 		if (!shouldFillFromStart) return `${rangeLengthPercentage}%`;
-		return `clamp(${getThickRangeMinimum()}, calc(${rangeLengthPercentage}% + ${getThickRangeEndOffset()}), 100%)`;
+		if (variant === 'thick') {
+			return `clamp(${getThickRangeMinimum()}, calc(${rangeLengthPercentage}% + ${getThickRangeEndOffset()}), 100%)`;
+		}
+		return `clamp(${getContainedRangeMinimum()}, calc(${rangeLengthPercentage}% + ${getContainedRangeEndOffset()}), 100%)`;
 	};
 	const rangeStyle = $derived(
 		slider.orientationValue === 'vertical'
@@ -87,6 +98,21 @@
 		aria-describedby={instructionsId}
 	>
 		<div class={classes.trackBackground({ orientation: slider.orientationValue, variant })}></div>
+		{#if variant === 'contained'}
+			<div
+				aria-hidden="true"
+				class={classes.containedTicks({ orientation: slider.orientationValue })}
+			>
+				{#each [10, 20, 30, 40, 50, 60, 70, 80, 90] as percentage (percentage)}
+					<span
+						class={classes.containedTick({ orientation: slider.orientationValue, size })}
+						style={slider.orientationValue === 'vertical'
+							? `bottom: ${percentage}%;`
+							: `left: ${percentage}%;`}
+					></span>
+				{/each}
+			</div>
+		{/if}
 		<div
 			{@attach slider.range}
 			role="presentation"

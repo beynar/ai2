@@ -2,6 +2,8 @@
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import { MenuOption } from '$lib/components/MenuOption/index.js';
+	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
+	import type { Density } from '$lib/types/theme.js';
 	import { checkIcon } from '$lib/components/Icons/check.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
 	import { userIcon } from '$lib/components/Icons/user.js';
@@ -11,6 +13,13 @@
 
 	let clickCount = $state(0);
 	let isHovered = $state(false);
+
+	const densitySegments = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
+	let rowDensity = $state<Density>('normal');
 </script>
 
 <DocPage
@@ -59,6 +68,32 @@
 				<MenuOption size="normal" prefix={userIcon} title="Normal Menu Item" />
 
 				<MenuOption size="large" prefix={userIcon} title="Large Menu Item" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Density"
+			description="density scales paddings, gaps, and min-height while size keeps the typography — small for dense menus, large for roomy ones."
+			code={`<SegmentedControl items={densities} bind:value={density} />
+<MenuOption {density} prefix={userIcon} title="Row" description="..." />`}
+		>
+			<div class="flex w-full flex-col items-center gap-5">
+				<SegmentedControl
+					items={densitySegments}
+					bind:value={rowDensity}
+					size="small"
+					ariaLabel="Row density"
+				/>
+				<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+					<MenuOption
+						density={rowDensity}
+						prefix={userIcon}
+						title="Profile"
+						description="View your profile"
+					/>
+					<MenuOption density={rowDensity} prefix={gearIcon} title="Settings" />
+					<MenuOption density={rowDensity} prefix={signOutIcon} title="Log out" color="danger" />
+				</div>
 			</div>
 		</ComponentCard>
 

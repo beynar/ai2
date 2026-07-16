@@ -30,6 +30,7 @@
 		trigger,
 		footer,
 		size = 'normal',
+		density = 'normal',
 		class: className,
 		theme,
 		...attachments
@@ -128,6 +129,7 @@
 		role="option"
 		href={it.href}
 		{size}
+		{density}
 		title={item ? undefined : it.label}
 		prefix={item ? undefined : it.icon}
 		suffix={item || !it.shortcut ? undefined : shortcut}

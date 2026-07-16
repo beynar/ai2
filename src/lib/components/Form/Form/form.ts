@@ -3,6 +3,7 @@ import type { FieldState } from '../Field/field.state.svelte.js';
 import type { TextInputProps } from '../TextInput/textInput.props.js';
 import type { NumberInputProps } from '../NumberInput/numberInput.props.js';
 import type { RatingInputProps } from '../RatingInput/ratingInput.props.js';
+import type { VoiceInputProps } from '../VoiceInput/voiceInput.props.js';
 import type { SliderProps } from '../Slider/slider.props.js';
 import type { TextAreaProps } from '../TextArea/textArea.props.js';
 import type { SelectProps } from '../Select/select.props.js';
@@ -42,6 +43,9 @@ type BaseFormInput =
 	| ({
 			type: 'rating';
 	  } & RatingInputProps)
+	| ({
+			type: 'voice';
+	  } & VoiceInputProps)
 	| ({
 			type: 'slider';
 	  } & SliderProps)

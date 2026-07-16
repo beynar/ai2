@@ -185,6 +185,11 @@
 			"svelte": "./dist/components/Form/RatingInput/index.js",
 			"default": "./dist/components/Form/RatingInput/index.js"
 		},
+		"./voice-input": {
+			"types": "./dist/components/Form/VoiceInput/index.d.ts",
+			"svelte": "./dist/components/Form/VoiceInput/index.js",
+			"default": "./dist/components/Form/VoiceInput/index.js"
+		},
 		"./rating": {
 			"types": "./dist/components/Rating/index.d.ts",
 			"svelte": "./dist/components/Rating/index.js",
@@ -437,6 +442,11 @@
 			"svelte": "./dist/components/Pagination/index.js",
 			"default": "./dist/components/Pagination/index.js"
 		},
+		"./table-of-contents": {
+			"types": "./dist/components/TableOfContents/index.d.ts",
+			"svelte": "./dist/components/TableOfContents/index.js",
+			"default": "./dist/components/TableOfContents/index.js"
+		},
 		"./dialog": {
 			"types": "./dist/components/Dialog/index.d.ts",
 			"svelte": "./dist/components/Dialog/index.js",
@@ -471,6 +481,16 @@
 			"types": "./dist/components/AspectRatio/index.d.ts",
 			"svelte": "./dist/components/AspectRatio/index.js",
 			"default": "./dist/components/AspectRatio/index.js"
+		},
+		"./stack": {
+			"types": "./dist/components/Stack/index.d.ts",
+			"svelte": "./dist/components/Stack/index.js",
+			"default": "./dist/components/Stack/index.js"
+		},
+		"./grid": {
+			"types": "./dist/components/Grid/index.d.ts",
+			"svelte": "./dist/components/Grid/index.js",
+			"default": "./dist/components/Grid/index.js"
 		},
 		"./code": {
 			"types": "./dist/components/Code/index.d.ts",
@@ -604,6 +624,9 @@
 			"./slider": [
 				"./dist/components/Form/Slider/index.d.ts"
 			],
+			"./voice-input": [
+				"./dist/components/Form/VoiceInput/index.d.ts"
+			],
 			"./tailwind-plugin": [
 				"./dist/tailwind/index.d.ts"
 			],
@@ -703,11 +726,20 @@
 			"./pagination": [
 				"./dist/components/Pagination/index.d.ts"
 			],
+			"./table-of-contents": [
+				"./dist/components/TableOfContents/index.d.ts"
+			],
 			"./dialog": [
 				"./dist/components/Dialog/index.d.ts"
 			],
 			"./scroll-area": [
 				"./dist/components/ScrollArea/index.d.ts"
+			],
+			"./stack": [
+				"./dist/components/Stack/index.d.ts"
+			],
+			"./grid": [
+				"./dist/components/Grid/index.d.ts"
 			],
 			"./confirmation": [
 				"./dist/components/Confirmation/index.d.ts"

@@ -1,38 +1,41 @@
 <script lang="ts">
-	type Execute = string[];
 	let {
 		once = false,
+		immediate = false,
 		scripts = [],
 		css = []
 	}: {
 		once?: boolean;
+		/** Executes while the document is parsing instead of waiting for DOMContentLoaded. */
+		immediate?: boolean;
 		scripts?: string[];
 		css?: string[];
 	} = $props();
 
 	const id = $props.id();
+	const source = $derived(scripts.join('\n'));
+	const removeScript = $derived(
+		once ? `document.getElementById(${JSON.stringify(id)})?.remove();` : ''
+	);
 </script>
 
 <svelte:head>
 	{@html /*html*/ `<s${'cript'} id="${id}">
+	${
+		immediate
+			? `${source}
+	${removeScript}`
+			: `
 		document.addEventListener('DOMContentLoaded', () => {
-        	${scripts
-						.map((script) => {
-							return `${script}`;
-						})
-						.join('\n')}
-	${once ? `document.getElementById('${id}').remove();` : ''}
+			${source}
+			${removeScript}
 		})
-						// if readyState is complete, execute the scripts directly
+	// if readyState is complete, execute the scripts directly
 	if(document.readyState === 'complete') {
-		${scripts
-			.map((script) => {
-				return `${script}`;
-			})
-			.join('\n')}
-	${once ? `document.getElementById('${id}').remove();` : ''}
+		${source}
+		${removeScript}
+	}`
 	}
-	
 	</s${'cript'}>`}
 	{@html `<s${'tyle'}>
             ${css.join('\n\n')}

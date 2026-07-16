@@ -1,3 +1,4 @@
+import type { Density } from '$lib/types/theme.js';
 import type { InputProps } from '../Field/field.js';
 import type { ComboboxThemeProps } from './combobox.theme.js';
 import type { Snippet } from 'svelte';
@@ -26,6 +27,11 @@ export type ComboboxProps = Omit<InputProps<'combobox'>, 'prefix' | 'onChange'> 
 	placeholder?: string;
 	/** Static array or function returning items filtered by the current search value. */
 	items: ComboboxOption[] | ((searchValue?: string) => MaybePromise<ComboboxOption[]>);
+	/**
+	 * Spacing density forwarded to the dropdown option rows (paddings, gaps, min-height).
+	 * @default 'normal'
+	 */
+	density?: Density;
 	/** When true, shows all options on focus without a search query (static arrays only). */
 	showAllOnFocus?: boolean;
 	/**

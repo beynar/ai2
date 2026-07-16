@@ -4,18 +4,19 @@ import type { ButtonThemeProps } from '../Button/button.theme.js';
 import type { MenuOptionThemeProps } from '../MenuOption/menuOption.theme.js';
 import type { SeparatorThemeProps } from '../Separator/separator.theme.js';
 
+// Spacing between rows follows `density` ('normal' keeps the previous default
+// gap-0.5, so defaults render exactly as before the gap→density move).
 const defaultMenu = cva({
 	base: 'flex flex-col w-full',
 	variants: {
-		gap: {
-			none: 'gap-0',
-			small: 'gap-0.5',
-			normal: 'gap-1',
-			large: 'gap-2'
+		density: {
+			small: 'gap-0',
+			normal: 'gap-0.5',
+			large: 'gap-1'
 		}
 	},
 	defaultVariants: {
-		gap: 'small'
+		density: 'normal'
 	}
 });
 

@@ -23,6 +23,7 @@
 		focused = $bindable(false),
 		required = false,
 		size = 'normal',
+		density = 'normal',
 		placeholder = '',
 		items,
 		showAllOnFocus = false,
@@ -269,6 +270,7 @@
 							as="button"
 							role="option"
 							{size}
+							{density}
 							title={option.label}
 							description={option.description}
 							highlighted={nav.highlighted === option.value}

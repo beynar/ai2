@@ -1,4 +1,5 @@
 import type { Sizes } from '../../types/index.js';
+import type { Density } from '$lib/types/theme.js';
 import type { Slot, WithSlot } from '../Slot/slot.js';
 import type { SlideTransitionProps } from '$lib/transitions/transition.js';
 import type { WithAttachments } from '$lib/types/props.js';
@@ -45,21 +46,32 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 */
 			descriptionKey?: ConditionalKeys<Item, Slot>;
 			/**
-			 * Whether the accordion items should be glued together or separated by a gap.
-			 */
-			splitted?: boolean;
-			/**
-			 * The icon to use to display the accordion item. Can be a "math" icon, a "chevron" icon or a slot. Pass false to hide the icon.
+			 * The icon marking the expand state. A rotating "chevron" (default), a
+			 * plus/minus "math" icon, or a custom slot. Pass false to hide it.
 			 */
 			icon?: 'math' | 'chevron' | Slot;
 			/**
-			 * The size of the accordion.
+			 * Size token controlling the typography scale (title, description,
+			 * content text and icon).
 			 */
 			size?: Sizes;
 			/**
-			 * The variant of the accordion.
+			 * Spacing density controlling paddings and gaps (trigger padding,
+			 * content padding, header gap, splitted gap). 'small' for dense
+			 * lists, 'large' for roomy surfaces.
+			 */
+			density?: Density;
+			/**
+			 * Visual variant: 'classic' is the flat default (rows with a muted
+			 * separator), 'card' wraps the rows in a raised surface, 'outlined' in a
+			 * muted border.
 			 */
 			variant?: 'classic' | 'card' | 'outlined';
+			/**
+			 * Breaks the list into one surface per item (with a gap) instead of a
+			 * single shared container.
+			 */
+			splitted?: boolean;
 			/**
 			 * The transitions of the accordion.
 			 */

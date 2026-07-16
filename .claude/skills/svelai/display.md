@@ -168,7 +168,7 @@ prefix = bottom-left badge, suffix = bottom-right badge (both receive `{ name, a
 
 `import { Chip } from 'svelai/chip'`
 
-Compact tag/label element. Renders as `<button>` (if onClick/onenter/onleave), `<a>` (if href), or `<div>`.
+Small tag/label element. Renders as `<button>` (if onClick/onenter/onleave), `<a>` (if href), or `<div>`.
 
 ### Unique Props
 
@@ -314,7 +314,8 @@ Read-only key/value list (Notion page-properties panel). Muted key label (option
 | Prop        | Type                            | Default | Notes                                                                     |
 | ----------- | ------------------------------- | ------- | ------------------------------------------------------------------------- |
 | items       | MetadataListItem[]              | []      | `{ id?, key?, title?, value?, type?, icon?, color?, href? }`; label = `key ?? title ?? id` |
-| size        | 'small' \| 'normal' \| 'large'  | 'normal'| Typography, gaps, chip size                                               |
+| size        | 'small' \| 'normal' \| 'large'  | 'normal'| Typography only: text, key icons, chip size                               |
+| density     | 'small' \| 'normal' \| 'large' | 'normal'| Spacing only: section, row, label/value and chip-list gaps        |
 | columns     | number                          | 1       | Items flow into N grid columns                                            |
 | maxItems    | number                          | -       | Collapse extras behind an animated "Show N more" toggle                   |
 | expanded    | boolean                         | false   | **Bindable.** Toggle state                                                |
@@ -324,7 +325,7 @@ Value types: `text`, `number`, `boolean`, `date`, `url`, `email`, `phone`, `chip
 
 ### Theme Parts
 
-`root` (size), `header` (size), `title` (size), `description` (size), `list` (size), `item` (size), `key` (size), `keyIcon` (size), `value` (size), `link`, `chips` (size), `toggle` (size), `toggleIcon` (expanded)
+`root` (density), `header` (density), `title` (size), `description` (size), `list` (density), `item` (density), `key` (size, density), `keyIcon` (size), `value` (size), `link`, `chips` (density), `toggle` (size, density), `toggleIcon` (expanded)
 
 ### Key Example
 

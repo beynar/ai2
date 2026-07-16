@@ -87,6 +87,7 @@ The Form component provides a comprehensive form system with built-in validation
 - **phone** - Phone number input with formatting
 - **file** - Single file upload
 - **files** - Multiple files upload
+- **voice** - Microphone recording input with a live waveform and Blob value
 
 ### Standalone Field Inputs Not Yet Supported by Form
 - **checkbox** - Use \`Checkbox\` directly, or \`switch\` in Form for boolean values

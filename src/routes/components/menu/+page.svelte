@@ -2,6 +2,8 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 	import { Menu, type MenuItem } from '$lib/components/Menu/index.js';
+	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
+	import type { Density } from '$lib/types/theme.js';
 	import { userIcon } from '$lib/components/Icons/user.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
 	import { signOutIcon } from '$lib/components/Icons/signOut.js';
@@ -15,6 +17,13 @@
 
 	let clickCount = $state(0);
 	let selectedOption = $state('Option 1');
+
+	const densitySegments = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
+	let menuDensity = $state<Density>('normal');
 
 	// Basic menu items
 	const basicItems: MenuItem[] = [
@@ -70,6 +79,14 @@
 	const largeItems: MenuItem[] = [
 		{ type: 'option', prefix: userIcon, title: 'Large Item', size: 'large' },
 		{ type: 'option', prefix: gearIcon, title: 'Large Settings', size: 'large' }
+	];
+
+	// Density
+	const densityItems: MenuItem[] = [
+		{ type: 'option', prefix: userIcon, title: 'Profile', description: 'View your profile' },
+		{ type: 'option', prefix: gearIcon, title: 'Settings' },
+		{ type: 'separator' },
+		{ type: 'option', prefix: signOutIcon, title: 'Log Out', color: 'danger' }
 	];
 
 	// Different colors
@@ -248,6 +265,25 @@
 					<div class="bg-background rounded-xl border-background-muted border p-2">
 						<Menu items={largeItems} />
 					</div>
+				</div>
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Density"
+			description="density scales the row gap and every option's paddings — small for dense menus, large for roomy ones. Combine freely with size."
+			code={`<SegmentedControl items={densities} bind:value={density} />
+<Menu items={...} {density} />`}
+		>
+			<div class="flex w-full flex-col items-center gap-5">
+				<SegmentedControl
+					items={densitySegments}
+					bind:value={menuDensity}
+					size="small"
+					ariaLabel="Menu density"
+				/>
+				<div class="bg-background rounded-xl border-background-muted w-64 border p-2">
+					<Menu items={densityItems} density={menuDensity} />
 				</div>
 			</div>
 		</ComponentCard>

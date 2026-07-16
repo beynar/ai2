@@ -1,10 +1,13 @@
-import type { Sizes, Colors } from '$lib/types/theme.js';
+import type { Sizes, Colors, Density } from '$lib/types/theme.js';
 import type { WithSlot, Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { CardThemeProps } from './card.theme.js';
 import type { ButtonProps } from '../Button/button.props.js';
 
 export type CardVariant = 'solid' | 'outline' | 'soft' | 'ghost';
+
+/** @deprecated Use the shared `Density` type from svelai types instead. */
+export type CardDensity = Density;
 
 export type CardActionSlot = Slot | Omit<ButtonProps, 'as'>;
 
@@ -30,9 +33,15 @@ type CardBaseProps = {
 	 */
 	variant?: CardVariant;
 	/**
-	 * Size token controlling padding, typography, and spacing.
+	 * Size token controlling the typography scale (title, description, body).
 	 */
 	size?: Sizes;
+	/**
+	 * Spacing density controlling paddings and gaps between sections.
+	 * 'large' matches the roomy vega default; 'normal' is the tighter
+	 * everyday scale; 'small' for dense dashboards.
+	 */
+	density?: Density;
 	/**
 	 * When set, renders the card as an anchor link instead of a div.
 	 */

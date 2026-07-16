@@ -17,6 +17,7 @@
 		class: className,
 		items = [],
 		size = 'normal',
+		density = 'normal',
 		columns = 1,
 		maxItems,
 		expanded = $bindable(false),
@@ -128,7 +129,7 @@
 			>{String(item.value)}</Chip
 		>
 	{:else if type === 'chips'}
-		<div class={classes.chips({ size })}>
+		<div class={classes.chips({ density })}>
 			{#each Array.isArray(item.value) ? item.value : [item.value] as entry, i (i)}
 				<Chip variant="soft" size={chipSize} color={item.color ?? 'foreground'}
 					>{String(entry)}</Chip
@@ -145,8 +146,8 @@
 	{@const label = resolveLabel(item)}
 	{@const formatted = formatValue(item, type)}
 	{@const payload = toPayload(item, index, type, label, formatted)}
-	<div class={classes.item({ size })}>
-		<dt class={classes.key({ size })}>
+	<div class={classes.item({ density })}>
+		<dt class={classes.key({ size, density })}>
 			<Slot render={item.icon} class={classes.keyIcon({ size })} />
 			<Slot render={key} {payload}>{label}</Slot>
 		</dt>
@@ -158,15 +159,20 @@
 	</div>
 {/snippet}
 
-<div bind:this={ref} class={classes.root({ size, className })} {...attachments}>
+<div
+	bind:this={ref}
+	data-density={density}
+	class={classes.root({ density, className })}
+	{...attachments}
+>
 	{#if title || description}
-		<div class={classes.header({ size })}>
+		<div class={classes.header({ density })}>
 			<Slot render={title} class={classes.title({ size })} />
 			<Slot render={description} class={classes.description({ size })} />
 		</div>
 	{/if}
 
-	<dl class={classes.list({ size })} style={columnsStyle}>
+	<dl class={classes.list({ density })} style={columnsStyle}>
 		<!-- Block A rows are direct grid children of the dl so they flow into the columns. -->
 		<!-- Keyed by index: items may legitimately repeat a key label, which would crash an identity key. -->
 		{#each visibleItems as item, index (index)}
@@ -176,7 +182,7 @@
 		{#if hiddenItems.length && expanded}
 			<!-- Block B: a full-span nested grid mirrors the dl columns; slide needs a block box (not display:contents). -->
 			<div
-				class={classes.list({ size })}
+				class={classes.list({ density })}
 				style={`grid-column: 1 / -1; ${columnsStyle}`}
 				transition:slide={{ duration: 200 }}
 			>
@@ -191,7 +197,7 @@
 		<button
 			type="button"
 			aria-expanded={expanded}
-			class={classes.toggle({ size })}
+			class={classes.toggle({ size, density })}
 			onclick={() => (expanded = !expanded)}
 		>
 			<!-- The rotation class lives on a span (plain reactive attribute), not on the icon snippet's props. -->

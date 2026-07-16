@@ -32,7 +32,9 @@ A read-only key/value metadata list, like Notion's page-properties panel. Each r
 
 ### Style Props
 - **size**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`)
-  - Typography, row gaps, and chip sizing.
+  - Typography only: key/value/toggle text, key icons, and chip sizing.
+- **density**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`)
+  - Spacing only: section, row, label/value, and chip-list gaps. Combine freely with \`size\`.
 - **columns**: \`number\` (default: \`1\`)
   - Items flow into this many grid columns.
 

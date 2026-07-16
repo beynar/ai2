@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown, type StreamdownToken } from 'svelte-streamdown';
+	import type { Snippet } from 'svelte';
+	import Card from '../Card/Card.svelte';
 	import Code from '../Code/Code.svelte';
+	import { Grid, GridSpan } from '../Grid/index.js';
 	import Mermaid from '../Mermaid/Mermaid.svelte';
+	import Stat from '../Stat/Stat.svelte';
+	import { HStack, VStack } from '../Stack/index.js';
 	import type { MarkdownProps } from './markdown.props.js';
 	import {
 		buildStreamdownTheme,
@@ -13,7 +18,14 @@
 	// `MarkdownProps` is `WithAttachments`, so attachments also arrive in `...rest`.
 	// Spreading `rest` onto `<Streamdown>` forwards both extra Streamdown props and
 	// those attachments through in one go, which is acceptable here.
-	let { content, size = 'normal', class: className, theme, ...rest }: MarkdownProps = $props();
+	let {
+		content,
+		size = 'normal',
+		class: className,
+		theme,
+		mdx: customMdx,
+		...rest
+	}: MarkdownProps = $props();
 
 	const classes = $derived(useMarkdownTheme(theme));
 	const streamdownTheme = $derived(buildStreamdownTheme(size));
@@ -21,10 +33,54 @@
 	// The `token` carried by the code/mermaid override snippets is a marked
 	// `Tokens.Code`; we only need its raw source and language string here.
 	type CodePayload = { token: { text: string; lang?: string } };
+	type MdxToken = Extract<StreamdownToken, { type: 'mdx' }>;
+	type MdxAttribute = string | number | boolean | null | undefined;
+	type MdxPayload = {
+		token: MdxToken;
+		children: Snippet;
+		props: Record<string, MdxAttribute>;
+	};
+
+	const mdxComponents = { Card, Grid, GridSpan, HStack, Stat, VStack } as const;
+	const blockedMdxProps = new Set([
+		'children',
+		'class',
+		'href',
+		'ref',
+		'rel',
+		'style',
+		'target',
+		'theme'
+	]);
+
+	const getMdxComponent = (tagName: string) => mdxComponents[tagName as keyof typeof mdxComponents];
+	const getMdxProps = (props: Record<string, MdxAttribute>): Record<string, MdxAttribute> => {
+		const mdxProps: Record<string, MdxAttribute> = {};
+		for (const [name, value] of Object.entries(props)) {
+			if (blockedMdxProps.has(name) || name.startsWith('on')) continue;
+			if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean')
+				continue;
+			mdxProps[name] = value;
+		}
+		return mdxProps;
+	};
 </script>
 
+{#snippet renderMdx(payload: MdxPayload)}
+	{@const Component = getMdxComponent(payload.token.tagName)}
+	{#if Component}
+		<Component {...getMdxProps(payload.props)}>
+			{@render payload.children()}
+		</Component>
+	{:else if customMdx}
+		{@render customMdx(payload)}
+	{:else}
+		{@render payload.children()}
+	{/if}
+{/snippet}
+
 <div class={classes.root({ size, className })}>
-	<Streamdown {content} theme={streamdownTheme} {...rest}>
+	<Streamdown {content} theme={streamdownTheme} mdx={renderMdx} {...rest}>
 		<!-- Streamdown routes ```mermaid fences through the `code` snippet too (its
 		     mermaid branch consults snippets.code), so the mermaid case must be
 		     handled here rather than relying solely on a `mermaid` snippet. -->

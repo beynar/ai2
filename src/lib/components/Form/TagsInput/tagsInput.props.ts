@@ -1,3 +1,4 @@
+import type { Density } from '$lib/types/theme.js';
 import type { InputProps } from '../Field/field.js';
 import type { ComboboxOption, MaybePromise } from '../Combobox/combobox.props.js';
 import type { TagsInputThemeProps } from './tagsInput.theme.js';
@@ -13,6 +14,11 @@ export type TagsInputProps = Omit<InputProps<'tag'>, 'onChange'> & {
 	placeholder?: string;
 	/** Static array or function returning items filtered by the current search value. Omit for free-text entry. */
 	items?: ComboboxOption[] | ((searchValue?: string) => MaybePromise<ComboboxOption[]>);
+	/**
+	 * Spacing density forwarded to the dropdown option rows (paddings, gaps, min-height).
+	 * @default 'normal'
+	 */
+	density?: Density;
 	/** When items is provided, also allow Enter to add free text that is not in the option list. */
 	allowCustom?: boolean;
 	/** Maximum number of tags allowed; further adds are ignored once reached. */

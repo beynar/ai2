@@ -1,4 +1,5 @@
 import type { Snippet } from 'svelte';
+import type { Density } from '$lib/types/theme.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { ButtonProps } from '../Button/button.props.js';
 import type { MenuOptionProps } from '../MenuOption/menuOption.props.js';
@@ -59,6 +60,14 @@ export type MenuProps = WithAttachments<{
 	 * Array of menu items to render (Button, MenuOption, or Separator).
 	 */
 	items: MenuItem[];
+	/**
+	 * Spacing density — controls the gap between rows and is forwarded to every
+	 * MenuOption row (option, submenu trigger, back control). A per-item `density`
+	 * wins over the menu-level one. Items of type 'button' render a Button, which
+	 * has no density axis and is unaffected.
+	 * @default 'normal'
+	 */
+	density?: Density;
 	/**
 	 * Custom theme overrides for the menu container and child components.
 	 */

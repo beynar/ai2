@@ -32,13 +32,18 @@
 			as="span"
 			render={rangeLabel}
 			payload={slider.rangePayload}
-			class={classes.valueLabel({ size })}
+			class={classes.valueLabel({ size, variant, orientation: slider.orientationValue })}
 		>
 			{slider.rangePayload.formatted}
 		</Slot>
 	{:else}
 		{#each slider.valuePayloads as payload (payload.index)}
-			<Slot as="span" render={valueLabel} {payload} class={classes.valueLabel({ size })}>
+			<Slot
+				as="span"
+				render={valueLabel}
+				{payload}
+				class={classes.valueLabel({ size, variant, orientation: slider.orientationValue })}
+			>
 				{payload.formatted}
 			</Slot>
 		{/each}

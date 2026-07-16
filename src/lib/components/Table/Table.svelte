@@ -10,6 +10,7 @@
 		prefix,
 		suffix,
 		caption,
+		density = 'normal',
 		class: className,
 		theme,
 		...attachments
@@ -38,7 +39,7 @@
 	{@const cell = normalizeCell(cellValue)}
 	{#if isHeader}
 		<th
-			class={classes.head({ class: cell.class })}
+			class={classes.head({ density, class: cell.class })}
 			rowspan={cell.rowSpan || undefined}
 			colspan={cell.colSpan || undefined}
 		>
@@ -46,7 +47,7 @@
 		</th>
 	{:else}
 		<td
-			class={classes.cell({ class: cell.class })}
+			class={classes.cell({ density, class: cell.class })}
 			rowspan={cell.rowSpan || undefined}
 			colspan={cell.colSpan || undefined}
 		>
@@ -55,14 +56,14 @@
 	{/if}
 {/snippet}
 
-<div class={classes.root({ className })} {...attachments}>
+<div data-density={density} class={classes.root({ className })} {...attachments}>
 	<Slot render={prefix} class={classes.prefix()} />
 	<table class={classes.table()}>
-		<Slot render={caption} as="caption" class={classes.caption()} />
+		<Slot render={caption} as="caption" class={classes.caption({ density })} />
 
 		{#if header && headerKeys.length > 0}
 			<thead class={classes.thead()}>
-				<tr class={classes.row()}>
+				<tr class={classes.row({ density })}>
 					{#each headerKeys as key}
 						{@render renderCell(header[key]!, true)}
 					{/each}
@@ -73,7 +74,7 @@
 		{#if items && items.length > 0}
 			<tbody class={classes.tbody()}>
 				{#each items as row}
-					<tr class={classes.row({ class: row.class })}>
+					<tr class={classes.row({ density, class: row.class })}>
 						{#if row.content}
 							<Slot render={row.content} />
 						{:else if row.cells}
@@ -96,7 +97,7 @@
 
 		{#if footer && Object.keys(footer).length > 0}
 			<tfoot class={classes.tfoot()}>
-				<tr class={classes.row()}>
+				<tr class={classes.row({ density })}>
 					{#if headerKeys.length > 0}
 						{#each headerKeys as key}
 							{#if footer[key]}

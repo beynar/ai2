@@ -49,6 +49,7 @@ Extends all Field component props plus:
 - **required**: boolean - Mark as required
 - **disabled**: boolean - Disable the trigger
 - **size**: 'small' | 'normal' | 'large' - Trigger and dropdown size
+- **density**: 'small' | 'normal' | 'large' (default: 'normal') - Spacing density forwarded to the dropdown option rows (paddings, gaps, min-height)
 - **name**: string - Form field name; also renders a hidden input for native form posts
 
 ### Bindable Props

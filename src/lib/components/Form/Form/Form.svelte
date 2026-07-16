@@ -2,6 +2,7 @@
 	import TextInput from '../TextInput/TextInput.svelte';
 	import NumberInput from '../NumberInput/NumberInput.svelte';
 	import RatingInput from '../RatingInput/RatingInput.svelte';
+	import VoiceInput from '../VoiceInput/VoiceInput.svelte';
 	import Slider from '../Slider/Slider.svelte';
 	import type { SliderProps } from '../Slider/slider.props.js';
 	import type { FormInputs, FormSubmitHandler, FormInput, InferFormValue } from './form.js';
@@ -94,6 +95,8 @@
 			<NumberInput {...inputProps as any} {name} />
 		{:else if input.type === 'rating'}
 			<RatingInput {...inputProps as any} {name} />
+		{:else if input.type === 'voice'}
+			<VoiceInput {...inputProps as any} {name} />
 		{:else if input.type === 'slider'}
 			<Slider {...inputProps as SliderProps} {name} />
 		{:else if input.type === 'slider-range'}

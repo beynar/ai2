@@ -1,13 +1,21 @@
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
+// `size` scales typography, icons, and the radius tied to that scale; `density`
+// owns paddings and gaps ('small' matches the old small spacing, 'large'
+// the old large spacing).
 const defaultStatRoot = cva({
 	base: 'raised-sm grid grid-cols-[minmax(0,1fr)_auto] border tabular-nums transition-colors',
 	variants: {
 		size: {
-			small: 'gap-x-3 gap-y-1 rounded-lg p-3',
-			normal: 'gap-x-4 gap-y-1 rounded-xl p-4',
-			large: 'gap-x-5 gap-y-1.5 rounded-xl p-5'
+			small: 'rounded-lg',
+			normal: 'rounded-xl',
+			large: 'rounded-xl'
+		},
+		density: {
+			small: 'gap-x-3 gap-y-1 p-3',
+			normal: 'gap-x-4 gap-y-1 p-4',
+			large: 'gap-x-5 gap-y-1.5 p-5'
 		},
 		color: {
 			primary: 'border-primary',
@@ -28,6 +36,7 @@ const defaultStatRoot = cva({
 	},
 	defaultVariants: {
 		size: 'normal',
+		density: 'normal',
 		color: 'background',
 		variant: 'solid'
 	},
@@ -178,14 +187,14 @@ const defaultStatDescription = cva({
 const defaultStatSeparator = cva({
 	base: 'col-span-2',
 	variants: {
-		size: {
+		density: {
 			small: 'my-1',
 			normal: 'my-2',
 			large: 'my-3'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		density: 'normal'
 	}
 });
 

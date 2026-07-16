@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Slot from '$lib/components/Slot/Slot.svelte';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
 	import SliderTrack from './SliderTrack.svelte';
@@ -38,6 +39,7 @@
 		type: _formType,
 		size = 'normal',
 		i18n,
+		label,
 		...rest
 	}: SliderProps & { type?: string } = $props();
 
@@ -137,9 +139,12 @@
 
 	const classes = $derived(useSliderTheme(theme));
 	const groupLabel = $derived(
-		typeof rest.label === 'string' || typeof rest.label === 'number' ? `${rest.label}` : undefined
+		typeof label === 'string' || typeof label === 'number' ? `${label}` : undefined
 	);
 	const hasMarks = $derived(marks.length > 0);
+	const hasContainedLayout = $derived(
+		variant === 'contained' && slider.orientationValue === 'horizontal'
+	);
 
 	const getThumbLabel = (index: number) => {
 		if (thumbLabels[index]) return thumbLabels[index];
@@ -162,6 +167,7 @@
 <Field
 	{field}
 	{size}
+	label={hasContainedLayout ? undefined : label}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
@@ -188,6 +194,19 @@
 				marks: hasMarks
 			})}
 		>
+			{#if hasContainedLayout && label}
+				<Slot
+					as="label"
+					attrs={{ for: id }}
+					render={label}
+					class={classes.containedLabel({
+						size,
+						required: field.required,
+						hasError: field.hasError
+					})}
+				/>
+			{/if}
+
 			<SliderTrack
 				{id}
 				{slider}

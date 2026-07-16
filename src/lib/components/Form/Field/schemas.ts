@@ -56,6 +56,9 @@ export const schemas: {
 		// Rating input type
 		rating: v.pipe(v.number(), v.minValue(0.5)),
 
+		// Voice input type
+		voice: v.instance(Blob),
+
 		// Tag input type
 		tag: nonEmptyArray(v.string()),
 		'tag-group': tagGroupValue,
@@ -109,6 +112,9 @@ export const schemas: {
 
 		// Rating input type
 		rating: optional(v.number()),
+
+		// Voice input type
+		voice: optional(v.instance(Blob)),
 
 		// Tag input type
 		tag: optional(emptyArrayNull(v.array(v.string()))),

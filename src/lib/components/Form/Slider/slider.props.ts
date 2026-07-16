@@ -20,7 +20,7 @@ export type SliderMark = {
 
 export type SliderRangeLabelPayload = SliderRangePayload;
 export type SliderMode = 'single' | 'range';
-export type SliderVariant = 'default' | 'thick';
+export type SliderVariant = 'default' | 'thick' | 'contained';
 
 export type SliderProps = Omit<InputProps<'slider'>, 'value' | 'onChange' | 'onValidate'> & {
 	/** The field's value, bindable with `bind:value`; arrays render multiple thumbs. */
@@ -33,7 +33,7 @@ export type SliderProps = Omit<InputProps<'slider'>, 'value' | 'onChange' | 'onV
 	step?: number;
 	/** Rendering mode; range defaults to two thumbs and range Form semantics. */
 	mode?: SliderMode;
-	/** Visual track style. */
+	/** Visual track style; contained places the label and optional value inside an input-like rail. */
 	variant?: SliderVariant;
 	/** Number of thumbs to render when value is null or a single number. */
 	thumbs?: number;

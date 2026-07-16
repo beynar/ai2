@@ -32,6 +32,7 @@ import { formDescription } from '$lib/components/Form/Form/form.mcp.js';
 import { multiStepFormDescription } from '$lib/components/Form/MultiStepForm/multiStepForm.mcp.js';
 import { numberInputDescription } from '$lib/components/Form/NumberInput/numberInput.mcp.js';
 import { ratingInputDescription } from '$lib/components/Form/RatingInput/ratingInput.mcp.js';
+import { voiceInputDescription } from '$lib/components/Form/VoiceInput/voiceInput.mcp.js';
 import { ratingDescription } from '$lib/components/Rating/rating.mcp.js';
 import { miniCalendarDescription } from '$lib/components/MiniCalendar/miniCalendar.mcp.js';
 import { metadataListDescription } from '$lib/components/MetadataList/metadataList.mcp.js';
@@ -77,6 +78,7 @@ import { cardDescription } from '$lib/components/Card/card.mcp.js';
 import { tableDescription } from '$lib/components/Table/table.mcp.js';
 import { marqueeDescription } from '$lib/components/Marquee/marquee.mcp.js';
 import { paginationDescription } from '$lib/components/Pagination/pagination.mcp.js';
+import { tableOfContentsDescription } from '$lib/components/TableOfContents/tableOfContents.mcp.js';
 import { skeletonDescription } from '$lib/components/Skeleton/skeleton.mcp.js';
 import { spinnerDescription } from '$lib/components/Spinner/spinner.mcp.js';
 import { tabsDescription } from '$lib/components/Tabs/tabs.mcp.js';
@@ -88,6 +90,8 @@ import { collapsibleDescription } from '$lib/components/Collapsible/collapsible.
 import { qrCodeDescription } from '$lib/components/QRCode/qrCode.mcp.js';
 import { pdfViewerDescription } from '$lib/components/PDFViewer/pdfViewer.mcp.js';
 import { globeDescription } from '$lib/components/Globe/globe.mcp.js';
+import { gridDescription } from '$lib/components/Grid/grid.mcp.js';
+import { stackDescription } from '$lib/components/Stack/stack.mcp.js';
 
 const components = {
 	accordion: accordionDescription,
@@ -120,6 +124,7 @@ const components = {
 	'multi-step-form': multiStepFormDescription,
 	'number-input': numberInputDescription,
 	'rating-input': ratingInputDescription,
+	'voice-input': voiceInputDescription,
 	'password-input': passwordInputDescription,
 	'phone-input': phoneInputDescription,
 	'radio-input': radioInputDescription,
@@ -160,6 +165,7 @@ const components = {
 	table: tableDescription,
 	marquee: marqueeDescription,
 	pagination: paginationDescription,
+	'table-of-contents': tableOfContentsDescription,
 	skeleton: skeletonDescription,
 	spinner: spinnerDescription,
 	tabs: tabsDescription,
@@ -174,6 +180,11 @@ const components = {
 	'metadata-list': metadataListDescription,
 	'sortable-list': sortableListDescription,
 	globe: globeDescription,
+	grid: gridDescription,
+	'grid-span': gridDescription,
+	stack: stackDescription,
+	'h-stack': stackDescription,
+	'v-stack': stackDescription,
 	'pdf-viewer': pdfViewerDescription
 };
 

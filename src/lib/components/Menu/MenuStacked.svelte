@@ -23,6 +23,7 @@
 		items,
 		class: className = '',
 		theme,
+		density = 'normal',
 		header,
 		footer,
 		focusOnMount,
@@ -134,7 +135,7 @@
 </script>
 
 <div
-	class={classes.root({ className })}
+	class={classes.root({ density, className })}
 	role="menu"
 	{...attachments}
 	{@attach navigation.containerReference}
@@ -157,11 +158,12 @@
 			{@const hasBackControl = depth > 0}
 
 			{#if depth <= activeStep}
-				<div class={classes.root({})}>
+				<div class={classes.root({ density })}>
 					{#if hasBackControl}
 						<MenuStackedBackHeader
 							opener={panelEntry?.item ?? null}
 							label={getBackControlLabel(panelEntry)}
+							{density}
 							{theme}
 							onBack={() => {
 								void closeSubmenu();
@@ -187,6 +189,7 @@
 							{@const { type: _type, ...optionProps } = item}
 							<MenuOption
 								role="menuitem"
+								{density}
 								{...optionProps}
 								theme={theme?.option}
 								{@attach attachItemReference(isActivePanel)}
@@ -211,6 +214,7 @@
 							} = submenuItem}
 							<MenuOption
 								role="menuitem"
+								{density}
 								{...itemProps}
 								suffix={suffix ?? caretRightIcon}
 								theme={theme?.submenu}

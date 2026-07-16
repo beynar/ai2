@@ -44,6 +44,8 @@ The Menu component is a flexible container that renders an array of menu items i
 
 - **class**: string - Additional CSS classes for the menu container
 
+- **density**: 'small' | 'normal' | 'large' (default: 'normal') - Spacing density: controls the gap between rows and is forwarded to every MenuOption row (option, submenu trigger, back control); a per-item \`density\` wins. Items of type 'button' render a Button, which has no density axis and is unaffected.
+
 - **header**: Snippet - Optional header content rendered at the top of the menu
 
 - **footer**: Snippet - Optional footer content rendered at the bottom of the menu
@@ -435,6 +437,15 @@ The menu follows this DOM structure:
 <Menu {items} />
 \`\`\`
 
+### Density
+\`\`\`svelte
+<!-- density tightens/loosens the row gap and every option row's paddings.
+     Button items are unaffected (Button has no density axis). -->
+<Menu {items} density="small" />
+<Menu {items} density="normal" />
+<Menu {items} density="large" />
+\`\`\`
+
 ## Accessibility
 
 - Automatically sets \`role="menu"\` on the container
@@ -501,11 +512,10 @@ import type { SeparatorThemeProps } from 'svelai/separator';
 const customTheme: MenuThemeProps = {
   root: {
     base: 'flex flex-col w-full',
-    gap: {
-      none: 'gap-0',
-      small: 'gap-0.5',
-      normal: 'gap-1',
-      large: 'gap-2'
+    density: {
+      small: 'gap-0',
+      normal: 'gap-0.5',
+      large: 'gap-1'
     }
   },
   button: {
@@ -515,7 +525,7 @@ const customTheme: MenuThemeProps = {
   },
   option: {
     root: {
-      size: {
+      density: {
         normal: 'px-3 py-2'
       }
     }
@@ -533,7 +543,7 @@ const customTheme: MenuThemeProps = {
 **root**:
 - base: Base classes for menu container
 - Variants:
-  - gap: 'none' | 'small' | 'normal' | 'large' - Spacing between menu items
+  - density: 'small' | 'normal' | 'large' - Spacing between menu items
 
 **button** (optional):
 - Forwards theme to all Button items in the menu
@@ -555,11 +565,11 @@ const customTheme: MenuThemeProps = {
 
 **Basic Theme Override**:
 \`\`\`svelte
-<Menu 
+<Menu
   items={menuItems}
   theme={{
     root: {
-      gap: {
+      density: {
         normal: 'gap-2'
       }
     }
@@ -569,17 +579,17 @@ const customTheme: MenuThemeProps = {
 
 **Theme Forwarding to Child Components**:
 \`\`\`svelte
-<Menu 
+<Menu
   items={menuItems}
   theme={{
     root: {
-      gap: {
+      density: {
         large: 'gap-3'
       }
     },
     option: {
       root: {
-        size: {
+        density: {
           normal: 'px-4 py-3 min-h-10'
         },
         color: {
@@ -606,14 +616,14 @@ const customTheme: MenuThemeProps = {
   
   setMenuTheme({
     root: {
-      gap: {
+      density: {
         normal: 'gap-2'
       }
     },
     option: {
       root: {
         base: 'rounded-lg',
-        size: {
+        density: {
           normal: 'px-3 py-2'
         }
       }

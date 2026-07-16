@@ -21,6 +21,7 @@
 		disabled,
 		name,
 		size = 'normal',
+		density = 'normal',
 		onValidate,
 		onChange,
 		visible,
@@ -145,6 +146,7 @@
 								as="button"
 								role="option"
 								{size}
+								{density}
 								title={option.label}
 								highlighted={select.nav.highlighted === option.value}
 								selected={field.value === option.value}

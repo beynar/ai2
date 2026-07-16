@@ -1,10 +1,11 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
-	import { Card, setCardTheme } from '$lib/components/Card/index.js';
+	import { Card } from '$lib/components/Card/index.js';
 	import Button from '$lib/components/Button/Button.svelte';
-	import { colors, sizes, variants } from '$lib/utils/tokens.js';
+	import { colors, variants } from '$lib/utils/tokens.js';
 	import { Form } from '$lib/components/Form/Form/index.js';
+	import CardPlayground from './demos/CardPlayground.svelte';
 </script>
 
 <DocPage
@@ -16,7 +17,7 @@
 		'Header, content and footer slots',
 		'Renders link or button when interactive',
 		'Action slot or ButtonProps shortcut',
-		'Variants, colors and size tokens'
+		'Variants, colors, size and density tokens'
 	]}
 >
 	<ComponentCard
@@ -32,7 +33,7 @@
 	{/snippet}
 </Card>`}
 	>
-		<Card>
+		<Card class="w-full max-w-sm">
 			{#snippet title()}
 				Card Title
 			{/snippet}
@@ -46,7 +47,17 @@
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Shadcn Card">
+		<ComponentCard
+			title="Playground"
+			description="Every rendering prop, live — variant, color, size, density, section borders and disabled."
+		>
+			<CardPlayground />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Login card"
+			description="Header with an action, a Form as content, and stacked footer buttons."
+		>
 			<Card
 				class="w-full max-w-sm"
 				title="Login to your account"
@@ -81,241 +92,166 @@
 			</Card>
 		</ComponentCard>
 
-		<ComponentCard description="Basic Card">
-			<Card>
-				{#snippet title()}
-					Card Title
-				{/snippet}
-				{#snippet description()}
-					This is a description of the card content.
-				{/snippet}
-				{#snippet children()}
-					<p>Card content goes here.</p>
-				{/snippet}
-			</Card>
+		<ComponentCard
+			title="Sizes"
+			description="size scales the typography only — title, description, and body text."
+			code={`<Card size="small" ... />
+<Card size="normal" ... />
+<Card size="large" ... />`}
+		>
+			<div class="grid w-full gap-6 lg:grid-cols-3">
+				{#each ['small', 'normal', 'large'] as const as s (s)}
+					<Card size={s}>
+						{#snippet title()}
+							Settings ({s})
+						{/snippet}
+						{#snippet description()}
+							Manage your preferences
+						{/snippet}
+						{#snippet children()}
+							<p>Same paddings, scaled type.</p>
+						{/snippet}
+					</Card>
+				{/each}
+			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Card with Action (Snippet)">
-			<Card>
-				{#snippet title()}
-					Settings
-				{/snippet}
-				{#snippet description()}
-					Manage your preferences
-				{/snippet}
-				{#snippet action()}
-					<Button variant="ghost" size="small">Action</Button>
-				{/snippet}
-				{#snippet children()}
-					<p>Settings content...</p>
-				{/snippet}
-			</Card>
+		<ComponentCard
+			title="Density"
+			description="density scales the paddings and gaps — small for dense dashboards, large for roomy detail surfaces. Combine freely with size."
+			code={`<Card density="small" ... />
+<Card density="normal" ... />
+<Card density="large" ... />`}
+		>
+			<div class="grid w-full gap-6 lg:grid-cols-3">
+				{#each ['small', 'normal', 'large'] as const as d (d)}
+					<Card density={d}>
+						{#snippet title()}
+							Settings ({d})
+						{/snippet}
+						{#snippet description()}
+							Manage your preferences
+						{/snippet}
+						{#snippet children()}
+							<p>Same type, scaled spacing.</p>
+						{/snippet}
+					</Card>
+				{/each}
+			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Card with Action (ButtonProps Object)">
-			<Card
-				showBorders
-				action={{
-					variant: 'ghost',
-					size: 'small',
-					children: 'Action'
-				}}
-			>
-				{#snippet title()}
-					Settings
-				{/snippet}
-				{#snippet description()}
-					Manage your preferences
-				{/snippet}
-				{#snippet children()}
-					<p>Settings content...</p>
-				{/snippet}
-			</Card>
-			<Card
-				size="small"
-				showBorders
-				action={{
-					variant: 'ghost',
-					size: 'small',
-					children: 'Action'
-				}}
-			>
-				{#snippet title()}
-					Settings
-				{/snippet}
-				{#snippet description()}
-					Manage your preferences
-				{/snippet}
-				{#snippet children()}
-					<p>Settings content...</p>
-				{/snippet}
-			</Card>
-			<Card
-				size="large"
-				showBorders
-				action={{
-					variant: 'ghost',
-					size: 'small',
-					children: 'Action'
-				}}
-			>
-				{#snippet title()}
-					Settings
-				{/snippet}
-				{#snippet description()}
-					Manage your preferences
-				{/snippet}
-				{#snippet children()}
-					<p>Settings content...</p>
-				{/snippet}
-			</Card>
-		</ComponentCard>
-
-		<ComponentCard description="Card with Action (ButtonProps with onClick)">
-			<Card
-				showBorders
-				action={{
-					variant: 'ghost',
-					size: 'small',
-					children: 'Delete',
-					color: 'danger',
-					onClick: () => alert('Deleted!')
-				}}
-			>
-				{#snippet title()}
-					Dangerous Action
-				{/snippet}
-				{#snippet description()}
-					Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium voluptatibus quos eius
-					amet minus animi veritatis incidunt error odit vero quas soluta omnis, optio iste beatae sit
-					voluptate neque dolores!
-				{/snippet}
-				{#snippet children()}
-					<p>This action cannot be undone.</p>
-				{/snippet}
-			</Card>
-		</ComponentCard>
-
-		<ComponentCard description="Card Variants">
-			<div class="grid grid-cols-2 gap-4">
-				{#each variants as variant}
+		<ComponentCard
+			title="Variants"
+			description="solid is the elevated default; outline and soft are quieter; ghost blends into the page."
+		>
+			<div class="grid w-full gap-6 sm:grid-cols-2">
+				{#each variants as variant (variant)}
 					<Card {variant} color="primary">
 						{#snippet title()}
-							{variant} Card
+							{variant}
 						{/snippet}
 						{#snippet description()}
-							Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium voluptatibus quos
-							eius amet minus animi veritatis incidunt error odit vero quas soluta omnis, optio iste
-							beatae sit voluptate neque dolores!
-						{/snippet}
-						{#snippet children()}
-							<p>This is a {variant} variant card.</p>
+							A primary {variant} card.
 						{/snippet}
 					</Card>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Card Sizes">
-			<div class="grid gap-4">
-				{#each sizes as size}
-					<Card {size}>
+		<ComponentCard
+			title="Colors"
+			description="The color prop drives the surface (solid), ring (outline) or tint (soft)."
+		>
+			<div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				{#each colors as color (color)}
+					<Card {color} density="small">
 						{#snippet title()}
-							{size} Card
+							{color}
 						{/snippet}
 						{#snippet children()}
-							<p>This is a {size} size card.</p>
+							<p>Solid {color} surface.</p>
 						{/snippet}
 					</Card>
 				{/each}
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Card Colors">
-			<div class="grid grid-cols-2 gap-4">
-				{#each colors as color}
-					<Card {color}>
-						{#snippet title()}
-							{color} Card
-						{/snippet}
-						{#snippet description()}
-							Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium voluptatibus quos
-							eius amet minus animi veritatis incidunt error odit vero quas soluta omnis, optio iste
-							beatae sit voluptate neque dolores!
-						{/snippet}
-						{#snippet children()}
-							<p>This is a {color} colored card.</p>
-						{/snippet}
-					</Card>
-				{/each}
-			</div>
-		</ComponentCard>
-
-		<ComponentCard description="Interactive Card (Link)">
-			<Card href="/" target="_blank" rel="noopener">
+		<ComponentCard
+			title="Header action"
+			description="Pass ButtonProps for the shortcut, or a snippet for full control — rendered top-right of the header."
+			code={`<Card action={{ variant: 'ghost', size: 'small', children: 'Edit' }} ... />`}
+		>
+			<Card
+				class="w-full max-w-sm"
+				action={{
+					variant: 'ghost',
+					size: 'small',
+					children: 'Edit'
+				}}
+			>
 				{#snippet title()}
-					Article Title
+					Notifications
 				{/snippet}
 				{#snippet description()}
-					Read more about this topic
+					Choose how you want to be notified
 				{/snippet}
 				{#snippet children()}
-					<p>Article preview...</p>
+					<p>Email and push notifications are enabled.</p>
 				{/snippet}
 			</Card>
 		</ComponentCard>
 
-		<ComponentCard description="Interactive Card (Click Handler)">
-			<Card onClick={() => alert('Card clicked!')} onEnter={() => console.log('Hovered')}>
+		<ComponentCard
+			title="Sections and footer"
+			description="showBorders draws muted separators between header, content and footer."
+		>
+			<Card class="w-full max-w-sm" showBorders>
 				{#snippet title()}
-					Clickable Card
+					Billing
+				{/snippet}
+				{#snippet description()}
+					Your plan renews on August 1st
 				{/snippet}
 				{#snippet children()}
-					<p>Click me!</p>
-				{/snippet}
-			</Card>
-		</ComponentCard>
-
-		<ComponentCard description="Card with Border Separators">
-			<Card showBorders={true}>
-				{#snippet title()}
-					Title
-				{/snippet}
-				{#snippet children()}
-					<p>Content with border above</p>
-				{/snippet}
-				{#snippet footer()}
-					<Button size="small">Action</Button>
-				{/snippet}
-			</Card>
-		</ComponentCard>
-
-		<ComponentCard description="Card with Footer">
-			<Card>
-				{#snippet title()}
-					Card with Footer
-				{/snippet}
-				{#snippet children()}
-					<p>Card content...</p>
+					<p>Pro plan · $29/month · 3 seats</p>
 				{/snippet}
 				{#snippet footer()}
 					<div class="flex w-full items-center justify-between">
-						<span class="text-muted-foreground text-sm">Footer content</span>
-						<Button size="small">Action</Button>
+						<span class="text-foreground-muted text-sm">Next invoice: $87</span>
+						<Button size="small">Manage plan</Button>
 					</div>
 				{/snippet}
 			</Card>
 		</ComponentCard>
 
-		<ComponentCard description="Disabled Card">
-			<Card disabled={true}>
-				{#snippet title()}
-					Disabled Card
-				{/snippet}
-				{#snippet children()}
-					<p>This card is disabled</p>
-				{/snippet}
-			</Card>
+		<ComponentCard
+			title="Interactive"
+			description="With href the card renders as a link; with onClick it becomes a button."
+		>
+			<div class="grid w-full gap-6 sm:grid-cols-2">
+				<Card href="/" target="_blank" rel="noopener">
+					{#snippet title()}
+						Release notes
+					{/snippet}
+					{#snippet description()}
+						Everything new in version 0.2
+					{/snippet}
+					{#snippet children()}
+						<p>Opens in a new tab.</p>
+					{/snippet}
+				</Card>
+				<Card onClick={() => console.log('Card clicked')}>
+					{#snippet title()}
+						Quick action
+					{/snippet}
+					{#snippet description()}
+						The whole surface is clickable
+					{/snippet}
+					{#snippet children()}
+						<p>Logs a message on click.</p>
+					{/snippet}
+				</Card>
+			</div>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

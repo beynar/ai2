@@ -21,6 +21,7 @@
 		items,
 		class: className = '',
 		theme,
+		density = 'normal',
 		header,
 		footer,
 		focusOnMount,
@@ -116,7 +117,7 @@
 </script>
 
 <div
-	class={classes.root({ className })}
+	class={classes.root({ density, className })}
 	role="menu"
 	{...attachments}
 	{@attach navigation.containerReference}
@@ -126,6 +127,7 @@
 			role="menuitem"
 			title={t.back}
 			prefix={arrowLeftIcon}
+			{density}
 			theme={theme?.option}
 			attrs={{ 'data-menu-keep-open': 'true' }}
 			onClick={() => {
@@ -154,6 +156,7 @@
 			{@const { type: _type, ...optionProps } = item}
 			<MenuOption
 				role="menuitem"
+				{density}
 				{...optionProps}
 				theme={theme?.option}
 				onEnter={(event) => {
@@ -197,12 +200,14 @@
 					items: menu,
 					focusOnMount: true,
 					submenuMode: 'popover',
+					density,
 					theme
 				}}
 			>
 				{#snippet trigger(popover)}
 					<MenuOption
 						role="menuitem"
+						{density}
 						{...itemProps}
 						suffix={suffix ?? caretRightIcon}
 						theme={theme?.submenu}

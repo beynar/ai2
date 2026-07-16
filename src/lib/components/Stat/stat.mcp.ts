@@ -35,6 +35,20 @@ Stat renders a compact metric card with semantic regions for label, value, indic
 </Stat>
 \`\`\`
 
+## Sizes and Density
+
+\`\`\`svelte
+<!-- size scales the typography and icons -->
+<Stat size="small" label="Small type" value="1,204" />
+<Stat size="normal" label="Normal type (default)" value="1,204" />
+<Stat size="large" label="Large type" value="1,204" />
+
+<!-- density scales the padding and gaps -->
+<Stat density="small" label="Dense dashboard stat" value="1,204" />
+<Stat density="normal" label="Everyday stat (default)" value="1,204" />
+<Stat density="large" label="Roomy detail stat" value="1,204" />
+\`\`\`
+
 ## Props
 
 ### Core Props
@@ -42,7 +56,8 @@ Stat renders a compact metric card with semantic regions for label, value, indic
 - **class**: string - Additional classes for the root element.
 - **color**: Colors (default: 'background') - Semantic color token for the stat surface.
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'solid') - Surface treatment.
-- **size**: 'small' | 'normal' | 'large' (default: 'normal') - Controls padding, spacing, and typography.
+- **size**: 'small' | 'normal' | 'large' (default: 'normal') - Scales typography and icons only (label, value, trend, description, indicator). Combine with density to control spacing independently.
+- **density**: 'small' | 'normal' | 'large' (default: 'normal') - Controls the surface padding and gaps between regions (small: p-3 / gap-x-3, normal: p-4 / gap-x-4, large: p-5 / gap-x-5).
 - **theme**: StatThemeProps - Theme overrides for root and stat parts.
 
 ### Content Props

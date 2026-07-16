@@ -1,5 +1,6 @@
 import type { Slot } from '../Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
+import type { Density } from '$lib/types/theme.js';
 import type { TableThemeProps } from './table.theme.js';
 
 /**
@@ -79,6 +80,12 @@ export type TableProps = WithAttachments<{
 	 * Caption for the table. Rendered as a <caption> element.
 	 */
 	caption?: Slot;
+	/**
+	 * Spacing density controlling cell paddings and row heights.
+	 * 'normal' is today's everyday scale; 'small' for dense data grids;
+	 * 'large' for roomy detail surfaces.
+	 */
+	density?: Density;
 	/**
 	 * CSS classes to apply to the table container.
 	 */

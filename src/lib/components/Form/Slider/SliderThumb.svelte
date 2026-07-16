@@ -41,6 +41,11 @@
 			if (size === 'large') return '18px';
 			return '14px';
 		}
+		if (variant === 'contained') {
+			if (size === 'small') return '2px';
+			if (size === 'large') return '4px';
+			return '3px';
+		}
 		if (size === 'small') return '7px';
 		if (size === 'large') return '10px';
 		return '8px';
@@ -49,11 +54,13 @@
 	const getThickEdgeInset = () => '2px';
 	const getThumbMinPosition = () => {
 		const thumbHalfSize = getThumbHalfSize();
+		if (variant === 'contained') return `calc(${thumbHalfSize} + 4px)`;
 		if (variant !== 'thick') return thumbHalfSize;
 		return `calc(${thumbHalfSize} + ${getThickEdgeInset()})`;
 	};
 	const getThumbMaxPosition = () => {
 		const thumbHalfSize = getThumbHalfSize();
+		if (variant === 'contained') return `calc(100% - ${thumbHalfSize} - 4px)`;
 		if (variant !== 'thick') return `calc(100% - ${thumbHalfSize})`;
 		return `calc(100% - ${thumbHalfSize} - ${getThickEdgeInset()})`;
 	};

@@ -3,6 +3,8 @@
 	import DocPage from '../../DocPage.svelte';
 	import { Stat } from '$lib/components/Stat/index.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
+	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
+	import type { Density } from '$lib/types/theme.js';
 	import { chartLineUpIcon } from '$lib/components/Icons/chartLineUp.js';
 	import { databaseIcon } from '$lib/components/Icons/database.js';
 	import { dotsThreeIcon } from '$lib/components/Icons/dotsThree.js';
@@ -15,6 +17,13 @@
 	import { usersIcon } from '$lib/components/Icons/users.js';
 
 	const statVariants = variants;
+
+	const densitySegments = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
+	let statDensity = $state<Density>('normal');
 </script>
 
 <DocPage
@@ -138,7 +147,7 @@
 		</ComponentCard>
 
 		<ComponentCard
-			description="Small, normal, and large sizes adjust padding, icon scale, and type hierarchy."
+			description="size scales the typography and icons only — label, value, trend, and indicator."
 			class="!min-h-[320px]"
 			code={`{#each sizes as size}
 	<Stat
@@ -176,6 +185,40 @@
 						{/snippet}
 					</Stat>
 				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="density scales the padding and gaps — small for dense dashboards, large for roomy detail surfaces. Combine freely with size."
+			class="!min-h-[280px]"
+			code={`<SegmentedControl items={densities} bind:value={density} />
+<Stat {density} label="Storage used" value="68%" ... />`}
+		>
+			<div class="flex w-full flex-col items-center gap-5">
+				<SegmentedControl
+					items={densitySegments}
+					bind:value={statDensity}
+					size="small"
+					ariaLabel="Stat density"
+				/>
+				<Stat
+					density={statDensity}
+					class="w-full max-w-sm"
+					label="Storage used"
+					value="68%"
+					indicatorVariant="icon"
+					indicatorColor="primary"
+					description="Same type, scaled spacing"
+					showSeparator
+				>
+					{#snippet indicator()}
+						{@render databaseIcon()}
+					{/snippet}
+					{#snippet trend()}
+						{@render percentIcon()}
+						8 points available
+					{/snippet}
+				</Stat>
 			</div>
 		</ComponentCard>
 

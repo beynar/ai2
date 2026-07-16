@@ -28,10 +28,14 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		links: [
 			{ href: '/components/aspect-ratio', text: 'Aspect ratio' },
 			{ href: '/components/card', text: 'Card' },
+			{ href: '/components/grid', text: 'Grid' },
+			{ href: '/components/grid-span', text: 'Grid span' },
 			{ href: '/components/heading', text: 'Heading' },
+			{ href: '/components/h-stack', text: 'HStack' },
 			{ href: '/components/resizable', text: 'Resizable' },
 			{ href: '/components/scroll-area', text: 'Scroll area' },
-			{ href: '/components/separator', text: 'Separator' }
+			{ href: '/components/separator', text: 'Separator' },
+			{ href: '/components/v-stack', text: 'VStack' }
 		]
 	},
 	{
@@ -76,6 +80,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/radios', text: 'Radios' },
 			{ href: '/components/rating-input', text: 'Rating input' },
 			{ href: '/components/rich-text-input', text: 'Rich text input' },
+			{ href: '/components/voice-input', text: 'Voice input' },
 			{ href: '/components/select', text: 'Select' },
 			{ href: '/components/slider', text: 'Slider' },
 			{ href: '/components/switch', text: 'Switch' },
@@ -131,6 +136,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/pagination', text: 'Pagination' },
 			{ href: '/components/stepper', text: 'Stepper' },
 			{ href: '/components/tabbar', text: 'Tabbar' },
+			{ href: '/components/table-of-contents', text: 'Table of contents' },
 			{ href: '/components/tabs', text: 'Tabs' }
 		]
 	},
@@ -183,6 +189,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 	{
 		label: 'Utilities',
 		links: [
+			{ href: '/utilities/dnd', text: 'Dnd list' },
 			{ href: '/utilities/hitbox', text: 'Hitbox' },
 			{ href: '/utilities/raised', text: 'Raised' },
 			{ href: '/utilities/scroll-fade', text: 'Scroll fade' },

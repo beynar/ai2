@@ -45,6 +45,9 @@ const colorSet = new Set<Colors>([
 const isColor = (color?: string | Colors): color is Colors => colorSet.has(color as Colors);
 
 const useSetup = (node: Element, args: (() => IconProps) | undefined) => {
+	// Reconcile instead of only adding: dynamic classes (e.g. a conditional
+	// rotate-180) must come OFF the node when the prop drops them.
+	let prevClasses: string[] = [];
 	$effect(() => {
 		const { size = '1lh', mirrored, color, class: className = '', ...attributes } = args?.() || {};
 		for (const key in attributes) {
@@ -65,11 +68,13 @@ const useSetup = (node: Element, args: (() => IconProps) | undefined) => {
 		mirrored && node.setAttribute('transform', mirrored ? 'scale(-1, 1)' : '');
 		if (typeof className === 'string') {
 			const classList = className.split(' ').filter(Boolean);
-			if (classList.length > 0) {
-				for (const cls of classList) {
-					node.classList.add(cls);
-				}
+			for (const cls of prevClasses) {
+				if (!classList.includes(cls)) node.classList.remove(cls);
 			}
+			for (const cls of classList) {
+				node.classList.add(cls);
+			}
+			prevClasses = classList;
 		}
 	});
 };

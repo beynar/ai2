@@ -8,6 +8,9 @@
 	let storage = $state<number | null>(120);
 	let priority = $state<number | null>(3);
 	let opacity = $state<number | null>(0.65);
+	let backgroundGlow = $state<number | null>(0.5);
+	let cursorRadius = $state<number | null>(1.15);
+	let bloomIntensity = $state<number | null>(0.75);
 	let temperature = $state<number | null>(22);
 	let priceRange = $state<number[] | null>([25, 75]);
 	let comfortRange = $state<number[] | null>([18, 24]);
@@ -32,7 +35,7 @@
 	features={[
 		'ARIA slider thumbs',
 		'Scalar or range values',
-		'Default and thick track variants',
+		'Default, thick, and contained variants',
 		'Vertical orientation',
 		'Draggable selected range'
 	]}
@@ -252,6 +255,82 @@
 						formatValue={(value) => `${value} deg C`}
 					/>
 				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Contained"
+			description="An input-like rail keeps the label, scale, current value, and pointer target in one compact control."
+			code={`<div class="grid gap-2">
+	<Slider
+		variant="contained"
+		size="small"
+		label="Background glow"
+		bind:value={backgroundGlow}
+		min={0}
+		max={3}
+		step={0.1}
+		showValue
+		formatValue={(value) => value.toFixed(1)}
+	/>
+	<Slider
+		variant="contained"
+		size="normal"
+		label="Cursor radius"
+		bind:value={cursorRadius}
+		min={0}
+		max={2}
+		step={0.05}
+		showValue
+		formatValue={(value) => Number(value.toFixed(2)).toString()}
+	/>
+	<Slider
+		variant="contained"
+		size="large"
+		label="Bloom intensity"
+		bind:value={bloomIntensity}
+		min={0}
+		max={1}
+		step={0.05}
+		showValue
+		formatValue={(value) => Number(value.toFixed(2)).toString()}
+	/>
+</div>`}
+		>
+			<div class="grid w-full max-w-xl gap-2">
+				<Slider
+					variant="contained"
+					size="small"
+					label="Background glow"
+					bind:value={backgroundGlow}
+					min={0}
+					max={3}
+					step={0.1}
+					showValue
+					formatValue={(value) => value.toFixed(1)}
+				/>
+				<Slider
+					variant="contained"
+					size="normal"
+					label="Cursor radius"
+					bind:value={cursorRadius}
+					min={0}
+					max={2}
+					step={0.05}
+					showValue
+					formatValue={(value) => Number(value.toFixed(2)).toString()}
+				/>
+				<Slider
+					variant="contained"
+					size="large"
+					label="Bloom intensity"
+					bind:value={bloomIntensity}
+					min={0}
+					max={1}
+					step={0.05}
+					showValue
+					formatValue={(value) => Number(value.toFixed(2)).toString()}
+				/>
 			</div>
 		</ComponentCard>
 

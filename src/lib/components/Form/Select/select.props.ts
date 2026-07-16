@@ -1,3 +1,4 @@
+import type { Density } from '$lib/types/theme.js';
 import type { InputProps } from '../Field/field.js';
 import type { SelectThemeProps } from './select.theme.js';
 
@@ -27,6 +28,11 @@ export type SelectProps = InputProps<'select'> & {
 	theme?: SelectThemeProps & InputProps<'select'>['theme'];
 	/** Items to display — flat `{ value, label }` entries and/or `{ label, items }` groups. */
 	items?: SelectItems;
+	/**
+	 * Spacing density forwarded to the dropdown option rows (paddings, gaps, min-height).
+	 * @default 'normal'
+	 */
+	density?: Density;
 	/** Render separators between consecutive groups. */
 	separators?: boolean;
 };

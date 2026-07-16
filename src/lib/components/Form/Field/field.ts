@@ -10,6 +10,7 @@ export type TextInputType = 'text' | 'password' | 'email' | 'url' | 'textarea' |
 export type RichTextInputType = 'rich-text';
 export type NumberInputType = 'number' | 'slider';
 export type RatingInputType = 'rating';
+export type VoiceInputType = 'voice';
 export type SliderRangeInputType = 'slider-range';
 export type TagInputType = 'tag';
 export type TagGroupInputType = 'tag-group';
@@ -31,6 +32,7 @@ export type InputType =
 	| ColorInputType
 	| NumberInputType
 	| RatingInputType
+	| VoiceInputType
 	| TimeInputType
 	| TextInputType
 	| RichTextInputType
@@ -55,33 +57,35 @@ export type FieldValue<T extends InputType> = T extends 'file'
 					? number
 					: T extends RatingInputType
 						? number
-						: T extends TimeInputType
-							? number
-							: T extends TextInputType
-								? string
-								: T extends RichTextInputType
+						: T extends VoiceInputType
+							? Blob
+							: T extends TimeInputType
+								? number
+								: T extends TextInputType
 									? string
-									: T extends PinInputType
+									: T extends RichTextInputType
 										? string
-										: T extends BooleanInputType
-											? boolean
-											: T extends MultipleChoiceInputType
-												? string[]
-												: T extends TagInputType
+										: T extends PinInputType
+											? string
+											: T extends BooleanInputType
+												? boolean
+												: T extends MultipleChoiceInputType
 													? string[]
-													: T extends TagGroupInputType
-														? string | string[] | null
-														: T extends KeyValueInputType
-															? KeyValuePair[]
-															: T extends SingleOptionInputType
-																? string
-																: T extends 'calendar'
-																	? Date
-																	: T extends 'calendar-range'
-																		? [Date | null, Date | null]
-																		: T extends ColorInputType
-																			? string
-																			: never;
+													: T extends TagInputType
+														? string[]
+														: T extends TagGroupInputType
+															? string | string[] | null
+															: T extends KeyValueInputType
+																? KeyValuePair[]
+																: T extends SingleOptionInputType
+																	? string
+																	: T extends 'calendar'
+																		? Date
+																		: T extends 'calendar-range'
+																			? [Date | null, Date | null]
+																			: T extends ColorInputType
+																				? string
+																				: never;
 
 export type InputProps<T extends InputType> = WithSlot<
 	{

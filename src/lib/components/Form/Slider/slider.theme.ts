@@ -53,7 +53,8 @@ const defaultControl = cva({
 		},
 		variant: {
 			default: '',
-			thick: ''
+			thick: '',
+			contained: 'relative gap-0'
 		},
 		marks: {
 			true: '',
@@ -71,7 +72,28 @@ const defaultControl = cva({
 		{ variant: 'default', orientation: 'horizontal', size: 'large', marks: false, class: 'h-5' },
 		{ variant: 'thick', orientation: 'horizontal', size: 'small', marks: false, class: 'h-4' },
 		{ variant: 'thick', orientation: 'horizontal', size: 'normal', marks: false, class: 'h-5' },
-		{ variant: 'thick', orientation: 'horizontal', size: 'large', marks: false, class: 'h-6' }
+		{ variant: 'thick', orientation: 'horizontal', size: 'large', marks: false, class: 'h-6' },
+		{
+			variant: 'contained',
+			orientation: 'horizontal',
+			size: 'small',
+			marks: false,
+			class: 'h-8'
+		},
+		{
+			variant: 'contained',
+			orientation: 'horizontal',
+			size: 'normal',
+			marks: false,
+			class: 'h-10'
+		},
+		{
+			variant: 'contained',
+			orientation: 'horizontal',
+			size: 'large',
+			marks: false,
+			class: 'h-12'
+		}
 	]
 });
 
@@ -103,7 +125,8 @@ const defaultTrack = cva({
 		},
 		variant: {
 			default: '',
-			thick: ''
+			thick: '',
+			contained: 'border-background-muted bg-background-light rounded-lg border'
 		}
 	},
 	defaultVariants: {
@@ -121,7 +144,13 @@ const defaultTrack = cva({
 		{ orientation: 'horizontal', variant: 'thick', size: 'large', class: 'h-6' },
 		{ orientation: 'vertical', variant: 'thick', size: 'small', class: 'w-4' },
 		{ orientation: 'vertical', variant: 'thick', size: 'normal', class: 'w-5' },
-		{ orientation: 'vertical', variant: 'thick', size: 'large', class: 'w-6' }
+		{ orientation: 'vertical', variant: 'thick', size: 'large', class: 'w-6' },
+		{ orientation: 'horizontal', variant: 'contained', size: 'small', class: 'h-8' },
+		{ orientation: 'horizontal', variant: 'contained', size: 'normal', class: 'h-10' },
+		{ orientation: 'horizontal', variant: 'contained', size: 'large', class: 'h-12' },
+		{ orientation: 'vertical', variant: 'contained', size: 'small', class: 'w-8' },
+		{ orientation: 'vertical', variant: 'contained', size: 'normal', class: 'w-10' },
+		{ orientation: 'vertical', variant: 'contained', size: 'large', class: 'w-12' }
 	]
 });
 
@@ -134,7 +163,8 @@ const defaultTrackBackground = cva({
 		},
 		variant: {
 			default: '',
-			thick: 'inset-0'
+			thick: 'inset-0',
+			contained: 'bg-background-light inset-0 rounded-[inherit]'
 		}
 	},
 	defaultVariants: {
@@ -173,7 +203,8 @@ const defaultRange = cva({
 		},
 		variant: {
 			default: '',
-			thick: ''
+			thick: '',
+			contained: 'z-10 rounded-[inherit] bg-current/10'
 		}
 	},
 	defaultVariants: {
@@ -201,6 +232,16 @@ const defaultRange = cva({
 		{
 			orientation: 'vertical',
 			variant: 'thick',
+			class: 'inset-x-0'
+		},
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			class: 'inset-y-0'
+		},
+		{
+			orientation: 'vertical',
+			variant: 'contained',
 			class: 'inset-x-0'
 		}
 	]
@@ -234,7 +275,9 @@ const defaultThumb = cva({
 		},
 		variant: {
 			default: '',
-			thick: ''
+			thick: '',
+			contained:
+				'peer-hover/thumb:[&>[data-slider-thumb-visual]]:scale-100 peer-hover/thumb:[&>[data-slider-thumb-visual]]:bg-foreground/80'
 		}
 	},
 	defaultVariants: {
@@ -264,7 +307,8 @@ const defaultThumbHitbox = cva({
 		},
 		variant: {
 			default: 'hidden',
-			thick: ''
+			thick: '',
+			contained: 'peer/thumb'
 		}
 	},
 	defaultVariants: {
@@ -299,7 +343,8 @@ const defaultThumbVisual = cva({
 		},
 		variant: {
 			default: '',
-			thick: ''
+			thick: '',
+			contained: ''
 		}
 	},
 	defaultVariants: {
@@ -323,7 +368,18 @@ const defaultThumbVisual = cva({
 		{ orientation: 'horizontal', variant: 'thick', size: 'large', class: 'h-5 w-9' },
 		{ orientation: 'vertical', variant: 'thick', size: 'small', class: 'h-5 w-3' },
 		{ orientation: 'vertical', variant: 'thick', size: 'normal', class: 'h-7 w-4' },
-		{ orientation: 'vertical', variant: 'thick', size: 'large', class: 'h-9 w-5' }
+		{ orientation: 'vertical', variant: 'thick', size: 'large', class: 'h-9 w-5' },
+		{
+			variant: 'contained',
+			class:
+				'bg-foreground/45 scale-75 border-0 shadow-none transition-[background-color,transform] duration-150 ease-out group-focus-visible:scale-100 group-focus-visible:bg-foreground/80'
+		},
+		{ orientation: 'horizontal', variant: 'contained', size: 'small', class: 'h-5 w-1' },
+		{ orientation: 'horizontal', variant: 'contained', size: 'normal', class: 'h-7 w-1.5' },
+		{ orientation: 'horizontal', variant: 'contained', size: 'large', class: 'h-8 w-2' },
+		{ orientation: 'vertical', variant: 'contained', size: 'small', class: 'h-1 w-5' },
+		{ orientation: 'vertical', variant: 'contained', size: 'normal', class: 'h-1.5 w-7' },
+		{ orientation: 'vertical', variant: 'contained', size: 'large', class: 'h-2 w-8' }
 	]
 });
 
@@ -341,7 +397,8 @@ const defaultValueLabels = cva({
 		},
 		variant: {
 			default: '',
-			thick: ''
+			thick: '',
+			contained: ''
 		},
 		marks: {
 			true: '',
@@ -356,6 +413,24 @@ const defaultValueLabels = cva({
 	},
 	compoundVariants: [
 		{ orientation: 'horizontal', marks: true, variant: 'default', class: 'mt-1 -translate-y-1/2' },
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			size: 'small',
+			class: 'pointer-events-none absolute top-0 right-3 z-30 h-8 flex-nowrap'
+		},
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			size: 'normal',
+			class: 'pointer-events-none absolute top-0 right-4 z-30 h-10 flex-nowrap'
+		},
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			size: 'large',
+			class: 'pointer-events-none absolute top-0 right-5 z-30 h-12 flex-nowrap'
+		},
 		{
 			orientation: 'horizontal',
 			marks: true,
@@ -383,15 +458,110 @@ const defaultValueLabels = cva({
 const defaultValueLabel = cva({
 	base: 'border-background-muted bg-background text-foreground inline-flex shrink-0 items-center justify-center rounded-full border font-medium leading-none tabular-nums',
 	variants: {
+		orientation: {
+			horizontal: '',
+			vertical: ''
+		},
 		size: {
 			small: 'min-w-8 px-2 py-1 text-xs',
 			normal: 'min-w-10 px-2.5 py-1 text-xs',
 			large: 'min-w-12 px-3 py-1.5 text-sm'
+		},
+		variant: {
+			default: '',
+			thick: '',
+			contained: ''
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		orientation: 'horizontal',
+		size: 'normal',
+		variant: 'default'
+	},
+	compoundVariants: [
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			size: 'small',
+			class: 'min-w-0 rounded-none border-0 bg-transparent px-0 py-0 text-xs'
+		},
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			size: 'normal',
+			class: 'min-w-0 rounded-none border-0 bg-transparent px-0 py-0 text-sm'
+		},
+		{
+			orientation: 'horizontal',
+			variant: 'contained',
+			size: 'large',
+			class: 'min-w-0 rounded-none border-0 bg-transparent px-0 py-0 text-base'
+		}
+	]
+});
+
+const defaultContainedLabel = cva({
+	base: 'text-foreground-muted pointer-events-none absolute top-0 left-0 z-30 flex max-w-[55%] min-w-0 items-center truncate font-medium',
+	variants: {
+		size: {
+			small: 'h-8 pl-3 text-xs',
+			normal: 'h-10 pl-4 text-sm',
+			large: 'h-12 pl-5 text-base'
+		},
+		required: {
+			true: "after:text-danger after:ml-1 after:content-['*']",
+			false: ''
+		},
+		hasError: {
+			true: 'text-danger',
+			false: ''
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		required: false,
+		hasError: false
 	}
+});
+
+const defaultContainedTicks = cva({
+	base: 'text-foreground pointer-events-none absolute inset-0 z-0',
+	variants: {
+		orientation: {
+			horizontal: '',
+			vertical: ''
+		}
+	},
+	defaultVariants: {
+		orientation: 'horizontal'
+	}
+});
+
+const defaultContainedTick = cva({
+	base: 'bg-current/10 absolute rounded-full',
+	variants: {
+		orientation: {
+			horizontal: 'top-1/2 w-px -translate-x-1/2 -translate-y-1/2',
+			vertical: 'left-1/2 h-px -translate-x-1/2 translate-y-1/2'
+		},
+		size: {
+			small: '',
+			normal: '',
+			large: ''
+		}
+	},
+	defaultVariants: {
+		orientation: 'horizontal',
+		size: 'normal'
+	},
+	compoundVariants: [
+		{ orientation: 'horizontal', size: 'small', class: 'h-2.5' },
+		{ orientation: 'horizontal', size: 'normal', class: 'h-3' },
+		{ orientation: 'horizontal', size: 'large', class: 'h-4' },
+		{ orientation: 'vertical', size: 'small', class: 'w-2.5' },
+		{ orientation: 'vertical', size: 'normal', class: 'w-3' },
+		{ orientation: 'vertical', size: 'large', class: 'w-4' }
+	]
 });
 
 const defaultMarks = cva({
@@ -446,6 +616,9 @@ export const sliderTheme = {
 	thumbVisual: defaultThumbVisual,
 	valueLabels: defaultValueLabels,
 	valueLabel: defaultValueLabel,
+	containedLabel: defaultContainedLabel,
+	containedTicks: defaultContainedTicks,
+	containedTick: defaultContainedTick,
 	marks: defaultMarks,
 	mark: defaultMark,
 	markDot: defaultMarkDot,

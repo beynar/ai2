@@ -63,6 +63,7 @@ A multi-value tag input. Use it for entering a list of free-text tags, or restri
 - **required**: \`boolean\` (default: \`false\`)
 - **disabled**: \`boolean\`
 - **size**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`)
+- **density**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`) - Spacing density forwarded to the dropdown option rows (paddings, gaps, min-height)
 - **name**: \`string\`
 - **errors**: \`string[] | boolean\` (bindable)
 - **focused**: \`boolean\` (bindable)

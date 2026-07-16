@@ -15,6 +15,7 @@ export type MarkdownProps = WithAttachments<
 		| 'class'
 		| 'code'
 		| 'mermaid'
+		| 'mdxComponents'
 		| 'children'
 		| 'streamdown'
 		| 'element'
@@ -27,5 +28,7 @@ export type MarkdownProps = WithAttachments<
 		class?: string;
 		/** Per-instance theme overrides (root part). */
 		theme?: MarkdownThemeProps;
+		/** Custom MDX components. Matching names override Markdown's built-in svelai components. */
+		mdxComponents?: StreamdownProps['mdxComponents'];
 	}
 >;

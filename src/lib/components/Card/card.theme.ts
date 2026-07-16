@@ -1,29 +1,51 @@
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
+// Vega look: a quiet surface (subtle ring + shadow-xs instead of a heavy raised
+// shadow), medium-weight title, muted description. `size` scales typography
+// only; `density` owns paddings and gaps ('large' matches vega's default
+// 6-scale, 'normal' its sm 4-scale).
 const defaultCard = cva({
-	base: 'bg-background text-foreground flex flex-col rounded-xl transition-all tabular-nums raised-sm',
+	base: 'group/card text-foreground flex flex-col rounded-xl tabular-nums transition-all',
 	variants: {
 		size: {
-			small: 'py-2 gap-2',
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
+		},
+		density: {
+			small: 'py-3 gap-3',
 			normal: 'py-4 gap-4',
 			large: 'py-6 gap-6'
 		},
+		// The color itself flows through the data-color attribute (bg-color /
+		// ring-color / text-color-contrast resolve against it); the axis stays for
+		// per-color theme overrides.
 		color: {
-			primary: 'bg-primary text-primary-contrast border-primary',
-			secondary: 'bg-secondary text-secondary-contrast border-secondary',
-			foreground: 'bg-foreground text-foreground-contrast border-foreground',
-			background: 'bg-background text-color-contrast border-background-muted',
-			danger: 'bg-danger text-danger-contrast border-danger',
-			success: 'bg-success text-success-contrast border-success',
-			warning: 'bg-warning text-warning-contrast border-warning',
-			info: 'bg-info text-info-contrast border-info'
+			primary: '',
+			secondary: '',
+			foreground: '',
+			background: '',
+			danger: '',
+			success: '',
+			warning: '',
+			info: ''
 		},
+		// Text color follows the SURFACE: contrast tone on a solid color fill,
+		// plain foreground on transparent/tinted surfaces (contrast text there is
+		// unreadable — it's meant for a color-filled background).
 		variant: {
-			solid: 'bg-color border-color shadow-sm',
-			outline: 'bg-transparent border-color ',
-			soft: 'bg-color-muted  border-transparent!',
-			ghost: 'bg-transparent! border-transparent!'
+			solid: 'bg-color text-color-contrast ring-1 ring-foreground/10 shadow-xs',
+			outline: 'bg-transparent text-foreground ring-1 ring-color',
+			soft: 'bg-color-muted text-foreground',
+			// No ! on bg-transparent: it would also defeat the clickable hover bg.
+			ghost: 'bg-transparent text-foreground'
+		},
+		// Internal: set when the card has an onClick or href — interactive cards
+		// get cursor, hover, press and keyboard-focus treatment.
+		clickable: {
+			true: 'cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:translate-y-px',
+			false: ''
 		},
 		disabled: {
 			true: 'opacity-55 cursor-not-allowed *:pointer-events-none',
@@ -32,30 +54,67 @@ const defaultCard = cva({
 	},
 	defaultVariants: {
 		size: 'normal',
+		density: 'normal',
 		color: 'background',
 		variant: 'solid',
+		clickable: false,
 		disabled: false
 	},
 	compoundVariants: [
+		// Hover per surface: solids lift (stronger ring + shadow); outline and
+		// ghost gain a subtle translucent wash of the card color (soft-like);
+		// soft deepens its tint.
+		{ clickable: true, variant: 'solid', class: 'hover:ring-foreground/25 hover:shadow-sm' },
+		{ clickable: true, variant: 'outline', class: 'hover:bg-color/10' },
+		{ clickable: true, variant: 'ghost', class: 'hover:bg-color/10' },
+		{ clickable: true, variant: 'soft', class: 'hover:bg-color/25' },
+		// Neutral (background) color: the background token has no visible tint on
+		// the page — use a foreground wash / the next surface step instead.
+		{
+			clickable: true,
+			color: 'background',
+			variant: 'outline',
+			class: 'hover:bg-foreground/5'
+		},
+		{
+			clickable: true,
+			color: 'background',
+			variant: 'ghost',
+			class: 'hover:bg-foreground/5'
+		},
+		{
+			clickable: true,
+			color: 'background',
+			variant: 'soft',
+			class: 'hover:bg-background-muted'
+		},
+		{
+			clickable: true,
+			color: 'background',
+			variant: 'solid',
+			class: 'hover:bg-background-lighter'
+		},
+		// Neutral card: an elevated surface distinct from the page background
+		// (bg-background would blend in, especially in dark mode).
 		{
 			color: 'background',
 			variant: 'solid',
-			class: 'bg-background'
+			class: 'bg-background-light text-foreground'
 		},
 		{
 			color: 'background',
 			variant: 'outline',
-			class: 'border-background text-foreground'
+			class: 'ring-foreground/15 text-foreground'
 		},
 		{
 			color: 'background',
 			variant: 'soft',
-			class: 'bg-background-lighter text-color-contrast'
+			class: 'bg-background-lighter text-foreground'
 		},
 		{
 			color: 'foreground',
 			variant: 'outline',
-			class: 'border-foreground/50'
+			class: 'ring-foreground/50'
 		}
 	]
 });
@@ -63,10 +122,10 @@ const defaultCard = cva({
 const defaultCardHeader = cva({
 	base: 'grid auto-rows-min items-start',
 	variants: {
-		size: {
-			small: 'px-2 gap-1',
-			normal: 'px-4 gap-2',
-			large: 'px-6 gap-3'
+		density: {
+			small: 'px-3 gap-0.5',
+			normal: 'px-4 gap-1',
+			large: 'px-6 gap-1.5'
 		},
 		hasAction: {
 			true: 'grid-cols-[1fr_auto]',
@@ -84,14 +143,14 @@ const defaultCardHeader = cva({
 		}
 	},
 	defaultVariants: {
-		size: 'normal',
+		density: 'normal',
 		hasAction: false,
 		hasBorder: false
 	}
 });
 
 const defaultCardTitle = cva({
-	base: 'leading-none font-semibold',
+	base: 'font-medium leading-normal',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -99,10 +158,10 @@ const defaultCardTitle = cva({
 			large: 'text-lg'
 		},
 		variant: {
-			solid: 'text-color-contrast',
-			outline: 'text-color',
-			soft: 'text-color',
-			ghost: 'text-color'
+			solid: 'text-color-contrast group-data-[color=background]/card:text-foreground',
+			outline: 'text-color group-data-[color=background]/card:text-foreground',
+			soft: 'text-color group-data-[color=background]/card:text-foreground',
+			ghost: 'text-color group-data-[color=background]/card:text-foreground'
 		}
 	},
 	defaultVariants: {
@@ -111,7 +170,7 @@ const defaultCardTitle = cva({
 });
 
 const defaultCardDescription = cva({
-	base: 'text-foreground-muted',
+	base: 'text-foreground-muted leading-normal',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -119,7 +178,7 @@ const defaultCardDescription = cva({
 			large: 'text-base'
 		},
 		variant: {
-			solid: 'text-color-contrast/70',
+			solid: 'text-color-contrast/70 group-data-[color=background]/card:text-foreground-muted',
 			outline: '',
 			soft: '',
 			ghost: ''
@@ -137,14 +196,10 @@ const defaultCardAction = cva({
 const defaultCardContent = cva({
 	base: '',
 	variants: {
-		size: {
-			small: 'px-2',
+		density: {
+			small: 'px-3',
 			normal: 'px-4',
 			large: 'px-6'
-		},
-		hasBorder: {
-			true: '',
-			false: ''
 		},
 		hasBorderTop: {
 			true: 'border-t border-background-muted',
@@ -156,50 +211,25 @@ const defaultCardContent = cva({
 		}
 	},
 	defaultVariants: {
-		size: 'normal',
-		hasBorder: false
+		density: 'normal'
 	},
 	compoundVariants: [
-		{
-			hasBorderTop: true,
-			size: 'small',
-			class: 'pt-2'
-		},
-		{
-			hasBorderTop: true,
-			size: 'normal',
-			class: 'pt-4'
-		},
-		{
-			hasBorderTop: true,
-			size: 'large',
-			class: 'pt-6'
-		},
-		{
-			hasBorderBottom: true,
-			size: 'small',
-			class: 'pb-2'
-		},
-		{
-			hasBorderBottom: true,
-			size: 'normal',
-			class: 'pb-4'
-		},
-		{
-			hasBorderBottom: true,
-			size: 'large',
-			class: 'pb-6'
-		}
+		{ hasBorderTop: true, density: 'small', class: 'pt-3' },
+		{ hasBorderTop: true, density: 'normal', class: 'pt-4' },
+		{ hasBorderTop: true, density: 'large', class: 'pt-6' },
+		{ hasBorderBottom: true, density: 'small', class: 'pb-3' },
+		{ hasBorderBottom: true, density: 'normal', class: 'pb-4' },
+		{ hasBorderBottom: true, density: 'large', class: 'pb-6' }
 	]
 });
 
 const defaultCardFooter = cva({
-	base: 'flex flex-wrap items-center ',
+	base: 'flex flex-wrap items-center',
 	variants: {
-		size: {
-			small: 'px-2 gap-1 ',
-			normal: 'px-4 gap-2 ',
-			large: 'px-6 gap-3 '
+		density: {
+			small: 'px-3 gap-2',
+			normal: 'px-4 gap-2',
+			large: 'px-6 gap-3'
 		},
 		hasBorder: {
 			true: '',
@@ -207,7 +237,7 @@ const defaultCardFooter = cva({
 		}
 	},
 	defaultVariants: {
-		size: 'normal',
+		density: 'normal',
 		hasBorder: false
 	}
 });

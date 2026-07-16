@@ -56,6 +56,7 @@ default, or inside a modal Dialog (⌘K style) with \`dialog\`.
   - \`CommandItem\`: \`{ value: string; label: string; icon?: Slot; shortcut?: string; keywords?: string[]; disabled?: boolean; href?: string; onSelect?: (value) => void; class?: string }\`
   - Items with \`href\` render as \`<a>\` and navigate on click/Enter.
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Typography and spacing scale.
+- **density**: 'small' | 'normal' | 'large' (default: 'normal') - Spacing density forwarded to the option rows (paddings, gaps, min-height).
 
 ### Dialog Mode Props
 - **dialog**: boolean (default: false) - Render inside a modal Dialog instead of inline.

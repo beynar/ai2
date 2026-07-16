@@ -63,6 +63,7 @@ A searchable dropdown component that supports both static arrays and async optio
 - **required**: \`boolean\` (default: \`false\`)
 - **disabled**: \`boolean\`
 - **size**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`)
+- **density**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`) - Spacing density forwarded to the dropdown option rows (paddings, gaps, min-height)
 - **name**: \`string\`
 - **errors**: \`string[] | boolean\` (bindable)
 - **focused**: \`boolean\` (bindable)

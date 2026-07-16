@@ -16,10 +16,8 @@ The MenuOption component is a flexible menu item that can be used in dropdown me
 ## Props
 
 ### Core Props
-- **size**: 'small' | 'normal' | 'large' (default: 'normal')
-  - small: Compact menu item (28px min height)
-  - normal: Standard menu item (36px min height)
-  - large: Spacious menu item (44px min height)
+- **size**: 'small' | 'normal' | 'large' (default: 'normal') - Scales typography and icons only
+- **density**: 'small' | 'normal' | 'large' (default: 'normal') - Owns paddings, gaps and min-height; reflected as \`data-density\` on the row. Combine freely with size.
 - **color**: Colors (default: 'primary') - Sets the text color and hover background color
   - Available: primary, secondary, success, warning, danger, info, foreground, background
 
@@ -155,6 +153,22 @@ MenuOption is also the shared row primitive for the listbox family (Command, Sel
 
 <MenuOption size="large">
 	{#snippet title()}Large Menu Item{/snippet}
+</MenuOption>
+\`\`\`
+
+### Different Densities
+\`\`\`svelte
+<!-- density scales paddings/gaps/min-height; size scales text/icons -->
+<MenuOption density="small">
+	{#snippet title()}Small row{/snippet}
+</MenuOption>
+
+<MenuOption density="normal">
+	{#snippet title()}Normal row{/snippet}
+</MenuOption>
+
+<MenuOption density="large">
+	{#snippet title()}Large row{/snippet}
 </MenuOption>
 \`\`\`
 
@@ -368,7 +382,8 @@ The theme object contains the following parts:
 **root**:
 - base: Base classes applied to all menu options
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Controls padding, text size, gap, and min-height
+  - size: 'small' | 'normal' | 'large' - Text size
+  - density: 'small' | 'normal' | 'large' - Padding, gap, and min-height
   - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme and hover states
 
 **title**:
@@ -395,17 +410,17 @@ The theme object contains the following parts:
 **content**:
 - base: Base classes for content wrapper
 - Variants:
-  - size: 'small' | 'normal' | 'large' - Gap spacing between title and description
+  - density: 'small' | 'normal' | 'large' - Gap spacing between title and description
 
 ### Usage Examples
 
 **Basic Theme Override**:
 \`\`\`svelte
-<MenuOption 
+<MenuOption
   theme={{
     root: {
       base: 'rounded-lg',
-      size: {
+      density: {
         large: 'px-4 py-3 min-h-12'
       }
     },
@@ -448,7 +463,7 @@ The theme object contains the following parts:
   setMenuOptionTheme({
     root: {
       base: 'rounded-md transition-colors',
-      size: {
+      density: {
         normal: 'px-3 py-2'
       }
     },
