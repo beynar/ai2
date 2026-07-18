@@ -7,6 +7,7 @@
 	let {
 		ref = $bindable(),
 		sidebar = {},
+		variant = 'sidebar',
 		eyebrow,
 		breadcrumbs,
 		breadcrumbsMaxItems,
@@ -21,7 +22,6 @@
 		contentWidth,
 		actionOverflow,
 		mobileActionCount,
-		frame = 'viewport',
 		children: pageContent,
 		class: className,
 		pageShellTheme,
@@ -35,12 +35,12 @@
 <div
 	bind:this={ref}
 	data-slot="app-shell"
-	data-sidebar-variant={sidebar.variant ?? 'sidebar'}
+	data-sidebar-variant={variant}
 	data-sidebar-side={sidebar.side ?? 'left'}
 	class={classes.root({ className })}
 	{...attachments}
 >
-	<Sidebar {...sidebar} {frame} mode="layout">
+	<Sidebar {...sidebar} {variant} frame="contained" mode="layout">
 		{#snippet children(sidebarApi)}
 			{#snippet appHeader(pageShell: PageShellApi)}
 				{#if header}
@@ -106,7 +106,7 @@
 				{actionOverflow}
 				{mobileActionCount}
 				class={classes.page({
-					variant: sidebar.variant ?? 'sidebar',
+					variant,
 					side: sidebar.side ?? 'left'
 				})}
 				theme={pageShellTheme}

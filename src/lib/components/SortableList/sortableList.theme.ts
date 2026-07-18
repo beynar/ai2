@@ -1,24 +1,30 @@
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
-// The root <ul>: a vertical stack whose gap scales with the size token.
+// The root <ul>: a stack/row/wrapping row whose gap scales with the size token.
 const defaultRoot = cva({
-	base: 'm-0 flex list-none flex-col p-0',
+	base: 'm-0 flex list-none p-0',
 	variants: {
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
 			large: 'gap-3'
+		},
+		orientation: {
+			vertical: 'flex-col',
+			horizontal: 'flex-row',
+			grid: 'flex-row flex-wrap'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		orientation: 'vertical'
 	}
 });
 
 // The <li> row. In full-row mode the whole row is the drag activator (grab cursor, no text
-// selection); in handle mode the row stays selectable and only the grip drags. `dragging`
-// lifts the row while it is being moved.
+// selection); in handle mode only the grip drags. `dragging` marks the dimmed placeholder —
+// the dragged row shown at the slot it would land in.
 const defaultItem = cva({
 	base: 'border-background-muted bg-background text-foreground relative flex items-center rounded-xl border outline-none transition-[box-shadow,opacity] focus-visible:ring-2 focus-visible:ring-primary/50',
 	variants: {
@@ -32,7 +38,7 @@ const defaultItem = cva({
 			false: 'cursor-grab touch-none select-none active:cursor-grabbing'
 		},
 		dragging: {
-			true: 'raised z-10 opacity-95',
+			true: 'opacity-40',
 			false: ''
 		},
 		disabled: {
@@ -72,11 +78,18 @@ const defaultHandle = cva({
 	}
 });
 
+// The empty state rendered when the list has no rows (only when the `empty`
+// slot is provided). min-h keeps an empty grouped list a hittable drop area.
+const defaultEmpty = cva({
+	base: 'text-foreground-muted border-background-muted flex min-h-12 w-full items-center justify-center rounded-xl border border-dashed px-3 py-2 text-sm'
+});
+
 export const sortableListTheme = {
 	root: defaultRoot,
 	item: defaultItem,
 	content: defaultContent,
-	handle: defaultHandle
+	handle: defaultHandle,
+	empty: defaultEmpty
 };
 
 export type SortableListTheme = typeof sortableListTheme;

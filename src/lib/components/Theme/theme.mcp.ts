@@ -11,7 +11,7 @@ The Theme component provides a global theming system and state management for UI
 	import { Theme } from 'svelai/theme';
 </script>
 
-<Theme>
+<Theme spinnerVariant="pulse">
 	<slot />
 </Theme>
 \`\`\`
@@ -23,8 +23,10 @@ Access theme state using the \`useTheme()\` hook:
 \`\`\`svelte
 <script>
 	import { useTheme } from 'svelai/theme';
-	
+
 	const theme = useTheme();
+	// Also inherited by Button, Confirmation, and loading Toasts.
+	console.log(theme.spinnerVariant);
 </script>
 \`\`\`
 
@@ -45,6 +47,8 @@ Access theme state using the \`useTheme()\` hook:
 ### Theme Component Props
 - **colorScheme**: 'light' | 'dark' | 'auto' (default: 'auto')
   - Controls the color scheme of the application
+- **spinnerVariant**: 'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles' (default: 'default')
+  - Global default for Spinner, SpinnerText, spinnerOverlay, Button loading states, Confirmation actions, and loading Toasts
 - **children**: Snippet - App content
 - **class**: string - Additional CSS classes
 

@@ -75,12 +75,14 @@ import { menuOptionDescription } from '$lib/components/MenuOption/menuOption.mcp
 import { separatorDescription } from '$lib/components/Separator/separator.mcp.js';
 import { breadcrumbsDescription } from '$lib/components/Breadcrumbs/breadcrumbs.mcp.js';
 import { cardDescription } from '$lib/components/Card/card.mcp.js';
+import { dataTableDescription } from '$lib/components/DataTable/dataTable.mcp.js';
 import { tableDescription } from '$lib/components/Table/table.mcp.js';
 import { marqueeDescription } from '$lib/components/Marquee/marquee.mcp.js';
 import { paginationDescription } from '$lib/components/Pagination/pagination.mcp.js';
 import { tableOfContentsDescription } from '$lib/components/TableOfContents/tableOfContents.mcp.js';
 import { skeletonDescription } from '$lib/components/Skeleton/skeleton.mcp.js';
 import { spinnerDescription } from '$lib/components/Spinner/spinner.mcp.js';
+import { spinnerTextDescription } from '$lib/components/SpinnerText/spinnerText.mcp.js';
 import { tabsDescription } from '$lib/components/Tabs/tabs.mcp.js';
 import { tabbarDescription } from '$lib/components/Tabbar/tabbar.mcp.js';
 import { networkIndicatorDescription } from '$lib/components/NetworkIndicator/networkIndicator.mcp.js';
@@ -162,12 +164,14 @@ const components = {
 	separator: separatorDescription,
 	breadcrumbs: breadcrumbsDescription,
 	card: cardDescription,
+	'data-table': dataTableDescription,
 	table: tableDescription,
 	marquee: marqueeDescription,
 	pagination: paginationDescription,
 	'table-of-contents': tableOfContentsDescription,
 	skeleton: skeletonDescription,
 	spinner: spinnerDescription,
+	'spinner-text': spinnerTextDescription,
 	tabs: tabsDescription,
 	tabbar: tabbarDescription,
 	'network-indicator': networkIndicatorDescription,

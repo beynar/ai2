@@ -1,15 +1,20 @@
 <script lang="ts">
 	import { AppShell, type AppShellSidebarProps } from '$lib/components/AppShell/index.js';
 	import { Button } from '$lib/components/Button/index.js';
+	import { SegmentedControl } from '$lib/components/SegmentedControl/index.js';
 	import {
 		type SidebarCollapsible,
+		type SidebarDensity,
 		type SidebarDisplayState,
 		type SidebarGroup,
+		type SidebarSize,
 		type SidebarVariant
 	} from '$lib/components/Sidebar/index.js';
 	import { Skeleton } from '$lib/components/Skeleton/index.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
 	import { commandIcon } from '$lib/components/Icons/command.js';
+	import { fileIcon } from '$lib/components/Icons/file.js';
+	import { folderIcon } from '$lib/components/Icons/folder.js';
 	import { gearIcon } from '$lib/components/Icons/gear.js';
 	import { houseIcon } from '$lib/components/Icons/house.js';
 	import { usersIcon } from '$lib/components/Icons/users.js';
@@ -25,6 +30,8 @@
 	let selectedRecipeId = $state('sidebar');
 	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('collapsed');
 	let sidebarWidth = $state('16rem');
+	let sidebarSize = $state<SidebarSize>('normal');
+	let sidebarDensity = $state<SidebarDensity>('normal');
 
 	const variantRecipes: VariantRecipe[] = [
 		{ id: 'sidebar', label: 'sidebar', variant: 'sidebar' },
@@ -33,6 +40,16 @@
 		{ id: 'split', label: 'split', variant: 'split' }
 	];
 	const demoStates: DemoState[] = ['expanded', 'icon', 'hidden'];
+	const sidebarSizes = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: SidebarSize; label: string }>;
+	const sidebarDensities = [
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const satisfies ReadonlyArray<{ value: SidebarDensity; label: string }>;
 
 	const selectedRecipe = $derived(
 		variantRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? variantRecipes[0]
@@ -52,6 +69,29 @@
 				{ label: 'Analytics', href: '#analytics', icon: chartBarIcon },
 				{ label: 'Customers', href: '#customers', icon: usersIcon },
 				{ label: 'Settings', href: '#settings', icon: gearIcon }
+			]
+		},
+		{
+			label: 'Project',
+			tree: [
+				{
+					label: 'src',
+					icon: folderIcon,
+					defaultOpen: true,
+					children: [
+						{
+							label: 'components',
+							icon: folderIcon,
+							defaultOpen: true,
+							children: [
+								{ label: 'Sidebar.svelte', href: '#variant-sidebar', icon: fileIcon },
+								{ label: 'AppShell.svelte', href: '#variant-app-shell', icon: fileIcon }
+							]
+						},
+						{ label: 'routes', href: '#variant-routes', icon: folderIcon }
+					]
+				},
+				{ label: 'package.json', href: '#variant-package', icon: fileIcon }
 			]
 		}
 	];
@@ -84,8 +124,9 @@
 		items,
 		displayState: sidebarDisplayState,
 		onDisplayStateChange: handleSidebarDisplayStateChange,
-		variant: selectedRecipe.variant,
 		collapsible: sidebarCollapsible,
+		size: sidebarSize,
+		density: sidebarDensity,
 		rail: true,
 		width: sidebarWidth,
 		widthIcon: '3.5rem',
@@ -93,6 +134,7 @@
 			minWidth: '12rem',
 			maxWidth: '24rem',
 			collapseThreshold: '10.5rem',
+			storageKey: 'sidebar-variant-demo-width',
 			onWidthChange: (nextWidth) => {
 				sidebarWidth = nextWidth;
 			}
@@ -130,17 +172,37 @@
 				</Button>
 			{/each}
 		</div>
+
+		<div class="grid gap-1.5">
+			<span class="text-xs font-medium text-foreground/55">Size</span>
+			<SegmentedControl
+				items={sidebarSizes}
+				bind:value={sidebarSize}
+				size="small"
+				ariaLabel="Sidebar size"
+			/>
+		</div>
+
+		<div class="grid gap-1.5">
+			<span class="text-xs font-medium text-foreground/55">Density</span>
+			<SegmentedControl
+				items={sidebarDensities}
+				bind:value={sidebarDensity}
+				size="small"
+				ariaLabel="Sidebar density"
+			/>
+		</div>
 	</div>
 
 	<div class="min-h-0 flex-1">
 		<AppShell
 			{sidebar}
+			variant={selectedRecipe.variant}
 			title="Variant Lab"
-			subtitle="The page host and wall are painted by AppShell defaults."
-			eyebrow={`${selectedRecipe.label} / ${sidebarState}`}
+			subtitle="Sidebar owns the wall and surface geometry shared by AppShell."
+			eyebrow={`${selectedRecipe.label} / ${sidebarState} / ${sidebarSize} / ${sidebarDensity}`}
 			contentPadding="normal"
 			contentWidth="normal"
-			frame="contained"
 			theme={{
 				root: {
 					base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted'

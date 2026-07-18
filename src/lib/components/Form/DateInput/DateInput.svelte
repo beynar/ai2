@@ -281,7 +281,7 @@
 				label="Choose date"
 				aria-haspopup="dialog"
 				aria-expanded={isCalendarOpen}
-				aria-controls={isCalendarOpen ? `${id}-calendar` : undefined}
+				aria-controls={isCalendarOpen ? `${id}-calendar-popover` : undefined}
 				disabled={field.disabled}
 				prefix={calendarBlankIcon}
 				onClick={() => {

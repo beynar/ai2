@@ -33,7 +33,7 @@ The Button component is a flexible and customizable button element that supports
 - **fullWidth**: boolean (default: false) - Makes button take full width of container
 - **squared**: boolean - Makes button square (aspect-ratio 1:1), auto-determined if only prefix/suffix is provided
 - **disabled**: boolean (default: false) - Disables button interaction
-- **loading**: boolean (default: false) - Shows loading state and disables interaction
+- **loading**: boolean (default: false) - Shows the Theme-configured loading spinner and disables interaction
 
 ### Link Props
 - **href**: string - Makes button render as anchor tag

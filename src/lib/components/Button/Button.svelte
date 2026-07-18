@@ -74,7 +74,7 @@
 		className,
 		fullWidth
 	})}
-	{@attach spinnerOverlay({ loading })}
+	{@attach spinnerOverlay({ loading, size })}
 	onclick={onClick &&
 		(() => {
 			if (!disabled) {

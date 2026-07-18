@@ -31,16 +31,25 @@ const defaultSpinner = cva({
 });
 
 const defaultSpinnerIndicator = cva({
-	base: 'ui-spinner shrink-0',
+	base: 'relative box-border shrink-0',
 	variants: {
 		size: {
 			small: '[--spinner-size:1rem]',
 			normal: '[--spinner-size:1.25rem]',
 			large: '[--spinner-size:1.5rem]'
+		},
+		variant: {
+			default: 'ui-spinner',
+			grid: 'grid grid-cols-3 place-items-center',
+			pulse: 'flex items-center justify-center gap-[calc(var(--spinner-size)*0.1)]',
+			puff: 'block',
+			lines: 'block',
+			circles: 'block'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		variant: 'default'
 	}
 });
 

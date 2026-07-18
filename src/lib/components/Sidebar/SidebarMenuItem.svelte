@@ -6,10 +6,13 @@
 	import { minusIcon } from '$lib/components/Icons/minus.js';
 	import { plusIcon } from '$lib/components/Icons/plus.js';
 	import { useI18n } from '$lib/i18n/context.svelte.js';
+	import { slide } from 'svelte/transition';
 	import type {
 		SidebarApi,
 		SidebarCollapseIcon,
+		SidebarDensity,
 		SidebarMenuEntry,
+		SidebarSize,
 		SidebarTooltipMode
 	} from './sidebar.props.js';
 	import { getSidebarMenuPosition } from './sidebar-position.js';
@@ -23,16 +26,24 @@
 		api,
 		collapseIcon,
 		tooltips,
+		size,
+		density,
 		theme
 	}: {
 		item: SidebarMenuEntry;
 		api: SidebarApi;
 		collapseIcon: SidebarCollapseIcon;
 		tooltips: SidebarTooltipMode;
+		size: SidebarSize;
+		density: SidebarDensity;
 		theme?: SidebarThemeProps;
 	} = $props();
 
 	let open = $state<boolean | undefined>();
+	let rowRef = $state<HTMLElement | null>(null);
+	let submenuTriggerRef = $state<HTMLButtonElement | null>(null);
+	let submenuRef = $state<HTMLUListElement | null>(null);
+	let actionRef = $state<HTMLElement | null>(null);
 	const classes = $derived(useSidebarTheme(theme));
 	const t = $derived(useI18n());
 	const isOpen = $derived(open ?? item.defaultOpen ?? false);
@@ -40,6 +51,23 @@
 	const showTooltip = $derived((tooltips === 'always' || isIconCollapsed) && !api.isMobile);
 	const tooltipContent = $derived(showTooltip ? (item.tooltip ?? item.label) : undefined);
 	const hasSubmenu = $derived(!!item.items?.length);
+	const showSubmenu = $derived(
+		hasSubmenu && !isIconCollapsed && (item.collapsible === false || isOpen)
+	);
+
+	$effect(() => {
+		const activeElement = document.activeElement;
+		if (!(activeElement instanceof HTMLElement)) return;
+
+		if (!showSubmenu && submenuRef?.contains(activeElement)) {
+			(submenuTriggerRef ?? rowRef)?.focus();
+			return;
+		}
+
+		if (isIconCollapsed && actionRef?.contains(activeElement)) {
+			(submenuTriggerRef ?? rowRef)?.focus();
+		}
+	});
 
 	function toggleSubmenu() {
 		if (item.disabled) return;
@@ -49,29 +77,30 @@
 
 {#snippet entryContent()}
 	<SidebarIcon icon={item.icon} />
-	{#if !isIconCollapsed}
-		<span>{item.label}</span>
-	{:else}
-		<span class="sr-only">{item.label}</span>
-	{/if}
+	<span class={classes.menuLabel()}>{item.label}</span>
 {/snippet}
 
 {#snippet indicator()}
-	{#if !isIconCollapsed}
-		{#if collapseIcon === 'plus-minus'}
-			<SidebarIcon icon={isOpen ? minusIcon : plusIcon} class="ml-auto size-4" />
-		{:else}
-			<SidebarIcon
-				icon={caretRightIcon}
-				class="ml-auto size-4 transition-transform {isOpen ? 'rotate-90' : ''}"
-			/>
-		{/if}
+	{#if collapseIcon === 'plus-minus'}
+		<SidebarIcon
+			icon={isOpen ? minusIcon : plusIcon}
+			class={classes.menuTrailing({ componentSize: size })}
+		/>
+	{:else}
+		<SidebarIcon
+			icon={caretRightIcon}
+			class={classes.menuTrailing({
+				componentSize: size,
+				className: ['transition-transform', isOpen && 'rotate-90']
+			})}
+		/>
 	{/if}
 {/snippet}
 
 {#snippet leafButton()}
 	{#if item.href}
 		<a
+			bind:this={rowRef}
 			href={item.href}
 			data-slot="sidebar-menu-button"
 			data-sidebar="menu-button"
@@ -80,7 +109,13 @@
 			aria-current={item.isActive ? 'page' : undefined}
 			aria-disabled={item.disabled || undefined}
 			tabindex={item.disabled ? -1 : undefined}
-			class={classes.menuButton({ variant: item.variant, size: item.size, className: item.class })}
+			class={classes.menuButton({
+				variant: item.variant,
+				componentSize: size,
+				density,
+				size: item.size,
+				className: item.class
+			})}
 			{@attach tooltipContent ? tooltip({ content: tooltipContent, position: 'right' }) : undefined}
 			onclick={item.onClick}
 		>
@@ -88,6 +123,7 @@
 		</a>
 	{:else}
 		<button
+			bind:this={rowRef}
 			type="button"
 			data-slot="sidebar-menu-button"
 			data-sidebar="menu-button"
@@ -95,7 +131,13 @@
 			data-active={item.isActive ? 'true' : undefined}
 			aria-current={item.isActive ? 'page' : undefined}
 			disabled={item.disabled || undefined}
-			class={classes.menuButton({ variant: item.variant, size: item.size, className: item.class })}
+			class={classes.menuButton({
+				variant: item.variant,
+				componentSize: size,
+				density,
+				size: item.size,
+				className: item.class
+			})}
 			{@attach tooltipContent ? tooltip({ content: tooltipContent, position: 'right' }) : undefined}
 			onclick={item.onClick}
 		>
@@ -120,6 +162,8 @@
 				disabled={item.disabled || undefined}
 				class={classes.menuButton({
 					variant: item.variant,
+					componentSize: size,
+					density,
 					size: item.size,
 					className: ['aria-expanded:bg-background-muted', item.class]
 				})}
@@ -133,87 +177,106 @@
 				onclick={() => popover.toggle()}
 			>
 				{@render entryContent()}
-				{#if !isIconCollapsed}<SidebarIcon icon={dotsThreeIcon} class="ml-auto size-4" />{/if}
+				<SidebarIcon icon={dotsThreeIcon} class={classes.menuTrailing({ componentSize: size })} />
 			</button>
 		{/snippet}
 	</PopupMenu>
 {/snippet}
 
 {#snippet submenu()}
-	{#if !isIconCollapsed}
-		<ul
-			data-slot="sidebar-menu-sub"
-			data-sidebar="menu-sub"
-			class={classes.subMenu({ className: item.subClass })}
-		>
-			{#each item.items ?? [] as sub, index (sub.label + index)}
-				<SidebarMenuSubItem {sub} {theme} />
-			{/each}
-		</ul>
-	{/if}
+	<ul
+		bind:this={submenuRef}
+		data-slot="sidebar-menu-sub"
+		data-sidebar="menu-sub"
+		inert={showSubmenu ? undefined : true}
+		aria-hidden={showSubmenu ? undefined : 'true'}
+		class={classes.subMenu({ density, className: item.subClass })}
+		transition:slide={{ duration: 180 }}
+	>
+		{#each item.items ?? [] as sub, index (sub.label + index)}
+			<SidebarMenuSubItem {sub} {size} {density} {theme} />
+		{/each}
+	</ul>
 {/snippet}
 
 <li data-slot="sidebar-menu-item" data-sidebar="menu-item" class={classes.menuItem()}>
-	{#if item.menu}
-		{@render dropdownButton()}
-	{:else if hasSubmenu && item.collapsible === false}
-		{@render leafButton()}
-		{@render submenu()}
-	{:else if hasSubmenu}
-		{#if item.href}
-			<div class="relative">
+	<div class="group/menu-row relative">
+		{#if item.menu}
+			{@render dropdownButton()}
+		{:else if hasSubmenu && item.collapsible === false}
+			{@render leafButton()}
+		{:else if hasSubmenu}
+			{#if item.href}
 				{@render leafButton()}
 				<button
+					bind:this={submenuTriggerRef}
 					type="button"
 					class={classes.menuAction({
+						componentSize: size,
+						density,
 						className: 'left-1 right-auto bg-background-muted data-[open=true]:rotate-90'
 					})}
 					data-open={isOpen ? 'true' : undefined}
 					aria-label={`${t.toggle} ${t.submenu}`}
-					aria-expanded={isOpen}
+					aria-expanded={showSubmenu}
 					onclick={toggleSubmenu}
 				>
 					<SidebarIcon icon={caretRightIcon} />
 				</button>
-			</div>
+			{:else}
+				<button
+					bind:this={submenuTriggerRef}
+					type="button"
+					data-slot="sidebar-menu-button"
+					data-sidebar="menu-button"
+					data-size={item.size ?? 'default'}
+					data-active={item.isActive ? 'true' : undefined}
+					disabled={item.disabled || undefined}
+					class={classes.menuButton({
+						variant: item.variant,
+						componentSize: size,
+						density,
+						size: item.size,
+						className: item.class
+					})}
+					aria-expanded={showSubmenu}
+					{@attach tooltipContent
+						? tooltip({ content: tooltipContent, position: 'right' })
+						: undefined}
+					onclick={toggleSubmenu}
+				>
+					{@render entryContent()}
+					{@render indicator()}
+				</button>
+			{/if}
 		{:else}
-			<button
-				type="button"
-				data-slot="sidebar-menu-button"
-				data-sidebar="menu-button"
-				data-size={item.size ?? 'default'}
-				data-active={item.isActive ? 'true' : undefined}
-				disabled={item.disabled || undefined}
-				class={classes.menuButton({
-					variant: item.variant,
-					size: item.size,
-					className: item.class
-				})}
-				aria-expanded={isOpen}
-				{@attach tooltipContent
-					? tooltip({ content: tooltipContent, position: 'right' })
-					: undefined}
-				onclick={toggleSubmenu}
-			>
-				{@render entryContent()}
-				{@render indicator()}
-			</button>
+			{@render leafButton()}
 		{/if}
-		{#if isOpen}
-			{@render submenu()}
-		{/if}
-	{:else}
-		{@render leafButton()}
-	{/if}
 
-	{#if item.badge != null && !isIconCollapsed}
-		<div data-slot="sidebar-menu-badge" data-sidebar="menu-badge" class={classes.badge()}>
-			{item.badge}
-		</div>
-	{/if}
-	{#if item.action}
-		<div data-slot="sidebar-menu-action" data-sidebar="menu-action" class={classes.menuAction()}>
-			<SidebarAction action={item.action} {api} {theme} />
-		</div>
+		{#if item.badge != null && !isIconCollapsed}
+			<div
+				data-slot="sidebar-menu-badge"
+				data-sidebar="menu-badge"
+				class={classes.badge({ componentSize: size, density })}
+			>
+				{item.badge}
+			</div>
+		{/if}
+		{#if item.action}
+			<div
+				bind:this={actionRef}
+				data-slot="sidebar-menu-action"
+				data-sidebar="menu-action"
+				inert={isIconCollapsed ? true : undefined}
+				aria-hidden={isIconCollapsed ? 'true' : undefined}
+				class={classes.menuAction({ componentSize: size, density })}
+			>
+				<SidebarAction action={item.action} {api} {size} {theme} />
+			</div>
+		{/if}
+	</div>
+
+	{#if showSubmenu}
+		{@render submenu()}
 	{/if}
 </li>

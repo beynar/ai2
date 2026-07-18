@@ -13,15 +13,21 @@ const defaultKanbanColumn = cva({
 });
 
 const defaultKanbanColumnHeader = cva({
-	base: 'flex items-center gap-2 px-3 py-2.5',
+	base: 'flex items-center gap-2',
 	variants: {
 		sortable: {
 			true: 'cursor-grab',
 			false: ''
+		},
+		density: {
+			small: 'px-2.5 py-2',
+			normal: 'px-3 py-2.5',
+			large: 'px-4 py-3'
 		}
 	},
 	defaultVariants: {
-		sortable: false
+		sortable: false,
+		density: 'normal'
 	}
 });
 
@@ -39,11 +45,38 @@ const defaultKanbanCount = cva({
 
 const defaultKanbanList = cva({
 	// data-dnd-over comes from useDndList when an accepted drag hovers the list.
-	base: 'flex min-h-12 flex-1 flex-col gap-1.5 overflow-y-auto p-2 pt-0 scrollbar-none rounded-b-xl transition-colors data-[dnd-over=true]:bg-primary/5'
+	// pt keeps the first card's ring/shadow clear of the scroll container edge.
+	base: 'flex min-h-12 flex-1 flex-col overflow-y-auto scrollbar-none rounded-b-xl transition-colors data-[dnd-over=true]:bg-primary/5',
+	variants: {
+		density: {
+			small: 'gap-1 p-1.5 pt-1',
+			normal: 'gap-1.5 p-2 pt-1',
+			large: 'gap-2 p-2.5 pt-1.5'
+		}
+	},
+	defaultVariants: {
+		density: 'normal'
+	}
 });
 
 const defaultKanbanCard = cva({
-	base: 'bg-background-lighter ring-foreground/10 rounded-lg px-3 py-2 text-sm shadow-xs ring-1 cursor-grab select-none'
+	base: 'bg-background-lighter ring-foreground/10 rounded-lg text-sm shadow-xs ring-1 select-none',
+	variants: {
+		density: {
+			small: 'px-2.5 py-1.5',
+			normal: 'px-3 py-2',
+			large: 'px-4 py-3'
+		},
+		handle: {
+			// With a grip handle the card body is not the drag activator.
+			true: 'flex items-start gap-2',
+			false: 'cursor-grab'
+		}
+	},
+	defaultVariants: {
+		density: 'normal',
+		handle: false
+	}
 });
 
 const defaultKanbanCardTitle = cva({
@@ -58,18 +91,72 @@ const defaultKanbanEmpty = cva({
 	base: 'text-foreground-muted px-2 py-4 text-center text-xs'
 });
 
+// Rendered below the card list (columnFooter snippet / the `footer` param of
+// the column snippet).
+const defaultKanbanFooter = cva({
+	base: '',
+	variants: {
+		density: {
+			small: 'p-1.5 pt-1',
+			normal: 'p-2 pt-1',
+			large: 'p-2.5 pt-1.5'
+		}
+	},
+	defaultVariants: {
+		density: 'normal'
+	}
+});
+
+// Per-card wrapper (the dnd row). `dragging` marks the dimmed placeholder.
+const defaultKanbanCardWrapper = cva({
+	base: '',
+	variants: {
+		dragging: {
+			true: 'opacity-40',
+			false: ''
+		}
+	},
+	defaultVariants: {
+		dragging: false
+	}
+});
+
+// Per-column wrapper (the dnd row of the board). `dragging` marks the dimmed
+// placeholder while a column is dragged.
+const defaultKanbanColumnWrapper = cva({
+	base: 'shrink-0',
+	variants: {
+		dragging: {
+			true: 'opacity-40',
+			false: ''
+		}
+	},
+	defaultVariants: {
+		dragging: false
+	}
+});
+
+// The grip rendered by the DEFAULT card when cardHandle is on.
+const defaultKanbanCardHandle = cva({
+	base: 'text-foreground-muted hover:text-foreground mt-0.5 inline-flex shrink-0 cursor-grab items-center justify-center'
+});
+
 export const kanbanTheme = {
 	root: defaultKanban,
 	column: defaultKanbanColumn,
+	columnWrapper: defaultKanbanColumnWrapper,
 	columnHeader: defaultKanbanColumnHeader,
 	columnDot: defaultKanbanColumnDot,
 	columnTitle: defaultKanbanColumnTitle,
 	count: defaultKanbanCount,
 	list: defaultKanbanList,
 	card: defaultKanbanCard,
+	cardWrapper: defaultKanbanCardWrapper,
+	cardHandle: defaultKanbanCardHandle,
 	cardTitle: defaultKanbanCardTitle,
 	cardDescription: defaultKanbanCardDescription,
-	empty: defaultKanbanEmpty
+	empty: defaultKanbanEmpty,
+	footer: defaultKanbanFooter
 };
 
 export type KanbanTheme = typeof kanbanTheme;

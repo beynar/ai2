@@ -2,7 +2,7 @@
 	import PopupMenu from '$lib/components/PopupMenu/PopupMenu.svelte';
 	import { caretDownIcon } from '$lib/components/Icons/caretDown.js';
 	import { caretUpDownIcon } from '$lib/components/Icons/caretUpDown.js';
-	import type { SidebarMenuButtonItem } from './sidebar.props.js';
+	import type { SidebarDensity, SidebarMenuButtonItem, SidebarSize } from './sidebar.props.js';
 	import { getSidebarMenuPosition } from './sidebar-position.js';
 	import SidebarIcon from './SidebarIcon.svelte';
 	import { useSidebarTheme, type SidebarThemeProps } from './sidebar.theme.js';
@@ -10,7 +10,8 @@
 	type Props = SidebarMenuButtonItem & {
 		isMobile?: boolean;
 		defaultAlign?: 'start' | 'center' | 'end';
-		collapsed?: boolean;
+		size?: SidebarSize;
+		density?: SidebarDensity;
 		theme?: SidebarThemeProps;
 	};
 
@@ -34,7 +35,8 @@
 		mediaClass,
 		isMobile = false,
 		defaultAlign = 'start',
-		collapsed = false,
+		size = 'normal',
+		density = 'normal',
 		theme
 	}: Props = $props();
 
@@ -57,10 +59,22 @@
 				: 'aria-expanded:bg-primary/10 aria-expanded:text-primary'
 			: ''
 	);
+	const collapsedMediaPadding = $derived(
+		compact
+			? 'group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-compact-media-size))/2-var(--sidebar-section-padding))]'
+			: 'group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-media-size))/2-var(--sidebar-section-padding))]'
+	);
 	const buttonClass = $derived(
 		classes.menuButton({
+			componentSize: size,
+			density,
 			size: compact ? 'default' : 'lg',
-			className: [compact && 'w-fit px-1.5', openClass, className]
+			className: [
+				compact && 'w-fit group-data-[collapsible=icon]:w-full',
+				collapsedMediaPadding,
+				openClass,
+				className
+			]
 		})
 	);
 	const menuPosition = $derived(
@@ -82,7 +96,7 @@
 
 {#snippet media()}
 	{#if avatar}
-		<div class={classes.avatar({ className: mediaClass })}>
+		<div class={classes.avatar({ componentSize: size, className: mediaClass })}>
 			{#if avatar.src && !avatarImageFailed}
 				<img
 					src={avatar.src}
@@ -95,46 +109,60 @@
 			{/if}
 		</div>
 	{:else if icon}
-		<div class={classes.media({ size: compact ? 'compact' : 'default', className: mediaClass })}>
-			<SidebarIcon {icon} class={compact ? 'size-3' : 'size-4'} />
+		<div
+			class={classes.media({
+				size: compact ? 'compact' : 'default',
+				componentSize: size,
+				className: mediaClass
+			})}
+		>
+			<SidebarIcon {icon} />
 		</div>
 	{/if}
 {/snippet}
 
 {#snippet rowText()}
-	{#if !collapsed}
-		{#if compact}
+	{#if compact}
+		<span class={classes.menuLabel({ className: 'font-medium' })}>{title}</span>
+	{:else if brand}
+		<div class={classes.menuLabel({ className: 'flex flex-col gap-0.5 leading-none' })}>
 			<span class="truncate font-medium">{title}</span>
-		{:else if brand}
-			<div class="flex min-w-0 flex-col gap-0.5 leading-none">
-				<span class="truncate font-medium">{title}</span>
-				{#if subtitle}<span class="truncate text-xs text-foreground/60">{subtitle}</span>{/if}
-			</div>
-		{:else}
-			<div class="grid min-w-0 flex-1 text-left text-sm leading-tight">
-				<span class="truncate font-medium">{title}</span>
-				{#if subtitle}<span class="truncate text-xs text-foreground/60">{subtitle}</span>{/if}
-			</div>
-		{/if}
+			{#if subtitle}
+				<span class={classes.menuSecondary({ componentSize: size })}>{subtitle}</span>
+			{/if}
+		</div>
 	{:else}
-		<span class="sr-only">{title}</span>
+		<div class={classes.menuLabel({ className: 'grid text-left leading-tight' })}>
+			<span class="truncate font-medium">{title}</span>
+			{#if subtitle}
+				<span class={classes.menuSecondary({ componentSize: size })}>{subtitle}</span>
+			{/if}
+		</div>
 	{/if}
 {/snippet}
 
 {#snippet buttonInner()}
 	{@render media()}
 	{@render rowText()}
-	{#if resolvedTrailing && !collapsed}
-		<SidebarIcon icon={resolvedTrailing} class={compact ? 'opacity-50' : 'ml-auto size-4'} />
+	{#if resolvedTrailing}
+		<SidebarIcon
+			icon={resolvedTrailing}
+			class={classes.menuTrailing({
+				componentSize: size,
+				className: compact ? 'opacity-50' : undefined
+			})}
+		/>
 	{/if}
 {/snippet}
 
 {#snippet identityRow()}
-	<div class="flex items-center gap-2 px-2 py-1 text-left text-sm">
+	<div class="flex items-center gap-2 px-2 py-1 text-left">
 		{@render media()}
 		<div class="grid min-w-0 flex-1 leading-tight">
 			<span class="truncate font-medium text-foreground">{title}</span>
-			{#if subtitle}<span class="truncate text-xs text-foreground/60">{subtitle}</span>{/if}
+			{#if subtitle}
+				<span class={classes.menuSecondary({ componentSize: size })}>{subtitle}</span>
+			{/if}
 		</div>
 	</div>
 {/snippet}

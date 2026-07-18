@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultRoot = cva({
-	base: 'min-h-svh w-full bg-background-dark text-foreground'
+	base: 'relative h-[var(--window-height,100dvh)] min-h-0 w-full overflow-hidden text-foreground'
 });
 
 const defaultPage = cva({
@@ -23,30 +23,6 @@ const defaultPage = cva({
 			right: ''
 		}
 	},
-	compoundVariants: [
-		{
-			variant: 'inset',
-			side: 'left',
-			class:
-				'md:my-2 md:mr-2 md:ml-0 md:rounded-xl md:border md:border-background-dark md:shadow-sm'
-		},
-		{
-			variant: 'inset',
-			side: 'right',
-			class:
-				'md:my-2 md:mr-0 md:ml-2 md:rounded-xl md:border md:border-background-dark md:shadow-sm'
-		},
-		{
-			variant: 'split',
-			side: 'left',
-			class: 'md:rounded-l-xl md:border-y md:border-r md:border-background-dark md:shadow-sm'
-		},
-		{
-			variant: 'split',
-			side: 'right',
-			class: 'md:rounded-r-xl md:border-y md:border-l md:border-background-dark md:shadow-sm'
-		}
-	],
 	defaultVariants: {
 		variant: 'sidebar',
 		side: 'left'

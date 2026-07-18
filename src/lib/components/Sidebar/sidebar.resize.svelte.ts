@@ -7,21 +7,25 @@ import type {
 	SidebarResizableOptions,
 	SidebarSide
 } from './sidebar.props.js';
+import {
+	readSidebarStoredWidth,
+	SIDEBAR_DEFAULT_MAX_WIDTH,
+	SIDEBAR_DEFAULT_MIN_WIDTH,
+	writeSidebarStoredWidth
+} from './sidebar.resize.persistence.js';
 
 type SidebarResizeStateOptions = {
 	width: string;
 	resizable?: SidebarResizable;
 	side: SidebarSide;
 	displayState: SidebarDisplayState;
+	edgeRevealed: boolean;
 	collapsible: SidebarCollapsible;
 	setWidth: (width: string) => void;
 	setDisplayState: (state: SidebarDisplayState) => void;
 };
 
-const DEFAULT_MIN_WIDTH = '12rem';
-const DEFAULT_MAX_WIDTH = '32rem';
 const DEFAULT_KEYBOARD_STEP = 16;
-const STORAGE_VERSION = 1;
 
 export interface SidebarResizeState extends SidebarResizeStateOptions {}
 
@@ -29,38 +33,80 @@ export class SidebarResizeState {
 	panelNode = $state<HTMLElement | null>(null);
 	isDragging = $state(false);
 	isKeyboardResizing = $state(false);
+	isStateTransitioning = $state(false);
+	isWidthInitializing = $state(false);
 	private startWidth = 0;
 	private startX = 0;
+	private didDrag = false;
+	private suppressNextClick = false;
+	private initialStorageKey: string | null = null;
+	private initialStoredWidth: number | null = null;
 	private keyboardResizeTimeout: ReturnType<typeof setTimeout> | null = null;
+	private stateTransitionTimeout: ReturnType<typeof setTimeout> | null = null;
 	private activeDragCleanup: (() => void) | null = null;
 	private loadedStorageKeys = new Set<string>();
 
 	constructor(options: SidebarResizeStateOptions) {
 		bind(this, options);
+		this.initialStorageKey = this.resizeOptions?.storageKey ?? null;
+		if (this.initialStorageKey) {
+			this.initialStoredWidth = readSidebarStoredWidth(this.initialStorageKey);
+			this.isWidthInitializing = this.initialStoredWidth !== null;
+		}
 
 		$effect(() => {
 			const storageKey = this.resizeOptions?.storageKey;
 			const panelNode = this.panelNode;
-			const enabled = this.enabled;
+			const configured = this.configured;
 			untrack(() => {
-				if (!enabled || !panelNode || !storageKey) return;
+				if (!configured || !panelNode || !storageKey) return;
 				this.loadStoredWidth(storageKey);
 			});
 		});
 	}
 
+	get configured() {
+		return !!this.resizable;
+	}
+
 	get enabled() {
-		if (!this.resizable) return false;
+		if (!this.configured) return false;
 		if (this.displayState === 'expanded') return true;
-		return this.displayState === 'collapsed';
+		if (this.displayState === 'collapsed') return true;
+		return this.displayState === 'hidden' && this.edgeRevealed;
 	}
 
 	get isResizing() {
 		return this.isDragging || this.isKeyboardResizing;
 	}
 
+	get shouldSuppressTransitions() {
+		return this.isResizing && !this.isStateTransitioning;
+	}
+
 	get currentWidth() {
 		return Math.round(this.getCurrentWidth());
+	}
+
+	get renderWidth() {
+		if (!this.isWidthInitializing || this.initialStoredWidth === null) return this.width;
+		return `${Math.round(this.initialStoredWidth)}px`;
+	}
+
+	get displayWidth() {
+		if (this.displayState !== 'collapsed') return this.currentWidth;
+		if (!this.panelNode || typeof window === 'undefined') return this.currentWidth;
+
+		const iconWidth = window
+			.getComputedStyle(this.panelNode)
+			.getPropertyValue('--sidebar-width-icon')
+			.trim();
+		if (!iconWidth) return this.currentWidth;
+		return Math.round(resolveLengthToPixels(iconWidth, this.panelNode, 'widthIcon'));
+	}
+
+	get displayMinWidth() {
+		return this.displayState === 'collapsed' ? this.displayWidth : this.minWidth;
 	}
 
 	get minWidth() {
@@ -114,6 +160,8 @@ export class SidebarResizeState {
 		node.focus();
 		this.startX = event.clientX;
 		this.startWidth = panelNode.getBoundingClientRect().width;
+		this.didDrag = false;
+		this.suppressNextClick = false;
 		this.isDragging = true;
 
 		const pointerId = event.pointerId;
@@ -126,11 +174,11 @@ export class SidebarResizeState {
 		const onEnd = (endEvent: PointerEvent) => {
 			if (endEvent.pointerId !== pointerId) return;
 			this.cleanupDrag(node, pointerId);
-			this.endDrag();
+			this.endDrag(node);
 		};
 		const onLostPointerCapture = () => {
 			this.cleanupDrag(node, pointerId);
-			this.endDrag();
+			this.endDrag(node);
 		};
 
 		this.activeDragCleanup = () => {
@@ -166,16 +214,26 @@ export class SidebarResizeState {
 
 	private updateDrag(deltaX: number) {
 		if (!this.isDragging) return;
+		if (!this.didDrag && Math.abs(deltaX) < 3) return;
 
+		this.didDrag = true;
 		const delta = this.side === 'left' ? deltaX : -deltaX;
 		this.resizeToRequestedWidth(this.startWidth + delta, false);
 	}
 
-	private endDrag() {
+	private endDrag(node: HTMLElement) {
 		if (!this.isDragging) return;
 
 		this.isDragging = false;
-		this.commitWidth(true);
+		this.suppressNextClick = this.didDrag;
+		if (this.didDrag) this.commitWidth(true);
+		if (document.activeElement === node) node.blur();
+	}
+
+	consumeClickAfterResize() {
+		const shouldHandleClick = !this.suppressNextClick;
+		this.suppressNextClick = false;
+		return shouldHandleClick;
 	}
 
 	private setWidthPixels(width: number, commit: boolean) {
@@ -200,7 +258,8 @@ export class SidebarResizeState {
 		}
 
 		if (this.displayState === 'expanded' && this.shouldCollapse(requestedWidth)) {
-			this.setDisplayState('collapsed');
+			this.startStateTransition();
+			this.setDisplayState(this.collapsedState);
 			this.commitWidth(true);
 			return;
 		}
@@ -209,12 +268,17 @@ export class SidebarResizeState {
 	}
 
 	private expandFromCollapsed(requestedWidth: number, commit: boolean) {
+		this.startStateTransition();
 		this.setDisplayState('expanded');
 		this.setWidthPixels(Math.max(requestedWidth, this.minWidth), commit);
 	}
 
 	private shouldCollapse(requestedWidth: number) {
 		return this.collapsible !== 'none' && requestedWidth < this.collapseThreshold;
+	}
+
+	private get collapsedState(): SidebarDisplayState {
+		return this.collapsible === 'icon' ? 'collapsed' : 'hidden';
 	}
 
 	private commitWidth(isUserInteraction: boolean) {
@@ -238,14 +302,25 @@ export class SidebarResizeState {
 		}, 120);
 	}
 
+	private startStateTransition() {
+		this.isStateTransitioning = true;
+		if (this.stateTransitionTimeout) {
+			clearTimeout(this.stateTransitionTimeout);
+		}
+		this.stateTransitionTimeout = setTimeout(() => {
+			this.isStateTransitioning = false;
+			this.stateTransitionTimeout = null;
+		}, 220);
+	}
+
 	private getBounds() {
 		const min = resolveLengthToPixels(
-			this.resizeOptions?.minWidth ?? DEFAULT_MIN_WIDTH,
+			this.resizeOptions?.minWidth ?? SIDEBAR_DEFAULT_MIN_WIDTH,
 			this.panelNode,
 			'minWidth'
 		);
 		const max = resolveLengthToPixels(
-			this.resizeOptions?.maxWidth ?? DEFAULT_MAX_WIDTH,
+			this.resizeOptions?.maxWidth ?? SIDEBAR_DEFAULT_MAX_WIDTH,
 			this.panelNode,
 			'maxWidth'
 		);
@@ -265,7 +340,9 @@ export class SidebarResizeState {
 	private get collapseThreshold() {
 		return Math.round(
 			resolveLengthToPixels(
-				this.resizeOptions?.collapseThreshold ?? this.resizeOptions?.minWidth ?? DEFAULT_MIN_WIDTH,
+				this.resizeOptions?.collapseThreshold ??
+					this.resizeOptions?.minWidth ??
+					SIDEBAR_DEFAULT_MIN_WIDTH,
 				this.panelNode,
 				'collapseThreshold'
 			)
@@ -280,16 +357,33 @@ export class SidebarResizeState {
 		if (this.loadedStorageKeys.has(storageKey)) return;
 		this.loadedStorageKeys.add(storageKey);
 
-		const storedWidth = readStoredWidth(storageKey);
-		if (!storedWidth) return;
-		this.setWidthPixels(storedWidth, false);
-		this.commitWidth(false);
+		try {
+			const storedWidth =
+				storageKey === this.initialStorageKey
+					? this.initialStoredWidth
+					: readSidebarStoredWidth(storageKey);
+			if (!storedWidth) return;
+			this.setWidthPixels(storedWidth, false);
+			this.commitWidth(false);
+		} finally {
+			this.releaseWidthPrehydrationLock();
+		}
+	}
+
+	private releaseWidthPrehydrationLock() {
+		const root = this.panelNode?.closest<HTMLElement>('[data-slot="sidebar-wrapper"]');
+		if (!this.isWidthInitializing && !root?.dataset.widthPrehydrating) return;
+
+		requestAnimationFrame(() => {
+			this.isWidthInitializing = false;
+			root?.removeAttribute('data-width-prehydrating');
+		});
 	}
 
 	private writeStoredWidth() {
 		const storageKey = this.resizeOptions?.storageKey;
 		if (!storageKey) return;
-		writeStoredWidth(storageKey, this.getCurrentWidth());
+		writeSidebarStoredWidth(storageKey, this.getCurrentWidth());
 	}
 }
 
@@ -340,53 +434,4 @@ const getRootFontSize = () => {
 const getContextFontSize = (contextNode: HTMLElement | null) => {
 	if (!contextNode || typeof window === 'undefined') return getRootFontSize();
 	return Number.parseFloat(window.getComputedStyle(contextNode).fontSize) || getRootFontSize();
-};
-
-const getBrowserStorage = (): Storage | null => {
-	if (typeof window === 'undefined') return null;
-
-	try {
-		return window.localStorage;
-	} catch {
-		return null;
-	}
-};
-
-const isObject = (value: unknown): value is Record<string, unknown> =>
-	typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const parseStoredWidth = (value: unknown) => {
-	if (!isObject(value) || value.version !== STORAGE_VERSION) return null;
-	return isFinitePositiveNumber(value.width) ? value.width : null;
-};
-
-const readStoredWidth = (storageKey: string): number | null => {
-	const storage = getBrowserStorage();
-	if (!storage) return null;
-
-	let rawWidth: string | null;
-	try {
-		rawWidth = storage.getItem(storageKey);
-	} catch {
-		return null;
-	}
-	if (!rawWidth) return null;
-
-	try {
-		const parsedWidth: unknown = JSON.parse(rawWidth);
-		return parseStoredWidth(parsedWidth);
-	} catch {
-		return null;
-	}
-};
-
-const writeStoredWidth = (storageKey: string, width: number) => {
-	const storage = getBrowserStorage();
-	if (!storage) return;
-
-	try {
-		storage.setItem(storageKey, JSON.stringify({ version: STORAGE_VERSION, width }));
-	} catch {
-		// Persistence is optional; localStorage may be unavailable or full.
-	}
 };

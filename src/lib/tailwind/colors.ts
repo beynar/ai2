@@ -502,8 +502,8 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 	};
 
 	const backgroundLightness = isDark
-		? { DEFAULT: 0.18, dark: 0.14, light: 0.22, lighter: 0.27, muted: 0.32 }
-		: { DEFAULT: 0.98, dark: 0.95, light: 0.99, lighter: 1, muted: 0.92 };
+		? { DEFAULT: 0.18, dark: 0.15, light: 0.22, lighter: 0.27, muted: 0.32 }
+		: { DEFAULT: 0.98, dark: 0.965, light: 0.99, lighter: 1, muted: 0.92 };
 
 	const setPerceptualLightness = (color: string, lightness: number) => {
 		const { c, h } = hex2oklch(toHex(color));

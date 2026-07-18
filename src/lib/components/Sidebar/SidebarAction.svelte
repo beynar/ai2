@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PopupMenu from '$lib/components/PopupMenu/PopupMenu.svelte';
 	import { dotsThreeIcon } from '$lib/components/Icons/dotsThree.js';
-	import type { SidebarApi, SidebarMenuActionDescriptor } from './sidebar.props.js';
+	import type { SidebarApi, SidebarMenuActionDescriptor, SidebarSize } from './sidebar.props.js';
 	import { getSidebarMenuPosition } from './sidebar-position.js';
 	import SidebarIcon from './SidebarIcon.svelte';
 	import { useSidebarTheme, type SidebarThemeProps } from './sidebar.theme.js';
@@ -9,10 +9,12 @@
 	let {
 		action,
 		api,
+		size,
 		theme
 	}: {
 		action: SidebarMenuActionDescriptor | import('svelte').Snippet<[SidebarApi]>;
 		api: SidebarApi;
+		size: SidebarSize;
 		theme?: SidebarThemeProps;
 	} = $props();
 
@@ -35,7 +37,7 @@
 		{#snippet trigger(popover)}
 			<button
 				type="button"
-				class={classes.actionTrigger()}
+				class={classes.actionTrigger({ componentSize: size })}
 				aria-label={actionLabel}
 				aria-expanded={popover.isOpen}
 				aria-haspopup="menu"
@@ -51,7 +53,7 @@
 {:else}
 	<button
 		type="button"
-		class={classes.actionTrigger()}
+		class={classes.actionTrigger({ componentSize: size })}
 		aria-label={actionLabel}
 		onclick={action.onClick}
 	>

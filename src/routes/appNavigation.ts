@@ -105,6 +105,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/sortable-list', text: 'Sortable list' },
 			{ href: '/components/stat', text: 'Stat' },
 			{ href: '/components/table', text: 'Table' },
+			{ href: '/components/data-table', text: 'Data table' },
 			{ href: '/components/tree', text: 'Tree' }
 		]
 	},
@@ -119,6 +120,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/progress-circle', text: 'Progress circle' },
 			{ href: '/components/skeleton', text: 'Skeleton' },
 			{ href: '/components/spinner', text: 'Spinner' },
+			{ href: '/components/spinner-text', text: 'Spinner Text' },
 			{ href: '/components/toast', text: 'Toast' }
 		]
 	},

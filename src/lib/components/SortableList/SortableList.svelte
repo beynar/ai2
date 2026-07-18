@@ -1,8 +1,10 @@
 <script lang="ts" generics="T">
-	import { DragDropProvider, type DragDropEvents } from '@dnd-kit-svelte/svelte';
-	import { move } from '@dnd-kit/helpers';
+	import { flip } from 'svelte/animate';
+	import { cubicOut } from 'svelte/easing';
+	import { useDndList } from '$lib/utils/useDndList.svelte.js';
 	import { useI18n } from '$lib/i18n/context.svelte.js';
-	import SortableListItem from './SortableListItem.svelte';
+	import Slot from '../Slot/Slot.svelte';
+	import { dotsSixVerticalIcon } from '../Icons/dotsSixVertical.js';
 	import type { SortableListProps } from './sortableList.props.js';
 	import { useSortableListTheme } from './sortableList.theme.js';
 
@@ -10,8 +12,18 @@
 		items = $bindable([]),
 		handle = false,
 		disabled = false,
+		indicator = false,
 		size = 'normal',
+		orientation = 'vertical',
+		group,
+		name,
+		accepts,
 		onReorder,
+		onReceive,
+		onRemove,
+		onDragStart,
+		onDragEnd,
+		empty,
 		i18n,
 		class: className,
 		ref = $bindable(null),
@@ -23,18 +35,21 @@
 	const t = $derived(useI18n(i18n));
 	const classes = $derived(useSortableListTheme(theme));
 
-	// Rows are matched exactly the way `move()` matches them: objects by their `id`,
-	// primitives by value.
-	const idOf = (value: T): string | number =>
-		typeof value === 'object' && value != null
-			? (value as unknown as { id: string | number }).id
-			: (value as unknown as string | number);
+	// Rows are matched by object `id`, primitives by value.
+	const idOf = (value: T): string =>
+		String(
+			typeof value === 'object' && value != null
+				? (value as unknown as { id: string | number }).id
+				: (value as unknown as string | number)
+		);
 
-	// Any truthy `handle` turns on handle mode; a snippet/string additionally customizes the grip.
+	// Any truthy `handle` turns on handle mode; a snippet/string additionally
+	// customizes the grip.
 	const handleMode = $derived(Boolean(handle));
 	const handleContent = $derived(typeof handle === 'boolean' ? undefined : handle);
 
-	// Primitive-friendly default row label, used only when no `item` snippet is supplied.
+	// Primitive-friendly default row label, used only when no `item` snippet is
+	// supplied.
 	const defaultLabel = (value: T): string => {
 		if (value == null) return '';
 		if (typeof value !== 'object') return String(value);
@@ -42,57 +57,109 @@
 		return String(record.label ?? record.title ?? idOf(value));
 	};
 
-	type DragOverEvent = Parameters<DragDropEvents['dragover']>[0];
-	type DragEndEvent = Parameters<DragDropEvents['dragend']>[0];
+	const uid = $props.id();
+	// Cross-list: lists sharing a `group` accept each other's rows. The dnd id
+	// is namespaced `${group}::${name}` so `accepts` can match on the group;
+	// group/name are captured at mount (the dnd id must stay stable).
+	// svelte-ignore state_referenced_locally
+	const listName = name ?? uid;
+	// svelte-ignore state_referenced_locally
+	const listGroup = group;
+	const peerName = (dndListId: string) =>
+		listGroup ? dndListId.slice(listGroup.length + 2) : dndListId;
 
-	// Snapshot of the pre-drag order, taken on drag start; used to revert on cancel and to
-	// compute the `from` index. We only ever replace `items` with a fresh array, never mutate
-	// in place, so this reference stays a valid snapshot.
-	let orderBeforeDrag: T[] | null = null;
+	const dnd = useDndList<T>({
+		id: listGroup ? `${listGroup}::${listName}` : `${uid}-sortable`,
+		items: () => items,
+		itemId: idOf,
+		indicator: () => indicator,
+		// Both horizontal and grid resolve before/after on the horizontal axis;
+		// the engine's wrapped-line handling covers the grid's row breaks.
+		axis: () => (orientation === 'vertical' ? 'vertical' : 'horizontal'),
+		handle: () => handleMode,
+		disabled: () => disabled,
+		accepts: (source) =>
+			!!listGroup &&
+			source.listId.startsWith(`${listGroup}::`) &&
+			(accepts?.({ item: source.item as T, from: peerName(source.listId) }) ?? true),
+		onReorder: (next, detail) => {
+			items = next;
+			onReorder?.(next, { from: detail.from, to: detail.to, item: detail.item });
+		},
+		onReceive: ({ item: received, index, from }) => {
+			const value = received as T;
+			items = [...items.slice(0, index), value, ...items.slice(index)];
+			onReceive?.({
+				item: value,
+				index,
+				from: { list: peerName(from.listId), index: from.index }
+			});
+		},
+		onRemove: ({ item: removed, index, to }) => {
+			items = items.filter((value) => idOf(value) !== idOf(removed));
+			onRemove?.({ item: removed, index, to: { list: peerName(to.listId) } });
+		},
+		onDragStart: (detail) => onDragStart?.(detail),
+		onDragEnd: (detail) => onDragEnd?.(detail)
+	});
 
-	const onDragStart = () => {
-		orderBeforeDrag = items;
-	};
+	// Default feedback derives a prospective order without mutating `items`.
+	// Indicator feedback renders `items` unchanged and lets the DnD utility draw
+	// the insertion edge. Both modes commit from the same `over` state at drop.
+	const previewItems = $derived.by(() => {
+		const over = dnd.over;
+		if (!over) return dnd.dragging ? items.filter((value) => idOf(value) !== dnd.dragging) : items;
+		const rest = items.filter((value) => idOf(value) !== over.source.itemId);
+		const index = Math.min(over.index, rest.length);
+		return [...rest.slice(0, index), over.source.item as T, ...rest.slice(index)];
+	});
+	const renderedItems = $derived(indicator ? items : previewItems);
+	const draggingId = $derived(indicator ? dnd.dragging : (dnd.over?.source.itemId ?? null));
 
-	// Live reorder while dragging, exactly like the library's sortable example. `move()` is
-	// typed for concrete id-bearing arrays; T is generic here, so bridge the types.
-	const onDragOver = (event: DragOverEvent) => {
-		items = move(items as (T & { id: string | number })[], event) as T[];
-	};
+	const reducedMotion =
+		typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const flipParams = { duration: reducedMotion ? 0 : 180, easing: cubicOut };
 
-	const onDragEnd = (event: DragEndEvent) => {
-		const before = orderBeforeDrag;
-		orderBeforeDrag = null;
-		if (event.canceled) {
-			// Escape / cancelled drop: undo the live reorder.
-			if (before) items = before;
-			return;
-		}
-		const sourceId = event.operation.source?.id;
-		if (sourceId == null) return;
-		const to = items.findIndex((value) => idOf(value) === sourceId);
-		const from = before ? before.findIndex((value) => idOf(value) === sourceId) : to;
-		if (to === -1 || from === -1 || from === to) return;
-		onReorder?.(items, { from, to, item: items[to] });
-	};
+	// Grip glyph size per token.
+	const gripClass = $derived(size === 'large' ? 'size-5' : 'size-4');
 </script>
 
-<DragDropProvider {onDragStart} {onDragOver} {onDragEnd}>
-	<ul bind:this={ref} class={classes.root({ size, className })} {...attachments}>
-		{#each items as value, index (idOf(value))}
-			<SortableListItem
-				id={idOf(value)}
-				{index}
-				item={value}
-				{handleMode}
-				{handleContent}
-				{disabled}
-				{size}
-				{classes}
-				handleLabel={t.dragToReorder}
-				fallbackText={defaultLabel(value)}
-				content={item}
-			/>
-		{/each}
-	</ul>
-</DragDropProvider>
+<ul
+	bind:this={ref}
+	class={classes.root({ size, orientation, className })}
+	{...attachments}
+	{@attach dnd.list}
+>
+	{#each renderedItems as value, index (idOf(value))}
+		{@const payload = { item: value, index, isDragging: idOf(value) === draggingId }}
+		<li
+			animate:flip={flipParams}
+			class={classes.item({ size, handle: handleMode, dragging: payload.isDragging, disabled })}
+			{@attach dnd.item(value)}
+		>
+			{#if handleMode}
+				<button
+					type="button"
+					data-dnd-handle
+					{disabled}
+					aria-label={t.dragToReorder}
+					class={classes.handle({ size })}
+				>
+					<Slot render={handleContent} {payload}>
+						{@render dotsSixVerticalIcon({ class: gripClass })}
+					</Slot>
+				</button>
+			{/if}
+
+			<Slot render={item} {payload} class={classes.content()}>
+				{defaultLabel(value)}
+			</Slot>
+		</li>
+	{/each}
+	{#if empty !== undefined && renderedItems.length === 0}
+		<!-- Not a dnd row — drops onto it resolve through the list container. -->
+		<li class={classes.empty()}>
+			<Slot render={empty} />
+		</li>
+	{/if}
+</ul>

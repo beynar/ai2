@@ -1,8 +1,9 @@
 <script lang="ts">
 	import propsMap from 'virtual:svelai-props';
-	import type { PropCategory, PropDoc } from '../../tooling/props-docs/types';
+	import type { PropCategory, PropDoc } from '../../tooling/props-docs/types.js';
 	import Popover from '$lib/components/Popover/Popover.svelte';
 	import Code from '$lib/components/Code/Code.svelte';
+	import Chip from '$lib/components/Chip/Chip.svelte';
 	import { bracketsCurlyIcon } from '$lib/components/Icons/bracketsCurly.js';
 	import { currencyDollarIcon } from '$lib/components/Icons/currencyDollar.js';
 	import { bracketsAngleIcon } from '$lib/components/Icons/bracketsAngle.js';
@@ -14,13 +15,17 @@
 	const docs = $derived(propsMap[component]);
 
 	type SectionIcon = typeof bracketsCurlyIcon;
-	const sectionOrder: { category: PropCategory; label: string; icon: SectionIcon; color: Colors }[] =
-		[
-			{ category: 'prop', label: 'Props', icon: bracketsCurlyIcon, color: 'primary' },
-			{ category: 'binding', label: 'Bindable props', icon: currencyDollarIcon, color: 'success' },
-			{ category: 'slot', label: 'Slots', icon: bracketsAngleIcon, color: 'warning' },
-			{ category: 'event', label: 'Callbacks', icon: functionIcon, color: 'info' }
-		];
+	const sectionOrder: {
+		category: PropCategory;
+		label: string;
+		icon: SectionIcon;
+		color: Colors;
+	}[] = [
+		{ category: 'prop', label: 'Props', icon: bracketsCurlyIcon, color: 'primary' },
+		{ category: 'binding', label: 'Bindable props', icon: currencyDollarIcon, color: 'success' },
+		{ category: 'slot', label: 'Slots', icon: bracketsAngleIcon, color: 'warning' },
+		{ category: 'event', label: 'Callbacks', icon: functionIcon, color: 'info' }
+	];
 
 	const sections = $derived(
 		sectionOrder
@@ -43,6 +48,18 @@
 
 {#if docs}
 	<div class="border-background-muted bg-background mt-12 w-full overflow-hidden rounded-xl border">
+		{#if docs.htmlAttributes.length > 0}
+			<div class="border-background-muted/40 flex items-center gap-2 border-b px-6 py-3">
+				<span class="text-foreground/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
+					Extends
+				</span>
+				{#each docs.htmlAttributes as htmlAttributes (htmlAttributes)}
+					<Chip size="small" variant="soft" color="primary">
+						<code>{htmlAttributes}</code>
+					</Chip>
+				{/each}
+			</div>
+		{/if}
 		<div class="overflow-x-auto">
 			<table class="w-full border-collapse text-left">
 				{#each sections as section (section.label)}
@@ -64,7 +81,9 @@
 							>
 								<td class="px-6 py-3.5 whitespace-nowrap">
 									<span class="inline-flex items-center gap-2">
-										<span class="text-foreground font-mono text-[13px] font-medium">{prop.name}</span>
+										<span class="text-foreground font-mono text-[13px] font-medium"
+											>{prop.name}</span
+										>
 										{#if !prop.optional}
 											<span
 												class="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-medium tracking-wide uppercase"
@@ -94,13 +113,13 @@
 												</button>
 											{/snippet}
 											<Code
-											language="typescript"
-											code={prop.type}
-											showHeader={false}
-											copyable={false}
-											maxHeight={320}
-											class="max-w-md"
-										/>
+												language="typescript"
+												code={prop.type}
+												showHeader={false}
+												copyable={false}
+												maxHeight={320}
+												class="max-w-md"
+											/>
 										</Popover>
 									{:else}
 										<code class="text-primary/90 font-mono text-[13px]">{prop.value}</code>

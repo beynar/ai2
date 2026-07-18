@@ -102,7 +102,7 @@
 		collapsible="icon"
 		variant="inset"
 		frame="contained"
-		rail
+		rail="thumb"
 		widthIcon="3.5rem"
 		resizable={{
 			minWidth: '12rem',

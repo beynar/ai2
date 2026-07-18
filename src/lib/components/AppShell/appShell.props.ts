@@ -11,11 +11,11 @@ import type {
 } from '$lib/components/PageShell/index.js';
 import type { BreadcrumbItem } from '$lib/components/Breadcrumbs/index.js';
 import type { PageShellThemeProps } from '$lib/components/PageShell/pageShell.theme.js';
-import type { SidebarApi, SidebarFrame, SidebarProps } from '$lib/components/Sidebar/index.js';
+import type { SidebarApi, SidebarProps, SidebarVariant } from '$lib/components/Sidebar/index.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { AppShellThemeProps } from './appShell.theme.js';
 
-export type AppShellSidebarProps = Omit<SidebarProps, 'children' | 'mode' | 'frame'>;
+export type AppShellSidebarProps = Omit<SidebarProps, 'children' | 'mode' | 'frame' | 'variant'>;
 
 export type AppShellApi = {
 	/** Page shell API for title, header, footer, and scoped overrides. */
@@ -30,6 +30,8 @@ export type AppShellBack = AppShellRegion | PageShellAction;
 export type AppShellBreadcrumbs = AppShellRegion | BreadcrumbItem[];
 
 export type AppShellConfig = {
+	/** Shared shell geometry forwarded to Sidebar. */
+	variant?: SidebarVariant;
 	/** Small metadata above the PageShell title. Ignored when breadcrumbs are provided. */
 	eyebrow?: PageShellTextRegion;
 	/** Breadcrumb items or a custom breadcrumb snippet rendered above the PageShell title. */
@@ -58,8 +60,6 @@ export type AppShellConfig = {
 	actionOverflow?: PageShellActionOverflow;
 	/** Number of action-array buttons to keep inline on mobile when overflow is auto. */
 	mobileActionCount?: PageShellMobileActionCount;
-	/** Use viewport sizing/fixed positioning or contained sizing/absolute positioning. */
-	frame?: SidebarFrame;
 };
 
 type AppShellRootAttributes = Partial<
@@ -76,7 +76,7 @@ export type AppShellProps = WithAttachments<
 		AppShellConfig & {
 			/** Bindable reference to the root app shell wrapper. */
 			ref?: HTMLElement | null;
-			/** Sidebar props, minus children because AppShell owns the inset composition. */
+			/** Sidebar content and behavior props; AppShell forwards its variant and owns the frame. */
 			sidebar?: AppShellSidebarProps;
 			/** Main page content. Receives both PageShell and Sidebar APIs. */
 			children: Snippet<[AppShellApi]>;

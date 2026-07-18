@@ -16,12 +16,13 @@
 	features={[
 		'Svelte {@attach} on any element',
 		'Fade in/out overlay animation',
+		'Theme default and per-instance Spinner variants',
 		'Animated loading text updates',
 		'Auto-positions parent relatively'
 	]}
 >
 	<ComponentCard
-		description="Overlay a spinner on an element while async work runs."
+		description="Overlay a spinner on an element while async work runs. The animation follows Theme."
 		code={`<div
 	{@attach spinnerOverlay({
 		loading: true,

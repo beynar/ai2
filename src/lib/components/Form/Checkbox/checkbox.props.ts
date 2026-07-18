@@ -3,8 +3,12 @@ import type { CheckboxMode } from '../CheckboxesInput/checkboxesInput.props.js';
 import type { CheckboxesInputThemeProps } from '../CheckboxesInput/checkboxesInput.theme.js';
 
 export type CheckboxProps = InputProps<'checkbox'> & {
-	/** Display mode: 'normal' for an inline row, 'card' for a card-style row. */
-	mode?: CheckboxMode;
+	/** Display mode: normal row, card row, or compact standalone control. */
+	mode?: CheckboxMode | 'control';
+	/** Shows a mixed state without changing the boolean field value. */
+	indeterminate?: boolean;
+	/** Accessible name for compact controls without a visible label. */
+	ariaLabel?: string;
 	/** Called when the checkbox is toggled. */
 	onClick?: (checked: boolean) => void;
 	/** Theme overrides for the checkbox row and field parts. */

@@ -1,7 +1,7 @@
 export const spinnerDescription = `
 # Spinner Component
 
-The Spinner component is a standalone indeterminate loading indicator. It uses the global \`.ui-spinner\` engine from the Svelai Tailwind plugin, so applications can change the spinner animation from theme configuration without changing component markup.
+The Spinner component is a standalone indeterminate loading indicator. It inherits \`spinnerVariant\` from Theme and allows a per-instance override. The \`default\` variant uses the global \`.ui-spinner\` engine from the Svelai Tailwind plugin.
 
 ## Basic Usage
 
@@ -15,6 +15,8 @@ The Spinner component is a standalone indeterminate loading indicator. It uses t
   - Controls indicator size and label typography.
 - **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'foreground')
   - Applies a theme color token to the indicator.
+- **variant**: 'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles' (default: Theme spinnerVariant, then 'default')
+  - Selects the indicator animation and overrides the global Theme setting.
 - **text**: string | Snippet
   - Optional visible loading text rendered after the indicator.
 - **children**: Snippet
@@ -40,6 +42,24 @@ The Spinner component is a standalone indeterminate loading indicator. It uses t
 
 \`\`\`svelte
 <Spinner text="Loading results" />
+\`\`\`
+
+### Indicator Variants
+
+\`\`\`svelte
+<Spinner variant="grid" />
+<Spinner variant="pulse" />
+<Spinner variant="puff" />
+<Spinner variant="lines" />
+<Spinner variant="circles" />
+\`\`\`
+
+### Global Default
+
+\`\`\`svelte
+<Theme spinnerVariant="pulse">
+	<Spinner />
+</Theme>
 \`\`\`
 
 ### Semantic Colors
@@ -72,7 +92,7 @@ The Spinner component is a standalone indeterminate loading indicator. It uses t
 The theme object contains three parts:
 
 - **root**: root inline-flex wrapper
-- **indicator**: animated \`.ui-spinner\` element
+- **indicator**: animated indicator element with size and variant classes
 - **label**: visible text wrapper
 
 \`\`\`svelte

@@ -5,9 +5,14 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
+import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled';
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
+import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview';
+import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
 import type { Attachment } from 'svelte/attachments';
 
 export type DndAxis = 'vertical' | 'horizontal';
+export type DndAutoScrollAxis = DndAxis | 'all';
 export type DndEdge = 'top' | 'bottom' | 'left' | 'right';
 
 /** What a drag carries — enough for any list to decide and act on a drop. */
@@ -25,7 +30,9 @@ export type DndSource<T = unknown> = {
 export type UseDndListOptions<T> = {
 	/**
 	 * Unique id of this list. Other lists receive it in `accepts`/`onReceive`
-	 * and use it to accept or reject the drag.
+	 * and use it to accept or reject the drag. Drop attribution itself uses a
+	 * private per-instance token, so two lists accidentally sharing an id can
+	 * not corrupt each other — but keep ids unique for `accepts` to be useful.
 	 */
 	id: string;
 	/** Reactive getter for the list's items. */
@@ -34,7 +41,8 @@ export type UseDndListOptions<T> = {
 	itemId?: (item: T) => string;
 	/**
 	 * Called after a same-list drag with the reordered array — assign it to
-	 * your state. `detail` carries the moved item and both indices.
+	 * your state. `detail` carries the moved item and both indices (resolved
+	 * at drop time, so mid-drag list changes stay consistent).
 	 */
 	onReorder?: (items: T[], detail: { item: T; from: number; to: number }) => void;
 	/**
@@ -45,30 +53,92 @@ export type UseDndListOptions<T> = {
 	accepts?: (source: DndSource) => boolean;
 	/** An accepted external item was dropped here at `index` — insert it. */
 	onReceive?: (detail: { item: unknown; index: number; from: DndSource }) => void;
-	/** One of THIS list's items was dropped into another accepting list — remove it. */
+	/**
+	 * One of THIS list's items was dropped into another accepting list —
+	 * remove it. `index` is resolved at drop time. Note: the source list must
+	 * stay mounted for the duration of drags it originates, otherwise the
+	 * destination receives but nobody removes.
+	 */
 	onRemove?: (detail: { item: T; index: number; to: { listId: string } }) => void;
-	/** Orientation; drives the closest-edge math and the indicator. @default 'vertical' */
-	axis?: DndAxis;
+	/** Orientation; drives the closest-edge math and the indicator. Pass a
+	 * function to make it reactive. @default 'vertical' */
+	axis?: DndAxis | (() => DndAxis);
+	/**
+	 * Axes that overflow ancestors may auto-scroll during this list's drags.
+	 * This is independent from list orientation because nested boards can need
+	 * cross-axis scrolling. Pass a function to make it reactive. @default 'all'
+	 */
+	autoScrollAxis?: DndAutoScrollAxis | (() => DndAutoScrollAxis);
 	/**
 	 * When true, items only drag from a descendant marked `data-dnd-handle`
-	 * instead of the whole row.
+	 * (resolved per drag attempt, so late-rendered handles work). With no
+	 * handle present the row is not draggable. Pass a function to make it
+	 * reactive.
 	 */
-	handle?: boolean;
-	/** Reactive kill-switch for the whole list. */
+	handle?: boolean | (() => boolean);
+	/** Reactive kill-switch — checked per drag attempt and per drop-target
+	 * evaluation, so flipping it mid-drag is safe. */
 	disabled?: () => boolean;
+	/** Per-item drag gate, checked per drag attempt on top of `disabled` and
+	 * `handle`. Return false to keep the row in place. */
+	canDrag?: (item: T) => boolean;
+	/** A drag of one of THIS list's items started. */
+	onDragStart?: (detail: { item: T; index: number }) => void;
+	/**
+	 * The drag of one of THIS list's items ended (drop or cancel), after any
+	 * state callbacks ran. `dropped` is true when it landed on an accepting
+	 * list — including no-op drops back onto its own position.
+	 */
+	onDragEnd?: (detail: { item: T; dropped: boolean }) => void;
+	/**
+	 * Draw the shared drop-indicator line while a drag hovers this list.
+	 * Set false for live-preview UIs that render the prospective order from
+	 * `over` instead (the gap IS the indicator there). A getter makes the
+	 * feedback mode reactive.
+	 * @default true
+	 */
+	indicator?: boolean | (() => boolean);
 };
 
-// Marks data as belonging to this utility — element-adapter data stays
-// in-memory, so a symbol key cleanly namespaces us from other pragmatic users.
-const DND_MARK = Symbol('svelai-dnd');
+/** Live hover state of a list: where the dragged item would land if dropped
+ * now. `index` is the insertion index in the list's FINAL array (same-list:
+ * after removal of the dragged item — directly usable to build a preview). */
+export type DndOver = {
+	index: number;
+	source: DndSource;
+};
 
-type DragData = DndSource & { [DND_MARK]: true };
-type TargetData = DragData & { edge: DndEdge };
-type ContainerData = { [DND_MARK]: true; listId: string; container: true };
+// Marks data as belonging to this utility. Symbol.for keeps the mark stable
+// across HMR module re-evaluations.
+const DND_MARK = Symbol.for('svelai-dnd');
+
+type DragData = DndSource & {
+	[DND_MARK]: true;
+	instance: symbol;
+	autoScrollAxis: DndAutoScrollAxis;
+};
+type TargetData = DragData & { edge: DndEdge; physicalEdge: DndEdge };
+type ContainerData = { [DND_MARK]: true; instance: symbol; listId: string; container: true };
 
 const isMine = (data: Record<string | symbol, unknown>): boolean => data[DND_MARK] === true;
 
-const closestEdge = (
+// getComputedStyle is a forced style resolution and this runs per dragover in
+// the closest-edge hot path, so the answer is cached per element. Stale only
+// if an element's direction flips at runtime, which we accept.
+const rtlCache = new WeakMap<Element, boolean>();
+const isRtl = (element: Element): boolean => {
+	let value = rtlCache.get(element);
+	if (value === undefined) {
+		value = getComputedStyle(element).direction === 'rtl';
+		rtlCache.set(element, value);
+	}
+	return value;
+};
+
+/**
+ * Physical (visual) closest edge — which side of the element the pointer is on.
+ */
+const physicalClosestEdge = (
 	element: Element,
 	input: { clientX: number; clientY: number },
 	axis: DndAxis
@@ -83,49 +153,132 @@ const closestEdge = (
 			: 'right';
 };
 
+/**
+ * Logical edge for index math: in RTL horizontal lists the array runs
+ * right-to-left, so the physical side flips ('left' of an item means AFTER it).
+ * The indicator always draws at the physical side; the math always uses the
+ * logical one.
+ */
+const toLogicalEdge = (physical: DndEdge, element: Element, axis: DndAxis): DndEdge => {
+	if (axis !== 'horizontal' || !isRtl(element)) return physical;
+	return physical === 'left' ? 'right' : physical === 'right' ? 'left' : physical;
+};
+
 // ---------------------------------------------------------------------------
-// Drop indicator: one fixed-position line for the whole app, moved imperatively
-// (no reactivity needed). Styled with the primary token; override via the
-// [data-dnd-indicator] selector.
+// Drop indicator + default dragging style: one fixed-position line and one
+// tiny stylesheet for the whole app, managed imperatively. Override via the
+// [data-dnd-indicator] / [data-dnd-dragging] selectors.
 // ---------------------------------------------------------------------------
 let indicatorEl: HTMLElement | null = null;
 
+// Injected once per document, from the list attachment — indicator-less
+// (preview) lists need the data-dnd-dragging default and the empty-list tint
+// too, not just lists that ever draw the line.
+const ensureBaseStyles = () => {
+	if (document.querySelector('style[data-dnd-styles]')) return;
+	const style = document.createElement('style');
+	style.setAttribute('data-dnd-styles', '');
+	// The empty-list rule is wrapped in :where() (zero specificity) so any
+	// consumer class on the container wins over the default tint.
+	style.textContent =
+		'[data-dnd-dragging]{opacity:.4;}' +
+		':where([data-dnd-over="true"]:not(:has([data-dnd-item]))){' +
+		'background-color:color-mix(in oklab, var(--color-primary, currentColor) 6%, transparent);}';
+	document.head.appendChild(style);
+};
+
 const ensureIndicator = (): HTMLElement => {
+	// Query the DOM (not just the module variable) so HMR re-evaluations reuse
+	// the existing node instead of orphaning it.
+	indicatorEl ??= document.querySelector<HTMLElement>('[data-dnd-indicator]');
 	if (indicatorEl && indicatorEl.isConnected) return indicatorEl;
 	indicatorEl = document.createElement('div');
 	indicatorEl.setAttribute('data-dnd-indicator', '');
 	Object.assign(indicatorEl.style, {
 		position: 'fixed',
-		zIndex: '9999',
+		zIndex: '2147483647',
 		pointerEvents: 'none',
 		background: 'var(--color-primary)',
 		borderRadius: '9999px',
 		display: 'none'
 	});
 	document.body.appendChild(indicatorEl);
+	ensureBaseStyles();
 	return indicatorEl;
 };
 
 const THICKNESS = 2;
 
-const showIndicator = (rect: DOMRect, edge: DndEdge) => {
+/** Where a gap-centered line goes: its cross-axis `center` plus the union
+ * extent of the two rows flanking the gap, so hovering either side of the
+ * same gap draws the exact same line (position AND length). */
+type GapLine = { center: number; start: number; extent: number };
+
+/**
+ * Without `gap` the line hugs the hovered row's edge (terminal positions,
+ * wrapped lines, anything the gap math can't vouch for).
+ */
+const showIndicator = (rect: DOMRect, edge: DndEdge, gap?: GapLine) => {
 	const el = ensureIndicator();
 	el.style.display = 'block';
 	if (edge === 'top' || edge === 'bottom') {
-		el.style.left = `${rect.left}px`;
-		el.style.width = `${rect.width}px`;
+		el.style.left = `${gap?.start ?? rect.left}px`;
+		el.style.width = `${gap?.extent ?? rect.width}px`;
 		el.style.height = `${THICKNESS}px`;
-		el.style.top = `${(edge === 'top' ? rect.top : rect.bottom) - THICKNESS / 2}px`;
+		el.style.top = `${(gap?.center ?? (edge === 'top' ? rect.top : rect.bottom)) - THICKNESS / 2}px`;
 	} else {
-		el.style.top = `${rect.top}px`;
-		el.style.height = `${rect.height}px`;
+		el.style.top = `${gap?.start ?? rect.top}px`;
+		el.style.height = `${gap?.extent ?? rect.height}px`;
 		el.style.width = `${THICKNESS}px`;
-		el.style.left = `${(edge === 'left' ? rect.left : rect.right) - THICKNESS / 2}px`;
+		el.style.left = `${(gap?.center ?? (edge === 'left' ? rect.left : rect.right)) - THICKNESS / 2}px`;
 	}
 };
 
 const hideIndicator = () => {
 	if (indicatorEl) indicatorEl.style.display = 'none';
+};
+
+// ---------------------------------------------------------------------------
+// Auto-scroll: the native drag gesture doesn't scroll overflow containers, so
+// dragging near the edge of a scrollable list (or of a scrollable ancestor
+// such as a ScrollArea viewport) scrolls it. One registration per scroll
+// container, refcounted — several lists sharing one scrollable ancestor must
+// not stack scroll speed.
+// ---------------------------------------------------------------------------
+const nearestScrollable = (el: Element): Element | null => {
+	for (let node: Element | null = el; node && node !== document.body; node = node.parentElement) {
+		const style = getComputedStyle(node);
+		if (/auto|scroll|overlay/.test(style.overflowY + style.overflowX)) return node;
+	}
+	return null;
+};
+
+const autoScrollRegistry = new Map<Element, { refs: number; cleanup: () => void }>();
+
+const registerAutoScroll = (listEl: Element): (() => void) => {
+	const scrollable = nearestScrollable(listEl);
+	if (!scrollable) return () => {};
+	let entry = autoScrollRegistry.get(scrollable);
+	if (!entry) {
+		entry = {
+			refs: 0,
+			cleanup: autoScrollForElements({
+				element: scrollable,
+				canScroll: ({ source }) => isMine(source.data),
+				getAllowedAxis: ({ source }) =>
+					isMine(source.data) ? (source.data as DragData).autoScrollAxis : 'all'
+			})
+		};
+		autoScrollRegistry.set(scrollable, entry);
+	}
+	entry.refs += 1;
+	return () => {
+		entry.refs -= 1;
+		if (entry.refs === 0) {
+			entry.cleanup();
+			autoScrollRegistry.delete(scrollable);
+		}
+	};
 };
 
 /**
@@ -143,26 +296,60 @@ const hideIndicator = () => {
  *
  * Cross-list moves: give each list its own `useDndList`, let the destination
  * opt in with `accepts`, insert in `onReceive`, and remove from the source in
- * `onRemove`. The drop indicator, edge math, and no-op suppression are handled
- * internally.
+ * `onRemove`. The drop indicator, edge math (RTL-aware), and no-op suppression
+ * are handled internally.
  *
- * Styling hooks: `data-dnd-dragging` on the dragged item, `data-dnd-over` on a
- * hovered container, `data-dnd-indicator` on the shared indicator line,
+ * Scrolling: if the list (or an ancestor) is a scroll container, dragging near
+ * its edges auto-scrolls it — the native drag gesture can't scroll overflow
+ * containers on its own.
+ *
+ * Styling hooks: `data-dnd-dragging` on the dragged item (default 0.4 opacity
+ * via an injected rule), `data-dnd-over` on a hovered container (an EMPTY
+ * hovered list gets a default primary tint instead of an indicator line —
+ * there is no index to point at; override via your own `data-dnd-over`
+ * styles), `data-dnd-indicator` on the shared indicator line,
  * `data-dnd-handle` marks a drag handle when `handle` is set.
  */
 export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	const listId = options.id;
-	const axis = () => options.axis ?? 'vertical';
+	// Private identity: drop attribution compares tokens, never id strings, so
+	// duplicate list ids across component instances cannot cross-talk.
+	const token = Symbol(listId);
+	const axis = (): DndAxis =>
+		typeof options.axis === 'function' ? options.axis() : (options.axis ?? 'vertical');
+	const autoScrollAxis = (): DndAutoScrollAxis =>
+		typeof options.autoScrollAxis === 'function'
+			? options.autoScrollAxis()
+			: (options.autoScrollAxis ?? 'all');
 	const getId = (item: T): string =>
 		options.itemId ? options.itemId(item) : String((item as { id: string | number }).id);
 
 	let draggingId = $state<string | null>(null);
 	let isOver = $state(false);
+	// Prospective drop position, kept fresh by the same handlers that draw the
+	// indicator. Drop resolution reads it too, so a preview built from `over`
+	// can never disagree with where the item actually lands.
+	let over = $state<DndOver | null>(null);
+	const isIndicatorEnabled = () =>
+		typeof options.indicator === 'function' ? options.indicator() : options.indicator !== false;
+	// Identity-stable: dragover fires continuously — reassigning `over` per
+	// event (even with the same index) would recompute every preview derived
+	// from it and reconcile the DOM every frame.
+	const setOver = (index: number, source: DragData) => {
+		if (over && over.index === index && over.source.itemId === source.itemId) return;
+		over = { index, source };
+	};
+
+	// The monitor is registered once per instance regardless of how many times
+	// the list attachment runs (re-attach, transitions keeping old trees alive),
+	// so a drop can never be double-applied.
+	let monitorRefs = 0;
+	let monitorCleanup: (() => void) | null = null;
 
 	const canAccept = (data: Record<string | symbol, unknown>): boolean => {
 		if (!isMine(data) || options.disabled?.()) return false;
 		const source = data as DragData;
-		if (source.listId === listId) return true;
+		if (source.instance === token) return true;
 		return options.accepts?.(source) ?? false;
 	};
 
@@ -173,9 +360,14 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		return to === from ? null : to;
 	};
 
-	// Central drop resolution. Runs in every list's monitor for every drag this
-	// utility owns; each instance only acts on the part that concerns it, so a
-	// cross-list drop resolves as onReceive (destination) + onRemove (source).
+	/** Fresh index of the dragged item — drag-start indices go stale when the
+	 * list changes mid-drag. */
+	const freshIndex = (items: T[], itemId: string): number =>
+		items.findIndex((candidate) => getId(candidate) === itemId);
+
+	// Central drop resolution. Each instance's monitor only acts on the part
+	// that concerns it (by token), so a cross-list drop resolves as onReceive
+	// (destination) + onRemove (source).
 	const handleDrop = ({
 		source,
 		location
@@ -184,89 +376,184 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		location: { current: { dropTargets: Array<{ data: Record<string | symbol, unknown> }> } };
 	}) => {
 		hideIndicator();
+		preventUnhandled.stop();
 		isOver = false;
+		const overAtDrop = over;
+		over = null;
 		if (!isMine(source.data)) return;
 		const src = source.data as DragData;
-		const target = location.current.dropTargets.find((t) => isMine(t.data));
-		if (!target) return;
+		// The draggable's own onDrop resets this, but not when the dragged row
+		// was unmounted mid-drag — the monitor always survives.
+		if (src.instance === token) draggingId = null;
 
+		const target = location.current.dropTargets.find((t) => isMine(t.data));
+		try {
+			applyDrop(src, target, overAtDrop);
+		} finally {
+			// After the state callbacks, on every path — the source list owns
+			// the lifecycle notification.
+			if (src.instance === token) {
+				options.onDragEnd?.({ item: src.item as T, dropped: !!target });
+			}
+		}
+	};
+
+	const applyDrop = (
+		src: DragData,
+		target: { data: Record<string | symbol, unknown> } | undefined,
+		overAtDrop: DndOver | null
+	) => {
+		if (!target) return;
 		const targetData = target.data as TargetData | ContainerData;
-		const targetListId = targetData.listId;
-		if (src.listId !== listId && targetListId !== listId) return;
+		if (src.instance !== token && targetData.instance !== token) return;
 
 		const items = options.items();
 
-		if (targetListId === listId) {
-			// Dropped into this list — either a reorder or a receive.
-			const to =
-				'container' in targetData
-					? items.length
-					: Math.min(
-							(targetData as TargetData).index +
-								((targetData as TargetData).edge === 'bottom' ||
-								(targetData as TargetData).edge === 'right'
-									? 1
-									: 0),
-							items.length
-						);
-
-			if (src.listId === listId) {
-				const finish =
-					'container' in targetData
-						? resolveReorder(src.index, items.length - 1, axis() === 'vertical' ? 'bottom' : 'right')
-						: resolveReorder(src.index, (targetData as TargetData).index, (targetData as TargetData).edge);
-				if (finish === null) return;
-				const next = reorder({ list: [...items], startIndex: src.index, finishIndex: finish });
-				options.onReorder?.(next, { item: items[src.index], from: src.index, to: finish });
+		if (targetData.instance === token) {
+			// Dropped into this list — either a reorder or a receive. `over` is
+			// the source of truth when present (it is exactly what any preview
+			// showed); the geometric fallback covers drops without a prior
+			// enter (defensive).
+			if (src.instance === token) {
+				const from = freshIndex(items, src.itemId);
+				if (from === -1) return;
+				let finish: number | null;
+				if (overAtDrop) {
+					finish = Math.min(overAtDrop.index, items.length - 1);
+				} else if ('container' in targetData) {
+					finish = resolveReorder(from, items.length - 1, 'bottom');
+				} else {
+					const targetIndex = freshIndex(items, (targetData as TargetData).itemId);
+					if (targetIndex === -1) return;
+					finish = resolveReorder(from, targetIndex, (targetData as TargetData).edge);
+				}
+				if (finish === null || finish === from) return;
+				const next = reorder({ list: [...items], startIndex: from, finishIndex: finish });
+				options.onReorder?.(next, { item: items[from], from, to: finish });
 			} else {
+				let to: number;
+				if (overAtDrop) {
+					to = Math.min(overAtDrop.index, items.length);
+				} else if ('container' in targetData) {
+					to = items.length;
+				} else {
+					const targetIndex = freshIndex(items, (targetData as TargetData).itemId);
+					if (targetIndex === -1) return;
+					const edge = (targetData as TargetData).edge;
+					to = Math.min(
+						targetIndex + (edge === 'bottom' || edge === 'right' ? 1 : 0),
+						items.length
+					);
+				}
 				options.onReceive?.({ item: src.item, index: to, from: src });
 			}
-		} else if (src.listId === listId) {
+		} else if (src.instance === token) {
 			// One of ours landed somewhere else.
-			options.onRemove?.({ item: src.item as T, index: src.index, to: { listId: targetListId } });
+			const index = freshIndex(items, src.itemId);
+			if (index === -1) return;
+			options.onRemove?.({ item: items[index], index, to: { listId: targetData.listId } });
 		}
 	};
 
 	/** Attachment for the list container (drop zone + central monitor). */
 	const list: Attachment = (element) => {
 		element.setAttribute('data-dnd-list', listId);
+		ensureBaseStyles();
+
+		/** Rows belonging to THIS list only — nested lists' rows don't count. */
+		const ownRows = () =>
+			[...element.querySelectorAll('[data-dnd-item]')].filter(
+				(row) => row.closest('[data-dnd-list]') === element
+			);
+
+		const terminalEdge = (): DndEdge => {
+			if (axis() === 'vertical') return 'bottom';
+			return isRtl(element) ? 'left' : 'right';
+		};
 
 		const terminalIndicator = () => {
-			const rows = element.querySelectorAll('[data-dnd-item]');
+			const rows = ownRows();
 			const last = rows[rows.length - 1];
 			if (last) {
-				showIndicator(
-					last.getBoundingClientRect(),
-					axis() === 'vertical' ? 'bottom' : 'right'
-				);
+				showIndicator(last.getBoundingClientRect(), terminalEdge());
 			} else {
-				// Empty list: a line inset at the top of the container.
-				const rect = element.getBoundingClientRect();
-				const inset = 6;
-				showIndicator(
-					new DOMRect(rect.x + inset, rect.y + inset, rect.width - inset * 2, 0),
-					'bottom'
-				);
+				// Empty list: there is no index to point at, so no line — the
+				// container itself signals via [data-dnd-over] (default tint from
+				// the injected stylesheet, override with your own styles).
+				hideIndicator();
 			}
 		};
 
-		return combine(
+		const drawContainerIndicator = (
+			location: { current: { dropTargets: Array<{ element: Element }> } },
+			source: { data: Record<string | symbol, unknown> }
+		) => {
+			// Only when hovering the container's own empty space — when an item
+			// is the innermost target (sticky ones included), the item owns the
+			// indicator.
+			if (location.current.dropTargets[0]?.element !== element) return;
+			const drawEnabled = isIndicatorEnabled();
+			if (!drawEnabled) hideIndicator();
+			const src = source.data as DragData;
+			const items = options.items();
+			if (src.instance === token) {
+				const from = freshIndex(items, src.itemId);
+				if (from !== -1) {
+					const finish = resolveReorder(from, items.length - 1, 'bottom');
+					// Terminal drop that would change nothing: the item stays
+					// (previews show it at its own position), no indicator.
+					if (finish === null) {
+						setOver(from, src);
+						if (drawEnabled) hideIndicator();
+						return;
+					}
+					setOver(finish, src);
+				}
+			} else {
+				setOver(items.length, src);
+			}
+			if (drawEnabled) terminalIndicator();
+		};
+
+		if (monitorRefs === 0) {
+			monitorCleanup = monitorForElements({
+				canMonitor: ({ source }) => isMine(source.data),
+				onDrop: handleDrop
+			});
+		}
+		monitorRefs += 1;
+
+		const unregisterAutoScroll = registerAutoScroll(element);
+
+		const cleanup = combine(
 			dropTargetForElements({
 				element: element as HTMLElement,
 				canDrop: ({ source }) => canAccept(source.data),
-				getData: (): ContainerData => ({ [DND_MARK]: true, listId, container: true }),
-				onDragEnter: () => {
+				// Sticky container: overshooting the list bounds by a few pixels
+				// keeps the whole target chain (and `over`) alive — the preview
+				// stays at the last position and the drop still lands there.
+				// The chain hands over as soon as another drop target is entered;
+				// onDragLeave then fires and clears the state.
+				getIsSticky: () => true,
+				getData: (): ContainerData => ({
+					[DND_MARK]: true,
+					instance: token,
+					listId,
+					container: true
+				}),
+				// onDrag is rAF-throttled; onDragEnter dispatches synchronously at
+				// target change — drawing in both keeps the indicator immediate.
+				onDragEnter: ({ location, source }) => {
 					isOver = true;
 					element.setAttribute('data-dnd-over', 'true');
+					drawContainerIndicator(location, source);
 				},
-				onDrag: ({ location }) => {
-					// Only when hovering the container's own empty space — when an item
-					// is the innermost target, the item draws the indicator.
-					if (location.current.dropTargets[0]?.element !== element) return;
-					terminalIndicator();
+				onDrag: ({ location, source }) => {
+					drawContainerIndicator(location, source);
 				},
 				onDragLeave: () => {
 					isOver = false;
+					over = null;
 					element.removeAttribute('data-dnd-over');
 					hideIndicator();
 				},
@@ -274,77 +561,241 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 					isOver = false;
 					element.removeAttribute('data-dnd-over');
 				}
-			}),
-			monitorForElements({
-				canMonitor: ({ source }) => isMine(source.data),
-				onDrop: handleDrop
 			})
 		);
+
+		return () => {
+			cleanup();
+			unregisterAutoScroll();
+			monitorRefs -= 1;
+			if (monitorRefs === 0) {
+				monitorCleanup?.();
+				monitorCleanup = null;
+			}
+			// A list unmounting mid-drag must not strand the shared indicator.
+			hideIndicator();
+			element.removeAttribute('data-dnd-over');
+			element.removeAttribute('data-dnd-list');
+		};
 	};
 
-	/** Attachment for one list item; call with the item and its current index. */
-	const item = (itemData: T, index: number): Attachment => {
+	/** Attachment for one list item. The index parameter is optional and
+	 * unused — indices are resolved fresh at event time, so the attachment
+	 * identity never depends on a position that shifts mid-drag (re-running
+	 * attachments during a drag is supported but wasteful). */
+	const item = (itemData: T, _index?: number): Attachment => {
 		return (element) => {
-			if (options.disabled?.()) return;
 			const id = getId(itemData);
 			element.setAttribute('data-dnd-item', id);
 
 			const payload = (): DragData => ({
 				[DND_MARK]: true,
+				instance: token,
+				autoScrollAxis: autoScrollAxis(),
 				listId,
 				itemId: id,
-				index,
+				index: freshIndex(options.items(), id),
 				item: itemData
 			});
 
-			const handleEl = options.handle
-				? (element.querySelector('[data-dnd-handle]') as HTMLElement | null)
-				: null;
+			const drawItemIndicator = ({
+				self,
+				source,
+				location
+			}: {
+				self: { data: Record<string | symbol, unknown> };
+				source: { data: Record<string | symbol, unknown> };
+				location: { current: { dropTargets: Array<{ element: Element }> } };
+			}) => {
+				// Only the innermost target draws — nested accepted lists would
+				// otherwise overdraw the inner indicator with the outer row's.
+				if (location.current.dropTargets[0]?.element !== element) return;
+				const drawEnabled = isIndicatorEnabled();
+				if (!drawEnabled) hideIndicator();
+				const src = source.data as DragData;
+				const data = self.data as TargetData;
+				const items = options.items();
+				// The dragged row itself: no indicator. In a live preview
+				// (indicator off) this row is the placeholder sitting at `over`,
+				// so hovering it must preserve `over` — moving anything would
+				// make the placeholder flee the pointer. In indicator mode the
+				// row sits at its ORIGINAL index, so `over` must reset to it:
+				// dropping on your own row is a no-op, and a stale `over` from
+				// an earlier hover must not silently reorder.
+				if (src.instance === token && src.itemId === id) {
+					if (drawEnabled || !over) {
+						const from = freshIndex(items, src.itemId);
+						if (from !== -1) setOver(from, src);
+					}
+					if (drawEnabled) hideIndicator();
+					return;
+				}
+				if (src.instance === token) {
+					const from = freshIndex(items, src.itemId);
+					const targetIndex = freshIndex(items, id);
+					if (from === -1 || targetIndex === -1) return;
+					const finish = resolveReorder(from, targetIndex, data.edge);
+					// A drop that would put the item right back where it is:
+					// preview shows it at its own position, no indicator.
+					if (finish === null) {
+						setOver(from, src);
+						if (drawEnabled) hideIndicator();
+						return;
+					}
+					setOver(finish, src);
+				} else {
+					const targetIndex = freshIndex(items, id);
+					if (targetIndex !== -1) {
+						setOver(
+							Math.min(
+								targetIndex + (data.edge === 'bottom' || data.edge === 'right' ? 1 : 0),
+								items.length
+							),
+							src
+						);
+					}
+				}
+				if (drawEnabled) {
+					showIndicator(element.getBoundingClientRect(), data.physicalEdge, gapCenter(data.edge));
+				}
+			};
 
-			return combine(
+			/**
+			 * The gap line between this row and its neighbor on the given logical
+			 * side. Hovering the bottom half of row A and the top half of row B
+			 * resolve to the same drop index, so they must draw the same line —
+			 * centered in the gap, spanning the union of both rows — instead of
+			 * hugging whichever row is hovered. Undefined (edge fallback) when
+			 * there is no neighbor or the two rows aren't cleanly facing each
+			 * other across a gap (wrapped line, overlap).
+			 */
+			const gapCenter = (edge: DndEdge): GapLine | undefined => {
+				const items = options.items();
+				const targetIndex = freshIndex(items, id);
+				if (targetIndex === -1) return undefined;
+				const neighborItem = items[targetIndex + (edge === 'top' || edge === 'left' ? -1 : 1)];
+				if (neighborItem === undefined) return undefined;
+				const listEl = element.closest('[data-dnd-list]');
+				if (!listEl) return undefined;
+				// Scoped like ownRows(): nested lists may hold rows with the same
+				// id, and a first-match query would find those and bail.
+				const neighbor = [
+					...listEl.querySelectorAll(`[data-dnd-item="${CSS.escape(getId(neighborItem))}"]`)
+				].find((row) => row.closest('[data-dnd-list]') === listEl);
+				if (!neighbor) return undefined;
+				const a = element.getBoundingClientRect();
+				const b = neighbor.getBoundingClientRect();
+				// The axis comes from the edge, not axis(): a sticky target keeps
+				// its frozen edge across a reactive axis flip mid-drag, and the
+				// draw must stay consistent with that frozen edge.
+				if (edge === 'top' || edge === 'bottom') {
+					// Facing rows must share most of their cross-axis range —
+					// wrapped lines that overlap a little (negative margins) would
+					// otherwise midpoint to a spot far from both rows.
+					const overlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+					if (overlap < Math.min(a.width, b.width) / 2) return undefined;
+					const [upper, lower] = a.top <= b.top ? [a, b] : [b, a];
+					if (lower.top < upper.bottom) return undefined;
+					const start = Math.min(a.left, b.left);
+					return {
+						center: (upper.bottom + lower.top) / 2,
+						start,
+						extent: Math.max(a.right, b.right) - start
+					};
+				}
+				const overlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+				if (overlap < Math.min(a.height, b.height) / 2) return undefined;
+				const [before, after] = a.left <= b.left ? [a, b] : [b, a];
+				if (after.left < before.right) return undefined;
+				const start = Math.min(a.top, b.top);
+				return {
+					center: (before.right + after.left) / 2,
+					start,
+					extent: Math.max(a.bottom, b.bottom) - start
+				};
+			};
+
+			const cleanup = combine(
 				draggable({
 					element: element as HTMLElement,
-					dragHandle: handleEl ?? undefined,
+					// Evaluated per drag attempt: disabling mid-drag stays safe (the
+					// registration lives on, pragmatic's supported path), and handles
+					// are resolved fresh so late-rendered handles work.
+					canDrag: ({ input }) => {
+						if (options.disabled?.()) return false;
+						if (options.canDrag && !options.canDrag(itemData)) return false;
+						const handleOn =
+							typeof options.handle === 'function' ? options.handle() : options.handle;
+						if (!handleOn) return true;
+						const handle = element.querySelector('[data-dnd-handle]');
+						const grabbed = document.elementFromPoint(input.clientX, input.clientY);
+						return !!handle && !!grabbed && handle.contains(grabbed);
+					},
 					getInitialData: () => payload(),
+					onGenerateDragPreview: ({ nativeSetDragImage }) => {
+						// A compact clone pushed in front of the pointer: the default
+						// snapshot sits centered under the cursor and hides the drop
+						// position. Width capped at 280px — beyond that Windows dims the
+						// preview (and it obscures the board). No CSS transform: Safari
+						// can't snapshot transformed previews.
+						const rect = element.getBoundingClientRect();
+						setCustomNativeDragPreview({
+							nativeSetDragImage,
+							getOffset: pointerOutsideOfPreview({ x: '12px', y: '8px' }),
+							render: ({ container }) => {
+								const clone = element.cloneNode(true) as HTMLElement;
+								clone.style.width = `${Math.min(rect.width, 280)}px`;
+								clone.style.boxSizing = 'border-box';
+								clone.style.margin = '0';
+								container.appendChild(clone);
+							}
+						});
+					},
 					onDragStart: () => {
 						draggingId = id;
+						// Seed the hover state at the item's own position so a live
+						// preview renders unchanged in the same flush (no flash of
+						// the row collapsing before the placeholder appears).
+						const from = freshIndex(options.items(), id);
+						if (from !== -1) setOver(from, payload());
 						element.setAttribute('data-dnd-dragging', 'true');
-						(element as HTMLElement).style.opacity = '0.4';
+						// Without this, drops outside any target play the slow native
+						// snap-back animation before dragend.
+						preventUnhandled.start();
+						options.onDragStart?.({ item: itemData, index: from });
 					},
 					onDrop: () => {
 						draggingId = null;
 						element.removeAttribute('data-dnd-dragging');
-						(element as HTMLElement).style.opacity = '';
 					}
 				}),
 				dropTargetForElements({
 					element: element as HTMLElement,
 					canDrop: ({ source }) => canAccept(source.data),
 					getIsSticky: () => true,
-					getData: ({ input }): TargetData => ({
-						...payload(),
-						edge: closestEdge(element, input, axis())
-					}),
-					onDrag: ({ self, source }) => {
-						const src = source.data as DragData;
-						const edge = (self.data as TargetData).edge;
-						// No indicator on the dragged row itself, nor when the drop would
-						// put the item right back where it already is.
-						if (src.listId === listId && src.itemId === id) {
-							hideIndicator();
-							return;
-						}
-						if (src.listId === listId && resolveReorder(src.index, index, edge) === null) {
-							hideIndicator();
-							return;
-						}
-						showIndicator(element.getBoundingClientRect(), edge);
+					getData: ({ input }): TargetData => {
+						const physical = physicalClosestEdge(element, input, axis());
+						return {
+							...payload(),
+							edge: toLogicalEdge(physical, element, axis()),
+							physicalEdge: physical
+						};
 					},
+					// onDrag is rAF-throttled; onDragEnter dispatches synchronously at
+					// target change — drawing in both keeps the indicator immediate.
+					onDragEnter: (args) => drawItemIndicator(args),
+					onDrag: (args) => drawItemIndicator(args),
 					onDragLeave: () => {
 						hideIndicator();
 					}
 				})
 			);
+
+			return () => {
+				cleanup();
+				element.removeAttribute('data-dnd-item');
+				element.removeAttribute('data-dnd-dragging');
+			};
 		};
 	};
 
@@ -360,6 +811,16 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		/** True while an accepted drag hovers this list. */
 		get isOver() {
 			return isOver;
+		},
+		/**
+		 * Where the dragged item would land if dropped now, or null. Drives
+		 * live-preview rendering (with `indicator: false`): remove the dragged
+		 * item from your items, insert `over.source.item` at `over.index`, and
+		 * render that — drop resolution uses the same value, so the preview and
+		 * the actual drop always agree.
+		 */
+		get over() {
+			return over;
 		}
 	};
 };

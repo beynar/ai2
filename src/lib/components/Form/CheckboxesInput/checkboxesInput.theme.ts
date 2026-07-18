@@ -6,7 +6,8 @@ const defaultCheckboxesInput = cva({
 	variants: {
 		mode: {
 			card: '',
-			normal: ''
+			normal: '',
+			control: 'inline-flex'
 		}
 	}
 });
@@ -16,7 +17,8 @@ const defaultCheckboxesInputItem = cva({
 	variants: {
 		mode: {
 			card: 'rounded bg-background-light raised py-2',
-			normal: 'py-1'
+			normal: 'py-1',
+			control: '!inline-grid !size-5 !min-h-0 !w-5 !grid-cols-1 !place-items-center !gap-0 !p-0'
 		},
 		checked: {
 			true: '',
@@ -49,7 +51,8 @@ const defaultCheckboxesInputItemTrack = cva({
 		},
 		mode: {
 			card: 'top-2',
-			normal: 'top-1'
+			normal: 'top-1',
+			control: '!static col-start-1 row-start-1'
 		},
 		disabled: {
 			true: 'opacity-50',
@@ -69,7 +72,8 @@ const defaultCheckboxesInputItemThumb = cva({
 		},
 		mode: {
 			card: 'top-2',
-			normal: 'top-1'
+			normal: 'top-1',
+			control: '!static col-start-1 row-start-1'
 		},
 		disabled: {
 			true: 'opacity-50',
@@ -91,7 +95,8 @@ const defaultCheckboxesInputContainer = cva({
 	variants: {
 		mode: {
 			card: '',
-			normal: ''
+			normal: '',
+			control: '!inline-flex !w-auto !flex-none'
 		},
 		disabled: {
 			true: 'opacity-50',

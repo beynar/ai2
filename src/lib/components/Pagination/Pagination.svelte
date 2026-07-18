@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { transitionSize } from '$lib/attachments/transitionSize.js';
 	import { flip } from 'svelte/animate';
 	import { scale } from 'svelte/transition';
 	import Hitbox from '../Hitbox/Hitbox.svelte';
@@ -197,6 +198,7 @@
 		data-variant={variant}
 		data-control-variant={controlVariant}
 		class={classes.root({ className })}
+		{@attach transitionSize({ axis: 'both', duration: 200 })}
 		{...attachments}
 	>
 		{#if children}

@@ -141,6 +141,7 @@ export const useSafeArea = (opts: {
 	callback?: () => void;
 	offset?: number;
 	debug?: SafeAreaDebugOption;
+	trackPosition?: boolean;
 }) => {
 	let refs = new Map<HTMLElement, SafeAreaRole>();
 	let observerOffs = new Map<HTMLElement, () => void>();
@@ -259,6 +260,10 @@ export const useSafeArea = (opts: {
 
 	const onPointerMove = (e: PointerEvent) => {
 		if (rects.size === 0) return;
+		if (opts.trackPosition) {
+			refs.forEach((_role, ref) => setArea(ref));
+			updateConeDebug();
+		}
 
 		const point = { x: e.clientX, y: e.clientY };
 		const containingRole = getContainingRole(point);

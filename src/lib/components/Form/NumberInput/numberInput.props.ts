@@ -12,6 +12,8 @@ export type NumberInputProps = InputProps<'number'> & {
 	step?: number;
 	/** Amount changed by the +/- buttons; defaults to step, then 1. */
 	increment?: number;
+	/** Whether to render the decrement and increment buttons. */
+	showControls?: boolean;
 	/** Theme overrides for the number input element and its field container. */
 	theme?: NumberInputThemeProps & InputProps<'number'>['theme'];
 };

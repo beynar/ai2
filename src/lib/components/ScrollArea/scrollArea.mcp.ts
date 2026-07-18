@@ -17,6 +17,9 @@ The ScrollArea component provides a native scroll viewport with custom overlay s
 
 ### Core Props
 - **children**: Snippet - Content rendered inside the scrollable viewport
+- **ref**: HTMLElement | null (bindable) - Reference to the root scroll-area element
+- **viewportRef**: HTMLElement | null (bindable) - Reference to the native scrolling viewport, suitable for virtualizers and imperative scrolling
+- **ariaLabel**: string (default: 'Scrollable content') - Accessible name for the native scrolling viewport
 - **type**: 'hover' | 'always' | 'scroll' | 'auto' (default: 'hover') - Controls scrollbar visibility behavior
 - **delay**: number (default: 0) - Milliseconds before hover mode treats the area as hovered
 

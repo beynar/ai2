@@ -23,6 +23,7 @@
 		max,
 		step,
 		increment,
+		showControls = true,
 		...rest
 	}: NumberInputProps = $props();
 
@@ -167,21 +168,23 @@
 		disabled={field.disabled}
 		class={classes.input({ disabled: field.disabled, size: rest.size })}
 	/>
-	<div class="flex shrink-0 items-stretch gap-0.5 self-stretch">
-		<FieldActionButton
-			size={rest.size}
-			edge="none"
-			label="Decrease value"
-			disabled={!canDecrement}
-			prefix={minusIcon}
-			onClick={() => changeValue(-1)}
-		/>
-		<FieldActionButton
-			size={rest.size}
-			label="Increase value"
-			disabled={!canIncrement}
-			prefix={plusIcon}
-			onClick={() => changeValue(1)}
-		/>
-	</div>
+	{#if showControls}
+		<div class="flex shrink-0 items-stretch gap-0.5 self-stretch">
+			<FieldActionButton
+				size={rest.size}
+				edge="none"
+				label="Decrease value"
+				disabled={!canDecrement}
+				prefix={minusIcon}
+				onClick={() => changeValue(-1)}
+			/>
+			<FieldActionButton
+				size={rest.size}
+				label="Increase value"
+				disabled={!canIncrement}
+				prefix={plusIcon}
+				onClick={() => changeValue(1)}
+			/>
+		</div>
+	{/if}
 </Field>

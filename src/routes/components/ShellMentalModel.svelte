@@ -16,18 +16,18 @@
 			label: 'AppShell',
 			href: '/components/app-shell',
 			responsibility:
-				'Owns the visible app wall, the page host surface, and the composition of Sidebar plus PageShell.',
+				'Composes Sidebar plus PageShell and forwards one shared surface variant to the Sidebar frame.',
 			use: 'Use it when routes share the same application navigation and page chrome.',
-			how: 'Pass a sidebar config, PageShell props, and theme app surfaces through theme.root and theme.page.'
+			how: 'Pass variant, a sidebar config, and PageShell props; use theme.page for PageShell surface tokens.'
 		},
 		{
 			id: 'sidebar',
 			label: 'Sidebar',
 			href: '/components/sidebar',
 			responsibility:
-				'Owns navigation data, the visible navigation panel, collapse, rail, edge reveal, and mobile drawer behavior.',
-			use: 'Use it inside AppShell, or standalone when another parent already owns the surrounding wall and content.',
-			how: 'Pass items plus variant, collapsible, rail, side, or mode; style the panel with sidebar.theme.panel.'
+				'Owns navigation, the lower application wall, variant surfaces, collapse, rail, resize, edge reveal, and mobile drawer behavior.',
+			use: 'Use it through AppShell for standard application frames, or standalone for custom shell composition.',
+			how: 'Pass items plus variant, collapsible, rail, side, or mode; theme root, panel, and main as one frame.'
 		},
 		{
 			id: 'page-shell',
@@ -48,8 +48,8 @@
 	<div class="grid gap-1">
 		<p id="shell-mental-model-title" class="font-medium text-foreground">Shell mental model</p>
 		<p>
-			Sidebar moves layout; AppShell paints layout; PageShell shapes the page. Each card links to
-			the component that owns that layer.
+			Sidebar moves and paints the application frame; AppShell composes it with PageShell; PageShell
+			shapes the page. Each card links to the component that owns that layer.
 		</p>
 	</div>
 

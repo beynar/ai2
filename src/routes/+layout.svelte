@@ -30,7 +30,7 @@
 	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
 	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
 	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
-	let sidebarVariant = $state<SidebarVariant>('split');
+	let sidebarVariant = $state<SidebarVariant>('inset');
 	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('hidden');
 	let sidebarWidth = $state('16rem');
 
@@ -63,7 +63,6 @@
 	const sidebar = $derived<AppShellSidebarProps>({
 		displayState: sidebarDisplayState,
 		onDisplayStateChange: handleSidebarDisplayStateChange,
-		variant: sidebarVariant,
 		collapsible: sidebarCollapsible,
 		rail: true,
 		edgeReveal: true,
@@ -177,6 +176,7 @@
 			<Confirmation />
 			<AppShell
 				{sidebar}
+				variant={sidebarVariant}
 				header={shellHeader}
 				footer={shellFooter}
 				contentPadding="large"

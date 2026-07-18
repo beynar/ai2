@@ -1,10 +1,11 @@
 export const appShellDescription = `
 # AppShell Component
 
-	Convenience wrapper for the common application layout: Sidebar owns navigation and
-	responsive drawer behavior, while PageShell owns the page header, scrollable content,
-	footer, and route-level injection. AppShell owns the visible app wall and page host
-	surfaces.
+Convenience wrapper for the common application layout: Sidebar owns navigation,
+responsive drawer behavior, the application wall, and variant surfaces, while PageShell
+owns the page header, scrollable content, footer, and route-level injection. AppShell
+forwards one shared variant to Sidebar and composes PageShell inside it.
+AppShell owns a dynamic viewport-height frame and contains Sidebar within that frame.
 
 Use AppShell when every route follows the same sidebar + page shell structure. Use
 Sidebar and PageShell directly when the frame needs custom composition.
@@ -17,7 +18,6 @@ Sidebar and PageShell directly when the frame needs custom composition.
 	import { houseIcon } from 'svelai/icons/house';
 
 	const sidebar: AppShellSidebarProps = {
-		variant: 'inset',
 		collapsible: 'icon',
 		rail: true,
 		items: [
@@ -29,7 +29,7 @@ Sidebar and PageShell directly when the frame needs custom composition.
 	};
 </script>
 
-<AppShell {sidebar} title="Dashboard" subtitle="Operational overview">
+<AppShell variant="inset" {sidebar} title="Dashboard" subtitle="Operational overview">
 	{#snippet children({ sidebar })}
 		<button type="button" onclick={sidebar.toggle}>Toggle sidebar</button>
 	{/snippet}
@@ -58,7 +58,9 @@ AppShell renders PageShell internally, so child pages can use the PageShell cont
 
 ## Props
 
-- **sidebar**: AppShellSidebarProps - Sidebar props except \`children\`.
+- **variant**: 'sidebar' | 'floating' | 'inset' | 'split' - Shared shell geometry forwarded to Sidebar.
+- **sidebar**: AppShellSidebarProps - Sidebar props except \`children\`, \`mode\`, \`frame\`, and \`variant\`.
+  Configure Sidebar \`size\` and \`density\` independently inside this object.
 - **eyebrow**: string | Snippet<[PageShellApi]> - Small metadata above the PageShell title.
 - **breadcrumbs**: BreadcrumbItem[] | Snippet<[AppShellApi]> - PageShell breadcrumbs.
 - **breadcrumbsMaxItems**: number - Maximum visible breadcrumb items before ellipsis. Defaults to 4.
@@ -69,12 +71,11 @@ AppShell renders PageShell internally, so child pages can use the PageShell cont
 - **headerActions**: Snippet<[AppShellApi]> | PageShellAction[] - Actions in the default PageShell header. Use an array for standard Button props, or a snippet when the action needs sidebar/page-shell API access.
 - **footer**: Snippet<[PageShellApi]> - Sticky PageShell footer.
 - **footerActions**: Snippet<[AppShellApi]> | PageShellAction[] - Sticky PageShell footer actions.
-	- **children**: Snippet<[AppShellApi]> - Main content, with \`pageShell\` and \`sidebar\` APIs.
-	- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - PageShell content padding preset.
-	- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - PageShell content width preset.
-	- **frame**: 'viewport' | 'contained' - Viewport/fixed or contained/absolute Sidebar layout mechanics.
-	- **pageShellTheme**: PageShellThemeProps - PageShell theme overrides.
-	- **theme**: AppShellThemeProps - AppShell \`root\` wall and \`page\` host surface overrides.
+- **children**: Snippet<[AppShellApi]> - Main content, with \`pageShell\` and \`sidebar\` APIs.
+- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - PageShell content padding preset.
+- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - PageShell content width preset.
+- **pageShellTheme**: PageShellThemeProps - PageShell theme overrides.
+- **theme**: AppShellThemeProps - AppShell root and PageShell surface-token overrides. Sidebar owns the wall and shell geometry.
 
 ## Accessibility
 

@@ -8,6 +8,9 @@
 	import { caretDownIcon } from '../Icons/caretDown.js';
 
 	let {
+		ref = $bindable(null),
+		viewportRef = $bindable(null),
+		ariaLabel = 'Scrollable content',
 		class: className = '',
 		children,
 		delay = 0,
@@ -16,6 +19,9 @@
 		scrollFade = false,
 		theme
 	}: ScrollAreaProps = $props();
+
+	const componentId = $props.id();
+	const viewportId = `${componentId}-viewport`;
 
 	const scrollArea = new ScrollArea({
 		get type() {
@@ -40,6 +46,7 @@
 
 <div
 	data-scroll-area
+	bind:this={ref}
 	class={classes.root({ className })}
 	style:position="relative"
 	{@attach scrollArea.hoover.reference}
@@ -50,12 +57,13 @@
 	     dead tab stop. -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
-		id="scroll-area-viewport"
+		id={viewportId}
 		data-scroll-area-viewport
+		bind:this={viewportRef}
 		class={classes.viewport({ scrollFade: scrollFadeAxis })}
 		tabindex={scrollArea.viewportTabindex}
 		role="group"
-		aria-label="Scrollable content"
+		aria-label={ariaLabel}
 		{@attach scrollArea.viewportAttachment}
 		style:position="relative"
 		style:overflow="scroll"
@@ -87,7 +95,7 @@
 			style:opacity={scrollArea.visible ? 1 : 0}
 			style:transition="opacity 0.2s ease"
 			role="scrollbar"
-			aria-controls="scroll-area-viewport"
+			aria-controls={viewportId}
 			aria-valuenow={scrollArea.scrollY}
 			aria-valuemin="0"
 			aria-valuemax={scrollArea.maxScrollY}
@@ -118,7 +126,7 @@
 			style:transition="opacity 0.2s ease"
 			role="scrollbar"
 			aria-orientation="horizontal"
-			aria-controls="scroll-area-viewport"
+			aria-controls={viewportId}
 			aria-valuenow={scrollArea.scrollX}
 			aria-valuemin="0"
 			aria-valuemax={scrollArea.maxScrollX}

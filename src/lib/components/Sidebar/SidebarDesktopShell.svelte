@@ -1,10 +1,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { useSafeArea } from '$lib/utils/safeArea.svelte.js';
 	import {
 		type SidebarCollapsible,
 		type SidebarDisplayState,
+		type SidebarDensity,
 		type SidebarFrame,
+		type SidebarRail,
 		type SidebarSide,
+		type SidebarSize,
 		type SidebarState,
 		type SidebarVariant
 	} from './sidebar.props.js';
@@ -19,9 +23,13 @@
 		variant,
 		side,
 		frame,
+		size,
+		density,
 		rail,
 		edgeReveal,
 		toggleLabel,
+		resizeLabel,
+		collapsedResizeLabel,
 		openLabel,
 		toggle,
 		open,
@@ -36,9 +44,13 @@
 		variant: SidebarVariant;
 		side: SidebarSide;
 		frame: SidebarFrame;
-		rail: boolean;
+		size: SidebarSize;
+		density: SidebarDensity;
+		rail: SidebarRail;
 		edgeReveal: boolean;
 		toggleLabel: string;
+		resizeLabel: string;
+		collapsedResizeLabel: string;
 		openLabel: string;
 		toggle: () => void;
 		open: () => void;
@@ -50,21 +62,22 @@
 
 	const classes = $derived(useSidebarTheme(theme));
 	const showEdgeTrigger = $derived(edgeReveal && displayState === 'hidden');
+	const hasRail = $derived(rail !== false);
+	const railAppearance = $derived(rail === 'thumb' ? 'thumb' : 'line');
+	const resizeControlLabel = $derived(hasRail ? `${resizeLabel}; ${toggleLabel}` : resizeLabel);
+	const resizeValueText = $derived(
+		displayState === 'collapsed' ? collapsedResizeLabel : `${resize.displayWidth}px`
+	);
 
 	let panelRef: HTMLElement | null = $state(null);
 	let resizeHandleRef: HTMLElement | null = $state(null);
 	let edgeTriggerRef: HTMLButtonElement | null = $state(null);
-
-	function isPointerInside(element: HTMLElement | null, event: PointerEvent) {
-		if (!element) return false;
-		const bounds = element.getBoundingClientRect();
-		return (
-			event.clientX >= bounds.left &&
-			event.clientX <= bounds.right &&
-			event.clientY >= bounds.top &&
-			event.clientY <= bounds.bottom
-		);
-	}
+	const revealSafeArea = useSafeArea({
+		isActive: () => showEdgeTrigger && edgeRevealed && !resize.isResizing,
+		callback: () => (edgeRevealed = false),
+		offset: 8,
+		trackPosition: true
+	});
 
 	$effect(() => {
 		if (showEdgeTrigger) return;
@@ -86,43 +99,47 @@
 		if (!node) return;
 
 		const onPointerDown = (event: PointerEvent) => resize.handlePointerdown(event, node);
-		const onKeydown = (event: KeyboardEvent) => resize.handleKeydown(event);
+		const onKeydown = (event: KeyboardEvent) => {
+			if (hasRail && (event.key === 'Enter' || event.key === ' ')) {
+				event.preventDefault();
+				toggle();
+				return;
+			}
+			resize.handleKeydown(event);
+		};
+		const onClick = () => {
+			if (!hasRail || !resize.consumeClickAfterResize()) return;
+			toggle();
+		};
 		node.addEventListener('pointerdown', onPointerDown);
 		node.addEventListener('keydown', onKeydown);
+		node.addEventListener('click', onClick);
 		return () => {
 			node.removeEventListener('pointerdown', onPointerDown);
 			node.removeEventListener('keydown', onKeydown);
+			node.removeEventListener('click', onClick);
 		};
-	});
-
-	$effect(() => {
-		if (!edgeRevealed) return;
-
-		const closeWhenPointerLeaves = (event: PointerEvent) => {
-			if (isPointerInside(panelRef, event)) return;
-			if (isPointerInside(edgeTriggerRef, event)) return;
-			edgeRevealed = false;
-		};
-
-		window.addEventListener('pointermove', closeWhenPointerLeaves);
-		return () => window.removeEventListener('pointermove', closeWhenPointerLeaves);
 	});
 </script>
 
 <div
-	class="group peer relative hidden text-foreground md:block data-[side=right]:order-last"
+	class="group peer relative hidden text-foreground data-[display-state=hidden]:z-20 md:block data-[side=right]:order-last"
 	data-slot="sidebar"
 	data-state={sidebarState}
 	data-display-state={displayState}
-	data-resizing={resize.isResizing ? 'true' : undefined}
+	data-resizing={resize.shouldSuppressTransitions ? 'true' : undefined}
 	data-edge-revealed={edgeRevealed ? 'true' : undefined}
 	data-collapsible={collapsibleState}
 	data-variant={variant}
 	data-side={side}
+	data-size={size}
+	data-density={density}
+	data-rail={hasRail ? railAppearance : undefined}
 >
 	<div data-slot="sidebar-spacer" class={getSidebarGapClass(variant)}></div>
 	<div
 		bind:this={panelRef}
+		{@attach revealSafeArea.reference}
 		data-slot="sidebar-container"
 		data-side={side}
 		class={getSidebarContainerClass(side, variant, edgeRevealed, frame)}
@@ -131,21 +148,22 @@
 			data-sidebar="sidebar"
 			data-slot="sidebar-panel"
 			data-side={side}
-			class={classes.panel({ variant, placement: 'positioned' })}
+			class={classes.panel({ variant, placement: 'positioned', size, density })}
 		>
 			{@render children()}
 		</div>
 	</div>
-	{#if rail}
+	{#if hasRail && !resize.enabled}
 		<button
 			type="button"
 			data-slot="sidebar-rail"
 			data-sidebar="rail"
 			data-side={side}
+			data-appearance={railAppearance}
 			aria-label={toggleLabel}
 			tabindex={-1}
 			title={toggleLabel}
-			class={classes.rail({ variant, side })}
+			class={classes.rail({ variant, side, appearance: railAppearance })}
 			onclick={toggle}
 		></button>
 	{/if}
@@ -153,29 +171,35 @@
 		<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 		<div
 			bind:this={resizeHandleRef}
+			{@attach revealSafeArea.reference}
 			role="separator"
 			tabindex="0"
 			aria-orientation="vertical"
-			aria-valuenow={resize.currentWidth}
-			aria-valuemin={resize.minWidth}
+			aria-valuenow={resize.displayWidth}
+			aria-valuemin={resize.displayMinWidth}
 			aria-valuemax={resize.maxWidth}
-			aria-valuetext={`${resize.currentWidth}px`}
-			aria-label="Resize sidebar"
+			aria-valuetext={resizeValueText}
+			aria-label={resizeControlLabel}
+			title={resizeControlLabel}
 			data-slot="sidebar-resize-handle"
 			data-sidebar="resize-handle"
 			data-side={side}
+			data-appearance={hasRail ? railAppearance : undefined}
 			data-dragging={resize.isDragging ? 'true' : undefined}
 			class={classes.resizeHandle({
 				variant,
 				side,
 				dragging: resize.isDragging,
-				disabled: false
+				disabled: false,
+				combined: hasRail,
+				appearance: railAppearance
 			})}
 		></div>
 	{/if}
 	{#if showEdgeTrigger}
 		<button
 			bind:this={edgeTriggerRef}
+			{@attach revealSafeArea.reference}
 			type="button"
 			data-slot="sidebar-edge-trigger"
 			data-sidebar="edge-trigger"

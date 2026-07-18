@@ -28,6 +28,8 @@ export type PropDoc = {
 export type ComponentDocs = {
 	/** PascalCase component name, e.g. "Card". */
 	name: string;
+	/** Native attribute types inherited from `svelte/elements`, including their element generic. */
+	htmlAttributes: string[];
 	props: PropDoc[];
 };
 

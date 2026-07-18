@@ -1,9 +1,19 @@
 <script lang="ts">
-	import type { SidebarMenuSubEntry } from './sidebar.props.js';
+	import type { SidebarDensity, SidebarMenuSubEntry, SidebarSize } from './sidebar.props.js';
 	import SidebarIcon from './SidebarIcon.svelte';
 	import { useSidebarTheme, type SidebarThemeProps } from './sidebar.theme.js';
 
-	let { sub, theme }: { sub: SidebarMenuSubEntry; theme?: SidebarThemeProps } = $props();
+	let {
+		sub,
+		size,
+		density,
+		theme
+	}: {
+		sub: SidebarMenuSubEntry;
+		size: SidebarSize;
+		density: SidebarDensity;
+		theme?: SidebarThemeProps;
+	} = $props();
 
 	const classes = $derived(useSidebarTheme(theme));
 </script>
@@ -23,7 +33,7 @@
 			aria-current={sub.isActive ? 'page' : undefined}
 			aria-disabled={sub.disabled || undefined}
 			tabindex={sub.disabled ? -1 : undefined}
-			class={classes.subButton({ size: sub.size })}
+			class={classes.subButton({ componentSize: size, density, size: sub.size })}
 			onclick={sub.onClick}
 		>
 			<SidebarIcon icon={sub.icon} />
@@ -37,7 +47,7 @@
 			data-size={sub.size ?? 'md'}
 			data-active={sub.isActive ? 'true' : undefined}
 			disabled={sub.disabled || undefined}
-			class={classes.subButton({ size: sub.size })}
+			class={classes.subButton({ componentSize: size, density, size: sub.size })}
 			onclick={sub.onClick}
 		>
 			<SidebarIcon icon={sub.icon} />

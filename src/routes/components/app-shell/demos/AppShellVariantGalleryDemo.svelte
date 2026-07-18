@@ -5,7 +5,7 @@
 		type AppShellSidebarProps,
 		type AppShellThemeProps
 	} from '$lib/components/AppShell/index.js';
-	import type { SidebarGroup } from '$lib/components/Sidebar/index.js';
+	import type { SidebarGroup, SidebarVariant } from '$lib/components/Sidebar/index.js';
 	import { arrowClockwiseIcon } from '$lib/components/Icons/arrowClockwise.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
 	import { commandIcon } from '$lib/components/Icons/command.js';
@@ -21,9 +21,10 @@
 		name: string;
 		description: string;
 		title: string;
+		variant: SidebarVariant;
 		contentWidth: 'full' | 'narrow' | 'normal' | 'wide' | 'prose';
 		contentPadding: 'none' | 'small' | 'normal' | 'large';
-		sidebar: Pick<AppShellSidebarProps, 'variant' | 'collapsible' | 'rail' | 'width' | 'widthIcon'>;
+		sidebar: Pick<AppShellSidebarProps, 'collapsible' | 'rail' | 'width' | 'widthIcon'>;
 		items: SidebarGroup[];
 	};
 
@@ -53,10 +54,10 @@
 			name: 'Classic admin',
 			description: 'Full-width workspace with a fixed, tinted navigation column.',
 			title: 'Operations',
+			variant: 'sidebar',
 			contentWidth: 'full',
 			contentPadding: 'normal',
 			sidebar: {
-				variant: 'sidebar',
 				collapsible: 'none',
 				width: '16rem'
 			},
@@ -64,12 +65,13 @@
 		},
 		{
 			id: 'inset',
-			name: 'Inset product app',
-			description: 'Rounded inset frame with collapsible navigation and an invisible edge rail.',
+			name: 'Inset workspace',
+			description: 'Content is inset over the dark application wall beside integrated navigation.',
 			title: 'Revenue cockpit',
+			variant: 'inset',
 			contentWidth: 'wide',
 			contentPadding: 'normal',
-			sidebar: { variant: 'inset', collapsible: 'icon', rail: true, width: '16rem' },
+			sidebar: { collapsible: 'icon', rail: true, width: '16rem' },
 			items: productGroups
 		},
 		{
@@ -77,20 +79,21 @@
 			name: 'Floating console',
 			description: 'Detached navigation with dense command-style content.',
 			title: 'Command center',
+			variant: 'floating',
 			contentWidth: 'normal',
 			contentPadding: 'small',
-			sidebar: { variant: 'floating', collapsible: 'icon', rail: true, width: '15rem' },
+			sidebar: { collapsible: 'icon', rail: true, width: '15rem' },
 			items: productGroups
 		},
 		{
 			id: 'split',
-			name: 'Rounded content split',
-			description:
-				'Contrasting sidebar well with an inset content panel rounded against the navigation edge.',
+			name: 'Split panels',
+			description: 'Detached sidebar and content surfaces share the same lower application wall.',
 			title: 'Component browser',
+			variant: 'split',
 			contentWidth: 'normal',
 			contentPadding: 'normal',
-			sidebar: { variant: 'split', collapsible: 'icon', rail: true, width: '17rem' },
+			sidebar: { collapsible: 'icon', rail: true, width: '17rem' },
 			items: productGroups
 		}
 	];
@@ -168,14 +171,14 @@
 	<div class="h-[620px] w-full">
 		<AppShell
 			{sidebar}
+			variant={selectedRecipe.variant}
 			title={selectedRecipe.title}
 			subtitle={selectedRecipe.description}
-			eyebrow={`${selectedRecipe.sidebar.variant} / ${selectedRecipe.sidebar.collapsible}`}
+			eyebrow={`${selectedRecipe.variant} / ${selectedRecipe.sidebar.collapsible}`}
 			{headerActions}
 			contentPadding={selectedRecipe.contentPadding}
 			contentWidth={selectedRecipe.contentWidth}
 			mobileActionCount={1}
-			frame="contained"
 			theme={previewAppShellTheme}
 		>
 			{#snippet children()}
@@ -183,7 +186,7 @@
 					<section class="rounded-lg border border-background-muted bg-background-light p-4">
 						<p class="text-sm font-medium text-foreground">Recipe anatomy</p>
 						<div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-							{#each [['Sidebar', selectedRecipe.sidebar.variant], ['Collapse', selectedRecipe.sidebar.collapsible], ['Rail', selectedRecipe.sidebar.rail ? 'edge toggle' : 'none'], ['Content', selectedRecipe.contentWidth]] as detail}
+							{#each [['Sidebar', selectedRecipe.variant], ['Collapse', selectedRecipe.sidebar.collapsible], ['Rail', selectedRecipe.sidebar.rail ? 'edge toggle' : 'none'], ['Content', selectedRecipe.contentWidth]] as detail}
 								<div class="rounded-md border border-background-muted bg-background p-3">
 									<p class="text-xs font-medium uppercase tracking-normal text-foreground/50">
 										{detail[0]}

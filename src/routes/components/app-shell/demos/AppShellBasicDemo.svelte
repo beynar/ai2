@@ -31,7 +31,6 @@
 		},
 		items,
 		collapsible: 'icon',
-		variant: 'inset',
 		rail: true,
 		width: sidebarWidth,
 		widthIcon: '3.5rem',
@@ -54,9 +53,9 @@
 <div class="h-[520px] w-full">
 	<AppShell
 		{sidebar}
+		variant="inset"
 		title="Dashboard"
 		subtitle="Sidebar navigation with sticky page chrome"
-		frame="contained"
 		theme={{
 			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
 		}}

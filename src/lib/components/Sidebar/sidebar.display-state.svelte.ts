@@ -23,7 +23,9 @@ export class SidebarDisplayStateBridge {
 	}
 
 	get displayState(): SidebarDisplayState {
-		return this.options.displayState ?? this.internalDisplayState ?? this.legacyDisplayState;
+		return this.normalizeState(
+			this.options.displayState ?? this.internalDisplayState ?? this.legacyDisplayState
+		);
 	}
 
 	setDisplayState = (nextState: SidebarDisplayState) => {
@@ -83,7 +85,9 @@ export class SidebarDisplayStateBridge {
 	}
 
 	private normalizeState(state: SidebarDisplayState) {
-		return this.options.collapsible === 'none' ? 'expanded' : state;
+		if (this.options.collapsible === 'none') return 'expanded';
+		if (this.options.collapsible === 'offcanvas' && state === 'collapsed') return 'hidden';
+		return state;
 	}
 
 	private updateOpenFromDisplayState(state: SidebarDisplayState) {

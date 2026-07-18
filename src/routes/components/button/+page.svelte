@@ -67,12 +67,8 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="A spinner overlays the label while loading — click to preview.">
-			<div class="flex flex-wrap items-center justify-center gap-3">
-				{#each variants as variant (variant)}
-					<Button {variant} {loading} onClick={triggerLoading}>{variant}</Button>
-				{/each}
-			</div>
+		<ComponentCard description="Loading buttons use the Spinner variant configured on Theme.">
+			<Button {loading} onClick={triggerLoading}>Save changes</Button>
 		</ComponentCard>
 
 		<ComponentCard description="Disabled buttons are dimmed and ignore interaction.">

@@ -3,6 +3,7 @@ import { getContext, onMount, setContext } from 'svelte';
 import { browser } from '$app/environment';
 import { MediaQuery } from 'svelte/reactivity';
 import type { DialogState } from '../Dialog/dialog.state.svelte.js';
+import type { SpinnerVariant } from '../Spinner/spinner.props.js';
 import type { ResponsiveProps, Breakpoint } from './theme.js';
 import type { Easing } from '$lib/transitions/easingFunctions.js';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -25,7 +26,9 @@ type EventPayload = {
 					? WheelEvent
 					: Event;
 };
-interface ThemeOptions {}
+interface ThemeOptions {
+	readonly spinnerVariant: SpinnerVariant;
+}
 
 export interface ThemeState extends ThemeOptions {}
 

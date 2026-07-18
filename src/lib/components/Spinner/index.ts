@@ -1,5 +1,5 @@
 export { default as Spinner } from './Spinner.svelte';
-export type { SpinnerProps } from './spinner.props.js';
+export type { SpinnerProps, SpinnerVariant } from './spinner.props.js';
 export {
 	spinnerTheme,
 	setSpinnerTheme,

@@ -23,6 +23,7 @@ Extends all Field component props plus:
 - **max**: number - Maximum allowed value
 - **step**: number - Native number input step for keyboard and browser interactions
 - **increment**: number (default: step ?? 1) - Amount changed by the +/- buttons
+- **showControls**: boolean (default: true) - Whether to render the +/- buttons
 
 ### Display Props
 - **placeholder**: string - Placeholder text

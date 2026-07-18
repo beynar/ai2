@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import BeforeHydratation from '../Utils/BeforeHydratation.svelte';
 	import { type SvelteThemeProps, Theme as SvelteTheme } from 'svelte-themes';
+	import type { SpinnerVariant } from '../Spinner/spinner.props.js';
 	import { ThemeState } from './theme.state.svelte.js';
 	import { escapeForInlineScript, escapeJsString, MEDIA } from './helper.js';
 	import Tooltip from '../Tooltip/Tooltip.svelte';
@@ -9,6 +10,7 @@
 
 	type SvelaiThemeProps = SvelteThemeProps<T> & {
 		children: Snippet<[ThemeState]>;
+		spinnerVariant?: SpinnerVariant;
 	};
 	let {
 		children,
@@ -21,6 +23,7 @@
 		defaultTheme = enableSystem ? 'system' : 'light',
 		attribute = 'data-theme',
 		value = undefined,
+		spinnerVariant = 'default',
 		colorScheme
 	}: SvelaiThemeProps = $props();
 
@@ -75,7 +78,14 @@
 		}
 	});
 
-	const sveltaiTheme = new ThemeState({}, theme);
+	const sveltaiTheme = new ThemeState(
+		{
+			get spinnerVariant() {
+				return spinnerVariant;
+			}
+		},
+		theme
+	);
 
 	const attrs = !value ? ((themes || []) as string[]) : (Object.values(value || {}) as string[]);
 
@@ -106,21 +116,25 @@
 </script>
 
 <BeforeHydratation
+	immediate
+	once
 	scripts={[
 		/* js */ `
-const setWindowDimensions = () => {
-		const setWindowHeight = () => {		
-			document.documentElement.style.setProperty('--window-height', window.innerHeight + 'px');
-		};
-		const setWindowWidth = () => {
-			document.documentElement.style.setProperty('--window-width', window.innerWidth + 'px');
-		};
-		window.addEventListener('resize', setWindowHeight);
-		window.addEventListener('resize', setWindowWidth);
-		setWindowHeight();
-		setWindowWidth();
-	};
-	setWindowDimensions();
+	(() => {
+			const visualViewport = window.visualViewport;
+			const setWindowHeight = () => {
+				const height = visualViewport?.height ?? window.innerHeight;
+				document.documentElement.style.setProperty('--window-height', height + 'px');
+			};
+			const setWindowWidth = () => {
+				document.documentElement.style.setProperty('--window-width', window.innerWidth + 'px');
+			};
+			window.addEventListener('resize', setWindowHeight);
+			window.addEventListener('resize', setWindowWidth);
+			visualViewport?.addEventListener('resize', setWindowHeight);
+			setWindowHeight();
+			setWindowWidth();
+	})();
 `
 	]}
 	css={[]}

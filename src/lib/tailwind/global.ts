@@ -95,7 +95,7 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 	// DYNAMIC WINDOW UTILITIES
 	addUtilities({
 		'.h-window': {
-			height: 'var(--window-height)'
+			height: 'var(--window-height, 100dvh)'
 		},
 		'.w-window': {
 			width: 'var(--window-width)'
@@ -136,6 +136,7 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 	addVariant('inactive', ['&:not(:active)', '&[data-active="false"]']);
 
 	addVariant('highlight', ['&[data-highlighted="true"]']);
+	addVariant('dark', ['html[data-theme="dark"] &', '.dark &', '[data-color-scheme="dark"] &']);
 	addVariant('disabled', ['&:disabled', '&[data-disabled="true"]']);
 
 	addBase({

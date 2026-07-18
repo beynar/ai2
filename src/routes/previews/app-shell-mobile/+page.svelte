@@ -16,7 +16,6 @@
 			open = nextOpen;
 		},
 		collapsible: 'icon',
-		variant: 'inset',
 		rail: true,
 		width: '16rem',
 		widthIcon: '3.5rem',
@@ -46,9 +45,10 @@
 	});
 </script>
 
-<div class="h-svh min-h-[420px] w-full overflow-hidden bg-background-muted">
+<div class="h-window min-h-[420px] w-full overflow-hidden bg-background-muted">
 	<AppShell
 		{sidebar}
+		variant="inset"
 		title="Responsive shell"
 		subtitle="Breakpoint-aware workspace navigation."
 		contentPadding="normal"

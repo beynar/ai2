@@ -39,14 +39,35 @@ export function extractComponentDocs(project: Project, filePath: string): Compon
 	const checker = project.getTypeChecker();
 	const type = declaration.getType();
 	const bindables = readBindableNames(filePath, componentName);
+	const symbols = type.getProperties();
+	const htmlAttributes = findInheritedHtmlAttributeTypes(declaration);
+	const shouldCollapseHtmlAttributes = htmlAttributes.length > 0;
 
-	const props = type
-		.getProperties()
-		.map((symbol) => toPropDoc(symbol, declaration, checker, bindables, componentName))
+	const props = symbols
+		.filter((symbol) => !shouldCollapseHtmlAttributes || !isInheritedHtmlAttribute(symbol))
+		.map((symbol) => toPropDoc(symbol, declaration, checker, bindables))
 		.filter((prop): prop is PropDoc => prop !== null)
 		.sort((a, b) => a.name.localeCompare(b.name));
 
-	return { name: componentName, props };
+	return { name: componentName, htmlAttributes, props };
+}
+
+/** Native element attribute intersections represented once by the props table instead of flattened. */
+function findInheritedHtmlAttributeTypes(declaration: Node): string[] {
+	const types = declaration
+		.getDescendantsOfKind(ts.SyntaxKind.TypeReference)
+		.filter((reference) => /^HTML\w*Attributes$/.test(reference.getTypeName().getText()))
+		.filter((reference) => {
+			return !reference.getAncestors().some((ancestor) => {
+				if (Node.isPropertySignature(ancestor) || Node.isIndexedAccessTypeNode(ancestor)) {
+					return true;
+				}
+				return Node.isTypeReference(ancestor) && ancestor.getTypeName().getText() === 'Pick';
+			});
+		})
+		.map((reference) => reference.getText().replace(/\s+/g, ' '));
+
+	return [...new Set(types)];
 }
 
 /**
@@ -96,13 +117,11 @@ function toPropDoc(
 	symbol: MorphSymbol,
 	location: Node,
 	checker: ReturnType<Project['getTypeChecker']>,
-	bindables: Set<string>,
-	componentName: string
+	bindables: Set<string>
 ): PropDoc | null {
 	const name = symbol.getName();
 	// Skip index signatures / symbol keys (e.g. WithAttachments' [key: symbol]).
 	if (!name || name.startsWith('__')) return null;
-	if (componentName === 'Tree' && isInheritedDomAttribute(symbol)) return null;
 
 	const propType = symbol.getTypeAtLocation(location);
 	const { value, type } = describeType(symbol, propType, location, checker);
@@ -117,7 +136,7 @@ function toPropDoc(
 	};
 }
 
-function isInheritedDomAttribute(symbol: MorphSymbol): boolean {
+function isInheritedHtmlAttribute(symbol: MorphSymbol): boolean {
 	const declarations = symbol.getDeclarations();
 	return (
 		declarations.length > 0 &&

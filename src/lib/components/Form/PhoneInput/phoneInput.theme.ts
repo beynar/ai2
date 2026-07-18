@@ -154,7 +154,7 @@ const defaultCountryOption = cva({
 			large: 'min-h-8 py-1.5 text-sm'
 		},
 		highlighted: {
-			true: 'bg-background-muted',
+			true: 'bg-background-dark dark:bg-background-light',
 			false: ''
 		},
 		selected: {

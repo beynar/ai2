@@ -38,7 +38,9 @@ export function svelaiPropsDocs(): Plugin {
 			const filePath = file.getFilePath();
 			if (!filePath.endsWith('.props.ts')) continue;
 			const docs = extractComponentDocs(proj, filePath);
-			if (docs && docs.props.length > 0) map[docs.name] = docs;
+			if (docs && (docs.props.length > 0 || docs.htmlAttributes.length > 0)) {
+				map[docs.name] = docs;
+			}
 		}
 		cachedMap = map;
 		return map;

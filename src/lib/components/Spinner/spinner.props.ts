@@ -3,6 +3,8 @@ import type { Colors, Sizes } from '$lib/types/index.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { SpinnerThemeProps } from './spinner.theme.js';
 
+export type SpinnerVariant = 'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles';
+
 type SpinnerBaseProps = {
 	/**
 	 * Bindable reference to the root spinner element.
@@ -20,6 +22,10 @@ type SpinnerBaseProps = {
 	 * Color token applied to the indicator.
 	 */
 	color?: Colors;
+	/**
+	 * Visual animation used by the indicator. Overrides the Theme default when provided.
+	 */
+	variant?: SpinnerVariant;
 	/**
 	 * Visible text rendered after the indicator. Ignored when `children` is provided.
 	 */

@@ -37,7 +37,6 @@
 	const sidebar: AppShellSidebarProps = {
 		items,
 		collapsible: 'icon',
-		variant: 'inset',
 		rail: true,
 		width: '15rem',
 		widthIcon: '3.5rem',
@@ -52,6 +51,7 @@
 <div class="h-[460px] w-full">
 	<AppShell
 		{sidebar}
+		variant="inset"
 		title="Reports"
 		subtitle="Array actions pass through AppShell to PageShell."
 		{breadcrumbs}
@@ -59,7 +59,6 @@
 		{headerActions}
 		contentPadding="normal"
 		contentWidth="normal"
-		frame="contained"
 		theme={{
 			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
 		}}

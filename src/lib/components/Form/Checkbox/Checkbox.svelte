@@ -11,6 +11,8 @@
 		focused = $bindable(false),
 		required = false,
 		mode = 'normal',
+		indeterminate = false,
+		ariaLabel,
 		theme,
 		disabled,
 		name,
@@ -107,6 +109,8 @@
 		name={field.name}
 		inputValue="true"
 		checked={!!field.value}
+		{indeterminate}
+		{ariaLabel}
 		disabled={field.disabled}
 		{mode}
 		{label}

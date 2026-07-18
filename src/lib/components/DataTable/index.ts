@@ -1,0 +1,47 @@
+export { default as DataTable } from './DataTable.svelte';
+export type {
+	DataTableAggregation,
+	DataTableAlignment,
+	DataTableBooleanFilter,
+	DataTableBuiltInEditor,
+	DataTableCellCommit,
+	DataTableCellPayload,
+	DataTableColumn,
+	DataTableColumnFilter,
+	DataTableCustomEditor,
+	DataTableDateEditor,
+	DataTableDateFilter,
+	DataTableEditor,
+	DataTableEditorPayload,
+	DataTableFilter,
+	DataTableHeaderPayload,
+	DataTableInteractionMode,
+	DataTableNumberEditor,
+	DataTableNumberFilter,
+	DataTableOption,
+	DataTablePaginationConfig,
+	DataTablePaginationState,
+	DataTablePinning,
+	DataTableProcessingMode,
+	DataTableProps,
+	DataTableRowPayload,
+	DataTableSearchConfig,
+	DataTableSelectionMode,
+	DataTableSelectEditor,
+	DataTableSelectFilter,
+	DataTableSorting,
+	DataTableState,
+	DataTableSwitchEditor,
+	DataTableTextEditor,
+	DataTableTextFilter,
+	DataTableToolbarPayload
+} from './dataTable.props.js';
+export {
+	dataTableTheme,
+	setDataTableTheme,
+	useDataTableTheme,
+	type DataTableClasses,
+	type DataTableTheme,
+	type DataTableThemeProps
+} from './dataTable.theme.js';
+export { dataTableDescription } from './dataTable.mcp.js';

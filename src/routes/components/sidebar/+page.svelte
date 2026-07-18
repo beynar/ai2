@@ -24,6 +24,7 @@
 			.replaceAll('$lib/components/Button/index.js', 'svelai/button')
 			.replaceAll('$lib/components/AppShell/index.js', 'svelai/app-shell')
 			.replaceAll('$lib/components/Menu/index.js', 'svelai/menu')
+			.replaceAll('$lib/components/SegmentedControl/index.js', 'svelai/segmented-control')
 			.replaceAll('$lib/components/Sidebar/index.js', 'svelai/sidebar')
 			.replaceAll('$lib/components/Skeleton/index.js', 'svelai/skeleton')
 			.replace(/\$lib\/components\/Icons\/([A-Za-z0-9]+)\.js/g, 'svelai/icons/$1');
@@ -37,11 +38,12 @@
 	features={[
 		'Desktop icon and offcanvas collapse modes',
 		'Resizable desktop panels with drag and keyboard handles',
-		'Hidden offcanvas sidebars reveal from the screen edge',
+		'Hidden offcanvas sidebars reveal, resize, and dismiss through a safe hover area',
 		'Mobile drawer state through the same API',
 		'Panel mode and contained frames for embedded previews',
 		'Header, footer, search, menu, and action rows',
-		'Recursive tree groups and nested submenus'
+		'Recursive tree groups with inline and icon-popover navigation',
+		'Independent item size and spacing density'
 	]}
 >
 	<ShellMentalModel current="sidebar" />
@@ -51,8 +53,9 @@
 	>
 		<p>
 			These examples keep the page side inert with skeleton content so the focus stays on Sidebar.
-			Sidebar itself owns navigation, state, rail, reveal, and resizing; AppShell owns the visible
-			app wall and page surface. For full application layouts, compose it through
+			Sidebar owns navigation, state, resizing, the application wall, and variant surfaces. AppShell
+			composes the same variant with PageShell and forwards its variant to Sidebar. For full
+			application layouts, compose it through
 			<a class="font-medium text-primary hover:underline" href="/components/app-shell">AppShell</a>.
 			For page headers, content width, and sticky footers, use
 			<a class="font-medium text-primary hover:underline" href="/components/page-shell">PageShell</a
@@ -61,7 +64,7 @@
 	</section>
 
 	<ComponentCard
-		description="Render a Sidebar layout from typed groups, search, account menus, badges, and row actions. The page side is intentionally just skeleton content."
+		description="Render a Sidebar layout from typed groups, search, account menus, badges, row actions, and a resizable thumb rail. The page side is intentionally just skeleton content."
 		class="!min-h-fit !items-start !p-4"
 		code={basicCode}
 	>
@@ -70,7 +73,7 @@
 
 	{#snippet examples()}
 		<ComponentCard
-			description="Switch between the official Sidebar variants against the same inert skeleton content."
+			description="Switch variants, display states, item size, and spacing density across navigation rows and a nested project tree. Hidden state keeps its resize handle during edge reveal and persists the changed width."
 			class="!min-h-fit !items-start !p-4"
 			code={variantCode}
 		>
@@ -86,7 +89,7 @@
 		</ComponentCard>
 
 		<ComponentCard
-			description="Icon collapse keeps rows accessible with sr-only labels and native title tooltips while the shell keeps its page space."
+			description="Icon collapse keeps labels mounted and fades them while the panel width animates. If any data-driven row lacks an icon, Sidebar falls back to hidden offcanvas collapse."
 			class="!min-h-fit !items-start !p-4"
 			code={iconCode}
 		>
@@ -94,7 +97,7 @@
 		</ComponentCard>
 
 		<ComponentCard
-			description="Tree groups render recursive folder structures while offcanvas collapse still has a page region to reveal over."
+			description="Tree groups render recursive folder structures inline when expanded and as Menu submenu popovers in desktop icon mode."
 			class="!min-h-fit !items-start !p-4"
 			code={treeCode}
 		>

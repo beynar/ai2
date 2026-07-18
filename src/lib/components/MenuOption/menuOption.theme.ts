@@ -20,8 +20,10 @@ const defaultMenuOption = cva({
 		color: {
 			primary: 'text-primary highlight:bg-primary-muted highlight:text-primary',
 			secondary: 'text-secondary highlight:bg-secondary-muted highlight:text-secondary',
-			foreground: 'text-foreground highlight:bg-background-muted highlight:text-foreground',
-			background: 'text-foreground highlight:bg-background-muted highlight:text-foreground',
+			foreground:
+				'text-foreground highlight:bg-background-dark dark:highlight:bg-background-light highlight:text-foreground',
+			background:
+				'text-foreground highlight:bg-background-dark dark:highlight:bg-background-light highlight:text-foreground',
 			danger: 'text-danger highlight:bg-danger-muted highlight:text-danger',
 			success: 'text-success highlight:bg-success-muted highlight:text-success',
 			warning: 'text-warning highlight:bg-warning-muted highlight:text-warning',
@@ -35,7 +37,7 @@ const defaultMenuOption = cva({
 		// a plain utility that doesn't depend on the `highlight:` attribute variant. Menus leave
 		// this unset and use the `highlight:` variant (data-highlighted set imperatively by the hook).
 		highlighted: {
-			true: 'bg-background-muted',
+			true: 'bg-background-dark dark:bg-background-light',
 			false: ''
 		},
 		// Persistent highlight in the item's own color — e.g. a submenu trigger while its submenu is

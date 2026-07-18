@@ -17,6 +17,7 @@
 		visible,
 		size = 'normal',
 		label,
+		ariaLabel,
 		onChange,
 		...rest
 	}: SwitchProps = $props();
@@ -114,6 +115,7 @@
 		bind:this={field.node}
 		data-checked={!!value}
 		aria-checked={!!value}
+		aria-label={ariaLabel}
 		role="switch"
 		tabindex="0"
 		class={classes.toggle({ checked: !!value, size, disabled })}

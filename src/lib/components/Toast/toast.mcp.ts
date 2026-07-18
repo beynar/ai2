@@ -59,7 +59,7 @@ toast.warning({
 - \`showCloseIcon\` (boolean, optional): If true, shows a close button. Default: inherited from Toaster
 - \`dismissible\` (boolean, optional): If false, prevents user from dismissing. Default: inherited from Toaster
 - \`richColors\` (boolean, optional): If true, uses richer color variants. Default: inherited from Toaster
-- \`loading\` (boolean, optional): If true, shows a loading spinner
+- \`loading\` (boolean, optional): If true, shows a loading spinner using Theme's global \`spinnerVariant\`
 - \`progress\` (boolean, optional): If true, shows a bar counting down the remaining duration (pauses on hover). Only appears when the toast has a finite \`duration\`. Can also be set on \`<Toaster progress />\` as a default.
 - \`swipeToDismiss\` (boolean, optional, default true): Drag the toast toward its anchored screen edge (down for bottom-*, up for top-*) past a threshold to dismiss it; dragging the other way rubber-bands. A manual dismiss (fires \`onClose\`, not \`onAutoClose\`).
 - \`closeOnClick\` (boolean, optional, default false): Dismiss when the toast body is clicked. Off by default now that swipe-to-dismiss exists; the close icon and swipe are the primary dismiss affordances.

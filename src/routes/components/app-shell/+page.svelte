@@ -28,11 +28,11 @@
 
 <DocPage
 	title="App shell"
-	subtitle="Application layout that owns the app wall, sidebar composition, and page host surface."
+	subtitle="Application layout that shares one surface variant across Sidebar and PageShell."
 	component="AppShell"
 	features={[
-		'Owns the visible app wall and page host surface',
-		'Composes Sidebar navigation with PageShell page chrome',
+		'Forwards one variant to Sidebar for consistent shell geometry',
+		'Composes Sidebar-owned surfaces with PageShell page chrome',
 		'Keeps Sidebar responsive drawer, collapse, rail, and edge reveal behavior',
 		'Header, footer, and children snippets receive both APIs',
 		'Child routes can still use setPageShell through context'
@@ -60,7 +60,6 @@
 			sidebarDisplayState = nextDisplayState;
 		},
 		collapsible: 'icon',
-		variant: 'inset',
 		rail: true,
 		width: sidebarWidth,
 		resizable: {
@@ -90,7 +89,7 @@
 	});
 ${'</' + 'script>'}
 
-<AppShell {sidebar} title="Dashboard" subtitle="Sidebar navigation with sticky page chrome">
+<AppShell variant="inset" {sidebar} title="Dashboard" subtitle="Sidebar navigation with sticky page chrome">
 	{#snippet headerActions({ sidebar })}
 		<button type="button" aria-label="Toggle sidebar" onclick={sidebar.toggle}>
 			{@render sidebarIcon({ class: 'size-4' })}
@@ -180,10 +179,11 @@ ${'</' + 'script>'}
 		{ content: 'Create', color: 'primary', prefix: plusIcon }
 	] satisfies AppShellActions;
 
-	const sidebar: AppShellSidebarProps = { items, collapsible: 'icon', variant: 'inset' };
+	const sidebar: AppShellSidebarProps = { items, collapsible: 'icon' };
 ${'</' + 'script>'}
 
 <AppShell
+	variant="inset"
 	{sidebar}
 	title="Reports"
 	{breadcrumbs}

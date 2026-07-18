@@ -55,7 +55,6 @@
 	const sidebar: AppShellSidebarProps = {
 		items,
 		collapsible: 'icon',
-		variant: 'inset',
 		rail: true,
 		width: '16rem',
 		widthIcon: '3.5rem',
@@ -87,6 +86,7 @@
 <div class="h-[620px] w-full">
 	<AppShell
 		{sidebar}
+		variant="inset"
 		title="Customer intelligence"
 		subtitle="A production-style shell with persistent navigation, sticky chrome, and responsive actions."
 		breadcrumbs={contextMode === 'breadcrumbs' ? breadcrumbs : undefined}
@@ -98,7 +98,6 @@
 		contentPadding="normal"
 		contentWidth="wide"
 		mobileActionCount={1}
-		frame="contained"
 		theme={{
 			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
 		}}

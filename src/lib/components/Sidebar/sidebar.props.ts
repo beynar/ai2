@@ -3,12 +3,15 @@ import type { HTMLAttributes } from 'svelte/elements';
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { MenuItem } from '$lib/components/Menu/menu.props.js';
 import type { WithAttachments } from '$lib/types/props.js';
+import type { Density, Sizes } from '$lib/types/theme.js';
 import type { SidebarThemeProps } from './sidebar.theme.js';
 
 export type SidebarDisplayState = 'expanded' | 'collapsed' | 'hidden';
 export type SidebarState = SidebarDisplayState;
 export type SidebarSide = 'left' | 'right';
 export type SidebarVariant = 'sidebar' | 'floating' | 'inset' | 'split';
+export type SidebarSize = Sizes;
+export type SidebarDensity = Density;
 export type SidebarCollapsible = 'offcanvas' | 'icon' | 'none';
 export type SidebarMode = 'layout' | 'panel';
 export type SidebarFrame = 'viewport' | 'contained';
@@ -16,6 +19,7 @@ export type SidebarMenuButtonVariant = 'default' | 'outline';
 export type SidebarMenuButtonSize = 'default' | 'sm' | 'lg';
 export type SidebarCollapseIcon = 'chevron' | 'plus-minus';
 export type SidebarTooltipMode = 'auto' | 'always';
+export type SidebarRail = boolean | 'line' | 'thumb';
 export type SidebarMenuSide = 'top' | 'right' | 'bottom' | 'left';
 export type SidebarMenuAlign = 'start' | 'center' | 'end';
 export type SidebarIcon = Slot | string;
@@ -275,9 +279,13 @@ type SidebarOwnProps = {
 	onDisplayStateChange?: (state: SidebarDisplayState) => void;
 	/** Side the sidebar is anchored to. */
 	side?: SidebarSide;
-	/** Sidebar geometry variant. */
+	/** Sidebar geometry and surface relationship. Inset uses an integrated navigation well; split uses detached surfaces. */
 	variant?: SidebarVariant;
-	/** Collapse behavior. */
+	/** Typography, icon, and item-height scale. */
+	size?: SidebarSize;
+	/** Spacing density for section padding, gaps, and nested navigation. */
+	density?: SidebarDensity;
+	/** Collapse behavior. Icon mode falls back to offcanvas when a data-driven row has no icon. */
 	collapsible?: SidebarCollapsible;
 	/** Render a full resizing layout or only the visible navigation panel. */
 	mode?: SidebarMode;
@@ -295,8 +303,8 @@ type SidebarOwnProps = {
 	widthMobile?: string;
 	/** Ctrl/Cmd shortcut key. Set false to disable. */
 	keyboardShortcut?: string | false;
-	/** Render the thin edge rail that toggles the sidebar. */
-	rail?: boolean;
+	/** Render an edge rail that toggles the sidebar. True uses the thin line style. */
+	rail?: SidebarRail;
 	/** Open hidden offcanvas sidebars when the pointer reaches the screen edge. */
 	edgeReveal?: boolean;
 	/** Items rendered in the scrollable body. Each item is a labelled sidebar group. */

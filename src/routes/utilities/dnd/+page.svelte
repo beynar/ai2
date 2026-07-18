@@ -74,8 +74,8 @@
 	// --- Drag handle
 	let handled = $state<Task[]>([
 		{ id: 'g1', title: 'Only the grip drags' },
-		{ id: 'g2', title: 'Text stays selectable' },
-		{ id: 'g3', title: 'Buttons stay clickable' }
+		{ id: 'g2', title: 'Rows ignore body grabs' },
+		{ id: 'g3', title: 'Late-rendered grips work too' }
 	]);
 	const handledDnd = useDndList({
 		id: 'handled',
@@ -100,6 +100,7 @@
 		'list + item attachments, nothing else',
 		'Cross-list accept/reject by list id',
 		'Automatic drop indicator with no-op suppression',
+		'Auto-scrolls scroll containers while dragging near their edges',
 		'Vertical or horizontal axis, optional drag handle'
 	]}
 >
