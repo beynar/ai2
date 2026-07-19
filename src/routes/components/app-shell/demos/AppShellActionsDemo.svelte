@@ -60,7 +60,9 @@
 		contentPadding="normal"
 		contentWidth="normal"
 		theme={{
-			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
+			root: {
+				base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+			}
 		}}
 	>
 		{#snippet children()}

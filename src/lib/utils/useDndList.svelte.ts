@@ -66,7 +66,9 @@ export type UseDndListOptions<T> = {
 	/**
 	 * Axes that overflow ancestors may auto-scroll during this list's drags.
 	 * This is independent from list orientation because nested boards can need
-	 * cross-axis scrolling. Pass a function to make it reactive. @default 'all'
+	 * cross-axis scrolling. The nearest scroll container is also locked on the
+	 * other axis during the native drag. Pass a function to make it reactive.
+	 * @default 'all'
 	 */
 	autoScrollAxis?: DndAutoScrollAxis | (() => DndAutoScrollAxis);
 	/**
@@ -239,11 +241,10 @@ const hideIndicator = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Auto-scroll: the native drag gesture doesn't scroll overflow containers, so
-// dragging near the edge of a scrollable list (or of a scrollable ancestor
-// such as a ScrollArea viewport) scrolls it. One registration per scroll
-// container, refcounted — several lists sharing one scrollable ancestor must
-// not stack scroll speed.
+// Auto-scroll: Atlaskit scrolls the allowed axes near container edges. Browsers
+// can independently scroll overflow containers during native drags, so the
+// disallowed axis is also locked for the duration of the gesture. Registrations
+// are refcounted so lists sharing one container never stack scroll speed.
 // ---------------------------------------------------------------------------
 const nearestScrollable = (el: Element): Element | null => {
 	for (let node: Element | null = el; node && node !== document.body; node = node.parentElement) {
@@ -251,6 +252,25 @@ const nearestScrollable = (el: Element): Element | null => {
 		if (/auto|scroll|overlay/.test(style.overflowY + style.overflowX)) return node;
 	}
 	return null;
+};
+
+const lockNativeScrollAxis = (listEl: Element, allowedAxis: DndAutoScrollAxis): (() => void) => {
+	if (allowedAxis === 'all') return () => {};
+	const scrollable = nearestScrollable(listEl);
+	if (!(scrollable instanceof HTMLElement)) return () => {};
+
+	const property = allowedAxis === 'horizontal' ? 'overflow-y' : 'overflow-x';
+	const previousValue = scrollable.style.getPropertyValue(property);
+	const previousPriority = scrollable.style.getPropertyPriority(property);
+	scrollable.style.setProperty(property, 'hidden');
+
+	return () => {
+		if (previousValue) {
+			scrollable.style.setProperty(property, previousValue, previousPriority);
+			return;
+		}
+		scrollable.style.removeProperty(property);
+	};
 };
 
 const autoScrollRegistry = new Map<Element, { refs: number; cleanup: () => void }>();
@@ -345,6 +365,11 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	// so a drop can never be double-applied.
 	let monitorRefs = 0;
 	let monitorCleanup: (() => void) | null = null;
+	let nativeScrollUnlock: (() => void) | null = null;
+	const unlockNativeScroll = () => {
+		nativeScrollUnlock?.();
+		nativeScrollUnlock = null;
+	};
 
 	const canAccept = (data: Record<string | symbol, unknown>): boolean => {
 		if (!isMine(data) || options.disabled?.()) return false;
@@ -377,6 +402,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	}) => {
 		hideIndicator();
 		preventUnhandled.stop();
+		unlockNativeScroll();
 		isOver = false;
 		const overAtDrop = over;
 		over = null;
@@ -567,6 +593,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		return () => {
 			cleanup();
 			unregisterAutoScroll();
+			unlockNativeScroll();
 			monitorRefs -= 1;
 			if (monitorRefs === 0) {
 				monitorCleanup?.();
@@ -753,6 +780,8 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 					},
 					onDragStart: () => {
 						draggingId = id;
+						unlockNativeScroll();
+						nativeScrollUnlock = lockNativeScrollAxis(element, autoScrollAxis());
 						// Seed the hover state at the item's own position so a live
 						// preview renders unchanged in the same flush (no flash of
 						// the row collapsing before the placeholder appears).
@@ -765,6 +794,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 						options.onDragStart?.({ item: itemData, index: from });
 					},
 					onDrop: () => {
+						unlockNativeScroll();
 						draggingId = null;
 						element.removeAttribute('data-dnd-dragging');
 					}
@@ -793,6 +823,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 
 			return () => {
 				cleanup();
+				if (draggingId === id) unlockNativeScroll();
 				element.removeAttribute('data-dnd-item');
 				element.removeAttribute('data-dnd-dragging');
 			};

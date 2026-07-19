@@ -74,12 +74,27 @@ export type DataTableBooleanFilter = {
 	falseLabel?: string;
 };
 
-export type DataTableFilter =
+export type DataTableFilterPayload<TData> = {
+	column: DataTableColumn<TData>;
+	value: unknown;
+	active: boolean;
+	setValue: (value: unknown) => void;
+	clear: () => void;
+};
+
+export type DataTableCustomFilter<TData> = {
+	type: 'custom';
+	render: Snippet<[DataTableFilterPayload<TData>]>;
+	predicate: (row: TData, value: unknown, columnValue: unknown) => boolean;
+};
+
+export type DataTableFilter<TData = unknown> =
 	| DataTableTextFilter
 	| DataTableNumberFilter
 	| DataTableSelectFilter
 	| DataTableDateFilter
-	| DataTableBooleanFilter;
+	| DataTableBooleanFilter
+	| DataTableCustomFilter<TData>;
 
 export type DataTableTextEditor = {
 	type: 'text';
@@ -175,6 +190,31 @@ export type DataTableHeaderPayload<TData> = {
 	toggleSorting: (multi?: boolean) => void;
 };
 
+export type DataTableCellRenderPayload<TData> = DataTableCellPayload<TData> & {
+	column: DataTableColumn<TData>;
+	placeholder: boolean;
+	renderDefault: Snippet;
+};
+
+export type DataTableHeaderRenderPayload<TData> = DataTableHeaderPayload<TData> & {
+	renderDefault: Snippet;
+};
+
+export type DataTableApi<TData> = {
+	readonly state: DataTableState;
+	readonly totalItems: number;
+	readonly totalPages: number;
+	readonly visibleRows: readonly TData[];
+	readonly selectedRows: readonly TData[];
+	readonly isSaving: boolean;
+	setGlobalFilter: (value: string) => void;
+	setColumnFilter: (columnId: string, value: unknown) => void;
+	clearFilters: () => void;
+	clearSelection: () => void;
+	setPage: (page: number) => void;
+	setPageSize: (pageSize: number) => void;
+};
+
 export type DataTableToolbarPayload<TData> = {
 	state: DataTableState;
 	selectedRows: TData[];
@@ -190,7 +230,7 @@ export type DataTableColumn<TData, TValue = unknown> = {
 	cell?: Slot<DataTableCellPayload<TData, TValue>>;
 	aggregatedCell?: Slot<DataTableCellPayload<TData, TValue>>;
 	sortable?: boolean | ((left: TData, right: TData, columnId: string) => number);
-	filter?: DataTableFilter;
+	filter?: DataTableFilter<TData>;
 	groupable?: boolean;
 	aggregation?: DataTableAggregation<TData>;
 	editor?: DataTableEditor<TData>;
@@ -214,20 +254,27 @@ export type DataTableSearchConfig = {
 export type DataTablePaginationConfig = {
 	pageSize?: number;
 	pageSizes?: readonly number[];
+	/** Keeps pagination processing enabled while optionally hiding the built-in footer controls. */
+	showControls?: boolean;
 };
 
 type DataTableBaseProps<TData> = {
 	items: readonly TData[];
 	columns: readonly DataTableColumn<TData>[];
 	getRowId: (row: TData, index: number, parent?: TData) => string;
-	height: string | number;
+	/** Scroll viewport height. Defaults to filling a parent with a definite height. */
+	height?: string | number;
 	state?: DataTableState;
+	/** Narrow bindable facade for composing search, filters, and pagination outside the table. */
+	dataTable?: DataTableApi<TData>;
 	initialState?: Partial<DataTableState>;
 	onStateChange?: (state: DataTableState) => void;
 	interactionMode?: DataTableInteractionMode;
 	selectionMode?: DataTableSelectionMode;
 	pagination?: false | DataTablePaginationConfig;
 	search?: boolean | DataTableSearchConfig;
+	/** Shows the toolbar menu for toggling column visibility. */
+	showColumnVisibilityControl?: boolean;
 	density?: Density;
 	stickyHeader?: boolean;
 	overscan?: number;
@@ -243,6 +290,10 @@ type DataTableBaseProps<TData> = {
 	ref?: HTMLElement | null;
 	theme?: DataTableThemeProps;
 	caption?: Slot;
+	/** Table-level renderer for public data cells. Call renderDefault to retain built-in behavior. */
+	cell?: Snippet<[DataTableCellRenderPayload<TData>]>;
+	/** Table-level renderer for public header content. Structural controls remain DataTable-owned. */
+	header?: Snippet<[DataTableHeaderRenderPayload<TData>]>;
 	toolbarPrefix?: Slot<DataTableToolbarPayload<TData>>;
 	toolbarSuffix?: Slot<DataTableToolbarPayload<TData>>;
 	bulkActions?: Slot<DataTableToolbarPayload<TData>>;

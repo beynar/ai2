@@ -1,7 +1,14 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import Code from '$lib/components/Code/Code.svelte';
+
+	const controls = createComponentControls([
+		{ name: 'showHeader', type: 'switch', label: 'Header', value: true },
+		{ name: 'showLineNumbers', type: 'switch', label: 'Line numbers', value: false },
+		{ name: 'wrap', type: 'switch', label: 'Wrap', value: false }
+	]);
 
 	const tsCode = `import { createHighlighter } from './highlighter.js';
 
@@ -13,7 +20,7 @@ export type User = {
 
 // Fetch a user by id, falling back to a guest.
 export async function getUser(id: string): Promise<User> {
-	const res = await fetch(\`/api/users/\${id}\`);
+	const res = await fetch(\`/api/users/\${id}?include=permissions,preferences,teams,projects,notifications,security-settings\`);
 	if (!res.ok) return { id: 'guest', name: 'Guest' };
 	return res.json();
 }`;
@@ -96,12 +103,25 @@ print(f"distance = {origin.distance(Point(3, 4))}")`;
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Pass a language id and source string — colors adapt to the active theme."
 		class="!min-h-fit"
-		code={`<Code language="typescript" code={tsCode} />`}
+		code={`<Code
+	language="typescript"
+	code={tsCode}
+	showHeader={${controls.value.showHeader}}
+	showLineNumbers={${controls.value.showLineNumbers}}
+	wrap={${controls.value.wrap}}
+/>`}
 	>
 		<div class="w-full max-w-2xl">
-			<Code language="typescript" code={tsCode} />
+			<Code
+				language="typescript"
+				code={tsCode}
+				showHeader={controls.value.showHeader}
+				showLineNumbers={controls.value.showLineNumbers}
+				wrap={controls.value.wrap}
+			/>
 		</div>
 	</ComponentCard>
 

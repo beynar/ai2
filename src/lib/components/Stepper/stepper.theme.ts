@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 export const defaultStepper = cva({
-	base: 'relative w-full max-w-full transition-[height]',
+	base: 'relative w-full max-w-full min-w-0 overflow-hidden transition-[height]',
 	variants: {
 		mode: {
 			classic: '',
@@ -12,7 +12,7 @@ export const defaultStepper = cva({
 });
 
 export const defaultStepperContainer = cva({
-	base: 'absolute inset-0 grid',
+	base: 'pointer-events-none absolute top-0 left-0 grid min-w-0',
 	variants: {
 		mode: {
 			classic: '',
@@ -22,7 +22,7 @@ export const defaultStepperContainer = cva({
 });
 
 export const defaultStepperStep = cva({
-	base: 'h-fit w-full flex-1 focus:outline-none',
+	base: 'pointer-events-none h-fit w-full min-w-0 flex-1 opacity-0 transition-opacity focus:outline-none data-[step-active=true]:pointer-events-auto data-[step-active=true]:opacity-100',
 	variants: {
 		mode: {
 			classic: '',

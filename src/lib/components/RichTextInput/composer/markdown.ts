@@ -26,13 +26,14 @@ import {
 	type AIComposerTokenData
 } from './token-node.js';
 
-const TOKEN_RE = /<(File|Reference|Skill|Command)\s+([^>]*?)\s*\/>/;
-const TOKEN_SHORTCUT_RE = /<(File|Reference|Skill|Command)\s+([^>]*?)\s*\/>$/;
+const TOKEN_RE = /<(File|Reference|Mention|Skill|Command)\s+([^>]*?)\s*\/>/;
+const TOKEN_SHORTCUT_RE = /<(File|Reference|Mention|Skill|Command)\s+([^>]*?)\s*\/>$/;
 const ATTR_RE = /(\w+)="([^"]*)"/g;
 
 function tokenKindFromTag(tag: string): AIComposerTokenData['kind'] {
 	if (tag === 'Command') return 'command';
 	if (tag === 'Skill') return 'skill';
+	if (tag === 'Mention') return 'mention';
 	if (tag === 'Reference') return 'reference';
 	return 'file';
 }
@@ -40,6 +41,7 @@ function tokenKindFromTag(tag: string): AIComposerTokenData['kind'] {
 function tokenTag(kind: AIComposerTokenData['kind']) {
 	if (kind === 'command') return 'Command';
 	if (kind === 'skill') return 'Skill';
+	if (kind === 'mention') return 'Mention';
 	if (kind === 'reference') return 'Reference';
 	return 'File';
 }

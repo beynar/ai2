@@ -58,6 +58,18 @@
 			type: 'boolean',
 			def: 'true',
 			desc: 'Add a border to raised-* elements in light mode.'
+		},
+		{
+			name: 'overlay-hover',
+			type: 'string',
+			def: 'foreground at 5%',
+			desc: 'Optional CSS color for hover and virtual-focus state layers. Alpha is supported.'
+		},
+		{
+			name: 'overlay-pressed',
+			type: 'string',
+			def: 'foreground at 10%',
+			desc: 'Optional CSS color for the pressed state layer. Alpha is supported.'
 		}
 	];
 
@@ -114,12 +126,16 @@
 	background: #ffffff;
 	foreground: #0a0a0a;
 
+	/* optional interaction calibration; defaults use foreground at 5% and 10% */
+	overlay-hover: #0a0a0a0d;
+	overlay-pressed: #0a0a0a1a;
+
 	/* optional per-variant overrides */
 	primary-dark: #4338ca;
 	primary-contrast: #ffffff;
 }`;
 
-	const usageCode = `<button class="bg-primary text-primary-contrast rounded px-3 py-1.5">
+	const usageCode = `<button class="state-layer bg-primary text-primary-contrast rounded px-3 py-1.5">
 	Primary
 </button>
 
@@ -227,6 +243,13 @@
 
 	<p class="text-foreground-muted">
 		See the <a class="text-primary underline" href="/colors">Colors</a> page for the full palette.
+	</p>
+
+	<p class="text-foreground-muted">
+		Background grades express resting elevation. Add {@render ic('state-layer')} to interactive elements
+		so hover and press composite the global overlays without replacing that resting color. Use focus rings
+		for keyboard focus, and use {@render ic('*-muted')} or solid colors for persistent selected, checked,
+		open, or semantic states.
 	</p>
 
 	<Separator class="my-2" children="Using tokens" />

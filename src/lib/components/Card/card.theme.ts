@@ -44,7 +44,7 @@ const defaultCard = cva({
 		// Internal: set when the card has an onClick or href — interactive cards
 		// get cursor, hover, press and keyboard-focus treatment.
 		clickable: {
-			true: 'cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:translate-y-px',
+			true: 'state-layer cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:translate-y-px',
 			false: ''
 		},
 		disabled: {
@@ -61,39 +61,9 @@ const defaultCard = cva({
 		disabled: false
 	},
 	compoundVariants: [
-		// Hover per surface: solids lift (stronger ring + shadow); outline and
-		// ghost gain a subtle translucent wash of the card color (soft-like);
-		// soft deepens its tint.
+		// Solid cards also lift through border/shadow; the shared state layer owns
+		// transient fill feedback for every clickable surface.
 		{ clickable: true, variant: 'solid', class: 'hover:ring-foreground/25 hover:shadow-sm' },
-		{ clickable: true, variant: 'outline', class: 'hover:bg-color/10' },
-		{ clickable: true, variant: 'ghost', class: 'hover:bg-color/10' },
-		{ clickable: true, variant: 'soft', class: 'hover:bg-color/25' },
-		// Neutral (background) color: the background token has no visible tint on
-		// the page — use a foreground wash / the next surface step instead.
-		{
-			clickable: true,
-			color: 'background',
-			variant: 'outline',
-			class: 'hover:bg-foreground/5'
-		},
-		{
-			clickable: true,
-			color: 'background',
-			variant: 'ghost',
-			class: 'hover:bg-foreground/5'
-		},
-		{
-			clickable: true,
-			color: 'background',
-			variant: 'soft',
-			class: 'hover:bg-background-muted'
-		},
-		{
-			clickable: true,
-			color: 'background',
-			variant: 'solid',
-			class: 'hover:bg-background-lighter'
-		},
 		// Neutral card: an elevated surface distinct from the page background
 		// (bg-background would blend in, especially in dark mode).
 		{

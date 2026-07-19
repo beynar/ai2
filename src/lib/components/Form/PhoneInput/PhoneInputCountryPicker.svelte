@@ -156,6 +156,7 @@
 					fullWidth
 					role="option"
 					aria-selected={selected}
+					data-highlighted={highlighted ? 'true' : undefined}
 					tabindex={-1}
 					class={classes.countryOption({
 						size,

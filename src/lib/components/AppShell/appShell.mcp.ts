@@ -3,9 +3,10 @@ export const appShellDescription = `
 
 Convenience wrapper for the common application layout: Sidebar owns navigation,
 responsive drawer behavior, the application wall, and variant surfaces, while PageShell
-owns the page header, scrollable content, footer, and route-level injection. AppShell
+owns the page header, document-flow content, footer, and route-level injection. AppShell
 forwards one shared variant to Sidebar and composes PageShell inside it.
-AppShell owns a dynamic viewport-height frame and contains Sidebar within that frame.
+AppShell establishes a dynamic viewport-height minimum while letting the document own
+vertical scrolling. The desktop sidebar remains sticky independently of page content.
 
 Use AppShell when every route follows the same sidebar + page shell structure. Use
 Sidebar and PageShell directly when the frame needs custom composition.
@@ -58,7 +59,7 @@ AppShell renders PageShell internally, so child pages can use the PageShell cont
 
 ## Props
 
-- **variant**: 'sidebar' | 'floating' | 'inset' | 'split' - Shared shell geometry forwarded to Sidebar.
+- **variant**: 'admin' | 'floating' | 'inset' | 'split' - Shared shell geometry forwarded to Sidebar.
 - **sidebar**: AppShellSidebarProps - Sidebar props except \`children\`, \`mode\`, \`frame\`, and \`variant\`.
   Configure Sidebar \`size\` and \`density\` independently inside this object.
 - **eyebrow**: string | Snippet<[PageShellApi]> - Small metadata above the PageShell title.
@@ -69,8 +70,8 @@ AppShell renders PageShell internally, so child pages can use the PageShell cont
 - **subtitle**: string | Snippet<[PageShellApi]> - Default PageShell subtitle.
 - **header**: Snippet<[PageShellApi]> - Custom PageShell header.
 - **headerActions**: Snippet<[AppShellApi]> | PageShellAction[] - Actions in the default PageShell header. Use an array for standard Button props, or a snippet when the action needs sidebar/page-shell API access.
-- **footer**: Snippet<[PageShellApi]> - Sticky PageShell footer.
-- **footerActions**: Snippet<[AppShellApi]> | PageShellAction[] - Sticky PageShell footer actions.
+- **footer**: Snippet<[PageShellApi]> - PageShell footer.
+- **footerActions**: Snippet<[AppShellApi]> | PageShellAction[] - PageShell footer actions.
 - **children**: Snippet<[AppShellApi]> - Main content, with \`pageShell\` and \`sidebar\` APIs.
 - **contentPadding**: 'none' | 'small' | 'normal' | 'large' - PageShell content padding preset.
 - **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - PageShell content width preset.

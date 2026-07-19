@@ -3,9 +3,12 @@
 	import Heading from '$lib/components/Heading/Heading.svelte';
 	import Collapsible from '$lib/components/Collapsible/Collapsible.svelte';
 	import Code from '$lib/components/Code/Code.svelte';
+	import ComponentControls from './ComponentControls.svelte';
+	import type { ComponentControls as ComponentControlsState } from './componentControls.svelte.js';
 
 	let {
 		children,
+		controls,
 		title,
 		class: className = '',
 		description,
@@ -14,6 +17,8 @@
 		...attachments
 	}: {
 		children: Snippet;
+		/** Declarative interactive controls rendered as a raised layer at the top of the preview. */
+		controls?: ComponentControlsState;
 		description?: string;
 		class?: string;
 		title?: string;
@@ -40,9 +45,20 @@
 	{/if}
 	<div class="border-background-muted bg-background raised overflow-hidden rounded-xl border">
 		<div
-			class="dotted-grid relative flex min-h-[400px] w-full items-center justify-center gap-4 p-8 {className}"
+			class="dotted-grid relative flex min-h-[400px] w-full items-center justify-center gap-4 p-8 {controls
+				? 'flex-col items-stretch justify-start'
+				: ''} {className}"
 		>
-			<div class="z-10 mx-auto flex h-full w-full items-center justify-center gap-4">
+			{#if controls}
+				<div
+					role="group"
+					aria-label="Preview controls"
+					class="border-background-muted bg-background/95 raised z-20 mx-auto flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-lg border p-2 backdrop-blur-sm"
+				>
+					<ComponentControls {controls} />
+				</div>
+			{/if}
+			<div class="z-10 mx-auto flex min-w-0 w-full flex-1 items-center justify-center gap-4">
 				{@render children()}
 			</div>
 		</div>

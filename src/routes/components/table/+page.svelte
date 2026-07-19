@@ -1,6 +1,7 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import { Table } from '$lib/components/Table/index.js';
 	import { Button } from '$lib/components/Button/index.js';
 	import { TextInput } from '$lib/components/Form/TextInput/index.js';
@@ -14,6 +15,15 @@
 		{ value: 'large', label: 'Large' }
 	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
 	let tableDensity = $state<Density>('normal');
+	const controls = createComponentControls([
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		}
+	]);
 
 	// Simplified syntax with strings
 	const basicHeader = {
@@ -133,8 +143,10 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Simple table with header and rows using string syntax."
 		code={`<Table
+	density="${controls.value.density}"
   header={{
     name: 'Name',
     email: 'Email',
@@ -165,7 +177,7 @@
   ]}
 />`}
 	>
-		<Table header={basicHeader} items={basicRows} />
+		<Table density={controls.value.density} header={basicHeader} items={basicRows} />
 	</ComponentCard>
 
 	{#snippet examples()}

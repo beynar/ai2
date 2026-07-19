@@ -324,15 +324,12 @@ export const tailwindColors = {
 	}
 } as const;
 
+type ColorName =
+	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'background' | 'foreground';
+type ColorVariant = 'light' | 'lighter' | 'dark' | 'muted' | 'contrast';
+
 export type ColorTheme = {
-	[
-		K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'background' | 'foreground'}${
-			'light' | 'lighter' | 'dark' | 'muted' | 'contrast'}`
-	]?: string;
-} & {
-	[
-		K in `${'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'background' | 'foreground'}`
-	]?: string;
+	[K in ColorName | `${ColorName}-${ColorVariant}`]?: string;
 };
 
 export type TailwindColor = keyof typeof tailwindColors;
@@ -422,19 +419,22 @@ type ColorThemeOption = {
 	saturation?: number;
 	luminance?: number;
 	colorscheme?: 'dark' | 'light';
+	'overlay-hover'?: string;
+	'overlay-pressed'?: string;
 } & ColorTheme;
 
 export const generateBaseColors = (theme: ColorThemeOption) => {
 	const isDark = theme.colorscheme === 'dark';
 	const baseColors = colors.reduce(
 		(acc, color) => {
-			const isTailwindColor = theme[color] && theme[color] in tailwindColors;
-			const isHexColor = isHex(theme[color]);
+			const configuredColor = theme[color];
+			const isTailwindColor = configuredColor && configuredColor in tailwindColors;
+			const isHexColor = isHex(configuredColor || '');
 			let defaultColor = isHexColor
-				? theme[color]
+				? configuredColor
 				: isTailwindColor
-					? tailwindColors[theme[color] as TailwindColor]['500']
-					: theme[color] ||
+					? tailwindColors[configuredColor as TailwindColor]['500']
+					: configuredColor ||
 						(theme.colorscheme === 'dark' ? defaultColorsDark[color] : defaultColorsLight[color]);
 
 			Object.assign(acc[color], {
@@ -442,8 +442,10 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 			});
 
 			variants.forEach((variant) => {
+				const variantName = variant.toLowerCase() as Lowercase<typeof variant>;
+				const variantKey = `${color}-${variantName}` as keyof ColorTheme;
 				Object.assign(acc[color as keyof typeof acc], {
-					[variant.toLowerCase()]: theme[`${color}-${variant.toLowerCase()}`] || null
+					[variantName]: theme[variantKey] || null
 				});
 			});
 
@@ -584,7 +586,16 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		foreground: generateForegroundPalette(colors.foreground)
 	} satisfies Colors;
 
-	const cssVariables = paletteToCssVariables(colorsPalette);
+	const foreground = toHex(colorsPalette.foreground.DEFAULT) as `#${string}`;
+	const cssVariables = {
+		...paletteToCssVariables(colorsPalette),
+		'--color-overlay-hover': opts['overlay-hover']
+			? opts['overlay-hover']
+			: formatCSS(foreground, { format: 'oklab', alpha: 0.05 }),
+		'--color-overlay-pressed': opts['overlay-pressed']
+			? opts['overlay-pressed']
+			: formatCSS(foreground, { format: 'oklab', alpha: 0.1 })
+	};
 
 	return {
 		colorsPalette,
@@ -596,6 +607,9 @@ const paletteToCssVariables = (colors: DeepNonNullable<Colors>) => {
 	const colorVariables = {};
 	Object.entries(colors).forEach(([key, value]) => {
 		Object.entries(value).forEach(([k, v]) => {
+			if (!v) {
+				throw new Error(`Missing generated color value for ${key}-${k}`);
+			}
 			Object.assign(colorVariables, {
 				[k === 'DEFAULT' ? `--color-${key}` : `--color-${key}-${k}`]: formatCSS(
 					isHex(v) ? v : (toHex(v) as `#${string}`),

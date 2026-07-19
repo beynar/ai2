@@ -95,7 +95,7 @@
 			(!!config.filter ||
 				config.hideable !== false ||
 				config.pinnable !== false ||
-				config.groupable ||
+				(model.props.processingMode !== 'manual' && config.groupable) ||
 				config.resizable !== false)
 	);
 
@@ -145,7 +145,7 @@
 				}
 			);
 		}
-		if (config.groupable) {
+		if (model.props.processingMode !== 'manual' && config.groupable) {
 			items.push({
 				type: 'option',
 				title: model.state.grouping.includes(column.id) ? 'Stop grouping' : 'Group by this column',
@@ -207,6 +207,15 @@
 		model.setColumnSize(column.id, column.getSize() + delta * direction);
 	};
 
+	const reorderWithKeyboard = (event: KeyboardEvent) => {
+		if (model.props.disabled || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return;
+		event.preventDefault();
+		event.stopPropagation();
+		const isRtl = getComputedStyle(event.currentTarget as HTMLElement).direction === 'rtl';
+		const visualDirection = event.key === 'ArrowRight' ? 1 : -1;
+		model.moveColumn(column.id, (isRtl ? -visualDirection : visualDirection) as -1 | 1);
+	};
+
 	let resizing = $state(false);
 	const startResize = (event: PointerEvent) => {
 		if (event.button !== 0 || model.props.disabled) return;
@@ -247,6 +256,20 @@
 	<DataTableFilter {column} {model} {classes} separated={menuItems.length > 0} />
 {/snippet}
 
+{#snippet renderDefaultHeader()}
+	{#if config && headerPayload}
+		<Slot render={config.header} payload={headerPayload} class={classes.headerLabel()} as="span" />
+	{/if}
+{/snippet}
+
+{#snippet renderHeader()}
+	{#if config && headerPayload && model.props.header}
+		{@render model.props.header({ ...headerPayload, renderDefault: renderDefaultHeader })}
+	{:else}
+		{@render renderDefaultHeader()}
+	{/if}
+{/snippet}
+
 <th
 	role="columnheader"
 	aria-colindex={columnIndex + 1}
@@ -273,7 +296,8 @@
 			data-dnd-handle
 			disabled={model.props.disabled}
 			class={classes.dragHandle()}
-			aria-label={`Reorder ${typeof config.header === 'string' ? config.header : column.id}`}
+			aria-label={`Reorder ${typeof config.header === 'string' ? config.header : column.id} with left and right arrow keys`}
+			onkeydown={reorderWithKeyboard}
 		>
 			<Hitbox size="small" />
 			<span aria-hidden="true" class={classes.dragThumb()}></span>
@@ -289,12 +313,7 @@
 				aria-label={sortLabel}
 				onclick={(event) => column.toggleSorting(undefined, event.shiftKey)}
 			>
-				<Slot
-					render={config.header}
-					payload={headerPayload}
-					class={classes.headerLabel()}
-					as="span"
-				/>
+				{@render renderHeader()}
 				{#if sorted === 'asc'}
 					{@render sortAscendingIcon({ size: 14 })}
 				{:else if sorted === 'desc'}
@@ -302,12 +321,7 @@
 				{/if}
 			</button>
 		{:else if config}
-			<Slot
-				render={config.header}
-				payload={headerPayload}
-				class={classes.headerLabel()}
-				as="span"
-			/>
+			{@render renderHeader()}
 		{:else if column.id === '__selection'}
 			<span class="sr-only">Select</span>
 		{:else}

@@ -4,13 +4,14 @@
 	import { caretDownIcon } from '../Icons/caretDown.js';
 	import { caretUpIcon } from '../Icons/caretUp.js';
 	import { checkIcon } from '../Icons/check.js';
-	import type { TabbarProps, TabItem } from './tabbar.props.js';
+	import type { TabbarProps } from './tabbar.props.js';
 	import { useTabbarTheme } from './tabbar.theme.js';
 	import { useNavigation } from '$lib/utils/useNavigation.svelte.js';
 	import { useSlidingIndicator } from '$lib/utils/useSlidingIndicator.svelte.js';
 	import type { Snippet } from 'svelte';
 
 	let {
+		ref = $bindable(null),
 		items,
 		activeTab = $bindable(0),
 		onChange,
@@ -23,6 +24,7 @@
 		class: className = '',
 		theme,
 		fullWidth = false,
+		scrollFade = true,
 		...attachments
 	}: TabbarProps = $props();
 
@@ -63,6 +65,51 @@
 	// Selected entry per menu tab (index into tab.menu). The trigger shows the
 	// selected entry's label; until one is picked it shows the tab's own label.
 	let menuSelections = $state<Record<number, number>>({});
+	let isOverflowing = $state(false);
+	const scrollFadeAxis = $derived(
+		scrollFade && isOverflowing ? (orientation === 'horizontal' ? 'x' : 'y') : 'none'
+	);
+
+	$effect(() => {
+		const node = ref;
+		const axis = orientation;
+		if (!node) {
+			isOverflowing = false;
+			return;
+		}
+
+		let frame: number | undefined;
+		const measure = () => {
+			frame = undefined;
+			isOverflowing =
+				axis === 'horizontal'
+					? node.scrollWidth > node.clientWidth + 1
+					: node.scrollHeight > node.clientHeight + 1;
+		};
+		const schedule = () => {
+			if (frame !== undefined) cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(measure);
+		};
+		const resizeObserver = new ResizeObserver(schedule);
+		const observeLayout = () => {
+			resizeObserver.disconnect();
+			resizeObserver.observe(node);
+			node
+				.querySelectorAll<HTMLElement>('[role="tab"]')
+				.forEach((tab) => resizeObserver.observe(tab));
+			schedule();
+		};
+		const mutationObserver = new MutationObserver(observeLayout);
+
+		mutationObserver.observe(node, { childList: true, characterData: true, subtree: true });
+		observeLayout();
+
+		return () => {
+			if (frame !== undefined) cancelAnimationFrame(frame);
+			mutationObserver.disconnect();
+			resizeObserver.disconnect();
+		};
+	});
 
 	const selectMenuEntry = (index: number, tab: NormalizedTab, menuIndex: number) => {
 		menuSelections[index] = menuIndex;
@@ -142,7 +189,19 @@
 </script>
 
 <div
-	class={classes.root({ orientation, alignment, size, variant, className, fullWidth })}
+	bind:this={ref}
+	data-slot="tabbar"
+	data-overflowing={isOverflowing ? 'true' : 'false'}
+	data-scroll-fade={scrollFadeAxis === 'none' ? undefined : scrollFadeAxis}
+	class={classes.root({
+		orientation,
+		alignment,
+		size,
+		variant,
+		className,
+		fullWidth,
+		scrollFade: scrollFadeAxis
+	})}
 	role="tablist"
 	aria-orientation={orientation}
 	{@attach navigation.containerReference}
@@ -152,6 +211,7 @@
 	{#if indicator.isHydrated}
 		<!-- Measured, animated indicator (client only). -->
 		<div
+			data-slot="tabbar-indicator"
 			class={classes.indicator({ variant })}
 			style={indicator.style}
 			data-color={color}
@@ -159,7 +219,7 @@
 			aria-hidden="true"
 		></div>
 	{/if}
-	{#each normalizedTabs as tab, index}
+	{#each normalizedTabs as tab, index (index)}
 		{@const isActive = activeTab === index}
 		{@const isFocused = navigation.focusedIndex === index}
 		{@const elementType = tab.href ? 'a' : 'button'}
@@ -176,6 +236,7 @@
 			>
 				{#snippet trigger(popover)}
 					<button
+						data-slot="tabbar-tab"
 						type="button"
 						role="tab"
 						aria-disabled={tab.disabled}
@@ -204,7 +265,10 @@
 						{@attach indicator.itemReference(index)}
 					>
 						{#if !indicator.isHydrated && isActive}
-							<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"
+							<span
+								data-slot="tabbar-indicator"
+								class={classes.staticIndicator({ variant, position })}
+								aria-hidden="true"
 							></span>
 						{/if}
 						<Slot render={tab.prefix} class={classes.prefix({ size })} />
@@ -227,6 +291,7 @@
 		{:else}
 			<svelte:element
 				this={elementType}
+				data-slot="tabbar-tab"
 				role="tab"
 				aria-disabled={tab.disabled}
 				disabled={tab.disabled}
@@ -255,7 +320,11 @@
 			>
 				{#if !indicator.isHydrated && isActive}
 					<!-- CSS-only indicator for SSR / pre-hydration, positioned by layout. -->
-					<span class={classes.staticIndicator({ variant, position })} aria-hidden="true"></span>
+					<span
+						data-slot="tabbar-indicator"
+						class={classes.staticIndicator({ variant, position })}
+						aria-hidden="true"
+					></span>
 				{/if}
 				<Slot render={tab.prefix} class={classes.prefix({ size })} />
 

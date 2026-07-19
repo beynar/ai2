@@ -7,4 +7,3 @@ export {
 	type ScrollAreaTheme,
 	type ScrollAreaThemeProps
 } from './scrollArea.theme.js';
-

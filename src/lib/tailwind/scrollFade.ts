@@ -40,8 +40,13 @@ const withBareValue = (
 const defaultFadeSize = 'var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))';
 const revealSize = 'var(--scroll-fade-reveal, calc(var(--spacing) * 24))';
 
+const isInteger = (value: string) => {
+	const number = Number(value);
+	return Number.isInteger(number) && number >= 0 && String(number) === value;
+};
+
 const spacingValue = ({ value }: BareValue) =>
-	/^\d+$/.test(value) ? `calc(var(--spacing) * ${value})` : undefined;
+	isInteger(value) ? `calc(var(--spacing) * ${value})` : undefined;
 
 const maskProperties: CssRule = {
 	'-webkit-mask-composite': 'source-in',
@@ -270,16 +275,11 @@ const scrollFadeUtilities: UtilityRules = {
 	}
 };
 
-export const addScrollFadeUtilities = ({
-	addBase,
-	addUtilities,
-	matchUtilities,
-	theme
-}: PluginAPI) => {
+export const addScrollFadeUtilities = ({ addBase, addUtilities, matchUtilities }: PluginAPI) => {
 	addBase(scrollFadeProperties);
 	addUtilities(scrollFadeUtilities);
 
-	const spacingValues = withBareValue(theme('spacing'), spacingValue);
+	const spacingValues = withBareValue({}, spacingValue);
 
 	matchUtilities(
 		{

@@ -242,7 +242,7 @@
 		{:else}
 			<button
 				type="button"
-				class="flex size-8 items-center justify-center border-b border-background-muted bg-background outline-none transition-colors last:border-b-0 hover:bg-background-muted hover:text-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-background disabled:hover:text-foreground"
+				class="state-layer flex size-8 items-center justify-center border-b border-background-muted bg-background outline-none transition-colors last:border-b-0 hover:text-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-foreground"
 				aria-label={buttonArg.label}
 				{disabled}
 				onpointerdown={stopMapControlEvent}

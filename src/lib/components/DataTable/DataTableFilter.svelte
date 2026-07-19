@@ -7,6 +7,7 @@
 	import NumberInput from '../Form/NumberInput/NumberInput.svelte';
 	import Select from '../Form/Select/Select.svelte';
 	import TextInput from '../Form/TextInput/TextInput.svelte';
+	import Slot from '../Slot/Slot.svelte';
 	import type { DataTableClasses } from './dataTable.theme.js';
 	import type { DataTableModel } from './dataTable.model.svelte.js';
 
@@ -26,6 +27,17 @@
 	const value = $derived(model.state.columnFilters.find((entry) => entry.id === column.id)?.value);
 	const active = $derived(
 		Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null && value !== ''
+	);
+	const filterPayload = $derived(
+		config
+			? {
+					column: config,
+					value,
+					active,
+					setValue: (next: unknown) => model.setColumnFilter(column.id, next),
+					clear: () => model.setColumnFilter(column.id, undefined)
+				}
+			: undefined
 	);
 	let multiSelectFrame: number | undefined;
 
@@ -80,7 +92,9 @@
 			</Button>
 		</div>
 
-		{#if config.filter.type === 'text'}
+		{#if config.filter.type === 'custom' && filterPayload}
+			<Slot render={config.filter.render} payload={filterPayload} />
+		{:else if config.filter.type === 'text'}
 			<TextInput
 				size="small"
 				placeholder={config.filter.placeholder ?? 'Filter values'}

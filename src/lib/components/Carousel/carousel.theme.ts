@@ -14,7 +14,7 @@ const defaultSlide = cva({
 });
 
 const defaultNavigationButton = cva({
-	base: 'rounded cursor-pointer absolute inline-flex items-center justify-center transition-all duration-100 ease-in-out outline-none border-none',
+	base: 'state-layer rounded cursor-pointer absolute inline-flex items-center justify-center transition-all duration-100 ease-in-out outline-none border-none',
 	variants: {
 		size: {
 			xs: 'w-5 h-5',
@@ -25,7 +25,7 @@ const defaultNavigationButton = cva({
 			default: 'w-8 h-8'
 		},
 		color: {
-			background: 'text-background-muted  active:bg-background-muted/10',
+			background: 'text-background-muted',
 			primary: 'text-primary ',
 			secondary: 'text-secondary ',
 			foreground: 'text-foreground /20',

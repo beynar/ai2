@@ -16,12 +16,10 @@ import {
 	type Table,
 	type Updater
 } from '@tanstack/table-core';
-import { tick } from 'svelte';
-import { SvelteMap } from 'svelte/reactivity';
+import { DataTableEditing } from './dataTable.editing.svelte.js';
+import { DataTableFocus } from './dataTable.focus.svelte.js';
 import type {
-	DataTableCellCommit,
 	DataTableColumn,
-	DataTableEditorPayload,
 	DataTableProps,
 	DataTableRowPayload,
 	DataTableState
@@ -35,7 +33,7 @@ const DEFAULT_PAGE_SIZE = 25;
 
 export function createDataTableState<TData>(
 	columns: readonly DataTableColumn<TData>[],
-	initialState: Partial<DataTableState> | undefined,
+	initialState: Partial<DataTableState> | undefined = undefined,
 	pageSize = DEFAULT_PAGE_SIZE
 ): DataTableState {
 	return {
@@ -53,20 +51,6 @@ export function createDataTableState<TData>(
 	};
 }
 
-type EditingState<TData> = {
-	row: Row<TData>;
-	columnId: string;
-	previousValue: unknown;
-	draft: unknown;
-	pending: boolean;
-	error: unknown;
-};
-
-type OptimisticCell = {
-	token: symbol;
-	value: unknown;
-};
-
 type DataTableModelOptions<TData> = {
 	get props(): DataTableProps<TData>;
 	get state(): DataTableState;
@@ -81,21 +65,16 @@ const asRecord = (value: ExpandedState): Record<string, boolean> => {
 const valuesEqual = (left: readonly string[], right: readonly string[]) =>
 	left.length === right.length && left.every((value, index) => value === right[index]);
 
-const cellValuesEqual = (left: unknown, right: unknown) => {
-	if (Object.is(left, right)) return true;
-	return left instanceof Date && right instanceof Date && left.getTime() === right.getTime();
-};
-
 export class DataTableModel<TData> {
 	readonly table: Table<TData>;
-	editing = $state<EditingState<TData> | null>(null);
-	focusedCell = $state({ row: 0, column: 0 });
-	private optimisticCells = new SvelteMap<string, OptimisticCell>();
+	readonly editTransactions = new DataTableEditing(this);
+	readonly focus = new DataTableFocus(this);
 	private itemsSource: readonly TData[] | null = null;
 	private itemsCache: TData[] = [];
 	private columnsSource: readonly DataTableColumn<TData>[] | null = null;
 	private columnsSelectionMode: DataTableProps<TData>['selectionMode'] = undefined;
 	private columnsHaveActions = false;
+	private columnsProcessingMode: DataTableProps<TData>['processingMode'] = undefined;
 	private columnDefsCache: ColumnDef<TData, unknown>[] = [];
 
 	constructor(private readonly options: DataTableModelOptions<TData>) {
@@ -146,7 +125,19 @@ export class DataTableModel<TData> {
 	}
 
 	get pendingCommitCount() {
-		return this.optimisticCells.size;
+		return this.editTransactions.pendingCommitCount;
+	}
+
+	get editing() {
+		return this.editTransactions.editing;
+	}
+
+	get focusedCell() {
+		return this.focus.focusedCell;
+	}
+
+	get hasFocusedCell() {
+		return this.focus.hasFocusedCell;
 	}
 
 	getColumnConfig(columnId: string) {
@@ -154,10 +145,7 @@ export class DataTableModel<TData> {
 	}
 
 	getCellValue(row: Row<TData>, columnId: string) {
-		const key = this.getCellKey(row.id, columnId);
-		return this.optimisticCells.has(key)
-			? this.optimisticCells.get(key)?.value
-			: row.getValue(columnId);
+		return this.editTransactions.getCellValue(row, columnId);
 	}
 
 	getRowPayload(row: Row<TData>): DataTableRowPayload<TData> {
@@ -167,28 +155,17 @@ export class DataTableModel<TData> {
 			selected: !!this.state.rowSelection[row.id],
 			expanded: !!this.state.expanded[row.id],
 			depth: row.depth,
-			toggleSelected: () => row.toggleSelected(),
-			toggleExpanded: () => row.toggleExpanded()
+			toggleSelected: () => {
+				if (!this.props.disabled) row.toggleSelected();
+			},
+			toggleExpanded: () => {
+				if (!this.props.disabled) row.toggleExpanded();
+			}
 		};
 	}
 
-	getEditorPayload(): DataTableEditorPayload<TData> | null {
-		if (!this.editing) return null;
-		return {
-			row: this.editing.row.original,
-			rowId: this.editing.row.id,
-			columnId: this.editing.columnId,
-			previousValue: this.editing.previousValue,
-			value: this.editing.draft,
-			draft: this.editing.draft,
-			pending: this.editing.pending,
-			error: this.editing.error,
-			setDraft: (value) => this.setDraft(value),
-			commit: async () => {
-				await this.commitEditing();
-			},
-			cancel: () => this.cancelEditing()
-		};
+	getEditorPayload() {
+		return this.editTransactions.getPayload();
 	}
 
 	updateOptions() {
@@ -220,7 +197,9 @@ export class DataTableModel<TData> {
 			getRowCanExpand: (row) =>
 				props.canExpand?.(row.original) ?? (row.subRows.length > 0 || !!props.expandedContent),
 			enableRowSelection: (row) =>
-				props.selectionMode !== 'none' && (props.isRowSelectable?.(row.original) ?? true),
+				!props.disabled &&
+				props.selectionMode !== 'none' &&
+				(props.isRowSelectable?.(row.original) ?? true),
 			enableMultiRowSelection: props.selectionMode === 'multiple',
 			manualFiltering: isManual,
 			manualSorting: isManual,
@@ -247,7 +226,7 @@ export class DataTableModel<TData> {
 				columnOrder,
 				columnPinning: { left: leftPinning, right: rightPinning },
 				columnSizing: state.columnSizing,
-				grouping: state.grouping,
+				grouping: isManual ? [] : state.grouping,
 				expanded: state.expanded
 			},
 			onSortingChange: (updater) => this.updateSlice('sorting', updater, { resetPage: true }),
@@ -291,6 +270,11 @@ export class DataTableModel<TData> {
 				this.setState({ ...this.state, expanded: asRecord(next) });
 			}
 		}));
+	}
+
+	reconcileProcessingMode() {
+		if (this.props.processingMode !== 'manual' || this.state.grouping.length === 0) return;
+		this.setState({ ...this.state, grouping: [], expanded: {} });
 	}
 
 	reconcileColumns() {
@@ -349,6 +333,27 @@ export class DataTableModel<TData> {
 		this.setState({ ...this.state, columnOrder });
 	}
 
+	moveColumn(columnId: string, offset: -1 | 1) {
+		let region = this.state.columnOrder.filter(
+			(id) =>
+				!this.state.columnPinning.left.includes(id) && !this.state.columnPinning.right.includes(id)
+		);
+		if (this.state.columnPinning.left.includes(columnId)) region = this.state.columnPinning.left;
+		if (this.state.columnPinning.right.includes(columnId)) region = this.state.columnPinning.right;
+		const currentIndex = region.indexOf(columnId);
+		const targetId = region[currentIndex + offset];
+		if (currentIndex < 0 || !targetId) return;
+		const columnOrder = [...this.state.columnOrder];
+		const sourceOrderIndex = columnOrder.indexOf(columnId);
+		const targetOrderIndex = columnOrder.indexOf(targetId);
+		if (sourceOrderIndex < 0 || targetOrderIndex < 0) return;
+		[columnOrder[sourceOrderIndex], columnOrder[targetOrderIndex]] = [
+			columnOrder[targetOrderIndex],
+			columnOrder[sourceOrderIndex]
+		];
+		this.setState({ ...this.state, columnOrder });
+	}
+
 	setColumnSize(columnId: string, size: number) {
 		const column = this.table.getColumn(columnId);
 		if (!column) return;
@@ -363,97 +368,31 @@ export class DataTableModel<TData> {
 	}
 
 	startEditing(row: Row<TData>, columnId: string) {
-		const column = this.getColumnConfig(columnId);
-		if (
-			!column?.editor ||
-			this.props.disabled ||
-			row.getIsGrouped() ||
-			this.optimisticCells.has(this.getCellKey(row.id, columnId))
-		)
-			return;
-		const previousValue = this.getCellValue(row, columnId);
-		this.editing = {
-			row,
-			columnId,
-			previousValue,
-			draft: previousValue,
-			pending: false,
-			error: null
-		};
+		this.editTransactions.start(row, columnId);
 	}
 
 	setDraft(value: unknown) {
-		if (!this.editing || this.editing.pending) return;
-		this.editing.draft = value;
-		this.editing.error = null;
+		this.editTransactions.setDraft(value);
 	}
 
 	async commitEditing(): Promise<boolean> {
-		if (!this.editing || this.editing.pending) return false;
-		const editing = this.editing;
-		if (cellValuesEqual(editing.previousValue, editing.draft)) {
-			this.editing = null;
-			return true;
-		}
-		const commit: DataTableCellCommit<TData> = {
-			row: editing.row.original,
-			rowId: editing.row.id,
-			columnId: editing.columnId,
-			previousValue: editing.previousValue,
-			value: editing.draft
-		};
-		const key = this.getCellKey(editing.row.id, editing.columnId);
-		const token = Symbol(key);
-		editing.pending = true;
-		editing.error = null;
-		this.optimisticCells.set(key, { token, value: editing.draft });
-		this.editing = null;
-		try {
-			await this.props.onCellCommit?.(commit);
-			await tick();
-			if (this.optimisticCells.get(key)?.token === token) this.optimisticCells.delete(key);
-			return true;
-		} catch (error) {
-			if (this.optimisticCells.get(key)?.token === token) this.optimisticCells.delete(key);
-			editing.pending = false;
-			editing.error = error;
-			if (!this.editing) this.editing = editing;
-			return false;
-		}
-	}
-
-	moveEditing(row: Row<TData>, columnId: string, direction: 1 | -1) {
-		const editableCells = this.pageRows.flatMap((pageRow) => {
-			if (pageRow.getIsGrouped()) return [];
-			return pageRow
-				.getVisibleCells()
-				.filter((cell) => !!this.getColumnConfig(cell.column.id)?.editor)
-				.map((cell) => ({ row: pageRow, columnId: cell.column.id }));
-		});
-		const currentIndex = editableCells.findIndex(
-			(cell) => cell.row.id === row.id && cell.columnId === columnId
-		);
-		if (currentIndex < 0) return;
-		const next = editableCells[currentIndex + direction];
-		if (next) this.startEditing(next.row, next.columnId);
+		return this.editTransactions.commit();
 	}
 
 	cancelEditing() {
-		if (this.editing?.pending) return;
-		this.editing = null;
-	}
-
-	private getCellKey(rowId: string, columnId: string) {
-		return JSON.stringify([rowId, columnId]);
+		this.editTransactions.cancel();
 	}
 
 	moveFocusedCell(row: number, column: number) {
-		const rowCount = this.pageRows.length;
-		const columnCount = this.table.getVisibleLeafColumns().length;
-		this.focusedCell = {
-			row: Math.max(0, Math.min(row, Math.max(0, rowCount - 1))),
-			column: Math.max(0, Math.min(column, Math.max(0, columnCount - 1)))
-		};
+		this.focus.move(row, column);
+	}
+
+	reconcileFocusedCell() {
+		this.focus.reconcile();
+	}
+
+	clearFocusedCell() {
+		this.focus.clear();
 	}
 
 	private updateSlice<Key extends keyof DataTableState>(
@@ -481,13 +420,15 @@ export class DataTableModel<TData> {
 		if (
 			this.columnsSource === this.publicColumns &&
 			this.columnsSelectionMode === this.props.selectionMode &&
-			this.columnsHaveActions === hasRowActions
+			this.columnsHaveActions === hasRowActions &&
+			this.columnsProcessingMode === this.props.processingMode
 		) {
 			return this.columnDefsCache;
 		}
 		this.columnsSource = this.publicColumns;
 		this.columnsSelectionMode = this.props.selectionMode;
 		this.columnsHaveActions = hasRowActions;
+		this.columnsProcessingMode = this.props.processingMode;
 		this.columnDefsCache = this.createColumnDefs();
 		return this.columnDefsCache;
 	}
@@ -524,7 +465,7 @@ export class DataTableModel<TData> {
 				enableSorting: !!column.sortable,
 				enableColumnFilter: !!column.filter,
 				enableGlobalFilter: true,
-				enableGrouping: !!column.groupable,
+				enableGrouping: this.props.processingMode !== 'manual' && !!column.groupable,
 				sortingFn: sorting
 					? (left, right) => sorting(left.original, right.original, column.id)
 					: 'auto',
@@ -588,6 +529,8 @@ export class DataTableModel<TData> {
 				}
 				case 'boolean':
 					return filterValue === undefined || filterValue === null || value === filterValue;
+				case 'custom':
+					return filter.predicate(row.original, filterValue, value);
 			}
 		};
 	}

@@ -1,10 +1,8 @@
 <script lang="ts" generics="TData">
 	import type { Column, Row } from '@tanstack/table-core';
 	import type { Attachment } from 'svelte/attachments';
-	import Button from '../Button/Button.svelte';
-	import { caretDownIcon } from '../Icons/caretDown.js';
-	import { caretRightIcon } from '../Icons/caretRight.js';
 	import Slot from '../Slot/Slot.svelte';
+	import DataTableCellContent from './DataTableCellContent.svelte';
 	import DataTableEditor from './DataTableEditor.svelte';
 	import DataTableSelectionCheckbox from './DataTableSelectionCheckbox.svelte';
 	import {
@@ -95,13 +93,6 @@
 		);
 	});
 
-	const formatValue = (value: unknown) => {
-		if (value === null || value === undefined) return '';
-		if (value instanceof Date) return value.toLocaleDateString();
-		if (typeof value === 'object') return JSON.stringify(value);
-		return String(value);
-	};
-
 	const cellPayload = (columnId: string): DataTableCellPayload<TData> | undefined => {
 		const cell = cells.find((entry) => entry.column.id === columnId);
 		if (!cell) return undefined;
@@ -121,14 +112,17 @@
 		columnIndex: number
 	) => {
 		if (interactionMode !== 'grid') return;
-		if (event.key === 'Escape' && event.target !== event.currentTarget) {
-			event.preventDefault();
-			event.stopPropagation();
-			(event.currentTarget as HTMLElement).focus();
+		if (event.target !== event.currentTarget) {
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				event.stopPropagation();
+				(event.currentTarget as HTMLElement).focus();
+			}
 			return;
 		}
 		if (
 			[
+				'Tab',
 				'ArrowLeft',
 				'ArrowRight',
 				'ArrowUp',
@@ -144,7 +138,7 @@
 		}
 		if (event.key === ' ' && column.id === DATA_TABLE_SELECTION_COLUMN) {
 			event.preventDefault();
-			row.toggleSelected();
+			if (!model.props.disabled && row.getCanSelect()) row.toggleSelected();
 			return;
 		}
 		if (event.key !== 'Enter' && event.key !== 'F2') return;
@@ -157,6 +151,19 @@
 			'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
 		);
 		control?.focus();
+	};
+
+	const handleCellClick = (event: MouseEvent, rowIndex: number, columnIndex: number) => {
+		if (interactionMode !== 'grid') return;
+		model.moveFocusedCell(rowIndex, columnIndex);
+
+		const target = event.target;
+		const interactive =
+			target instanceof Element
+				? target.closest('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+				: null;
+		if (interactive && interactive !== event.currentTarget) return;
+		(event.currentTarget as HTMLElement).focus();
 	};
 </script>
 
@@ -180,21 +187,25 @@
 		{@const payload = cellPayload(column.id)}
 		{@const pinnedCell = pinnedCellLayouts.get(column.id)}
 		{@const pinning = pinnedCell?.side || false}
+		{@const gridColumn = allIndex + 1 + (pinning === 'right' ? 1 : 0)}
+		{@const isRovingCell =
+			interactionMode === 'grid' &&
+			model.focusedCell.row === rowIndex &&
+			model.focusedCell.column === allIndex}
+		{@const isFocused = isRovingCell && model.hasFocusedCell}
 		{@const isEditing = model.editing?.row.id === row.id && model.editing.columnId === column.id}
 		<td
 			role={interactionMode === 'grid' ? 'gridcell' : undefined}
 			aria-colindex={allIndex + 1}
-			tabindex={interactionMode === 'grid' &&
-			model.focusedCell.row === rowIndex &&
-			model.focusedCell.column === allIndex
-				? 0
-				: undefined}
+			tabindex={interactionMode === 'grid' ? (isRovingCell ? 0 : -1) : undefined}
 			data-grid-column={allIndex}
 			data-column-id={column.id}
+			data-focused={isFocused || undefined}
 			class={classes.cell({
 				density,
 				align: config?.align ?? (column.id === DATA_TABLE_SELECTION_COLUMN ? 'center' : 'start'),
 				pinned: !!pinning,
+				focused: isFocused,
 				editing: isEditing,
 				class: [
 					config?.class,
@@ -205,13 +216,21 @@
 					.filter(Boolean)
 					.join(' ')
 			})}
-			style:grid-column={allIndex + 1}
+			style:grid-column={gridColumn}
 			style:position={pinning ? 'sticky' : undefined}
 			style:inset-inline-start={pinning === 'left' ? `${pinnedCell?.offset ?? 0}px` : undefined}
 			style:inset-inline-end={pinning === 'right' ? `${pinnedCell?.offset ?? 0}px` : undefined}
-			onfocus={() => model.moveFocusedCell(rowIndex, allIndex)}
+			onfocusin={() => model.moveFocusedCell(rowIndex, allIndex)}
+			onmousedown={(event) => {
+				if (event.detail > 1 && config?.editor) event.preventDefault();
+			}}
+			onclick={(event) => handleCellClick(event, rowIndex, allIndex)}
 			onkeydown={(event) => handleCellKeydown(event, column, allIndex)}
-			ondblclick={() => config?.editor && model.startEditing(row, column.id)}
+			ondblclick={(event) => {
+				if (!config?.editor) return;
+				event.preventDefault();
+				model.startEditing(row, column.id);
+			}}
 		>
 			{#if column.id === DATA_TABLE_SELECTION_COLUMN}
 				<DataTableSelectionCheckbox
@@ -226,52 +245,16 @@
 			{:else if isEditing}
 				<DataTableEditor {row} columnId={column.id} {model} {classes} {density} />
 			{:else if cell && payload && config}
-				{#if cell.getIsGrouped()}
-					<Button
-						label={rowExpanded ? 'Collapse group' : 'Expand group'}
-						prefix={rowExpanded ? caretDownIcon : caretRightIcon}
-						variant="ghost"
-						color="foreground"
-						size="small"
-						class={classes.expander()}
-						disabled={model.props.disabled}
-						onClick={() => row.toggleExpanded()}
-					/>
-					<span class={classes.groupValue()}>{formatValue(cell.getValue())}</span>
-					<span class={classes.groupCount()}>({row.subRows.length})</span>
-				{:else if cell.getIsAggregated()}
-					{#if config.aggregatedCell}
-						<Slot
-							render={config.aggregatedCell}
-							{payload}
-							class={classes.cellContent()}
-							as="span"
-						/>
-					{:else}
-						<span class={classes.cellContent()}>{formatValue(cell.getValue())}</span>
-					{/if}
-				{:else if cell.getIsPlaceholder()}
-					<span aria-hidden="true"></span>
-				{:else}
-					{#if column.id === firstDataColumnId && row.getCanExpand() && !row.getIsGrouped()}
-						<div aria-hidden="true" style:width={`${row.depth * 12}px`}></div>
-						<Button
-							label={rowExpanded ? 'Collapse row' : 'Expand row'}
-							prefix={rowExpanded ? caretDownIcon : caretRightIcon}
-							variant="ghost"
-							color="foreground"
-							size="small"
-							class={classes.expander()}
-							disabled={model.props.disabled}
-							onClick={() => row.toggleExpanded()}
-						/>
-					{/if}
-					{#if config.cell}
-						<Slot render={config.cell} {payload} class={classes.cellContent()} as="span" />
-					{:else}
-						<span class={classes.cellContent()}>{formatValue(payload.value)}</span>
-					{/if}
-				{/if}
+				<DataTableCellContent
+					{row}
+					{cell}
+					{payload}
+					{config}
+					{firstDataColumnId}
+					{rowExpanded}
+					{model}
+					{classes}
+				/>
 			{/if}
 		</td>
 	{/each}

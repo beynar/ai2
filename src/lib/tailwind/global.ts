@@ -119,7 +119,35 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 		}
 	});
 	addComponents({
-		'.ui-spinner': getSpinner(options).style
+		'.ui-spinner': getSpinner(options).style,
+		'.state-layer': {
+			position: 'relative',
+			isolation: 'isolate',
+			'&::before': {
+				content: "''",
+				position: 'absolute',
+				inset: '0',
+				'z-index': '-1',
+				'pointer-events': 'none',
+				'border-radius': 'inherit',
+				'background-color': 'transparent',
+				'transition-property': 'background-color',
+				'transition-duration': '100ms',
+				'transition-timing-function': 'ease-out'
+			},
+			'@media (hover: hover)': {
+				'&:not(:disabled):not([data-disabled]):not([aria-disabled="true"]):hover::before': {
+					'background-color': 'var(--color-overlay-hover)'
+				}
+			},
+			'&:not(:disabled):not([data-disabled]):not([aria-disabled="true"])[data-highlighted="true"]::before':
+				{
+					'background-color': 'var(--color-overlay-hover)'
+				},
+			'&:not(:disabled):not([data-disabled]):not([aria-disabled="true"]):active::before': {
+				'background-color': 'var(--color-overlay-pressed)'
+			}
+		}
 	});
 	addShimmerUtilities(api);
 	addScrollFadeUtilities(api);

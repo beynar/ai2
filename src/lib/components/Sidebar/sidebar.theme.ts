@@ -20,14 +20,14 @@ const defaultRoot = cva({
 	base: 'group/sidebar-wrapper flex w-full bg-background-dark text-foreground',
 	variants: {
 		variant: {
-			sidebar: '',
+			admin: '',
 			floating: '',
 			inset: '',
 			split: ''
 		}
 	},
 	defaultVariants: {
-		variant: 'sidebar'
+		variant: 'admin'
 	}
 });
 
@@ -35,7 +35,7 @@ const defaultPanel = cva({
 	base: 'flex h-full flex-col text-foreground',
 	variants: {
 		variant: {
-			sidebar:
+			admin:
 				'border-background-dark bg-background-dark data-[side=left]:border-r data-[side=right]:border-l',
 			floating: 'rounded-xl border border-background-dark bg-background shadow-sm',
 			inset: 'border-0 bg-background-dark shadow-none',
@@ -58,7 +58,7 @@ const defaultPanel = cva({
 		}
 	],
 	defaultVariants: {
-		variant: 'sidebar',
+		variant: 'admin',
 		placement: 'positioned',
 		size: 'normal',
 		density: 'normal'
@@ -111,7 +111,7 @@ const defaultGroupLabel = cva({
 	base: 'text-foreground/65 flex shrink-0 items-center rounded-md font-medium outline-none transition-[height,margin,padding,opacity] duration-200 ease-linear group-data-[collapsible=icon]:opacity-0 disabled:pointer-events-none [&>svg]:shrink-0',
 	variants: {
 		interactive: {
-			true: 'hover:bg-background-dark hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40',
+			true: 'state-layer hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40',
 			false: null
 		},
 		componentSize: {
@@ -133,7 +133,7 @@ const defaultGroupLabel = cva({
 });
 
 const defaultGroupAction = cva({
-	base: 'text-foreground hover:bg-background-dark hover:text-foreground absolute flex aspect-square items-center justify-center rounded-md p-0 outline-none transition group-data-[collapsible=icon]:hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&>svg]:shrink-0',
+	base: 'state-layer text-foreground hover:text-foreground absolute flex aspect-square items-center justify-center rounded-md p-0 outline-none transition group-data-[collapsible=icon]:hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&>svg]:shrink-0',
 	variants: {
 		componentSize: {
 			small: 'top-[calc(var(--sidebar-group-padding)+0.3125rem)] size-4.5 [&>svg]:size-3.5',
@@ -177,17 +177,19 @@ const defaultMenu = cva({
 });
 
 const defaultMenuButton = cva({
-	base: 'peer/menu-button group/menu-button flex w-full items-center overflow-hidden rounded-md text-left outline-none transition-[background,color,width,height,padding] duration-200 ease-linear hover:bg-background-dark hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-primary/10 data-active:text-primary data-active:font-medium group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-icon-size))/2-var(--sidebar-group-padding))] [&_svg]:shrink-0',
+	base: 'state-layer peer/menu-button group/menu-button flex w-full items-center overflow-hidden rounded-md text-left outline-none transition-[background,color,width,height,padding,margin] duration-200 ease-linear hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-primary/10 data-active:text-primary data-active:font-medium group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:-mx-[var(--sidebar-group-padding)] group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-icon-size))/2)] group-data-[collapsible=icon]:ring-inset [&_svg]:shrink-0',
 	variants: {
 		variant: {
 			default: '',
-			outline:
-				'border border-background-dark bg-background hover:border-primary/30 hover:bg-background-dark'
+			outline: 'border border-background-dark bg-background hover:border-primary/30'
 		},
 		componentSize: {
-			small: 'text-xs leading-4 group-data-[collapsible=icon]:h-8 [&_svg]:size-3.5',
-			normal: 'text-sm leading-5 group-data-[collapsible=icon]:h-9 [&_svg]:size-4',
-			large: 'text-base leading-6 group-data-[collapsible=icon]:h-10 [&_svg]:size-5'
+			small:
+				'text-xs leading-4 group-data-[collapsible=icon]:-my-0.5 group-data-[collapsible=icon]:h-9 [&_svg]:size-3.5',
+			normal:
+				'text-sm leading-5 group-data-[collapsible=icon]:-my-0.5 group-data-[collapsible=icon]:h-10 [&_svg]:size-4',
+			large:
+				'text-base leading-6 group-data-[collapsible=icon]:-my-0.5 group-data-[collapsible=icon]:h-11 [&_svg]:size-5'
 		},
 		density: {
 			small: 'gap-1.5 px-1.5',
@@ -280,7 +282,7 @@ const defaultTreeSubMenu = cva({
 });
 
 const defaultSubButton = cva({
-	base: 'text-foreground/80 hover:bg-background-dark hover:text-foreground flex min-w-0 -translate-x-px items-center overflow-hidden rounded-md outline-none transition-[background,color,height,padding] duration-200 ease-linear focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-primary/10 data-active:text-primary [&>span:last-child]:truncate [&>svg]:shrink-0',
+	base: 'state-layer text-foreground/80 hover:text-foreground flex min-w-0 -translate-x-px items-center overflow-hidden rounded-md outline-none transition-[background,color,height,padding] duration-200 ease-linear focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-primary/10 data-active:text-primary [&>span:last-child]:truncate [&>svg]:shrink-0',
 	variants: {
 		componentSize: {
 			small: 'h-6 text-xs leading-4 [&>svg]:size-3.5',
@@ -305,7 +307,7 @@ const defaultSubButton = cva({
 });
 
 const defaultMenuAction = cva({
-	base: 'text-foreground hover:bg-background-dark hover:text-foreground peer-hover/menu-button:text-foreground absolute top-1/2 flex aspect-square -translate-y-1/2 items-center justify-center rounded-md p-0 opacity-100 outline-none transition group-data-[collapsible=icon]:hidden focus-visible:ring-2 focus-visible:ring-primary/40 md:opacity-0 group-focus-within/menu-row:opacity-100 group-hover/menu-row:opacity-100 has-[[aria-expanded=true]]:opacity-100 [&>svg]:shrink-0',
+	base: 'state-layer text-foreground hover:text-foreground peer-hover/menu-button:text-foreground absolute top-1/2 flex aspect-square -translate-y-1/2 items-center justify-center rounded-md p-0 opacity-100 outline-none transition group-data-[collapsible=icon]:hidden focus-visible:ring-2 focus-visible:ring-primary/40 md:opacity-0 group-focus-within/menu-row:opacity-100 group-hover/menu-row:opacity-100 has-[[aria-expanded=true]]:opacity-100 [&>svg]:shrink-0',
 	variants: {
 		componentSize: {
 			small: 'size-4.5 [&>svg]:size-3.5',
@@ -359,26 +361,20 @@ const defaultBadge = cva({
 });
 
 const defaultSearchContainer = cva({
-	base: 'relative opacity-100 transition-[height,margin,opacity,padding] duration-200 ease-linear',
+	base: 'relative w-full opacity-100 transition-[height,margin,opacity] duration-200 ease-linear',
 	variants: {
 		componentSize: {
-			small: 'h-7',
-			normal: 'h-8',
-			large: 'h-9'
-		},
-		density: {
-			small: 'px-1',
-			normal: 'px-2',
-			large: 'px-3'
+			small: 'h-8',
+			normal: 'h-9',
+			large: 'h-10'
 		},
 		collapsed: {
-			true: 'pointer-events-none h-0 !m-0 !p-0 overflow-hidden opacity-0',
+			true: 'pointer-events-none h-0 !m-0 overflow-hidden opacity-0',
 			false: 'overflow-visible'
 		}
 	},
 	defaultVariants: {
 		componentSize: 'normal',
-		density: 'normal',
 		collapsed: false
 	}
 });
@@ -387,9 +383,9 @@ const defaultSearch = cva({
 	base: 'border-background-dark bg-background-light text-foreground placeholder:text-foreground/45 w-full rounded-md border shadow-none outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20',
 	variants: {
 		componentSize: {
-			small: 'h-7 text-xs',
-			normal: 'h-8 text-sm',
-			large: 'h-9 text-base'
+			small: 'h-8 text-xs',
+			normal: 'h-9 text-sm',
+			large: 'h-10 text-base'
 		},
 		density: {
 			small: 'px-7',
@@ -404,7 +400,7 @@ const defaultSearch = cva({
 });
 
 const defaultSearchIcon = cva({
-	base: 'pointer-events-none absolute top-1/2 -translate-y-1/2 text-foreground/45 select-none',
+	base: 'pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center text-foreground/45 select-none [&_svg]:size-full',
 	variants: {
 		componentSize: {
 			small: 'size-3.5',
@@ -441,7 +437,7 @@ const defaultRail = cva({
 	base: 'absolute z-20 hidden w-4 outline-none transition-all ease-linear after:absolute after:start-1/2 after:-translate-x-1/2 after:transition-[height,width,background-color,opacity] after:duration-150 focus-visible:after:opacity-100 sm:flex',
 	variants: {
 		variant: {
-			sidebar: 'inset-y-0',
+			admin: 'inset-y-0',
 			floating: 'inset-y-2',
 			inset: 'inset-y-2',
 			split: 'inset-y-2'
@@ -457,13 +453,13 @@ const defaultRail = cva({
 		}
 	},
 	compoundVariants: [
-		{ variant: ['sidebar', 'inset'], side: 'left', class: 'translate-x-1/2' },
-		{ variant: ['sidebar', 'inset'], side: 'right', class: '-translate-x-1/2' },
+		{ variant: ['admin', 'inset'], side: 'left', class: 'translate-x-1/2' },
+		{ variant: ['admin', 'inset'], side: 'right', class: '-translate-x-1/2' },
 		{ variant: ['floating', 'split'], side: 'left', class: 'right-2 translate-x-1/2' },
 		{ variant: ['floating', 'split'], side: 'right', class: 'left-2 -translate-x-1/2' }
 	],
 	defaultVariants: {
-		variant: 'sidebar',
+		variant: 'admin',
 		side: 'left',
 		appearance: 'line'
 	}
@@ -473,7 +469,7 @@ const defaultResizeHandle = cva({
 	base: 'absolute inset-y-0 z-30 hidden w-2 cursor-col-resize touch-none outline-none transition-opacity md:block after:absolute after:left-1/2 after:-translate-x-1/2 after:transition-[height,width,background-color,opacity] after:duration-150 focus-visible:after:bg-primary focus-visible:after:opacity-100 data-[dragging=true]:after:bg-primary data-[dragging=true]:after:opacity-100',
 	variants: {
 		variant: {
-			sidebar: '',
+			admin: '',
 			floating: 'inset-y-2',
 			inset: 'inset-y-2',
 			split: 'inset-y-2'
@@ -502,13 +498,13 @@ const defaultResizeHandle = cva({
 		}
 	},
 	compoundVariants: [
-		{ variant: ['sidebar', 'inset'], side: 'left', class: 'translate-x-1/2' },
-		{ variant: ['sidebar', 'inset'], side: 'right', class: '-translate-x-1/2' },
+		{ variant: ['admin', 'inset'], side: 'left', class: 'translate-x-1/2' },
+		{ variant: ['admin', 'inset'], side: 'right', class: '-translate-x-1/2' },
 		{ variant: ['floating', 'split'], side: 'left', class: 'right-2 translate-x-1/2' },
 		{ variant: ['floating', 'split'], side: 'right', class: 'left-2 -translate-x-1/2' }
 	],
 	defaultVariants: {
-		variant: 'sidebar',
+		variant: 'admin',
 		side: 'left',
 		appearance: 'line',
 		dragging: false,
@@ -518,13 +514,13 @@ const defaultResizeHandle = cva({
 });
 
 const defaultMain = cva({
-	base: 'relative flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent transition-[transform,translate,margin,padding,border-radius] duration-200 ease-linear',
+	base: 'relative flex min-w-0 flex-1 flex-col bg-transparent [--page-shell-edge-inset:0px] transition-[transform,translate,margin,padding,border-radius] duration-200 ease-linear',
 	variants: {
 		variant: {
-			sidebar: 'bg-background',
+			admin: 'bg-background',
 			floating: 'bg-background-dark',
-			inset: 'bg-background md:my-2 md:border md:border-background-dark md:shadow-sm',
-			split: 'bg-background md:my-2 md:rounded-xl md:border md:border-background-dark md:shadow-sm'
+			inset: 'bg-background md:my-2',
+			split: 'bg-background md:my-2 md:rounded-xl'
 		},
 		side: {
 			left: '',
@@ -541,6 +537,11 @@ const defaultMain = cva({
 		}
 	},
 	compoundVariants: [
+		{
+			variant: ['inset', 'split'],
+			displayState: ['expanded', 'collapsed'],
+			class: 'md:[--page-shell-edge-inset:0.5rem]'
+		},
 		{
 			variant: 'inset',
 			side: 'left',
@@ -565,24 +566,10 @@ const defaultMain = cva({
 			variant: ['inset', 'split'],
 			displayState: 'hidden',
 			class: 'md:m-0 md:rounded-none'
-		},
-		{
-			variant: ['inset', 'split'],
-			side: 'left',
-			displayState: 'hidden',
-			edgeRevealed: true,
-			class: 'translate-x-[var(--sidebar-width)]'
-		},
-		{
-			variant: ['inset', 'split'],
-			side: 'right',
-			displayState: 'hidden',
-			edgeRevealed: true,
-			class: '-translate-x-[var(--sidebar-width)]'
 		}
 	],
 	defaultVariants: {
-		variant: 'sidebar',
+		variant: 'admin',
 		side: 'left',
 		displayState: 'expanded',
 		edgeRevealed: false

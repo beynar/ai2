@@ -26,7 +26,7 @@
 
 	type SidebarFooterState = 'expanded' | 'icon' | 'hidden';
 
-	const sidebarVariants: SidebarVariant[] = ['sidebar', 'floating', 'inset', 'split'];
+	const sidebarVariants: SidebarVariant[] = ['admin', 'floating', 'inset', 'split'];
 	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
 	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
 	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
@@ -67,11 +67,12 @@
 		rail: true,
 		edgeReveal: true,
 		width: sidebarWidth,
+		density: 'small',
+		size: 'small',
 		widthMobile: '18rem',
 		resizable: {
 			minWidth: '12rem',
 			maxWidth: '24rem',
-			collapseThreshold: '10.5rem',
 			storageKey: 'svelai-docs-sidebar-width',
 			onWidthChange: (nextWidth) => {
 				sidebarWidth = nextWidth;
@@ -91,7 +92,7 @@
 	{@const isActive = page.route.id === href}
 	<a
 		{href}
-		class="rounded-md px-2 py-1 text-sm font-medium text-foreground transition-colors hover:bg-background-muted hover:text-foreground {isActive
+		class="state-layer rounded-md px-2 py-1 text-sm font-medium text-foreground transition-colors hover:text-foreground {isActive
 			? 'bg-primary/15 text-primary'
 			: ''}"
 	>

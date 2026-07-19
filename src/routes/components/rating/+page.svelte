@@ -1,8 +1,36 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import Rating from '$lib/components/Rating/Rating.svelte';
 	import { heartIcon, heartIconFill } from '$lib/components/Icons/heart.js';
+
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'warning',
+			options: ['warning', 'primary', 'success', 'danger']
+		},
+		{
+			name: 'value',
+			type: 'slider',
+			label: 'Rating',
+			value: 3.5,
+			min: 0,
+			max: 5,
+			step: 0.5,
+			showValue: true
+		}
+	]);
 </script>
 
 <DocPage
@@ -18,10 +46,11 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="A static rating display"
-		code={`<Rating value={3.5} />`}
+		code={`<Rating value={${controls.value.value}} size="${controls.value.size}" color="${controls.value.color}" />`}
 	>
-		<Rating value={3.5} />
+		<Rating value={controls.value.value} size={controls.value.size} color={controls.value.color} />
 	</ComponentCard>
 
 	{#snippet examples()}

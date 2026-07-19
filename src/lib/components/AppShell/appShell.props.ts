@@ -48,9 +48,9 @@ export type AppShellConfig = {
 	header?: AppShellRegion;
 	/** Default PageShell header actions with access to both shell APIs. */
 	headerActions?: AppShellActions;
-	/** Sticky PageShell footer with access to both shell APIs. */
+	/** PageShell footer with access to both shell APIs. */
 	footer?: AppShellRegion;
-	/** Sticky PageShell footer actions. */
+	/** PageShell footer actions. */
 	footerActions?: AppShellActions;
 	/** Padding applied to the PageShell content inner wrapper. */
 	contentPadding?: PageShellContentPadding;

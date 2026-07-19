@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import SortableList from '$lib/components/SortableList/SortableList.svelte';
 
@@ -13,10 +14,30 @@
 		{ id: 'review', label: 'Review with the team' },
 		{ id: 'ship', label: 'Ship the release' }
 	];
+	const controls = createComponentControls([
+		{
+			name: 'feedback',
+			type: 'segmented',
+			label: 'Feedback',
+			value: 'preview',
+			options: [
+				{ value: 'preview', label: 'Live preview' },
+				{ value: 'indicator', label: 'Indicator line' }
+			]
+		},
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{ name: 'handle', type: 'switch', label: 'Handle', value: false },
+		{ name: 'disabled', type: 'switch', label: 'Disabled', value: false }
+	]);
 
 	// A separate list per interactive example so reorders don't bleed across cards.
 	let basic = $state(makeTasks());
-	let indicatorTasks = $state(makeTasks());
 	let handleTasks = $state(makeTasks());
 	let sizedTasks = $state(makeTasks());
 	let disabledTasks = $state(makeTasks());
@@ -62,28 +83,25 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		title="Live preview or indicator"
-		description="Choose animated displacement for spatial feedback, or keep every row stable and mark the insertion edge with a line."
-		code={`<SortableList bind:items={previewItems} />
-<SortableList bind:items={indicatorItems} indicator />`}
+		description="Explore drag feedback, row size, handle-only dragging, and the disabled state."
+		code={`<SortableList
+	bind:items
+	indicator={${controls.value.feedback === 'indicator'}}
+	size="${controls.value.size}"
+	handle={${controls.value.handle}}
+	disabled={${controls.value.disabled}}
+/>`}
 	>
-		<div class="grid w-full max-w-3xl gap-6 md:grid-cols-2">
-			<section class="min-w-0">
-				<div class="mb-3">
-					<h3 class="text-foreground font-medium">Live preview</h3>
-					<p class="text-foreground-muted mt-1 text-sm">Rows part around the prospective slot.</p>
-				</div>
-				<SortableList bind:items={basic} />
-			</section>
-
-			<section class="min-w-0">
-				<div class="mb-3">
-					<h3 class="text-foreground font-medium">Indicator line</h3>
-					<p class="text-foreground-muted mt-1 text-sm">Rows remain fixed until drop.</p>
-				</div>
-				<SortableList bind:items={indicatorTasks} indicator />
-			</section>
-		</div>
+		<SortableList
+			bind:items={basic}
+			indicator={controls.value.feedback === 'indicator'}
+			size={controls.value.size}
+			handle={controls.value.handle}
+			disabled={controls.value.disabled}
+			class="w-full max-w-lg"
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}

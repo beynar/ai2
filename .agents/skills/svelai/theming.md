@@ -18,7 +18,7 @@
 ## Tailwind Plugin Setup
 
 Declare the theme plugin once per theme. The theme marked `default: true` also
-registers the shared utilities, variants, `.ui-spinner` and `raised-*` — so a
+registers the shared utilities, variants, `.ui-spinner`, `.state-layer` and `raised-*` — so a
 single plugin covers everything:
 
 ```css
@@ -61,6 +61,8 @@ Full example with all keys:
 	info: #3b82f6;
 	background: #fafafa; /* hex only */
 	foreground: #121212; /* hex only */
+	overlay-hover: #1212120d; /* optional; defaults to foreground at 5% */
+	overlay-pressed: #1212121a; /* optional; defaults to foreground at 10% */
 
 	primary-light: #a5b4fc; /* override auto-generated variants */
 	primary-dark: #4338ca;
@@ -99,6 +101,21 @@ Each base color generates five variants (all overridable with `{color}-{variant}
 
 Usage: `primary-light`, `danger-contrast`, `background-muted`, etc.
 
+## Interaction States
+
+Use background grades for resting elevation and the global `state-layer` utility
+for transient hover, virtual-focus, and pressed feedback:
+
+```svelte
+<button class="state-layer bg-primary text-primary-contrast rounded-md px-3 py-2"> Save </button>
+```
+
+The utility composites `--color-overlay-hover` for pointer hover and
+`data-highlighted="true"`, then `--color-overlay-pressed` for `:active`. Pressed
+takes precedence. Disabled, `data-disabled`, and `aria-disabled="true"` elements
+do not receive the layer. Focus remains a ring concern; persistent selected,
+checked, open, and semantic states continue to use `*-muted` or solid colors.
+
 ## Design Tokens
 
 ### `radius`
@@ -107,14 +124,14 @@ Multiplier applied to the native Tailwind radius scale (`rounded-sm` … `rounde
 and bare `rounded`). One value rounds the whole UI proportionally; `normal` keeps
 Tailwind's native defaults. A `number` is used as the multiplier directly.
 
-| Preset    | Multiplier        |
-| --------- | ----------------- |
-| `none`    | 0× (sharp)        |
-| `subtile` | 0.5×              |
-| `small`   | 0.75×             |
-| `normal`  | 1× (native)       |
-| `large`   | 1.5×              |
-| `round`   | 2.5×              |
+| Preset    | Multiplier  |
+| --------- | ----------- |
+| `none`    | 0× (sharp)  |
+| `subtile` | 0.5×        |
+| `small`   | 0.75×       |
+| `normal`  | 1× (native) |
+| `large`   | 1.5×        |
+| `round`   | 2.5×        |
 
 Also accepts a raw number (rem).
 
@@ -125,11 +142,11 @@ Multiplier applied to the native Tailwind spacing scale (`p-*`, `gap-*`, `m-*`,
 proportionally; `normal` keeps Tailwind's native defaults. Emitted per theme, so
 light and dark can breathe differently. A `number` is used as the multiplier directly.
 
-| Preset   | Multiplier    |
-| -------- | ------------- |
-| `small`  | 0.8× (dense)  |
-| `normal` | 1× (native)   |
-| `large`  | 1.2× (roomy)  |
+| Preset   | Multiplier   |
+| -------- | ------------ |
+| `small`  | 0.8× (dense) |
+| `normal` | 1× (native)  |
+| `large`  | 1.2× (roomy) |
 
 ### `scale` (typography)
 

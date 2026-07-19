@@ -1,6 +1,8 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import ComponentSegmentedControl from '../../ComponentSegmentedControl.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import Markdown from '$lib/components/Markdown/Markdown.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import { onDestroy } from 'svelte';
@@ -98,7 +100,15 @@ Use \`Markdown\` inline like any other component.`;
 		'```'
 	].join('\n');
 
-	let mdSize = $state<'small' | 'normal' | 'large'>('normal');
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		}
+	]);
 
 	// Streaming: heading + list + code fence + mermaid fence, so incomplete
 	// markdown handling is visible as chunks arrive.
@@ -141,21 +151,6 @@ Use \`Markdown\` inline like any other component.`;
 	onDestroy(() => clearInterval(streamTimer));
 </script>
 
-{#snippet segmented(current: string, options: string[], onSelect: (value: string) => void)}
-	<div class="flex gap-1">
-		{#each options as option (option)}
-			<Button
-				size="small"
-				variant={current === option ? 'solid' : 'ghost'}
-				color="foreground"
-				onClick={() => onSelect(option)}
-			>
-				{option}
-			</Button>
-		{/each}
-	</div>
-{/snippet}
-
 <DocPage
 	title="Markdown"
 	subtitle="Render Markdown as themed HTML, built for streaming LLM output. Wraps the svelte-streamdown renderer, restyled with svelai design tokens, with code fences going through svelai's Code component and mermaid fences through svelai's Mermaid. Incomplete/streaming markdown is handled gracefully, and three size scales tune it for chat, prose, or long-form documents."
@@ -170,12 +165,13 @@ Use \`Markdown\` inline like any other component.`;
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Headings, emphasis, links, lists, task lists, blockquotes, a GitHub alert, a table and inline code — all styled from svelai tokens."
 		class="!min-h-fit !items-stretch !justify-start"
-		code={`<Markdown content={doc} />`}
+		code={`<Markdown content={doc} size="${controls.value.size}" />`}
 	>
 		<div class="w-full max-w-3xl">
-			<Markdown content={doc} />
+			<Markdown content={doc} size={controls.value.size} />
 		</div>
 	</ComponentCard>
 
@@ -215,12 +211,12 @@ Use \`Markdown\` inline like any other component.`;
 			class="!min-h-fit !items-stretch !justify-start"
 		>
 			<div class="grid w-full max-w-3xl gap-4">
-				{@render segmented(
-					mdSize,
-					['small', 'normal', 'large'],
-					(v) => (mdSize = v as typeof mdSize)
-				)}
-				<Markdown content={sizeSample} size={mdSize} />
+				<ComponentSegmentedControl
+					label="Size"
+					options={['small', 'normal', 'large']}
+					bind:value={controls.value.size}
+				/>
+				<Markdown content={sizeSample} size={controls.value.size} />
 			</div>
 		</ComponentCard>
 

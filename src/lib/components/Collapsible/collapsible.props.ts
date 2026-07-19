@@ -60,7 +60,7 @@ type CollapsibleBaseProps = {
 
 type CollapsibleSlotProps = WithSlot<
 	CollapsibleBaseProps,
-	'trigger' | 'children' | 'icon' | 'srOnlyContent',
+	'trigger' | 'children' | 'srOnlyContent',
 	{ open: boolean }
 >;
 

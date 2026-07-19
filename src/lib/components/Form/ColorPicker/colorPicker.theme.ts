@@ -85,7 +85,7 @@ const defaultControls = cva({
 
 // Square outline button that launches the native EyeDropper.
 const defaultEyedropperButton = cva({
-	base: 'flex shrink-0 items-center justify-center rounded-md border border-foreground-muted/25 text-foreground-muted transition-colors hover:bg-foreground-muted/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-40',
+	base: 'state-layer flex shrink-0 items-center justify-center rounded-md border border-foreground-muted/25 text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-40',
 	variants: {
 		size: {
 			small: 'size-7',

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		createDataTableState,
 		DataTable,
 		type DataTableColumn,
 		type DataTableState
@@ -23,23 +24,12 @@
 		{ id: 'status', accessor: 'status', header: 'Status', sortable: true, size: 140 }
 	];
 
-	let tableState = $state<DataTableState>({
-		sorting: [],
-		globalFilter: '',
-		columnFilters: [],
-		pagination: { page: 1, pageSize: 25 },
-		rowSelection: {},
-		columnVisibility: {},
-		columnOrder: columns.map((column) => column.id),
-		columnPinning: { left: [], right: [] },
-		columnSizing: {},
-		grouping: [],
-		expanded: {}
-	});
+	let tableState = $state(createDataTableState(columns, { pagination: { page: 1, pageSize: 25 } }));
 
 	let rows = $state<Person[]>([]);
 	let rowCount = $state(0);
 	let loading = $state(true);
+	let error = $state<unknown>(null);
 	const getSortValue = (person: Person, columnId: string) => {
 		switch (columnId) {
 			case 'name':
@@ -82,17 +72,41 @@
 			rowCount: matches.length
 		};
 	};
+	const requestServerPage = (state: DataTableState, signal: AbortSignal) =>
+		new Promise<ReturnType<typeof runServerQuery>>((resolve, reject) => {
+			const timer = setTimeout(() => {
+				signal.removeEventListener('abort', abort);
+				resolve(runServerQuery(state));
+			}, 260);
+			const abort = () => {
+				clearTimeout(timer);
+				reject(new DOMException('Request aborted', 'AbortError'));
+			};
+			if (signal.aborted) {
+				abort();
+				return;
+			}
+			signal.addEventListener('abort', abort, { once: true });
+		});
 
 	$effect(() => {
-		const requestState = tableState;
+		const controller = new AbortController();
+		const requestState = $state.snapshot(tableState);
 		loading = true;
-		const timer = setTimeout(() => {
-			const response = runServerQuery(requestState);
-			rows = response.rows;
-			rowCount = response.rowCount;
-			loading = false;
-		}, 260);
-		return () => clearTimeout(timer);
+		error = null;
+		void requestServerPage(requestState, controller.signal)
+			.then((response) => {
+				rows = response.rows;
+				rowCount = response.rowCount;
+			})
+			.catch((reason) => {
+				if (reason instanceof DOMException && reason.name === 'AbortError') return;
+				error = reason;
+			})
+			.finally(() => {
+				if (!controller.signal.aborted) loading = false;
+			});
+		return () => controller.abort();
 	});
 </script>
 
@@ -107,5 +121,6 @@
 	search={{ placeholder: 'Server search', debounce: 200 }}
 	pagination={{ pageSize: 25, pageSizes: [25, 50, 100] }}
 	{loading}
+	{error}
 	animateRows
 />

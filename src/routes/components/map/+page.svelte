@@ -1,6 +1,7 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import MapDemo from './demos/map-demo.svelte';
 	import MapClustersDemo from './demos/map-clusters.svelte';
 	import MapPopupTooltipDemo from './demos/map-popup-tooltip.svelte';
@@ -11,6 +12,18 @@
 	import MapShapesDemo from './demos/map-shapes.svelte';
 	import MapViewportDemo from './demos/map-viewport.svelte';
 	import MapAttributionDemo from './demos/map-attribution.svelte';
+
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{ name: 'clustered', type: 'switch', label: 'Clusters', value: true },
+		{ name: 'interactive', type: 'switch', label: 'Interactive', value: true }
+	]);
 </script>
 
 <DocPage
@@ -19,10 +32,14 @@
 	component="Map"
 >
 	<ComponentCard
+		{controls}
 		title="Basic"
 		description="Markers, popups, tooltips and the default control cluster. Drag to pan, scroll to zoom."
 		class="!min-h-fit !items-stretch !justify-start"
 		code={`<Map
+	size="${controls.value.size}"
+	interactive={${controls.value.interactive}}
+	cluster={${controls.value.clustered}}
 	markers={[
 		{
 			id: 'paris',
@@ -31,6 +48,22 @@
 			label: 'Paris',
 			description: 'European engineering hub',
 			data: { team: 'Engineering', headcount: 42 }
+		},
+		{
+			id: 'la-defense',
+			lng: 2.238,
+			lat: 48.892,
+			label: 'La Defense',
+			description: 'Product team',
+			data: { team: 'Design', headcount: 16 }
+		},
+		{
+			id: 'saint-denis',
+			lng: 2.357,
+			lat: 48.936,
+			label: 'Saint-Denis',
+			description: 'Operations team',
+			data: { team: 'Support', headcount: 21 }
 		},
 		{
 			id: 'london',
@@ -51,11 +84,9 @@
 	]}
 	center={[6.2, 50.5]}
 	zoom={4}
-	cluster={{ enabled: true, radius: 64, maxZoom: 5, zoomOnClick: true }}
 	controls={['zoom-in', 'zoom-out', 'fit-markers']}
 	fitMarkersOnMount
 	fitMarkersPadding={64}
-	class="h-[28rem]"
 >
 	{#snippet marker(arg)}
 		<span class="grid size-10 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-contrast shadow-md ring-4 ring-primary/20">
@@ -86,7 +117,11 @@
 	{/snippet}
 </Map>`}
 	>
-		<MapDemo />
+		<MapDemo
+			size={controls.value.size}
+			interactive={controls.value.interactive}
+			clustered={controls.value.clustered}
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}

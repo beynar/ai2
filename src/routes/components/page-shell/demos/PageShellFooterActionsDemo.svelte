@@ -9,11 +9,11 @@
 	] satisfies PageShellAction[];
 </script>
 
-<div class="h-[420px] w-full overflow-hidden rounded-lg border border-background-muted">
+<div class="h-[420px] w-full overflow-auto rounded-lg border border-background-muted">
 	<PageShell
 		eyebrow="Settings"
 		title="Billing profile"
-		subtitle="Footer actions stay visible while the form scrolls."
+		subtitle="Footer actions remain available while the page scrolls."
 		{footerActions}
 		contentPadding="normal"
 		contentWidth="narrow"

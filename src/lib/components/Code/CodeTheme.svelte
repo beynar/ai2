@@ -25,11 +25,7 @@
 		--code-token-number: var(--color-warning);
 		--code-token-constant: var(--color-warning);
 		--code-token-function: var(--color-info);
-		--code-token-variable: color-mix(
-			in oklab,
-			var(--color-foreground) 88%,
-			var(--color-info)
-		);
+		--code-token-variable: color-mix(in oklab, var(--color-foreground) 88%, var(--color-info));
 		--code-token-property: color-mix(in oklab, var(--color-info) 60%, var(--color-foreground));
 		--code-token-tag: var(--color-danger);
 		--code-token-regex: var(--color-success);
@@ -84,6 +80,16 @@
 
 	:global([data-slot='code'] code[data-line-numbers] [data-line]) {
 		display: block;
+	}
+
+	/* Reserve the gutter on every visual row when a numbered line wraps. The
+	   negative margin pulls the counter into that reserved space on row one. */
+	:global([data-slot='code'] code[data-line-numbers][data-wrap] [data-line]) {
+		padding-left: 4rem;
+	}
+
+	:global([data-slot='code'] code[data-line-numbers][data-wrap] [data-line])::before {
+		margin-left: -4rem;
 	}
 
 	/* `sticky; left: 0` pins the gutter to the left edge so it stays visible while a long

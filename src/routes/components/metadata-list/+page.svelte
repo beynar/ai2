@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import MetadataList from '$lib/components/MetadataList/MetadataList.svelte';
 	import type { MetadataListItem } from '$lib/components/MetadataList/metadataList.props.js';
@@ -52,6 +53,29 @@
 		{ value: 'large', label: 'Large' }
 	] as const satisfies ReadonlyArray<{ value: Density; label: string }>;
 	let listDensity = $state<Density>('normal');
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'columns',
+			type: 'segmented',
+			label: 'Columns',
+			value: '1',
+			options: ['1', '2']
+		}
+	]);
 
 	const ownerItems: MetadataListItem[] = [
 		{ key: 'Owner', value: 'Alice Johnson' },
@@ -59,7 +83,7 @@
 		{ key: 'Status', value: 'Active', type: 'chip', color: 'success' }
 	];
 
-	const heroCode = `<MetadataList
+	const heroCode = $derived(`<MetadataList
 	title="Project Details"
 	items={[
 		{ key: 'Name', value: 'Design System v2' },
@@ -69,7 +93,10 @@
 		{ key: 'Priority', value: 'High', type: 'chip', color: 'danger' },
 		{ key: 'Repository', value: 'https://github.com/org/design-system' }
 	]}
-/>`;
+	size="${controls.value.size}"
+	density="${controls.value.density}"
+	columns={${controls.value.columns}}
+/>`);
 </script>
 
 <DocPage
@@ -84,8 +111,15 @@
 		'Collapse extras behind Show more'
 	]}
 >
-	<ComponentCard description="Typed key/value properties" code={heroCode}>
-		<MetadataList title="Project Details" class="w-full max-w-md" items={projectItems} />
+	<ComponentCard {controls} description="Typed key/value properties" code={heroCode}>
+		<MetadataList
+			title="Project Details"
+			class="w-full max-w-2xl"
+			items={projectItems}
+			size={controls.value.size}
+			density={controls.value.density}
+			columns={Number(controls.value.columns)}
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}

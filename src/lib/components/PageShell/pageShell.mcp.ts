@@ -2,8 +2,9 @@ export const pageShellDescription = `
 # PageShell Component
 
 Content shell for pages rendered inside an application frame. PageShell provides a
-sticky header, scrollable content region, sticky footer, title/subtitle props, and a
-context API for child routes to inject shell content.
+sticky header and footer, document-flow content, title/subtitle props, and a context
+API for child routes to inject shell content. Scrolling stays on the document by default,
+so browser navigation and scroll restoration keep their native behavior.
 
 Use PageShell inside \`Sidebar.children\` when Sidebar owns navigation and responsive
 drawer behavior.
@@ -73,7 +74,7 @@ during component initialization for automatic cleanup.
 - **headerActions**: Snippet<[PageShellApi]> | PageShellAction[] - Actions on the right side of the default header. Use an array for standard Button props, or a snippet when the action needs shell API access.
 - **footer**: Snippet<[PageShellApi]> - Custom sticky footer content.
 - **footerActions**: Snippet<[PageShellApi]> | PageShellAction[] - Actions on the right side of the sticky footer.
-	- **children**: Snippet<[PageShellApi]> - Scrollable page content.
+	- **children**: Snippet<[PageShellApi]> - Page content rendered in normal document flow.
 	- **contentPadding**: 'none' | 'small' | 'normal' | 'large' - Padding applied to the content inner wrapper.
 	- **contentWidth**: 'full' | 'narrow' | 'normal' | 'wide' | 'prose' - Max-width preset for the content inner wrapper.
 	- **actionOverflow**: 'auto' | 'never' - Mobile overflow behavior for action arrays.
@@ -85,7 +86,7 @@ during component initialization for automatic cleanup.
 - **usePageShell()** returns the current PageShell API and throws when no PageShell exists.
 - **setPageShell(config)** registers a scoped config override and removes it on component destroy.
 - **api.set(config)** pushes a manual override and returns a cleanup function.
-- **api.setFooterActions(actions)** pushes scoped sticky footer actions.
+- **api.setFooterActions(actions)** pushes scoped page footer actions.
 - **api.reset()** clears all scoped overrides.
 
 ## Header Action Arrays

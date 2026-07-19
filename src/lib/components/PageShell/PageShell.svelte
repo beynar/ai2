@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import type { PageShellProps } from './pageShell.props.js';
 	import PageShellFooter from './PageShellFooter.svelte';
 	import PageShellHeader from './PageShellHeader.svelte';
@@ -29,9 +30,18 @@
 
 	let isContentScrolled = $state(false);
 
-	function updateContentScroll(event: Event & { currentTarget: HTMLElement }) {
-		isContentScrolled = event.currentTarget.scrollTop > 0;
-	}
+	const trackPageScroll: Attachment<HTMLElement> = (node) => {
+		const scrollContainer = findScrollContainer(node);
+		const update = () => {
+			isContentScrolled = scrollContainer ? scrollContainer.scrollTop > 0 : window.scrollY > 0;
+		};
+
+		update();
+		const target = scrollContainer ?? window;
+		target.addEventListener('scroll', update, { passive: true });
+
+		return () => target.removeEventListener('scroll', update);
+	};
 
 	const shell = new PageShellState({
 		get eyebrow() {
@@ -82,10 +92,20 @@
 	});
 
 	const classes = $derived(usePageShellTheme(theme));
+
+	function findScrollContainer(node: HTMLElement) {
+		let parent = node.parentElement;
+		while (parent && parent !== document.documentElement) {
+			if (/(auto|scroll)/.test(getComputedStyle(parent).overflowY)) return parent;
+			parent = parent.parentElement;
+		}
+		return null;
+	}
 </script>
 
 <div
 	bind:this={ref}
+	{@attach trackPageScroll}
 	data-slot="page-shell"
 	data-scrolled={isContentScrolled ? 'true' : undefined}
 	class={classes.root({ className })}
@@ -95,7 +115,7 @@
 		<PageShellHeader api={shell.api} {theme} />
 	{/if}
 
-	<main data-slot="page-shell-content" class={classes.content()} onscroll={updateContentScroll}>
+	<main data-slot="page-shell-content" class={classes.content()}>
 		<div
 			data-slot="page-shell-content-inner"
 			class={classes.contentInner({

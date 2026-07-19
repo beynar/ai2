@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import { Stat } from '$lib/components/Stat/index.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
@@ -17,6 +18,29 @@
 	import { usersIcon } from '$lib/components/Icons/users.js';
 
 	const statVariants = variants;
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: sizes
+		},
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'solid',
+			options: statVariants
+		}
+	]);
 
 	const densitySegments = [
 		{ value: 'small', label: 'Small' },
@@ -39,8 +63,9 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		class="!min-h-[280px] !items-start"
-		code={`<Stat label="Revenue" value="$45,231" trend="+20.1%" trendDirection="up" description="Compared with last month">
+		code={`<Stat size="${controls.value.size}" density="${controls.value.density}" variant="${controls.value.variant}" label="Revenue" value="$45,231" trend="+20.1%" trendDirection="up" description="Compared with last month">
 	{#snippet indicator()}
 		{@render trendUpIcon()}
 	{/snippet}
@@ -48,6 +73,9 @@
 	>
 		<div class="grid w-full max-w-4xl gap-4 md:grid-cols-3">
 			<Stat
+				size={controls.value.size}
+				density={controls.value.density}
+				variant={controls.value.variant}
 				label="Revenue"
 				value="$45,231"
 				trend="+20.1%"
@@ -59,6 +87,9 @@
 				{/snippet}
 			</Stat>
 			<Stat
+				size={controls.value.size}
+				density={controls.value.density}
+				variant={controls.value.variant}
 				label="Churn"
 				value="2.4%"
 				trend="-0.8%"
@@ -71,6 +102,9 @@
 				{/snippet}
 			</Stat>
 			<Stat
+				size={controls.value.size}
+				density={controls.value.density}
+				variant={controls.value.variant}
 				label="Response"
 				value="184ms"
 				trend="stable"

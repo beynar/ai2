@@ -568,7 +568,7 @@ The theme object contains the following parts:
       base: 'border-collapse border-2'
     },
     row: {
-      base: 'hover:bg-gray-50 transition-colors'
+      base: 'state-layer transition-colors'
     },
     head: {
       base: 'bg-gray-100 font-semibold'
@@ -609,7 +609,7 @@ The theme object contains the following parts:
       base: 'w-full border-collapse'
     },
     row: {
-      base: 'hover:bg-gray-50 transition-colors',
+      base: 'state-layer transition-colors',
       selected: {
         true: 'bg-primary/10'
       }

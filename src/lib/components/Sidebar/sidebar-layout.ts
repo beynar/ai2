@@ -13,7 +13,7 @@ export function getSidebarGapClass(variant: SidebarVariant) {
 }
 
 function getContainerGeometryClass(variant: SidebarVariant) {
-	if (variant === 'sidebar') {
+	if (variant === 'admin') {
 		return 'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]';
 	}
 	if (variant === 'inset') {
@@ -28,7 +28,7 @@ export function getSidebarContainerClass(
 	isEdgeRevealed: boolean,
 	frame: SidebarFrame
 ) {
-	const overlaysContent = isEdgeRevealed && variant !== 'inset' && variant !== 'split';
+	const panelOwnsShadow = variant === 'floating' || variant === 'split';
 
 	return cx(
 		'inset-y-0 z-10 hidden w-[var(--sidebar-width)] bg-transparent transition-[left,right,width] duration-200 ease-linear group-data-[width-prehydrating=true]/sidebar-wrapper:!transition-none group-data-[resizing=true]:!transition-none md:flex',
@@ -37,7 +37,8 @@ export function getSidebarContainerClass(
 			? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
 			: 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
 		getContainerGeometryClass(variant),
-		overlaysContent && 'z-40 shadow-xl',
+		isEdgeRevealed && 'z-40',
+		isEdgeRevealed && !panelOwnsShadow && 'shadow-xl',
 		side === 'left' && isEdgeRevealed && '!left-0',
 		side === 'right' && isEdgeRevealed && '!right-0'
 	);

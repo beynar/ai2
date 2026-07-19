@@ -37,7 +37,6 @@
 		resizable: {
 			minWidth: '12rem',
 			maxWidth: '24rem',
-			collapseThreshold: '10.5rem',
 			onWidthChange: (nextWidth) => {
 				sidebarWidth = nextWidth;
 			}
@@ -57,13 +56,15 @@
 		title="Dashboard"
 		subtitle="Sidebar navigation with sticky page chrome"
 		theme={{
-			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
+			root: {
+				base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+			}
 		}}
 	>
 		{#snippet headerActions({ sidebar })}
 			<button
 				type="button"
-				class="border-background-muted hover:bg-background-muted inline-flex size-8 items-center justify-center rounded-md border text-foreground"
+				class="state-layer border-background-muted inline-flex size-8 items-center justify-center rounded-md border text-foreground"
 				aria-label="Toggle sidebar"
 				onclick={sidebar.toggle}
 			>

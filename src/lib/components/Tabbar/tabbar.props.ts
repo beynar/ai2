@@ -2,6 +2,7 @@ import type { Sizes, Colors } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { TabbarThemeProps } from './tabbar.theme.js';
+import type { HTMLAttributes } from 'svelte/elements';
 
 export type TabAlignment = 'start' | 'center' | 'end';
 export type TabOrientation = 'horizontal' | 'vertical';
@@ -58,65 +59,79 @@ export type TabItem =
 			onMenuSelect?: (menuIndex: number) => void;
 	  };
 
-export type TabbarProps = WithAttachments<{
-	/**
-	 * Items to render as tabs. Each item can be a simple string or an object with label, prefix, suffix, href, and disabled properties.
-	 */
-	items: TabItem[];
-	/**
-	 * The index of the currently active tab. This is bindable.
-	 * @default 0
-	 */
-	activeTab?: number;
-	/**
-	 * Callback function called when the active tab changes.
-	 * Receives the new tab index as an argument.
-	 */
-	onChange?: (index: number) => void;
-	/**
-	 * The size of the tabs.
-	 * @default 'normal'
-	 */
-	size?: Sizes;
-	/**
-	 * The orientation of the tabbar.
-	 * @default 'horizontal'
-	 */
-	orientation?: TabOrientation;
-	/**
-	 * The color scheme of the tabs.
-	 * @default 'primary'
-	 */
-	color?: Colors;
-	/**
-	 * The alignment of the tabs within the container.
-	 * @default 'start'
-	 */
-	alignment?: TabAlignment;
-	/**
-	 * The position of the tabbar (affects underline indicator placement).
-	 * @default 'top'
-	 */
-	position?: TabbarPosition;
-	/**
-	 * Visual variant: 'underline' shows a sliding bar along the tab edge;
-	 * 'pill' renders a rounded track where the active tab is a raised pill that
-	 * slides between tabs with the same animation.
-	 * @default 'underline'
-	 */
-	variant?: TabbarVariant;
-	/**
-	 * Additional CSS classes for the tabbar container.
-	 */
-	class?: string;
-	/**
-	 * Custom theme overrides.
-	 */
-	theme?: TabbarThemeProps;
+type TabbarRootAttributes = Omit<
+	HTMLAttributes<HTMLDivElement>,
+	'children' | 'class' | 'role' | 'aria-orientation'
+>;
 
-	/**
-	 * Whether the tabbar should be full width.
-	 * @default false
-	 */
-	fullWidth?: boolean;
-}>;
+export type TabbarProps = WithAttachments<
+	TabbarRootAttributes & {
+		/** Bindable reference to the tab list element. */
+		ref?: HTMLDivElement | null;
+		/**
+		 * Items to render as tabs. Each item can be a simple string or an object with label, prefix, suffix, href, and disabled properties.
+		 */
+		items: TabItem[];
+		/**
+		 * The index of the currently active tab. This is bindable.
+		 * @default 0
+		 */
+		activeTab?: number;
+		/**
+		 * Callback function called when the active tab changes.
+		 * Receives the new tab index as an argument.
+		 */
+		onChange?: (index: number) => void;
+		/**
+		 * The size of the tabs.
+		 * @default 'normal'
+		 */
+		size?: Sizes;
+		/**
+		 * The orientation of the tabbar.
+		 * @default 'horizontal'
+		 */
+		orientation?: TabOrientation;
+		/**
+		 * The color scheme of the tabs.
+		 * @default 'primary'
+		 */
+		color?: Colors;
+		/**
+		 * The alignment of the tabs within the container.
+		 * @default 'start'
+		 */
+		alignment?: TabAlignment;
+		/**
+		 * The position of the tabbar (affects underline indicator placement).
+		 * @default 'top'
+		 */
+		position?: TabbarPosition;
+		/**
+		 * Visual variant: 'underline' shows a sliding bar along the tab edge;
+		 * 'pill' renders a rounded track where the active tab is a raised pill that
+		 * slides between tabs with the same animation.
+		 * @default 'underline'
+		 */
+		variant?: TabbarVariant;
+		/**
+		 * Additional CSS classes for the tabbar container.
+		 */
+		class?: string;
+		/**
+		 * Custom theme overrides.
+		 */
+		theme?: TabbarThemeProps;
+
+		/**
+		 * Whether the tabbar should be full width.
+		 * @default false
+		 */
+		fullWidth?: boolean;
+		/**
+		 * Applies the shared scroll-fade utility when the tab list overflows.
+		 * @default true
+		 */
+		scrollFade?: boolean;
+	}
+>;

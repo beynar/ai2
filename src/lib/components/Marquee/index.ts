@@ -7,4 +7,3 @@ export {
 	type MarqueeTheme,
 	type MarqueeThemeProps
 } from './marquee.theme.js';
-

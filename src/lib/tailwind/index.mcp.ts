@@ -21,4 +21,12 @@ export const tailwindPluginDescription = `
 - **Type**: \`Spinner\` object
 - **Default**: Auto-generated
 - **Description**: Custom spinner configuration for the \`.ui-spinner\` class
+
+## Shared utilities
+
+### \`.state-layer\`
+- Composites \`--color-overlay-hover\` on hover and \`data-highlighted="true"\`
+- Composites \`--color-overlay-pressed\` on \`:active\`
+- Does not activate for disabled, \`data-disabled\`, or \`aria-disabled="true"\` elements
+- Theme plugin defaults derive both variables from the generated foreground color
 `;

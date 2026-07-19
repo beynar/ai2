@@ -24,7 +24,7 @@ const defaultTableFoot = cva({
 // `density` owns paddings and row heights only ('normal' keeps today's exact
 // values; small is one step tighter, large one step roomier).
 const defaultTableRow = cva({
-	base: 'hover:bg-background-muted/40 data-[state=selected]:bg-muted border-b border-background-muted transition-colors',
+	base: 'state-layer data-[state=selected]:bg-muted border-b border-background-muted transition-colors',
 	variants: {
 		density: {
 			small: 'py-0',

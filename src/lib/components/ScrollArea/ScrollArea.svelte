@@ -3,7 +3,6 @@
 	import { ScrollArea } from './scrollArea.svelte.js';
 	import type { ScrollAreaProps } from './scrollArea.props.js';
 	import { useScrollAreaTheme } from './scrollArea.theme.js';
-	import { caretUpDownIcon } from '../Icons/caretUpDown.js';
 	import { caretUpIcon } from '../Icons/caretUp.js';
 	import { caretDownIcon } from '../Icons/caretDown.js';
 
@@ -17,7 +16,9 @@
 		type = 'hover',
 		scrollOnEdges = false,
 		scrollFade = false,
-		theme
+		onScroll,
+		theme,
+		...attachments
 	}: ScrollAreaProps = $props();
 
 	const componentId = $props.id();
@@ -37,8 +38,9 @@
 
 	const scrollFadeAxis = $derived.by(() => {
 		if (!scrollFade) return 'none';
-		if (scrollArea.visibleX && !scrollArea.visible) return 'x';
-		return 'y';
+		if (scrollArea.visibleX) return 'x';
+		if (scrollArea.visible) return 'y';
+		return 'none';
 	});
 
 	const classes = $derived(useScrollAreaTheme(theme));
@@ -46,11 +48,13 @@
 
 <div
 	data-scroll-area
+	data-slot="scroll-area"
 	bind:this={ref}
 	class={classes.root({ className })}
 	style:position="relative"
 	{@attach scrollArea.hoover.reference}
 	{@attach scrollArea.scrollOnEdgesAttachment}
+	{...attachments}
 >
 	<!-- The viewport is the native scroll container and the keyboard scroll region: focusable
 	     only when it overflows (WCAG SCR34 scrollable-region pattern), so it never becomes a
@@ -59,11 +63,14 @@
 	<div
 		id={viewportId}
 		data-scroll-area-viewport
+		data-slot="scroll-area-viewport"
+		data-scroll-fade-axis={scrollFadeAxis === 'none' ? undefined : scrollFadeAxis}
 		bind:this={viewportRef}
 		class={classes.viewport({ scrollFade: scrollFadeAxis })}
 		tabindex={scrollArea.viewportTabindex}
 		role="group"
 		aria-label={ariaLabel}
+		onscroll={onScroll}
 		{@attach scrollArea.viewportAttachment}
 		style:position="relative"
 		style:overflow="scroll"
@@ -75,6 +82,9 @@
 		     the viewport for narrow content. Its border-box tracks content width, so the content
 		     ResizeObserver fires on horizontal content changes and keeps maxScrollX fresh. -->
 		<div
+			data-scroll-area-content
+			data-slot="scroll-area-content"
+			class={classes.content()}
 			{@attach scrollArea.contentAttachment}
 			style:min-width="100%"
 			style:display="table"
@@ -86,6 +96,7 @@
 
 	{#if (type === 'hover' && scrollArea.visible && scrollArea.hoover.isHovered) || scrollArea.isDraggingY || (type === 'always' && scrollArea.visible) || (type === 'auto' && scrollArea.visible) || (type === 'scroll' && scrollArea.isScrolling)}
 		<div
+			data-slot="scroll-area-scrollbar"
 			transition:fade={{ duration: 200 }}
 			bind:this={scrollArea.scrollbarYElement}
 			class={classes.scrollbar()}
@@ -104,6 +115,7 @@
 		>
 			<div
 				data-thumb
+				data-slot="scroll-area-thumb"
 				class={classes.scrollbarThumb()}
 				style:height={scrollArea.thumbYSize + 'px'}
 				style:width="100%"
@@ -116,6 +128,7 @@
 
 	{#if (type === 'hover' && scrollArea.visibleX && scrollArea.hoover.isHovered) || scrollArea.isDraggingX || (type === 'always' && scrollArea.visibleX) || (type === 'auto' && scrollArea.visibleX) || (type === 'scroll' && scrollArea.isScrolling)}
 		<div
+			data-slot="scroll-area-scrollbar"
 			transition:fade={{ duration: 200 }}
 			bind:this={scrollArea.scrollbarXElement}
 			class={classes.scrollbarX()}
@@ -134,6 +147,7 @@
 		>
 			<div
 				data-thumb
+				data-slot="scroll-area-thumb"
 				class={classes.scrollbarThumb()}
 				style:width={scrollArea.thumbXSize + 'px'}
 				style:height="100%"

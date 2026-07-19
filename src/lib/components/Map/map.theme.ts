@@ -11,10 +11,15 @@ const defaultMapRoot = cva({
 			small: 'h-[240px] min-h-[200px]',
 			normal: 'h-[360px] min-h-[280px]',
 			large: 'h-[520px] min-h-[360px]'
+		},
+		interactive: {
+			true: '',
+			false: '[&_.maplibregl-canvas]:!cursor-default'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		interactive: true
 	}
 });
 

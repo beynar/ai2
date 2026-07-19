@@ -1,5 +1,10 @@
 export { default as Stepper } from './Stepper.svelte';
-export type { StepperProps, StepperRenderPayload } from './stepper.props.js';
+export type {
+	StepperPanelAriaLabel,
+	StepperPanelAriaLabelledby,
+	StepperProps,
+	StepperRenderPayload
+} from './stepper.props.js';
 export { StepperState } from './stepper.state.svelte.js';
 export {
 	stepperTheme,

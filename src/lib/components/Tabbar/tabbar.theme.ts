@@ -5,12 +5,17 @@ const defaultTabbar = cva({
 	// relative: the shared active indicator is positioned against the root.
 	// w-fit: the bar (and its baseline) hugs the tabs — fit-content still clamps
 	// to the parent, so overflow scrolling keeps working. fullWidth opts into w-full.
-	base: 'relative flex w-fit',
+	base: 'relative flex w-fit max-w-full',
 	variants: {
 		orientation: {
 			// Scroll (no visible scrollbar) when the tabs overflow their track.
-			horizontal: 'flex-row overflow-x-auto scrollbar-none scroll-fade-x',
-			vertical: 'flex-col overflow-y-auto scrollbar-none scroll-fade-y'
+			horizontal: 'flex-row overflow-x-auto scrollbar-none',
+			vertical: 'flex-col overflow-y-auto scrollbar-none'
+		},
+		scrollFade: {
+			none: '',
+			x: 'scroll-fade-x',
+			y: 'scroll-fade-y'
 		},
 		alignment: {
 			start: 'justify-start',
@@ -53,7 +58,8 @@ const defaultTabbar = cva({
 		orientation: 'horizontal',
 		alignment: 'start',
 		size: 'normal',
-		variant: 'underline'
+		variant: 'underline',
+		scrollFade: 'none'
 	}
 });
 

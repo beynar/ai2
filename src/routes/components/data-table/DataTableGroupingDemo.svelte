@@ -53,6 +53,6 @@
 	getRowId={(person) => person.id}
 	height={430}
 	pagination={false}
+	showColumnVisibilityControl
 	initialState={{ grouping: ['department'], expanded: {} }}
-	caption="Compensation by department"
 />

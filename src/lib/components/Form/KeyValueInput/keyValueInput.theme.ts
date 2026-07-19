@@ -68,7 +68,7 @@ const defaultRemoveButton = cva({
 });
 
 const defaultAddButton = cva({
-	base: 'flex items-center justify-center gap-1.5 w-full px-3 border border-dashed border-background-muted rounded text-foreground-light bg-transparent hover:bg-background-light hover:text-foreground outline-none focus-visible:ring-1 focus-visible:ring-primary transition-all',
+	base: 'state-layer flex items-center justify-center gap-1.5 w-full px-3 border border-dashed border-background-muted rounded text-foreground-light bg-transparent hover:text-foreground outline-none focus-visible:ring-1 focus-visible:ring-primary transition-all',
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs',

@@ -100,7 +100,7 @@ Use for \`headerButton\`, \`footerButton\`, or direct \`<SidebarMenuButton />\` 
 
 ### Layout
 - **side**: 'left' | 'right' - Desktop and mobile side.
-- **variant**: 'sidebar' | 'floating' | 'inset' | 'split' - Sidebar geometry. \`inset\` integrates navigation into the lower wall with an inset content surface; \`split\` renders detached sidebar and content surfaces.
+- **variant**: 'admin' | 'floating' | 'inset' | 'split' - Sidebar geometry. \`admin\` renders the conventional full-height navigation column; \`inset\` integrates navigation into the lower wall with an inset content surface; \`split\` renders detached sidebar and content surfaces.
 - **size**: 'small' | 'normal' | 'large' (default 'normal') - Typography, icon, avatar, badge, leading-media, item-height, and search-height scale.
 - **density**: 'small' | 'normal' | 'large' (default 'normal') - Section padding, group padding, gaps, horizontal inset, and submenu spacing.
 - **collapsible**: 'offcanvas' | 'icon' | 'none' - Collapse behavior. Icon mode requires icons on every data-driven row and otherwise resolves to offcanvas.
@@ -110,8 +110,8 @@ Use for \`headerButton\`, \`footerButton\`, or direct \`<SidebarMenuButton />\` 
 - **widthIcon**: string - Icon-collapsed width.
 - **widthMobile**: string - Mobile drawer width.
 - **rail**: boolean | 'line' | 'thumb' - Edge toggle rail. \`true\` keeps the thin line style; \`thumb\` renders a short visible handle with the same full-height hitbox. The appearance is preserved when the rail shares the resize control.
-- **edgeReveal**: boolean (default true) - Pointer/focus edge preview for hidden offcanvas sidebars. Hover reveal overlays content, remains resizable when configured, and re-hides after the pointer leaves its small rectangular tolerance; toggle/click opens persistently.
-- **resizable**: boolean | SidebarResizableOptions - Enables pointer and keyboard resizing while expanded, icon-collapsed, or temporarily edge-revealed. Use \`storageKey\` to restore and persist the expanded width across sessions.
+- **edgeReveal**: boolean (default true) - Pointer/focus edge preview for hidden offcanvas sidebars. Hover reveal overlays content, remains resizable when configured, and re-hides after the pointer leaves its small rectangular tolerance. Dragging the sidebar closed suppresses immediate hover reopening until the pointer leaves the edge trigger; toggle/click opens persistently.
+- **resizable**: boolean | SidebarResizableOptions - Enables pointer and keyboard resizing while expanded, icon-collapsed, or temporarily edge-revealed. By default, collapse requires dragging 75% of \`minWidth\` beyond the minimum; override \`collapseThreshold\` for a custom boundary. Use \`storageKey\` to restore and persist the expanded width across sessions.
 
 ### Content
 - **items**: SidebarGroup[] - Data-driven body navigation.

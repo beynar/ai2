@@ -344,7 +344,7 @@ const customTheme: ChipThemeProps = {
       base: 'transition-all hover:scale-105',
       variant: {
         solid: 'shadow-sm hover:shadow-md',
-        outline: 'border-2 hover:bg-color/10'
+        outline: 'state-layer border-2'
       }
     },
     prefix: {

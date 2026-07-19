@@ -2,6 +2,23 @@
 	import Code from '$lib/components/Code/Code.svelte';
 	import Separator from '$lib/components/Separator/Separator.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
+
+	const controls = createComponentControls([
+		{
+			name: 'effect',
+			type: 'segmented',
+			label: 'Effect',
+			value: 'loop',
+			options: ['loop', 'once', 'reverse', 'off']
+		}
+	]);
+	const effectClasses = {
+		loop: '',
+		once: 'shimmer-once',
+		reverse: 'shimmer-reverse',
+		off: 'shimmer-none'
+	} as const;
 
 	const usageCode = `<p class="shimmer text-foreground-muted">
 	Generating response...
@@ -11,12 +28,20 @@
 	Generating response...
 </p>
 
-<p class="shimmer shimmer-color-[#378ADD]">
+<p class="shimmer shimmer-color-[#378ADD]/25">
 	Generating response...
 </p>`;
 
 	const timingCode = `<p class="shimmer shimmer-duration-1000 shimmer-spread-24 shimmer-angle-45">
 	Generating response...
+</p>
+
+<p class="shimmer shimmer-spread-[15%]">
+	Percentage spread
+</p>
+
+<p class="shimmer shimmer-spread-[5rem]">
+	Length spread
 </p>`;
 
 	const utilityRows = [
@@ -45,11 +70,14 @@
 	</header>
 
 	<ComponentCard
+		{controls}
 		description="Add the shimmer class to text that is waiting, loading, or streaming."
 		code={usageCode}
 		class="!min-h-[220px]"
 	>
-		<p class="shimmer text-foreground-muted text-sm">Generating response...</p>
+		<p class="shimmer text-foreground-muted text-sm {effectClasses[controls.value.effect]}">
+			Generating response...
+		</p>
 	</ComponentCard>
 
 	<Separator class="my-2" children="Usage" />
@@ -82,7 +110,7 @@
 	>
 		<div class="grid gap-3 text-sm">
 			<p class="shimmer shimmer-color-blue-500/60 text-foreground-muted">Generating response...</p>
-			<p class="shimmer shimmer-color-[#378ADD] text-foreground-muted">Generating response...</p>
+			<p class="shimmer shimmer-color-[#378ADD]/25 text-foreground-muted">Generating response...</p>
 		</div>
 	</ComponentCard>
 
@@ -94,6 +122,8 @@
 		<div class="grid gap-3 text-center text-sm text-foreground-muted sm:grid-cols-2">
 			<p class="shimmer shimmer-duration-1000">shimmer-duration-1000</p>
 			<p class="shimmer shimmer-spread-24 shimmer-angle-45">spread 24 / angle 45</p>
+			<p class="shimmer shimmer-spread-[15%]">spread 15%</p>
+			<p class="shimmer shimmer-spread-[5rem]">spread 5rem</p>
 		</div>
 	</ComponentCard>
 </article>

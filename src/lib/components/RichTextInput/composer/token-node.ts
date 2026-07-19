@@ -7,8 +7,9 @@ import {
 	type NodeKey,
 	type SerializedTextNode
 } from 'lexical';
+import type { RichTextInputTokenKind } from '../richTextInput.props.js';
 
-export type AIComposerTokenKind = 'file' | 'reference' | 'skill' | 'command';
+export type AIComposerTokenKind = RichTextInputTokenKind;
 
 export type AIComposerTokenData = {
 	kind: AIComposerTokenKind;

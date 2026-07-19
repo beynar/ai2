@@ -68,7 +68,7 @@ const defaultPickerScrollArea = cva({
 });
 
 const defaultPickerOption = cva({
-	base: 'w-full rounded font-mono text-center tabular-nums outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary',
+	base: 'state-layer w-full rounded font-mono text-center tabular-nums outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary',
 	variants: {
 		size: {
 			small: 'px-1.5 py-1 text-xs',
@@ -77,7 +77,7 @@ const defaultPickerOption = cva({
 		},
 		selected: {
 			true: 'bg-primary text-primary-contrast',
-			false: 'text-foreground hover:bg-background-muted'
+			false: 'text-foreground'
 		}
 	},
 	defaultVariants: {

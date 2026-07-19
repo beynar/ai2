@@ -1,9 +1,19 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar/Avatar.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 
 	const sizes = ['small', 'normal', 'large'] as const;
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: sizes
+		}
+	]);
 	const user = {
 		name: 'Guillermo Rauch',
 		avatar: 'https://avatars.githubusercontent.com/rauchg?s=64',
@@ -27,6 +37,7 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Avatar with image and delay before reveal."
 		code={`<Avatar
 	delay={1000}
@@ -34,10 +45,10 @@
 		name: 'Guillermo Rauch',
 		avatar: 'https://avatars.githubusercontent.com/rauchg?s=64'
 	}}
-	size="normal"
+	size="${controls.value.size}"
 />`}
 	>
-		<Avatar delay={1000} {user} size="normal" />
+		<Avatar delay={1000} {user} size={controls.value.size} />
 	</ComponentCard>
 
 	{#snippet examples()}

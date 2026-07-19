@@ -184,44 +184,47 @@
 	};
 
 	const drag = (node: HTMLElement) => {
-		return untrack(() => {
-			if (!draggable) return;
-			let originX: number | null = null;
-			let originY: number | null = null;
+		if (!draggable) {
+			node.style.removeProperty('cursor');
+			return;
+		}
 
-			const onDown = (e: PointerEvent) => {
-				pinned = null;
-				pointerId = e.pointerId;
-				originX = e.clientX - dragX.current;
-				originY = e.clientY - dragY.current;
-				node.style.cursor = 'grabbing';
-			};
-			const onUp = () => {
-				originX = originY = null;
-				pointerId = null;
-				node.style.cursor = 'grab';
-			};
-			const onMove = (e: PointerEvent) => {
-				if (originX !== null && dragAxis.includes('x')) {
-					dragX.target = e.clientX - originX;
-				}
-				if (originY !== null && dragAxis.includes('y')) {
-					dragY.target = e.clientY - originY;
-				}
-			};
+		let originX: number | null = null;
+		let originY: number | null = null;
 
-			node.addEventListener('pointerdown', onDown);
-			node.addEventListener('pointerup', onUp);
-			node.addEventListener('pointerleave', onUp);
-			node.addEventListener('pointermove', onMove);
+		const onDown = (e: PointerEvent) => {
+			pinned = null;
+			pointerId = e.pointerId;
+			originX = e.clientX - dragX.current;
+			originY = e.clientY - dragY.current;
+			node.style.cursor = 'grabbing';
+		};
+		const onUp = () => {
+			originX = originY = null;
+			pointerId = null;
+			node.style.removeProperty('cursor');
+		};
+		const onMove = (e: PointerEvent) => {
+			if (originX !== null && dragAxis.includes('x')) {
+				dragX.target = e.clientX - originX;
+			}
+			if (originY !== null && dragAxis.includes('y')) {
+				dragY.target = e.clientY - originY;
+			}
+		};
 
-			return () => {
-				node.removeEventListener('pointerdown', onDown);
-				node.removeEventListener('pointerup', onUp);
-				node.removeEventListener('pointerleave', onUp);
-				node.removeEventListener('pointermove', onMove);
-			};
-		});
+		node.addEventListener('pointerdown', onDown);
+		node.addEventListener('pointerup', onUp);
+		node.addEventListener('pointerleave', onUp);
+		node.addEventListener('pointermove', onMove);
+
+		return () => {
+			onUp();
+			node.removeEventListener('pointerdown', onDown);
+			node.removeEventListener('pointerup', onUp);
+			node.removeEventListener('pointerleave', onUp);
+			node.removeEventListener('pointermove', onMove);
+		};
 	};
 </script>
 

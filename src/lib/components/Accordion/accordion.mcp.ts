@@ -354,7 +354,7 @@ The theme object contains the following parts:
   items={items}
   theme={{
     trigger: {
-      base: 'hover:bg-primary/10'
+      base: 'state-layer'
     },
     item: {
       expanded: {

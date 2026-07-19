@@ -13,7 +13,7 @@
 {#snippet headerActions()}
 	<button
 		type="button"
-		class="border-background-muted hover:bg-background-muted inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm font-medium text-foreground"
+		class="state-layer border-background-muted inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm font-medium text-foreground"
 	>
 		{@render arrowClockwiseIcon({ class: 'size-4' })}
 		Refresh

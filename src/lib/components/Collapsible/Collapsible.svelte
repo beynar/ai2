@@ -2,11 +2,12 @@
 	import Slot from '../Slot/Slot.svelte';
 	import type { CollapsibleProps } from './collapsible.props.js';
 	import { useCollapsibleTheme } from './collapsible.theme.js';
-	import { slide } from 'svelte/transition';
+	import { slide, type SlideParams } from 'svelte/transition';
 	import { caretUpDownIcon } from '../Icons/caretUpDown.js';
 	import { caretDownIcon } from '../Icons/caretDown.js';
 	import { plusIcon } from '../Icons/plus.js';
 	import { minusIcon } from '../Icons/minus.js';
+	import { untrack } from 'svelte';
 
 	let {
 		ref = $bindable(),
@@ -30,7 +31,7 @@
 	const id = $props.id();
 
 	// Internal state management
-	let internalOpen = $state(defaultOpen);
+	let internalOpen = $state(untrack(() => defaultOpen));
 	const isOpen = $derived(open !== undefined ? open : internalOpen);
 
 	const contentId = $derived(`${id}-content`);
@@ -56,6 +57,13 @@
 	const classes = $derived(useCollapsibleTheme(theme));
 
 	const collapsibleState = $derived(isOpen ? 'open' : 'closed');
+
+	function reducedMotionSlide(node: Element, params?: SlideParams) {
+		const shouldReduceMotion = node.ownerDocument.defaultView?.matchMedia(
+			'(prefers-reduced-motion: reduce)'
+		).matches;
+		return slide(node, { ...params, duration: shouldReduceMotion ? 0 : params?.duration });
+	}
 </script>
 
 {#snippet triggerIcon()}
@@ -102,7 +110,7 @@
 					data-state={collapsibleState}
 					data-disabled={disabled ? '' : undefined}
 					{disabled}
-					class="border-background-muted bg-background text-foreground/80 hover:bg-background-light pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-55"
+					class="state-layer border-background-muted bg-background text-foreground/80 pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-55"
 					onclick={handleToggle}
 				>
 					<Slot render={trigger} />
@@ -140,7 +148,7 @@
 				data-state={collapsibleState}
 				data-disabled={disabled ? '' : undefined}
 				class={classes.content({ size })}
-				transition:slide={{ duration: 200 }}
+				transition:reducedMotionSlide={{ duration: 200 }}
 			>
 				<Slot payload={{ open: isOpen }} render={children} />
 			</div>

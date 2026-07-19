@@ -1,0 +1,568 @@
+<script lang="ts" generics="TMessage extends AIThreadItem = AIThreadItem">
+	import { createVirtualizer } from '@tanstack/svelte-virtual';
+	import { onDestroy, tick } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
+	import { get } from 'svelte/store';
+	import Alert from '../Alert/Alert.svelte';
+	import Button from '../Button/Button.svelte';
+	import { arrowDownIcon } from '../Icons/arrowDown.js';
+	import type {
+		AIAskAnswers,
+		AIAskUserQuestionSubmitDetail
+	} from '../AIAskUserQuestion/aiAskUserQuestion.props.js';
+	import { getAIConversation } from '../AIConversation/aiConversation.state.svelte.js';
+	import { isAIMcpToolCall } from '../AIMcpApp/aiMcpResource.js';
+	import AIThreadToc from '../AIThreadToc/AIThreadToc.svelte';
+	import { buildAIThreadTocState } from '../AIThreadToc/aiThreadToc.js';
+	import Slot from '../Slot/Slot.svelte';
+	import AIThreadAskUserQuestionSurface from './AIThreadAskUserQuestion.svelte';
+	import AIThreadItems from './AIThreadItems.svelte';
+	import type {
+		AIThreadAskUserQuestion,
+		AIThreadAskUserQuestionState,
+		AIThreadItem,
+		AIThreadProps,
+		AIThreadScrollBehavior
+	} from './aiThread.props.js';
+	import { useAIThreadTheme } from './aiThread.theme.js';
+	import { findActiveAskUserQuestion } from './threadAskUserQuestion.js';
+	import { AIThreadAskUserQuestionPublisher } from './threadAskUserQuestionPublisher.js';
+	import { deriveAIThreadRenderItems } from './threadRenderItems.js';
+	import { AIThreadScrollController } from './threadScrollController.js';
+
+	type EndStateVirtualizer = {
+		isAtEnd: (threshold?: number) => boolean;
+	};
+
+	let {
+		ref = $bindable(),
+		messages,
+		getMessageKey,
+		liveText,
+		isStreaming,
+		followOutput = true,
+		bottomThreshold = 80,
+		estimateSize = 96,
+		overscan = 4,
+		padding = 16,
+		paddingStart = padding,
+		paddingEnd = padding,
+		scrollBehavior = 'smooth',
+		showScrollButton = true,
+		scrollButtonPosition = 'right',
+		showToc = false,
+		tocSide = 'left',
+		tocMaxPins,
+		tocTheme,
+		mcpHost,
+		activeAskUserQuestion,
+		renderAskUserQuestion = true,
+		askUserQuestionDisabled = false,
+		suggestions,
+		onSuggestionClick,
+		empty,
+		message: messageSlot,
+		messageActions,
+		messageActionsVisibility,
+		messageCopyable,
+		messageEditable,
+		messageRetryable,
+		onMessageCopy,
+		onMessageEdit,
+		onMessageRetry,
+		tool: toolSlot,
+		toolIcon,
+		toolTitle,
+		toolContent,
+		toolInput,
+		toolOutput,
+		toolError,
+		toolStatus,
+		marker: markerSlot,
+		markerIcon,
+		markerContent,
+		app: appSlot,
+		onRetry,
+		onAskUserQuestionStateChange,
+		header,
+		footer,
+		toc,
+		role = 'log',
+		viewportLabel = 'Conversation transcript',
+		onScroll,
+		onwheel: onWheel,
+		class: className,
+		theme,
+		...rootAttributes
+	}: AIThreadProps<TMessage> = $props();
+
+	const conversation = getAIConversation<TMessage>();
+	const generatedKeys = new WeakMap<object, string>();
+	const questionPublisher = new AIThreadAskUserQuestionPublisher<TMessage>();
+	const scrollController = new AIThreadScrollController(() => scrollBehavior);
+	let generatedKeyId = 0;
+	let viewport = $state<HTMLDivElement>();
+	let viewportHeight = $state(0);
+	let viewportScrollTop = $state(0);
+	let isPinned = $state(true);
+	let hasInitializedEnd = $state(false);
+	let isInitializingEnd = $state(false);
+	let isFollowingAppendedItem = $state(false);
+	let errorMessage = $state<string>();
+	let questionStates = $state<Record<string, AIThreadAskUserQuestionState | undefined>>({});
+	let questionValuesByKey = $state<Record<string, AIAskAnswers | undefined>>({});
+	let previousRenderItemCount = 0;
+	let previousFirstRenderItemKey: string | undefined;
+	let shouldSmoothAppendedItem = false;
+	let prependScrollTarget: 'start' | 'end' | undefined;
+	let initialEndFrame: number | undefined;
+	let initialEndSchedule = 0;
+
+	const resolvedMessages = $derived(messages ?? conversation?.messages ?? []);
+	const resolvedLiveText = $derived(liveText ?? conversation?.liveText);
+	const resolvedStreaming = $derived(isStreaming ?? conversation?.isStreaming ?? false);
+	const resolvedSuggestions = $derived(suggestions ?? conversation?.suggestions ?? []);
+	const messageKeys = $derived.by(() => createMessageKeys(resolvedMessages));
+	const detectedQuestion = $derived(
+		findActiveAskUserQuestion(
+			resolvedMessages,
+			(_message, index) => messageKeys[index] ?? `missing:${index}`,
+			questionStates
+		)
+	);
+	const resolvedQuestion = $derived.by(() => {
+		const request =
+			activeAskUserQuestion !== undefined
+				? activeAskUserQuestion
+				: (conversation?.activeAskUserQuestion ?? detectedQuestion);
+		if (!request || (request.state !== undefined && request.state !== 'pending')) return null;
+		return questionStates[request.key] && questionStates[request.key] !== 'pending'
+			? null
+			: request;
+	});
+	const renderItems = $derived.by(() => {
+		return deriveAIThreadRenderItems(resolvedMessages, {
+			getMessageKey: (_message, index) => messageKeys[index] ?? `missing:${index}`,
+			isAppTool: isAIMcpToolCall,
+			activeQuestion: resolvedQuestion,
+			splitMessageParts: !messageSlot
+		});
+	});
+	const classes = $derived(useAIThreadTheme(theme));
+	const isSettlingInitialEnd = $derived(
+		renderItems.length > 0 && (!hasInitializedEnd || isInitializingEnd)
+	);
+	const shouldShowScrollButton = $derived(
+		showScrollButton &&
+			!isPinned &&
+			!isFollowingAppendedItem &&
+			!isSettlingInitialEnd &&
+			!isViewportAtEnd() &&
+			renderItems.length > 0
+	);
+
+	const virtualizerStore = createVirtualizer<HTMLDivElement, HTMLElement>({
+		count: initialThreadCount(),
+		getScrollElement: () => viewport ?? null,
+		estimateSize: () => 96,
+		overscan: 4,
+		initialRect: { width: 1, height: 96 },
+		getItemKey: renderItemKey,
+		scrollToFn: scrollController.scrollToFn,
+		anchorTo: 'end',
+		followOnAppend: followOnAppendBehavior(),
+		scrollEndThreshold: 80,
+		initialOffset: initialThreadOffset,
+		onChange: handleVirtualizerChange
+	});
+
+	const virtualItems = $derived($virtualizerStore.getVirtualItems());
+	const totalSize = $derived($virtualizerStore.getTotalSize());
+	const tocState = $derived.by(() => {
+		const virtualizer = $virtualizerStore;
+		const effectiveScrollOffset = isPinned
+			? Math.max(viewportScrollTop, totalSize - viewportHeight)
+			: viewportScrollTop;
+		return buildAIThreadTocState(renderItems, {
+			totalSize,
+			scrollOffset: effectiveScrollOffset,
+			viewportSize: viewportHeight,
+			isPinnedToBottom: isPinned || isSettlingInitialEnd,
+			estimateSize: Math.max(1, estimateSize),
+			getItemOffset: (index) => virtualizer.getOffsetForIndex(index, 'start')?.[0],
+			getItemSize: (index) => virtualizer.measurementsCache[index]?.size,
+			scrollToIndex(index, behavior) {
+				virtualizer.scrollToIndex(index, { align: 'start', behavior });
+			},
+			scrollToOffset(offset, behavior) {
+				virtualizer.scrollToOffset(offset, { behavior });
+			}
+		});
+	});
+
+	$effect(() => {
+		questionPublisher.sync(conversation, detectedQuestion, activeAskUserQuestion !== undefined);
+	});
+
+	$effect(() => {
+		const currentViewport = viewport;
+		if (!currentViewport) return;
+		const sync = () => syncThreadPosition(get(virtualizerStore));
+		sync();
+		const observer = new ResizeObserver(sync);
+		observer.observe(currentViewport);
+		return () => observer.disconnect();
+	});
+
+	$effect.pre(() => {
+		const hasAddedItems = hasInitializedEnd && renderItems.length > previousRenderItemCount;
+		const hasPrependedItems = hasAddedItems && renderItems[0]?.key !== previousFirstRenderItemKey;
+		prependScrollTarget = hasPrependedItems
+			? isViewportAtStart()
+				? 'start'
+				: isViewportAtEnd()
+					? 'end'
+					: undefined
+			: undefined;
+		shouldSmoothAppendedItem =
+			hasAddedItems &&
+			!hasPrependedItems &&
+			followOutput &&
+			scrollBehavior === 'smooth' &&
+			isViewportAtEnd();
+		if (shouldSmoothAppendedItem) isFollowingAppendedItem = true;
+	});
+
+	$effect(() => {
+		const count = renderItems.length;
+		const currentViewport = viewport;
+		scrollController.prepareSmoothAppendAdjustment(shouldSmoothAppendedItem);
+		get(virtualizerStore).setOptions({
+			count,
+			getScrollElement: () => currentViewport ?? null,
+			estimateSize: () => Math.max(1, estimateSize),
+			overscan: Math.max(0, overscan),
+			paddingStart: Math.max(0, paddingStart),
+			paddingEnd: Math.max(0, paddingEnd),
+			getItemKey: renderItemKey,
+			scrollToFn: scrollController.scrollToFn,
+			anchorTo: 'end',
+			followOnAppend: followOnAppendBehavior(),
+			scrollEndThreshold: Math.max(0, bottomThreshold),
+			onChange: handleVirtualizerChange
+		});
+		if (prependScrollTarget) {
+			const target = prependScrollTarget;
+			prependScrollTarget = undefined;
+			scrollController.settlePrependedItems(
+				target === 'start' ? scrollToStart : () => scrollToBottom('instant'),
+				() => syncThreadPosition(get(virtualizerStore))
+			);
+		}
+		previousRenderItemCount = count;
+		previousFirstRenderItemKey = renderItems[0]?.key;
+		if (shouldSmoothAppendedItem) {
+			scrollController.scheduleSmoothAppendAdjustmentReset();
+			scrollController.watchAppendFollowEnd(isViewportAtEnd, () => {
+				isFollowingAppendedItem = false;
+				syncThreadPosition(get(virtualizerStore));
+			});
+		}
+		if (count === 0) {
+			hasInitializedEnd = false;
+			isInitializingEnd = false;
+			isFollowingAppendedItem = false;
+			cancelInitialEndSettlement();
+			previousFirstRenderItemKey = undefined;
+		}
+		if (currentViewport && count > 0 && !hasInitializedEnd) {
+			isInitializingEnd = true;
+			hasInitializedEnd = true;
+			scheduleInitialEndSettlement();
+		}
+		syncThreadPosition(get(virtualizerStore));
+	});
+
+	onDestroy(() => {
+		cancelInitialEndSettlement();
+		questionPublisher.destroy();
+		scrollController.destroy();
+	});
+
+	const measureItem: Attachment<HTMLElement> = (element) => {
+		get(virtualizerStore).measureElement(element);
+	};
+
+	function createMessageKeys(currentMessages: readonly TMessage[]): string[] {
+		const bases = currentMessages.map((message, index) => {
+			const configured = getMessageKey?.(message, index) ?? message.id;
+			return configured === undefined ? generatedKey(message) : String(configured);
+		});
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- Ephemeral key counts are not component state.
+		const counts = new Map<string, number>();
+		for (const base of bases) counts.set(base, (counts.get(base) ?? 0) + 1);
+		return bases.map((base, index) => {
+			if ((counts.get(base) ?? 0) === 1) return base;
+			const message = currentMessages[index];
+			return message ? `${base}:duplicate:${generatedKey(message)}` : `${base}:duplicate:${index}`;
+		});
+	}
+
+	function generatedKey(message: TMessage): string {
+		const existing = generatedKeys.get(message);
+		if (existing) return existing;
+		generatedKeyId += 1;
+		const key = `message-generated:${generatedKeyId}`;
+		generatedKeys.set(message, key);
+		return key;
+	}
+
+	function renderItemKey(index: number): string | number {
+		return renderItems[index]?.key ?? index;
+	}
+
+	function initialThreadOffset(): number {
+		return Math.max(
+			0,
+			Math.max(0, paddingStart) +
+				Math.max(0, paddingEnd) +
+				renderItems.length * Math.max(1, estimateSize)
+		);
+	}
+
+	function initialThreadCount(): number {
+		return renderItems.length;
+	}
+
+	function followOnAppendBehavior(): AIThreadScrollBehavior | false {
+		return followOutput ? scrollBehavior : false;
+	}
+
+	function handleVirtualizerChange(instance: EndStateVirtualizer): void {
+		syncThreadPosition(instance);
+	}
+
+	function syncThreadPosition(instance: EndStateVirtualizer): void {
+		if (!viewport) return;
+		viewportHeight = viewport.clientHeight;
+		viewportScrollTop = viewport.scrollTop;
+		if (isInitializingEnd) {
+			isPinned = true;
+			return;
+		}
+		isPinned = isViewportAtEnd() || instance.isAtEnd(Math.max(0, bottomThreshold));
+	}
+
+	function isViewportAtStart(): boolean {
+		return !viewport || viewport.scrollTop <= 1;
+	}
+
+	function isViewportAtEnd(): boolean {
+		if (!viewport) return isPinned;
+		const distanceFromEnd = viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop;
+		return Math.max(distanceFromEnd, 0) <= Math.max(0, bottomThreshold);
+	}
+
+	function handleScroll(event: Event): void {
+		syncThreadPosition(get(virtualizerStore));
+		onScroll?.(event);
+	}
+
+	function handleWheel(): void {
+		cancelInitialEndSettlement();
+		isInitializingEnd = false;
+		isFollowingAppendedItem = false;
+		isPinned = false;
+	}
+
+	function handleRootWheel(
+		event: WheelEvent & { currentTarget: EventTarget & HTMLDivElement }
+	): void {
+		handleWheel();
+		onWheel?.(event);
+	}
+
+	function scrollToStart(): void {
+		get(virtualizerStore).scrollToOffset(0, { behavior: 'instant' });
+		syncThreadPosition(get(virtualizerStore));
+	}
+
+	function scrollToBottom(behavior: AIThreadScrollBehavior = scrollBehavior): void {
+		if (renderItems.length === 0) return;
+		get(virtualizerStore).scrollToEnd({ behavior });
+		syncThreadPosition(get(virtualizerStore));
+	}
+
+	function scheduleInitialEndSettlement(): void {
+		cancelInitialEndSettlement();
+		const schedule = initialEndSchedule;
+		void tick().then(() => {
+			if (schedule !== initialEndSchedule || !isInitializingEnd) return;
+			get(virtualizerStore).scrollToEnd({ behavior: 'instant' });
+			initialEndFrame = requestAnimationFrame(() => {
+				get(virtualizerStore).scrollToEnd({ behavior: 'instant' });
+				initialEndFrame = undefined;
+				isInitializingEnd = false;
+				syncThreadPosition(get(virtualizerStore));
+			});
+		});
+	}
+
+	function cancelInitialEndSettlement(): void {
+		initialEndSchedule += 1;
+		if (initialEndFrame === undefined) return;
+		cancelAnimationFrame(initialEndFrame);
+		initialEndFrame = undefined;
+	}
+
+	function handleSuggestionClick(suggestion: string): void {
+		if (onSuggestionClick) {
+			onSuggestionClick(suggestion);
+			return;
+		}
+		conversation?.setInput(suggestion);
+	}
+
+	function handleQuestionChange(
+		request: AIThreadAskUserQuestion<TMessage>,
+		values: AIAskAnswers
+	): void {
+		questionValuesByKey = { ...questionValuesByKey, [request.key]: values };
+	}
+
+	async function resolveQuestion(
+		request: AIThreadAskUserQuestion<TMessage>,
+		state: 'completed' | 'discarded',
+		detail?: AIAskUserQuestionSubmitDetail
+	): Promise<void> {
+		errorMessage = undefined;
+		questionStates = { ...questionStates, [request.key]: state };
+		const change = {
+			request,
+			state,
+			detail: detail ? { answers: detail.answers, values: detail.values } : undefined
+		};
+		try {
+			if (onAskUserQuestionStateChange) {
+				await onAskUserQuestionStateChange(change);
+				return;
+			}
+			if (!conversation) {
+				throw new Error(
+					'AIThread requires onAskUserQuestionStateChange or a parent AIConversation to resolve questions.'
+				);
+			}
+			await conversation.resolveAskUserQuestion(state, change.detail, request);
+		} catch (error) {
+			questionStates = { ...questionStates, [request.key]: 'pending' };
+			errorMessage = getErrorMessage(error, 'Unable to resolve the question request.');
+		}
+	}
+
+	function getErrorMessage(error: unknown, fallback: string): string {
+		return error instanceof Error && error.message ? error.message : fallback;
+	}
+</script>
+
+<div
+	bind:this={ref}
+	data-slot="ai-thread"
+	{role}
+	aria-busy={resolvedStreaming}
+	class={classes.root({ className })}
+	{...rootAttributes}
+	onwheel={handleRootWheel}
+>
+	{#if resolvedLiveText}
+		<div data-slot="ai-thread-live-region" class="sr-only" aria-live="polite" aria-atomic="true">
+			{resolvedLiveText}
+		</div>
+	{/if}
+	{#if header}<Slot render={header} class={classes.header()} />{/if}
+	{#if errorMessage}<Alert color="danger" variant="soft" description={errorMessage} />{/if}
+	<div class={classes.body()}>
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+		<div
+			bind:this={viewport}
+			data-slot="ai-thread-viewport"
+			class={classes.viewport({
+				tocSide: showToc && !toc && tocState.entries.length > 0 ? tocSide : undefined
+			})}
+			tabindex="0"
+			aria-label={viewportLabel}
+			onscroll={handleScroll}
+		>
+			<AIThreadItems
+				{renderItems}
+				{virtualItems}
+				{totalSize}
+				{measureItem}
+				{conversation}
+				suggestions={resolvedSuggestions}
+				onSuggestionClick={handleSuggestionClick}
+				{empty}
+				message={messageSlot}
+				{messageActions}
+				{messageActionsVisibility}
+				{messageCopyable}
+				{messageEditable}
+				{messageRetryable}
+				{onMessageCopy}
+				{onMessageEdit}
+				{onMessageRetry}
+				tool={toolSlot}
+				{toolIcon}
+				{toolTitle}
+				{toolContent}
+				{toolInput}
+				{toolOutput}
+				{toolError}
+				{toolStatus}
+				marker={markerSlot}
+				{markerIcon}
+				{markerContent}
+				app={appSlot}
+				{onRetry}
+				{mcpHost}
+				{theme}
+			/>
+		</div>
+
+		{#if showToc && tocState.entries.length > 0}
+			{#if toc}
+				<Slot render={toc} payload={tocState} />
+			{:else}
+				<div class={classes.tocOverlay({ side: tocSide })}>
+					<AIThreadToc state={tocState} maxPins={tocMaxPins} side={tocSide} theme={tocTheme} />
+				</div>
+			{/if}
+		{/if}
+
+		{#if shouldShowScrollButton}
+			<Button
+				squared
+				size="small"
+				variant="soft"
+				label="Scroll to latest message"
+				class={classes.scrollButton({ position: scrollButtonPosition })}
+				onClick={() => scrollToBottom()}
+			>
+				{@render arrowDownIcon({ size: 16 })}
+			</Button>
+		{/if}
+	</div>
+	{#if renderAskUserQuestion && resolvedQuestion}
+		{@const question = resolvedQuestion}
+		{#key question.key}
+			<AIThreadAskUserQuestionSurface
+				request={question}
+				value={questionValuesByKey[question.key] ?? question.value}
+				{askUserQuestionDisabled}
+				class={classes.askQuestion()}
+				onChange={handleQuestionChange}
+				onResolve={resolveQuestion}
+			/>
+		{/key}
+	{/if}
+	{#if footer}<Slot render={footer} class={classes.footer()} />{/if}
+</div>

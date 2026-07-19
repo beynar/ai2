@@ -1,12 +1,24 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import TreeBasicDemo from './demos/TreeBasicDemo.svelte';
 	import TreeCompositionDemo from './demos/TreeCompositionDemo.svelte';
 	import TreeCustomSearchDemo from './demos/TreeCustomSearchDemo.svelte';
 	import TreeIconsDensityDemo from './demos/TreeIconsDensityDemo.svelte';
 	import TreeLargeDemo from './demos/TreeLargeDemo.svelte';
 	import TreePoliciesDemo from './demos/TreePoliciesDemo.svelte';
+
+	const controls = createComponentControls([
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'default',
+			options: ['compact', 'default', 'relaxed']
+		},
+		{ name: 'search', type: 'switch', label: 'Search', value: true }
+	]);
 </script>
 
 <DocPage
@@ -22,6 +34,7 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Pass canonical paths directly for small and medium trees."
 		class="!min-h-fit !items-stretch !justify-start"
 		code={`<Tree
@@ -36,14 +49,15 @@
 		'vite.config.ts'
 	]}
 	height={320}
+	density="${controls.value.density}"
 	initialExpansion="open"
 	initialSelectedPaths={['src/lib/components/Tree/Tree.svelte']}
-	search
+	search={${controls.value.search}}
 	initialSearchQuery="Tree"
 	searchBlurBehavior="retain"
 />`}
 	>
-		<TreeBasicDemo />
+		<TreeBasicDemo density={controls.value.density} search={controls.value.search} />
 	</ComponentCard>
 
 	{#snippet examples()}

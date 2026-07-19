@@ -1,4 +1,3 @@
-import { tableTheme } from '../Table/table.theme.js';
 import {
 	cva,
 	setComponentTheme,
@@ -6,18 +5,41 @@ import {
 	useComponentTheme
 } from '$lib/utils/cva/index.js';
 
-const root = cva({ base: 'relative flex min-w-0 flex-col gap-3' });
+const root = cva({
+	base: 'relative flex min-w-0 flex-col gap-3',
+	variants: {
+		fill: {
+			true: 'h-full min-h-0',
+			false: ''
+		}
+	},
+	defaultVariants: { fill: false }
+});
 const toolbar = cva({
 	base: 'flex min-w-0 flex-wrap items-center justify-between gap-2'
 });
 const toolbarGroup = cva({ base: 'flex min-w-0 flex-wrap items-center gap-2' });
 const search = cva({ base: 'w-full sm:w-64' });
 const viewport = cva({
-	base: 'relative overflow-hidden rounded border border-background-muted bg-background'
+	base: 'relative isolate overflow-hidden rounded border border-background-muted bg-background [container-type:inline-size]',
+	variants: {
+		fill: {
+			true: 'min-h-0 flex-1',
+			false: ''
+		}
+	},
+	defaultVariants: { fill: false }
 });
 const savingIndicator = cva({ base: '!absolute !z-30 !rounded-none' });
 const scrollArea = cva({ base: 'h-full' });
 const virtualTable = cva({ base: 'grid min-w-full table-fixed text-sm' });
+const caption = cva({
+	base: 'text-sm text-foreground-muted',
+	variants: {
+		density: { small: 'mt-3', normal: 'mt-4', large: 'mt-6' }
+	},
+	defaultVariants: { density: 'normal' }
+});
 const header = cva({
 	base: 'z-20 grid bg-background-light'
 });
@@ -69,9 +91,9 @@ const dragThumb = cva({
 const resizeHandle = cva({
 	base: 'absolute inset-y-1 end-0 z-40 w-1 cursor-col-resize touch-none rounded-full outline-none hover:bg-primary focus-visible:bg-primary data-[resizing=true]:bg-primary'
 });
-const body = cva({ base: 'relative grid' });
+const body = cva({ base: 'relative z-0 grid' });
 const row = cva({
-	base: 'grid min-w-full border-b border-background-muted transition-colors last:border-b-0 hover:bg-background-muted/40 data-[selected=true]:bg-primary-muted/40',
+	base: 'state-layer grid min-w-full border-b border-background-muted transition-colors last:border-b-0 data-[selected=true]:bg-primary-muted/40',
 	variants: {
 		density: { small: 'min-h-8', normal: 'min-h-10', large: 'min-h-12' },
 		grouped: { true: 'bg-background-light font-medium', false: '' }
@@ -79,7 +101,7 @@ const row = cva({
 	defaultVariants: { density: 'normal', grouped: false }
 });
 const cell = cva({
-	base: 'relative flex min-w-0 items-center overflow-hidden border-background-muted outline-none focus-visible:z-20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary',
+	base: 'relative flex min-w-0 items-center overflow-hidden border-background-muted outline-none',
 	variants: {
 		density: {
 			small: 'min-h-8 px-1.5 py-1',
@@ -92,9 +114,19 @@ const cell = cva({
 			end: 'justify-end text-right'
 		},
 		pinned: { true: 'z-10 bg-background', false: '' },
+		focused: {
+			true: 'z-20 bg-primary-muted/20 ring-2 ring-inset ring-primary/70',
+			false: ''
+		},
 		editing: { true: 'overflow-visible p-0 ring-1 ring-inset ring-primary', false: '' }
 	},
-	defaultVariants: { density: 'normal', align: 'start', pinned: false, editing: false }
+	defaultVariants: {
+		density: 'normal',
+		align: 'start',
+		pinned: false,
+		focused: false,
+		editing: false
+	}
 });
 const cellContent = cva({ base: 'min-w-0 truncate' });
 const selectionCell = cva({ base: 'p-0' });
@@ -154,7 +186,7 @@ const editorError = cva({
 	base: 'absolute top-full left-0 z-50 mt-1 rounded bg-danger px-2 py-1 text-xs text-danger-contrast shadow'
 });
 const filterPanel = cva({
-	base: 'grid w-full gap-3 p-3',
+	base: 'grid w-full gap-1 p-3',
 	variants: {
 		separated: {
 			true: 'mt-1 border-t border-background-muted',
@@ -170,9 +202,10 @@ const filterCheckboxGroup = cva({ base: '!gap-1' });
 const filterCheckboxContainer = cva({ base: '!gap-1' });
 const filterCheckboxItem = cva({ base: '!min-h-8 !py-1 !pl-9' });
 const filterCheckboxIndicator = cva({ base: '!top-2 !size-4' });
-const stateRow = cva({ base: 'grid min-h-40 place-items-center p-6 text-center' });
-const loadingOverlay = cva({
-	base: 'absolute inset-0 z-50 grid place-items-center bg-background/65 backdrop-blur-[1px]'
+const stateRow = cva({ base: 'grid min-h-40' });
+const stateCell = cva({ base: 'relative grid min-w-0' });
+const stateContent = cva({
+	base: 'sticky start-0 grid w-[100cqw] place-items-center p-6 text-center'
 });
 const skeletonList = cva({ base: 'grid w-full max-w-3xl gap-3' });
 const skeletonBar = cva({ base: 'h-8 w-full' });
@@ -180,7 +213,6 @@ const footer = cva({ base: 'flex flex-wrap items-center justify-between gap-3' }
 const summary = cva({ base: 'text-sm text-foreground-muted' });
 
 export const dataTableTheme = {
-	...tableTheme,
 	root,
 	toolbar,
 	toolbarGroup,
@@ -189,6 +221,7 @@ export const dataTableTheme = {
 	savingIndicator,
 	scrollArea,
 	virtualTable,
+	caption,
 	header,
 	headerRow,
 	headerCell,
@@ -233,7 +266,8 @@ export const dataTableTheme = {
 	filterCheckboxItem,
 	filterCheckboxIndicator,
 	stateRow,
-	loadingOverlay,
+	stateCell,
+	stateContent,
 	skeletonList,
 	skeletonBar,
 	footer,

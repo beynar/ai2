@@ -18,10 +18,10 @@
 	] satisfies PageShellAction[];
 </script>
 
-<div class="h-[460px] w-full overflow-hidden rounded-lg border border-background-muted">
+<div class="h-[460px] w-full overflow-auto rounded-lg border border-background-muted">
 	<PageShell
 		title="Insights"
-		subtitle="Sticky header, scrollable content, and sticky footer"
+		subtitle="Sticky header and footer with natural content flow"
 		{headerActions}
 		contentPadding="normal"
 		contentWidth="wide"

@@ -2,14 +2,14 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultShell = cva({
-	base: 'flex h-full min-h-0 w-full flex-col rounded-[inherit] bg-background !bg-[var(--page-shell-surface,var(--color-background))] text-foreground'
+	base: 'flex min-h-full w-full flex-col rounded-[inherit] bg-background !bg-[var(--page-shell-surface,var(--color-background))] text-foreground'
 });
 
 const defaultHeader = cva({
-	base: 'border-background-muted sticky top-0 z-10 shrink-0 rounded-t-[inherit] border-b bg-background !bg-[var(--page-shell-chrome,var(--color-background))] backdrop-blur transition-shadow',
+	base: "sticky top-[var(--page-shell-edge-inset,0px)] z-20 shrink-0 rounded-t-[inherit] bg-transparent backdrop-blur before:pointer-events-none before:absolute before:inset-y-0 before:inset-x-0 before:-z-10 before:rounded-t-[inherit] before:border-b before:border-background-muted before:bg-[var(--page-shell-chrome,var(--color-background))] before:shadow-[var(--page-shell-edge-shadow,none)] before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-[calc(-1*var(--page-shell-edge-inset,0px))] after:bottom-0 after:-z-20 after:bg-[var(--page-shell-underlay,var(--page-shell-chrome,var(--color-background)))] after:shadow-[var(--page-shell-gap-shadow,none)] after:content-['']",
 	variants: {
 		scrolled: {
-			true: 'shadow-sm',
+			true: '',
 			false: ''
 		}
 	},
@@ -55,7 +55,7 @@ const defaultActions = cva({
 });
 
 const defaultContent = cva({
-	base: 'min-h-0 flex-1 overflow-auto'
+	base: 'flex-1 shadow-[var(--page-shell-edge-shadow,none)]'
 });
 
 const defaultContentInner = cva({
@@ -82,10 +82,10 @@ const defaultContentInner = cva({
 });
 
 const defaultFooter = cva({
-	base: 'border-background-muted sticky bottom-0 z-10 shrink-0 rounded-b-[inherit] border-t bg-background !bg-[var(--page-shell-chrome,var(--color-background))] backdrop-blur transition-shadow',
+	base: "sticky bottom-[var(--page-shell-edge-inset,0px)] z-20 shrink-0 rounded-b-[inherit] bg-transparent backdrop-blur before:pointer-events-none before:absolute before:inset-y-0 before:inset-x-0 before:-z-10 before:rounded-b-[inherit] before:border-t before:border-background-muted before:bg-[var(--page-shell-chrome,var(--color-background))] before:shadow-[var(--page-shell-edge-shadow,none)] before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:bottom-[calc(-1*var(--page-shell-edge-inset,0px))] after:-z-20 after:bg-[var(--page-shell-underlay,var(--page-shell-chrome,var(--color-background)))] after:shadow-[var(--page-shell-gap-shadow,none)] after:content-['']",
 	variants: {
 		scrolled: {
-			true: 'shadow-[0_-1px_4px_rgba(0,0,0,0.04)]',
+			true: '',
 			false: ''
 		}
 	},

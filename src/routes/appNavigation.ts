@@ -24,6 +24,28 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		]
 	},
 	{
+		label: 'AI',
+		links: [
+			{ href: '/components/ai-elements', text: 'AI elements' },
+			{ href: '/components/ai-conversation', text: 'Conversation' },
+			{ href: '/components/ai-ask-user-question', text: 'Ask user question' },
+			{ href: '/components/ai-chat', text: 'Chat' },
+			{ href: '/components/ai-context', text: 'Context' },
+			{ href: '/components/ai-thread', text: 'Thread' },
+			{ href: '/components/ai-thread-toc', text: 'Thread TOC' },
+			{ href: '/components/ai-message', text: 'Message' },
+			{ href: '/components/ai-message-actions', text: 'Message actions' },
+			{ href: '/components/ai-marker', text: 'Marker' },
+			{ href: '/components/ai-model-selector', text: 'Model selector' },
+			{ href: '/components/ai-composer', text: 'Composer' },
+			{ href: '/components/ai-reasoning', text: 'Reasoning' },
+			{ href: '/components/ai-shimmer', text: 'Shimmer' },
+			{ href: '/components/ai-suggestion', text: 'Suggestion' },
+			{ href: '/components/ai-tool', text: 'Tool' },
+			{ href: '/components/ai-mcp-app', text: 'MCP App' }
+		]
+	},
+	{
 		label: 'Layout',
 		links: [
 			{ href: '/components/aspect-ratio', text: 'Aspect ratio' },

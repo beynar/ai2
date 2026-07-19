@@ -51,7 +51,7 @@ export type PageShellConfig = {
 };
 
 export type PageShellApi = Readonly<PageShellConfig> & {
-	/** Whether the scrollable content region has moved past the top. */
+	/** Whether the page's nearest scroll container has moved past the top. */
 	readonly isContentScrolled: boolean;
 	/** Whether the resolved shell has header content. */
 	readonly hasHeader: boolean;
@@ -73,9 +73,9 @@ export type PageShellApi = Readonly<PageShellConfig> & {
 	setHeader: (header?: PageShellRegion) => PageShellRegistrationCleanup;
 	/** Push scoped default-header actions. */
 	setHeaderActions: (headerActions?: PageShellActions) => PageShellRegistrationCleanup;
-	/** Push scoped sticky footer content. */
+	/** Push scoped page footer content. */
 	setFooter: (footer?: PageShellRegion) => PageShellRegistrationCleanup;
-	/** Push scoped sticky footer actions. */
+	/** Push scoped page footer actions. */
 	setFooterActions: (footerActions?: PageShellActions) => PageShellRegistrationCleanup;
 	/** Remove all scoped overrides. */
 	reset: () => void;

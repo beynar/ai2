@@ -1,0 +1,36 @@
+export { default as AIComposer } from './AIComposer.svelte';
+export type {
+	AIComposerAttachment,
+	AIComposerAttachmentStatus,
+	AIComposerCommand,
+	AIComposerCommandSearch,
+	AIComposerDropzoneState,
+	AIComposerHandle,
+	AIComposerMentionItem,
+	AIComposerMentionSearch,
+	AIComposerMentionSearchType,
+	AIComposerMentionType,
+	AIComposerProps,
+	AIComposerQueuedMessage,
+	AIComposerSearchResult,
+	AIComposerSkillItem,
+	AIComposerSkillSearch,
+	AIComposerSubmitDetail,
+	AIComposerSubmitEvent,
+	AIComposerSubmitMeta,
+	AIComposerSubmitShortcut,
+	AIComposerSubmitState,
+	AIComposerSubmitToken,
+	AIComposerSuggestionKind,
+	AIComposerSuggestionLifecycleCallback,
+	AIComposerSuggestionLifecycleState,
+	AIComposerSuggestionTrigger,
+	AIComposerTriggerSource
+} from './aiComposer.props.js';
+export {
+	aiComposerTheme,
+	setAIComposerTheme,
+	useAIComposerTheme,
+	type AIComposerTheme,
+	type AIComposerThemeProps
+} from './aiComposer.theme.js';

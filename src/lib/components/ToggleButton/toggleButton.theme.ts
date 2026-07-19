@@ -24,9 +24,8 @@ const defaultButton = cva({
 		},
 		variant: {
 			outline:
-				'border-color/35 bg-transparent text-color-readable hover:border-color/50 hover:bg-color/8 active:bg-color/12',
-			ghost:
-				'border-transparent bg-transparent text-color-readable hover:bg-color/8 active:bg-color/12'
+				'state-layer border-color/35 bg-transparent text-color-readable hover:border-color/50',
+			ghost: 'state-layer border-transparent bg-transparent text-color-readable'
 		},
 		squared: {
 			true: 'aspect-square !px-0',
@@ -45,12 +44,12 @@ const defaultButton = cva({
 		{
 			variant: 'ghost',
 			checked: true,
-			class: 'bg-color/20 hover:bg-color/25 active:bg-color/30'
+			class: 'bg-color/20'
 		},
 		{
 			variant: 'outline',
 			checked: true,
-			class: 'bg-color/20 hover:bg-color/25 active:bg-color/30'
+			class: 'bg-color/20'
 		},
 		{
 			variant: 'outline',
@@ -60,24 +59,22 @@ const defaultButton = cva({
 		{
 			color: 'background',
 			checked: false,
-			class:
-				'!bg-transparent text-foreground hover:!bg-background-light/70 active:!bg-background-lighter'
+			class: '!bg-transparent text-foreground'
 		},
 		{
 			color: 'background',
 			checked: true,
-			class:
-				'!bg-background-lighter/70 text-foreground hover:!bg-background-muted/60 active:!bg-background-muted/80'
+			class: '!bg-background-lighter/70 text-foreground'
 		},
 		{
 			color: 'foreground',
 			checked: false,
-			class: '!bg-transparent text-foreground hover:!bg-foreground/5 active:!bg-foreground/8'
+			class: '!bg-transparent text-foreground'
 		},
 		{
 			color: 'foreground',
 			checked: true,
-			class: '!bg-foreground/16 text-foreground hover:!bg-foreground/20 active:!bg-foreground/24'
+			class: '!bg-foreground/16 text-foreground'
 		},
 		{
 			variant: 'outline',

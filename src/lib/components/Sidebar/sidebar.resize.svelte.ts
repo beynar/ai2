@@ -26,6 +26,7 @@ type SidebarResizeStateOptions = {
 };
 
 const DEFAULT_KEYBOARD_STEP = 16;
+const DEFAULT_COLLAPSE_DRAG_RATIO = 0.75;
 
 export interface SidebarResizeState extends SidebarResizeStateOptions {}
 
@@ -35,6 +36,7 @@ export class SidebarResizeState {
 	isKeyboardResizing = $state(false);
 	isStateTransitioning = $state(false);
 	isWidthInitializing = $state(false);
+	isEdgeRevealSuppressed = $state(false);
 	private startWidth = 0;
 	private startX = 0;
 	private didDrag = false;
@@ -236,6 +238,10 @@ export class SidebarResizeState {
 		return shouldHandleClick;
 	}
 
+	releaseEdgeRevealSuppression() {
+		this.isEdgeRevealSuppressed = false;
+	}
+
 	private setWidthPixels(width: number, commit: boolean) {
 		const bounds = this.getBounds();
 		const nextWidth = clamp(width, bounds.min, bounds.max);
@@ -258,8 +264,12 @@ export class SidebarResizeState {
 		}
 
 		if (this.displayState === 'expanded' && this.shouldCollapse(requestedWidth)) {
+			const collapsedState = this.collapsedState;
+			if (this.isDragging && collapsedState === 'hidden') {
+				this.isEdgeRevealSuppressed = true;
+			}
 			this.startStateTransition();
-			this.setDisplayState(this.collapsedState);
+			this.setDisplayState(collapsedState);
 			this.commitWidth(true);
 			return;
 		}
@@ -338,15 +348,14 @@ export class SidebarResizeState {
 	}
 
 	private get collapseThreshold() {
-		return Math.round(
-			resolveLengthToPixels(
-				this.resizeOptions?.collapseThreshold ??
-					this.resizeOptions?.minWidth ??
-					SIDEBAR_DEFAULT_MIN_WIDTH,
-				this.panelNode,
-				'collapseThreshold'
-			)
-		);
+		const configuredThreshold = this.resizeOptions?.collapseThreshold;
+		if (configuredThreshold !== undefined) {
+			return Math.round(
+				resolveLengthToPixels(configuredThreshold, this.panelNode, 'collapseThreshold')
+			);
+		}
+
+		return Math.max(1, Math.round(this.minWidth * (1 - DEFAULT_COLLAPSE_DRAG_RATIO)));
 	}
 
 	private get resizeOptions(): SidebarResizableOptions | undefined {

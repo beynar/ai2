@@ -61,6 +61,7 @@ function transformers(lineNumbers: boolean, wrap: boolean): ShikiTransformer[] {
 				? {
 						code(node) {
 							node.properties['data-line-numbers'] = '';
+							if (wrap) node.properties['data-wrap'] = '';
 							// Shiki separates line <span>s with literal "\n" text nodes. Once the
 							// gutter makes each line `display: block`, those preserved newlines
 							// would double the line spacing — drop them; the block breaks suffice.

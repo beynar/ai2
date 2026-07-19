@@ -118,7 +118,7 @@ const defaultAlertPrefix = cva({
 // Inline close button (top-right, aligned with the title). Subtle by default,
 // tinting on hover — mirrors the toast's close affordance.
 const defaultAlertClose = cva({
-	base: 'shrink-0 -mr-1 flex items-center justify-center rounded-md leading-none transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/40',
+	base: 'state-layer shrink-0 -mr-1 flex items-center justify-center rounded-md leading-none transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/40',
 	variants: {
 		size: {
 			small: 'size-5 [&>svg]:size-3.5',
@@ -126,9 +126,9 @@ const defaultAlertClose = cva({
 			large: 'size-7 [&>svg]:size-5'
 		},
 		variant: {
-			solid: 'text-current/60 hover:bg-color/10 hover:text-current',
-			outline: 'text-current/60 hover:bg-color/10 hover:text-current',
-			soft: 'text-color-muted-readable/70 hover:bg-color/15 hover:text-color-muted-readable'
+			solid: 'text-current/60 hover:text-current',
+			outline: 'text-current/60 hover:text-current',
+			soft: 'text-color-muted-readable/70 hover:text-color-muted-readable'
 		}
 	},
 	defaultVariants: {

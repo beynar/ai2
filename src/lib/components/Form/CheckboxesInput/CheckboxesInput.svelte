@@ -106,10 +106,13 @@
 	{#each items as option (option.value)}
 		{@const checked = field.value?.includes(option.value)}
 		{@const optionId = `${field.name}-${option.value}`}
+		{@const optionDisabled = Boolean(field.disabled || option.disabled)}
 		<button
+			type="button"
+			disabled={optionDisabled}
 			aria-controls={optionId}
 			onclick={() => {
-				if (field.disabled) return;
+				if (optionDisabled) return;
 				if (checked) {
 					field.value = field.value?.filter((v) => v !== option.value);
 				} else {
@@ -117,12 +120,12 @@
 				}
 				onClick?.(option.value);
 			}}
-			class={componentTheme.checkboxesInputItem({ mode, checked, disabled: field.disabled })}
+			class={componentTheme.checkboxesInputItem({ mode, checked, disabled: optionDisabled })}
 		>
 			<input
 				hidden
 				onchange={() => {
-					if (field.disabled) return;
+					if (optionDisabled) return;
 					if (checked) {
 						field.value = field.value?.filter((v) => v !== option.value);
 					} else {
@@ -135,17 +138,17 @@
 				name={field.name}
 				id={optionId}
 				value={option.value}
-				disabled={field.disabled}
+				disabled={optionDisabled}
 			/>
 
 			<!-- Checkbox Button Track -->
 			<div
-				class={componentTheme.checkboxesInputItemTrack({ mode, checked, disabled: field.disabled })}
+				class={componentTheme.checkboxesInputItemTrack({ mode, checked, disabled: optionDisabled })}
 			></div>
 
 			<!-- Checkbox Button Thumb -->
 			<div
-				class={componentTheme.checkboxesInputItemThumb({ checked, mode, disabled: field.disabled })}
+				class={componentTheme.checkboxesInputItemThumb({ checked, mode, disabled: optionDisabled })}
 			>
 				{@render checkIcon({ size: 40 })}
 			</div>

@@ -2,6 +2,7 @@
 	import Avatar from '$lib/components/Avatar/Avatar.svelte';
 	import AvatarGroup from '$lib/components/Avatar/AvatarGroup.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 
 	const people = [
@@ -26,6 +27,25 @@
 	];
 
 	const sizes = ['small', 'normal', 'large'] as const;
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: sizes
+		},
+		{
+			name: 'max',
+			type: 'slider',
+			label: 'Visible',
+			value: 4,
+			min: 2,
+			max: people.length,
+			step: 1,
+			showValue: true
+		}
+	]);
 	const statusColors: Record<string, string> = {
 		online: 'bg-success',
 		away: 'bg-warning',
@@ -46,17 +66,11 @@
 	]}
 >
 	<ComponentCard
-		description="Pass an array of people to render the complete group."
-		code={`<AvatarGroup
-	items={[
-		{ name: 'Guillermo Rauch', avatar: '/guillermo.jpg' },
-		{ name: 'Sarah Drasner', avatar: '/sarah.jpg' },
-		{ name: 'Rich Harris', avatar: '/rich.jpg' },
-		{ name: 'Maya Chen' }
-	]}
-/>`}
+		{controls}
+		description="Adjust the avatar scale and how many people remain visible before overflow."
+		code={`<AvatarGroup items={people} size="${controls.value.size}" max={${controls.value.max}} />`}
 	>
-		<AvatarGroup items={people.slice(0, 4)} />
+		<AvatarGroup items={people} size={controls.value.size} max={controls.value.max} />
 	</ComponentCard>
 
 	{#snippet examples()}

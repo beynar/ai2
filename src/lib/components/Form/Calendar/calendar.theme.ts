@@ -68,10 +68,10 @@ const defaultPickerOptions = cva({
 });
 
 const defaultPickerOption = cva({
-	base: 'w-full cursor-pointer rounded-md px-2 py-1.5 text-center text-sm text-foreground outline-none transition-colors hover:bg-background-muted focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-40',
+	base: 'state-layer w-full cursor-pointer rounded-md px-2 py-1.5 text-center text-sm text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-40',
 	variants: {
 		selected: {
-			true: 'bg-primary-lighter font-semibold text-primary-dark hover:bg-primary-lighter',
+			true: 'bg-primary-lighter font-semibold text-primary-dark',
 			false: null
 		},
 		disabled: {
@@ -86,10 +86,10 @@ const defaultWeekday = cva({
 });
 
 const defaultDay = cva({
-	base: 'relative flex aspect-square max-h-10 w-full cursor-pointer items-center justify-center rounded-md text-sm ring-inset outline-none transition-colors hover:z-[1] hover:ring-2 hover:ring-primary focus-visible:z-[2] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50',
+	base: 'state-layer relative flex aspect-square max-h-10 w-full cursor-pointer items-center justify-center rounded-md text-sm ring-inset outline-none transition-colors hover:z-[1] hover:ring-2 hover:ring-primary focus-visible:z-[2] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50',
 	variants: {
 		selected: {
-			true: 'bg-primary-lighter !text-primary-dark font-semibold hover:bg-primary-lighter'
+			true: 'bg-primary-lighter !text-primary-dark font-semibold'
 		},
 		inMonth: {
 			true: 'text-foreground',
@@ -102,7 +102,7 @@ const defaultDay = cva({
 			true: ''
 		},
 		disabled: {
-			true: 'opacity-30 cursor-not-allowed hover:bg-transparent'
+			true: 'opacity-30 cursor-not-allowed'
 		},
 		startOfRange: {
 			true: `relative rounded-r-none before:content-["|"] before:text-primary-dark before:text-sm before:font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2`

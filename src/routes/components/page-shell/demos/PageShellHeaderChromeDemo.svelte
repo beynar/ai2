@@ -16,7 +16,7 @@
 	] satisfies PageShellAction[];
 </script>
 
-<div class="h-[420px] w-full overflow-hidden rounded-lg border border-background-muted">
+<div class="h-[420px] w-full overflow-auto rounded-lg border border-background-muted">
 	<PageShell
 		title="Acme Group"
 		subtitle="Enterprise account"

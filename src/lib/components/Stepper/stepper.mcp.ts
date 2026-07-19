@@ -49,11 +49,12 @@ Use items for the collection and a single children snippet for the repeated pane
 - children: repeated snippet called for each panel with { stepper, item, index }.
 - activeStep: bindable zero-based active index. Use this as the public source of truth when syncing steppers.
 - stepper: bindable StepperState reference for next(), previous(), and goTo(index).
-- onChange: called with the newly active item when the active step changes.
+- onChange: called with the newly active item and zero-based index when the active step changes.
 - keyFramesOptions: Web Animations options used for the slide transition and timing. Default duration is 300ms.
 - mode: classic or vertical.
-- panelRole: role applied to each panel. Defaults to "tabpanel"; pass null when Stepper is only animating neutral containers.
+- panelRole: "tabpanel", "group", or null. Defaults to "tabpanel"; use "group" for labelled question flows.
 - panelAriaLabelledby: aria-labelledby value, callback, or false. Defaults to stepper-{index} when panelRole is "tabpanel".
+- panelAriaLabel: aria-label value or callback for each panel.
 - class: extra classes applied to the root container.
 
 ## StepperState

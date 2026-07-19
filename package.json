@@ -58,8 +58,7 @@
 		"typescript-eslint": "^8.62.1",
 		"vite": "^8.1.3",
 		"vitest": "^4.1.9",
-		"wrangler": "^4.106.0",
-		"zod": "^4.4.3"
+		"wrangler": "^4.106.0"
 	},
 	"keywords": [
 		"svelte"
@@ -83,11 +82,14 @@
 		"@lexical/utils": "^0.45.0",
 		"@maskito/core": "^5.3.1",
 		"@maskito/kit": "^5.3.1",
+		"@modelcontextprotocol/ext-apps": "^1.7.4",
+		"@modelcontextprotocol/sdk": "^1.29.0",
 		"@pierre/diffs": "^1.2.12",
 		"@pierre/trees": "1.0.0-beta.4",
 		"@sveltejs/kit": "^2.69.0",
 		"@tanstack/svelte-virtual": "3.13.32",
 		"@tanstack/table-core": "8.21.3",
+		"zod": "^4.4.3",
 		"add": "^2.0.6",
 		"bits-ui": "^2.18.1",
 		"cnfast": "^0.0.8",
@@ -618,6 +620,90 @@
 			"svelte": "./dist/components/Skeleton/index.js",
 			"default": "./dist/components/Skeleton/index.js"
 		},
+		"./ai-conversation": {
+			"types": "./dist/components/AIConversation/index.d.ts",
+			"svelte": "./dist/components/AIConversation/index.js",
+			"default": "./dist/components/AIConversation/index.js"
+		},
+		"./ai-ask-user-question": {
+			"types": "./dist/components/AIAskUserQuestion/index.d.ts",
+			"svelte": "./dist/components/AIAskUserQuestion/index.js",
+			"default": "./dist/components/AIAskUserQuestion/index.js"
+		},
+		"./ai-chat": {
+			"types": "./dist/components/AIChat/index.d.ts",
+			"svelte": "./dist/components/AIChat/index.js",
+			"default": "./dist/components/AIChat/index.js"
+		},
+		"./ai-context": {
+			"types": "./dist/components/AIContext/index.d.ts",
+			"svelte": "./dist/components/AIContext/index.js",
+			"default": "./dist/components/AIContext/index.js"
+		},
+		"./ai-thread": {
+			"types": "./dist/components/AIThread/index.d.ts",
+			"svelte": "./dist/components/AIThread/index.js",
+			"default": "./dist/components/AIThread/index.js"
+		},
+		"./ai-thread-toc": {
+			"types": "./dist/components/AIThreadToc/index.d.ts",
+			"svelte": "./dist/components/AIThreadToc/index.js",
+			"default": "./dist/components/AIThreadToc/index.js"
+		},
+		"./ai-message": {
+			"types": "./dist/components/AIMessage/index.d.ts",
+			"svelte": "./dist/components/AIMessage/index.js",
+			"default": "./dist/components/AIMessage/index.js"
+		},
+		"./ai-message-actions": {
+			"types": "./dist/components/AIMessageActions/index.d.ts",
+			"svelte": "./dist/components/AIMessageActions/index.js",
+			"default": "./dist/components/AIMessageActions/index.js"
+		},
+		"./ai-marker": {
+			"types": "./dist/components/AIMarker/index.d.ts",
+			"svelte": "./dist/components/AIMarker/index.js",
+			"default": "./dist/components/AIMarker/index.js"
+		},
+		"./ai-model-selector": {
+			"types": "./dist/components/AIModelSelector/index.d.ts",
+			"svelte": "./dist/components/AIModelSelector/index.js",
+			"default": "./dist/components/AIModelSelector/index.js"
+		},
+		"./ai-composer": {
+			"types": "./dist/components/AIComposer/index.d.ts",
+			"svelte": "./dist/components/AIComposer/index.js",
+			"default": "./dist/components/AIComposer/index.js"
+		},
+		"./ai-reasoning": {
+			"types": "./dist/components/AIReasoning/index.d.ts",
+			"svelte": "./dist/components/AIReasoning/index.js",
+			"default": "./dist/components/AIReasoning/index.js"
+		},
+		"./ai-shimmer": {
+			"types": "./dist/components/AIShimmer/index.d.ts",
+			"svelte": "./dist/components/AIShimmer/index.js",
+			"default": "./dist/components/AIShimmer/index.js"
+		},
+		"./ai-suggestion": {
+			"types": "./dist/components/AISuggestion/index.d.ts",
+			"svelte": "./dist/components/AISuggestion/index.js",
+			"default": "./dist/components/AISuggestion/index.js"
+		},
+		"./ai-tool": {
+			"types": "./dist/components/AITool/index.d.ts",
+			"svelte": "./dist/components/AITool/index.js",
+			"default": "./dist/components/AITool/index.js"
+		},
+		"./ai-mcp-app": {
+			"types": "./dist/components/AIMcpApp/index.d.ts",
+			"svelte": "./dist/components/AIMcpApp/index.js",
+			"default": "./dist/components/AIMcpApp/index.js"
+		},
+		"./ai-mcp-app/sandbox": {
+			"types": "./dist/components/AIMcpApp/sandbox/index.d.ts",
+			"default": "./dist/components/AIMcpApp/sandbox/index.js"
+		},
 		"./collapsible": {
 			"types": "./dist/components/Collapsible/index.d.ts",
 			"svelte": "./dist/components/Collapsible/index.js",
@@ -778,6 +864,57 @@
 			],
 			"./date-selector": [
 				"./dist/components/Form/DateSelector/index.d.ts"
+			],
+			"./ai-conversation": [
+				"./dist/components/AIConversation/index.d.ts"
+			],
+			"./ai-ask-user-question": [
+				"./dist/components/AIAskUserQuestion/index.d.ts"
+			],
+			"./ai-chat": [
+				"./dist/components/AIChat/index.d.ts"
+			],
+			"./ai-context": [
+				"./dist/components/AIContext/index.d.ts"
+			],
+			"./ai-thread": [
+				"./dist/components/AIThread/index.d.ts"
+			],
+			"./ai-thread-toc": [
+				"./dist/components/AIThreadToc/index.d.ts"
+			],
+			"./ai-message": [
+				"./dist/components/AIMessage/index.d.ts"
+			],
+			"./ai-message-actions": [
+				"./dist/components/AIMessageActions/index.d.ts"
+			],
+			"./ai-marker": [
+				"./dist/components/AIMarker/index.d.ts"
+			],
+			"./ai-model-selector": [
+				"./dist/components/AIModelSelector/index.d.ts"
+			],
+			"./ai-composer": [
+				"./dist/components/AIComposer/index.d.ts"
+			],
+			"./ai-reasoning": [
+				"./dist/components/AIReasoning/index.d.ts"
+			],
+			"./ai-shimmer": [
+				"./dist/components/AIShimmer/index.d.ts"
+			],
+			"./ai-suggestion": [
+				"./dist/components/AISuggestion/index.d.ts"
+			],
+			"./ai-tool": [
+				"./dist/components/AITool/index.d.ts"
+			],
+			"./ai-mcp-app": [
+				"./dist/components/AIMcpApp/index.d.ts"
+			],
+			"./ai-mcp-app/sandbox": [
+				"./dist/components/AIMcpApp/sandbox/index.d.ts"
 			]
 		}
 	}

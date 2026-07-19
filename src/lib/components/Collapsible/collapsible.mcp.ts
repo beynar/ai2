@@ -234,7 +234,7 @@ The theme object contains the following parts:
 <Collapsible 
   theme={{
     trigger: {
-      base: 'hover:bg-gray-100 rounded-lg transition-colors',
+      base: 'state-layer rounded-lg transition-colors',
       size: {
         large: 'px-6 py-4 text-lg'
       },

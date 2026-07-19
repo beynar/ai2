@@ -1,14 +1,18 @@
+<script lang="ts" module>
+	export type { StepperState } from './stepper.state.svelte.js';
+</script>
+
 <script lang="ts" generics="Item">
-	import { untrack } from 'svelte';
+	/* eslint-disable no-useless-assignment -- bindableStepper is an output binding. */
+	import { onMount, tick, untrack } from 'svelte';
 	import BeforeHydratation from '../Utils/BeforeHydratation.svelte';
 	import { type StepperProps } from './stepper.props.js';
 	import { useStepperTheme } from './stepper.theme.js';
-	import { StepperState } from './stepper.state.svelte.js';
-	export type { StepperState };
+	import { StepperState as StepperStateClass } from './stepper.state.svelte.js';
 	let {
 		items = [],
 		activeStep = $bindable(0),
-		stepper: bindableStepper = $bindable<StepperState<Item>>(),
+		stepper: bindableStepper = $bindable<StepperStateClass<Item>>(),
 		class: className,
 		children,
 		onChange,
@@ -19,12 +23,13 @@
 		},
 		mode = 'classic',
 		panelRole = 'tabpanel',
-		panelAriaLabelledby
+		panelAriaLabelledby,
+		panelAriaLabel
 	}: StepperProps<Item> = $props();
 
 	const id = $props.id();
 
-	const stepper = new StepperState({
+	const stepper = new StepperStateClass({
 		get activeStep() {
 			return activeStep;
 		},
@@ -44,7 +49,13 @@
 
 	bindableStepper = stepper;
 	const classes = $derived(useStepperTheme());
-	const activeHeight = $derived(stepper.stepHeights[activeStep]);
+	const stepCount = $derived(Math.max(items.length, 1));
+	const trackWidth = $derived(`${stepCount * 100}%`);
+	const activeHeight = $derived(stepper.activeHeight);
+
+	onMount(() => {
+		void tick().then(() => stepper.measureStepHeights());
+	});
 
 	$effect(() => {
 		const targetStep = activeStep;
@@ -60,6 +71,13 @@
 		if (typeof panelAriaLabelledby === 'string') return panelAriaLabelledby;
 		if (panelRole === 'tabpanel') return `stepper-${index}`;
 		return undefined;
+	};
+
+	const getPanelAriaLabel = (item: Item, index: number) => {
+		if (typeof panelAriaLabel === 'function') {
+			return panelAriaLabel({ stepper, item, index });
+		}
+		return panelAriaLabel;
 	};
 </script>
 
@@ -85,41 +103,40 @@ container.style.height = firstSlide.clientHeight + 'px';
 		className
 	})}
 	id="stepper-{id}"
-	style:overflow={stepper?.isAnimating ? 'hidden' : 'visible'}
 	style:will-change="height"
 	style:height={activeHeight == null ? undefined : `${activeHeight}px`}
 	style:transition-duration={`${keyFramesOptions.duration}ms`}
+	style:transition-timing-function={keyFramesOptions.easing}
 >
 	<div
 		bind:this={stepper.stepContainer}
 		class={classes.container({
 			mode
 		})}
-		style:pointer-events="none"
-		style:grid-template-columns="repeat({items.length}, 100%)"
+		style:width={trackWidth}
+		style:grid-template-columns="repeat({stepCount}, minmax(0, 1fr))"
 	>
-		{#each items as item, index}
+		{#each items as item, index (index)}
 			{@const isActiveStep = stepper.activeStep === index}
 			{@const ariaLabelledby = getPanelAriaLabelledby(item, index)}
+			{@const ariaLabel = getPanelAriaLabel(item, index)}
 			{@const panelTabindex = panelRole === 'tabpanel' ? (isActiveStep ? 0 : -1) : undefined}
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex - focusable tabpanels preserve Stepper's existing keyboard behavior; neutral panels omit tabindex. -->
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<div
 				bind:clientHeight={
 					() => stepper?.stepHeights?.[index] ?? undefined,
 					(value) => {
-						if (!stepper?.stepHeights) return;
-						stepper.stepHeights[index] = value || 0;
+						stepper.setStepHeight(index, value || 0);
 					}
 				}
-				data-step-active={isActiveStep}
+				data-step-active={isActiveStep ? 'true' : undefined}
 				data-step={index}
 				tabindex={panelTabindex}
 				inert={!isActiveStep}
 				role={panelRole ?? undefined}
+				aria-label={ariaLabel}
 				aria-labelledby={ariaLabelledby}
-				style:opacity={isActiveStep ? 1 : 0}
-				style:pointer-events={isActiveStep ? 'auto' : 'none'}
-				style:transition-property="opacity"
+				aria-hidden={!isActiveStep ? 'true' : undefined}
 				style:transition-duration={`${keyFramesOptions.duration}ms`}
 				style:transition-timing-function={keyFramesOptions.easing}
 				class={classes.step({

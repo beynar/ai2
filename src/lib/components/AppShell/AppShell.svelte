@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { PageShell, type PageShellApi } from '$lib/components/PageShell/index.js';
 	import { Sidebar } from '$lib/components/Sidebar/index.js';
+	import { cx } from '$lib/utils/cva/index.js';
 	import type { AppShellProps } from './appShell.props.js';
 	import { useAppShellTheme } from './appShell.theme.js';
 
 	let {
 		ref = $bindable(),
 		sidebar = {},
-		variant = 'sidebar',
+		variant = 'admin',
 		eyebrow,
 		breadcrumbs,
 		breadcrumbsMaxItems,
@@ -40,7 +41,13 @@
 	class={classes.root({ className })}
 	{...attachments}
 >
-	<Sidebar {...sidebar} {variant} frame="contained" mode="layout">
+	<Sidebar
+		{...sidebar}
+		{variant}
+		frame="contained"
+		mode="layout"
+		class={cx('!h-auto min-h-[inherit]', sidebar.class)}
+	>
 		{#snippet children(sidebarApi)}
 			{#snippet appHeader(pageShell: PageShellApi)}
 				{#if header}

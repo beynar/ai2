@@ -99,12 +99,15 @@
 	{#each items as option (option.value)}
 		{@const checked = field.value === option.value}
 		{@const optionId = `${field.name}-${option.value}`}
+		{@const optionDisabled = Boolean(field.disabled || option.disabled)}
 		<button
+			type="button"
+			disabled={optionDisabled}
 			aria-label={option.label}
 			aria-controls={optionId}
-			class={componentTheme.radiosInputItem({ mode, checked, disabled: field.disabled })}
+			class={componentTheme.radiosInputItem({ mode, checked, disabled: optionDisabled })}
 			onclick={() => {
-				if (field.disabled) return;
+				if (optionDisabled) return;
 				if (!field.value || field.value !== option.value) {
 					field.value = option.value;
 				}
@@ -114,7 +117,7 @@
 			<input
 				hidden
 				onchange={() => {
-					if (field.disabled) return;
+					if (optionDisabled) return;
 					field.value = option.value;
 				}}
 				style="transform: scale(0); opacity: 0; pointer-events: none; margin: -1px; position: absolute;"
@@ -123,17 +126,17 @@
 				name={field.name}
 				id={optionId}
 				value={option.value}
-				disabled={field.disabled}
+				disabled={optionDisabled}
 			/>
 
 			<!-- Radio Button Track -->
 			<div
-				class={componentTheme.radiosInputItemTrack({ mode, checked, disabled: field.disabled })}
+				class={componentTheme.radiosInputItemTrack({ mode, checked, disabled: optionDisabled })}
 			></div>
 
 			<!-- Radio Button Thumb -->
 			<div
-				class={componentTheme.radiosInputItemThumb({ checked, mode, disabled: field.disabled })}
+				class={componentTheme.radiosInputItemThumb({ checked, mode, disabled: optionDisabled })}
 			></div>
 
 			<!-- Label Content -->

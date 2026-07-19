@@ -221,7 +221,7 @@
 						onClick={(payload) => {
 							itemOnClick?.(payload);
 							closeSubmenus(index);
-							popover?.toggle();
+							if (openOnClick) popover.open();
 						}}
 						onEnter={(event) => {
 							itemOnEnter?.(event);

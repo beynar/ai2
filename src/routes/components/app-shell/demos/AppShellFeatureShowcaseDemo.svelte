@@ -99,7 +99,9 @@
 		contentWidth="wide"
 		mobileActionCount={1}
 		theme={{
-			root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
+			root: {
+				base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+			}
 		}}
 	>
 		{#snippet footer()}
@@ -121,10 +123,10 @@
 					<div class="inline-flex rounded-md border border-background-muted bg-background p-1">
 						<button
 							type="button"
-							class="rounded px-3 py-1.5 text-sm font-medium transition {contextMode ===
+							class="state-layer rounded px-3 py-1.5 text-sm font-medium transition {contextMode ===
 							'breadcrumbs'
 								? 'bg-primary text-primary-foreground'
-								: 'text-foreground/70 hover:bg-background-light'}"
+								: 'text-foreground/70'}"
 							aria-pressed={contextMode === 'breadcrumbs'}
 							onclick={() => (contextMode = 'breadcrumbs')}
 						>
@@ -132,9 +134,10 @@
 						</button>
 						<button
 							type="button"
-							class="rounded px-3 py-1.5 text-sm font-medium transition {contextMode === 'eyebrow'
+							class="state-layer rounded px-3 py-1.5 text-sm font-medium transition {contextMode ===
+							'eyebrow'
 								? 'bg-primary text-primary-foreground'
-								: 'text-foreground/70 hover:bg-background-light'}"
+								: 'text-foreground/70'}"
 							aria-pressed={contextMode === 'eyebrow'}
 							onclick={() => (contextMode = 'eyebrow')}
 						>

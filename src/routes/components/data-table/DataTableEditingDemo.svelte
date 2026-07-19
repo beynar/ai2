@@ -4,9 +4,11 @@
 		DataTable,
 		type DataTableCellCommit,
 		type DataTableColumn,
+		type DataTableEditorPayload,
 		type DataTableRowPayload,
 		type DataTableToolbarPayload
 	} from '$lib/components/DataTable/index.js';
+	import { Select } from '$lib/components/Form/Select/index.js';
 	import { trashIcon } from '$lib/components/Icons/trash.js';
 	import { createPeople, type Person } from './exampleData.js';
 
@@ -91,6 +93,16 @@
 	>
 {/snippet}
 
+{#snippet roleEditor(payload: DataTableEditorPayload<Person>)}
+	<Select
+		size="normal"
+		items={roleOptions}
+		value={payload.draft == null ? null : String(payload.draft)}
+		disabled={payload.pending}
+		onChange={payload.setDraft}
+	/>
+{/snippet}
+
 {#snippet rowActions(payload: DataTableRowPayload<Person>)}
 	<Button
 		label={`Remove ${payload.row.name}`}
@@ -111,10 +123,15 @@
 
 <DataTable
 	items={people}
-	{columns}
+	columns={columns.map((column) =>
+		column.id === 'role'
+			? { ...column, editor: { type: 'custom', render: roleEditor } as const }
+			: column
+	)}
 	getRowId={(person) => person.id}
 	height={420}
 	density="large"
+	interactionMode="grid"
 	selectionMode="multiple"
 	pagination={{ pageSize: 10, pageSizes: [10, 18] }}
 	{bulkActions}

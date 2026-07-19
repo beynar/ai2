@@ -1,6 +1,20 @@
 <script lang="ts">
 	import { DataTable, type DataTableColumn } from '$lib/components/DataTable/index.js';
+	import type { DataTableSelectionMode } from '$lib/components/DataTable/dataTable.props.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { createPeople, departments, statuses, type Person } from './exampleData.js';
+
+	let {
+		density = 'normal',
+		selectionMode = 'none',
+		search = true,
+		stickyHeader = true
+	}: {
+		density?: Density;
+		selectionMode?: DataTableSelectionMode;
+		search?: boolean;
+		stickyHeader?: boolean;
+	} = $props();
 
 	const people = createPeople(137);
 	const columns: DataTableColumn<Person>[] = [
@@ -60,12 +74,15 @@
 	];
 </script>
 
-<DataTable
-	items={people}
-	{columns}
-	getRowId={(person) => person.id}
-	height={440}
-	search={{ placeholder: 'Search the directory', debounce: 120 }}
-	pagination={{ pageSize: 25, pageSizes: [25, 50, 100] }}
-	caption="People directory"
-/>
+<div class="h-[440px]">
+	<DataTable
+		items={people}
+		{columns}
+		getRowId={(person) => person.id}
+		search={search ? { placeholder: 'Search the directory', debounce: 120 } : false}
+		{density}
+		{selectionMode}
+		{stickyHeader}
+		pagination={{ pageSize: 25, pageSizes: [25, 50, 100] }}
+	/>
+</div>

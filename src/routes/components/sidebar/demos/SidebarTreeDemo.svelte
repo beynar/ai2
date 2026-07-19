@@ -58,7 +58,7 @@
 		{items}
 		collapsible="offcanvas"
 		edgeReveal
-		variant="sidebar"
+		variant="admin"
 		frame="contained"
 		width="18rem"
 		headerButton={{

@@ -23,6 +23,7 @@
 		size = 'normal',
 		class: className,
 		theme,
+		mdxComponents,
 		mdx: customMdx,
 		...rest
 	}: MarkdownProps = $props();
@@ -41,7 +42,7 @@
 		props: Record<string, MdxAttribute>;
 	};
 
-	const mdxComponents = { Card, Grid, GridSpan, HStack, Stat, VStack } as const;
+	const builtInMdxComponents = { Card, Grid, GridSpan, HStack, Stat, VStack } as const;
 	const blockedMdxProps = new Set([
 		'children',
 		'class',
@@ -53,7 +54,8 @@
 		'theme'
 	]);
 
-	const getMdxComponent = (tagName: string) => mdxComponents[tagName as keyof typeof mdxComponents];
+	const getMdxComponent = (tagName: string) =>
+		builtInMdxComponents[tagName as keyof typeof builtInMdxComponents];
 	const getMdxProps = (props: Record<string, MdxAttribute>): Record<string, MdxAttribute> => {
 		const mdxProps: Record<string, MdxAttribute> = {};
 		for (const [name, value] of Object.entries(props)) {
@@ -80,7 +82,7 @@
 {/snippet}
 
 <div class={classes.root({ size, className })}>
-	<Streamdown {content} theme={streamdownTheme} mdx={renderMdx} {...rest}>
+	<Streamdown {content} theme={streamdownTheme} {mdxComponents} mdx={renderMdx} {...rest}>
 		<!-- Streamdown routes ```mermaid fences through the `code` snippet too (its
 		     mermaid branch consults snippets.code), so the mermaid case must be
 		     handled here rather than relying solely on a `mermaid` snippet. -->

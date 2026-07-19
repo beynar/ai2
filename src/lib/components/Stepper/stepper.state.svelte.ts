@@ -6,14 +6,14 @@ type StepperKeyFramesOptions = NonNullable<StepperProps<unknown>['keyFramesOptio
 type StepperStateBindableProps = {
 	activeStep: number;
 	items: unknown[];
-	onChange?: (item: unknown) => void;
+	onChange?: (item: unknown, index: number) => void;
 	keyFramesOptions: StepperKeyFramesOptions;
 };
 
 type StepperStateProps<Item> = {
 	activeStep: number;
 	items: Item[];
-	onChange?: (item: Item) => void;
+	onChange?: (item: Item, index: number) => void;
 	keyFramesOptions: StepperKeyFramesOptions;
 };
 
@@ -27,141 +27,56 @@ export class StepperState<Item> extends createBindableStateClass<StepperStateBin
 	declare keyFramesOptions: StepperKeyFramesOptions;
 	visualStep = $state(0);
 	isAnimating = $state(false);
-	private animations: Animation[] = [];
+	private targetStep: number | undefined;
+	private animationRunId = 0;
 	private rafId: number | null = null;
-	private navigationId = 0;
 
 	constructor(props: StepperStateProps<Item>) {
 		super(props as unknown as StepperStateBindableProps);
 		this.visualStep = props.activeStep;
 	}
 
-	private updateOffsets() {
-		if (!this.stepContainer) return;
-		const offsets = Array.from(this.stepContainer.children).map(
-			(step) => (step as HTMLElement).offsetLeft
-		);
-		if (
-			offsets.length === this.offsets.length &&
-			offsets.every((offset, index) => offset === this.offsets[index])
-		) {
-			return;
-		}
-		this.offsets = offsets;
+	get activeHeight() {
+		return this.stepHeights[this.activeStep];
 	}
 
-	private getStepOffset(step: number) {
-		this.updateOffsets();
-		const offset = this.offsets[step];
-		if (offset == null || Number.isNaN(offset)) return null;
-		return offset;
+	measureStepHeights() {
+		const steps = this.getSteps();
+		if (steps.length === 0) return;
+		this.stepHeights = steps.map((step) => step.clientHeight || 0);
 	}
 
-	private setContainerTransform(offset: number) {
-		if (!this.stepContainer) return;
-		this.destinationOffset = offset;
-		this.stepContainer.style.transform = `translateX(-${offset}px)`;
+	setStepHeight(index: number, height: number) {
+		if (this.stepHeights[index] === height) return;
+		this.stepHeights[index] = height;
 	}
 
-	private freezeCurrentTransform() {
-		if (!this.stepContainer) return;
-		const currentTransform = getComputedStyle(this.stepContainer).transform;
-		if (currentTransform && currentTransform !== 'none') {
-			this.stepContainer.style.transform = currentTransform;
-		}
-	}
+	next = () => {
+		this.goTo(this.activeStep + 1);
+	};
 
-	private cancelStepAnimation() {
-		this.freezeCurrentTransform();
-		this.stepAnimation?.cancel();
-		this.stepAnimation = undefined;
-	}
+	previous = () => {
+		this.goTo(this.activeStep - 1);
+	};
 
-	private cancelAnimations() {
-		this.animations.forEach((animation) => animation.cancel());
-		this.animations = [];
-		this.cancelStepAnimation();
-	}
-
-	private settleStep(step: number) {
-		const offset = this.getStepOffset(step);
-		if (offset == null) return;
-		this.cancelStepAnimation();
-		this.setContainerTransform(offset);
-		this.visualStep = step;
-	}
-
-	private getStepItem(step: number) {
-		const item = (this.items as Item[])[step];
-		if (item === undefined) {
-			throw new Error(`Stepper item not found at index ${step}.`);
-		}
-		return item;
-	}
-
-	private notifyChange(step: number) {
-		const onChange = this.onChange as ((item: Item) => void) | undefined;
-		onChange?.(this.getStepItem(step));
-	}
-
-	private animateToStep(step: number) {
+	goTo = (step: number) => {
 		if (!this.canGoToStep(step)) return;
-
-		const navigationId = ++this.navigationId;
-		const offset = this.getStepOffset(step);
-		if (!this.stepContainer || offset == null) {
-			this.visualStep = step;
+		if (step === this.activeStep) {
+			this.syncActiveStep(step);
 			return;
 		}
-
-		this.isAnimating = true;
-		this.cancelAnimations();
-		const fromTransform = this.stepContainer.style.transform || 'translateX(0px)';
-		const toTransform = `translateX(-${offset}px)`;
-		this.destinationOffset = offset;
-		this.stepAnimation = this.stepContainer.animate(
-			[{ transform: fromTransform }, { transform: toTransform }],
-			this.keyFramesOptions
-		);
-		this.animations = [this.stepAnimation];
-
-		this.stepAnimation.finished
-			.catch((error: unknown) => {
-				if (error instanceof DOMException && error.name === 'AbortError') return;
-				throw error;
-			})
-			.finally(() => {
-				if (navigationId !== this.navigationId) return;
-				const latestOffset = this.getStepOffset(this.activeStep) ?? offset;
-				this.setContainerTransform(latestOffset);
-				this.visualStep = this.activeStep;
-				this.cancelStepAnimation();
-				this.isAnimating = false;
-			});
-	}
+		this.activeStep = step;
+		this.translateToStep(step);
+		this.notifyChange(step);
+	};
 
 	syncActiveStep(step: number) {
-		if (!this.canGoToStep(step)) return;
-		if (!this.stepContainer) {
-			this.visualStep = step;
-			return;
-		}
-		if (this.visualStep !== step) {
-			this.animateToStep(step);
-			return;
-		}
-		if (!this.isAnimating) this.settleStep(step);
-	}
-
-	private requestStep(step: number, shouldNotify: boolean) {
-		if (!this.canGoToStep(step)) return;
-		if (this.activeStep === step) return;
-		this.activeStep = step;
-		if (shouldNotify) this.notifyChange(step);
+		if (!this.canGoToStep(step) || this.targetStep === step) return;
+		this.translateToStep(step);
 	}
 
 	setActiveStep = (step: number) => () => {
-		this.requestStep(step, true);
+		this.goTo(step);
 	};
 
 	translate = () => {
@@ -177,8 +92,10 @@ export class StepperState<Item> extends createBindableStateClass<StepperStateBin
 		const setOffsets = () => {
 			if (this.rafId) cancelAnimationFrame(this.rafId);
 			this.rafId = requestAnimationFrame(() => {
-				this.updateOffsets();
-				if (!this.isAnimating) this.settleStep(this.activeStep);
+				const steps = this.getSteps();
+				this.offsets = steps.map((step) => step.offsetLeft);
+				this.stepHeights = steps.map((step) => step.clientHeight || 0);
+				if (!this.isAnimating) this.lockTransformToStep(this.activeStep);
 				this.rafId = null;
 			});
 		};
@@ -188,12 +105,14 @@ export class StepperState<Item> extends createBindableStateClass<StepperStateBin
 
 		const resizeObserver = new ResizeObserver(setOffsets);
 		resizeObserver.observe(node);
-		if (this.stepContainer) resizeObserver.observe(this.stepContainer);
+		const mutationObserver = new MutationObserver(setOffsets);
+		mutationObserver.observe(node, { childList: true, subtree: true });
 		setOffsets();
 
 		return () => {
 			node.removeEventListener('scroll', preventScroll);
 			resizeObserver.disconnect();
+			mutationObserver.disconnect();
 			if (this.rafId) {
 				cancelAnimationFrame(this.rafId);
 				this.rafId = null;
@@ -202,19 +121,83 @@ export class StepperState<Item> extends createBindableStateClass<StepperStateBin
 		};
 	};
 
-	next = () => {
-		this.goTo(this.activeStep + 1);
-	};
-
-	previous = () => {
-		this.goTo(this.activeStep - 1);
-	};
-
-	goTo = (step: number) => {
-		this.requestStep(step, true);
-	};
-
 	canGoToStep = (targetStep: number): boolean => {
 		return targetStep >= 0 && targetStep < this.items.length;
 	};
+
+	private translateToStep(step: number) {
+		const offset = this.offsets[step];
+		if (!this.stepContainer || offset == null || Number.isNaN(offset)) return;
+
+		this.cancelStepAnimation();
+		this.targetStep = step;
+		if (this.shouldReduceMotion()) {
+			this.lockTransformToStep(step);
+			this.isAnimating = false;
+			return;
+		}
+
+		const fromTransform = this.stepContainer.style.transform || 'translateX(0px)';
+		const toTransform = `translateX(-${offset}px)`;
+		this.destinationOffset = offset;
+		this.stepAnimation = this.stepContainer.animate(
+			[{ transform: fromTransform }, { transform: toTransform }],
+			this.keyFramesOptions
+		);
+		this.isAnimating = true;
+		const animationRunId = ++this.animationRunId;
+		void Promise.allSettled([this.stepAnimation.finished]).then((results) => {
+			if (this.animationRunId !== animationRunId) return;
+			if (results[0]?.status === 'fulfilled') this.lockTransformToStep(step);
+			this.stepAnimation = undefined;
+			this.isAnimating = false;
+		});
+	}
+
+	private lockTransformToStep(step: number) {
+		const offset = this.offsets[step];
+		if (!this.stepContainer || offset == null || Number.isNaN(offset)) return;
+		this.destinationOffset = offset;
+		this.stepContainer.style.transform = `translateX(-${offset}px)`;
+		this.targetStep = step;
+		this.visualStep = step;
+	}
+
+	private cancelAnimations() {
+		this.animationRunId += 1;
+		this.cancelStepAnimation();
+		this.isAnimating = false;
+	}
+
+	private cancelStepAnimation() {
+		this.freezeCurrentTransform();
+		this.stepAnimation?.cancel();
+		this.stepAnimation = undefined;
+	}
+
+	private freezeCurrentTransform() {
+		if (!this.stepContainer) return;
+		const currentTransform = getComputedStyle(this.stepContainer).transform;
+		if (currentTransform && currentTransform !== 'none') {
+			this.stepContainer.style.transform = currentTransform;
+		}
+	}
+
+	private notifyChange(step: number) {
+		if (!(step in this.items)) return;
+		const onChange = this.onChange as ((item: Item, index: number) => void) | undefined;
+		onChange?.((this.items as Item[])[step], step);
+	}
+
+	private getSteps() {
+		return this.stepContainer ? (Array.from(this.stepContainer.children) as HTMLElement[]) : [];
+	}
+
+	private shouldReduceMotion() {
+		return (
+			this.keyFramesOptions.duration <= 0 ||
+			(typeof window !== 'undefined' &&
+				window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+		);
+	}
 }

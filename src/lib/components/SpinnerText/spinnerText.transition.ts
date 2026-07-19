@@ -12,8 +12,10 @@ type TextTransitionParams = {
 export const verticalText = () => {
 	const theme = useTheme();
 
-	return (_node: HTMLElement, { role }: TextTransitionParams): TransitionConfig => ({
-		duration: theme.transition.duration * verticalDurationMultiplier,
+	return (node: HTMLElement, { role }: TextTransitionParams): TransitionConfig => ({
+		duration: node.ownerDocument.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches
+			? 0
+			: theme.transition.duration * verticalDurationMultiplier,
 		easing: easingFunctions[theme.transition.easing],
 		css: (t) => {
 			const offset = (1 - t) * (role === 'in' ? -65 : 65);
@@ -25,8 +27,10 @@ export const verticalText = () => {
 export const revealText = () => {
 	const theme = useTheme();
 
-	return (_node: HTMLElement, { role }: TextTransitionParams): TransitionConfig => ({
-		duration: theme.transition.duration * revealDurationMultiplier,
+	return (node: HTMLElement, { role }: TextTransitionParams): TransitionConfig => ({
+		duration: node.ownerDocument.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches
+			? 0
+			: theme.transition.duration * revealDurationMultiplier,
 		easing: easingFunctions[theme.transition.easing],
 		css: (t) => {
 			const hidden = (1 - t) * 100;

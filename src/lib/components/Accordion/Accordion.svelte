@@ -1,6 +1,7 @@
 <script lang="ts" generics="Item extends Record<string, any>">
 	import { getters } from 'melt';
 	import { Accordion } from 'melt/builders';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { AccordionProps } from './accordion.props.js';
 	import { useAccordionTheme } from './accordion.theme.js';
 	import Slot from '../Slot/Slot.svelte';
@@ -12,11 +13,13 @@
 
 	let {
 		items: itemsWithoutIds = $bindable([]),
+		value = $bindable([]),
 		titleKey,
 		contentKey,
 		descriptionKey,
 		oneAtATime = true,
 		onToggle: ot,
+		onValueChange,
 		icon = 'chevron',
 		variant = 'classic',
 		splitted = false,
@@ -58,25 +61,45 @@
 		}) as (Item & { id: string })[];
 	});
 
-	let prevOpen: string[] = [];
+	let prevOpen: string[] = [...value];
 	const accordion = new Accordion({
 		...getters({
 			get multiple() {
 				return !oneAtATime;
 			}
 		}),
-		onValueChange(value) {
-			const next = value == null ? [] : Array.isArray(value) ? value : [value];
+		onValueChange(nextValue) {
+			const next = normalizeValue(nextValue);
 			const changed = [...next, ...prevOpen].find(
 				(id) => next.includes(id) !== prevOpen.includes(id)
 			);
 			prevOpen = next;
+			value = next;
+			onValueChange?.(next);
 			if (changed === undefined) return;
 			const index = items.findIndex((i) => i.id === changed);
 			if (index === -1) return;
 			ot?.({ item: itemsWithoutIds[index], index, open: next.includes(changed) });
 		}
 	});
+
+	$effect(() => {
+		const requested = oneAtATime ? value.slice(0, 1) : [...value];
+		const current = normalizeValue(accordion.value);
+		if (
+			current.length === requested.length &&
+			current.every((id, index) => id === requested[index])
+		) {
+			return;
+		}
+		prevOpen = requested;
+		accordion.value = oneAtATime ? requested[0] : new SvelteSet(requested);
+	});
+
+	function normalizeValue(current: string | Iterable<string> | null | undefined): string[] {
+		if (current == null) return [];
+		return typeof current === 'string' ? [current] : [...current];
+	}
 </script>
 
 {#snippet renderIcon(isOpen: boolean)}
@@ -99,19 +122,27 @@
 	{...attachments}
 >
 	{#each items as accordionItem}
-		{@const item = accordion.getItem(accordionItem)}
-		<div class={classes.item({ size, density, variant, splitted, expanded: item.isExpanded })}>
-			<button {...item.trigger} class={classes.trigger({ size, density, variant })}>
-				<div {...item.heading} class={classes.header({ size, density })}>
+		{@const accordionControl = accordion.getItem(accordionItem)}
+		<div
+			class={classes.item({
+				size,
+				density,
+				variant,
+				splitted,
+				expanded: accordionControl.isExpanded
+			})}
+		>
+			<button {...accordionControl.trigger} class={classes.trigger({ size, density, variant })}>
+				<div {...accordionControl.heading} class={classes.header({ size, density })}>
 					<Slot
 						render={title || resolve(accordionItem, titleKey || 'title')}
 						class={classes.title({ size })}
-						payload={{ item }}
+						payload={{ item: accordionItem }}
 					/>
 					<Slot
 						render={description || resolve(accordionItem, descriptionKey || 'description')}
 						class={classes.description({ size })}
-						payload={{ item }}
+						payload={{ item: accordionItem }}
 					/>
 				</div>
 				{#if icon}
@@ -121,32 +152,32 @@
 					<span
 						aria-hidden="true"
 						class="shrink-0 translate-y-0.5 transition-transform {icon === 'chevron' &&
-						item.isExpanded
+						accordionControl.isExpanded
 							? 'rotate-180'
 							: ''}"
 					>
-						{@render renderIcon(item.isExpanded)}
+						{@render renderIcon(accordionControl.isExpanded)}
 					</span>
 				{/if}
 			</button>
 
-			{#if item.isExpanded}
+			{#if accordionControl.isExpanded}
 				<div
 					in:slideTransition={split.in}
 					out:slideTransition={split.out}
-					{...item.content}
+					{...accordionControl.content}
 					class={classes.content({ size, density, variant })}
 				>
 					<Slot
 						render={content || resolve(accordionItem, contentKey || 'content')}
-						payload={{ item }}
+						payload={{ item: accordionItem }}
 					/>
 				</div>
 			{:else if accessible}
 				<span class="sr-only">
 					<Slot
 						render={content || resolve(accordionItem, contentKey || 'content')}
-						payload={{ item }}
+						payload={{ item: accordionItem }}
 					/>
 				</span>
 			{/if}

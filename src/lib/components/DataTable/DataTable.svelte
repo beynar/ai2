@@ -10,13 +10,14 @@
 	import ScrollArea from '../ScrollArea/ScrollArea.svelte';
 	import Skeleton from '../Skeleton/Skeleton.svelte';
 	import Slot from '../Slot/Slot.svelte';
-	import Spinner from '../Spinner/Spinner.svelte';
 	import DataTableHeader from './DataTableHeader.svelte';
 	import DataTableRow from './DataTableRow.svelte';
 	import DataTableToolbar from './DataTableToolbar.svelte';
+	import { dataTableGridNavigation } from './dataTableGridNavigation.js';
 	import { createDataTableState, DataTableModel } from './dataTable.model.svelte.js';
 	import { dataTableRowFlip } from './dataTableRowFlip.js';
 	import type {
+		DataTableApi,
 		DataTablePaginationConfig,
 		DataTableProps,
 		DataTableState,
@@ -30,6 +31,7 @@
 		getRowId,
 		height,
 		state: tableState = $bindable(),
+		dataTable = $bindable(),
 		initialState,
 		onStateChange,
 		interactionMode = 'table',
@@ -38,6 +40,7 @@
 		selectionMode = 'none',
 		pagination = {},
 		search = false,
+		showColumnVisibilityControl = false,
 		density = 'normal',
 		stickyHeader = true,
 		overscan = 6,
@@ -52,6 +55,8 @@
 		ref = $bindable(null),
 		theme,
 		caption,
+		cell,
+		header,
 		toolbarPrefix,
 		toolbarSuffix,
 		bulkActions,
@@ -71,7 +76,7 @@
 		tableState = untrack(() => createDataTableState(columns, initialState, pageSize));
 	}
 
-	let viewportRef = $state<HTMLElement | null>(null);
+	let viewportRef = $state<HTMLDivElement | null>(null);
 	let modelRevision = $state(0);
 
 	const model = new DataTableModel<TData>({
@@ -90,6 +95,7 @@
 				selectionMode,
 				pagination,
 				search,
+				showColumnVisibilityControl,
 				density,
 				stickyHeader,
 				overscan,
@@ -104,6 +110,8 @@
 				ref,
 				theme,
 				caption,
+				cell,
+				header,
 				toolbarPrefix,
 				toolbarSuffix,
 				bulkActions,
@@ -124,10 +132,13 @@
 			tableState = value;
 		}
 	});
+	model.reconcileProcessingMode();
 	model.reconcileColumns();
 	model.updateOptions();
+	model.reconcileFocusedCell();
 
 	const classes = $derived(useDataTableTheme(theme));
+	const fillsParent = $derived(height === undefined);
 	const rowHeight = $derived.by(() => {
 		if (estimatedRowHeight !== undefined) return estimatedRowHeight;
 		if (density === 'small') return 32;
@@ -148,8 +159,10 @@
 		selectionMode;
 		pagination;
 		rowActions;
+		model.reconcileProcessingMode();
 		model.reconcileColumns();
 		model.updateOptions();
+		model.reconcileFocusedCell();
 		modelRevision = untrack(() => modelRevision) + 1;
 	});
 
@@ -177,7 +190,14 @@
 		modelRevision;
 		return model.table.getRightVisibleLeafColumns();
 	});
-	const gridTemplate = $derived(allColumns.map((column) => `${column.getSize()}px`).join(' '));
+	const gridTemplate = $derived(
+		[
+			...leftColumns.map((column) => `${column.getSize()}px`),
+			...centerColumns.map((column) => `${column.getSize()}px`),
+			...(rightColumns.length ? ['minmax(0, 1fr)'] : []),
+			...rightColumns.map((column) => `${column.getSize()}px`)
+		].join(' ')
+	);
 	const tableWidth = $derived(allColumns.reduce((width, column) => width + column.getSize(), 0));
 
 	const rowVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
@@ -314,6 +334,9 @@
 		let nextColumn = columnIndex;
 		const pageJump = Math.max(1, Math.floor((viewportRef?.clientHeight ?? rowHeight) / rowHeight));
 		switch (event.key) {
+			case 'Tab':
+				nextColumn += event.shiftKey ? -1 : 1;
+				break;
 			case 'ArrowLeft':
 				nextColumn -= 1;
 				break;
@@ -366,10 +389,7 @@
 		return rows.filter((row) => tableState!.expanded[row.id] && !row.getIsGrouped()).length;
 	});
 	const rowAriaIndexes = $derived.by(() => {
-		let nextIndex =
-			(pagination === false
-				? 0
-				: (tableState!.pagination.page - 1) * tableState!.pagination.pageSize) + 2;
+		let nextIndex = 2;
 		return rows.map((row) => {
 			const currentIndex = nextIndex;
 			nextIndex += 1;
@@ -390,22 +410,49 @@
 		if (pagination === false) return null;
 		return pagination;
 	});
-	const statePayload = $derived<DataTableToolbarPayload<TData>>({
-		state: tableState!,
-		selectedRows: model.selectedRows,
-		visibleRows: rows.map((row) => row.original),
+	const tableApi: DataTableApi<TData> = {
+		get state() {
+			return model.state;
+		},
+		get totalItems() {
+			return totalItems;
+		},
+		get totalPages() {
+			return totalPages;
+		},
+		get visibleRows() {
+			return rows.map((row) => row.original);
+		},
+		get selectedRows() {
+			return model.selectedRows;
+		},
+		get isSaving() {
+			return isSaving;
+		},
+		setGlobalFilter: (value) => model.setGlobalFilter(value),
+		setColumnFilter: (columnId, value) => model.setColumnFilter(columnId, value),
 		clearFilters: () => model.clearFilters(),
-		clearSelection: () => model.clearSelection()
+		clearSelection: () => model.clearSelection(),
+		setPage: (page) => model.setPage(page),
+		setPageSize: (size) => model.setPageSize(size)
+	};
+	dataTable = tableApi;
+	const statePayload = $derived<DataTableToolbarPayload<TData>>({
+		state: tableApi.state,
+		selectedRows: [...tableApi.selectedRows],
+		visibleRows: [...tableApi.visibleRows],
+		clearFilters: tableApi.clearFilters,
+		clearSelection: tableApi.clearSelection
 	});
 	const hasActiveFilters = $derived(
 		!!tableState!.globalFilter || tableState!.columnFilters.length > 0
 	);
 </script>
 
-<div bind:this={ref} class={classes.root({ className })} {...attachments}>
-	<DataTableToolbar {model} {classes} revision={modelRevision} />
+<div bind:this={ref} class={classes.root({ fill: fillsParent, className })} {...attachments}>
+	<DataTableToolbar {model} {classes} revision={modelRevision} {tableApi} />
 
-	<div class={classes.viewport()} style:height={viewportHeight}>
+	<div class={classes.viewport({ fill: fillsParent })} style:height={viewportHeight}>
 		<NetworkIndicator
 			loading={isBusy}
 			color="primary"
@@ -416,10 +463,14 @@
 		/>
 		<ScrollArea bind:viewportRef class={classes.scrollArea()} type="auto" ariaLabel="Data table">
 			<table
+				{@attach dataTableGridNavigation({
+					enabled: interactionMode === 'grid',
+					onPointerOutsideCell: () => model.clearFocusedCell()
+				})}
 				aria-busy={isBusy}
 				role={interactionMode === 'grid' ? 'grid' : undefined}
 				aria-rowcount={interactionMode === 'grid'
-					? totalItems + expandedDetailCount + 1
+					? rows.length + expandedDetailCount + 1
 					: undefined}
 				aria-colcount={interactionMode === 'grid' ? allColumns.length : undefined}
 				class={classes.virtualTable()}
@@ -442,53 +493,71 @@
 						<tr class={classes.stateRow()} style:grid-template-columns={gridTemplate}>
 							<td
 								role={interactionMode === 'grid' ? 'gridcell' : undefined}
+								class={classes.stateCell()}
+								colspan={allColumns.length}
+								aria-colspan={interactionMode === 'grid' ? allColumns.length : undefined}
+								data-grid-state
 								style:grid-column="1 / -1"
 							>
-								{#if error}
-									{#if errorContent}
-										<Slot render={errorContent} payload={{ ...statePayload, error }} />
+								<div class={classes.stateContent()}>
+									{#if error}
+										{#if errorContent}
+											<Slot render={errorContent} payload={{ ...statePayload, error }} />
+										{:else}
+											<Empty
+												size="small"
+												title="Could not load data"
+												description={error instanceof Error
+													? error.message
+													: 'The data could not be loaded.'}
+											/>
+										{/if}
+									{:else if hasActiveFilters}
+										{#if noResults}
+											<Slot render={noResults} payload={statePayload} />
+										{:else}
+											<Empty
+												size="small"
+												title="No matching rows"
+												description="Adjust or clear the active filters."
+												actions={[
+													{ content: 'Clear filters', onClick: () => model.clearFilters() }
+												]}
+											/>
+										{/if}
+									{:else if empty}
+										<Slot render={empty} payload={statePayload} />
 									{:else}
 										<Empty
 											size="small"
-											title="Could not load data"
-											description={error instanceof Error
-												? error.message
-												: 'The data could not be loaded.'}
+											title="No data"
+											description="There are no rows to display."
 										/>
 									{/if}
-								{:else if hasActiveFilters}
-									{#if noResults}
-										<Slot render={noResults} payload={statePayload} />
-									{:else}
-										<Empty
-											size="small"
-											title="No matching rows"
-											description="Adjust or clear the active filters."
-											actions={[{ content: 'Clear filters', onClick: () => model.clearFilters() }]}
-										/>
-									{/if}
-								{:else if empty}
-									<Slot render={empty} payload={statePayload} />
-								{:else}
-									<Empty size="small" title="No data" description="There are no rows to display." />
-								{/if}
+								</div>
 							</td>
 						</tr>
 					{:else if loading && rows.length === 0}
 						<tr class={classes.stateRow()} style:grid-template-columns={gridTemplate}>
 							<td
 								role={interactionMode === 'grid' ? 'gridcell' : undefined}
+								class={classes.stateCell()}
+								colspan={allColumns.length}
+								aria-colspan={interactionMode === 'grid' ? allColumns.length : undefined}
+								data-grid-state
 								style:grid-column="1 / -1"
 							>
-								{#if loadingContent}
-									<Slot render={loadingContent} payload={statePayload} />
-								{:else}
-									<div class={classes.skeletonList()} aria-label="Loading rows">
-										{#each Array(6) as _}
-											<Skeleton class={classes.skeletonBar()} />
-										{/each}
-									</div>
-								{/if}
+								<div class={classes.stateContent()}>
+									{#if loadingContent}
+										<Slot render={loadingContent} payload={statePayload} />
+									{:else}
+										<div class={classes.skeletonList()} aria-label="Loading rows">
+											{#each Array(6) as _}
+												<Skeleton class={classes.skeletonBar()} />
+											{/each}
+										</div>
+									{/if}
+								</div>
 							</td>
 						</tr>
 					{:else}
@@ -529,15 +598,9 @@
 				</tbody>
 			</table>
 		</ScrollArea>
-
-		{#if loading && rows.length > 0}
-			<div class={classes.loadingOverlay()}>
-				<Spinner size="small" label="Refreshing data" />
-			</div>
-		{/if}
 	</div>
 
-	{#if paginationConfig}
+	{#if paginationConfig && paginationConfig.showControls !== false}
 		<div class={classes.footer()}>
 			<div class={classes.toolbarGroup()}>
 				<span class={classes.summary()}>{pageStart}–{pageEnd} of {totalItems}</span>

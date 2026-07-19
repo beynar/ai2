@@ -1,43 +1,33 @@
 export const dataTableDescription = `
 # DataTable
 
-DataTable is the interactive, virtualized table component for application data. It keeps the
-Svelai API public and uses TanStack Table Core privately. Use the lighter \`Table\` component
-for static rows that do not need sorting, filtering, selection, editing, grouping, or pagination.
+DataTable is the typed, interactive, virtualized table for application data. Its public API is
+Svelai-native; TanStack Table Core remains private. Use Table for static tabular content.
 
 ## Basic usage
 
 \`\`\`svelte
 <script lang="ts">
-  import { DataTable, type DataTableColumn } from 'svelai/data-table';
+  import {
+    createDataTableColumnHelper,
+    DataTable
+  } from 'svelai/data-table';
 
-  type Person = {
-    id: string;
-    name: string;
-    role: string;
-    active: boolean;
-  };
-
-  const items: Person[] = [
-    { id: 'p-1', name: 'Ada Lovelace', role: 'Engineer', active: true },
-    { id: 'p-2', name: 'Grace Hopper', role: 'Admiral', active: true }
-  ];
-
-  const columns: DataTableColumn<Person>[] = [
-    { id: 'name', accessor: 'name', header: 'Name', sortable: true, filter: { type: 'text' } },
-    {
-      id: 'role',
-      accessor: 'role',
-      header: 'Role',
-      filter: {
-        type: 'select',
-        options: [
-          { value: 'Engineer', label: 'Engineer' },
-          { value: 'Admiral', label: 'Admiral' }
-        ]
-      }
-    },
-    { id: 'active', accessor: 'active', header: 'Active', filter: { type: 'boolean' } }
+  type Person = { id: string; name: string; role: string; active: boolean };
+  const column = createDataTableColumnHelper<Person>();
+  const columns = [
+    column.accessor('name', {
+      id: 'name',
+      header: 'Name',
+      sortable: true,
+      filter: { type: 'text' }
+    }),
+    column.accessor('role', { id: 'role', header: 'Role' }),
+    column.accessor('active', {
+      id: 'active',
+      header: 'Active',
+      filter: { type: 'boolean' }
+    })
   ];
 </script>
 
@@ -51,210 +41,133 @@ for static rows that do not need sorting, filtering, selection, editing, groupin
 />
 \`\`\`
 
-\`items\`, \`columns\`, \`getRowId\`, and \`height\` are required. Stable identity and a
-bounded virtual viewport are deliberately never inferred.
+\`items\`, \`columns\`, and \`getRowId\` are required. Without \`height\`, DataTable fills a
+parent with a definite height so the virtual viewport remains bounded.
 
 ## Core props
 
-- **items**: \`readonly TData[]\` — rows available to the current processing mode.
-- **columns**: \`readonly DataTableColumn<TData>[]\` — typed Svelai column definitions.
-- **getRowId**: \`(row, index, parent?) => string\` — stable identity for selection and expansion.
-- **height**: \`string | number\` — required height of the scroll viewport.
-- **density**: \`'small' | 'normal' | 'large'\`, default \`'normal'\`.
-- **interactionMode**: \`'table' | 'grid'\`, default \`'table'\`.
-- **processingMode**: \`'client' | 'manual'\`, default \`'client'\`.
-- **selectionMode**: \`'none' | 'single' | 'multiple'\`, default \`'none'\`.
-- **pagination**: \`false | DataTablePaginationConfig\`; defaults to 25 rows with 25/50/100 choices.
-- **search**: \`false | true | DataTableSearchConfig\`, default \`false\`.
-- **stickyHeader**: boolean, default \`true\`.
-- **overscan**: virtual rows mounted beyond the viewport, default \`6\`.
-- **estimatedRowHeight**: optional row estimate; density defaults are 32, 40, and 48 pixels.
-- **animateRows**: opt-in FLIP movement for stable rows after sorting or filtering, default \`false\`.
-- **disabled**: disables selection and editing controls.
-- **loading** / **error**: asynchronous presentation states. Loading preserves existing rows,
-  marks the table busy, and drives its NetworkIndicator; an empty loading table uses the loading slot.
-- **class**, **theme**, **ref**, and Svelte attachments follow normal Svelai conventions.
+- **items**: \`readonly TData[]\`.
+- **columns**: \`readonly DataTableColumn<TData>[]\`.
+- **getRowId**: stable row identity used by selection, expansion, virtualization, and focus.
+- **height**: optional \`string | number\`; otherwise fills a definite-height parent.
+- **density**: \`small | normal | large\`, default \`normal\`.
+- **interactionMode**: \`table | grid\`, default \`table\`.
+- **processingMode**: \`client | manual\`, default \`client\`.
+- **selectionMode**: \`none | single | multiple\`, default \`none\`.
+- **pagination**: \`false | DataTablePaginationConfig\`. False disables pagination processing.
+  \`showControls: false\` keeps processing active while hiding the built-in footer.
+- **search**: false, true, or placeholder/debounce configuration.
+- **showColumnVisibilityControl**: default false.
+- **stickyHeader**, **overscan**, **estimatedRowHeight**, and **animateRows** control rendering.
+- **disabled** blocks sorting controls, selection paths, editing, and column manipulation.
+- **loading** and **error** drive table states and the NetworkIndicator.
+- **dataTable**: bindable narrow external-control facade.
+- **cell** and **header**: table-level renderer snippets with \`renderDefault\` delegates.
+- **class**, **theme**, **ref**, and Svelte attachments follow Svelai conventions.
 
 ## Column definitions
 
-\`DataTableColumn<TData, TValue>\` has these fields:
+\`DataTableColumn<TData, TValue>\` supports \`id\`, \`accessor\`, required \`header\`, optional
+\`cell\` and \`aggregatedCell\`, sorting, filtering, grouping, aggregation, editing, visibility,
+resizing, reordering, pinning, alignment, sizing, and column classes.
 
-- **id**: stable column identifier.
-- **accessor**: a key of \`TData\` or \`(row, index) => TValue\`.
-- **header**: string or snippet receiving \`DataTableHeaderPayload<TData>\`.
-- **cell**: optional string/snippet receiving \`DataTableCellPayload<TData, TValue>\`.
-- **aggregatedCell**: optional aggregate renderer with the same cell payload.
-- **sortable**: boolean or comparator \`(left, right, columnId) => number\`.
-- **filter**: one built-in filter configuration.
-- **groupable**: enables grouping from the column menu.
-- **aggregation**: \`count | sum | min | max | mean | median | uniqueCount\` or a custom function.
-- **editor**: one built-in editor or a custom editor snippet.
-- **hideable**, **resizable**, **reorderable**, **pinnable**: capability flags.
-- **align**: \`start | center | end\`.
-- **size**, **minSize**, **maxSize**: pixel sizing. Defaults are 180, 80, and 640.
-- **class** / **headerClass**: column-level classes for cells and headers.
+Use \`createDataTableColumnHelper<TData>()\` to infer accessor values inside cell and editor
+configuration. Raw DataTableColumn definitions remain available as an escape hatch.
 
-Header payload:
+## Rendering
 
-\`\`\`ts
-type DataTableHeaderPayload<TData> = {
-  column: DataTableColumn<TData>;
-  sorted: false | 'asc' | 'desc';
-  sortIndex: number;
-  filtered: boolean;
-  toggleSorting: (multi?: boolean) => void;
-};
+Column-level renderers are part of the default rendering chain. A table-level \`cell\` renderer
+wraps every public ordinary, grouped, aggregated, and placeholder cell. It does not wrap selection
+cells, action cells, detail rows, or active editors. A table-level \`header\` renderer wraps only
+configured public header content; sorting, menus, dragging, resizing, focus, and ARIA remain owned
+by DataTable.
+
+\`DataTableCellRenderPayload<TData>\` contains the normal cell payload plus \`column\`,
+\`placeholder\`, and \`renderDefault\`. \`DataTableHeaderRenderPayload<TData>\` contains the normal
+header payload plus \`renderDefault\`.
+
+\`\`\`svelte
+{#snippet cell({ columnId, value, renderDefault })}
+  {#if columnId === 'status'}
+    <Chip>{value}</Chip>
+  {:else}
+    {@render renderDefault()}
+  {/if}
+{/snippet}
 \`\`\`
 
-Cell payload:
-
-\`\`\`ts
-type DataTableCellPayload<TData, TValue = unknown> = {
-  row: TData;
-  rowId: string;
-  columnId: string;
-  value: TValue;
-  selected: boolean;
-  expanded: boolean;
-  depth: number;
-  aggregated: boolean;
-  grouped: boolean;
-  toggleSelected: () => void;
-  toggleExpanded: () => void;
-  startEditing: () => void;
-};
-\`\`\`
+Precedence is structural rendering or an active editor, then the table-level renderer, then
+\`renderDefault\`, which resolves the column renderer before the built-in fallback.
 
 ## Filters
 
-- \`{ type: 'text', placeholder? }\`
-- \`{ type: 'number', min?, max? }\` — minimum/maximum range.
-- \`{ type: 'select', options }\`
-- \`{ type: 'multi-select', options }\`
-- \`{ type: 'date', min?, max? }\` — start/end date range.
-- \`{ type: 'boolean', trueLabel?, falseLabel? }\`
+Built-in filters are text, number range, select, multi-select, date range, and boolean.
+A custom filter is \`{ type: 'custom', render, predicate }\`. Its renderer receives the column,
+current value, active state, \`setValue(value)\`, and \`clear()\`; \`predicate(row, value,
+columnValue)\` owns client matching. Filtering, searching, sorting, and grouping reset page one.
 
-Each column filter opens in a Popover, exposes its active state, and includes a clear command.
-Global search can be enabled with \`search\` or configured with placeholder and debounce values.
-Changing search, column filters, sorting, or grouping resets pagination to page one.
+## State and external composition
 
-## State contract
+Use \`createDataTableState(columns, initialState?, pageSize?)\` for controlled state. The bindable
+state contains sorting, globalFilter, columnFilters, one-based pagination, rowSelection,
+columnVisibility, columnOrder, columnPinning, columnSizing, grouping, and expanded.
 
-Bind one state object instead of individual fields:
+DataTable updates replace slices immutably and call \`onStateChange(nextState)\`. Parent-originated
+mutations through \`bind:state\` are observed without calling that callback again.
 
-\`\`\`ts
-type DataTableState = {
-  sorting: { id: string; desc: boolean }[];
-  globalFilter: string;
-  columnFilters: { id: string; value: unknown }[];
-  pagination: { page: number; pageSize: number }; // page is one-based
-  rowSelection: Record<string, boolean>;
-  columnVisibility: Record<string, boolean>;
-  columnOrder: string[];
-  columnPinning: { left: string[]; right: string[] };
-  columnSizing: Record<string, number>;
-  grouping: string[];
-  expanded: Record<string, boolean>;
-};
-\`\`\`
-
-\`initialState\` is read once. A supplied bindable \`state\` takes precedence. Every update
-replaces the changed slice immutably and invokes \`onStateChange(nextState)\`.
+\`bind:dataTable\` exposes a stable \`DataTableApi<TData>\` with reactive state, totals, visible
+rows, selected loaded rows, save status, and commands for global/column filters, selection clearing,
+page, and page size. Commands use the same guards and reset rules as built-in controls.
 
 \`\`\`svelte
-<DataTable bind:state onStateChange={(next) => savePreferences(next)} {...props} />
+<DataTable
+  bind:state
+  bind:dataTable
+  pagination={{ pageSize: 25, showControls: false }}
+  {...props}
+/>
 \`\`\`
-
-Row selection is keyed by \`getRowId\`, so it persists when filtering or moving between loaded
-pages. The header checkbox selects the current page only.
 
 ## Client and manual processing
 
 Client mode runs filtering, sorting, grouping, aggregation, expansion, and pagination locally.
 
-Manual mode delegates filtering, sorting, grouping, aggregation, and pagination as one contract.
-It requires \`rowCount\`; \`items\` must already contain the processed current page. Observe
-\`state\` or \`onStateChange\`, fetch the matching page, and pass it back without expecting
-DataTable to reprocess it.
-
-\`\`\`svelte
-<DataTable
-  processingMode="manual"
-  {rowCount}
-  {items}
-  {columns}
-  bind:state
-  getRowId={(row) => row.id}
-  height={420}
-  {loading}
-  animateRows
-/>
-\`\`\`
+Manual mode delegates filtering, sorting, and pagination together. It requires \`rowCount\`, and
+\`items\` must contain the already processed current page. Grouping and aggregation are client-only
+in this release: grouping commands are hidden and unsupported manual grouping state is normalized
+away. Abort stale requests when state changes. In manual mode, \`dataTable.selectedRows\` includes
+only loaded row objects; all selected IDs remain in \`state.rowSelection\`.
 
 ## Editing
 
-Built-in editors are text, number, select, date, and switch. DataTable never mutates rows.
-Committing calls:
+Built-in editors are text, number, select, date, and switch. A custom editor snippet receives row
+metadata, draft, pending/error state, \`setDraft\`, \`commit\`, and \`cancel\`. DataTable never
+mutates rows; changed values call \`onCellCommit\` and render optimistically while the
+NetworkIndicator tracks the request. Unchanged drafts close without a commit. Rejection rolls back,
+restores the editor and draft, and exposes the error. Only one asynchronous transaction can be
+active or recoverable. Columns with editors do not enter edit mode without \`onCellCommit\` and
+issue a development warning.
 
-\`\`\`ts
-onCellCommit?: (commit: {
-  row: TData;
-  rowId: string;
-  columnId: string;
-  previousValue: unknown;
-  value: unknown;
-}) => void | Promise<void>;
-\`\`\`
-
-The editor owns a draft. A changed value renders optimistically while a table-level
-NetworkIndicator tracks the asynchronous commit; unchanged values close without invoking
-\`onCellCommit\`. A rejected promise rolls the value back, restores the editor, and exposes its
-error. Enter and clicking outside the editor commit, Escape cancels, and Tab commits before native
-focus movement.
-
-A custom editor uses \`{ type: 'custom', render }\`. Its payload contains row metadata,
-\`draft\`, \`pending\`, \`error\`, \`setDraft(value)\`, \`commit()\`, and \`cancel()\`.
-
-## Expansion, grouping, and aggregation
-
-- **getSubRows** returns hierarchical child rows.
-- **canExpand** overrides whether a row can expand.
-- **expandedContent** renders a detail region for expanded leaf rows.
-- Groupable columns expose grouping commands in their header menu.
-- Group rows show disclosure state, group value, child count, and aggregate values.
+Enter and outside clicks commit, Escape cancels, and Tab commits without leaving the edited cell.
+Calendar selection synchronizes its draft before commit. Arrow keys remain owned by editor controls.
 
 ## Slots
 
-- **caption** — semantic table caption.
-- **toolbarPrefix** / **toolbarSuffix** — toolbar content.
-- **bulkActions** — shown while loaded rows are selected.
-- **rowActions** — actions column for each row.
-- **expandedContent** — detail content for expanded leaf rows.
-- **loadingContent**, **empty**, **noResults**, **errorContent** — state overrides.
+- **caption**, **toolbarPrefix**, **toolbarSuffix**, **bulkActions**, **rowActions**,
+  **expandedContent**, **loadingContent**, **empty**, **noResults**, and **errorContent**.
+- Toolbar slots receive state, selected loaded rows, visible rows, clearFilters, and clearSelection.
+- Row slots receive row identity, selection/expansion state, depth, and guarded toggle actions.
 
-Toolbar slots receive \`state\`, \`selectedRows\`, \`visibleRows\`, \`clearFilters()\`, and
-\`clearSelection()\`. Row slots receive row identity, selection/expansion state, depth, and
-toggle actions.
+## Accessibility and virtualization
 
-## Accessibility and keyboard behavior
+Table mode preserves native table semantics. Grid mode uses one roving cell tab stop with arrows,
+Tab/Shift+Tab, Home/End, Ctrl+Home/Ctrl+End, and PageUp/PageDown. Focus is reconciled by row and
+column identity after data, pagination, filtering, grouping, and visibility changes. State rows use
+complete column spans and keep recovery controls keyboard reachable. Logical row indices derive
+from the final grouped/expanded row model.
 
-The default \`interactionMode="table"\` uses native semantic table navigation and leaves the tab
-order to controls. Sorting cycles ascending, descending, and none; Shift-click adds sort columns.
-The primary sorted header uses \`aria-sort\`, and additional sort priority is announced in labels.
-
-\`interactionMode="grid"\` adds one roving cell tab stop. Arrow keys move between cells,
-Home/End move across a row, Ctrl+Home/Ctrl+End move to table boundaries, and PageUp/PageDown move
-by the visible page. Enter or F2 enters an editable/interactive cell. Escape returns from editing.
-Logical row/column counts and indices remain exposed while rows and center columns are virtualized.
-
-Resize handles support pointer dragging, arrow-key resizing, Home/End min/max sizing, and
-double-click reset. Column reordering remains inside the current pin region. Pinning is explicit
-through the header menu, and logical inset positioning preserves RTL behavior.
-
-## Virtualization
-
-Rows are always virtualized. Semantic table mode keeps all columns mounted so native header
-relationships remain complete. Grid mode additionally virtualizes center columns while pinned
-columns stay mounted. \`overscan\` defaults to six rows; dynamic measurement accounts for edited,
-grouped, and expanded content.
+Rows are always virtualized. Semantic table mode keeps all columns mounted; grid mode additionally
+virtualizes center columns while pinned columns stay mounted. Resize handles support pointer and
+keyboard resizing. Reorder handles support left/right keyboard movement and pointer movement within
+their current pin region. Logical inset positioning preserves RTL pinning.
 `;

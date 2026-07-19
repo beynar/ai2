@@ -57,9 +57,15 @@ The Tabbar component is a flexible navigation component that displays a list of 
   - Whether the tabbar should be full width
   - When true, the tabbar and individual tabs will expand to fill the available width
 
+- **scrollFade**: boolean (default: true)
+  - Applies the shared logical-axis scroll fade only while the tab list overflows
+
 ### Advanced Props
+- **ref**: HTMLDivElement | null (bindable) - Reference to the tab list element
 - **class**: string - Additional CSS classes for the tabbar container
 - **theme**: TabbarThemeProps - Custom theme overrides
+
+Native div attributes and attachments are forwarded to the root. Horizontal and vertical overflow use the shared \`scroll-fade-x\` and \`scroll-fade-y\` utilities by default; non-overflowing tab lists remain unmasked, including in no-support fallback browsers.
 
 ## TabItem Structure
 

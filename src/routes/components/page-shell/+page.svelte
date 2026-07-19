@@ -11,10 +11,11 @@
 
 <DocPage
 	title="Page shell"
-	subtitle="A content shell for application pages: sticky header, scrollable content, sticky footer, and route-level injection."
+	subtitle="A content shell for application pages: sticky header and footer, natural document scrolling, and route-level injection."
 	component="PageShell"
 	features={[
-		'Sticky header and footer around a scrollable content region',
+		'Natural document scrolling with sticky page chrome',
+		'Sticky footer content and actions',
 		'String or snippet title and subtitle props',
 		'Header actions and custom header/footer snippets',
 		'Context API for child routes to override shell regions',
@@ -46,10 +47,10 @@
 	] satisfies PageShellAction[];
 ${'</' + 'script>'}
 
-<div class="h-[460px] w-full overflow-hidden rounded-lg border border-background-muted">
-	<PageShell
+<div class="h-[460px] w-full overflow-auto rounded-lg border border-background-muted">
+<PageShell
 		title="Insights"
-		subtitle="Sticky header, scrollable content, and sticky footer"
+		subtitle="Sticky header and footer with natural content flow"
 		{headerActions}
 		contentPadding="normal"
 		contentWidth="wide"
@@ -112,7 +113,7 @@ ${'</' + 'script>'}
 		</ComponentCard>
 
 		<ComponentCard
-			description="Footer actions keep form controls visible while the content region scrolls."
+			description="Footer actions stay available without creating a nested scroll container."
 			class="!min-h-fit !items-start !p-4"
 			code={`<script lang="ts">
 	import { PageShell, type PageShellAction } from 'svelai/page-shell';
@@ -125,10 +126,10 @@ ${'</' + 'script>'}
 	] satisfies PageShellAction[];
 ${'</' + 'script>'}
 
-<PageShell
+	<PageShell
 	eyebrow="Settings"
 	title="Billing profile"
-	subtitle="Footer actions stay visible while the form scrolls."
+	subtitle="Footer actions remain available while the page scrolls."
 	{footerActions}
 	contentPadding="normal"
 	contentWidth="narrow"

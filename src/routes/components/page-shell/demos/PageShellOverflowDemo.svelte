@@ -13,9 +13,7 @@
 	] satisfies PageShellAction[];
 </script>
 
-<div
-	class="h-[420px] w-full max-w-[390px] overflow-hidden rounded-lg border border-background-muted"
->
+<div class="h-[420px] w-full max-w-[390px] overflow-auto rounded-lg border border-background-muted">
 	<PageShell
 		title="Reports"
 		subtitle="Mobile overflow keeps dense action rows usable."

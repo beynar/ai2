@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { on } from 'svelte/events';
 	import { useSafeArea } from '$lib/utils/safeArea.svelte.js';
+	import { cx } from '$lib/utils/cva/index.js';
 	import {
 		type SidebarCollapsible,
 		type SidebarDisplayState,
@@ -85,6 +87,30 @@
 	});
 
 	$effect(() => {
+		if (displayState === 'hidden') return;
+		resize.releaseEdgeRevealSuppression();
+	});
+
+	$effect(() => {
+		if (!showEdgeTrigger || !resize.isEdgeRevealSuppressed) return;
+
+		return on(window, 'pointermove', (event) => {
+			if (event.buttons !== 0) return;
+
+			const trigger = edgeTriggerRef;
+			if (!trigger) return;
+
+			const rect = trigger.getBoundingClientRect();
+			const isInside =
+				event.clientX >= rect.left &&
+				event.clientX <= rect.right &&
+				event.clientY >= rect.top &&
+				event.clientY <= rect.bottom;
+			if (!isInside) resize.releaseEdgeRevealSuppression();
+		});
+	});
+
+	$effect(() => {
 		const node = panelRef;
 		resize.panelNode = node;
 		return () => {
@@ -123,7 +149,10 @@
 </script>
 
 <div
-	class="group peer relative hidden text-foreground data-[display-state=hidden]:z-20 md:block data-[side=right]:order-last"
+	class={cx(
+		'group peer relative hidden text-foreground data-[display-state=hidden]:z-20 data-[edge-revealed=true]:!z-30 md:block data-[side=right]:order-last',
+		frame === 'contained' && 'sticky top-0 max-h-[var(--window-height,100dvh)]'
+	)}
 	data-slot="sidebar"
 	data-state={sidebarState}
 	data-display-state={displayState}
@@ -208,7 +237,9 @@
 			tabindex={-1}
 			title={openLabel}
 			class={classes.edgeTrigger()}
-			onpointerenter={() => (edgeRevealed = true)}
+			onpointerenter={() => {
+				if (!resize.isEdgeRevealSuppressed) edgeRevealed = true;
+			}}
 			onfocus={() => (edgeRevealed = true)}
 			onclick={open}
 		></button>

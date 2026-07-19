@@ -24,7 +24,7 @@
 		displayState = $bindable<SidebarDisplayState | undefined>(undefined),
 		onDisplayStateChange,
 		side = 'left',
-		variant = 'sidebar',
+		variant = 'admin',
 		size = 'normal',
 		density = 'normal',
 		collapsible = 'offcanvas',
@@ -165,9 +165,7 @@
 		classes.root({
 			variant,
 			className: [
-				frame === 'viewport'
-					? 'h-window min-h-0 overflow-hidden'
-					: 'relative h-full min-h-0 overflow-hidden rounded-[inherit]',
+				frame === 'viewport' ? 'h-window min-h-0' : 'relative h-full min-h-0 rounded-[inherit]',
 				withBanner && 'flex-col',
 				className
 			]

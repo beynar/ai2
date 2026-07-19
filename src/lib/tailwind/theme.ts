@@ -16,6 +16,8 @@ export type ThemeOptions = Partial<{
 	spacing?: Spacing;
 	'border-width'?: number;
 	'raised-with-border'?: boolean;
+	'overlay-hover'?: string;
+	'overlay-pressed'?: string;
 	scale?: TypeScale;
 	prefersDark?: boolean;
 	radius?: RadiusSize;

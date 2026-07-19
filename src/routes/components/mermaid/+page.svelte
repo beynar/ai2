@@ -1,9 +1,22 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import Mermaid from '$lib/components/Mermaid/Mermaid.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import { onDestroy } from 'svelte';
+
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{ name: 'showControls', type: 'switch', label: 'Controls', value: true },
+		{ name: 'mouseWheelZoom', type: 'switch', label: 'Wheel zoom', value: true }
+	]);
 
 	const flowchart = `graph TD
     A[Start] --> B{Is it working?}
@@ -91,95 +104,104 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Drag to pan, scroll or pinch to zoom, and use the floating controls (fit, zoom, fullscreen, download). The diagram colors follow the active theme."
 		class="!min-h-fit"
-		code={`<Mermaid chart={\`graph TD
+		code={`<Mermaid
+	size="${controls.value.size}"
+	controls={${controls.value.showControls}}
+	mouseWheelZoom={${controls.value.mouseWheelZoom}}
+	chart={\`graph TD
     A[Start] --> B{Is it working?}
     B -->|Yes| C[Ship it]
     B -->|No| D[Debug]
     D --> B
-    C --> E[Celebrate]\`} />`}
+    C --> E[Celebrate]\`}
+/>`}
 	>
 		<div class="w-full max-w-3xl">
-			<Mermaid chart={flowchart} />
+			<Mermaid
+				chart={flowchart}
+				size={controls.value.size}
+				controls={controls.value.showControls}
+				mouseWheelZoom={controls.value.mouseWheelZoom}
+			/>
 		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
-	<ComponentCard
-		description="Drag to pan, scroll or pinch to zoom, and use the floating controls (fit, zoom, fullscreen, download). The diagram colors follow the active theme."
-		class="!min-h-fit"
-	>
-		<div class="w-full max-w-3xl">
-			<Mermaid chart={flowchart} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard
-		description="Any Mermaid diagram type is supported — the same brand theming and pan/zoom controls apply."
-		class="!min-h-fit"
-	>
-		<div class="w-full max-w-3xl">
-			<Mermaid chart={sequence} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard
-		description="A pie chart, sized with the large viewport."
-		class="!min-h-fit"
-	>
-		<div class="w-full max-w-3xl">
-			<Mermaid chart={pie} size="large" />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard
-		description="A gantt chart. Sections and task states inherit the design tokens."
-		class="!min-h-fit !items-start"
-	>
-		<div class="w-full max-w-3xl">
-			<Mermaid chart={gantt} size="large" />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard
-		description="Bind the chart string to an input and the diagram re-renders reactively as you type."
-		class="!min-h-fit !items-start"
-	>
-		<div class="grid w-full max-w-3xl gap-3">
-			<textarea
-				bind:value={liveChart}
-				spellcheck="false"
-				rows="5"
-				class="border-background-muted bg-background text-foreground focus:border-primary w-full resize-y rounded border px-3 py-2 font-mono text-sm outline-none"
-			></textarea>
-			<Mermaid chart={liveChart} />
-		</div>
-	</ComponentCard>
-
-	<ComponentCard
-		description="With errorForgiving, transient parse errors while the source streams in are swallowed — the last valid diagram stays on screen instead of flashing an error. Press Stream to replay a token-by-token render."
-		class="!min-h-fit !items-start"
-	>
-		<div class="grid w-full max-w-3xl gap-3">
-			<div class="flex items-center gap-3">
-				<Button label="Stream diagram" onClick={startStream} loading={streaming} size="small">
-					Stream
-				</Button>
-				<pre
-					class="border-background-muted bg-background text-foreground-muted min-h-16 flex-1 overflow-auto rounded border px-3 py-2 font-mono text-xs">{streamed || ' '}</pre>
+		<ComponentCard
+			description="Drag to pan, scroll or pinch to zoom, and use the floating controls (fit, zoom, fullscreen, download). The diagram colors follow the active theme."
+			class="!min-h-fit"
+		>
+			<div class="w-full max-w-3xl">
+				<Mermaid chart={flowchart} />
 			</div>
-			<Mermaid chart={streamed} errorForgiving />
-		</div>
-	</ComponentCard>
+		</ComponentCard>
 
-	<ComponentCard
-		description="Invalid Mermaid syntax surfaces an inline error message (danger tokens) instead of crashing or injecting Mermaid's own error DOM."
-		class="!min-h-fit"
-	>
-		<div class="w-full max-w-3xl">
-			<Mermaid chart={broken} />
-		</div>
-	</ComponentCard>
+		<ComponentCard
+			description="Any Mermaid diagram type is supported — the same brand theming and pan/zoom controls apply."
+			class="!min-h-fit"
+		>
+			<div class="w-full max-w-3xl">
+				<Mermaid chart={sequence} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard description="A pie chart, sized with the large viewport." class="!min-h-fit">
+			<div class="w-full max-w-3xl">
+				<Mermaid chart={pie} size="large" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="A gantt chart. Sections and task states inherit the design tokens."
+			class="!min-h-fit !items-start"
+		>
+			<div class="w-full max-w-3xl">
+				<Mermaid chart={gantt} size="large" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Bind the chart string to an input and the diagram re-renders reactively as you type."
+			class="!min-h-fit !items-start"
+		>
+			<div class="grid w-full max-w-3xl gap-3">
+				<textarea
+					bind:value={liveChart}
+					spellcheck="false"
+					rows="5"
+					class="border-background-muted bg-background text-foreground focus:border-primary w-full resize-y rounded border px-3 py-2 font-mono text-sm outline-none"
+				></textarea>
+				<Mermaid chart={liveChart} />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="With errorForgiving, transient parse errors while the source streams in are swallowed — the last valid diagram stays on screen instead of flashing an error. Press Stream to replay a token-by-token render."
+			class="!min-h-fit !items-start"
+		>
+			<div class="grid w-full max-w-3xl gap-3">
+				<div class="flex items-center gap-3">
+					<Button label="Stream diagram" onClick={startStream} loading={streaming} size="small">
+						Stream
+					</Button>
+					<pre
+						class="border-background-muted bg-background text-foreground-muted min-h-16 flex-1 overflow-auto rounded border px-3 py-2 font-mono text-xs">{streamed ||
+							' '}</pre>
+				</div>
+				<Mermaid chart={streamed} errorForgiving />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Invalid Mermaid syntax surfaces an inline error message (danger tokens) instead of crashing or injecting Mermaid's own error DOM."
+			class="!min-h-fit"
+		>
+			<div class="w-full max-w-3xl">
+				<Mermaid chart={broken} />
+			</div>
+		</ComponentCard>
 	{/snippet}
 </DocPage>

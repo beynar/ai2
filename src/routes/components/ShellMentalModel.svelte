@@ -34,7 +34,7 @@
 			label: 'PageShell',
 			href: '/components/page-shell',
 			responsibility:
-				'Owns page-level chrome: sticky header, scrollable content, sticky footer, breadcrumbs, and actions.',
+				'Owns page-level chrome: sticky header and footer, document-flow content, breadcrumbs, and actions.',
 			use: 'Use it for screens that need consistent title, context, content width, and footer behavior.',
 			how: 'Pass title, subtitle, breadcrumbs, actions, contentPadding, contentWidth, and PageShell theme parts.'
 		}

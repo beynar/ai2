@@ -42,11 +42,11 @@ const defaultInner = cva({
 			large: 'gap-6'
 		},
 		pauseOnHover: {
-			true: 'group-hover:[animation-play-state:paused]',
+			true: 'group-hover:[--marquee-animation-play-state:paused]',
 			false: ''
 		},
 		reverse: {
-			true: '[direction:reverse]',
+			true: '[--marquee-animation-direction:reverse]',
 			false: ''
 		}
 	},

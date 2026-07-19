@@ -2,6 +2,7 @@
 	import Button from '../../Button/Button.svelte';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
+	import type { FieldValue } from '../Field/field.js';
 	import { FileDropzone } from './fileDropzone.svelte.js';
 	import type { FileInputProps, FileInputType, FileInputValue } from './fileInput.props.js';
 	import { useFileInputTheme } from './fileInput.theme.js';
@@ -14,6 +15,7 @@
 		focused = $bindable(false),
 		mode = 'single' as Mode,
 		onChange,
+		onReject,
 		types = ['image/*'],
 		maxFiles = 1,
 		clickable = true,
@@ -38,7 +40,7 @@
 	const field = createFieldState({
 		id,
 		get value() {
-			return value as any;
+			return value as FieldValue<FileInputType<Mode>> | null;
 		},
 		set value(v) {
 			value = v as FileInputValue<Mode>;
@@ -46,7 +48,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -90,31 +92,26 @@
 		return file.type.startsWith('image/');
 	};
 
-	const dropzone = new FileDropzone({
-		get disabled() {
-			return field.disabled;
-		},
-		get config() {
-			return {
-				types,
-				maxFiles,
-				clickable,
-				maxSize,
-				mode,
-				get value() {
-					return field.value as any;
-				},
-				onChange: (files: File[]) => {
-					if (mode === 'single') {
-						field.value = files[0] as any;
-					} else {
-						// In multiple mode, files array contains all files (existing + new)
-						field.value = files as any;
-					}
-				}
-			};
+	const dropzone = new FileDropzone(() => ({
+		disabled: field.disabled,
+		types,
+		maxFiles,
+		clickable,
+		maxSize,
+		mode,
+		files: normalizeFiles(field.value as File | File[] | null | undefined),
+		onReject,
+		onChange: (files: File[]) => {
+			field.value = (mode === 'single' ? (files[0] ?? null) : files) as FieldValue<
+				FileInputType<Mode>
+			> | null;
 		}
-	});
+	}));
+
+	function normalizeFiles(currentValue: File | File[] | null | undefined): File[] {
+		if (!currentValue) return [];
+		return Array.isArray(currentValue) ? currentValue : [currentValue];
+	}
 </script>
 
 <Field
@@ -170,7 +167,7 @@
 	{:else}
 		<div transition:slide class="h-fit w-full">
 			<Slot render={fileList} class={classes.fileList({ class: fileListClass, size: rest.size })}>
-				{#each dropzone.files as fil, i (fil.name + fil.size)}
+				{#each dropzone.files as fil (fil.name + fil.size)}
 					{@const size = dropzone.formatSize(fil.size)}
 					<div transition:slide={{ duration: 300 }}>
 						<Slot render={file} class={classes.file({ class: fileClass, size: rest.size })}>
@@ -208,12 +205,7 @@
 					</div>
 				{/each}
 				{#if mode === 'multiple' && dropzone.files.length > 0 && dropzone.files.length < maxFiles}
-					<Button
-						variant="soft"
-						color="primary"
-						fullWidth
-						onClick={() => dropzone.inputElement?.click()}
-					>
+					<Button variant="soft" color="primary" fullWidth onClick={() => dropzone.open()}>
 						{#snippet prefix()}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -230,7 +222,9 @@
 								<line x1="5" y1="12" x2="19" y2="12" />
 							</svg>
 						{/snippet}
-						Add more files ({dropzone.files.length}/{maxFiles})
+						{Number.isFinite(maxFiles)
+							? `Add more files (${dropzone.files.length}/${maxFiles})`
+							: 'Add more files'}
 					</Button>
 				{/if}
 			</Slot>

@@ -50,5 +50,4 @@
 		columnPinning: { left: ['name'], right: ['status'] },
 		columnOrder: columns.map((column) => column.id)
 	}}
-	caption="Fifty thousand virtualized people"
 />

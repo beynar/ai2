@@ -94,6 +94,22 @@ import { pdfViewerDescription } from '$lib/components/PDFViewer/pdfViewer.mcp.js
 import { globeDescription } from '$lib/components/Globe/globe.mcp.js';
 import { gridDescription } from '$lib/components/Grid/grid.mcp.js';
 import { stackDescription } from '$lib/components/Stack/stack.mcp.js';
+import { aiConversationDescription } from '$lib/components/AIConversation/aiConversation.mcp.js';
+import { aiAskUserQuestionDescription } from '$lib/components/AIAskUserQuestion/aiAskUserQuestion.mcp.js';
+import { aiChatDescription } from '$lib/components/AIChat/aiChat.mcp.js';
+import { aiContextDescription } from '$lib/components/AIContext/aiContext.mcp.js';
+import { aiThreadDescription } from '$lib/components/AIThread/aiThread.mcp.js';
+import { aiThreadTocDescription } from '$lib/components/AIThreadToc/aiThreadToc.mcp.js';
+import { aiMessageDescription } from '$lib/components/AIMessage/aiMessage.mcp.js';
+import { aiMessageActionsDescription } from '$lib/components/AIMessageActions/aiMessageActions.mcp.js';
+import { aiMarkerDescription } from '$lib/components/AIMarker/aiMarker.mcp.js';
+import { aiModelSelectorDescription } from '$lib/components/AIModelSelector/aiModelSelector.mcp.js';
+import { aiComposerDescription } from '$lib/components/AIComposer/aiComposer.mcp.js';
+import { aiReasoningDescription } from '$lib/components/AIReasoning/aiReasoning.mcp.js';
+import { aiShimmerDescription } from '$lib/components/AIShimmer/aiShimmer.mcp.js';
+import { aiSuggestionDescription } from '$lib/components/AISuggestion/aiSuggestion.mcp.js';
+import { aiToolDescription } from '$lib/components/AITool/aiTool.mcp.js';
+import { aiMcpAppDescription } from '$lib/components/AIMcpApp/aiMcpApp.mcp.js';
 
 const components = {
 	accordion: accordionDescription,
@@ -189,6 +205,22 @@ const components = {
 	stack: stackDescription,
 	'h-stack': stackDescription,
 	'v-stack': stackDescription,
+	'ai-conversation': aiConversationDescription,
+	'ai-ask-user-question': aiAskUserQuestionDescription,
+	'ai-chat': aiChatDescription,
+	'ai-context': aiContextDescription,
+	'ai-thread': aiThreadDescription,
+	'ai-thread-toc': aiThreadTocDescription,
+	'ai-message': aiMessageDescription,
+	'ai-message-actions': aiMessageActionsDescription,
+	'ai-marker': aiMarkerDescription,
+	'ai-model-selector': aiModelSelectorDescription,
+	'ai-composer': aiComposerDescription,
+	'ai-reasoning': aiReasoningDescription,
+	'ai-shimmer': aiShimmerDescription,
+	'ai-suggestion': aiSuggestionDescription,
+	'ai-tool': aiToolDescription,
+	'ai-mcp-app': aiMcpAppDescription,
 	'pdf-viewer': pdfViewerDescription
 };
 

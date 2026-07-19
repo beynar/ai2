@@ -1,9 +1,14 @@
 import type { Sizes } from '$lib/types/theme.js';
-import type { WithSlot, Slot } from '$lib/components/Slot/slot.js';
+import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { MarqueeThemeProps } from './marquee.theme.js';
+import type { HTMLAttributes } from 'svelte/elements';
 
-type MarqueeBaseProps = {
+type MarqueeRootAttributes = Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'class'>;
+
+type MarqueeBaseProps = MarqueeRootAttributes & {
+	/** Bindable reference to the marquee container. */
+	ref?: HTMLDivElement | null;
 	/**
 	 * Direction of the marquee animation
 	 * @default 'left'
@@ -30,7 +35,8 @@ type MarqueeBaseProps = {
 	 */
 	fade?: boolean;
 	/**
-	 * Number of times to duplicate the content for seamless loop
+	 * Minimum number of copies used for the seamless loop. The component adds copies
+	 * when the rendered content is narrower or shorter than its viewport.
 	 * @default 2
 	 */
 	numberOfCopies?: number;

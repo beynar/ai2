@@ -1,5 +1,10 @@
 export { default as FileInput } from './FileInput.svelte';
-export type { FileInputProps, FileInputMode, FileInputType, FileInputValue } from './fileInput.props.js';
+export type {
+	FileInputProps,
+	FileInputMode,
+	FileInputType,
+	FileInputValue
+} from './fileInput.props.js';
 export {
 	fileInputTheme,
 	setFileInputTheme,
@@ -7,4 +12,3 @@ export {
 	type FileInputTheme,
 	type FileInputThemeProps
 } from './fileInput.theme.js';
-

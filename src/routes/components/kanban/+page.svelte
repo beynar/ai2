@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import {
 		Kanban,
@@ -45,6 +46,27 @@
 			cards: [{ id: 'k6', title: 'Vega card theme' }]
 		}
 	];
+	const controls = createComponentControls([
+		{
+			name: 'feedback',
+			type: 'segmented',
+			label: 'Feedback',
+			value: 'preview',
+			options: [
+				{ value: 'preview', label: 'Live preview' },
+				{ value: 'indicator', label: 'Indicator line' }
+			]
+		},
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{ name: 'cardHandle', type: 'switch', label: 'Card handle', value: false },
+		{ name: 'disabled', type: 'switch', label: 'Disabled', value: false }
+	]);
 
 	let columns = $state(makeBoard());
 
@@ -73,12 +95,6 @@
 	]);
 
 	let lastMove = $state<KanbanCardMove<Card> | null>(null);
-	const feedbackSegments = [
-		{ value: 'preview', label: 'Live preview' },
-		{ value: 'indicator', label: 'Indicator line' }
-	];
-	let boardFeedback = $state<'preview' | 'indicator'>('preview');
-
 	// Density + card handle playground
 	const densitySegments = [
 		{ value: 'small', label: 'Small' },
@@ -218,21 +234,24 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		title="Live preview or indicator"
 		description="Switch between animated card displacement and a stable board with insertion lines. The same mode applies to card and column reordering."
-		code={`<Kanban bind:columns />
-<Kanban bind:columns indicator />`}
+		code={`<Kanban
+	bind:columns
+	indicator={${controls.value.feedback === 'indicator'}}
+	density="${controls.value.density}"
+	cardHandle={${controls.value.cardHandle}}
+	disabled={${controls.value.disabled}}
+/>`}
 	>
 		<div class="flex w-full flex-col gap-5">
-			<SegmentedControl
-				items={feedbackSegments}
-				bind:value={boardFeedback}
-				size="small"
-				ariaLabel="Drag feedback"
-			/>
 			<Kanban
 				bind:columns
-				indicator={boardFeedback === 'indicator'}
+				indicator={controls.value.feedback === 'indicator'}
+				density={controls.value.density}
+				cardHandle={controls.value.cardHandle}
+				disabled={controls.value.disabled}
 				onCardMove={(move) => (lastMove = move)}
 			/>
 			<p class="text-foreground-muted mt-3 text-xs">
@@ -331,7 +350,7 @@
 						<div class="p-2 pt-1">
 							<button
 								type="button"
-								class="text-foreground-muted hover:text-foreground hover:bg-background-muted w-full cursor-pointer rounded-lg px-3 py-1.5 text-left text-sm transition-colors"
+								class="state-layer text-foreground-muted hover:text-foreground w-full cursor-pointer rounded-lg px-3 py-1.5 text-left text-sm transition-colors"
 								onclick={() => addCard(column.id)}
 							>
 								+ Add card

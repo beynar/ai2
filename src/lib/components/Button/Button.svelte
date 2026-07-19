@@ -36,6 +36,8 @@
 		'aria-selected': ariaSelected,
 		'aria-pressed': ariaPressed,
 		'data-active': dataActive,
+		'data-highlighted': dataHighlighted,
+		'data-slot': dataSlot,
 		...attachments
 	}: ButtonPrimitiveProps = $props();
 
@@ -62,6 +64,8 @@
 	{type}
 	bind:this={ref}
 	data-active={dataActive}
+	data-highlighted={dataHighlighted}
+	data-slot={dataSlot}
 	data-color={color}
 	{disabled}
 	class={classes.root({

@@ -1,6 +1,7 @@
 import type { InputProps } from '../Field/field.js';
 import type { FileInputThemeProps } from './fileInput.theme.js';
 import type { Snippet } from 'svelte';
+import type { FileRejection } from './fileAcceptance.js';
 
 export type FileInputMode = 'single' | 'multiple';
 export type FileInputType<Mode extends FileInputMode> = Mode extends 'multiple' ? 'files' : 'file';
@@ -18,6 +19,8 @@ export type FileInputProps<Mode extends FileInputMode = 'single'> = Omit<
 	value?: FileInputValue<Mode>;
 	/** Called whenever the selected file(s) change. */
 	onChange?: (value: FileInputValue<Mode>) => void;
+	/** Called with each file rejected by type, size, duplicate, or count validation. */
+	onReject?: (rejections: FileRejection[]) => void;
 	/** Accepted MIME types or extensions for the hidden input accept attribute and drag validation. */
 	types?: string[];
 	/** Maximum number of files allowed; in multiple mode caps the combined selection. */
@@ -42,4 +45,3 @@ export type FileInputProps<Mode extends FileInputMode = 'single'> = Omit<
 	/** Theme overrides for the file input dropzone and field parts. */
 	theme?: FileInputThemeProps & InputProps<FileInputType<Mode>>['theme'];
 };
-

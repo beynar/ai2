@@ -20,12 +20,11 @@ const defaultButton = cva({
 			info: 'bg-info text-info-contrast'
 		},
 		variant: {
-			solid: 'bg-color text-color-contrast hover:bg-color/90 active:bg-color/80',
-			outline:
-				'bg-color/0 border border-color hover:bg-color/10 text-color-readable active:bg-color/20',
-			soft: 'text-color-muted-readable hover:bg-color/30  bg-color-muted active:bg-color/20',
-			ghost: 'text-color-readable hover:bg-color-muted bg-color/0 active:bg-color-muted/70',
-			link: 'bg-transparent hover:bg-opacity-60 text-color-readable hover:underline active:bg-color-muted/60'
+			solid: 'state-layer bg-color text-color-contrast',
+			outline: 'state-layer bg-color/0 border border-color text-color-readable',
+			soft: 'state-layer text-color-muted-readable bg-color-muted',
+			ghost: 'state-layer text-color-readable bg-color/0',
+			link: 'bg-transparent text-color-readable hover:underline'
 		},
 		loading: {
 			true: 'cursor-default pointer-events-none',
@@ -52,37 +51,17 @@ const defaultButton = cva({
 		{
 			color: 'background',
 			variant: 'outline',
-			class: 'border-background-muted text-foreground hover:bg-background-lighter'
-		},
-		{
-			color: 'background',
-			variant: 'solid',
-			class: 'active:bg-background-light'
+			class: 'border-background-muted text-foreground'
 		},
 		{
 			color: 'background',
 			variant: 'soft',
-			class: 'bg-background-lighter text-color-contrast hover:bg-background-light'
-		},
-		{
-			color: 'foreground',
-			variant: 'ghost',
-			class: 'hover:bg-foreground-muted/20 active:bg-foreground-muted/20'
-		},
-		{
-			color: 'background',
-			variant: 'ghost',
-			class: 'active:bg-background-muted/10 hover:bg-background-muted/20'
+			class: 'bg-background-lighter text-color-contrast'
 		},
 		{
 			color: 'foreground',
 			variant: 'link',
-			class: 'active:bg-foreground-muted/10 text-foreground'
-		},
-		{
-			color: 'background',
-			variant: 'link',
-			class: 'active:bg-background-muted/10'
+			class: 'text-foreground'
 		}
 	]
 });

@@ -10,19 +10,24 @@
 	import Slot from '../Slot/Slot.svelte';
 	import type { DataTableClasses } from './dataTable.theme.js';
 	import type { DataTableModel } from './dataTable.model.svelte.js';
+	import type { DataTableApi } from './dataTable.props.js';
 
 	let {
 		model,
 		classes,
-		revision
+		revision,
+		tableApi
 	}: {
 		model: DataTableModel<TData>;
 		classes: DataTableClasses;
 		revision: number;
+		tableApi: DataTableApi<TData>;
 	} = $props();
 
 	let searchValue = $state(untrack(() => model.state.globalFilter));
 	let searchTimer: ReturnType<typeof setTimeout> | null = null;
+	let syncedGlobalFilter = untrack(() => model.state.globalFilter);
+	let submittedGlobalFilter: string | null = null;
 
 	const searchConfig = $derived.by(() => {
 		if (typeof model.props.search === 'object') return model.props.search;
@@ -42,11 +47,11 @@
 		model.state.grouping;
 		model.state.expanded;
 		return {
-			state: model.state,
-			selectedRows,
-			visibleRows: model.pageRows.map((row) => row.original),
-			clearFilters: () => model.clearFilters(),
-			clearSelection: () => model.clearSelection()
+			state: tableApi.state,
+			selectedRows: [...tableApi.selectedRows],
+			visibleRows: [...tableApi.visibleRows],
+			clearFilters: tableApi.clearFilters,
+			clearSelection: tableApi.clearSelection
 		};
 	});
 	const hasFilters = $derived(!!model.state.globalFilter || model.state.columnFilters.length > 0);
@@ -86,13 +91,27 @@
 		!!searchConfig ||
 			!!model.props.toolbarPrefix ||
 			!!model.props.toolbarSuffix ||
-			(hideableColumns.length > 0 && model.publicColumns.length > 1) ||
+			(model.props.showColumnVisibilityControl &&
+				hideableColumns.length > 0 &&
+				model.publicColumns.length > 1) ||
 			(selectedRows.length > 0 && !!model.props.bulkActions)
 	);
 
 	$effect(() => {
-		if (searchTimer || model.state.globalFilter === searchValue) return;
-		searchValue = model.state.globalFilter;
+		revision;
+		const globalFilter = model.state.globalFilter;
+		if (globalFilter === syncedGlobalFilter) return;
+		syncedGlobalFilter = globalFilter;
+		if (globalFilter === submittedGlobalFilter) {
+			submittedGlobalFilter = null;
+			return;
+		}
+		submittedGlobalFilter = null;
+		if (searchTimer) {
+			clearTimeout(searchTimer);
+			searchTimer = null;
+		}
+		searchValue = globalFilter;
 	});
 
 	const updateSearch = (value: string) => {
@@ -100,6 +119,8 @@
 		if (searchTimer) clearTimeout(searchTimer);
 		searchTimer = setTimeout(() => {
 			searchTimer = null;
+			if (model.state.globalFilter === value) return;
+			submittedGlobalFilter = value;
 			model.setGlobalFilter(value);
 		}, searchConfig?.debounce ?? 150);
 	};
@@ -144,7 +165,7 @@
 				</Button>
 			{/if}
 
-			{#if hideableColumns.length > 0 && model.publicColumns.length > 1}
+			{#if model.props.showColumnVisibilityControl && hideableColumns.length > 0 && model.publicColumns.length > 1}
 				<PopupMenu
 					closeOnItemClick={false}
 					mobileSheet
@@ -153,7 +174,7 @@
 						label: 'Choose visible columns',
 						content: 'Columns',
 						prefix: columnsIcon,
-						variant: 'outline',
+						variant: 'ghost',
 						color: 'foreground',
 						size: 'small',
 						disabled: model.props.disabled

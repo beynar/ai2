@@ -1,5 +1,6 @@
 <script lang="ts" generics="TData">
 	import type { Row } from '@tanstack/table-core';
+	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { on } from 'svelte/events';
 	import DateInput from '../Form/DateInput/DateInput.svelte';
@@ -30,32 +31,61 @@
 	const payload = $derived(model.getEditorPayload());
 
 	const focusEditor: Attachment<HTMLElement> = (element) => {
-		queueMicrotask(() => {
+		const frame = requestAnimationFrame(() => {
 			const target = element.querySelector<HTMLElement>(
-				'input, button, [tabindex]:not([tabindex="-1"])'
+				'[role="switch"], input:not([hidden]):not([type="hidden"]), textarea, select, button, [tabindex]:not([hidden]):not(input[type="hidden"])'
 			);
-			target?.focus();
+			if (target) {
+				target.tabIndex = 0;
+				target.focus();
+				if (editor?.type === 'select' && target.matches('[role="combobox"]')) target.click();
+			}
 			if (target instanceof HTMLInputElement && target.type !== 'checkbox') target.select();
 		});
+		return () => cancelAnimationFrame(frame);
+	};
+
+	const focusCell = async (element: HTMLElement) => {
+		const cell = element.closest<HTMLElement>('td');
+		await tick();
+		cell?.focus();
+	};
+
+	const commitAndFocusCell = async (element: HTMLElement) => {
+		const commit = model.commitEditing();
+		await focusCell(element);
+		await commit;
+	};
+
+	const commitCalendarDate = (value: Date | null) => {
+		payload?.setDraft(value);
+		void model.commitEditing();
 	};
 
 	const handleKeydown = async (event: KeyboardEvent) => {
+		const editorElement = event.currentTarget as HTMLElement;
 		if (event.key === 'Escape') {
 			event.preventDefault();
+			event.stopPropagation();
 			model.cancelEditing();
+			await focusCell(editorElement);
 			return;
 		}
 		if (event.key === 'Tab') {
 			event.preventDefault();
-			const committed = await model.commitEditing();
-			if (committed) model.moveEditing(row, columnId, event.shiftKey ? -1 : 1);
+			event.stopPropagation();
+			await commitAndFocusCell(editorElement);
+			return;
+		}
+		if (event.key.startsWith('Arrow')) {
+			event.stopPropagation();
 			return;
 		}
 		if (editor?.type === 'custom') return;
 		if (event.key === 'Enter') {
 			event.preventDefault();
-			const cell = (event.currentTarget as HTMLElement).closest<HTMLElement>('td');
-			if (await model.commitEditing()) cell?.focus();
+			event.stopPropagation();
+			await commitAndFocusCell(editorElement);
 		}
 	};
 
@@ -83,11 +113,6 @@
 			if (ownsClickTarget(element, event.target)) return;
 			void model.commitEditing();
 		});
-
-	const commitDate = (value: Date | null) => {
-		payload?.setDraft(value);
-		void model.commitEditing();
-	};
 
 	const errorMessage = $derived.by(() => {
 		if (payload?.error instanceof Error) return payload.error.message;
@@ -151,7 +176,8 @@
 				maxDate={editor.max}
 				disabled={payload.pending}
 				value={payload.draft instanceof Date ? payload.draft : null}
-				onChange={commitDate}
+				onChange={payload.setDraft}
+				onCalendarSelect={commitCalendarDate}
 			/>
 		{:else if editor.type === 'switch'}
 			<Switch

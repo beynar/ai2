@@ -106,8 +106,7 @@
 		widthIcon="3.5rem"
 		resizable={{
 			minWidth: '12rem',
-			maxWidth: '24rem',
-			collapseThreshold: '10.5rem'
+			maxWidth: '24rem'
 		}}
 		headerButton={{
 			icon: commandIcon,

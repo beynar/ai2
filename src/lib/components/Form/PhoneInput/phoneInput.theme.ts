@@ -154,12 +154,12 @@ const defaultCountryOption = cva({
 			large: 'min-h-8 py-1.5 text-sm'
 		},
 		highlighted: {
-			true: 'bg-background-dark dark:bg-background-light',
+			true: '',
 			false: ''
 		},
 		selected: {
-			true: 'bg-primary text-primary-contrast hover:bg-primary',
-			false: 'text-foreground hover:bg-background-muted'
+			true: 'bg-primary text-primary-contrast',
+			false: 'text-foreground'
 		}
 	},
 	defaultVariants: {

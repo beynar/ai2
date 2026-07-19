@@ -39,14 +39,14 @@
 </script>
 
 <div
-	class="h-[560px] w-full overflow-hidden rounded-lg border border-background-muted bg-background-muted"
+	class="h-[560px] w-full overflow-auto rounded-lg border border-background-muted bg-background-muted"
 >
 	<Sidebar
 		open={leftOpen}
 		onOpenChange={(nextOpen: boolean) => (leftOpen = nextOpen)}
 		items={leftItems}
 		collapsible="icon"
-		variant="sidebar"
+		variant="admin"
 		frame="contained"
 		width="14rem"
 		widthIcon="3.5rem"
@@ -65,7 +65,7 @@
 				items={rightItems}
 				side="right"
 				collapsible="icon"
-				variant="sidebar"
+				variant="admin"
 				frame="contained"
 				width="16rem"
 				widthIcon="3.5rem"

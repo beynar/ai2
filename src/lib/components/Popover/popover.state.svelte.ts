@@ -3,7 +3,6 @@ import { getContext, hasContext, mount, onMount, setContext, untrack } from 'sve
 import { useTheme } from '../Theme/theme.state.svelte.js';
 import type { PopoverProps } from './popover.props.js';
 import {
-	autoPlacement,
 	computePosition,
 	autoUpdate,
 	hide,
@@ -244,30 +243,25 @@ export class PopoverState {
 			this.triggerWidth = this.referenceElement!.getBoundingClientRect().width;
 		}
 
-		const { x, y, strategy, placement, middlewareData } = await computePosition(
-			this.referenceElement!,
-			node,
-			{
-				strategy: 'fixed',
-				placement: this.computedPosition,
+		const { x, y, strategy, placement } = await computePosition(this.referenceElement!, node, {
+			strategy: 'fixed',
+			placement: this.computedPosition,
 
-				middleware: [
-					hide(),
-					offset(this.offset ?? 4),
-					// shift({
-					// 	mainAxis: true,
-					// 	crossAxis: true,
-					// 	padding: 20,
-
-					// }),
-					flip({
-						mainAxis: true,
-						crossAxis: true,
-						padding: 20
-					})
-				]
-			}
-		);
+			middleware: [
+				offset(this.offset ?? 4),
+				flip({
+					mainAxis: true,
+					crossAxis: true,
+					padding: 20
+				}),
+				shift({
+					mainAxis: true,
+					crossAxis: true,
+					padding: 20
+				}),
+				hide()
+			]
+		});
 
 		Object.assign(node.style, {
 			position: strategy,

@@ -89,7 +89,7 @@ const defaultToastPrefix = cva({
 // Inline, top-aligned close button (sits in the header row next to the title, not
 // floating outside the toast). Subtle by default, tinting on hover.
 const defaultToastCloseIcon = cva({
-	base: 'shrink-0 -mr-1 -mt-0.5 flex items-center justify-center rounded-md leading-none transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/40',
+	base: 'state-layer shrink-0 -mr-1 -mt-0.5 flex items-center justify-center rounded-md leading-none transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/40',
 	variants: {
 		size: {
 			small: 'size-4 [&_svg]:size-3',
@@ -97,8 +97,8 @@ const defaultToastCloseIcon = cva({
 			large: 'size-6 [&_svg]:size-4'
 		},
 		richColors: {
-			true: 'text-color-muted-readable/70 hover:bg-color/15 hover:text-color-muted-readable',
-			false: 'text-foreground-muted hover:bg-background-muted hover:text-foreground'
+			true: 'text-color-muted-readable/70 hover:text-color-muted-readable',
+			false: 'text-foreground-muted hover:text-foreground'
 		},
 		color: {
 			primary: '',
@@ -115,12 +115,12 @@ const defaultToastCloseIcon = cva({
 		{
 			richColors: true,
 			color: 'foreground',
-			class: 'text-background/60 hover:bg-background/15 hover:text-background'
+			class: 'text-background/60 hover:text-background'
 		},
 		{
 			richColors: true,
 			color: 'background',
-			class: 'text-foreground-muted hover:bg-foreground/10 hover:text-foreground'
+			class: 'text-foreground-muted hover:text-foreground'
 		}
 	],
 	defaultVariants: { size: 'normal' }

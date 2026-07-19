@@ -32,7 +32,9 @@
 	let sidebarWidth = $state('16rem');
 
 	const previewAppShellTheme = {
-		root: { base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted' }
+		root: {
+			base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+		}
 	} satisfies AppShellThemeProps;
 
 	const productGroups: SidebarGroup[] = [
@@ -54,7 +56,7 @@
 			name: 'Classic admin',
 			description: 'Full-width workspace with a fixed, tinted navigation column.',
 			title: 'Operations',
-			variant: 'sidebar',
+			variant: 'admin',
 			contentWidth: 'full',
 			contentPadding: 'normal',
 			sidebar: {
@@ -116,7 +118,6 @@
 		resizable: {
 			minWidth: '12rem',
 			maxWidth: '24rem',
-			collapseThreshold: '10.5rem',
 			onWidthChange: (nextWidth) => {
 				sidebarWidth = nextWidth;
 			}

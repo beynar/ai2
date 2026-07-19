@@ -90,6 +90,7 @@
 	});
 
 	const togglePageSelection = (checked: boolean) => {
+		if (model.props.disabled) return;
 		for (const row of selectableRows) row.toggleSelected(checked);
 	};
 </script>
@@ -102,6 +103,7 @@
 	<tr class={classes.headerRow()} style:grid-template-columns={gridTemplate} {@attach dnd.list}>
 		{#each columns as column (column.id)}
 			{@const allIndex = allColumns.findIndex((entry) => entry.id === column.id)}
+			{@const gridColumn = allIndex + 1 + (column.getIsPinned() === 'right' ? 1 : 0)}
 			{#if column.id === '__selection'}
 				<th
 					role="columnheader"
@@ -115,7 +117,7 @@
 							classes.pinnedBoundary({ side: pinnedBoundaryFor(column) })
 						].join(' ')
 					})}
-					style:grid-column={allIndex + 1}
+					style:grid-column={gridColumn}
 					style:position="sticky"
 					style:inset-inline-start={`${column.getStart('left')}px`}
 				>
@@ -140,7 +142,7 @@
 				<DataTableHeaderCell
 					{column}
 					columnIndex={allIndex}
-					gridColumn={allIndex + 1}
+					{gridColumn}
 					{model}
 					{classes}
 					{density}

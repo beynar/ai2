@@ -33,6 +33,8 @@ Use \`format\` with \`dd\`, \`mm\`, \`yy\`, and \`yyyy\` segments. Supported val
 - \`calendarView\`: \`'single' | 'double'\`.
 - \`mobileSheet\`: renders the DateSelector as a bottom sheet below 768px.
 - \`closeOnSelect\`: closes after choosing a date; defaults to \`false\`.
+- \`onCalendarSelect\`: called only when a date is chosen from the selector or its presets;
+  \`onChange\` continues to report both typed and selected valid dates.
 
 \`\`\`svelte
 <DateInput

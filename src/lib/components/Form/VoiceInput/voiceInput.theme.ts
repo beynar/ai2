@@ -195,8 +195,7 @@ const defaultAction = cva({
 		{
 			variant: 'compact',
 			recording: true,
-			class:
-				'!border-color !bg-color !text-color-contrast shadow-sm hover:!bg-color/90 active:!bg-color/80'
+			class: '!border-color !bg-color !text-color-contrast shadow-sm'
 		},
 		{ variant: 'compact', size: 'small', class: '!size-8' },
 		{ variant: 'compact', size: 'normal', class: '!size-9' },

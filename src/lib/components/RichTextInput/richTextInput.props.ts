@@ -4,7 +4,7 @@ import type { WithAttachments } from '$lib/types/props.js';
 import type { RichTextInputThemeProps } from './richTextInput.theme.js';
 
 export type RichTextInputSearchResult<T> = T[] | Promise<T[]>;
-export type RichTextInputTokenKind = 'file' | 'reference' | 'skill' | 'command';
+export type RichTextInputTokenKind = 'file' | 'reference' | 'mention' | 'skill' | 'command';
 export type RichTextInputToolbar = 'hover' | 'fixed' | 'both' | 'none';
 export type RichTextInputSubmitShortcut = 'enter' | 'shift-enter' | 'command-enter' | 'none';
 export type RichTextInputMaxHeight = number | string | false;

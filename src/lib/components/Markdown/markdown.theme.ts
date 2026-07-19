@@ -191,9 +191,11 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			icon: 'size-5',
 			note: '[&>[data-alert-title]]:text-info border-info/40 stroke-info bg-info-muted',
 			tip: '[&>[data-alert-title]]:text-success border-success/40 stroke-success bg-success-muted',
-			warning: '[&>[data-alert-title]]:text-warning border-warning/40 stroke-warning bg-warning-muted',
+			warning:
+				'[&>[data-alert-title]]:text-warning border-warning/40 stroke-warning bg-warning-muted',
 			caution: '[&>[data-alert-title]]:text-danger border-danger/40 stroke-danger bg-danger-muted',
-			important: '[&>[data-alert-title]]:text-primary border-primary/40 stroke-primary bg-primary-muted'
+			important:
+				'[&>[data-alert-title]]:text-primary border-primary/40 stroke-primary bg-primary-muted'
 		},
 		table: {
 			base: `overflow-x-auto max-w-full ${s.blockMargin} rounded-lg border border-background-muted`,
@@ -209,7 +211,7 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			base: 'bg-background-muted/50 border-t border-background-muted'
 		},
 		tr: {
-			base: 'border-background-muted not-last:border-b hover:bg-background-muted/50 transition-colors'
+			base: 'state-layer border-background-muted not-last:border-b transition-colors'
 		},
 		td: {
 			base: `px-4 py-3 ${s.smallText} text-foreground min-w-[200px] max-w-[400px] break-words`
@@ -248,7 +250,7 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			base: 'text-foreground-muted'
 		},
 		footnoteRef: {
-			base: `text-foreground-muted ${s.smallText} rounded-full bg-background-muted cursor-pointer border border-background-muted hover:bg-background-muted/50 tabular-nums min-w-5 min-h-5 outline-none focus:ring-1 focus:ring-primary`
+			base: `state-layer text-foreground-muted ${s.smallText} rounded-full bg-background-muted cursor-pointer border border-background-muted tabular-nums min-w-5 min-h-5 outline-none focus:ring-1 focus:ring-primary`
 		},
 		descriptionList: {
 			base: `${s.blockMargin} space-y-2`
@@ -260,7 +262,7 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			base: 'text-foreground-muted ml-4 leading-relaxed'
 		},
 		inlineCitation: {
-			preview: `${s.smallText} text-foreground-muted bg-background-muted rounded-md px-2 py-0.5 cursor-pointer inline-flex border border-background-muted hover:bg-background-muted/50 outline-none focus:ring-1 focus:ring-primary`,
+			preview: `state-layer ${s.smallText} text-foreground-muted bg-background-muted rounded-md px-2 py-0.5 cursor-pointer inline-flex border border-background-muted outline-none focus:ring-1 focus:ring-primary`,
 			carousel: {
 				header: 'flex items-center justify-between',
 				stepCounter: 'h-fit text-xs font-semibold text-foreground-muted tabular-nums',
@@ -271,7 +273,7 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			},
 			list: {
 				base: 'grid gap-2',
-				item: 'grid gap-1 hover:bg-background-muted rounded-md p-2',
+				item: 'state-layer grid gap-1 rounded-md p-2',
 				title: 'line-clamp-1 font-semibold text-sm',
 				url: 'flex items-center gap-2 text-xs text-foreground-muted',
 				favicon: 'h-3 w-3 rounded'
@@ -279,7 +281,7 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 		},
 		components: {
 			button:
-				'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer p-1 text-foreground-muted transition-all hover:text-foreground rounded hover:bg-background-muted flex items-center justify-center w-6 h-6',
+				'state-layer disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer p-1 text-foreground-muted transition-all hover:text-foreground rounded flex items-center justify-center w-6 h-6',
 			popover:
 				'min-w-[250px] max-w-md fixed z-[1000] max-h-md overflow-y-auto rounded-lg bg-background border border-background-muted p-2 shadow'
 		}

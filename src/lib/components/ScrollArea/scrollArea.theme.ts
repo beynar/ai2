@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultScrollArea = cva({
-	base: 'relative'
+	base: 'relative isolate'
 });
 
 const defaultScrollAreaViewport = cva({
@@ -29,11 +29,11 @@ const defaultScrollAreaContent = cva({
 });
 
 const defaultScrollAreaScrollbar = cva({
-	base: 'absolute top-0 right-0 w-1.5 cursor-pointer'
+	base: 'absolute top-0 right-0 z-30 w-1.5 cursor-pointer'
 });
 
 const defaultScrollAreaScrollbarX = cva({
-	base: 'absolute bottom-0 left-0 h-1.5 cursor-pointer'
+	base: 'absolute bottom-0 left-0 z-30 h-1.5 cursor-pointer'
 });
 
 const defaultScrollAreaScrollbarThumb = cva({

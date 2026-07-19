@@ -9,7 +9,7 @@ import type { SidebarThemeProps } from './sidebar.theme.js';
 export type SidebarDisplayState = 'expanded' | 'collapsed' | 'hidden';
 export type SidebarState = SidebarDisplayState;
 export type SidebarSide = 'left' | 'right';
-export type SidebarVariant = 'sidebar' | 'floating' | 'inset' | 'split';
+export type SidebarVariant = 'admin' | 'floating' | 'inset' | 'split';
 export type SidebarSize = Sizes;
 export type SidebarDensity = Density;
 export type SidebarCollapsible = 'offcanvas' | 'icon' | 'none';
@@ -34,7 +34,7 @@ export type SidebarResizableOptions = {
 	minWidth?: string | number;
 	/** Maximum expanded width. */
 	maxWidth?: string | number;
-	/** Width below which dragging collapses the sidebar. Defaults to minWidth. */
+	/** Width below which dragging collapses the sidebar. Defaults to 75% past minWidth. */
 	collapseThreshold?: string | number;
 	/** Keyboard resize step in pixels. */
 	keyboardStep?: number;

@@ -238,7 +238,12 @@
 	});
 </script>
 
-<div {@attach attachMap} data-slot="map" class={classes.root({ size, className })} {...rest}>
+<div
+	{@attach attachMap}
+	data-slot="map"
+	class={classes.root({ size, interactive: interactive !== false, className })}
+	{...rest}
+>
 	{#if loadError}
 		<div
 			role="alert"

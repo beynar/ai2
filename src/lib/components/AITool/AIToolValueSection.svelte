@@ -1,0 +1,49 @@
+<script lang="ts">
+	import ScrollArea from '../ScrollArea/ScrollArea.svelte';
+	import Slot from '../Slot/Slot.svelte';
+	import type { AIToolCall, AIToolSnippet } from './aiTool.props.js';
+	import type { AIToolThemeProps } from './aiTool.theme.js';
+	import { useAIToolTheme } from './aiTool.theme.js';
+	import { createAIToolScrollAreaTheme, type AIToolValueTone } from './aiToolPrimitiveThemes.js';
+	import AIToolValueTree from './AIToolValueTree.svelte';
+
+	let {
+		tool,
+		index,
+		label,
+		value,
+		snippet,
+		tone = 'default',
+		maxDepth,
+		maxEntries,
+		theme
+	}: {
+		tool: AIToolCall;
+		index: number;
+		label: string;
+		value: unknown;
+		snippet?: AIToolSnippet;
+		tone?: AIToolValueTone;
+		maxDepth: number;
+		maxEntries: number;
+		theme?: AIToolThemeProps;
+	} = $props();
+
+	const classes = $derived(useAIToolTheme(theme));
+	const scrollAreaTheme = $derived(createAIToolScrollAreaTheme(classes, tone));
+</script>
+
+<section
+	data-slot={tone === 'error' ? 'ai-tool-error' : 'ai-tool-value'}
+	data-tone={tone}
+	class={classes.section({ tone })}
+>
+	<div data-slot="ai-tool-value-label" class={classes.label({ tone })}>{label}</div>
+	{#if snippet}
+		<Slot render={snippet} payload={{ tool, index }} />
+	{:else}
+		<ScrollArea type="hover" ariaLabel={`${label} details`} theme={scrollAreaTheme}>
+			<AIToolValueTree {value} {tone} {maxDepth} {maxEntries} {theme} />
+		</ScrollArea>
+	{/if}
+</section>

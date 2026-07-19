@@ -58,15 +58,24 @@ export const useClipboard = (opts: ClipboardOptions = {}) => {
 		copied = false;
 	};
 
-	/** Copy `text` to the clipboard; sets `copied` on success. */
-	const copy = (text: string) => {
+	/** Copy `text` to the clipboard; sets `copied` on success and reports the outcome. */
+	const copy = async (text: string): Promise<boolean> => {
 		if (typeof navigator !== 'undefined' && navigator.clipboard) {
-			navigator.clipboard.writeText(text).then(markCopied, () => {
-				if (legacyCopy(text)) markCopied();
-			});
-		} else if (legacyCopy(text)) {
+			try {
+				await navigator.clipboard.writeText(text);
+				markCopied();
+				return true;
+			} catch {
+				const didCopy = legacyCopy(text);
+				if (didCopy) markCopied();
+				return didCopy;
+			}
+		}
+		const didCopy = legacyCopy(text);
+		if (didCopy) {
 			markCopied();
 		}
+		return didCopy;
 	};
 
 	$effect(() => () => clearTimeout(timer));

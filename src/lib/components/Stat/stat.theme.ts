@@ -110,7 +110,7 @@ const defaultStatIndicator = cva({
 			icon: 'border border-current/15 bg-current/5',
 			badge: 'border border-current/15 bg-current/5 font-medium',
 			action:
-				'border border-transparent bg-transparent transition-colors hover:bg-current/10 active:bg-current/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50'
+				'state-layer border border-transparent bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50'
 		},
 		color: {
 			primary: 'text-primary',

@@ -27,14 +27,14 @@
 	type DemoState = 'expanded' | 'icon' | 'hidden';
 
 	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
-	let selectedRecipeId = $state('sidebar');
+	let selectedRecipeId = $state('admin');
 	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('collapsed');
 	let sidebarWidth = $state('16rem');
 	let sidebarSize = $state<SidebarSize>('normal');
 	let sidebarDensity = $state<SidebarDensity>('normal');
 
 	const variantRecipes: VariantRecipe[] = [
-		{ id: 'sidebar', label: 'sidebar', variant: 'sidebar' },
+		{ id: 'admin', label: 'admin', variant: 'admin' },
 		{ id: 'floating', label: 'floating', variant: 'floating' },
 		{ id: 'inset', label: 'inset', variant: 'inset' },
 		{ id: 'split', label: 'split', variant: 'split' }
@@ -133,7 +133,6 @@
 		resizable: {
 			minWidth: '12rem',
 			maxWidth: '24rem',
-			collapseThreshold: '10.5rem',
 			storageKey: 'sidebar-variant-demo-width',
 			onWidthChange: (nextWidth) => {
 				sidebarWidth = nextWidth;
@@ -205,7 +204,7 @@
 			contentWidth="normal"
 			theme={{
 				root: {
-					base: 'h-full !min-h-0 overflow-hidden rounded-lg border border-background-muted'
+					base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
 				}
 			}}
 		>

@@ -1,18 +1,42 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import DataTableBasicDemo from './DataTableBasicDemo.svelte';
 	import DataTableEditingDemo from './DataTableEditingDemo.svelte';
+	import DataTableExternalControlsDemo from './DataTableExternalControlsDemo.svelte';
 	import DataTableGroupingDemo from './DataTableGroupingDemo.svelte';
 	import DataTableLargeDemo from './DataTableLargeDemo.svelte';
 	import DataTableManualDemo from './DataTableManualDemo.svelte';
+	import DataTableRenderingDemo from './DataTableRenderingDemo.svelte';
 	import {
 		basicDataTableCode,
 		editingDataTableCode,
+		externalControlsDataTableCode,
 		gridDataTableCode,
 		groupingDataTableCode,
-		manualDataTableCode
+		manualDataTableCode,
+		renderingDataTableCode
 	} from './codeSnippets.js';
+
+	const controls = createComponentControls([
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'selectionMode',
+			type: 'segmented',
+			label: 'Selection',
+			value: 'none',
+			options: ['none', 'single', 'multiple']
+		},
+		{ name: 'search', type: 'switch', label: 'Search', value: true },
+		{ name: 'stickyHeader', type: 'switch', label: 'Sticky header', value: true }
+	]);
 </script>
 
 <DocPage
@@ -33,25 +57,54 @@
 		<p class="text-foreground-muted max-w-3xl text-sm leading-6">
 			Use <code>Table</code> for static tabular content. Use <code>DataTable</code> when rows need
 			stable identity, processing state, virtualization, or interactive columns. DataTable requires
-			both <code>getRowId</code> and a bounded <code>height</code> so neither contract is guessed.
+			<code>getRowId</code> and fills a parent with a definite height by default; pass
+			<code>height</code> when the scroll viewport needs an explicit size.
 		</p>
 	</section>
 
 	<ComponentCard
+		{controls}
 		title="Semantic client table"
 		description="Native table semantics with global search, typed column filters, multi-sort, pagination, resizing, visibility, ordering, and pinning."
 		code={basicDataTableCode}
 		class="min-h-0 items-stretch p-3 md:p-5"
 	>
 		<div class="w-full">
-			<DataTableBasicDemo />
+			<DataTableBasicDemo
+				density={controls.value.density}
+				selectionMode={controls.value.selectionMode}
+				search={controls.value.search}
+				stickyHeader={controls.value.stickyHeader}
+			/>
 		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
 		<ComponentCard
+			title="Selective renderers"
+			description="A table-level cell renderer replaces only status cells while renderDefault preserves every other built-in cell. The header renderer wraps configured labels without taking ownership of sorting or column controls."
+			code={renderingDataTableCode}
+			class="min-h-0 items-stretch p-3 md:p-5"
+		>
+			<div class="w-full">
+				<DataTableRenderingDemo />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Externally composed controls"
+			description="The narrow bindable API drives search and Pagination outside the table. Processing stays enabled while showControls hides only the built-in footer."
+			code={externalControlsDataTableCode}
+			class="min-h-0 items-stretch p-3 md:p-5"
+		>
+			<div class="w-full">
+				<DataTableExternalControlsDemo />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
 			title="Selection and async editing"
-			description="Select rows, expand details, or double-click editable cells. Commits update optimistically while the table indicator tracks the request; clearing a name demonstrates rollback and the rejected state."
+			description="Click a cell, navigate with arrow keys, then press Enter or F2 to edit; double-click still edits directly. Commits update optimistically while the table indicator tracks the request; clearing a name demonstrates rollback and the rejected state."
 			code={editingDataTableCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>
@@ -73,7 +126,7 @@
 
 		<ComponentCard
 			title="Manual server state"
-			description="A simulated endpoint receives the complete state object and returns only the processed current page plus rowCount. Loading drives the table indicator, and stable rows use opt-in FLIP movement."
+			description="An abortable request receives filtering, sorting, and pagination state and returns only the processed current page plus rowCount. Grouping and aggregation remain client-only."
 			code={manualDataTableCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

@@ -70,16 +70,15 @@ const defaultPaginationControl = cva({
 			info: 'text-info-readable'
 		},
 		controlVariant: {
-			solid:
-				'border-transparent bg-color text-color-contrast hover:bg-color/90 [&:active]:bg-color/80',
+			solid: 'state-layer border-transparent bg-color text-color-contrast',
 			outline:
-				'border-background-muted bg-background text-foreground hover:border-color hover:bg-color/10 hover:text-color-readable [&:active]:bg-color/20',
-			soft: 'border-transparent bg-color-muted text-color-muted-readable hover:bg-color/30 [&:active]:bg-color/20',
+				'state-layer border-background-muted bg-background text-foreground hover:border-color hover:text-color-readable',
+			soft: 'state-layer border-transparent bg-color-muted text-color-muted-readable',
 			ghost:
-				'border-transparent bg-transparent text-foreground hover:bg-color-muted hover:text-color-readable [&:active]:bg-color-muted/70'
+				'state-layer border-transparent bg-transparent text-foreground hover:text-color-readable'
 		},
 		active: {
-			true: 'border-color bg-color text-color-contrast hover:bg-color/90 hover:text-color-contrast',
+			true: 'border-color bg-color text-color-contrast hover:text-color-contrast',
 			false: null
 		},
 		disabled: {
@@ -103,7 +102,7 @@ const defaultPaginationControl = cva({
 		{
 			color: 'background',
 			controlVariant: 'outline',
-			class: 'text-foreground hover:bg-background-muted hover:text-foreground'
+			class: 'text-foreground hover:text-foreground'
 		},
 		{
 			color: 'background',
@@ -113,7 +112,7 @@ const defaultPaginationControl = cva({
 		{
 			color: 'foreground',
 			controlVariant: 'ghost',
-			class: 'hover:bg-foreground-muted/20'
+			class: 'text-foreground'
 		}
 	]
 });

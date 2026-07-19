@@ -1,10 +1,39 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import MiniCalendar from '$lib/components/MiniCalendar/MiniCalendar.svelte';
 	import I18n from '$lib/i18n/I18n.svelte';
 
 	let selected = $state<Date | null>(new Date());
+	const today = new Date();
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'danger']
+		},
+		{
+			name: 'days',
+			type: 'slider',
+			label: 'Days',
+			value: 5,
+			min: 3,
+			max: 7,
+			step: 1,
+			showValue: true
+		},
+		{ name: 'disabled', type: 'switch', label: 'Disabled', value: false }
+	]);
 	const readout = $derived(
 		selected
 			? selected.toLocaleDateString(undefined, {
@@ -29,8 +58,23 @@
 		'Month labels follow the i18n locale, RTL supported'
 	]}
 >
-	<ComponentCard description="A basic mini calendar" code={`<MiniCalendar />`}>
-		<MiniCalendar />
+	<ComponentCard
+		{controls}
+		description="A compact calendar with configurable scale, range, and selected-day color."
+		code={`<MiniCalendar
+	size="${controls.value.size}"
+	color="${controls.value.color}"
+	days={${controls.value.days}}
+	disabled={${controls.value.disabled}}
+/>`}
+	>
+		<MiniCalendar
+			value={today}
+			size={controls.value.size}
+			color={controls.value.color}
+			days={controls.value.days}
+			disabled={controls.value.disabled}
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}

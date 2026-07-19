@@ -57,7 +57,7 @@
 			composes the same variant with PageShell and forwards its variant to Sidebar. For full
 			application layouts, compose it through
 			<a class="font-medium text-primary hover:underline" href="/components/app-shell">AppShell</a>.
-			For page headers, content width, and sticky footers, use
+			For page headers, content width, and page footers, use
 			<a class="font-medium text-primary hover:underline" href="/components/page-shell">PageShell</a
 			>.
 		</p>

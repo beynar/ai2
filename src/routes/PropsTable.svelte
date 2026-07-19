@@ -77,7 +77,7 @@
 						</tr>
 						{#each section.props as prop (prop.name)}
 							<tr
-								class="border-background-muted/40 hover:bg-background-muted/20 border-t align-top transition-colors"
+								class="state-layer border-background-muted/40 border-t align-top transition-colors"
 							>
 								<td class="px-6 py-3.5 whitespace-nowrap">
 									<span class="inline-flex items-center gap-2">

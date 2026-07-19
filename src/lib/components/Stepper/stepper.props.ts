@@ -1,4 +1,3 @@
-import { cva } from '$lib/utils/cva/index.js';
 import type { Snippet } from 'svelte';
 import type { StepperState } from './stepper.state.svelte.js';
 
@@ -11,6 +10,9 @@ export type StepperRenderPayload<Item> = {
 export type StepperPanelAriaLabelledby<Item> =
 	string | false | ((payload: StepperRenderPayload<Item>) => string | undefined);
 
+export type StepperPanelAriaLabel<Item> =
+	string | ((payload: StepperRenderPayload<Item>) => string | undefined);
+
 export type StepperProps<Item> = {
 	/**
 	 * Data for each step, passed to the repeated children snippet as `item`.
@@ -21,9 +23,9 @@ export type StepperProps<Item> = {
 	 */
 	children?: Snippet<[StepperRenderPayload<Item>]>;
 	/**
-	 * Called when the active step changes, with the newly active item.
+	 * Called when the active step changes, with the newly active item and index.
 	 */
-	onChange?: (item: Item) => void;
+	onChange?: (item: Item, index: number) => void;
 	/**
 	 * Additional CSS classes for the root stepper container.
 	 */
@@ -61,10 +63,12 @@ export type StepperProps<Item> = {
 	 * ARIA role applied to each panel. Pass null for neutral semantic containers.
 	 * @default 'tabpanel'
 	 */
-	panelRole?: 'tabpanel' | null;
+	panelRole?: 'tabpanel' | 'group' | null;
 	/**
 	 * aria-labelledby value for each panel. Defaults to `stepper-{index}` when
 	 * panelRole is `tabpanel`; pass false to omit it.
 	 */
 	panelAriaLabelledby?: StepperPanelAriaLabelledby<Item>;
+	/** Accessible label applied to each panel. */
+	panelAriaLabel?: StepperPanelAriaLabel<Item>;
 };

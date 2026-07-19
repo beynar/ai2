@@ -21,7 +21,7 @@ const defaultRoot = cva({
 });
 
 const defaultNavButton = cva({
-	base: 'inline-flex shrink-0 items-center justify-center rounded-xl text-foreground-muted outline-none transition-colors hover:bg-background-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none',
+	base: 'state-layer inline-flex shrink-0 items-center justify-center rounded-xl text-foreground-muted outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none',
 	variants: {
 		size: {
 			small: 'size-7',
@@ -55,7 +55,7 @@ const defaultTrack = cva({
 });
 
 const defaultDay = cva({
-	base: 'relative inline-flex shrink-0 flex-col items-center justify-center rounded-xl leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none',
+	base: 'state-layer relative inline-flex shrink-0 flex-col items-center justify-center rounded-xl leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none',
 	variants: {
 		size: {
 			small: 'min-w-11 gap-0.5 px-2 py-1',
@@ -74,7 +74,7 @@ const defaultDay = cva({
 		},
 		selected: {
 			true: 'raised',
-			false: 'text-foreground hover:bg-background-muted'
+			false: 'text-foreground'
 		},
 		today: {
 			true: '',

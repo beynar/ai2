@@ -33,6 +33,7 @@
 	features={[
 		'Forwards one variant to Sidebar for consistent shell geometry',
 		'Composes Sidebar-owned surfaces with PageShell page chrome',
+		'Keeps page scrolling on the document for native navigation restoration',
 		'Keeps Sidebar responsive drawer, collapse, rail, and edge reveal behavior',
 		'Header, footer, and children snippets receive both APIs',
 		'Child routes can still use setPageShell through context'
@@ -65,7 +66,6 @@
 		resizable: {
 			minWidth: '12rem',
 			maxWidth: '24rem',
-			collapseThreshold: '10.5rem',
 			onWidthChange: (nextWidth) => {
 				sidebarWidth = nextWidth;
 			}
@@ -139,7 +139,7 @@ ${'</' + 'script>'}
 		</ComponentCard>
 
 		<ComponentCard
-			description="A complete shell surface showing sidebar navigation, breadcrumbs or eyebrow context, a back affordance, content presets, responsive action overflow, and sticky footer actions."
+			description="A complete shell surface showing sidebar navigation, breadcrumbs or eyebrow context, a back affordance, content presets, responsive action overflow, and footer actions."
 			class="!min-h-fit !items-start !p-4"
 			code={featureShowcaseCode}
 		>

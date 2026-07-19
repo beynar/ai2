@@ -54,20 +54,40 @@ export function extractComponentDocs(project: Project, filePath: string): Compon
 
 /** Native element attribute intersections represented once by the props table instead of flattened. */
 function findInheritedHtmlAttributeTypes(declaration: Node): string[] {
-	const types = declaration
-		.getDescendantsOfKind(ts.SyntaxKind.TypeReference)
-		.filter((reference) => /^HTML\w*Attributes$/.test(reference.getTypeName().getText()))
-		.filter((reference) => {
-			return !reference.getAncestors().some((ancestor) => {
-				if (Node.isPropertySignature(ancestor) || Node.isIndexedAccessTypeNode(ancestor)) {
-					return true;
-				}
-				return Node.isTypeReference(ancestor) && ancestor.getTypeName().getText() === 'Pick';
-			});
-		})
-		.map((reference) => reference.getText().replace(/\s+/g, ' '));
+	const htmlAttributes = new Set<string>();
+	const visitedAliases = new Set<string>();
 
-	return [...new Set(types)];
+	visit(declaration);
+	return [...htmlAttributes];
+
+	function visit(node: Node): void {
+		for (const reference of node.getDescendantsOfKind(ts.SyntaxKind.TypeReference)) {
+			if (isNestedPropType(reference)) continue;
+			const typeName = reference.getTypeName().getText();
+			if (/^HTML\w*Attributes$/.test(typeName)) {
+				htmlAttributes.add(reference.getText().replace(/\s+/g, ' '));
+				continue;
+			}
+
+			const sourceFile = reference.getSourceFile();
+			const alias = sourceFile.getTypeAlias(typeName) ?? sourceFile.getInterface(typeName);
+			if (!alias) continue;
+			const aliasKey = `${sourceFile.getFilePath()}:${typeName}`;
+			if (visitedAliases.has(aliasKey)) continue;
+			visitedAliases.add(aliasKey);
+			visit(alias);
+		}
+	}
+
+	function isNestedPropType(reference: Node): boolean {
+		return reference.getAncestors().some((ancestor) => {
+			if (ancestor === declaration) return false;
+			if (Node.isPropertySignature(ancestor) || Node.isIndexedAccessTypeNode(ancestor)) {
+				return true;
+			}
+			return Node.isTypeReference(ancestor) && ancestor.getTypeName().getText() === 'Pick';
+		});
+	}
 }
 
 /**
@@ -131,7 +151,7 @@ function toPropDoc(
 		optional: isOptional(symbol, propType),
 		value,
 		description: getDescription(symbol, checker),
-		category: classify(name, value, propType, bindables),
+		category: classify(name, propType, bindables),
 		...(type ? { type } : {})
 	};
 }
@@ -150,13 +170,8 @@ function isInheritedHtmlAttribute(symbol: MorphSymbol): boolean {
  * Bucket a prop for grouping. Structural roles (slot, callback) win over
  * `binding`, which then covers the remaining `$bindable()` data props.
  */
-function classify(
-	name: string,
-	value: string,
-	propType: Type,
-	bindables: Set<string>
-): PropCategory {
-	if (/(^|[^A-Za-z])(Slot|SnippetSlot|Snippet)\b/.test(value)) return 'slot';
+function classify(name: string, propType: Type, bindables: Set<string>): PropCategory {
+	if (isSlotType(propType)) return 'slot';
 	if (hasCallableMember(propType)) return 'event';
 	if (bindables.has(name)) return 'binding';
 	return 'prop';

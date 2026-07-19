@@ -59,7 +59,7 @@ export function svelaiPropsDocs(): Plugin {
 			return `export default ${JSON.stringify(buildMap())};`;
 		},
 		handleHotUpdate(ctx) {
-			if (!ctx.file.endsWith('.props.ts')) return;
+			if (!ctx.file.endsWith('.ts')) return;
 
 			if (project) {
 				const sourceFile = project.getSourceFile(ctx.file);

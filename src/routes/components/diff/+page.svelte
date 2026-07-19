@@ -1,6 +1,7 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import Diff from '$lib/components/Diff/Diff.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import type { DiffFiles } from '$lib/components/Diff/diff.props.js';
@@ -98,6 +99,17 @@ export const LOCALE = 'en-GB';
 	let backgrounds = $state<'on' | 'off'>('on');
 	let indicators = $state<'classic' | 'bars' | 'none'>('classic');
 	let granularity = $state<'word' | 'char' | 'none'>('word');
+	const controls = createComponentControls([
+		{
+			name: 'diffStyle',
+			type: 'segmented',
+			label: 'Layout',
+			value: 'split',
+			options: ['split', 'unified']
+		},
+		{ name: 'lineNumbers', type: 'switch', label: 'Line numbers', value: true },
+		{ name: 'wrapping', type: 'switch', label: 'Wrap', value: false }
+	]);
 </script>
 
 {#snippet segmented(current: string, options: string[], onSelect: (value: string) => void)}
@@ -128,6 +140,7 @@ export const LOCALE = 'en-GB';
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Pass a [oldFile, newFile] tuple to diff raw file contents."
 		class="!min-h-fit"
 		code={`<Diff
@@ -151,10 +164,18 @@ export const LOCALE = 'en-GB';
 \`
 		}
 	]}
+	diffStyle="${controls.value.diffStyle}"
+	lineNumbers={${controls.value.lineNumbers}}
+	wrapping={${controls.value.wrapping}}
 />`}
 	>
 		<div class="w-full max-w-3xl">
-			<Diff files={greetFiles} />
+			<Diff
+				files={greetFiles}
+				diffStyle={controls.value.diffStyle}
+				lineNumbers={controls.value.lineNumbers}
+				wrapping={controls.value.wrapping}
+			/>
 		</div>
 	</ComponentCard>
 
@@ -182,7 +203,11 @@ export const LOCALE = 'en-GB';
 			class="!min-h-fit"
 		>
 			<div class="grid w-full max-w-3xl gap-3">
-				{@render segmented(diffStyle, ['split', 'unified'], (v) => (diffStyle = v as typeof diffStyle))}
+				{@render segmented(
+					diffStyle,
+					['split', 'unified'],
+					(v) => (diffStyle = v as typeof diffStyle)
+				)}
 				<Diff files={configFiles} {diffStyle} />
 			</div>
 		</ComponentCard>
@@ -197,10 +222,7 @@ export const LOCALE = 'en-GB';
 			</div>
 		</ComponentCard>
 
-		<ComponentCard
-			description="Toggle the line-number gutter with lineNumbers."
-			class="!min-h-fit"
-		>
+		<ComponentCard description="Toggle the line-number gutter with lineNumbers." class="!min-h-fit">
 			<div class="grid w-full max-w-3xl gap-3">
 				{@render segmented(gutter, ['on', 'off'], (v) => (gutter = v as typeof gutter))}
 				<Diff files={greetFiles} lineNumbers={gutter === 'on'} />
@@ -212,7 +234,11 @@ export const LOCALE = 'en-GB';
 			class="!min-h-fit"
 		>
 			<div class="grid w-full max-w-3xl gap-3">
-				{@render segmented(backgrounds, ['on', 'off'], (v) => (backgrounds = v as typeof backgrounds))}
+				{@render segmented(
+					backgrounds,
+					['on', 'off'],
+					(v) => (backgrounds = v as typeof backgrounds)
+				)}
 				<Diff files={configFiles} backgrounds={backgrounds === 'on'} />
 			</div>
 		</ComponentCard>
@@ -222,7 +248,11 @@ export const LOCALE = 'en-GB';
 			class="!min-h-fit"
 		>
 			<div class="grid w-full max-w-3xl gap-3">
-				{@render segmented(indicators, ['classic', 'bars', 'none'], (v) => (indicators = v as typeof indicators))}
+				{@render segmented(
+					indicators,
+					['classic', 'bars', 'none'],
+					(v) => (indicators = v as typeof indicators)
+				)}
 				<Diff files={configFiles} diffIndicators={indicators} />
 			</div>
 		</ComponentCard>
@@ -232,7 +262,11 @@ export const LOCALE = 'en-GB';
 			class="!min-h-fit"
 		>
 			<div class="grid w-full max-w-3xl gap-3">
-				{@render segmented(granularity, ['word', 'char', 'none'], (v) => (granularity = v as typeof granularity))}
+				{@render segmented(
+					granularity,
+					['word', 'char', 'none'],
+					(v) => (granularity = v as typeof granularity)
+				)}
 				<Diff files={granularityFiles} diffStyle="unified" lineDiffType={granularity} />
 			</div>
 		</ComponentCard>

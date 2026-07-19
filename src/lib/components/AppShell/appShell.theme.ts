@@ -2,29 +2,48 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultRoot = cva({
-	base: 'relative h-[var(--window-height,100dvh)] min-h-0 w-full overflow-hidden text-foreground'
+	base: 'relative min-h-[var(--window-height,100dvh)] w-full text-foreground'
 });
 
 const defaultPage = cva({
-	base: 'h-full min-h-0 overflow-hidden',
+	base: 'min-h-full [--page-shell-edge-shadow:none] [--page-shell-gap-shadow:none]',
 	variants: {
 		variant: {
-			sidebar:
-				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)]',
+			admin:
+				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)] [--page-shell-underlay:var(--color-background)]',
 			floating:
-				'bg-background-dark [--page-shell-chrome:var(--color-background-dark)] [--page-shell-surface:var(--color-background-dark)]',
+				'bg-background-dark [--page-shell-chrome:var(--color-background-dark)] [--page-shell-surface:var(--color-background-dark)] [--page-shell-underlay:var(--color-background-dark)]',
 			inset:
-				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)]',
+				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)] [--page-shell-underlay:var(--color-background-dark)]',
 			split:
-				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)]'
+				'bg-background [--page-shell-chrome:var(--color-background)] [--page-shell-surface:var(--color-background)] [--page-shell-underlay:var(--color-background-dark)]'
 		},
 		side: {
 			left: '',
 			right: ''
 		}
 	},
+	compoundVariants: [
+		{
+			variant: 'inset',
+			side: 'left',
+			class:
+				'[--page-shell-edge-shadow:-2px_0_4px_-2px_rgb(0_0_0_/_0.12)] [--page-shell-gap-shadow:-0.5rem_0_0_0_var(--page-shell-underlay)]'
+		},
+		{
+			variant: 'inset',
+			side: 'right',
+			class:
+				'[--page-shell-edge-shadow:2px_0_4px_-2px_rgb(0_0_0_/_0.12)] [--page-shell-gap-shadow:0.5rem_0_0_0_var(--page-shell-underlay)]'
+		},
+		{
+			variant: 'split',
+			class:
+				'[--page-shell-edge-shadow:-2px_0_4px_-2px_rgb(0_0_0_/_0.12),2px_0_4px_-2px_rgb(0_0_0_/_0.12)] [--page-shell-gap-shadow:-0.5rem_0_0_0_var(--page-shell-underlay),0.5rem_0_0_0_var(--page-shell-underlay)]'
+		}
+	],
 	defaultVariants: {
-		variant: 'sidebar',
+		variant: 'admin',
 		side: 'left'
 	}
 });

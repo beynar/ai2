@@ -1,7 +1,26 @@
 <script lang="ts">
 	import { Marquee } from '$lib/components/Marquee/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
+
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'speed',
+			type: 'segmented',
+			label: 'Speed',
+			value: 'fast',
+			options: ['fast', 'normal', 'slow']
+		},
+		{ name: 'pauseOnHover', type: 'switch', label: 'Pause on hover', value: true }
+	]);
 
 	const testimonials = $state([
 		{ id: 1, author: 'John Doe', quote: 'Amazing product! Highly recommended.' },
@@ -41,8 +60,14 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Basic horizontal marquee with simple items."
-		code={`<Marquee class="w-full max-w-[90vw]">
+		code={`<Marquee
+	size="${controls.value.size}"
+	speed="${controls.value.speed}"
+	pauseOnHover={${controls.value.pauseOnHover}}
+	class="w-full max-w-[90vw]"
+>
 	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 1</div>
 	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 2</div>
 	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 3</div>
@@ -50,7 +75,12 @@
 	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 5</div>
 </Marquee>`}
 	>
-		<Marquee class="w-full max-w-[90vw]">
+		<Marquee
+			size={controls.value.size}
+			speed={controls.value.speed}
+			pauseOnHover={controls.value.pauseOnHover}
+			class="w-full max-w-[90vw]"
+		>
 			{#each simpleItems as item}
 				<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
 					{item.text}

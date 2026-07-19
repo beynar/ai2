@@ -99,6 +99,25 @@ export const themePluginDescription = `
 - **Description**: High foreground text/foreground color
 - **Example**: \`foreground: #0a0a0a;\`
 
+### Interaction State Layers
+
+#### \`overlay-hover\`
+- **Type**: \`string\` (CSS color, alpha supported)
+- **Default**: Generated foreground at 5% opacity
+- **Description**: Global overlay composited by \`.state-layer\` on hover and \`data-highlighted="true"\`
+- **Example**: \`overlay-hover: #1018280d;\`
+
+#### \`overlay-pressed\`
+- **Type**: \`string\` (CSS color, alpha supported)
+- **Default**: Generated foreground at 10% opacity
+- **Description**: Global overlay composited by \`.state-layer\` while an element is pressed
+- **Example**: \`overlay-pressed: #1018281a;\`
+
+Use background grades for resting elevation, \`.state-layer\` for transient interaction,
+focus rings for keyboard focus, and \`*-muted\` or solid colors for persistent semantic states.
+The overlay follows the theme foreground, so it darkens surfaces in light themes and lightens
+them in dark themes without changing their resting hue.
+
 ### Color Variant Overrides
 
 For each base color (primary, secondary, danger, success, warning, info, background, foreground), you can override specific variants:
@@ -200,6 +219,10 @@ For each base color (primary, secondary, danger, success, warning, info, backgro
   success: #22c55e;
   warning: #f59e0b;
   info: #3b82f6;
+  background: #fafafa;
+  foreground: #121212;
+  overlay-hover: #1212120d;
+  overlay-pressed: #1212121a;
   
   primary-light: #a5b4fc;
   primary-dark: #4338ca;
@@ -209,5 +232,13 @@ For each base color (primary, secondary, danger, success, warning, info, backgro
   scale: majorThird;
   raised-with-border: true;
 }
+\`\`\`
+
+Apply the interaction model once instead of selecting opposite palette grades per mode:
+
+\`\`\`html
+<button class="state-layer bg-primary text-primary-contrast rounded px-3 py-1.5">
+  Primary
+</button>
 \`\`\`
 `;

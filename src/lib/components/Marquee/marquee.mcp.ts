@@ -38,9 +38,9 @@ The Marquee component creates an infinite scrolling animation for displaying con
   - \`'up'\`: Vertical scrolling from bottom to top
 
 - **numberOfCopies**: number (default: 2)
-  - Number of times to duplicate the content for seamless loop
-  - Higher values create smoother appearance but use more DOM elements
-  - Typically 2-4 is sufficient
+  - Minimum number of times to duplicate the content for a seamless loop
+  - The component measures the viewport and first copy, then adds copies when the content is too short to cover the viewport continuously
+  - The effective count is bounded to 100 copies
 
 ### Animation Props
 - **speed**: 'fast' | 'normal' | 'slow' | number (default: 'fast')
@@ -71,6 +71,9 @@ The Marquee component creates an infinite scrolling animation for displaying con
   - \`large\`: Expanded spacing (gap-6)
 
 ### Styling Props
+- **ref**: HTMLDivElement | null (bindable)
+  - Reference to the marquee container
+
 - **class**: string
   - Additional CSS classes for the marquee container
 
@@ -253,7 +256,7 @@ The Marquee component renders:
 - Consider providing alternative static content for screen readers
 - Ensure sufficient color foreground for text content
 - Pause on hover helps users interact with and read content
-- Be mindful of users with vestibular disorders - avoid very fast speeds
+- Animation is disabled when the user requests reduced motion
 
 ## Notes
 

@@ -22,6 +22,10 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 * The items to display in the accordion. An array of anything.
 			 */
 			items: Item[];
+			/** Bindable ids of the currently expanded items. */
+			value?: string[];
+			/** Called after the expanded item ids change. */
+			onValueChange?: (value: string[]) => void;
 			/**
 			 * The function to call when the accordion item is toggled. Receives the item, index and open state.
 			 */

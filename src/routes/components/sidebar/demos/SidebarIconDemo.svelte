@@ -35,7 +35,7 @@
 	<div class="flex w-full justify-end">
 		<button
 			type="button"
-			class="border-background-muted bg-background hover:bg-background-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium text-foreground transition"
+			class="state-layer border-background-muted bg-background inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium text-foreground transition"
 			aria-pressed={!open}
 			onclick={() => (displayState = open ? 'collapsed' : 'expanded')}
 		>
@@ -57,8 +57,7 @@
 			widthIcon="3.5rem"
 			resizable={{
 				minWidth: '12rem',
-				maxWidth: '22rem',
-				collapseThreshold: '10.5rem'
+				maxWidth: '22rem'
 			}}
 			headerButton={{
 				icon: commandIcon,

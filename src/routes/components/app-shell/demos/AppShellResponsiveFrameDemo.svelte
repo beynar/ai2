@@ -55,11 +55,11 @@
 			{#each presets as preset}
 				<button
 					type="button"
-					class="border-background-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition {Math.abs(
+					class="state-layer border-background-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition {Math.abs(
 						frameWidth - preset.width
 					) < 24
 						? 'bg-primary text-primary-contrast'
-						: 'bg-background text-foreground hover:bg-background-muted'}"
+						: 'bg-background text-foreground'}"
 					aria-pressed={Math.abs(frameWidth - preset.width) < 24}
 					onclick={() => setFrameWidth(preset.width)}
 				>

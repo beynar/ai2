@@ -9,6 +9,7 @@
 		title,
 		subtitle,
 		component,
+		relatedComponents = [],
 		features,
 		children,
 		examples
@@ -17,6 +18,8 @@
 		subtitle?: string;
 		/** Component key for the props table + structure schema (e.g. "Button"). */
 		component?: string;
+		/** Secondary public components documented on the same package page. */
+		relatedComponents?: string[];
 		/** 2-6 highlights: accessibility, underlying library, ergonomics. */
 		features?: string[];
 		/** Usage tab: a simple demo of the component. */
@@ -71,6 +74,12 @@
 			{#if component}
 				<PropsTable {component} />
 			{/if}
+			{#each relatedComponents as relatedComponent (relatedComponent)}
+				<section class="mt-12">
+					<h2 class="text-foreground text-xl font-semibold">{relatedComponent}</h2>
+					<PropsTable component={relatedComponent} />
+				</section>
+			{/each}
 		{:else if activeTab === 1}
 			{#if examples}
 				<div class="grid gap-10">

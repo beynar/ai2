@@ -10,6 +10,8 @@ export type RadioOption = {
 	icon?: Slot;
 	/** Supporting text rendered below the option label. */
 	description?: string;
+	/** Prevents selecting this individual option. */
+	disabled?: boolean;
 };
 export type RadioInputProps<T extends RadioOption = RadioOption> = InputProps<'radio'> & {
 	/** Visual layout style for the radio group (`normal` or `card`). */

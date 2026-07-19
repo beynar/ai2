@@ -24,10 +24,10 @@ All components use kebab-case package paths with PascalCase component names:
 
 ```svelte
 <script>
-  import { Button } from 'svelai/button';
-  import { TextInput } from 'svelai/text-input';
-  import { Dialog } from 'svelai/dialog';
-  import { Popover } from 'svelai/popover';
+	import { Button } from 'svelai/button';
+	import { TextInput } from 'svelai/text-input';
+	import { Dialog } from 'svelai/dialog';
+	import { Popover } from 'svelai/popover';
 </script>
 ```
 
@@ -36,15 +36,19 @@ All components use kebab-case package paths with PascalCase component names:
 Most components share these prop patterns:
 
 ### Colors
+
 `color`: `'primary'` | `'secondary'` | `'success'` | `'warning'` | `'danger'` | `'info'` | `'background'` | `'foreground'`
 
 ### Sizes
+
 `size`: `'small'` | `'normal'` | `'large'`
 
 ### Variants (interactive components)
+
 `variant`: `'solid'` | `'outline'` | `'soft'` | `'ghost'` | `'link'`
 
 ### Common
+
 - `class`: string - Additional CSS classes
 - `theme`: ComponentTheme - Per-instance theme overrides
 - `ref`: HTMLElement - Bind to underlying DOM element
@@ -56,8 +60,8 @@ Most components accept `prefix` and `suffix` snippets for composable content:
 
 ```svelte
 <Button>
-  {#snippet prefix()}<Icon name="plus" />{/snippet}
-  Add Item
+	{#snippet prefix()}<Icon name="plus" />{/snippet}
+	Add Item
 </Button>
 ```
 
@@ -70,28 +74,29 @@ Three layers: Tailwind plugin (colors/tokens), `<Theme>` component (wraps app), 
 ```css
 /* Tailwind plugin - defines colors and design tokens */
 @plugin './lib/tailwind/theme' {
-  name: custom;
-  default: true;
-  colorscheme: light;
-  primary: #6366f1;
-  secondary: #8b5cf6;
-  danger: #ef4444;
-  success: #22c55e;
-  warning: #f59e0b;
-  info: #3b82f6;
-  background: #FAFAFA;
-  foreground: #121212;
-  radius: normal;
-  spacing: large;
-  scale: majorThird;
+	name: custom;
+	default: true;
+	colorscheme: light;
+	primary: #6366f1;
+	secondary: #8b5cf6;
+	danger: #ef4444;
+	success: #22c55e;
+	warning: #f59e0b;
+	info: #3b82f6;
+	background: #fafafa;
+	foreground: #121212;
+	radius: normal;
+	spacing: large;
+	scale: majorThird;
 }
 ```
 
 ```svelte
 <!-- +layout.svelte - wrap app once -->
 <script>
-  import { Theme } from 'svelai/theme';
+	import { Theme } from 'svelai/theme';
 </script>
+
 <Theme colorScheme="auto">{@render children()}</Theme>
 ```
 
@@ -103,14 +108,24 @@ Each base color generates variants: `{color}-light` (+15%), `{color}-lighter` (+
 
 Usage: `bg-primary`, `text-primary-contrast`, `border-danger-dark`, `bg-background-muted`.
 
+Resting elevation uses background grades. Transient hover, virtual focus, and press use the global `state-layer` utility, which composites foreground-derived overlays without changing the resting color. Use focus rings for focus and `*-muted` or solid colors for persistent selected, checked, open, or semantic states.
+
+```svelte
+<button class="state-layer bg-primary text-primary-contrast">Save</button>
+```
+
+`overlay-hover` and `overlay-pressed` can be overridden per theme; their defaults are the generated foreground at 5% and 10% opacity.
+
 ## Design Tokens
 
-| Token | Values | Default |
-|-------|--------|---------|
-| `radius` | `none` \| `subtile` \| `small` \| `normal` \| `large` \| `round` \| number | `normal` |
-| `spacing` | `small` \| `normal` \| `large` \| number | `normal` |
-| `scale` | `minorSecond` \| `majorSecond` \| `minorThird` \| `majorThird` \| `perfectFourth` \| `augmentedFourth` | `majorThird` |
-| `raised-with-border` | boolean | `false` |
+| Token                | Values                                                                                                 | Default           |
+| -------------------- | ------------------------------------------------------------------------------------------------------ | ----------------- |
+| `radius`             | `none` \| `subtile` \| `small` \| `normal` \| `large` \| `round` \| number                             | `normal`          |
+| `spacing`            | `small` \| `normal` \| `large` \| number                                                               | `normal`          |
+| `scale`              | `minorSecond` \| `majorSecond` \| `minorThird` \| `majorThird` \| `perfectFourth` \| `augmentedFourth` | `majorThird`      |
+| `raised-with-border` | boolean                                                                                                | `false`           |
+| `overlay-hover`      | CSS color                                                                                              | foreground at 5%  |
+| `overlay-pressed`    | CSS color                                                                                              | foreground at 10% |
 
 ## Component Theme Customization
 
@@ -119,22 +134,20 @@ Every component has a theme object with parts (e.g., `button`, `prefix`, `suffix
 ### Per-instance override
 
 ```svelte
-<Button theme={{ button: { base: 'rounded-full shadow-lg' } }}>
-  Custom
-</Button>
+<Button theme={{ button: { base: 'rounded-full shadow-lg' } }}>Custom</Button>
 ```
 
 ### Global override
 
 ```svelte
 <script>
-  import { setButtonTheme } from 'svelai/button';
+	import { setButtonTheme } from 'svelai/button';
 
-  setButtonTheme({
-    button: {
-      variant: { solid: 'shadow-md hover:shadow-lg transition-shadow' }
-    }
-  });
+	setButtonTheme({
+		button: {
+			variant: { solid: 'shadow-md hover:shadow-lg transition-shadow' }
+		}
+	});
 </script>
 ```
 
@@ -157,38 +170,44 @@ Pattern: `import { set{Component}Theme } from 'svelai/{kebab-name}'`
 ## Quick Patterns
 
 ### Form with validation
+
 ```svelte
 <script>
-  import { Form } from 'svelai/form';
-  import { Button } from 'svelai/button';
+	import { Form } from 'svelai/form';
+	import { Button } from 'svelai/button';
 </script>
 
-<Form inputs={{
-  email: { type: 'email', label: 'Email', required: true, class: 'col-span-1' },
-  password: { type: 'password', label: 'Password', required: true, class: 'col-span-1' }
-}} onSubmit={handleSubmit}>
-  {#snippet footer({ form })}
-    <Button type="submit" disabled={!form.isValid}>Submit</Button>
-  {/snippet}
+<Form
+	inputs={{
+		email: { type: 'email', label: 'Email', required: true, class: 'col-span-1' },
+		password: { type: 'password', label: 'Password', required: true, class: 'col-span-1' }
+	}}
+	onSubmit={handleSubmit}
+>
+	{#snippet footer({ form })}
+		<Button type="submit" disabled={!form.isValid}>Submit</Button>
+	{/snippet}
 </Form>
 ```
 
 ### Confirmation dialog
+
 ```typescript
 import { confirmation } from 'svelai/confirmation';
 
 const { confirmed, result } = await confirmation({
-  title: 'Delete item?',
-  description: 'This cannot be undone.',
-  confirm: 'Delete',
-  cancel: 'Cancel',
-  onConfirm: async () => {
-    await deleteItem();
-  }
+	title: 'Delete item?',
+	description: 'This cannot be undone.',
+	confirm: 'Delete',
+	cancel: 'Cancel',
+	onConfirm: async () => {
+		await deleteItem();
+	}
 });
 ```
 
 ### Toast notifications
+
 ```typescript
 import { toast } from 'svelai/toast';
 

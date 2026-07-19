@@ -34,19 +34,19 @@
 			</div>
 			<div class="flex items-center justify-center gap-2">
 				<button
-					class="border-background-muted bg-background text-foreground hover:bg-background-muted rounded-md border px-3 py-1.5 text-sm"
+					class="state-layer border-background-muted bg-background text-foreground rounded-md border px-3 py-1.5 text-sm"
 					onclick={() => (progress = 20)}
 				>
 					20
 				</button>
 				<button
-					class="border-background-muted bg-background text-foreground hover:bg-background-muted rounded-md border px-3 py-1.5 text-sm"
+					class="state-layer border-background-muted bg-background text-foreground rounded-md border px-3 py-1.5 text-sm"
 					onclick={() => (progress = 65)}
 				>
 					65
 				</button>
 				<button
-					class="border-background-muted bg-background text-foreground hover:bg-background-muted rounded-md border px-3 py-1.5 text-sm"
+					class="state-layer border-background-muted bg-background text-foreground rounded-md border px-3 py-1.5 text-sm"
 					onclick={() => (progress = 90)}
 				>
 					90

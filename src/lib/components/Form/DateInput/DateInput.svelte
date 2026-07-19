@@ -31,6 +31,7 @@
 		name,
 		onValidate,
 		onChange,
+		onCalendarSelect,
 		visible,
 		type = 'date',
 		...rest
@@ -205,6 +206,7 @@
 
 	const handleCalendarChange = (date: Date | null) => {
 		field.value = date;
+		onCalendarSelect?.(date);
 		field.focused = false;
 		syncInputValue(date);
 	};

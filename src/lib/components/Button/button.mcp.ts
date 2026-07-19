@@ -234,7 +234,7 @@ const customTheme: ButtonThemeProps = {
   theme={{
     root: {
       color: {
-        primary: 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+        primary: 'state-layer bg-gradient-to-r from-blue-500 to-purple-500'
       }
     }
   }}
@@ -251,8 +251,8 @@ const customTheme: ButtonThemeProps = {
   setButtonTheme({
     root: {
       variant: {
-        solid: 'bg-color text-color-contrast shadow-md hover:shadow-lg transition-shadow',
-        outline: 'border-2 border-color hover:bg-color/10'
+        solid: 'state-layer bg-color text-color-contrast shadow-md hover:shadow-lg transition-shadow',
+        outline: 'state-layer border-2 border-color'
       }
     },
     prefix: {

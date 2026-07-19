@@ -106,6 +106,12 @@ export type ButtonPrimitiveProps = WithAttachments<
 			 * Active state marker used by composed controls for styling.
 			 */
 			'data-active'?: 'true';
+			/**
+			 * Virtual-focus marker consumed by the shared state layer.
+			 */
+			'data-highlighted'?: 'true';
+			/** Semantic part name used by composed components and theme tooling. */
+			'data-slot'?: string;
 		} & ButtonForwardedAttributes &
 			ButtonForwardedAnchorAttributes,
 		'suffix' | 'prefix' | 'children'

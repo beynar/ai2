@@ -1,20 +1,27 @@
 export { default as DataTable } from './DataTable.svelte';
+export { createDataTableColumnHelper } from './dataTable.column-helper.js';
+export { createDataTableState } from './dataTable.model.svelte.js';
 export type {
 	DataTableAggregation,
 	DataTableAlignment,
+	DataTableApi,
 	DataTableBooleanFilter,
 	DataTableBuiltInEditor,
 	DataTableCellCommit,
 	DataTableCellPayload,
+	DataTableCellRenderPayload,
 	DataTableColumn,
 	DataTableColumnFilter,
 	DataTableCustomEditor,
+	DataTableCustomFilter,
 	DataTableDateEditor,
 	DataTableDateFilter,
 	DataTableEditor,
 	DataTableEditorPayload,
 	DataTableFilter,
+	DataTableFilterPayload,
 	DataTableHeaderPayload,
+	DataTableHeaderRenderPayload,
 	DataTableInteractionMode,
 	DataTableNumberEditor,
 	DataTableNumberFilter,

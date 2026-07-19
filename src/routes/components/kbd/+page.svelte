@@ -5,6 +5,24 @@
 	import { colors, sizes } from '$lib/utils/tokens.js';
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
+
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: sizes
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'background',
+			options: ['background', 'primary', 'success', 'danger']
+		}
+	]);
 </script>
 
 <DocPage
@@ -19,10 +37,11 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="A command-palette shortcut rendered as keycaps."
-		code={`<Kbd keys={['⌘', 'K']} />`}
+		code={`<Kbd keys={['⌘', 'K']} size="${controls.value.size}" color="${controls.value.color}" />`}
 	>
-		<Kbd keys={['⌘', 'K']} />
+		<Kbd keys={['⌘', 'K']} size={controls.value.size} color={controls.value.color} />
 	</ComponentCard>
 
 	{#snippet examples()}

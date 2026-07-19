@@ -93,7 +93,7 @@
 			<form
 				bind:this={searchRef}
 				data-slot="sidebar-search"
-				class={classes.searchContainer({ componentSize: size, density, collapsed })}
+				class={classes.searchContainer({ componentSize: size, collapsed })}
 				inert={collapsed ? true : undefined}
 				aria-hidden={collapsed ? 'true' : undefined}
 				onsubmit={(event) => event.preventDefault()}

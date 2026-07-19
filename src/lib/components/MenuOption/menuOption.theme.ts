@@ -5,7 +5,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 // min-heights ('small' matches the old small spacing, 'large' the old
 // large spacing — defaults render exactly as before the split).
 const defaultMenuOption = cva({
-	base: 'rounded cursor-pointer items-center inline-flex relative w-full text-left outline-none',
+	base: 'state-layer rounded cursor-pointer items-center inline-flex relative w-full text-left outline-none',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -18,26 +18,22 @@ const defaultMenuOption = cva({
 			large: 'px-3 py-2 gap-2.5 min-h-9'
 		},
 		color: {
-			primary: 'text-primary highlight:bg-primary-muted highlight:text-primary',
-			secondary: 'text-secondary highlight:bg-secondary-muted highlight:text-secondary',
-			foreground:
-				'text-foreground highlight:bg-background-dark dark:highlight:bg-background-light highlight:text-foreground',
-			background:
-				'text-foreground highlight:bg-background-dark dark:highlight:bg-background-light highlight:text-foreground',
-			danger: 'text-danger highlight:bg-danger-muted highlight:text-danger',
-			success: 'text-success highlight:bg-success-muted highlight:text-success',
-			warning: 'text-warning highlight:bg-warning-muted highlight:text-warning',
-			info: 'text-info highlight:bg-info-muted highlight:text-info'
+			primary: 'text-primary',
+			secondary: 'text-secondary',
+			foreground: 'text-foreground',
+			background: 'text-foreground',
+			danger: 'text-danger',
+			success: 'text-success',
+			warning: 'text-warning',
+			info: 'text-info'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50 pointer-events-none',
 			false: ''
 		},
-		// Prop-driven highlight for the virtual-focus listbox family (Command/Select/Combobox):
-		// a plain utility that doesn't depend on the `highlight:` attribute variant. Menus leave
-		// this unset and use the `highlight:` variant (data-highlighted set imperatively by the hook).
+		// The prop reflects to data-highlighted; the shared state layer owns its fill.
 		highlighted: {
-			true: 'bg-background-dark dark:bg-background-light',
+			true: '',
 			false: ''
 		},
 		// Persistent highlight in the item's own color — e.g. a submenu trigger while its submenu is

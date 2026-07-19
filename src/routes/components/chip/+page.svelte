@@ -3,6 +3,7 @@
 	import { eyeClosedIcon } from '$lib/components/Icons/eyeClosed.js';
 	import { colors, sizes, variants } from '$lib/utils/tokens.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import ChipPositionSurface from './ChipPositionSurface.svelte';
 
@@ -12,6 +13,29 @@
 		{ value: 'bottomLeft', label: 'Bottom left' },
 		{ value: 'bottomRight', label: 'Bottom right' }
 	] as const;
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'small',
+			options: sizes
+		},
+		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'solid',
+			options: variants
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'warning', 'danger']
+		}
+	]);
 </script>
 
 <DocPage
@@ -26,8 +50,13 @@
 		'Optional corner positioning'
 	]}
 >
-	<ComponentCard code={`<Chip>Chip</Chip>`}>
-		<Chip>Chip</Chip>
+	<ComponentCard
+		{controls}
+		code={`<Chip size="${controls.value.size}" variant="${controls.value.variant}" color="${controls.value.color}">Chip</Chip>`}
+	>
+		<Chip size={controls.value.size} variant={controls.value.variant} color={controls.value.color}>
+			Chip
+		</Chip>
 	</ComponentCard>
 
 	{#snippet examples()}

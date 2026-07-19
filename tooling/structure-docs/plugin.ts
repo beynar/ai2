@@ -32,22 +32,22 @@ export function svelaiStructureDocs(): Plugin {
 		const map: StructureMap = {};
 
 		for (const themeFile of findThemeFiles(componentsRoot)) {
-			const svelteFile = findMainSvelte(themeFile);
-			if (!svelteFile) continue;
-			const name = basename(svelteFile).slice(0, -'.svelte'.length);
-			try {
-				const parts = readThemeParts(proj, themeFile);
-				const source = readFileSync(svelteFile, 'utf8');
-				const setter = readThemeSetter(proj, themeFile);
-				const importPath = importMap.get(relative(componentsRoot, dirname(svelteFile)));
-				map[name] = {
-					...extractComponentStructure(source, name, parts),
-					...(setter && { setter }),
-					...(importPath && { importPath })
-				};
-			} catch (error) {
-				// Skip a single unparseable component (surface it) rather than fail the build.
-				console.warn(`[svelai-structure] skipped ${name}: ${(error as Error).message}`);
+			for (const svelteFile of findMainSvelteFiles(themeFile)) {
+				const name = basename(svelteFile).slice(0, -'.svelte'.length);
+				try {
+					const parts = readThemeParts(proj, themeFile);
+					const source = readFileSync(svelteFile, 'utf8');
+					const setter = readThemeSetter(proj, themeFile);
+					const importPath = importMap.get(relative(componentsRoot, dirname(svelteFile)));
+					map[name] = {
+						...extractComponentStructure(source, name, parts),
+						...(setter && { setter }),
+						...(importPath && { importPath })
+					};
+				} catch (error) {
+					// Skip a single unparseable component (surface it) rather than fail the build.
+					console.warn(`[svelai-structure] skipped ${name}: ${(error as Error).message}`);
+				}
 			}
 		}
 		cachedMap = map;
@@ -113,11 +113,20 @@ function findThemeFiles(dir: string): string[] {
  * The main `.svelte` beside a theme file: `accordion.theme.ts` -> `Accordion.svelte`
  * (case-insensitive basename match). Skips subcomponents with their own themes.
  */
-function findMainSvelte(themeFile: string): string | undefined {
-	const base = basename(themeFile).replace(/\.theme\.ts$/, '').toLowerCase();
+function findMainSvelteFiles(themeFile: string): string[] {
+	const base = basename(themeFile)
+		.replace(/\.theme\.ts$/, '')
+		.toLowerCase();
 	const dir = dirname(themeFile);
-	const sibling = readdirSync(dir).find(
-		(file) => file.endsWith('.svelte') && file.slice(0, -'.svelte'.length).toLowerCase() === base
-	);
-	return sibling ? join(dir, sibling) : undefined;
+	const siblings = readdirSync(dir).filter((file) => file.endsWith('.svelte'));
+	const direct = siblings.find((file) => file.slice(0, -'.svelte'.length).toLowerCase() === base);
+	if (direct) return [join(dir, direct)];
+	if (!base.startsWith('ai')) return [];
+	const unprefixed = base.slice(2);
+	return siblings
+		.filter((file) => {
+			const name = file.slice(0, -'.svelte'.length).toLowerCase();
+			return name === unprefixed || name === `${unprefixed}s`;
+		})
+		.map((file) => join(dir, file));
 }
