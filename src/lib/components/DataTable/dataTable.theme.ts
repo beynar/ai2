@@ -21,7 +21,7 @@ const toolbar = cva({
 const toolbarGroup = cva({ base: 'flex min-w-0 flex-wrap items-center gap-2' });
 const search = cva({ base: 'w-full sm:w-64' });
 const viewport = cva({
-	base: 'relative isolate overflow-hidden rounded border border-background-muted bg-background [container-type:inline-size]',
+	base: 'relative isolate overflow-hidden rounded border border-neutral-muted bg-surface [container-type:inline-size]',
 	variants: {
 		fill: {
 			true: 'min-h-0 flex-1',
@@ -34,18 +34,18 @@ const savingIndicator = cva({ base: '!absolute !z-30 !rounded-none' });
 const scrollArea = cva({ base: 'h-full' });
 const virtualTable = cva({ base: 'grid min-w-full table-fixed text-sm' });
 const caption = cva({
-	base: 'text-sm text-foreground-muted',
+	base: 'text-sm text-neutral/60',
 	variants: {
 		density: { small: 'mt-3', normal: 'mt-4', large: 'mt-6' }
 	},
 	defaultVariants: { density: 'normal' }
 });
 const header = cva({
-	base: 'z-20 grid bg-background-light'
+	base: 'z-20 grid bg-surface-raised'
 });
-const headerRow = cva({ base: 'grid border-b border-background-muted bg-background-light' });
+const headerRow = cva({ base: 'grid border-b border-neutral-muted bg-surface-raised' });
 const headerCell = cva({
-	base: 'group/data-table-header relative flex min-w-0 items-center gap-1 overflow-visible border-background-muted font-medium whitespace-nowrap',
+	base: 'group/data-table-header relative flex min-w-0 items-center gap-1 overflow-visible border-neutral-muted font-medium whitespace-nowrap',
 	variants: {
 		density: {
 			small: 'h-8 px-1.5',
@@ -57,7 +57,7 @@ const headerCell = cva({
 			center: 'justify-center text-center',
 			end: 'justify-end text-right'
 		},
-		pinned: { true: 'z-30 bg-background-light', false: '' }
+		pinned: { true: 'z-30 bg-surface-raised', false: '' }
 	},
 	defaultVariants: { density: 'normal', align: 'start', pinned: false }
 });
@@ -83,25 +83,25 @@ const headerMenuButton = cva({
 	defaultVariants: { active: false }
 });
 const dragHandle = cva({
-	base: 'pointer-events-none absolute -top-1.5 start-1/2 z-30 grid h-4 w-8 -translate-x-1/2 cursor-grab place-items-center text-foreground-muted opacity-0 outline-none transition-[color,opacity] group-hover/data-table-header:pointer-events-auto group-hover/data-table-header:opacity-100 hover:text-foreground focus-visible:pointer-events-auto focus-visible:text-primary focus-visible:opacity-100 active:cursor-grabbing disabled:pointer-events-none'
+	base: 'pointer-events-none absolute -top-1.5 start-1/2 z-30 grid h-4 w-8 -translate-x-1/2 cursor-grab place-items-center text-neutral/60 opacity-0 outline-none transition-[color,opacity] group-hover/data-table-header:pointer-events-auto group-hover/data-table-header:opacity-100 hover:text-neutral focus-visible:pointer-events-auto focus-visible:text-primary-readable focus-visible:opacity-100 active:cursor-grabbing disabled:pointer-events-none'
 });
 const dragThumb = cva({
-	base: 'h-1 w-5 rounded-full bg-current shadow-[0_0_0_1px_var(--color-background)]'
+	base: 'h-1 w-5 rounded-full bg-current shadow-[0_0_0_1px_var(--color-surface)]'
 });
 const resizeHandle = cva({
 	base: 'absolute inset-y-1 end-0 z-40 w-1 cursor-col-resize touch-none rounded-full outline-none hover:bg-primary focus-visible:bg-primary data-[resizing=true]:bg-primary'
 });
 const body = cva({ base: 'relative z-0 grid' });
 const row = cva({
-	base: 'state-layer grid min-w-full border-b border-background-muted transition-colors last:border-b-0 data-[selected=true]:bg-primary-muted/40',
+	base: 'state-layer grid min-w-full border-b border-neutral-muted transition-colors last:border-b-0 data-[selected=true]:bg-primary-muted/40',
 	variants: {
 		density: { small: 'min-h-8', normal: 'min-h-10', large: 'min-h-12' },
-		grouped: { true: 'bg-background-light font-medium', false: '' }
+		grouped: { true: 'bg-surface-raised font-medium', false: '' }
 	},
 	defaultVariants: { density: 'normal', grouped: false }
 });
 const cell = cva({
-	base: 'relative flex min-w-0 items-center overflow-hidden border-background-muted outline-none',
+	base: 'relative flex min-w-0 items-center overflow-hidden border-neutral-muted outline-none',
 	variants: {
 		density: {
 			small: 'min-h-8 px-1.5 py-1',
@@ -113,7 +113,7 @@ const cell = cva({
 			center: 'justify-center text-center',
 			end: 'justify-end text-right'
 		},
-		pinned: { true: 'z-10 bg-background', false: '' },
+		pinned: { true: 'z-10 bg-surface', false: '' },
 		focused: {
 			true: 'z-20 bg-primary-muted/20 ring-2 ring-inset ring-primary/70',
 			false: ''
@@ -138,7 +138,7 @@ const selectionCheckboxControl = cva({
 const selectionCheckboxIndicator = cva({ base: '!size-4 !rounded-sm' });
 const actionsCell = cva({ base: 'p-0 [&>*]:h-full [&>*]:w-full [&>*]:rounded-none' });
 const detailRow = cva({
-	base: 'grid min-w-full border-b border-background-muted bg-background-light/50'
+	base: 'grid min-w-full border-b border-neutral-muted bg-surface-raised/50'
 });
 const detailCell = cva({
 	base: 'min-w-0 overflow-hidden',
@@ -154,14 +154,14 @@ const detailCell = cva({
 const spacer = cva({ base: 'pointer-events-none grid border-0' });
 const expander = cva({ base: 'mr-1 shrink-0' });
 const groupValue = cva({ base: 'min-w-0 truncate' });
-const groupCount = cva({ base: 'ml-1 text-xs font-normal text-foreground-muted' });
+const groupCount = cva({ base: 'ml-1 text-xs font-normal text-neutral/60' });
 const pinnedBoundary = cva({
-	base: 'after:pointer-events-none after:absolute after:inset-y-0 after:w-px after:bg-background-muted',
+	base: 'after:pointer-events-none after:absolute after:inset-y-0 after:w-px after:bg-neutral-muted',
 	variants: {
 		side: {
-			left: 'after:end-0 after:shadow-[2px_0_4px_color-mix(in_oklab,var(--color-foreground)_10%,transparent)] rtl:after:shadow-[-2px_0_4px_color-mix(in_oklab,var(--color-foreground)_10%,transparent)]',
+			left: 'after:end-0 after:shadow-[2px_0_4px_color-mix(in_oklab,var(--color-neutral)_10%,transparent)] rtl:after:shadow-[-2px_0_4px_color-mix(in_oklab,var(--color-neutral)_10%,transparent)]',
 			right:
-				'after:start-0 after:shadow-[-2px_0_4px_color-mix(in_oklab,var(--color-foreground)_10%,transparent)] rtl:after:shadow-[2px_0_4px_color-mix(in_oklab,var(--color-foreground)_10%,transparent)]',
+				'after:start-0 after:shadow-[-2px_0_4px_color-mix(in_oklab,var(--color-neutral)_10%,transparent)] rtl:after:shadow-[2px_0_4px_color-mix(in_oklab,var(--color-neutral)_10%,transparent)]',
 			none: 'after:hidden'
 		}
 	},
@@ -189,14 +189,14 @@ const filterPanel = cva({
 	base: 'grid w-full gap-1 p-3',
 	variants: {
 		separated: {
-			true: 'mt-1 border-t border-background-muted',
+			true: 'mt-1 border-t border-neutral-muted',
 			false: ''
 		}
 	},
 	defaultVariants: { separated: false }
 });
 const filterHeader = cva({ base: 'flex items-center justify-between gap-3' });
-const filterLabel = cva({ base: 'text-xs font-medium text-foreground-muted' });
+const filterLabel = cva({ base: 'text-xs font-medium text-neutral/60' });
 const filterFields = cva({ base: 'grid grid-cols-2 gap-2' });
 const filterCheckboxGroup = cva({ base: '!gap-1' });
 const filterCheckboxContainer = cva({ base: '!gap-1' });
@@ -210,7 +210,7 @@ const stateContent = cva({
 const skeletonList = cva({ base: 'grid w-full max-w-3xl gap-3' });
 const skeletonBar = cva({ base: 'h-8 w-full' });
 const footer = cva({ base: 'flex flex-wrap items-center justify-between gap-3' });
-const summary = cva({ base: 'text-sm text-foreground-muted' });
+const summary = cva({ base: 'text-sm text-neutral/60' });
 
 export const dataTableTheme = {
 	root,

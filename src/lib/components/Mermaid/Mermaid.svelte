@@ -58,7 +58,7 @@
 			(has('fit') || has('zoomIn') || has('zoomOut') || has('expand') || has('download'))
 	);
 
-	const buttonProps = { variant: 'ghost' as const, color: 'foreground' as const, size: 'small' as const, squared: true };
+	const buttonProps = { variant: 'ghost' as const, color: 'neutral' as const, size: 'small' as const, squared: true };
 </script>
 
 <div class={classes.root({ size, className })} {...attachments}>

@@ -46,7 +46,7 @@
 		{variant}
 		frame="contained"
 		mode="layout"
-		class={cx('!h-auto min-h-[inherit]', sidebar.class)}
+		class={cx('h-full min-h-0', sidebar.class)}
 	>
 		{#snippet children(sidebarApi)}
 			{#snippet appHeader(pageShell: PageShellApi)}

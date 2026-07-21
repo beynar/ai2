@@ -110,7 +110,7 @@ ${'</' + 'script>'}
 			/>
 			{#if submitted}
 				<pre
-					class="max-h-32 overflow-auto rounded border border-background-muted p-3 text-xs">{JSON.stringify(
+					class="max-h-32 overflow-auto rounded border border-neutral-muted p-3 text-xs">{JSON.stringify(
 						submitted,
 						null,
 						2

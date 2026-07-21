@@ -96,9 +96,9 @@
 		<Tabs items={simpleTabs} bind:activeTab={simpleActiveTab}>
 			{#snippet children({ item, index })}
 				<section class="space-y-2 p-6">
-					<p class="text-foreground/60 text-sm">Panel {index + 1}</p>
+					<p class="text-neutral/60 text-sm">Panel {index + 1}</p>
 					<h3 class="text-xl font-semibold">{item.title}</h3>
-					<p class="text-foreground/80">{item.description}</p>
+					<p class="text-neutral/80">{item.description}</p>
 				</section>
 			{/snippet}
 		</Tabs>
@@ -112,7 +112,7 @@
 						<div class="flex items-center justify-between gap-3">
 							<div>
 								<h3 class="text-xl font-semibold">{item.title}</h3>
-								<p class="text-foreground/80 mt-1">{item.description}</p>
+								<p class="text-neutral/80 mt-1">{item.description}</p>
 							</div>
 							<Chip color="primary">{item.badge}</Chip>
 						</div>
@@ -129,7 +129,7 @@
 					<section class="space-y-4 p-6">
 						<div>
 							<h3 class="text-xl font-semibold">{item.title}</h3>
-							<p class="text-foreground/80 mt-1">{item.description}</p>
+							<p class="text-neutral/80 mt-1">{item.description}</p>
 						</div>
 						<div class="flex gap-2">
 							<Button variant="outline" disabled={index === 0} onClick={() => stepper.previous()}>
@@ -151,8 +151,8 @@
 		<ComponentCard description="Control where the tabbar appears: top, bottom, left, or right.">
 			<div class="grid w-full gap-6">
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm font-medium">Left placement</p>
-					<div class="border-background-muted min-h-64 rounded border">
+					<p class="text-neutral/70 mb-2 text-sm font-medium">Left placement</p>
+					<div class="border-neutral-muted min-h-64 rounded border">
 						<Tabs
 							items={verticalTabs}
 							bind:activeTab={verticalActiveTab}
@@ -162,7 +162,7 @@
 							{#snippet children({ item })}
 								<section class="space-y-2 p-6">
 									<h3 class="text-xl font-semibold">{item.title}</h3>
-									<p class="text-foreground/80">{item.description}</p>
+									<p class="text-neutral/80">{item.description}</p>
 								</section>
 							{/snippet}
 						</Tabs>
@@ -170,12 +170,12 @@
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm font-medium">Bottom placement</p>
+					<p class="text-neutral/70 mb-2 text-sm font-medium">Bottom placement</p>
 					<Tabs items={simpleTabs} placement="bottom">
 						{#snippet children({ item })}
 							<section class="space-y-2 p-6">
 								<h3 class="text-xl font-semibold">{item.title}</h3>
-								<p class="text-foreground/80">{item.description}</p>
+								<p class="text-neutral/80">{item.description}</p>
 							</section>
 						{/snippet}
 					</Tabs>
@@ -205,10 +205,10 @@
 								placeholder="john@example.com"
 							/>
 						{:else}
-							<div class="bg-background-muted flex items-center justify-between rounded-lg p-4">
+							<div class="bg-neutral-muted flex items-center justify-between rounded-lg p-4">
 								<div>
 									<div class="font-medium">Email Notifications</div>
-									<div class="text-foreground/70 text-sm">Receive updates via email</div>
+									<div class="text-neutral/70 text-sm">Receive updates via email</div>
 								</div>
 								<input type="checkbox" bind:checked={formData.notifications} class="h-5 w-5" />
 							</div>
@@ -236,7 +236,7 @@
 							{@render chartBarIcon({ class: 'size-8' })}
 						</div>
 						<h3 class="text-xl font-semibold">{item.title}</h3>
-						<p class="text-foreground/80">{item.description}</p>
+						<p class="text-neutral/80">{item.description}</p>
 					</section>
 				{/snippet}
 			</Tabs>

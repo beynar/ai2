@@ -65,17 +65,17 @@
 <div class="grid w-full max-w-2xl gap-3">
 	<div class="grid gap-2 md:grid-cols-[1fr_auto]">
 		<div class="grid gap-2 text-sm md:grid-cols-2">
-			<div class="border-background-muted bg-background-muted rounded-lg border px-3 py-2">
+			<div class="border-neutral-muted bg-neutral-muted rounded-lg border px-3 py-2">
 				{lastPolicyEvent}
 			</div>
-			<div class="border-background-muted bg-background-muted rounded-lg border px-3 py-2">
+			<div class="border-neutral-muted bg-neutral-muted rounded-lg border px-3 py-2">
 				{lastMutation}
 			</div>
 		</div>
 		<Button
 			size="small"
 			variant="outline"
-			color="foreground"
+			color="neutral"
 			onClick={addEventFile}
 			disabled={!fileTree}
 		>

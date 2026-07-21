@@ -1,5 +1,5 @@
 export const toastDescription = `
-The toast function displays non-blocking notification messages to the user. It provides color-based methods (primary, secondary, success, warning, danger, info, background, foreground) that each return a Toast instance.
+The toast function displays non-blocking notification messages to the user. It provides color-based methods (primary, secondary, success, warning, danger, info, neutral) that each return a Toast instance.
 
 
 **Usage:**
@@ -47,8 +47,7 @@ toast.warning({
 - \`toast.warning(options)\` - Warning/yellow variant
 - \`toast.danger(options)\` - Danger/red variant
 - \`toast.info(options)\` - Info/blue variant
-- \`toast.background(options)\` - Background color variant
-- \`toast.foreground(options)\` - Foreground color variant
+- \`toast.neutral(options)\` - Neutral color variant
 
 **Parameters (all optional):**
 - \`title\` (Slot or string): The toast title text
@@ -83,7 +82,7 @@ Remove the item from the UI immediately, defer the real (irreversible) action to
 \`\`\`ts
 function deleteItem(item) {
   removeFromUI(item);                       // optimistic
-  toast.foreground({
+  toast.neutral({
     title: \`Deleted "\${item.name}"\`,
     duration: 5000,
     actions: [{ content: 'Undo', onClick: () => restore(item) }],

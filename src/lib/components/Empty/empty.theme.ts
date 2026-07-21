@@ -12,10 +12,10 @@ const defaultEmpty = cva({
 		// normal: transparent placeholder (current behavior). card: a raised surface matching Card.
 		mode: {
 			normal: '',
-			card: 'bg-background raised-sm'
+			card: 'bg-surface-raised raised-sm'
 		},
 		bordered: {
-			true: 'border border-dashed border-background-muted',
+			true: 'border border-dashed border-neutral-muted',
 			false: null
 		}
 	},
@@ -50,7 +50,7 @@ const defaultEmptyMedia = cva({
 		},
 		mediaVariant: {
 			default: 'bg-transparent',
-			icon: 'bg-background-muted text-foreground rounded-lg'
+			icon: 'bg-neutral-muted text-neutral-muted-readable rounded-lg'
 		}
 	},
 	compoundVariants: [
@@ -77,7 +77,7 @@ const defaultEmptyMedia = cva({
 });
 
 const defaultEmptyTitle = cva({
-	base: 'text-foreground font-medium tracking-tight',
+	base: 'text-neutral font-medium tracking-tight',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -91,7 +91,7 @@ const defaultEmptyTitle = cva({
 });
 
 const defaultEmptyDescription = cva({
-	base: 'text-foreground-muted [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
+	base: 'text-neutral/60 [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary-readable',
 	variants: {
 		size: {
 			small: 'text-xs/relaxed',
@@ -136,7 +136,7 @@ const defaultEmptyActions = cva({
 // Trailing slot below the content — typically a "Learn more" link. Muted by default; link styling
 // matches the description part so an anchor reads the same.
 const defaultEmptyFooter = cva({
-	base: 'text-foreground-muted flex items-center justify-center [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
+	base: 'text-neutral/60 flex items-center justify-center [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary-readable',
 	variants: {
 		size: {
 			small: 'text-[0.6875rem]',

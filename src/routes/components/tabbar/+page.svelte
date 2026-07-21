@@ -39,8 +39,8 @@
 		'Realtime',
 		'Settings'
 	];
-	// The pill respects the color prop; 'background' gives the neutral look.
-	const pillColors = ['background', 'primary', 'success', 'danger'] as const;
+	// The pill respects the color prop; 'neutral' gives the neutral look.
+	const pillColors = ['neutral', 'primary', 'success', 'danger'] as const;
 
 	const tabsWithIcons = [
 		{ label: 'Home', prefix: houseIcon },
@@ -104,7 +104,7 @@
 					bind:activeTab={simpleActiveTab}
 					onChange={handleTabChange}
 				/>
-				<p class="text-foreground/70 text-sm">Active tab: {simpleActiveTab}</p>
+				<p class="text-neutral/70 text-sm">Active tab: {simpleActiveTab}</p>
 			</div>
 		</ComponentCard>
 
@@ -137,7 +137,7 @@
 					bind:activeTab={simpleActiveTab}
 					onChange={handleTabChange}
 				/>
-				<p class="text-foreground/70 text-sm">Active tab: {simpleActiveTab}</p>
+				<p class="text-neutral/70 text-sm">Active tab: {simpleActiveTab}</p>
 			</div>
 		</ComponentCard>
 
@@ -152,7 +152,7 @@
 
 		<ComponentCard
 			title="Pill colors"
-			description="The pill respects the color prop — the active pill fills with the color and its label flips to that color's contrast tone. Use color='background' for the neutral segmented-control look."
+			description="The pill respects the color prop — the active pill fills with the color and its label flips to that color's contrast tone. Use color='neutral' for the neutral segmented-control look."
 		>
 			<div class="flex flex-col items-center gap-3">
 				{#each pillColors as c (c)}

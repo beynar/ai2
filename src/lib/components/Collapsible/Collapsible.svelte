@@ -110,7 +110,7 @@
 					data-state={collapsibleState}
 					data-disabled={disabled ? '' : undefined}
 					{disabled}
-					class="state-layer border-background-muted bg-background text-foreground/80 pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-55"
+					class="state-layer border-neutral-muted bg-surface text-neutral/80 pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-55"
 					onclick={handleToggle}
 				>
 					<Slot render={trigger} />

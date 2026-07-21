@@ -9,7 +9,7 @@
 		ref = $bindable(),
 		class: className,
 		disabled = false,
-		color = 'background',
+		color = 'neutral',
 		variant = 'solid',
 		size = 'normal',
 		density = 'normal',

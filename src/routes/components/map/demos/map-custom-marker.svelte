@@ -75,7 +75,7 @@
 
   <div class="flex flex-wrap items-center gap-2 text-sm">
     <span class="font-medium">{selectedMarker.label}</span>
-    <span class="text-foreground-muted">{selectedMarker.data?.team}</span>
+    <span class="text-neutral/60">{selectedMarker.data?.team}</span>
     <span class="rounded-md border px-2 py-0.5 text-xs tabular-nums">
       {selectedMarker.data?.headcount} people
     </span>

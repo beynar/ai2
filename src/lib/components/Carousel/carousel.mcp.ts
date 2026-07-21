@@ -62,7 +62,7 @@ Use item fields directly. For example, if items contains { title, image }, item.
 	dots={{ color: 'primary' }}
 >
 	{#snippet children({ item })}
-		<div class="rounded bg-background p-6">
+		<div class="rounded bg-surface p-6">
 			<h3>{item.title}</h3>
 			<p>{item.description}</p>
 		</div>
@@ -132,7 +132,7 @@ Use the slide theme part to style every generated wrapper consistently:
 
 <Carousel
 	items={items}
-	theme={{ slide: { base: 'rounded-lg bg-background p-4' } }}
+	theme={{ slide: { base: 'rounded-lg bg-surface p-4' } }}
 >
 	{#snippet children({ item })}
 		<h3>{item.title}</h3>

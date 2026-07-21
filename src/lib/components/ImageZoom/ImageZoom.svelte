@@ -30,7 +30,7 @@
 		lockScroll = false,
 		buttonLabel = 'Zoom image',
 		closeLabel = 'Close image zoom',
-		backgroundColor = 'var(--color-background)',
+		backgroundColor = 'var(--color-surface)',
 		licenseKey = '0000-0000-000-0000',
 		showIndicator = true,
 		indicatorPosition = 'top-right',

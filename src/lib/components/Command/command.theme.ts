@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultCommand = cva({
-	base: 'bg-background text-foreground flex h-full w-full flex-col overflow-hidden rounded-xl p-1',
+	base: 'bg-surface text-neutral flex h-full w-full flex-col overflow-hidden rounded-xl p-1',
 	variants: {
 		size: {
 			small: '',
@@ -24,7 +24,7 @@ const defaultCommandInputWrapper = cva({
 });
 
 const defaultCommandInputGroup = cva({
-	base: 'bg-background-light/30 border-background-muted/30 flex items-center gap-2 rounded-lg border px-2',
+	base: 'flex items-center gap-2 px-2',
 	variants: {
 		size: {
 			small: 'h-7',
@@ -46,7 +46,7 @@ const defaultCommandInputIcon = cva({
 });
 
 const defaultCommandInput = cva({
-	base: 'placeholder:text-foreground-muted w-full min-w-0 flex-1 bg-transparent outline-none',
+	base: 'placeholder:text-neutral/60 w-full min-w-0 flex-1 bg-transparent outline-none',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -57,7 +57,7 @@ const defaultCommandInput = cva({
 });
 
 const defaultCommandList = cva({
-	base: 'scrollbar scrollbar-none max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none',
+	base: 'scrollbar scrollbar-none max-h-72 flex-1 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none',
 	variants: {
 		size: {
 			small: '',
@@ -79,7 +79,7 @@ const defaultCommandEmpty = cva({
 });
 
 const defaultCommandGroup = cva({
-	base: 'text-foreground overflow-hidden p-1',
+	base: 'text-neutral overflow-hidden p-1',
 	variants: {
 		size: {
 			small: '',
@@ -90,7 +90,7 @@ const defaultCommandGroup = cva({
 });
 
 const defaultCommandGroupHeading = cva({
-	base: 'text-foreground-muted font-medium',
+	base: 'text-neutral/60 font-medium',
 	variants: {
 		size: {
 			small: 'px-2 py-1 text-[0.6875rem]',
@@ -101,7 +101,7 @@ const defaultCommandGroupHeading = cva({
 });
 
 const defaultCommandSeparator = cva({
-	base: 'bg-background-muted -mx-1 h-px',
+	base: '-mx-1 h-px',
 	variants: {
 		size: {
 			small: '',
@@ -112,7 +112,7 @@ const defaultCommandSeparator = cva({
 });
 
 const defaultCommandShortcut = cva({
-	base: 'ml-auto tracking-widest',
+	base: 'ml-auto hidden tracking-widest sm:inline',
 	variants: {
 		size: {
 			small: 'text-[0.6875rem]',
@@ -120,8 +120,8 @@ const defaultCommandShortcut = cva({
 			large: 'text-sm'
 		},
 		highlighted: {
-			true: 'text-foreground',
-			false: 'text-foreground-muted'
+			true: 'text-neutral',
+			false: 'text-neutral/60'
 		}
 	},
 	defaultVariants: {

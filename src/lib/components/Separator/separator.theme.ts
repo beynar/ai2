@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultSeparator = cva({
-	base: 'relative flex items-center text-foreground/70 text-xs',
+	base: 'relative flex items-center text-neutral/70 text-xs',
 	variants: {
 		orientation: {
 			horizontal: 'w-full my-2',
@@ -20,8 +20,7 @@ const defaultSeparator = cva({
 		color: {
 			primary: 'before:border-primary after:border-primary',
 			secondary: 'before:border-secondary after:border-secondary',
-			foreground: 'before:border-foreground after:border-foreground',
-			background: 'before:border-background-muted after:border-background-muted',
+			neutral: 'before:border-neutral-muted after:border-neutral-muted',
 			danger: 'before:border-danger after:border-danger',
 			success: 'before:border-success after:border-success',
 			warning: 'before:border-warning after:border-warning',
@@ -63,7 +62,7 @@ const defaultSeparator = cva({
 		orientation: 'horizontal',
 		align: 'center',
 		line: true,
-		color: 'background'
+		color: 'neutral'
 	}
 });
 

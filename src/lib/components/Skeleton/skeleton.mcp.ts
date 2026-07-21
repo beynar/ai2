@@ -12,11 +12,10 @@ The Skeleton component is a loading placeholder element that displays a pulsing 
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'foreground')
+- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' (default: 'neutral')
   - Determines the color scheme of the skeleton
-  - foreground: High foreground color (default)
+  - neutral: Subtle achromatic fill (default)
   - primary, secondary, danger, success, warning, info: Semantic colors
-  - background: Muted background color
 
 ### Styling Props
 - **class**: string - Additional CSS classes for the skeleton container
@@ -99,7 +98,7 @@ The Skeleton component is a loading placeholder element that displays a pulsing 
 
 The skeleton uses \`animate-pulse\` for the pulsing animation and supports color variants. You can customize the appearance by:
 
-1. Using the \`color\` prop to change the background color (default: 'foreground')
+1. Using the \`color\` prop to change the background color (default: 'neutral')
 2. Adding custom classes via the \`class\` prop
 3. Overriding the theme via the \`theme\` prop
 4. Using Tailwind utility classes for size, shape, and spacing
@@ -134,7 +133,7 @@ The skeleton uses \`animate-pulse\` for the pulsing animation and supports color
 ## Notes
 
 - The skeleton uses CSS animation (\`animate-pulse\`) which is provided by Tailwind CSS
-- The default color is 'foreground' which provides high visibility
+- The default color is 'neutral' which provides high visibility
 - Color variants use the theme's color system and adapt to your theme configuration
 - Skeletons should be replaced with actual content once loading is complete
 - Consider using skeletons that match the layout of the content being loaded for better UX
@@ -154,7 +153,7 @@ The theme object contains the following parts:
 **root**:
 - base: Base classes for skeleton element (includes animation)
 - Variants:
-  - color: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' - Background color
+  - color: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' - Background color
 
 ### Usage Examples
 

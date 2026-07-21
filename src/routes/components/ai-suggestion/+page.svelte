@@ -19,8 +19,8 @@
 		{
 			name: 'variant',
 			type: 'segmented',
-			label: 'Single item',
-			value: 'outline',
+			label: 'Variant',
+			value: 'soft',
 			options: ['outline', 'soft', 'ghost'] satisfies readonly ButtonVariant[]
 		},
 		{
@@ -62,6 +62,7 @@ ${'</' + 'script>'}
 			<Suggestions
 				suggestions={items}
 				bind:value
+				variant={controls.value.variant}
 				disabled={controls.value.interaction === 'disabled'}
 			/>
 			<Suggestion
@@ -70,7 +71,7 @@ ${'</' + 'script>'}
 				disabled={controls.value.interaction === 'disabled'}
 				onSelect={(next) => (value = next)}
 			/>
-			<div class="text-xs text-foreground/60">Selected: {value || 'none'}</div>
+			<div class="text-xs text-neutral/60">Selected: {value || 'none'}</div>
 		</div>
 	</ComponentCard>
 

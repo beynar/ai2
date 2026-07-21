@@ -172,7 +172,7 @@
 					bind:value={liveChart}
 					spellcheck="false"
 					rows="5"
-					class="border-background-muted bg-background text-foreground focus:border-primary w-full resize-y rounded border px-3 py-2 font-mono text-sm outline-none"
+					class="border-neutral-muted bg-surface text-neutral focus:border-primary w-full resize-y rounded border px-3 py-2 font-mono text-sm outline-none"
 				></textarea>
 				<Mermaid chart={liveChart} />
 			</div>
@@ -188,7 +188,7 @@
 						Stream
 					</Button>
 					<pre
-						class="border-background-muted bg-background text-foreground-muted min-h-16 flex-1 overflow-auto rounded border px-3 py-2 font-mono text-xs">{streamed ||
+						class="border-neutral-muted bg-surface text-neutral/60 min-h-16 flex-1 overflow-auto rounded border px-3 py-2 font-mono text-xs">{streamed ||
 							' '}</pre>
 				</div>
 				<Mermaid chart={streamed} errorForgiving />

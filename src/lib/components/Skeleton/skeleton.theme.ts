@@ -11,12 +11,11 @@ const defaultSkeleton = cva({
 			success: 'bg-success-light/10',
 			warning: 'bg-warning-light/10',
 			info: 'bg-info-light/10',
-			foreground: 'bg-foreground-muted/10',
-			background: 'bg-background-muted/50'
+			neutral: 'bg-neutral/10'
 		}
 	},
 	defaultVariants: {
-		color: 'background'
+		color: 'neutral'
 	}
 });
 

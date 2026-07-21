@@ -47,7 +47,7 @@
 	] satisfies PageShellAction[];
 ${'</' + 'script>'}
 
-<div class="h-[460px] w-full overflow-auto rounded-lg border border-background-muted">
+<div class="h-[460px] w-full overflow-auto rounded-lg border border-neutral-muted">
 <PageShell
 		title="Insights"
 		subtitle="Sticky header and footer with natural content flow"

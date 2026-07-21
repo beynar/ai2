@@ -14,19 +14,18 @@ const defaultRoot = cva({
 			large: 'gap-2'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info',
-			foreground: 'text-foreground',
-			background: 'text-background'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable',
+			neutral: 'text-neutral'
 		}
 	},
 	defaultVariants: {
 		size: 'normal',
-		color: 'foreground'
+		color: 'neutral'
 	}
 });
 

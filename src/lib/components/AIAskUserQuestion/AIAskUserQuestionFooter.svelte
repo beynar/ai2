@@ -77,7 +77,7 @@
 			<Button
 				type="button"
 				variant="ghost"
-				color="background"
+				color="neutral"
 				size="small"
 				loading={isDiscarding}
 				{disabled}

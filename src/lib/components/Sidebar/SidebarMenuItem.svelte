@@ -165,7 +165,7 @@
 					componentSize: size,
 					density,
 					size: item.size,
-					className: ['aria-expanded:bg-background-muted', item.class]
+					className: ['aria-expanded:bg-neutral-muted', item.class]
 				})}
 				aria-expanded={popover.isOpen}
 				aria-haspopup="menu"
@@ -214,7 +214,7 @@
 					class={classes.menuAction({
 						componentSize: size,
 						density,
-						className: 'left-1 right-auto bg-background-muted data-[open=true]:rotate-90'
+						className: 'left-1 right-auto bg-neutral-muted data-[open=true]:rotate-90'
 					})}
 					data-open={isOpen ? 'true' : undefined}
 					aria-label={`${t.toggle} ${t.submenu}`}

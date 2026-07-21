@@ -45,10 +45,10 @@
 			<ToggleButtonGroup
 				bind:value={formatting}
 				ariaLabel="Text formatting"
-				color="foreground"
+				color="neutral"
 				items={formattingItems}
 			/>
-			<code class="text-foreground-muted text-xs">{JSON.stringify(formatting)}</code>
+			<code class="text-neutral/60 text-xs">{JSON.stringify(formatting)}</code>
 		</div>
 	</ComponentCard>
 
@@ -69,7 +69,7 @@
 						{variant}
 						joined
 						ariaLabel={`${variant} text formatting`}
-						color="foreground"
+						color="neutral"
 						items={formattingItems}
 						value={{ bold: true }}
 					/>
@@ -102,7 +102,7 @@
 					<ToggleButtonGroup
 						{size}
 						ariaLabel={`${size} text formatting`}
-						color="foreground"
+						color="neutral"
 						items={{
 							bold: { prefix: textBIcon, children: 'Bold' },
 							italic: { prefix: textItalicIcon, children: 'Italic' }

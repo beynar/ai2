@@ -73,7 +73,7 @@
 					label="Choose your option"
 					required
 				/>
-				<div class="text-foreground-muted mt-4 text-sm">
+				<div class="text-neutral/60 mt-4 text-sm">
 					Selected: {selectedOptions.join(', ')}
 				</div>
 			</div>
@@ -122,7 +122,7 @@
 					label="Choose your card option"
 					required
 				/>
-				<div class="text-foreground-muted mt-4 text-sm">
+				<div class="text-neutral/60 mt-4 text-sm">
 					Selected: {cardSelectedOptions.join(', ')}
 				</div>
 			</div>

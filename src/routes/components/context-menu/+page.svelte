@@ -51,7 +51,7 @@
 
 {#snippet target(label: string)}
 	<div
-		class="bg-background-light border-background-muted text-foreground/70 flex h-48 w-full cursor-context-menu items-center justify-center rounded-xl border text-sm select-none"
+		class="bg-surface-raised border-neutral-muted text-neutral/70 flex h-48 w-full cursor-context-menu items-center justify-center rounded-xl border text-sm select-none"
 	>
 		{label}
 	</div>
@@ -73,8 +73,8 @@
 			<ContextMenu items={basicItems}>
 				{@render target('Right-click anywhere in this area')}
 			</ContextMenu>
-			<p class="text-foreground-muted mt-3 text-center text-xs">
-				Last action: <span class="text-foreground font-medium">{lastAction}</span>
+			<p class="text-neutral/60 mt-3 text-center text-xs">
+				Last action: <span class="text-neutral font-medium">{lastAction}</span>
 			</p>
 		</div>
 	</ComponentCard>

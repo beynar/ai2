@@ -35,7 +35,7 @@
 	<div class="flex w-full justify-end">
 		<button
 			type="button"
-			class="state-layer border-background-muted bg-background inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium text-foreground transition"
+			class="state-layer border-neutral-muted bg-surface inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium text-neutral transition"
 			aria-pressed={!open}
 			onclick={() => (displayState = open ? 'collapsed' : 'expanded')}
 		>
@@ -44,7 +44,7 @@
 	</div>
 
 	<div
-		class="min-h-0 flex-1 overflow-hidden rounded-lg border border-background-muted bg-background-muted"
+		class="min-h-0 flex-1 overflow-hidden rounded-lg border border-neutral-muted bg-neutral-muted"
 	>
 		<Sidebar
 			bind:displayState
@@ -71,7 +71,7 @@
 			]}
 		>
 			{#snippet children()}
-				<div class="grid h-full min-w-0 place-items-center bg-background p-8">
+				<div class="grid h-full min-w-0 place-items-center bg-surface p-8">
 					<div class="grid w-full max-w-2xl gap-3">
 						<Skeleton color="primary" class="h-3 w-11/12 rounded-full" />
 						<Skeleton class="h-3 w-8/12 rounded-full" />

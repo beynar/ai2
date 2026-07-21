@@ -39,8 +39,7 @@ const colorSet = new Set<Colors>([
 	'success',
 	'warning',
 	'info',
-	'background',
-	'foreground'
+	'neutral'
 ]);
 const isColor = (color?: string | Colors): color is Colors => colorSet.has(color as Colors);
 

@@ -9,7 +9,7 @@
 	let {
 		ref = $bindable(),
 		class: className,
-		color = 'foreground',
+		color = 'neutral',
 		size = 'normal',
 		variant,
 		text,

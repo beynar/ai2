@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultTextArea = cva({
-	base: 'outline-none flex-1 w-full rounded bg-transparent text-sm resize-none placeholder:text-foreground-muted autofill:text-foreground-light appearance-none leading-normal',
+	base: 'outline-none flex-1 w-full rounded bg-transparent text-sm resize-none placeholder:text-neutral/60 autofill:text-neutral appearance-none leading-normal',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -20,7 +20,7 @@ const defaultTextArea = cva({
 });
 
 const defaultTextAreaContainer = cva({
-	base: 'px-3 py-2 bg-background-light border border-background-muted rounded text-foreground w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all',
+	base: 'px-3 py-2 bg-surface-raised border border-neutral-muted rounded text-neutral w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all',
 	variants: {
 		size: {
 			small: 'min-h-20 py-1.5 text-xs',

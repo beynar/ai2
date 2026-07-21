@@ -1,10 +1,11 @@
 <script lang="ts" generics="TMessage extends AIThreadItem = AIThreadItem">
 	import type { StreamdownProps } from 'svelte-streamdown';
 	import Markdown from '../Markdown/Markdown.svelte';
+	import type { MarkdownSize } from '../Markdown/markdown.props.js';
 	import Slot from '../Slot/Slot.svelte';
 	import AIMessageActions from '../AIMessageActions/AIMessageActions.svelte';
 	import type { AIThreadItem, AIThreadRole } from '../AIThread/aiThread.props.js';
-	import type { AIMessageProps, AIMessageRenderPayload } from './aiMessage.props.js';
+	import type { AIMessageProps, AIMessageRenderPayload, AIMessageSize } from './aiMessage.props.js';
 	import { useAIMessageTheme } from './aiMessage.theme.js';
 	import AIMessageFiles from './AIMessageFiles.svelte';
 	import AIMessageMdxToken from './AIMessageMdxToken.svelte';
@@ -22,6 +23,8 @@
 		name,
 		content,
 		files,
+		size = 'normal',
+		variant = 'bubble',
 		markdown = true,
 		streamdown,
 		markdownProps,
@@ -64,7 +67,9 @@
 		index: resolvedIndex,
 		messageIndex: resolvedIndex,
 		role: resolvedRole,
-		content: resolvedContent
+		content: resolvedContent,
+		size,
+		variant
 	});
 	const classes = $derived(useAIMessageTheme(theme));
 	const inlineComponents = {
@@ -80,6 +85,7 @@
 		...(resolvedMarkdownProps?.extensions ?? [])
 	]);
 	const markdownContent = $derived(protectAIMessageInlineMdxBlocks(resolvedContent));
+	const markdownSize = $derived(resolveMarkdownSize(size));
 	const roleLayout = $derived(resolveRoleLayout(resolvedRole));
 	const fileAlignment = $derived(resolveFileAlignment(roleLayout));
 
@@ -97,6 +103,11 @@
 		if (value === 'system') return 'center';
 		return 'start';
 	}
+
+	function resolveMarkdownSize(value: AIMessageSize): MarkdownSize {
+		if (value === 'large') return 'large';
+		return 'small';
+	}
 </script>
 
 <article
@@ -104,22 +115,26 @@
 	data-slot="ai-message"
 	data-from={resolvedRole}
 	data-role={resolvedRole}
+	data-size={size}
+	data-variant={variant}
 	class={classes.root({
 		role: roleLayout,
+		size,
 		className
 	})}
 	{...attachments}
 >
-	<div data-slot="ai-message-body" class={classes.body({ role: roleLayout })}>
-		{#if resolvedName}<div data-slot="ai-message-name" class={classes.header()}>
+	<div data-slot="ai-message-body" class={classes.body({ role: roleLayout, size, variant })}>
+		{#if resolvedName}<div data-slot="ai-message-name" class={classes.header({ size })}>
 				{resolvedName}
 			</div>{/if}
-		<AIMessageFiles files={resolvedFiles} align={fileAlignment} class={classes.files()} />
-		<div data-slot="ai-message-content" class={classes.bubble({ role: roleLayout })}>
+		<AIMessageFiles files={resolvedFiles} align={fileAlignment} {size} class={classes.files()} />
+		<div data-slot="ai-message-content" class={classes.bubble({ role: roleLayout, size, variant })}>
 			{#if children !== undefined}<Slot render={children} {payload} />{:else if markdown}<Markdown
 					content={markdownContent}
-					size="small"
 					{...resolvedMarkdownProps}
+					size={markdownSize}
+					class={classes.markdown({ size, className: resolvedMarkdownProps?.class })}
 					{allowedLinkPrefixes}
 					{allowedImagePrefixes}
 					renderHtml={false}
@@ -132,6 +147,7 @@
 			messageIndex={resolvedIndex}
 			role={resolvedRole}
 			content={resolvedContent}
+			{size}
 			{conversation}
 			{actions}
 			visibility={resolvedActionVisibility}

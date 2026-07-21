@@ -35,7 +35,7 @@
 		<ComponentCard description="A boolean toggle with a label and description">
 			<div class="w-full max-w-md">
 				<Switch label="Notifications" description="Receive updates by email" bind:value={enabled} />
-				<p class="text-foreground-muted mt-2 text-xs">Value: {enabled}</p>
+				<p class="text-neutral/60 mt-2 text-xs">Value: {enabled}</p>
 			</div>
 		</ComponentCard>
 

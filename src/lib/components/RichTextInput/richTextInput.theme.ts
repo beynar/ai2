@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultRichTextInputRoot = cva({
-	base: 'text-foreground min-w-0 w-full',
+	base: 'text-neutral min-w-0 w-full',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -40,7 +40,7 @@ const defaultRichTextInputInputContainer = cva({
 });
 
 const defaultRichTextInputFixedToolbar = cva({
-	base: 'border-background-muted bg-background-light/70 mb-2 flex min-w-0 items-center overflow-x-auto rounded-lg border p-1',
+	base: 'border-neutral-muted bg-surface-raised/70 mb-2 flex min-w-0 items-center overflow-x-auto rounded-lg border p-1',
 	variants: {
 		size: {
 			small: 'gap-0.5',
@@ -70,7 +70,7 @@ const defaultRichTextInputViewport = cva({
 });
 
 const defaultRichTextInputScrollArea = cva({
-	base: 'group/rich-text-input flex min-w-0 flex-col overflow-hidden rounded border border-background-muted bg-background-light text-foreground transition-all focus-within:ring-1 focus-within:ring-primary',
+	base: 'group/rich-text-input flex min-w-0 flex-col overflow-hidden rounded border border-neutral-muted bg-surface-raised text-neutral transition-all focus-within:ring-1 focus-within:ring-primary',
 	variants: {
 		size: {
 			small: 'max-h-40 min-h-20',
@@ -114,7 +114,7 @@ const defaultRichTextInputEditorShell = cva({
 });
 
 const richTextInputMarkdownContent =
-	'[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_a]:font-medium [&_a]:text-primary [&_a]:underline [&_blockquote]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-foreground-muted/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-foreground-muted [&_code]:rounded [&_code]:bg-background-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_code]:text-foreground [&_del]:text-foreground-muted [&_em]:italic [&_h1]:mb-1.5 [&_h1]:mt-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:text-foreground [&_h2]:mb-1.5 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground [&_h3]:mb-1.5 [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground [&_li]:py-0 [&_mark]:rounded [&_mark]:bg-warning-muted [&_ol]:my-2 [&_ol]:ml-3 [&_ol]:list-inside [&_ol]:list-decimal [&_ol]:whitespace-normal [&_p]:my-2 [&_p]:text-foreground [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:ml-3 [&_ul]:list-inside [&_ul]:list-disc [&_ul]:whitespace-normal';
+	'[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_a]:font-medium [&_a]:text-primary-readable [&_a]:underline [&_blockquote]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-neutral/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-neutral/60 [&_code]:rounded [&_code]:bg-surface-canvas [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_code]:text-neutral [&_del]:text-neutral/60 [&_em]:italic [&_h1]:mb-1.5 [&_h1]:mt-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:text-neutral [&_h2]:mb-1.5 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-neutral [&_h3]:mb-1.5 [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-neutral [&_li]:py-0 [&_mark]:rounded [&_mark]:bg-warning-muted [&_mark]:text-warning-muted-readable [&_ol]:my-2 [&_ol]:ml-3 [&_ol]:list-inside [&_ol]:list-decimal [&_ol]:whitespace-normal [&_p]:my-2 [&_p]:text-neutral [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:ml-3 [&_ul]:list-inside [&_ul]:list-disc [&_ul]:whitespace-normal';
 
 const defaultRichTextInputEditor = cva({
 	base: `min-w-0 whitespace-pre-wrap break-words outline-none ${richTextInputMarkdownContent}`,
@@ -136,7 +136,7 @@ const defaultRichTextInputEditor = cva({
 });
 
 const defaultRichTextInputPlaceholder = cva({
-	base: 'text-foreground-muted pointer-events-none absolute',
+	base: 'text-neutral/60 pointer-events-none absolute',
 	variants: {
 		size: {
 			small: 'left-2 top-2 text-xs leading-normal',
@@ -164,7 +164,7 @@ const defaultRichTextInputScrollComfortSpacer = cva({
 });
 
 const defaultRichTextInputFloatingPanel = cva({
-	base: 'border-background-muted bg-background isolate overflow-hidden rounded-lg border text-foreground shadow-md',
+	base: 'border-neutral-muted bg-surface-floating isolate overflow-hidden rounded-lg border text-neutral shadow-md',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -232,7 +232,7 @@ const defaultRichTextInputToolbarIcon = cva({
 });
 
 const defaultRichTextInputToolbarSeparator = cva({
-	base: 'bg-background-muted mx-1 h-5 w-px shrink-0',
+	base: 'bg-neutral-muted mx-1 h-5 w-px shrink-0',
 	variants: {
 		size: {
 			small: 'h-4',
@@ -254,7 +254,7 @@ const defaultRichTextInputLinkForm = cva({
 });
 
 const defaultRichTextInputLinkInput = cva({
-	base: 'border-background-muted bg-background-light text-foreground placeholder:text-foreground-muted min-w-0 flex-1 rounded-md border outline-none focus:ring-1 focus:ring-primary',
+	base: 'border-neutral-muted bg-surface-raised text-neutral placeholder:text-neutral/60 min-w-0 flex-1 rounded-md border outline-none focus:ring-1 focus:ring-primary',
 	variants: {
 		size: {
 			small: 'h-7 w-44 px-2 text-xs',
@@ -268,7 +268,7 @@ const defaultRichTextInputLinkInput = cva({
 });
 
 const defaultRichTextInputSuggestionsStatus = cva({
-	base: 'border-background-muted text-foreground-muted border-t px-2 py-1.5',
+	base: 'border-neutral-muted text-neutral/60 border-t px-2 py-1.5',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -277,7 +277,7 @@ const defaultRichTextInputSuggestionsStatus = cva({
 		},
 		status: {
 			loading: '',
-			error: 'text-danger'
+			error: 'text-danger-readable'
 		}
 	},
 	defaultVariants: {
@@ -287,7 +287,7 @@ const defaultRichTextInputSuggestionsStatus = cva({
 });
 
 const defaultRichTextInputSuggestionsError = cva({
-	base: 'text-danger'
+	base: 'text-danger-readable'
 });
 
 export const richTextInputTheme = {

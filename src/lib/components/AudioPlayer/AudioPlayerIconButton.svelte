@@ -54,7 +54,7 @@
 <Button
 	squared
 	variant={play ? 'solid' : 'ghost'}
-	color={play || active ? color : 'background'}
+	color={play || active ? color : 'neutral'}
 	{size}
 	{label}
 	{disabled}

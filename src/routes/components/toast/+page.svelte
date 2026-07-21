@@ -3,6 +3,7 @@
 	import Button from '$lib/components/Button/Button.svelte';
 	import { Toaster, toast } from '$lib/components/Toast/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import type { ToastPosition } from '$lib/components/Toast/toast.state.svelte.js';
 
 	const positions: ToastPosition[] = [
@@ -15,6 +16,45 @@
 	];
 
 	const sizes = ['small', 'normal', 'large'] as const;
+	const controls = createComponentControls([
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'warning', 'danger', 'neutral']
+		},
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: sizes
+		},
+		{
+			name: 'duration',
+			type: 'slider',
+			label: 'Duration',
+			value: 4000,
+			min: 1000,
+			max: 10000,
+			step: 500,
+			showValue: true
+		},
+		{ name: 'richColors', type: 'switch', label: 'Rich colors', value: false },
+		{ name: 'progress', type: 'switch', label: 'Progress', value: false }
+	]);
+
+	function showConfiguredToast() {
+		toast[controls.value.color]({
+			title: 'Hello',
+			description: 'This is a toast',
+			size: controls.value.size,
+			duration: controls.value.duration,
+			richColors: controls.value.richColors,
+			progress: controls.value.progress
+		});
+	}
 
 	// Deferred delete + Undo — the real-world pattern. Deleting an item removes it
 	// from the UI optimistically and shows a toast with an Undo action. The actual
@@ -30,7 +70,7 @@
 
 	const deleteItem = (item: Item) => {
 		items = items.filter((i) => i.id !== item.id); // optimistic remove
-		toast.foreground({
+		toast.neutral({
 			title: `Deleted “${item.name}”`,
 			duration: 5000,
 			actions: [
@@ -87,6 +127,7 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Fire a toast from anywhere with the toast helper. Mount a single <Toaster /> once in your layout. Drag a toast toward its screen edge to dismiss it."
 		code={`<script>
 	import { Toaster, toast } from 'svelai/toast';
@@ -94,23 +135,21 @@
 
 <Toaster />
 
-<Button
-	onClick={() =>
-		toast.primary({
-			title: 'Hello',
-			description: 'This is a toast'
-		})}
+	<Button
+		onClick={() =>
+			toast.${controls.value.color}({
+				title: 'Hello',
+				description: 'This is a toast',
+				size: '${controls.value.size}',
+				duration: ${controls.value.duration},
+				richColors: ${controls.value.richColors},
+				progress: ${controls.value.progress}
+			})}
 >
 	Show toast
 </Button>`}
 	>
-		<Button
-			onClick={() =>
-				toast.primary({
-					title: 'Hello',
-					description: 'This is a toast'
-				})}>Show toast</Button
-		>
+		<Button color={controls.value.color} onClick={showConfiguredToast}>Show toast</Button>
 	</ComponentCard>
 
 	{#snippet examples()}
@@ -122,7 +161,7 @@
 toast.info({ title: 'Heads up', description: 'A new version is available.' });
 toast.warning({ title: 'Careful', description: 'This needs a review first.' });
 toast.danger({ title: 'Something went wrong', description: 'Please try again.' });
-toast.foreground({ title: 'Note', description: 'Just so you know.' });`}
+toast.neutral({ title: 'Note', description: 'Just so you know.' });`}
 		>
 			<div class="flex flex-wrap justify-center gap-2">
 				<Button
@@ -157,9 +196,9 @@ toast.foreground({ title: 'Note', description: 'Just so you know.' });`}
 					Danger
 				</Button>
 				<Button
-					color="foreground"
+					color="neutral"
 					variant="soft"
-					onClick={() => toast.foreground({ title: 'Note', description: 'Just so you know.' })}
+					onClick={() => toast.neutral({ title: 'Note', description: 'Just so you know.' })}
 				>
 					Neutral
 				</Button>
@@ -178,9 +217,7 @@ toast.success({ title: 'Saved', richColors: true });`}
 		>
 			<div class="flex flex-col items-stretch gap-6 sm:flex-row sm:gap-12">
 				<div class="flex flex-col items-center gap-2">
-					<span class="text-foreground-muted text-xs font-medium tracking-wide uppercase">
-						Default
-					</span>
+					<span class="text-neutral/60 text-xs font-medium tracking-wide uppercase"> Default </span>
 					<div class="flex flex-wrap justify-center gap-2">
 						<Button
 							color="success"
@@ -206,7 +243,7 @@ toast.success({ title: 'Saved', richColors: true });`}
 					</div>
 				</div>
 				<div class="flex flex-col items-center gap-2">
-					<span class="text-foreground-muted text-xs font-medium tracking-wide uppercase">
+					<span class="text-neutral/60 text-xs font-medium tracking-wide uppercase">
 						Rich colors
 					</span>
 					<div class="flex flex-wrap justify-center gap-2">
@@ -247,7 +284,7 @@ toast.info({ title: 'bottom-center', position: 'bottom-center' });`}
 				{#each positions as position (position)}
 					<Button
 						variant="outline"
-						color="foreground"
+						color="neutral"
 						size="small"
 						onClick={() => toast.info({ title: position, position })}
 					>
@@ -327,7 +364,7 @@ toast.warning({ title: 'You are offline.', position: 'banner-bottom' });`}
 			code={`const deleteItem = (item) => {
 	items = items.filter((i) => i.id !== item.id); // optimistic remove
 
-	toast.foreground({
+	toast.neutral({
 		title: \`Deleted "\${item.name}"\`,
 		duration: 5000,
 		actions: [
@@ -339,18 +376,18 @@ toast.warning({ title: 'You are offline.', position: 'banner-bottom' });`}
 };`}
 		>
 			<div
-				class="border-background-muted w-full max-w-sm divide-y divide-background-muted rounded-lg border"
+				class="border-neutral-muted w-full max-w-sm divide-y divide-neutral-muted rounded-lg border"
 			>
 				{#each items as item (item.id)}
 					<div class="flex items-center justify-between gap-2 px-3 py-2 text-sm">
-						<span class="text-foreground truncate">{item.name}</span>
+						<span class="text-neutral truncate">{item.name}</span>
 						<Button size="small" variant="ghost" color="danger" onClick={() => deleteItem(item)}>
 							Delete
 						</Button>
 					</div>
 				{/each}
 				{#if !items.length}
-					<p class="text-foreground-muted px-3 py-6 text-center text-sm">
+					<p class="text-neutral/60 px-3 py-6 text-center text-sm">
 						All items deleted. Reload the page to reset.
 					</p>
 				{/if}

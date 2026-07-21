@@ -13,8 +13,8 @@ The Separator component is a visual divider that separates content in an interfa
 
 ### Core Props
 - **orientation**: 'horizontal' | 'vertical' (default: 'horizontal') - The direction of the separator
-- **color**: Colors | 'background' (default: 'background') - The color of the separator line
-  - Available: primary, secondary, success, warning, danger, info, foreground, background
+- **color**: Colors | 'neutral' (default: 'neutral') - The color of the separator line
+  - Available: primary, secondary, success, warning, danger, info, neutral
 - **size**: number (default: 1) - The thickness of the separator in pixels
 - **decorative**: boolean (default: false) - Whether the separator is purely decorative (affects ARIA role)
 
@@ -209,7 +209,7 @@ The Separator component is a visual divider that separates content in an interfa
 ## Notes
 
 - Default orientation is horizontal
-- Default color is 'background' for subtle separation
+- Default color is 'neutral' for subtle separation
 - Size controls the thickness (border-width) of the line
 - Label automatically positions in the center with proper spacing
 - Vertical separators require a parent with defined height
@@ -232,7 +232,7 @@ The theme object contains the following parts:
 - base: Base classes applied to all separators
 - Variants:
   - orientation: 'horizontal' | 'vertical' - Layout direction and styling
-  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Border color
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Border color
 
 **label**:
 - base: Base classes for label text

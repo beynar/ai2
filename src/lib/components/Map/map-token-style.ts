@@ -206,17 +206,21 @@ function readMapStyleColors(root: HTMLElement): MapStyleColors {
 // boundary→danger).
 function readMapStyleTokens(probe: HTMLElement): MapStyleTokens {
 	return {
-		background: readCssColor(probe, 'var(--color-background)', FALLBACK_COLORS.background),
-		card: readCssColor(probe, 'var(--color-background-light)', FALLBACK_COLORS.background),
-		foreground: readCssColor(probe, 'var(--color-foreground)', FALLBACK_COLORS.road),
-		muted: readCssColor(probe, 'var(--color-background-muted)', FALLBACK_COLORS.backgroundMuted),
-		mutedForeground: readCssColor(probe, 'var(--color-foreground-muted)', FALLBACK_COLORS.label),
+		background: readCssColor(probe, 'var(--color-surface)', FALLBACK_COLORS.background),
+		card: readCssColor(probe, 'var(--color-surface-raised)', FALLBACK_COLORS.background),
+		foreground: readCssColor(probe, 'var(--color-neutral)', FALLBACK_COLORS.road),
+		muted: readCssColor(probe, 'var(--color-neutral-muted)', FALLBACK_COLORS.backgroundMuted),
+		mutedForeground: readCssColor(probe, 'var(--color-neutral-muted)', FALLBACK_COLORS.label),
 		accent: readCssColor(probe, 'var(--color-secondary)', FALLBACK_COLORS.backgroundMuted),
 		primary: readCssColor(probe, 'var(--color-primary)', FALLBACK_COLORS.water),
 		destructive: readCssColor(probe, 'var(--color-danger)', FALLBACK_COLORS.boundary),
-		sidebar: readCssColor(probe, 'var(--color-background-light)', FALLBACK_COLORS.background),
-		sidebarAccent: readCssColor(probe, 'var(--color-background-muted)', FALLBACK_COLORS.backgroundMuted),
-		sidebarBorder: readCssColor(probe, 'var(--color-background-muted)', FALLBACK_COLORS.roadCase),
+		sidebar: readCssColor(probe, 'var(--color-surface-raised)', FALLBACK_COLORS.background),
+		sidebarAccent: readCssColor(
+			probe,
+			'var(--color-neutral-muted)',
+			FALLBACK_COLORS.backgroundMuted
+		),
+		sidebarBorder: readCssColor(probe, 'var(--color-neutral-muted)', FALLBACK_COLORS.roadCase),
 		chart1: readCssColor(probe, 'var(--color-info)', FALLBACK_COLORS.water),
 		chart2: readCssColor(probe, 'var(--color-primary)', FALLBACK_COLORS.waterLine),
 		chart3: readCssColor(probe, 'var(--color-success)', FALLBACK_COLORS.landcover),
@@ -241,7 +245,14 @@ function getLightMapStyleColors(tokens: MapStyleTokens): MapStyleColors {
 		label: mixToContrast(base, tokens.mutedForeground, base, 2.35, 0.88, tokens.foreground),
 		water: mixToContrast(base, tokens.chart1, base, 1.06, 0.16, tokens.primary),
 		waterLine: mixToContrast(base, tokens.chart2, base, 1.12, 0.24, tokens.primary),
-		waterLabel: mixToContrast(tokens.mutedForeground, tokens.chart2, base, 2.2, 0.32, tokens.foreground),
+		waterLabel: mixToContrast(
+			tokens.mutedForeground,
+			tokens.chart2,
+			base,
+			2.2,
+			0.32,
+			tokens.foreground
+		),
 		poi: mixToContrast(base, tokens.chart4, base, 1.2, 0.34, tokens.primary),
 		halo: withAlpha(base, 0.76)
 	};
@@ -256,14 +267,28 @@ function getDarkMapStyleColors(tokens: MapStyleTokens): MapStyleColors {
 		landcover: mixToContrast(base, tokens.chart3, base, 1.1, 0.16, tokens.sidebarAccent),
 		residential: mixToContrast(base, tokens.sidebar, base, 1.06, 0.28, tokens.muted),
 		road: mixToContrast(tokens.muted, tokens.foreground, base, 1.45, 0.28),
-		roadCase: mixToContrast(tokens.muted, tokens.sidebarBorder, base, 1.25, 0.42, tokens.foreground),
+		roadCase: mixToContrast(
+			tokens.muted,
+			tokens.sidebarBorder,
+			base,
+			1.25,
+			0.42,
+			tokens.foreground
+		),
 		detail: mixToContrast(tokens.muted, tokens.foreground, base, 1.16, 0.14),
 		building: mixToContrast(base, tokens.foreground, base, 1.18, 0.2),
 		boundary: mixToContrast(base, tokens.chart5, base, 1.28, 0.3, tokens.destructive),
 		label: mixToContrast(base, tokens.mutedForeground, base, 2.25, 0.78),
 		water: mixToContrast(base, tokens.chart1, base, 1.45, 0.58, tokens.primary),
 		waterLine: mixToContrast(base, tokens.chart2, base, 1.72, 0.72, tokens.primary),
-		waterLabel: mixToContrast(tokens.mutedForeground, tokens.chart2, base, 2.5, 0.48, tokens.foreground),
+		waterLabel: mixToContrast(
+			tokens.mutedForeground,
+			tokens.chart2,
+			base,
+			2.5,
+			0.48,
+			tokens.foreground
+		),
 		poi: mixToContrast(tokens.muted, tokens.chart4, base, 1.35, 0.32, tokens.primary),
 		halo: withAlpha(base, 0.64)
 	};
@@ -277,14 +302,28 @@ function mixToContrast(
 	maxPairWeight: number,
 	fallbackPairColor?: string
 ): string {
-	const pairedColor = findContrastMix(baseColor, pairColor, backgroundColor, targetContrast, maxPairWeight);
+	const pairedColor = findContrastMix(
+		baseColor,
+		pairColor,
+		backgroundColor,
+		targetContrast,
+		maxPairWeight
+	);
 
 	if (pairedColor) {
 		return pairedColor;
 	}
 
 	return fallbackPairColor
-		? findContrastMix(baseColor, fallbackPairColor, backgroundColor, targetContrast, maxPairWeight) ?? pairedColor ?? baseColor
+		? (findContrastMix(
+				baseColor,
+				fallbackPairColor,
+				backgroundColor,
+				targetContrast,
+				maxPairWeight
+			) ??
+				pairedColor ??
+				baseColor)
 		: baseColor;
 }
 
@@ -362,5 +401,7 @@ function normalizeStyleColor(color: string): string {
 }
 
 function createMapStyleSignature(colors: MapStyleColors): string {
-	return Object.entries(colors).map(([name, color]) => `${name}:${color}`).join('|');
+	return Object.entries(colors)
+		.map(([name, color]) => `${name}:${color}`)
+		.join('|');
 }

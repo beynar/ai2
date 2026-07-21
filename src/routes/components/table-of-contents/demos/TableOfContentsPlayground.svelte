@@ -84,12 +84,12 @@
 <div class="grid w-full gap-6">
 	<section
 		aria-label="Table of contents controls"
-		class="border-background-muted bg-background grid gap-5 rounded-lg border p-4"
+		class="border-neutral-muted bg-surface grid gap-5 rounded-lg border p-4"
 	>
 		<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 			<Switch size="small" label="Rail" bind:value={showRail} />
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Markers</span>
+				<span class="text-neutral text-sm font-medium">Markers</span>
 				<SegmentedControl
 					items={markerItems}
 					bind:value={markerSetting}
@@ -122,7 +122,7 @@
 
 		<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Size</span>
+				<span class="text-neutral text-sm font-medium">Size</span>
 				<SegmentedControl
 					items={sizeItems}
 					bind:value={size}
@@ -131,7 +131,7 @@
 				/>
 			</div>
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Density</span>
+				<span class="text-neutral text-sm font-medium">Density</span>
 				<SegmentedControl
 					items={densityItems}
 					bind:value={density}
@@ -140,7 +140,7 @@
 				/>
 			</div>
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Heading levels</span>
+				<span class="text-neutral text-sm font-medium">Heading levels</span>
 				<SegmentedControl
 					items={levelItems}
 					bind:value={levelPreset}
@@ -149,7 +149,7 @@
 				/>
 			</div>
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Highlight color</span>
+				<span class="text-neutral text-sm font-medium">Highlight color</span>
 				<SegmentedControl
 					items={colorItems}
 					bind:value={color}

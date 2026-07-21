@@ -49,8 +49,8 @@ export async function getUser(id: string): Promise<User> {
 	gap: 1rem;
 	padding: 1.5rem;
 	border-radius: 0.75rem;
-	background: var(--color-background);
-	color: var(--color-foreground);
+	background: var(--color-surface);
+	color: var(--color-neutral);
 	/* adapts to the active theme */
 	box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
 }`;

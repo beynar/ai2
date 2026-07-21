@@ -340,7 +340,7 @@ The theme object contains the following parts:
 \`\`\`svelte
 <Accordion
   items={items}
-  class="rounded-lg border border-background-muted"
+  class="rounded-lg border border-neutral-muted"
   theme={{
     item: { base: 'px-4' },
     content: { base: 'px-4' }

@@ -73,8 +73,8 @@
 	>
 		<div class="flex w-full max-w-xl items-center justify-between gap-6">
 			<div class="min-w-0">
-				<p class="text-foreground text-sm font-medium">Project view</p>
-				<p class="text-foreground-muted truncate text-xs">Current mode: {view}</p>
+				<p class="text-neutral text-sm font-medium">Project view</p>
+				<p class="text-neutral/60 truncate text-xs">Current mode: {view}</p>
 			</div>
 			<SegmentedControl items={viewItems} bind:value={view} ariaLabel="Project view" />
 		</div>
@@ -164,7 +164,7 @@
 					item={densityRenderer}
 					ariaLabel="Row density"
 				/>
-				<p class="text-foreground-muted text-xs">Selected density: {density}</p>
+				<p class="text-neutral/60 text-xs">Selected density: {density}</p>
 			</div>
 		</ComponentCard>
 

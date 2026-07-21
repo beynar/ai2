@@ -40,7 +40,7 @@ Renders a [Mermaid](https://mermaid.js.org/) diagram (flowchart, sequence, gantt
 
 ## Brand theming
 
-Mermaid is initialized with \`theme: 'base'\` and a \`themeVariables\` object whose values are read from our \`--color-*\` design tokens at render time (mermaid reads them as concrete colors, not live CSS vars). The diagram re-renders when the active theme changes, so it stays in sync with light/dark. Mapping: \`primaryColor -> --color-primary-muted\`, \`primaryTextColor/textColor -> --color-foreground\`, \`primaryBorderColor/nodeBorder -> --color-primary\`, \`lineColor -> --color-foreground-muted\`, \`background -> --color-background\`, \`mainBkg -> --color-background-light\`, \`secondaryColor -> --color-secondary\`, \`tertiaryColor -> --color-background-muted\`, plus note/cluster/title colors and \`fontFamily\`.
+Mermaid is initialized with \`theme: 'base'\` and a \`themeVariables\` object whose values are read from our \`--color-*\` design tokens at render time (mermaid reads them as concrete colors, not live CSS vars). The diagram re-renders when the active theme changes, so it stays in sync with light/dark. Mapping: \`primaryColor -> --color-primary-muted\`, \`primaryTextColor/textColor -> --color-neutral\`, \`primaryBorderColor/nodeBorder -> --color-primary\`, \`lineColor -> --color-neutral-muted\`, \`background -> --color-surface\`, \`mainBkg -> --color-surface-raised\`, \`secondaryColor -> --color-secondary\`, \`tertiaryColor -> --color-neutral-muted\`, plus note/cluster/title colors and \`fontFamily\`.
 
 ## Examples
 

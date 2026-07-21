@@ -33,28 +33,28 @@
 
 {#snippet workspaceExplorer()}
 	<div class="flex h-full flex-col">
-		<div class="border-background-muted text-foreground/70 border-b px-4 py-3 text-xs font-medium">
+		<div class="border-neutral-muted text-neutral/70 border-b px-4 py-3 text-xs font-medium">
 			Explorer
 		</div>
 		<div class="space-y-1.5 p-4 text-sm">
-			<div class="text-foreground rounded bg-primary/10 px-2 py-1.5">src</div>
-			<div class="text-foreground-muted px-2 py-1">components</div>
-			<div class="text-foreground-muted px-2 py-1">routes</div>
-			<div class="text-foreground-muted px-2 py-1">lib</div>
+			<div class="text-neutral rounded bg-primary/10 px-2 py-1.5">src</div>
+			<div class="text-neutral/60 px-2 py-1">components</div>
+			<div class="text-neutral/60 px-2 py-1">routes</div>
+			<div class="text-neutral/60 px-2 py-1">lib</div>
 		</div>
 	</div>
 {/snippet}
 
 {#snippet workspaceEditor()}
 	<div class="flex h-full flex-col">
-		<div class="border-background-muted flex items-center justify-between border-b px-4 py-3">
+		<div class="border-neutral-muted flex items-center justify-between border-b px-4 py-3">
 			<span class="text-sm font-medium">Resizable.svelte</span>
-			<span class="text-foreground-muted text-xs">edited</span>
+			<span class="text-neutral/60 text-xs">edited</span>
 		</div>
-		<div class="text-foreground-muted grid flex-1 content-center gap-2 p-6 font-mono text-xs">
+		<div class="text-neutral/60 grid flex-1 content-center gap-2 p-6 font-mono text-xs">
 			<div class="h-2 w-10/12 rounded bg-primary/20"></div>
-			<div class="h-2 w-8/12 rounded bg-foreground/20"></div>
-			<div class="h-2 w-11/12 rounded bg-foreground/15"></div>
+			<div class="h-2 w-8/12 rounded bg-neutral/20"></div>
+			<div class="h-2 w-11/12 rounded bg-neutral/15"></div>
 			<div class="h-2 w-7/12 rounded bg-primary/25"></div>
 		</div>
 	</div>
@@ -62,16 +62,16 @@
 
 {#snippet workspaceInspector()}
 	<div class="flex h-full flex-col">
-		<div class="border-background-muted text-foreground/70 border-b px-4 py-3 text-xs font-medium">
+		<div class="border-neutral-muted text-neutral/70 border-b px-4 py-3 text-xs font-medium">
 			Inspector
 		</div>
 		<div class="grid gap-4 p-4 text-sm">
 			<div>
-				<div class="text-foreground-muted text-xs">Layout</div>
+				<div class="text-neutral/60 text-xs">Layout</div>
 				<div class="font-medium">3 panels</div>
 			</div>
 			<div>
-				<div class="text-foreground-muted text-xs">Sizes</div>
+				<div class="text-neutral/60 text-xs">Sizes</div>
 				<div class="font-medium">{formatSizes(workspaceSizes)}</div>
 			</div>
 		</div>
@@ -82,9 +82,9 @@
 	<div class="flex h-full items-center justify-between px-4">
 		<div>
 			<div class="text-sm font-medium">Preview</div>
-			<div class="text-foreground-muted text-xs">Vertical panel group</div>
+			<div class="text-neutral/60 text-xs">Vertical panel group</div>
 		</div>
-		<Chip color="background" variant="soft">{formatSizes(verticalSizes)}</Chip>
+		<Chip color="neutral" variant="soft">{formatSizes(verticalSizes)}</Chip>
 	</div>
 {/snippet}
 
@@ -93,16 +93,16 @@
 		<div class="grid w-full max-w-md gap-2">
 			<div class="h-16 rounded bg-primary/15"></div>
 			<div class="grid grid-cols-3 gap-2">
-				<div class="h-12 rounded bg-foreground/10"></div>
-				<div class="h-12 rounded bg-foreground/10"></div>
-				<div class="h-12 rounded bg-foreground/10"></div>
+				<div class="h-12 rounded bg-neutral/10"></div>
+				<div class="h-12 rounded bg-neutral/10"></div>
+				<div class="h-12 rounded bg-neutral/10"></div>
 			</div>
 		</div>
 	</div>
 {/snippet}
 
 {#snippet verticalConsole()}
-	<div class="font-mono text-foreground-muted grid h-full content-start gap-1 p-4 text-xs">
+	<div class="font-mono text-neutral/60 grid h-full content-start gap-1 p-4 text-xs">
 		<div>$ svelte-check</div>
 		<div>Watching component contracts...</div>
 		<div class="text-success">No Resizable route errors</div>
@@ -112,7 +112,7 @@
 {#snippet rtlList()}
 	<div class="h-full p-4 text-right">
 		<div class="text-sm font-medium">Inbox</div>
-		<div class="text-foreground-muted mt-3 grid gap-2 text-sm">
+		<div class="text-neutral/60 mt-3 grid gap-2 text-sm">
 			<div>Q3 planning</div>
 			<div>Design review</div>
 			<div>Release notes</div>
@@ -123,7 +123,7 @@
 {#snippet rtlDetail()}
 	<div class="grid h-full content-center gap-2 p-5 text-right">
 		<div class="text-lg font-semibold">Right-to-left resize</div>
-		<p class="text-foreground-muted text-sm">
+		<p class="text-neutral/60 text-sm">
 			Horizontal pointer and arrow-key deltas mirror when dir is rtl.
 		</p>
 	</div>
@@ -132,7 +132,7 @@
 {#snippet constrainedNav()}
 	<div class="h-full p-4">
 		<div class="text-sm font-medium">Locked navigation</div>
-		<p class="text-foreground-muted mt-2 text-xs">This panel keeps a 20 to 32 percent range.</p>
+		<p class="text-neutral/60 mt-2 text-xs">This panel keeps a 20 to 32 percent range.</p>
 	</div>
 {/snippet}
 
@@ -140,7 +140,7 @@
 	<div class="grid h-full place-items-center p-4">
 		<div class="text-center">
 			<div class="text-sm font-medium">Flexible workspace</div>
-			<div class="text-foreground-muted mt-1 text-xs">{formatSizes(constrainedSizes)}</div>
+			<div class="text-neutral/60 mt-1 text-xs">{formatSizes(constrainedSizes)}</div>
 		</div>
 	</div>
 {/snippet}
@@ -148,7 +148,7 @@
 {#snippet constrainedDisabled()}
 	<div class="h-full p-4">
 		<div class="text-sm font-medium">Detail panel</div>
-		<p class="text-foreground-muted mt-2 text-xs">The adjacent separator is disabled.</p>
+		<p class="text-neutral/60 mt-2 text-xs">The adjacent separator is disabled.</p>
 	</div>
 {/snippet}
 
@@ -192,7 +192,7 @@
 		code={`<Resizable
 	bind:sizes={workspaceSizes}
 	storageKey="svelai-resizable-workspace-demo"
-	class="h-80 rounded-lg border border-background-muted"
+	class="h-80 rounded-lg border border-neutral-muted"
 	withHandle
 	panels={[
 		{ id: 'explorer', defaultSize: 24, minSize: 16, maxSize: 35, content: explorerPanel },
@@ -205,7 +205,7 @@
 			<Resizable
 				bind:sizes={workspaceSizes}
 				storageKey="svelai-resizable-workspace-demo"
-				class="border-background-muted bg-background h-80 rounded-lg border"
+				class="border-neutral-muted bg-surface h-80 rounded-lg border"
 				withHandle
 				getHandleAriaLabel={getWorkspaceHandleLabel}
 				onResize={updateLastResize}
@@ -233,8 +233,8 @@
 				]}
 			/>
 			<div class="flex flex-wrap items-center justify-center gap-2">
-				<Chip color="background" variant="soft">{formatSizes(workspaceSizes)}</Chip>
-				<Chip color="background" variant="soft">{lastResize}</Chip>
+				<Chip color="neutral" variant="soft">{formatSizes(workspaceSizes)}</Chip>
+				<Chip color="neutral" variant="soft">{lastResize}</Chip>
 			</div>
 		</div>
 	</ComponentCard>
@@ -262,7 +262,7 @@
 					handleVariant={splitExampleUseThumbHandle ? 'thumb' : 'grip'}
 					class={splitExampleIsSplitted
 						? 'h-80'
-						: 'border-background-muted bg-background h-80 rounded-lg border'}
+						: 'border-neutral-muted bg-surface h-80 rounded-lg border'}
 					panels={[
 						{
 							id: 'split-explorer',
@@ -297,7 +297,7 @@
 					bind:sizes={collapsibleSizes}
 					bind:collapsedPanels={collapsedPanelIds}
 					storageKey="svelai-resizable-collapsible-demo"
-					class="border-background-muted bg-background h-72 rounded-lg border"
+					class="border-neutral-muted bg-surface h-72 rounded-lg border"
 					withHandle
 					panels={[
 						{
@@ -329,8 +329,8 @@
 					]}
 				/>
 				<div class="flex flex-wrap items-center justify-center gap-2">
-					<Chip color="background" variant="soft">{formatSizes(collapsibleSizes)}</Chip>
-					<Chip color="background" variant="soft">{formatCollapsedPanels(collapsedPanelIds)}</Chip>
+					<Chip color="neutral" variant="soft">{formatSizes(collapsibleSizes)}</Chip>
+					<Chip color="neutral" variant="soft">{formatCollapsedPanels(collapsedPanelIds)}</Chip>
 				</div>
 			</div>
 		</ComponentCard>
@@ -339,7 +339,7 @@
 			description="Groups can be nested by rendering a Resizable inside a panel snippet."
 		>
 			<Resizable
-				class="border-background-muted bg-background h-80 rounded-lg border"
+				class="border-neutral-muted bg-surface h-80 rounded-lg border"
 				withHandle
 				panels={[
 					{
@@ -365,7 +365,7 @@
 			<Resizable
 				bind:sizes={verticalSizes}
 				orientation="vertical"
-				class="border-background-muted bg-background h-96 rounded-lg border"
+				class="border-neutral-muted bg-surface h-96 rounded-lg border"
 				withHandle
 				panels={[
 					{
@@ -395,7 +395,7 @@
 		<ComponentCard description="RTL mirrors horizontal drag deltas and arrow-key behavior.">
 			<Resizable
 				dir="rtl"
-				class="border-background-muted bg-background h-72 rounded-lg border"
+				class="border-neutral-muted bg-surface h-72 rounded-lg border"
 				withHandle
 				panels={[
 					{
@@ -418,7 +418,7 @@
 		<ComponentCard description="Panel constraints clamp pointer and keyboard movement.">
 			<Resizable
 				bind:sizes={constrainedSizes}
-				class="border-background-muted bg-background h-72 rounded-lg border"
+				class="border-neutral-muted bg-surface h-72 rounded-lg border"
 				withHandle
 				disabledHandles={[1]}
 				keyboardStep={5}

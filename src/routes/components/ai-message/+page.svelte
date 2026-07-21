@@ -21,6 +21,20 @@
 			options: ['assistant', 'user', 'system', 'tool']
 		},
 		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'bubble',
+			options: ['bubble', 'minimal']
+		},
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
 			name: 'actions',
 			type: 'segmented',
 			label: 'Actions',
@@ -36,6 +50,8 @@
 	component="AIMessage"
 	features={[
 		'Assistant, user, system, and tool layouts',
+		'Bubble and minimal presentation variants',
+		'Small, normal, and large content scales',
 		'Markdown or plain text content',
 		'File attachment rows with scroll fade',
 		'File, reference, skill, command, and mention tokens',
@@ -51,12 +67,20 @@
   import { AIMessage } from 'svelai/ai-message';
 ${'</' + 'script>'}
 
-<AIMessage from="assistant" content={content} actionsVisibility="always" />`}
+<AIMessage
+  from="assistant"
+  content={content}
+  variant="minimal"
+  size="normal"
+  actionsVisibility="always"
+/>`}
 	>
 		<AIMessage
 			from={controls.value.role}
 			content={controls.value.role === 'user' ? 'Use the attached launch brief.' : tokenContent}
 			files={[{ name: 'launch-brief.md', size: 18_420, type: 'text/markdown' }]}
+			variant={controls.value.variant}
+			size={controls.value.size}
 			actionsVisibility={controls.value.actions}
 			class="w-full max-w-3xl"
 		/>
@@ -80,19 +104,23 @@ ${'</' + 'script>'}
 			title="Body composition"
 			description="The children slot receives the resolved message payload while AIMessage retains role layout, files, native attributes, and actions."
 			class="!min-h-[240px] p-4"
-			code={`<AIMessage message={message}>
-  {#snippet children({ role, content })}
-    <strong>{role}</strong>: {content}
+			code={`<AIMessage message={message} size="large" variant="minimal">
+  {#snippet children({ role, content, size, variant })}
+	<strong>{role}</strong> · {size} · {variant}: {content}
   {/snippet}
 </AIMessage>`}
 		>
 			<AIMessage
 				message={{ id: 'custom', role: 'assistant', content: 'Rendered through the payload.' }}
+				size="large"
+				variant="minimal"
 				actionsVisibility="always"
 			>
-				{#snippet children({ role: messageRole, content })}
+				{#snippet children({ role: messageRole, content, size, variant })}
 					<div class="grid gap-1">
-						<span class="text-xs font-semibold uppercase text-foreground/55">{messageRole}</span>
+						<span class="text-xs font-semibold uppercase text-neutral/55"
+							>{messageRole} · {size} · {variant}</span
+						>
 						<span>{content}</span>
 					</div>
 				{/snippet}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
 		AppShell,
@@ -19,6 +20,8 @@
 	} from '$lib/components/Sidebar/index.js';
 	import Theme from '$lib/components/Theme/Theme.svelte';
 	import type { ThemeState } from '$lib/components/Theme/theme.state.svelte.js';
+	import { themeTransitions, type ThemeTransition } from '$lib/components/Theme/themeTransition.js';
+	import { tick } from 'svelte';
 	import { getSidebarGroups, headerLinks } from './appNavigation.js';
 	import SidebarCommandPalette from './SidebarCommandPalette.svelte';
 
@@ -33,6 +36,8 @@
 	let sidebarVariant = $state<SidebarVariant>('inset');
 	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('hidden');
 	let sidebarWidth = $state('16rem');
+	let appShellRef = $state<HTMLElement | null>(null);
+	const pageScrollPositions = new Map<string, number>();
 
 	const sidebarGroups = $derived(getSidebarGroups(page.route.id));
 	const sidebarState = $derived<SidebarFooterState>(
@@ -41,6 +46,15 @@
 	const sidebarCollapsible = $derived<SidebarCollapsible>(
 		sidebarCollapsedDisplayState === 'hidden' ? 'offcanvas' : 'icon'
 	);
+	const themeTransition = $derived(
+		page.route.id === '/docs/theme-transitions'
+			? resolveThemeTransition(page.url.searchParams.get('transition'))
+			: 'radial-top-right'
+	);
+
+	function resolveThemeTransition(value: string | null): ThemeTransition {
+		return themeTransitions.find((transition) => transition === value) ?? 'radial-top-right';
+	}
 
 	function setSidebarState(nextState: SidebarFooterState) {
 		if (nextState === 'expanded') {
@@ -59,6 +73,53 @@
 			sidebarCollapsedDisplayState = nextDisplayState;
 		}
 	}
+
+	function getPageScroller() {
+		return appShellRef?.querySelector<HTMLElement>('[data-slot="page-shell-content"]') ?? null;
+	}
+
+	function getScrollKey(url: URL) {
+		return `${url.pathname}${url.search}${url.hash}`;
+	}
+
+	function getHashTarget(hash: string) {
+		const encodedId = hash.slice(1);
+		if (!encodedId) return null;
+
+		try {
+			return document.getElementById(decodeURIComponent(encodedId));
+		} catch {
+			return document.getElementById(encodedId);
+		}
+	}
+
+	beforeNavigate(({ from }) => {
+		const scroller = getPageScroller();
+		if (!from || !scroller) return;
+
+		pageScrollPositions.set(getScrollKey(from.url), scroller.scrollTop);
+	});
+
+	afterNavigate(async ({ type, to }) => {
+		if (!to) return;
+
+		await tick();
+		const scroller = getPageScroller();
+		if (!scroller) return;
+
+		if (type === 'popstate') {
+			scroller.scrollTop = pageScrollPositions.get(getScrollKey(to.url)) ?? 0;
+			return;
+		}
+
+		const hashTarget = getHashTarget(to.url.hash);
+		if (hashTarget) {
+			hashTarget.scrollIntoView({ block: 'start' });
+			return;
+		}
+
+		scroller.scrollTop = 0;
+	});
 
 	const sidebar = $derived<AppShellSidebarProps>({
 		displayState: sidebarDisplayState,
@@ -92,7 +153,7 @@
 	{@const isActive = page.route.id === href}
 	<a
 		{href}
-		class="state-layer rounded-md px-2 py-1 text-sm font-medium text-foreground transition-colors hover:text-foreground {isActive
+		class="state-layer rounded-md px-2 py-1 text-sm font-medium text-neutral transition-colors hover:text-neutral {isActive
 			? 'bg-primary/15 text-primary'
 			: ''}"
 	>
@@ -103,7 +164,7 @@
 {#snippet shellFooter()}
 	<div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
 		<div class="flex min-w-0 flex-wrap items-center gap-1.5">
-			<span class="mr-1 text-xs font-medium text-foreground-muted">Variant</span>
+			<span class="mr-1 text-xs font-medium text-neutral/60">Variant</span>
 			<div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sidebar variant">
 				{#each sidebarVariants as variant}
 					<Button
@@ -118,7 +179,7 @@
 		</div>
 
 		<div class="flex min-w-0 flex-wrap items-center gap-1.5">
-			<span class="mr-1 text-xs font-medium text-foreground-muted">State</span>
+			<span class="mr-1 text-xs font-medium text-neutral/60">State</span>
 			<div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sidebar state">
 				{#each sidebarStates as state}
 					<Button
@@ -140,7 +201,7 @@
 		collapsed={api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile}
 	/>
 {/snippet}
-<Theme>
+<Theme transition={themeTransition}>
 	{#snippet children(theme: ThemeState)}
 		{#if isPreviewRoute}
 			{@render childrenSnippet()}
@@ -176,6 +237,7 @@
 			<NetworkIndicator color="danger" />
 			<Confirmation />
 			<AppShell
+				bind:ref={appShellRef}
 				{sidebar}
 				variant={sidebarVariant}
 				header={shellHeader}

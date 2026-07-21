@@ -15,6 +15,7 @@
 		ariaLabel = 'Prompt suggestions',
 		value = $bindable(),
 		disabled = false,
+		variant = 'soft',
 		scrollFade = true,
 		suggestion,
 		onSuggestionClick,
@@ -69,6 +70,7 @@
 					suggestion={item}
 					selected={value === item}
 					{disabled}
+					{variant}
 					onSelect={select}
 					{theme}
 				/>

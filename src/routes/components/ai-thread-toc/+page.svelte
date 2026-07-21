@@ -112,7 +112,7 @@ ${'</' + 'script>'}
 	>
 		<div class="grid w-full gap-3">
 			<div
-				class="relative w-full overflow-hidden rounded-lg border border-background-muted {heightClass}"
+				class="relative w-full overflow-hidden rounded-lg border border-neutral-muted {heightClass}"
 			>
 				<div
 					class="pointer-events-none absolute inset-y-0 flex items-center {side === 'left'
@@ -124,13 +124,13 @@ ${'</' + 'script>'}
 				<div class="grid h-full place-items-center px-16 text-center">
 					<div class="max-w-sm">
 						<p class="text-sm font-medium">{activeEntry?.title}</p>
-						<p class="mt-1 text-xs text-foreground-muted">
+						<p class="mt-1 text-xs text-neutral/60">
 							Select or focus a pin to navigate the controlled state.
 						</p>
 					</div>
 				</div>
 			</div>
-			<p class="truncate text-center text-xs text-foreground-muted" aria-live="polite">
+			<p class="truncate text-center text-xs text-neutral/60" aria-live="polite">
 				Active turn {activeIndex + 1} of {entries.length}
 			</p>
 		</div>

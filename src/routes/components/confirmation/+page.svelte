@@ -2,18 +2,40 @@
 	import { confirmation } from '$lib/components/Confirmation/confirmation.state.svelte.js';
 	import Button from '$lib/components/Button/Button.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 
+	const controls = createComponentControls([
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Confirm color',
+			value: 'danger',
+			options: ['danger', 'primary', 'success', 'warning']
+		},
+		{ name: 'async', type: 'switch', label: 'Async action', value: false }
+	]);
 	let lastResult = $state<string>('—');
 
-	async function confirmDelete() {
-		const { confirmed } = await confirmation({
-			title: 'Delete item',
-			description: 'Are you sure you want to delete this item? This action cannot be undone.',
-			confirm: { text: 'Delete', color: 'danger' },
-			cancel: 'Cancel'
+	async function showConfirmation() {
+		const outcome = await confirmation({
+			title: 'Confirm action',
+			description: 'Review the action before continuing.',
+			confirm: { text: 'Continue', color: controls.value.color },
+			cancel: 'Cancel',
+			...(controls.value.async
+				? {
+						onConfirm: async () => {
+							await new Promise((resolve) => setTimeout(resolve, 1200));
+							return 'completed';
+						}
+					}
+				: {})
 		});
-		lastResult = confirmed ? 'Confirmed' : 'Cancelled';
+
+		lastResult = outcome.confirmed
+			? `Confirmed${outcome.result ? ` → ${outcome.result}` : ''}`
+			: 'Cancelled';
 	}
 
 	async function confirmAsync() {
@@ -42,18 +64,27 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		code={`import { confirmation } from 'svelai/confirmation';
 
 const { confirmed } = await confirmation({
-	title: 'Delete item',
-	description: 'This action cannot be undone.',
-	confirm: { text: 'Delete', color: 'danger' },
-	cancel: 'Cancel'
+	title: 'Confirm action',
+	description: 'Review the action before continuing.',
+	confirm: { text: 'Continue', color: '${controls.value.color}' },
+	cancel: 'Cancel'${
+		controls.value.async
+			? `,
+	onConfirm: async () => {
+		await runAction();
+		return 'completed';
+	}`
+			: ''
+	}
 });`}
 	>
 		<div class="flex flex-col items-center gap-4">
-			<Button color="danger" onClick={confirmDelete}>Delete item</Button>
-			<p class="text-foreground/60 text-sm">Last result: {lastResult}</p>
+			<Button color={controls.value.color} onClick={showConfirmation}>Open confirmation</Button>
+			<p class="text-neutral/60 text-sm">Last result: {lastResult}</p>
 		</div>
 	</ComponentCard>
 
@@ -73,7 +104,7 @@ const { confirmed } = await confirmation({
 		>
 			<div class="flex flex-col items-center gap-4">
 				<Button color="primary" onClick={confirmAsync}>Publish changes</Button>
-				<p class="text-foreground/60 text-sm">Last result: {lastResult}</p>
+				<p class="text-neutral/60 text-sm">Last result: {lastResult}</p>
 			</div>
 		</ComponentCard>
 
@@ -86,7 +117,7 @@ import { Confirmation } from 'svelai/confirmation';
 // <slot />
 // <Confirmation />`}
 		>
-			<p class="text-foreground/60 text-sm">Already mounted in this docs app's root layout.</p>
+			<p class="text-neutral/60 text-sm">Already mounted in this docs app's root layout.</p>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

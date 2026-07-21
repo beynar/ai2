@@ -92,7 +92,7 @@
 	>
 		<div class="flex w-full flex-col items-center justify-center gap-4">
 			<Pagination bind:page totalPages={20} />
-			<Chip color="background" variant="soft">Page {page} of 20</Chip>
+			<Chip color="neutral" variant="soft">Page {page} of 20</Chip>
 		</div>
 	</ComponentCard>
 
@@ -117,13 +117,13 @@
 			<div class="grid w-full gap-6 sm:grid-cols-2">
 				{#each variants as variant}
 					<div class="flex min-h-24 flex-col items-center justify-center gap-3">
-						<span class="text-foreground-muted text-xs font-medium capitalize">{variant}</span>
+						<span class="text-neutral/60 text-xs font-medium capitalize">{variant}</span>
 						<Pagination
 							{variant}
 							bind:page={variantPage}
 							totalItems={100}
 							pageSize={10}
-							color="background"
+							color="neutral"
 						/>
 					</div>
 				{/each}
@@ -164,7 +164,7 @@
 					boundaryCount={1}
 					size="small"
 				/>
-				<Chip color="background" variant="soft">Page {windowedPage} of 40</Chip>
+				<Chip color="neutral" variant="soft">Page {windowedPage} of 40</Chip>
 			</div>
 		</ComponentCard>
 
@@ -180,7 +180,7 @@
 		>
 			<Pagination bind:page={itemCountPage} totalItems={96} pageSize={10} showSummary>
 				{#snippet summary(range: PaginationSummaryPayload)}
-					<Chip color="background" variant="soft">
+					<Chip color="neutral" variant="soft">
 						{range.startItem}-{range.endItem} of {range.totalItems} invoices
 					</Chip>
 				{/snippet}
@@ -207,18 +207,18 @@
 					<div class="flex items-center gap-3">
 						<button
 							type="button"
-							class="text-foreground-muted hover:text-foreground text-sm font-medium disabled:opacity-45"
+							class="text-neutral/60 hover:text-neutral text-sm font-medium disabled:opacity-45"
 							disabled={pagination.isPreviousDisabled}
 							onclick={pagination.previous}
 						>
 							Previous
 						</button>
-						<Chip color="background" variant="soft">
+						<Chip color="neutral" variant="soft">
 							Page {pagination.currentPage} of {pagination.pageCount}
 						</Chip>
 						<button
 							type="button"
-							class="text-foreground-muted hover:text-foreground text-sm font-medium disabled:opacity-45"
+							class="text-neutral/60 hover:text-neutral text-sm font-medium disabled:opacity-45"
 							disabled={pagination.isNextDisabled}
 							onclick={pagination.next}
 						>
@@ -235,7 +235,7 @@
 		>
 			<div class="flex flex-col items-center gap-4">
 				<Pagination bind:page={linkedPage} totalPages={10} {getHref} />
-				<Chip color="background" variant="soft">
+				<Chip color="neutral" variant="soft">
 					Next links point at {getHref(Math.min(linkedPage + 1, 10))}
 				</Chip>
 			</div>
@@ -263,7 +263,7 @@
 							showSummary
 						>
 							{#snippet summary(range: PaginationSummaryPayload)}
-								<Chip color="background" variant="soft">
+								<Chip color="neutral" variant="soft">
 									Showing {range.startItem}-{range.endItem} of {range.totalItems}
 								</Chip>
 							{/snippet}

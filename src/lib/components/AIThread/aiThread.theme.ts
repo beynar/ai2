@@ -17,7 +17,17 @@ const defaultViewport = cva({
 	}
 });
 const defaultList = cva({ base: 'relative w-full' });
-const defaultItem = cva({ base: 'absolute top-0 left-0 w-full px-4 py-2' });
+const defaultItem = cva({
+	base: 'absolute top-0 left-0 w-full',
+	variants: {
+		density: {
+			small: 'px-3 py-0.5',
+			normal: 'px-4 py-2',
+			large: 'px-5 py-3.5'
+		}
+	},
+	defaultVariants: { density: 'normal' }
+});
 const defaultScrollButton = cva({
 	base: 'absolute bottom-4 z-10',
 	variants: {
@@ -30,7 +40,7 @@ const defaultScrollButton = cva({
 	defaultVariants: { position: 'right' }
 });
 const defaultAskQuestion = cva({
-	base: 'shrink-0 border-t border-background-muted p-3'
+	base: 'shrink-0 border-t border-neutral-muted p-3'
 });
 const defaultTocOverlay = cva({
 	base: 'pointer-events-none absolute inset-y-0 z-10 flex items-center py-3',

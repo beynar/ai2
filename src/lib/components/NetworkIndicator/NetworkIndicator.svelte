@@ -60,7 +60,7 @@
 	let {
 		delay = 300,
 		class: className = '',
-		color = 'foreground',
+		color = 'neutral',
 		size = 3,
 		easing = 'cubicInOut',
 		loading = false,

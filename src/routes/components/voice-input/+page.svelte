@@ -95,7 +95,7 @@ ${'</' + 'script>'}
 				maxDuration={60}
 			/>
 			{#if recording}
-				<p class="mt-2 text-xs text-foreground-muted">
+				<p class="mt-2 text-xs text-neutral/60">
 					Recording ready · {formatSize(recording.size)} · {duration.toFixed(1)}s
 				</p>
 			{/if}

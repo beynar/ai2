@@ -248,7 +248,7 @@
 		<div class="grid w-full gap-6 xl:grid-cols-3">
 			{#each verificationGroups as group (group.size)}
 				<section class="flex flex-col gap-3">
-					<h2 class="text-sm font-semibold text-foreground">{group.label}</h2>
+					<h2 class="text-sm font-semibold text-neutral">{group.label}</h2>
 					<Form inputs={group.inputs} />
 				</section>
 			{/each}

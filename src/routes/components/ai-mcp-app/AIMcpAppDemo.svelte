@@ -255,7 +255,7 @@
 	<div class="grid w-full gap-3">
 		<AIMcpApp {host} {tool} aria-label="Launch readiness MCP App" data-host-theme={hostTheme} />
 		{#if events.length > 0}
-			<ul class="grid gap-1 text-xs text-foreground/70" aria-live="polite">
+			<ul class="grid gap-1 text-xs text-neutral/70" aria-live="polite">
 				{#each events as event (event.id)}
 					<li>{event.label}</li>
 				{/each}

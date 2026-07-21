@@ -1,5 +1,5 @@
 import { bind } from '$lib/utils/state.svelte.js';
-import { getContext, onMount, setContext } from 'svelte';
+import { getContext, onMount, setContext, tick } from 'svelte';
 import { browser } from '$app/environment';
 import { MediaQuery } from 'svelte/reactivity';
 import type { DialogState } from '../Dialog/dialog.state.svelte.js';
@@ -12,6 +12,8 @@ import type { FSOParams, FSOProps } from '$lib/transitions/transition.js';
 import type { Theme as SvelteTheme } from 'svelte-themes';
 import type { PopoverState } from '../Popover/popover.state.svelte.js';
 import type { TooltipProps } from '../Tooltip/tooltip.svelte.js';
+import { updateThemeWithTransition, type ThemeTransition } from './themeTransition.js';
+import { ThemeFloatingWindows } from './theme.floatingWindows.js';
 
 const events = ['scroll', 'pointerdown', 'keydown', 'keyup'] as const;
 type Events = (typeof events)[number];
@@ -28,6 +30,7 @@ type EventPayload = {
 };
 interface ThemeOptions {
 	readonly spinnerVariant: SpinnerVariant;
+	readonly themeTransition?: ThemeTransition;
 }
 
 export interface ThemeState extends ThemeOptions {}
@@ -35,6 +38,7 @@ export interface ThemeState extends ThemeOptions {}
 export class ThemeState {
 	tooltip = $state<(TooltipProps & { ref: HTMLElement }) | null>(null);
 	lastTooltipClosed = $state<number | null>(null);
+	readonly floatingWindows = new ThemeFloatingWindows();
 	dialogs = $state<DialogState[]>([]);
 	dialogSeq = 0;
 	openDialogs = $derived(
@@ -85,7 +89,16 @@ export class ThemeState {
 	}
 
 	set theme(theme: string) {
-		this.svelteTheme.theme = theme;
+		if (theme === this.svelteTheme.theme) return;
+		if (!this.svelteTheme.themes.includes(theme)) {
+			this.svelteTheme.theme = theme;
+			return;
+		}
+
+		updateThemeWithTransition(this.themeTransition, async () => {
+			this.svelteTheme.theme = theme;
+			await tick();
+		});
 	}
 
 	get themes() {

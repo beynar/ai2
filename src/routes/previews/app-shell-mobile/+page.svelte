@@ -45,7 +45,7 @@
 	});
 </script>
 
-<div class="h-window min-h-[420px] w-full overflow-hidden bg-background-muted">
+<div class="h-window min-h-[420px] w-full overflow-hidden bg-neutral-muted">
 	<AppShell
 		{sidebar}
 		variant="inset"

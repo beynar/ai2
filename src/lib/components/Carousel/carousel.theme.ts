@@ -25,14 +25,13 @@ const defaultNavigationButton = cva({
 			default: 'w-8 h-8'
 		},
 		color: {
-			background: 'text-background-muted',
-			primary: 'text-primary ',
-			secondary: 'text-secondary ',
-			foreground: 'text-foreground /20',
-			danger: 'text-danger ',
-			success: 'text-success ',
-			warning: 'text-warning ',
-			info: 'text-info '
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		},
 		disabled: {
 			true: 'opacity-55 cursor-not-allowed pointer-events-none',
@@ -87,8 +86,7 @@ const defaultDot = cva({
 		color: {
 			primary: 'bg-primary',
 			secondary: 'bg-secondary',
-			foreground: 'bg-foreground',
-			background: 'bg-background',
+			neutral: 'bg-neutral',
 			danger: 'bg-danger',
 			success: 'bg-success',
 			warning: 'bg-warning',

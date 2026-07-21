@@ -35,7 +35,7 @@
 	let open = $state(false);
 	const classes = $derived(useToggleButtonTheme(item.theme));
 	const resolvedSize = $derived(item.size ?? size ?? 'normal');
-	const resolvedColor = $derived(item.color ?? color ?? 'foreground');
+	const resolvedColor = $derived(item.color ?? color ?? 'neutral');
 	const resolvedVariant = $derived(item.variant ?? variant ?? 'ghost');
 	const isDisabled = $derived(disabled || !!item.disabled);
 	const isSquared = $derived(

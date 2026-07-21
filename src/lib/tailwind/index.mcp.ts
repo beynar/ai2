@@ -25,8 +25,8 @@ export const tailwindPluginDescription = `
 ## Shared utilities
 
 ### \`.state-layer\`
-- Composites \`--color-overlay-hover\` on hover and \`data-highlighted="true"\`
-- Composites \`--color-overlay-pressed\` on \`:active\`
+- Composites \`currentColor\` at \`--state-hover-opacity\` on hover and \`data-highlighted="true"\`
+- Composites \`currentColor\` at \`--state-pressed-opacity\` on \`:active\`
 - Does not activate for disabled, \`data-disabled\`, or \`aria-disabled="true"\` elements
-- Theme plugin defaults derive both variables from the generated foreground color
+- Theme plugin defaults the opacities to 5% and 10% in light themes, and 16% and 32% in dark themes
 `;

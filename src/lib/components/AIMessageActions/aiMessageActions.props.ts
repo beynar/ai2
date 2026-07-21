@@ -1,5 +1,6 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
+import type { Sizes } from '$lib/types/theme.js';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { AIThreadItem, AIThreadRole } from '../AIThread/aiThread.props.js';
 import type { AIConversationState } from '../AIConversation/aiConversation.state.svelte.js';
@@ -12,6 +13,7 @@ export type AIMessageActionState<TMessage extends AIThreadItem = AIThreadItem> =
 	index?: number;
 	role: AIThreadRole;
 	content: string;
+	size: Sizes;
 	copied: boolean;
 	canCopy: boolean;
 	canEdit: boolean;
@@ -51,6 +53,8 @@ export type AIMessageActionsProps<TMessage extends AIThreadItem = AIThreadItem> 
 		role?: AIThreadRole;
 		/** Text copied by the default copy action. */
 		content?: string;
+		/** Action control scale. @default 'normal' */
+		size?: Sizes;
 		/** Conversation used by default edit and retry actions. Pass `null` to disable context lookup. */
 		conversation?: AIConversationState<TMessage> | null;
 		/** Controls whether the action group is always shown, hover-revealed, or omitted. */

@@ -166,16 +166,16 @@
 		code={usageCode}
 	>
 		<div
-			class="border-background-muted bg-background w-full max-w-3xl overflow-hidden rounded-lg border shadow-sm"
+			class="border-neutral-muted bg-surface w-full max-w-3xl overflow-hidden rounded-lg border shadow-sm"
 		>
-			<header class="border-background-muted flex items-center justify-between border-b px-3 py-2">
+			<header class="border-neutral-muted flex items-center justify-between border-b px-3 py-2">
 				<MenuBar menus={applicationMenus} />
-				<span class="text-foreground-muted hidden text-xs sm:block">{lastAction}</span>
+				<span class="text-neutral/60 hidden text-xs sm:block">{lastAction}</span>
 			</header>
 			<div class="min-h-64 px-8 py-10 sm:px-12">
-				<p class="text-foreground-muted text-xs font-medium uppercase">Untitled document</p>
-				<h2 class="text-foreground mt-4 text-2xl font-semibold">A quieter place to think.</h2>
-				<p class="text-foreground-muted mt-3 max-w-lg text-sm leading-6">
+				<p class="text-neutral/60 text-xs font-medium uppercase">Untitled document</p>
+				<h2 class="text-neutral mt-4 text-2xl font-semibold">A quieter place to think.</h2>
+				<p class="text-neutral/60 mt-3 max-w-lg text-sm leading-6">
 					The menu bar remains idle until one menu opens. After that, adjacent menus follow pointer
 					and keyboard focus without another click.
 				</p>

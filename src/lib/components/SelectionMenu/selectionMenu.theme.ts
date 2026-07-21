@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultSelectionMenuPopover = cva({
-	base: 'bg-background max-w-[calc(100vw-1rem)] p-0 shadow-none ring-0'
+	base: 'bg-surface-floating max-w-[calc(100vw-1rem)] p-0 shadow-none ring-0'
 });
 
 const defaultSelectionMenuContent = cva({

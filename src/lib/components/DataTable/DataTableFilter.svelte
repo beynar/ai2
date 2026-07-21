@@ -83,7 +83,7 @@
 			<Button
 				type="button"
 				variant="ghost"
-				color="foreground"
+				color="neutral"
 				size="small"
 				disabled={!active || model.props.disabled}
 				onClick={clearFilter}

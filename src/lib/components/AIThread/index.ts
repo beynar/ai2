@@ -6,6 +6,7 @@ export type {
 	AIThreadAskUserQuestion,
 	AIThreadAskUserQuestionState,
 	AIThreadAskUserQuestionStateChange,
+	AIThreadDensity,
 	AIThreadItem,
 	AIThreadMessageKey,
 	AIThreadPart,
@@ -24,6 +25,7 @@ export type {
 	AIThreadTocState,
 	AIThreadToolPart
 } from './aiThread.props.js';
+export type { AIMessageSize, AIMessageVariant } from '../AIMessage/aiMessage.props.js';
 export {
 	aiThreadTocTheme,
 	setAIThreadTocTheme,

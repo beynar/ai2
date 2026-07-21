@@ -18,7 +18,7 @@ grips, and RTL-aware horizontal resizing.
 
 \`\`\`svelte
 <Resizable
-	class="h-72 rounded-lg border border-background-muted"
+	class="h-72 rounded-lg border border-neutral-muted"
 	panels={[
 		{ id: 'sidebar', defaultSize: 30, content: leftPanel },
 		{ id: 'content', defaultSize: 70, content: rightPanel }

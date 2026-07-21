@@ -6,10 +6,10 @@ import {
 } from '$lib/utils/cva/index.js';
 
 const defaultRoot = cva({
-	base: 'relative min-w-0 overflow-hidden rounded-md bg-background',
+	base: 'relative min-w-0 overflow-hidden rounded-md bg-surface',
 	variants: {
 		bordered: {
-			true: 'border border-background-muted',
+			true: 'border border-neutral-muted',
 			false: 'rounded-none bg-transparent'
 		}
 	}

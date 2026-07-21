@@ -63,7 +63,7 @@ A read-only key/value metadata list, like Notion's page-properties panel. Each r
 | \`chip\`    | (explicit only)                            | one soft Chip                                          |
 | \`chips\`   | \`Array.isArray(value)\`                     | flex-wrap row of soft Chips                            |
 
-Boolean chips default to \`success\` (true) / \`foreground\` (false); other chips default to \`foreground\`. Set \`item.color\` to override. Dates and numbers use the active locale (\`i18n.locale\`). Set \`item.href\` to override the derived link target.
+Boolean chips default to \`success\` (true) / \`neutral\` (false); other chips default to \`neutral\`. Set \`item.color\` to override. Dates and numbers use the active locale (\`i18n.locale\`). Set \`item.href\` to override the derived link target.
 
 ## Examples
 

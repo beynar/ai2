@@ -10,7 +10,7 @@ const defaultTable = cva({
 });
 
 const defaultTableHead = cva({
-	base: '[&_tr]:border-b [&_tr]:border-background-muted'
+	base: '[&_tr]:border-b [&_tr]:border-neutral-muted'
 });
 
 const defaultTableBody = cva({
@@ -18,13 +18,13 @@ const defaultTableBody = cva({
 });
 
 const defaultTableFoot = cva({
-	base: 'bg-muted/50 border-t border-background-muted font-medium [&>tr]:last:border-b-0'
+	base: 'bg-surface-raised border-t border-neutral-muted font-medium [&>tr]:last:border-b-0'
 });
 
 // `density` owns paddings and row heights only ('normal' keeps today's exact
 // values; small is one step tighter, large one step roomier).
 const defaultTableRow = cva({
-	base: 'state-layer data-[state=selected]:bg-muted border-b border-background-muted transition-colors',
+	base: 'state-layer data-[state=selected]:bg-neutral-muted data-[state=selected]:text-neutral-muted-readable border-b border-neutral-muted transition-colors',
 	variants: {
 		density: {
 			small: 'py-0',
@@ -38,7 +38,7 @@ const defaultTableRow = cva({
 });
 
 const defaultTableHeadCell = cva({
-	base: 'text-foreground text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+	base: 'text-neutral text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
 	variants: {
 		density: {
 			small: 'h-8 px-1.5',
@@ -66,7 +66,7 @@ const defaultTableCell = cva({
 });
 
 const defaultTableCaption = cva({
-	base: 'text-muted-foreground text-sm',
+	base: 'text-neutral/60 text-sm',
 	variants: {
 		density: {
 			small: 'mt-3',

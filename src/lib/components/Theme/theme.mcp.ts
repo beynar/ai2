@@ -11,7 +11,7 @@ The Theme component provides a global theming system and state management for UI
 	import { Theme } from 'svelai/theme';
 </script>
 
-<Theme spinnerVariant="pulse">
+<Theme spinnerVariant="pulse" transition="radial-top-right">
 	<slot />
 </Theme>
 \`\`\`
@@ -49,6 +49,13 @@ Access theme state using the \`useTheme()\` hook:
   - Controls the color scheme of the application
 - **spinnerVariant**: 'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles' (default: 'default')
   - Global default for Spinner, SpinnerText, spinnerOverlay, Button loading states, Confirmation actions, and loading Toasts
+- **transition**: ThemeTransition (optional)
+  - Applied whenever \`ThemeState.theme\` is assigned.
+  - Radial: 'radial-top-left' | 'radial-top-right' | 'radial-bottom-left' | 'radial-bottom-right'
+  - Line: 'line-top' | 'line-right' | 'line-bottom' | 'line-left'
+  - Shutter: 'shutter-top' | 'shutter-right' | 'shutter-bottom' | 'shutter-left'
+  - Grid: 'random-grid' | 'column-grid-left' | 'column-grid-right'
+  - Omit for an instant theme change. Unsupported browsers and reduced-motion preferences also change instantly.
 - **children**: Snippet - App content
 - **class**: string - Additional CSS classes
 
@@ -68,19 +75,14 @@ Access theme state using the \`useTheme()\` hook:
 
 ### Dark Mode Toggle
 \`\`\`svelte
-<script>
-	import { useTheme } from 'svelai/theme';
-	
-	const theme = useTheme();
-	let colorScheme = $state('light');
-</script>
+<Theme transition="radial-top-right">
+	{#snippet children(theme)}
+		<Button onClick={() => theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark'}>
+			Toggle Theme
+		</Button>
 
-<Theme colorScheme={colorScheme}>
-	<Button onClick={() => colorScheme = colorScheme === 'light' ? 'dark' : 'light'}>
-		Toggle Theme
-	</Button>
-	
-	<slot />
+		<slot />
+	{/snippet}
 </Theme>
 \`\`\`
 

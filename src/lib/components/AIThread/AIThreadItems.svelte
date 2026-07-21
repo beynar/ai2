@@ -24,6 +24,9 @@
 		AIThreadProps<TMessage>,
 		| 'suggestions'
 		| 'onSuggestionClick'
+		| 'density'
+		| 'messageSize'
+		| 'messageVariant'
 		| 'empty'
 		| 'message'
 		| 'messageActions'
@@ -65,6 +68,9 @@
 		conversation,
 		suggestions = [],
 		onSuggestionClick,
+		density = 'normal',
+		messageSize = 'normal',
+		messageVariant = 'bubble',
 		empty,
 		message: messageSlot,
 		messageActions,
@@ -160,7 +166,7 @@
 					data-slot="ai-thread-item"
 					data-index={virtualItem.index}
 					data-kind={item.kind}
-					class={classes.item()}
+					class={classes.item({ density })}
 					style:transform={`translateY(${virtualItem.start}px)`}
 					{@attach measureItem}
 				>
@@ -174,6 +180,8 @@
 							<AIMessage
 								message={item.message}
 								index={item.messageIndex}
+								size={messageSize}
+								variant={messageVariant}
 								name={messageName(item, virtualItem.index)}
 								content={item.content ?? item.message.content ?? ''}
 								{conversation}

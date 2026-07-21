@@ -28,7 +28,7 @@
 		<Button
 			prefix={magnifyingGlassIcon}
 			label={collapsed ? 'Search pages' : undefined}
-			color="background"
+			color="neutral"
 			squared={collapsed}
 			fullWidth={!collapsed}
 			class={collapsed ? 'mx-auto' : 'justify-start'}
@@ -39,7 +39,7 @@
 				<span class="min-w-0 flex-1 truncate text-left">Search pages</span>
 				<span
 					aria-hidden="true"
-					class="border-background-muted bg-background-muted text-foreground-muted ml-auto rounded border px-1.5 py-0.5 text-[0.6875rem] font-medium tracking-widest"
+					class="border-neutral-muted bg-neutral-muted text-neutral/60 ml-auto rounded border px-1.5 py-0.5 text-[0.6875rem] font-medium tracking-widest"
 				>
 					⌘K
 				</span>
@@ -49,11 +49,11 @@
 
 	{#snippet footer({ close })}
 		<div
-			class="border-background-muted text-foreground-muted mt-1 flex items-center gap-3 border-t px-3 py-2 text-xs"
+			class="border-neutral-muted text-neutral/60 mt-1 flex items-center gap-3 border-t px-3 py-2 text-xs"
 		>
 			<span>Enter to open</span>
 			<span>Esc to close</span>
-			<button type="button" class="ml-auto hover:text-foreground" onclick={() => close()}>
+			<button type="button" class="ml-auto hover:text-neutral" onclick={() => close()}>
 				Close
 			</button>
 		</div>

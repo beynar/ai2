@@ -42,7 +42,7 @@
 			label={rowExpanded ? 'Collapse group' : 'Expand group'}
 			prefix={rowExpanded ? caretDownIcon : caretRightIcon}
 			variant="ghost"
-			color="foreground"
+			color="neutral"
 			size="small"
 			class={classes.expander()}
 			disabled={model.props.disabled}
@@ -65,7 +65,7 @@
 				label={rowExpanded ? 'Collapse row' : 'Expand row'}
 				prefix={rowExpanded ? caretDownIcon : caretRightIcon}
 				variant="ghost"
-				color="foreground"
+				color="neutral"
 				size="small"
 				class={classes.expander()}
 				disabled={model.props.disabled}

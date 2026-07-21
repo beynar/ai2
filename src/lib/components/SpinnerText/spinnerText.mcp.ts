@@ -31,7 +31,7 @@ SpinnerText combines the existing Spinner with a stable-width sequence of loadin
 - **spinnerVariant**: \`'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles'\` (default: Theme \`spinnerVariant\`, then \`'default'\`) - Overrides the global spinner animation for this instance.
 - **spinner**: \`Snippet<[SpinnerTextSpinnerPayload]>\` - Replaces the default visual spinner. Receives the resolved \`color\`, \`size\`, and \`variant\`.
 - **size**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`) - Controls spinner dimensions, gap, text size, and line height.
-- **color**: \`Colors\` (default: \`'foreground'\`) - Semantic color applied to both spinner and text.
+- **color**: \`Colors\` (default: \`'neutral'\`) - Semantic color applied to both spinner and text.
 - **label**: \`string\` (default: \`'Loading'\`) - Accessible fallback when \`texts\` is empty.
 - **ref**: \`HTMLElement | null\` (bindable) - Root status element.
 - **class**: \`string\` - Additional root classes.

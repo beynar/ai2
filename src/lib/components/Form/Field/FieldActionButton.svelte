@@ -47,7 +47,7 @@
 	}: FieldActionButtonProps = $props();
 
 	const classes = $derived(useFieldTheme());
-	const effectiveColor = $derived(color ?? (active ? 'primary' : 'foreground'));
+	const effectiveColor = $derived(color ?? (active ? 'primary' : 'neutral'));
 </script>
 
 <Button

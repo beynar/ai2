@@ -142,7 +142,7 @@ const defaultField = cva({
 	base: 'flex flex-col gap-2',
 	variants: {
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		}
 	}
@@ -161,14 +161,14 @@ const defaultFieldHeader = cva({
 			false: ''
 		},
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		}
 	}
 });
 
 const defaultFieldLabel = cva({
-	base: 'text-foreground-light text-sm',
+	base: 'text-neutral text-sm',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -176,11 +176,11 @@ const defaultFieldLabel = cva({
 			large: 'text-base'
 		},
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		},
 		required: {
-			true: 'relative before:content-["*"] before:text-danger before:text-sm  before:font-bold before:absolute before:-right-2 before:top-0',
+			true: 'relative before:content-["*"] before:text-danger-readable before:text-sm  before:font-bold before:absolute before:-right-2 before:top-0',
 			false: ''
 		}
 	}
@@ -209,7 +209,7 @@ const defaultFieldErrorsContainer = cva({
 });
 
 const defaultFieldError = cva({
-	base: 'text-danger text-xs leading-3',
+	base: 'text-danger-readable text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -269,7 +269,7 @@ const defaultFieldActionButton = cva({
 			none: 'mx-0'
 		},
 		active: {
-			true: 'text-primary',
+			true: 'text-primary-readable',
 			false: ''
 		}
 	},
@@ -291,7 +291,7 @@ const defaultFieldFooter = cva({
 	}
 });
 const defaultFieldDescription = cva({
-	base: 'text-foreground-muted text-xs leading-3 flex-1',
+	base: 'text-neutral/60 text-xs leading-3 flex-1',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -301,7 +301,7 @@ const defaultFieldDescription = cva({
 	}
 });
 const defaultFieldHelper = cva({
-	base: 'text-foreground-muted text-xs leading-3',
+	base: 'text-neutral/60 text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',

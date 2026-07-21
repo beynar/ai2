@@ -155,7 +155,7 @@ prefix = bottom-left badge, suffix = bottom-right badge (both receive `{ name, a
 
 <Avatar user={{ name: 'Jane Doe', avatar: '/jane.jpg' }}>
 	{#snippet suffix()}
-		<div class="w-3 h-3 rounded-full bg-success border-2 border-background"></div>
+		<div class="w-3 h-3 rounded-full bg-success border-2 border-surface"></div>
 	{/snippet}
 </Avatar>
 ```
@@ -475,7 +475,7 @@ Continuous-scroll PDF reader on pdf.js (loaded from cdnjs at runtime — not bun
 | orientation                     | 'vertical' \| 'horizontal' (bindable)      | 'vertical'   | Direction pages flow and scroll                                                                                   |
 | pageTransition                  | boolean                                    | true         | Single mode: animate page changes as a card stack (next slides in from the right)                                 |
 | toolbarPosition                 | 'top' \| 'bottom' \| 'left' \| 'right'     | 'top'        | Toolbar placement; 'left'/'right' stack the controls vertically                                                   |
-| color                           | Colors                                     | 'foreground' | Toolbar control color (neutral by default)                                                                        |
+| color                           | Colors                                     | 'neutral' | Toolbar control color (neutral by default)                                                                        |
 | totalPages                      | number (bindable)                          | 0            | Read-only output                                                                                                  |
 | controls                        | array \| false                             | all          | Subset of 'navigation', 'pageInfo', 'zoom', 'fit', 'mode', 'orientation', 'rotate', 'search', 'download', 'print' |
 | password                        | string                                     | -            | For protected documents                                                                                           |

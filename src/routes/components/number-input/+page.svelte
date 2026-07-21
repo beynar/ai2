@@ -42,7 +42,7 @@
 			<div class="w-full max-w-md">
 				<NumberInput label="Quantity" placeholder="0" bind:value={quantity} />
 				{#if quantity !== null}
-					<p class="text-foreground-muted mt-2 text-xs">Value: {quantity}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Value: {quantity}</p>
 				{/if}
 			</div>
 		</ComponentCard>

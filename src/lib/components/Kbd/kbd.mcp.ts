@@ -20,8 +20,8 @@ The Kbd component displays keyboard keys and shortcuts. It renders a single key,
   - small: Compact keys for dense UI
   - normal: Standard key size
   - large: Larger keys for emphasis
-- **color**: Colors (default: 'background')
-  - background: Neutral keycap (muted background, foreground text)
+- **color**: Colors (default: 'neutral')
+  - neutral: Neutral keycap
   - Any semantic color (\`primary\`, \`danger\`, \`success\`, ...): soft treatment — the color's muted tint with readable tinted text
 
 ### Content Slots
@@ -92,7 +92,7 @@ Key combo:
 
 ### Inside a Button
 \`\`\`svelte
-<Button variant="outline" color="background">
+<Button variant="outline" color="neutral">
 	Search
 	{#snippet suffix()}
 		<Kbd keys={['⌘', 'K']} />
@@ -130,7 +130,7 @@ import type { KbdThemeProps } from 'svelai/kbd';
 
 const customTheme: KbdThemeProps = {
 	root: {
-		base: 'rounded border border-background-muted shadow-sm',
+		base: 'rounded border border-neutral-muted shadow-sm',
 		size: {
 			small: 'h-4 min-w-4 px-0.5 text-[0.625rem]',
 			normal: 'h-5 min-w-5 px-1 text-xs',
@@ -143,7 +143,7 @@ const customTheme: KbdThemeProps = {
 		}
 	},
 	separator: {
-		base: 'text-foreground'
+		base: 'text-neutral'
 	}
 };
 \`\`\`
@@ -169,7 +169,7 @@ const customTheme: KbdThemeProps = {
 
 **Basic Theme Override**:
 \`\`\`svelte
-<Kbd theme={{ root: { base: 'border border-background-muted shadow-sm' } }}>
+<Kbd theme={{ root: { base: 'border border-neutral-muted shadow-sm' } }}>
 	Esc
 </Kbd>
 \`\`\`
@@ -181,7 +181,7 @@ const customTheme: KbdThemeProps = {
 
 	setKbdTheme({
 		root: {
-			base: 'rounded border border-background-muted'
+			base: 'rounded border border-neutral-muted'
 		}
 	});
 </script>

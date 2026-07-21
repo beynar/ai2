@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultInput = cva({
-	base: 'outline-none flex-1 w-full rounded bg-transparent resize-none placeholder:text-foreground-muted autofill:text-foreground-light appearance-none text-sm leading-normal',
+	base: 'outline-none flex-1 w-full rounded bg-transparent resize-none placeholder:text-neutral/60 autofill:text-neutral appearance-none text-sm leading-normal',
 	variants: {
 		size: {
 			small: 'text-xs h-5',
@@ -20,7 +20,7 @@ const defaultInput = cva({
 });
 
 const defaultInputContainer = cva({
-	base: 'px-3 bg-background-light border border-background-muted rounded text-foreground w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all flex items-center py-2',
+	base: 'px-3 bg-surface-raised border border-neutral-muted rounded text-neutral w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all flex items-center py-2',
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs',
@@ -38,7 +38,7 @@ const defaultInputContainer = cva({
 });
 
 const defaultCountryTrigger = cva({
-	base: '-ml-3 mr-2 inline-flex h-auto shrink-0 self-stretch rounded-none border-0 bg-clip-border px-3 text-foreground hover:bg-transparent focus-visible:ring-0 focus-visible:text-primary active:translate-y-0 active:bg-transparent',
+	base: '-ml-3 mr-2 inline-flex h-auto shrink-0 self-stretch rounded-none border-0 bg-clip-border px-3 text-neutral hover:bg-transparent focus-visible:ring-0 focus-visible:text-primary-readable active:translate-y-0 active:bg-transparent',
 	variants: {
 		size: {
 			small: '-my-1.5 gap-1 text-xs',
@@ -46,7 +46,7 @@ const defaultCountryTrigger = cva({
 			large: '-my-2 gap-1.5 text-sm'
 		},
 		open: {
-			true: 'text-primary',
+			true: 'text-primary-readable',
 			false: ''
 		}
 	},
@@ -85,10 +85,10 @@ const defaultCountryDialCode = cva({
 });
 
 const defaultCountryChevron = cva({
-	base: 'text-foreground-muted size-3 shrink-0 transition-transform',
+	base: 'text-neutral/60 size-3 shrink-0 transition-transform',
 	variants: {
 		open: {
-			true: 'rotate-180 text-primary',
+			true: 'rotate-180 text-primary-readable',
 			false: ''
 		}
 	},
@@ -110,7 +110,7 @@ const defaultCountrySearch = cva({
 });
 
 const defaultCountrySearchInputContainer = cva({
-	base: 'bg-background-dark',
+	base: 'bg-surface-canvas',
 	variants: {
 		size: {
 			small: 'py-1',
@@ -124,7 +124,7 @@ const defaultCountrySearchInputContainer = cva({
 });
 
 const defaultCountrySearchInput = cva({
-	base: 'placeholder:text-foreground-muted',
+	base: 'placeholder:text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -159,7 +159,7 @@ const defaultCountryOption = cva({
 		},
 		selected: {
 			true: 'bg-primary text-primary-contrast',
-			false: 'text-foreground'
+			false: 'text-neutral'
 		}
 	},
 	defaultVariants: {
@@ -184,7 +184,7 @@ const defaultCountryName = cva({
 });
 
 const defaultCountryOptionDialCode = cva({
-	base: 'text-foreground-muted ml-auto tabular-nums',
+	base: 'text-neutral/60 ml-auto tabular-nums',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -202,7 +202,7 @@ const defaultCountryCheck = cva({
 });
 
 const defaultCountryEmpty = cva({
-	base: 'text-foreground-muted px-2 py-6 text-center',
+	base: 'text-neutral/60 px-2 py-6 text-center',
 	variants: {
 		size: {
 			small: 'text-xs',

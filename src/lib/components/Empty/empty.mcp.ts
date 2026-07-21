@@ -28,7 +28,7 @@ The Empty component displays an empty state: a centered composition of media (ic
 
 - **mode**: 'normal' | 'card' (default: 'normal')
   - normal: Transparent placeholder (current behavior)
-  - card: Renders on a raised surface (bg-background + raised-sm), matching the Card component
+  - card: Renders on a raised surface (bg-surface + raised-sm), matching the Card component
 
 - **bordered**: boolean (default: false)
   - Wraps the whole empty state in a dashed border (rounded-xl)
@@ -91,7 +91,7 @@ All slots accept a string or a snippet.
 \`\`\`svelte
 <Empty title="No results" description="Try adjusting your search filters.">
 	{#snippet media()}
-		{@render magnifyingGlassIcon({ class: 'size-10 text-foreground-muted' })}
+		{@render magnifyingGlassIcon({ class: 'size-10 text-neutral/60' })}
 	{/snippet}
 </Empty>
 \`\`\`

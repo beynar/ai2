@@ -14,7 +14,7 @@ const defaultImageZoomImage = cva({
 });
 
 const defaultImageZoomIndicator = cva({
-	base: 'bg-foreground/70 text-background pointer-events-none absolute inline-flex size-9 items-center justify-center rounded-full opacity-0 shadow-sm transition-opacity group-hover/image-zoom:opacity-100 group-focus-visible/image-zoom:opacity-100 [&_svg]:size-4',
+	base: 'bg-neutral/70 text-neutral-contrast pointer-events-none absolute inline-flex size-9 items-center justify-center rounded-full opacity-0 shadow-sm transition-opacity group-hover/image-zoom:opacity-100 group-focus-visible/image-zoom:opacity-100 [&_svg]:size-4',
 	variants: {
 		position: {
 			'top-left': 'top-2 left-2',
@@ -29,7 +29,7 @@ const defaultImageZoomIndicator = cva({
 });
 
 const defaultImageZoomCaption = cva({
-	base: 'text-foreground bg-background/85 fixed bottom-4 left-1/2 z-[1100] max-w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 rounded-full px-4 py-2 text-center text-sm shadow-sm backdrop-blur-md'
+	base: 'text-neutral bg-surface-floating/85 fixed bottom-4 left-1/2 z-[1100] max-w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 rounded-full px-4 py-2 text-center text-sm shadow-sm backdrop-blur-md'
 });
 
 export const imageZoomTheme = {

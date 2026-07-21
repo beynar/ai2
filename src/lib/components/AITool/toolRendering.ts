@@ -44,7 +44,7 @@ export function formatAIToolStatus(status: AIToolStatus): string {
 export function getAIToolStatusColor(status: AIToolStatus): Colors {
 	if (status === 'success') return 'success';
 	if (status === 'error') return 'danger';
-	if (status === 'cancelled') return 'foreground';
+	if (status === 'cancelled') return 'neutral';
 	return 'info';
 }
 

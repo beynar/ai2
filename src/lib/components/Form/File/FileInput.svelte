@@ -176,12 +176,12 @@
 								<img
 									{src}
 									alt={fil.name}
-									class="border-background-muted h-16 w-16 shrink-0 rounded border object-cover"
+									class="border-neutral-muted h-16 w-16 shrink-0 rounded border object-cover"
 								/>
 							{/if}
 							<div class="min-w-0 flex-1">
 								<div class="truncate">{fil.name}</div>
-								<div class="text-foreground-muted text-xs">{size}</div>
+								<div class="text-neutral/60 text-xs">{size}</div>
 							</div>
 							<Button variant="ghost" size="small" squared onClick={() => dropzone.removeFile(fil)}>
 								{#snippet prefix()}

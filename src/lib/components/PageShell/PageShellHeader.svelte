@@ -29,10 +29,7 @@
 	}
 </script>
 
-<header
-	data-slot="page-shell-header"
-	class={classes.header({ scrolled: api.isContentScrolled, className })}
->
+<header data-slot="page-shell-header" class={classes.header({ className })}>
 	{#if api.header}
 		{@render api.header(api)}
 	{:else}

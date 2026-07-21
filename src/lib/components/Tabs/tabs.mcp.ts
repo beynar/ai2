@@ -20,7 +20,7 @@ Use items for the tab collection and a single children snippet for the repeated 
 <Tabs {items} bind:activeTab>
 	{#snippet children({ item, index, stepper })}
 		<section class="space-y-3 p-6">
-			<p class="text-sm text-foreground/60">Panel {index + 1}</p>
+			<p class="text-sm text-neutral/60">Panel {index + 1}</p>
 			<h2>{item.title}</h2>
 			<p>{item.body}</p>
 			<button onclick={() => stepper.goTo(0)}>Back to overview</button>

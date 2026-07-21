@@ -82,8 +82,8 @@
 
 {#snippet content(title: string, description = text)}
 	<div class="grid gap-2">
-		<h2 class="text-foreground text-base font-semibold">{title}</h2>
-		<p class="text-foreground-muted text-sm">{description}</p>
+		<h2 class="text-neutral text-base font-semibold">{title}</h2>
+		<p class="text-neutral/60 text-sm">{description}</p>
 	</div>
 {/snippet}
 
@@ -150,7 +150,7 @@
 		<Popover
 			closeOnEscape
 			closeOnClickOutside
-			trigger={{ content: 'Escape / outside', color: 'foreground', variant: 'outline' }}
+			trigger={{ content: 'Escape / outside', color: 'neutral', variant: 'outline' }}
 			position="bottom-end"
 		>
 			{@render content('Dismissible', 'Escape and outside clicks close the active popover.')}
@@ -190,7 +190,7 @@ ${'</' + 'script>'}
 				<Button
 					fullWidth
 					variant="outline"
-					color="foreground"
+					color="neutral"
 					{@attach popover.reference}
 					onClick={() => popover.toggle()}
 				>
@@ -272,8 +272,8 @@ ${'</' + 'script>'}
 			)}
 			<div class="flex flex-wrap gap-2">
 				<Button size="small" variant="soft">Active</Button>
-				<Button size="small" variant="outline" color="foreground">Archived</Button>
-				<Button size="small" variant="outline" color="foreground">Assigned to me</Button>
+				<Button size="small" variant="outline" color="neutral">Archived</Button>
+				<Button size="small" variant="outline" color="neutral">Assigned to me</Button>
 			</div>
 		</div>
 	</Popover>

@@ -381,6 +381,11 @@
 			"svelte": "./dist/components/Overlay/index.js",
 			"default": "./dist/components/Overlay/index.js"
 		},
+		"./floating-window": {
+			"types": "./dist/components/FloatingWindow/index.d.ts",
+			"svelte": "./dist/components/FloatingWindow/index.js",
+			"default": "./dist/components/FloatingWindow/index.js"
+		},
 		"./image-zoom": {
 			"types": "./dist/components/ImageZoom/index.d.ts",
 			"svelte": "./dist/components/ImageZoom/index.js",
@@ -680,11 +685,6 @@
 			"svelte": "./dist/components/AIReasoning/index.js",
 			"default": "./dist/components/AIReasoning/index.js"
 		},
-		"./ai-shimmer": {
-			"types": "./dist/components/AIShimmer/index.d.ts",
-			"svelte": "./dist/components/AIShimmer/index.js",
-			"default": "./dist/components/AIShimmer/index.js"
-		},
 		"./ai-suggestion": {
 			"types": "./dist/components/AISuggestion/index.d.ts",
 			"svelte": "./dist/components/AISuggestion/index.js",
@@ -768,6 +768,9 @@
 			],
 			"./overlay": [
 				"./dist/components/Overlay/index.d.ts"
+			],
+			"./floating-window": [
+				"./dist/components/FloatingWindow/index.d.ts"
 			],
 			"./empty": [
 				"./dist/components/Empty/index.d.ts"
@@ -900,9 +903,6 @@
 			],
 			"./ai-reasoning": [
 				"./dist/components/AIReasoning/index.d.ts"
-			],
-			"./ai-shimmer": [
-				"./dist/components/AIShimmer/index.d.ts"
 			],
 			"./ai-suggestion": [
 				"./dist/components/AISuggestion/index.d.ts"

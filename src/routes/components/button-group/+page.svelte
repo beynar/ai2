@@ -36,7 +36,7 @@
 		<ComponentCard description="Three variants join their segments into one connected control.">
 			<div class="flex flex-wrap items-center justify-center gap-4">
 				{#each variants as variant (variant)}
-					<ButtonGroup {variant} color="foreground" {items} />
+					<ButtonGroup {variant} color="neutral" {items} />
 				{/each}
 			</div>
 		</ComponentCard>
@@ -52,7 +52,7 @@
 		<ComponentCard description="Three sizes to match surrounding density.">
 			<div class="flex flex-wrap items-center justify-center gap-4">
 				{#each sizes as size (size)}
-					<ButtonGroup {size} color="foreground" {items} />
+					<ButtonGroup {size} color="neutral" {items} />
 				{/each}
 			</div>
 		</ComponentCard>
@@ -60,7 +60,7 @@
 		<ComponentCard description="Disabled groups are dimmed and ignore interaction.">
 			<div class="flex flex-wrap items-center justify-center gap-4">
 				{#each variants as variant (variant)}
-					<ButtonGroup {variant} color="foreground" disabled {items} />
+					<ButtonGroup {variant} color="neutral" disabled {items} />
 				{/each}
 			</div>
 		</ComponentCard>

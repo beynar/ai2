@@ -11,8 +11,7 @@ const defaultAlert = cva({
 		color: {
 			primary: 'bg-primary text-primary-contrast border-primary',
 			secondary: 'bg-secondary text-secondary-contrast border-secondary',
-			foreground: 'bg-foreground text-foreground-contrast border-foreground',
-			background: 'bg-background text-color-contrast border-background-muted',
+			neutral: 'bg-neutral text-neutral-contrast border-neutral',
 			danger: 'bg-danger text-danger-contrast border-danger',
 			success: 'bg-success text-success-contrast border-success',
 			warning: 'bg-warning text-warning-contrast border-warning',
@@ -20,7 +19,7 @@ const defaultAlert = cva({
 		},
 		variant: {
 			solid: 'bg-color text-color-contrast border-color',
-			outline: 'bg-transparent border-color text-color',
+			outline: 'bg-transparent border-color text-color-readable',
 			// The soft "toast" look: muted tint, colored border and a legible on-tint
 			// accent (`muted-readable` = dark text light-mode, light text dark-mode).
 			soft: 'bg-color-muted text-color-muted-readable border-color/20'
@@ -45,38 +44,12 @@ const defaultAlert = cva({
 	},
 	defaultVariants: {
 		hasIcon: false,
-		color: 'background',
+		color: 'neutral',
 		variant: 'solid',
 		size: 'normal',
 		disabled: false
 	},
 	compoundVariants: [
-		{
-			color: 'background',
-			variant: 'solid',
-			class: 'bg-background border-background-muted'
-		},
-		{
-			color: 'background',
-			variant: 'outline',
-			class: 'border-background-muted text-foreground'
-		},
-		{
-			color: 'background',
-			variant: 'soft',
-			class: 'bg-background-lighter text-foreground border-background-muted'
-		},
-		{
-			color: 'foreground',
-			variant: 'outline',
-			class: 'border-foreground/50'
-		},
-		{
-			color: 'foreground',
-			variant: 'soft',
-			class: 'bg-foreground text-background border-transparent'
-		},
-
 		{
 			hasDescription: false,
 			hasTitle: true,
@@ -99,7 +72,7 @@ const defaultAlertPrefix = cva({
 		variant: {
 			solid: '',
 			outline: '',
-			soft: '[&>svg]:text-color'
+			soft: '[&>svg]:text-color-readable'
 		},
 		// Nudge the icon to the first text line only in multi-line alerts. A title-only
 		// alert centers its row (items-center), so no nudge — keeps icon/title/close level.

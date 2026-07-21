@@ -18,7 +18,7 @@ The QRCode component renders a customizable QR code as an SVG. It supports theme
   - small: 96px (size-24)
   - normal: 128px (size-32)
   - large: 192px (size-48)
-- **color**: Colors (default: 'foreground') - Theme color of the modules and finder patterns. Applied through \`currentColor\`, so it adapts to the active theme.
+- **color**: Colors (default: 'neutral') - Theme color of the modules and finder patterns. Applied through \`currentColor\`, so it adapts to the active theme.
 - **level**: 'L' | 'M' | 'Q' | 'H' (default: 'M') - The Error Correction Level.
 - **minVersion**: number (default: 1) - Minimum QR version (1-40) used as the lower bound when encoding.
 - **boostLevel**: boolean (default: true) - Allow raising the Error Correction Level when it does not increase the version.

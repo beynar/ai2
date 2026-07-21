@@ -60,7 +60,7 @@
 					<Button
 						href={secondaryButtonHref}
 						variant="link"
-						color="foreground"
+						color="neutral"
 						class="text-sm/6 font-semibold text-white"
 					>
 						{secondaryButtonText}

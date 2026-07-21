@@ -31,7 +31,7 @@ A continuous-scroll PDF reader built on pdf.js. It renders every page in a scrol
   - Pass a subset to show specific controls, or \`false\` to hide the toolbar. \`mode\` and \`orientation\` render toolbar toggle buttons.
 - **toolbarPosition**: 'top' | 'bottom' | 'left' | 'right' (default: 'top') - Where the toolbar sits relative to the document. 'left'/'right' stack the controls into a vertical column.
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Size of the toolbar controls.
-- **color**: Colors (default: 'foreground') - Theme color of the toolbar controls (neutral by default; set e.g. 'primary' to tint them).
+- **color**: Colors (default: 'neutral') - Theme color of the toolbar controls (neutral by default; set e.g. 'primary' to tint them).
 
 ### Event Props
 - **onLoad**: (viewer: PDFViewerState) => void - Called when the document is loaded.

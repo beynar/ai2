@@ -36,9 +36,9 @@
       <!-- Click is forwarded by the map's wrapper element, so no onClick here. -->
       <Button
         variant="ghost"
-        color={button.action === "geolocate" ? "secondary" : "foreground"}
+        color={button.action === "geolocate" ? "secondary" : "neutral"}
         size="small"
-        class="rounded-none bg-background/95"
+        class="rounded-none bg-surface/95"
         disabled={button.disabled}
       >
         {button.label}
@@ -54,7 +54,7 @@
     {/snippet}
   </Map>
 
-  <p class="text-foreground-muted text-sm">
+  <p class="text-neutral/60 text-sm">
     {#if errorMessage}
       Geolocation did not resolve: {errorMessage}
     {:else}

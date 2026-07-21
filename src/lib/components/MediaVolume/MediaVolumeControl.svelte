@@ -151,7 +151,7 @@
 	<Button
 		squared
 		variant="ghost"
-		color={context.active ? color : 'background'}
+		color={context.active ? color : 'neutral'}
 		{size}
 		label={context.label}
 		disabled={context.disabled}
@@ -170,7 +170,7 @@
 	<Button
 		squared
 		variant="ghost"
-		color={context.active ? color : 'background'}
+		color={context.active ? color : 'neutral'}
 		{size}
 		label={context.label}
 		disabled={context.disabled}

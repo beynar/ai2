@@ -88,7 +88,7 @@
 </script>
 
 {#snippet bulkActions(payload: DataTableToolbarPayload<Person>)}
-	<span class="text-foreground-muted text-sm">{payload.selectedRows.length} selected</span>
+	<span class="text-neutral/60 text-sm">{payload.selectedRows.length} selected</span>
 	<Button size="small" variant="ghost" color="danger" onClick={payload.clearSelection}>Clear</Button
 	>
 {/snippet}

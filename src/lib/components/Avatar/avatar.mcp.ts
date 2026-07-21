@@ -174,13 +174,13 @@ The Avatar component displays a user's profile picture with fallback initials. I
 \`\`\`svelte
 <Avatar user={{ name: 'Online User' }}>
 	{#snippet suffix()}
-		<div class="w-3 h-3 rounded-full bg-success border-2 border-background"></div>
+		<div class="w-3 h-3 rounded-full bg-success border-2 border-surface"></div>
 	{/snippet}
 </Avatar>
 
 <Avatar user={{ name: 'Away User' }}>
 	{#snippet suffix()}
-		<div class="w-3 h-3 rounded-full bg-warning border-2 border-background"></div>
+		<div class="w-3 h-3 rounded-full bg-warning border-2 border-surface"></div>
 	{/snippet}
 </Avatar>
 \`\`\`
@@ -334,7 +334,7 @@ const customTheme: AvatarThemeProps = {
   
   setAvatarTheme({
     root: {
-      base: 'ring-2 ring-background-muted transition-all',
+      base: 'ring-2 ring-neutral-muted transition-all',
       size: {
         normal: 'size-10'
       }

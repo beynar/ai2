@@ -50,7 +50,7 @@ Pagination renders accessible page navigation for long lists, tables, and server
 
 ### Style Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
-- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'primary')
+- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' (default: 'primary')
 - **variant**: 'pages' | 'count' | 'compact' | 'dots' | 'none' (default: 'pages')
   - Controls what appears between previous and next. \`count\` requires \`totalItems\` and \`pageSize\`.
 - **controlVariant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'ghost')

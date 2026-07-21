@@ -243,7 +243,7 @@
 				{/snippet}
 				{#snippet suffix()}
 					<div class="mt-4 flex items-center justify-between">
-						<span class="text-foreground/70 text-sm">Showing 1-3 of 3</span>
+						<span class="text-neutral/70 text-sm">Showing 1-3 of 3</span>
 						<div class="flex gap-2">
 							<Button size="small" variant="outline">Previous</Button>
 							<Button size="small" variant="outline">Next</Button>
@@ -301,7 +301,7 @@
 				{/snippet}
 				{#snippet suffix()}
 					<div class="mt-4 flex items-center justify-between border-t pt-4">
-						<span class="text-foreground/70 text-sm">Total items: 3</span>
+						<span class="text-neutral/70 text-sm">Total items: 3</span>
 						<div class="flex gap-2">
 							<Button size="small" variant="outline">Previous</Button>
 							<Button size="small" variant="outline">Next</Button>

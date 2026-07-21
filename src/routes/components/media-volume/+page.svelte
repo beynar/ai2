@@ -83,7 +83,7 @@ ${'</' + 'script>'}
 		<Button
 			squared
 			variant="ghost"
-			color="background"
+			color="neutral"
 			label={context.label}
 			prefix={context.icon}
 			onClick={context.onClick}
@@ -212,7 +212,7 @@ ${'</' + 'script>'}
 						<Button
 							squared
 							variant="ghost"
-							color="background"
+							color="neutral"
 							size="normal"
 							label={context.label}
 							prefix={context.icon}
@@ -229,7 +229,7 @@ ${'</' + 'script>'}
 						<Button
 							squared
 							variant="ghost"
-							color="background"
+							color="neutral"
 							size="normal"
 							label={context.label}
 							prefix={context.icon}

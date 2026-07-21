@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultMenuBar = cva({
-	base: 'bg-background inline-flex w-fit max-w-full items-center overflow-x-auto rounded-lg scrollbar-none',
+	base: 'bg-surface inline-flex w-fit max-w-full items-center overflow-x-auto rounded-lg scrollbar-none',
 	variants: {
 		size: {
 			small: 'gap-0.5 p-0.5',
@@ -19,7 +19,7 @@ const defaultMenuBarTrigger = cva({
 	base: 'focus-visible:ring-inset',
 	variants: {
 		active: {
-			true: 'bg-background-muted text-foreground',
+			true: 'bg-neutral-muted text-neutral-muted-readable',
 			false: ''
 		}
 	},

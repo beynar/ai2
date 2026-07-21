@@ -7,7 +7,7 @@
 	let {
 		ref = $bindable(),
 		class: className,
-		color = 'background',
+		color = 'neutral',
 		variant = 'solid',
 		size = 'normal',
 		density = 'normal',
@@ -16,7 +16,7 @@
 		value,
 		indicator,
 		indicatorVariant = 'default',
-		indicatorColor = 'foreground',
+		indicatorColor = 'neutral',
 		onIndicatorClick,
 		indicatorLabel,
 		indicatorType = 'button',

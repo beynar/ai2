@@ -29,7 +29,7 @@ A compact single-selection input for switching between a small set of mutually e
 - **onChange**: \`(value: string) => void\` — called after user interaction changes the value.
 - **item**: \`Snippet<[SegmentedControlItem]>\` — replaces the default item renderer.
 - **size**: \`'small' | 'normal' | 'large'\` — defaults to \`'normal'\`.
-- **color**: semantic color — controls the selected pill and focus ring; defaults to \`'background'\`.
+- **color**: semantic color — controls the selected pill and focus ring; defaults to \`'neutral'\`.
 - **variant**: \`'normal' | 'pill'\` — controls corner radius; defaults to the moderately rounded \`'normal'\` shape.
 - **disabled**: \`boolean\` — disables the full control.
 - **ariaLabel**: \`string\` — accessible radiogroup name; defaults to \`'Segmented control'\`.

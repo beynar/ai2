@@ -78,9 +78,9 @@
 								<AspectRatio ratio={item.ratio} class="rounded-md">
 									{#snippet children()}
 										<div
-											class="border-background-muted bg-background-lighter flex h-full w-full items-center justify-center border"
+											class="border-neutral-muted bg-surface-floating flex h-full w-full items-center justify-center border"
 										>
-											<span class="text-foreground text-sm font-semibold">
+											<span class="text-neutral text-sm font-semibold">
 												{item.ratio.replace('x', ':')}
 											</span>
 										</div>
@@ -88,7 +88,7 @@
 								</AspectRatio>
 							</div>
 						</div>
-						<p class="text-foreground-muted text-center text-xs">{item.label}</p>
+						<p class="text-neutral/60 text-center text-xs">{item.label}</p>
 					</div>
 				{/each}
 			</div>

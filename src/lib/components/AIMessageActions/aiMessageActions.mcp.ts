@@ -17,9 +17,10 @@ scoped conversation lookup.
 
 \`visibility\` accepts \`always\`, \`hover\`, or \`none\`. \`actions={false}\` suppresses the
 complete surface. A supplied \`actions\` slot wins over the equivalent \`children\` slot. Both
-receive complete \`AIMessageActionState\`, including capability flags and awaitable copy, edit, and
-retry methods. The copy callback runs only after clipboard success. Failures raised by the default
-buttons render through the semantic error region.
+receive complete \`AIMessageActionState\`, including the resolved size, capability flags, and
+awaitable copy, edit, and retry methods. \`size\` accepts \`small\`, \`normal\`, or \`large\` and
+scales the default controls. The copy callback runs only after clipboard success. Failures raised by
+the default buttons render through the semantic error region.
 
 \`\`\`svelte
 <script>
@@ -36,6 +37,6 @@ buttons render through the semantic error region.
 \`\`\`
 
 The root forwards native div attributes and attachments when actions are available, plus bindable
-\`ref\`, \`class\`, and \`theme\`. Theme parts cover \`root\`, \`button\`, and \`error\`, with role
-and visibility variants on the root.
+\`ref\`, \`class\`, and \`theme\`. Theme parts cover \`root\`, \`button\`, and \`error\`, with role,
+visibility, and size variants on the root and size variants on the button.
 `;

@@ -33,7 +33,7 @@
 
 	const previewAppShellTheme = {
 		root: {
-			base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+			base: 'h-full min-h-full overflow-auto rounded-lg border border-neutral-muted'
 		}
 	} satisfies AppShellThemeProps;
 
@@ -141,8 +141,8 @@
 			<button
 				type="button"
 				class="rounded-lg border p-3 text-left transition {selectedRecipeId === recipe.id
-					? 'border-primary bg-primary/10 text-foreground'
-					: 'border-background-muted bg-background-light text-foreground/70 hover:border-primary/50 hover:text-foreground'}"
+					? 'border-primary bg-primary/10 text-neutral'
+					: 'border-neutral-muted bg-surface-raised text-neutral/70 hover:border-primary/50 hover:text-neutral'}"
 				aria-pressed={selectedRecipeId === recipe.id}
 				onclick={() => selectRecipe(recipe)}
 			>
@@ -153,16 +153,16 @@
 	</div>
 
 	<div class="grid gap-2 md:grid-cols-2">
-		<div class="rounded-lg border border-background-muted bg-background-light p-3">
-			<p class="text-sm font-semibold text-foreground">Icon rail is a state</p>
-			<p class="mt-1 text-xs leading-5 text-foreground/65">
+		<div class="rounded-lg border border-neutral-muted bg-surface-raised p-3">
+			<p class="text-sm font-semibold text-neutral">Icon rail is a state</p>
+			<p class="mt-1 text-xs leading-5 text-neutral/65">
 				Use <code>collapsible="icon"</code>, <code>rail</code>, and optionally
 				<code>displayState="collapsed"</code> on the inset, floating, or split variant.
 			</p>
 		</div>
-		<div class="rounded-lg border border-background-muted bg-background-light p-3">
-			<p class="text-sm font-semibold text-foreground">Docs prose is page layout</p>
-			<p class="mt-1 text-xs leading-5 text-foreground/65">
+		<div class="rounded-lg border border-neutral-muted bg-surface-raised p-3">
+			<p class="text-sm font-semibold text-neutral">Docs prose is page layout</p>
+			<p class="mt-1 text-xs leading-5 text-neutral/65">
 				It is mainly <code>contentWidth="prose"</code> plus larger PageShell padding, not a separate AppShell
 				shape.
 			</p>
@@ -182,33 +182,40 @@
 			mobileActionCount={1}
 			theme={previewAppShellTheme}
 		>
+			{#snippet footer()}
+				<div class="flex items-center gap-2">
+					<span class="size-1.5 rounded-full bg-success"></span>
+					<span>{selectedRecipe.name} workspace ready</span>
+				</div>
+			{/snippet}
+
 			{#snippet children()}
 				<div class="grid gap-4">
-					<section class="rounded-lg border border-background-muted bg-background-light p-4">
-						<p class="text-sm font-medium text-foreground">Recipe anatomy</p>
+					<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
+						<p class="text-sm font-medium text-neutral">Recipe anatomy</p>
 						<div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 							{#each [['Sidebar', selectedRecipe.variant], ['Collapse', selectedRecipe.sidebar.collapsible], ['Rail', selectedRecipe.sidebar.rail ? 'edge toggle' : 'none'], ['Content', selectedRecipe.contentWidth]] as detail}
-								<div class="rounded-md border border-background-muted bg-background p-3">
-									<p class="text-xs font-medium uppercase tracking-normal text-foreground/50">
+								<div class="rounded-md border border-neutral-muted bg-surface p-3">
+									<p class="text-xs font-medium uppercase tracking-normal text-neutral/50">
 										{detail[0]}
 									</p>
-									<p class="mt-2 text-sm font-semibold text-foreground">{detail[1]}</p>
+									<p class="mt-2 text-sm font-semibold text-neutral">{detail[1]}</p>
 								</div>
 							{/each}
 						</div>
 					</section>
 
-					<section class="rounded-lg border border-background-muted bg-background-light p-4">
-						<p class="text-sm font-medium text-foreground">Primary surface</p>
-						<p class="mt-3 text-sm leading-6 text-foreground/70">
+					<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
+						<p class="text-sm font-medium text-neutral">Primary surface</p>
+						<p class="mt-3 text-sm leading-6 text-neutral/70">
 							{selectedRecipe.description} This preview keeps the same AppShell component and only switches
 							Sidebar and PageShell props.
 						</p>
 						<div class="mt-5 grid gap-3 sm:grid-cols-3">
 							{#each ['Pipeline', 'Quality', 'Velocity'] as metric, index}
-								<div class="rounded-md border border-background-muted bg-background p-3">
-									<p class="text-sm text-foreground/60">{metric}</p>
-									<p class="mt-2 text-2xl font-semibold text-foreground">{82 + index * 6}%</p>
+								<div class="rounded-md border border-neutral-muted bg-surface p-3">
+									<p class="text-sm text-neutral/60">{metric}</p>
+									<p class="mt-2 text-2xl font-semibold text-neutral">{82 + index * 6}%</p>
 								</div>
 							{/each}
 						</div>

@@ -35,19 +35,19 @@
 		const spans: { t: string; cls: string }[] = [];
 		if (box.kind === 'slot') {
 			spans.push({ t: box.slot?.name ?? box.slot?.source ?? 'slot', cls: 'text-warning' });
-			if (box.slot?.payload) spans.push({ t: ` ${box.slot.payload}`, cls: 'text-foreground/50' });
+			if (box.slot?.payload) spans.push({ t: ` ${box.slot.payload}`, cls: 'text-neutral/50' });
 		} else {
-			const nameCls = box.kind === 'component' ? 'text-foreground' : 'text-foreground/70';
+			const nameCls = box.kind === 'component' ? 'text-neutral' : 'text-neutral/70';
 			spans.push({ t: `<${box.tag}>`, cls: nameCls });
 		}
 		if (box.themePart) spans.push({ t: ` theme.${box.themePart}`, cls: 'text-primary' });
 		if (box.defaultValue)
-			spans.push({ t: ` default: ${box.defaultValue}`, cls: 'text-foreground/40 italic' });
+			spans.push({ t: ` default: ${box.defaultValue}`, cls: 'text-neutral/40 italic' });
 		return spans;
 	}
 
 	// Cycle container fills by nesting depth so the box hierarchy reads at a glance.
-	const DEPTH_BG = ['bg-background', 'bg-background', 'bg-background'];
+	const DEPTH_BG = ['bg-surface', 'bg-surface', 'bg-surface'];
 
 	const roots = $derived((structure?.tree ?? []).map(toBox));
 </script>
@@ -75,7 +75,7 @@
 		<div
 			class="rounded-lg border px-3 py-2 {box.kind === 'slot'
 				? 'border-warning/50 bg-warning/10 border-dashed'
-				: `border-background-muted ${DEPTH_BG[depth % DEPTH_BG.length]}`}"
+				: `border-neutral-muted ${DEPTH_BG[depth % DEPTH_BG.length]}`}"
 		>
 			<div class="font-mono text-[13px] whitespace-nowrap">
 				{#each box.spans as span, i (i)}<span class={span.cls}>{span.t}</span>{/each}
@@ -90,9 +90,9 @@
 {/snippet}
 
 {#if structure}
-	<div class="border-background-muted bg-background w-full overflow-hidden rounded-xl border">
-		<div class="border-background-muted/60 flex items-center justify-between border-b px-6 py-3">
-			<span class="text-foreground/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
+	<div class="border-neutral-muted bg-surface w-full overflow-hidden rounded-xl border">
+		<div class="border-neutral-muted/60 flex items-center justify-between border-b px-6 py-3">
+			<span class="text-neutral/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
 				Structure
 			</span>
 			<span class="flex flex-wrap gap-3 font-mono text-[11px]">
@@ -106,5 +106,5 @@
 		</div>
 	</div>
 {:else}
-	<p class="text-foreground/70 text-sm">No structural schema for <code>{component}</code>.</p>
+	<p class="text-neutral/70 text-sm">No structural schema for <code>{component}</code>.</p>
 {/if}

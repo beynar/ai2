@@ -11,13 +11,17 @@
 </script>
 
 <span
-	class="flex size-9 items-center justify-center text-background drop-shadow-md ring-offset-background group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2"
-	style:color={color}
+	class="flex size-9 items-center justify-center text-surface drop-shadow-md ring-offset-surface group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2"
+	style:color
 >
-	<span class="inline-flex items-center justify-center [&_svg]:size-9" aria-hidden="true">{@render mapPinIcon()}</span>
+	<span class="inline-flex items-center justify-center [&_svg]:size-9" aria-hidden="true"
+		>{@render mapPinIcon()}</span
+	>
 </span>
 {#if marker.label}
-	<span class="mt-1 max-w-full truncate rounded-md bg-background/95 px-2 py-0.5 text-xs font-medium text-foreground shadow-sm ring-1 ring-background-muted">
+	<span
+		class="mt-1 max-w-full truncate rounded-md bg-surface-floating/95 px-2 py-0.5 text-xs font-medium text-neutral shadow-sm ring-1 ring-neutral-muted"
+	>
 		{@html marker.label}
 	</span>
 {/if}

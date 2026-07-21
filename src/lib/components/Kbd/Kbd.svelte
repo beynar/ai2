@@ -7,7 +7,7 @@
 		keys,
 		separator,
 		size = 'normal',
-		color = 'background',
+		color = 'neutral',
 		class: className = '',
 		children,
 		theme,

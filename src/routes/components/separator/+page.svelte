@@ -24,7 +24,7 @@
 		code={`<div class="w-full max-w-xl">
 	<div class="space-y-1">
 		<h4 class="text-sm font-medium leading-none">Svelai</h4>
-		<p class="text-foreground-muted text-sm">The foundation for your design system.</p>
+		<p class="text-neutral/60 text-sm">The foundation for your design system.</p>
 	</div>
 	<Separator class="my-4" />
 	<p class="text-sm leading-relaxed">
@@ -35,7 +35,7 @@
 		<div class="w-full max-w-xl">
 			<div class="space-y-1">
 				<h4 class="text-sm font-medium leading-none">Svelai</h4>
-				<p class="text-foreground-muted text-sm">The foundation for your design system.</p>
+				<p class="text-neutral/60 text-sm">The foundation for your design system.</p>
 			</div>
 			<Separator class="my-4" />
 			<p class="text-sm leading-relaxed">
@@ -65,32 +65,32 @@
 		<ComponentCard description="Divider color tokens from the design system." class="!min-h-fit">
 			<div class="space-y-4">
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Background (default)</p>
-					<Separator color="background" />
+					<p class="text-neutral/70 mb-2 text-sm">Background (default)</p>
+					<Separator color="neutral" />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Primary</p>
+					<p class="text-neutral/70 mb-2 text-sm">Primary</p>
 					<Separator color="primary" />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Secondary</p>
+					<p class="text-neutral/70 mb-2 text-sm">Secondary</p>
 					<Separator color="secondary" />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Success</p>
+					<p class="text-neutral/70 mb-2 text-sm">Success</p>
 					<Separator color="success" />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Danger</p>
+					<p class="text-neutral/70 mb-2 text-sm">Danger</p>
 					<Separator color="danger" />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">With Label</p>
+					<p class="text-neutral/70 mb-2 text-sm">With Label</p>
 					<Separator color="primary" children="Primary Section" />
 				</div>
 			</div>
@@ -99,22 +99,22 @@
 		<ComponentCard description="Border thickness from 1px to 4px." class="!min-h-fit">
 			<div class="space-y-4">
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Size 1 (default)</p>
+					<p class="text-neutral/70 mb-2 text-sm">Size 1 (default)</p>
 					<Separator size={1} />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Size 2</p>
+					<p class="text-neutral/70 mb-2 text-sm">Size 2</p>
 					<Separator size={2} />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Size 4</p>
+					<p class="text-neutral/70 mb-2 text-sm">Size 4</p>
 					<Separator size={4} />
 				</div>
 
 				<div>
-					<p class="text-foreground/70 mb-2 text-sm">Size 4 with Color</p>
+					<p class="text-neutral/70 mb-2 text-sm">Size 4 with Color</p>
 					<Separator size={4} color="primary" />
 				</div>
 			</div>
@@ -139,7 +139,7 @@
 		</ComponentCard>
 
 		<ComponentCard description="Dividing groups inside a menu panel.">
-			<div class="bg-background rounded-xl border-background-muted w-64 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-64 border p-1">
 				<MenuOption prefix={userIcon} title="Profile" description="View your profile" />
 				<MenuOption prefix={gearIcon} title="Settings" description="Manage preferences" />
 
@@ -156,21 +156,21 @@
 			<div class="space-y-4">
 				<section>
 					<h3 class="text-xl font-semibold">Personal Information</h3>
-					<p class="text-foreground/70">Manage your personal details</p>
+					<p class="text-neutral/70">Manage your personal details</p>
 				</section>
 
 				<Separator color="primary" size={2} children="Account Settings" />
 
 				<section>
 					<h3 class="text-xl font-semibold">Security</h3>
-					<p class="text-foreground/70">Password and authentication settings</p>
+					<p class="text-neutral/70">Password and authentication settings</p>
 				</section>
 
 				<Separator color="secondary" children="Preferences" />
 
 				<section>
 					<h3 class="text-xl font-semibold">Notifications</h3>
-					<p class="text-foreground/70">Manage your notification preferences</p>
+					<p class="text-neutral/70">Manage your notification preferences</p>
 				</section>
 			</div>
 		</ComponentCard>

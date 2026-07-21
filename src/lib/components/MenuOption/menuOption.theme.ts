@@ -18,14 +18,13 @@ const defaultMenuOption = cva({
 			large: 'px-3 py-2 gap-2.5 min-h-9'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			foreground: 'text-foreground',
-			background: 'text-foreground',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-50 pointer-events-none',
@@ -44,14 +43,21 @@ const defaultMenuOption = cva({
 		}
 	},
 	compoundVariants: [
-		{ active: true, color: 'primary', class: 'bg-primary-muted text-primary' },
-		{ active: true, color: 'secondary', class: 'bg-secondary-muted text-secondary' },
-		{ active: true, color: 'foreground', class: 'bg-background-muted text-foreground' },
-		{ active: true, color: 'background', class: 'bg-background-muted text-foreground' },
-		{ active: true, color: 'danger', class: 'bg-danger-muted text-danger' },
-		{ active: true, color: 'success', class: 'bg-success-muted text-success' },
-		{ active: true, color: 'warning', class: 'bg-warning-muted text-warning' },
-		{ active: true, color: 'info', class: 'bg-info-muted text-info' }
+		{ active: true, color: 'primary', class: 'bg-primary-muted text-primary-muted-readable' },
+		{
+			active: true,
+			color: 'secondary',
+			class: 'bg-secondary-muted text-secondary-muted-readable'
+		},
+		{
+			active: true,
+			color: 'neutral',
+			class: 'bg-neutral-muted text-neutral-muted-readable'
+		},
+		{ active: true, color: 'danger', class: 'bg-danger-muted text-danger-muted-readable' },
+		{ active: true, color: 'success', class: 'bg-success-muted text-success-muted-readable' },
+		{ active: true, color: 'warning', class: 'bg-warning-muted text-warning-muted-readable' },
+		{ active: true, color: 'info', class: 'bg-info-muted text-info-muted-readable' }
 	],
 	defaultVariants: {
 		size: 'normal',
@@ -63,7 +69,7 @@ const defaultMenuOption = cva({
 });
 
 const defaultMenuOptionTitle = cva({
-	base: 'font-medium  leading-none',
+	base: 'font-normal leading-none',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -77,7 +83,7 @@ const defaultMenuOptionTitle = cva({
 });
 
 const defaultMenuOptionDescription = cva({
-	base: 'text-foreground/70  leading-none',
+	base: 'text-neutral/70  leading-none',
 	variants: {
 		size: {
 			small: 'text-[0.625rem]',

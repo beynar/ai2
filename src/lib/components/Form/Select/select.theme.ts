@@ -20,7 +20,7 @@ const defaultInput = cva({
 });
 
 const defaultInputContainer = cva({
-	base: 'px-3 bg-background-light border border-background-muted rounded text-foreground w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all flex items-center py-2',
+	base: 'px-3 bg-surface-raised border border-neutral-muted rounded text-neutral w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all flex items-center py-2',
 	variants: {
 		size: {
 			small: 'py-1.5 text-xs',
@@ -46,8 +46,8 @@ const defaultValue = cva({
 			large: ''
 		},
 		placeholder: {
-			true: 'text-foreground-muted',
-			false: 'text-foreground'
+			true: 'text-neutral/60',
+			false: 'text-neutral'
 		}
 	},
 	defaultVariants: {
@@ -57,7 +57,7 @@ const defaultValue = cva({
 });
 
 const defaultTriggerIcon = cva({
-	base: 'text-foreground-muted pointer-events-none shrink-0',
+	base: 'text-neutral/60 pointer-events-none shrink-0',
 	variants: {
 		size: {
 			small: 'size-3.5',
@@ -93,7 +93,7 @@ const defaultGroup = cva({
 });
 
 const defaultGroupLabel = cva({
-	base: 'text-foreground-muted',
+	base: 'text-neutral/60',
 	variants: {
 		size: {
 			small: 'px-1.5 py-1 text-[0.6875rem]',
@@ -109,7 +109,7 @@ const defaultGroupLabel = cva({
 const defaultSeparator = cva({
 	// Flush (not `-mx-1`): the separator sits directly in the scroll content with no padding to
 	// bleed into, so a negative margin would overflow the viewport and trigger a spurious X bar.
-	base: 'bg-background-muted my-1 h-px',
+	base: 'bg-neutral-muted my-1 h-px',
 	variants: {
 		size: {
 			small: '',

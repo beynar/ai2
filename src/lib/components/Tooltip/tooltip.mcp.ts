@@ -21,7 +21,8 @@ The tooltip attachment displays contextual information when hovering over an ele
 - **position**: Placement (default: 'top') - Tooltip position relative to element
   - Options: 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end' | 'right-start' | 'right-end'
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Visual size
-- **color**: Colors (default: 'background') - Color theme
+- **color**: Colors (default: 'neutral') - Color theme
+- **variant**: 'solid' | 'outline' | 'soft' (default: 'solid') - Visual style matching Chip
 - **delay**: number (default: 400) - Delay in ms before showing tooltip
 - **offset**: number - Distance from reference element in pixels
 - **class**: string - Additional CSS classes
@@ -109,6 +110,21 @@ The tooltip attachment displays contextual information when hovering over an ele
 </button>
 \`\`\`
 
+### Different Variants
+\`\`\`svelte
+<button {@attach tooltip({ content: 'Solid tooltip', variant: 'solid' })}>
+	Solid
+</button>
+
+<button {@attach tooltip({ content: 'Outlined tooltip', variant: 'outline' })}>
+	Outline
+</button>
+
+<button {@attach tooltip({ content: 'Soft tooltip', variant: 'soft' })}>
+	Soft
+</button>
+\`\`\`
+
 ### With Snippet Content
 \`\`\`svelte
 <script>
@@ -190,19 +206,24 @@ import type { TooltipThemeProps } from 'svelai/tooltip';
 // Example theme customization
 const customTheme: TooltipThemeProps = {
   root: {
-    base: 'z-[+50] fixed w-fit rounded raised isolate h-fit',
+    base: 'inline-flex w-fit items-center rounded-full border font-medium',
     size: {
-      small: 'text-xs px-1 py-0.5',
-      normal: 'text-sm px-1 py-0.5',
-      large: 'text-base px-1.5 py-1'
+      small: 'h-5 px-2 text-xs',
+      normal: 'h-6 px-2.5 text-xs',
+      large: 'h-7 px-3 text-sm'
     },
-    color: {
-      background: 'bg-background-light text-foreground',
+	color: {
+	  neutral: 'bg-neutral text-neutral-contrast',
       primary: 'bg-primary text-primary-contrast',
       danger: 'bg-danger text-danger-contrast',
       success: 'bg-success text-success-contrast',
       warning: 'bg-warning text-warning-contrast',
-      info: 'bg-info text-info-contrast'
+	  info: 'bg-info text-info-contrast'
+	},
+	variant: {
+	  solid: 'bg-color text-color-contrast',
+	  outline: 'border-color bg-transparent text-color-readable',
+	  soft: 'bg-color-muted text-color-muted-readable'
     }
   }
 };
@@ -214,7 +235,8 @@ const customTheme: TooltipThemeProps = {
 - base: Base classes applied to all tooltips
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls text size and padding
-  - color: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - variant: 'solid' | 'outline' | 'soft' - Matches Chip's visual variants
 
 ### Usage Examples
 
@@ -267,8 +289,8 @@ const customTheme: TooltipThemeProps = {
       size: {
         normal: 'px-3 py-1.5 text-sm'
       },
-      color: {
-        background: 'bg-gray-900 text-white',
+	  color: {
+		neutral: 'bg-gray-900 text-white',
         primary: 'bg-blue-500 text-white'
       }
     }

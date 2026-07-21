@@ -11,13 +11,13 @@ export type ThemeOptions = Partial<{
 	default: boolean;
 	luminance?: number;
 	saturation?: number;
-	colorScheme?: 'light' | 'dark';
+	colorscheme?: 'light' | 'dark';
 	'primary-tint-intensity'?: number;
 	spacing?: Spacing;
 	'border-width'?: number;
 	'raised-with-border'?: boolean;
-	'overlay-hover'?: string;
-	'overlay-pressed'?: string;
+	'state-hover-opacity'?: number;
+	'state-pressed-opacity'?: number;
 	scale?: TypeScale;
 	prefersDark?: boolean;
 	radius?: RadiusSize;
@@ -60,10 +60,10 @@ export default plugin.withOptions<ThemeOptions>(
 			if (theme['raised-with-border'] !== false) {
 				addBase({
 					[`html[data-theme="${theme.name}"]`]: {
-						'--raised-border': '1px solid var(--current-border, var(--color-background-muted))'
+						'--raised-border': '1px solid var(--current-border, var(--color-neutral-muted))'
 					},
 					[`.${theme.name}`]: {
-						'--raised-border': '1px solid var(--current-border, var(--color-background-muted))'
+						'--raised-border': '1px solid var(--current-border, var(--color-neutral-muted))'
 					}
 				});
 			}

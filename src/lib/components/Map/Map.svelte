@@ -247,7 +247,7 @@
 	{#if loadError}
 		<div
 			role="alert"
-			class="text-danger bg-background absolute inset-0 z-10 flex items-center justify-center p-6 text-center text-sm"
+			class="text-danger bg-surface absolute inset-0 z-10 flex items-center justify-center p-6 text-center text-sm"
 		>
 			{loadError.message}
 		</div>

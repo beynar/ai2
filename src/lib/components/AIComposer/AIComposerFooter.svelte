@@ -65,7 +65,7 @@
 					squared
 					size="small"
 					variant="ghost"
-					color="background"
+					color="neutral"
 					label={attachLabel}
 					disabled={attachDisabled}
 					onClick={onAttach}

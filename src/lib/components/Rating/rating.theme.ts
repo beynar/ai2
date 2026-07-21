@@ -39,21 +39,20 @@ const defaultStar = cva({
 });
 
 const defaultStarBase = cva({
-	base: 'absolute inset-0 text-foreground-muted/40'
+	base: 'absolute inset-0 text-neutral/40'
 });
 
 const defaultStarFill = cva({
 	base: 'absolute inset-y-0 overflow-hidden',
 	variants: {
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			foreground: 'text-foreground',
-			background: 'text-background',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		}
 	},
 	defaultVariants: {

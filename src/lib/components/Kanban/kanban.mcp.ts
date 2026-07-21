@@ -95,7 +95,7 @@ edge math come from the utility.
 \`\`\`svelte
 <Kanban bind:columns>
 	{#snippet card({ card })}
-		<div class="rounded-lg bg-background-lighter px-3 py-2 ring-1 ring-foreground/10">
+		<div class="rounded-lg bg-surface-floating px-3 py-2 ring-1 ring-neutral/10">
 			<span class="text-sm font-medium">{card.title}</span>
 			<Chip size="small" color={card.priority === 'high' ? 'danger' : 'info'}>{card.priority}</Chip>
 		</div>

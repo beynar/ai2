@@ -38,7 +38,7 @@
 			return 'size-12 bg-primary text-primary-contrast ring-primary/25';
 		}
 
-		return 'size-10 bg-background text-foreground ring-primary/30';
+		return 'size-10 bg-surface text-neutral ring-primary/30';
 	}
 
 	function handleClusterClick(event: MouseEvent): void {
@@ -136,7 +136,7 @@
 		<button
 			type="button"
 			class={cn(
-				'flex items-center justify-center rounded-full border-2 border-background text-sm font-semibold tabular-nums shadow-md ring-4 outline-none transition-transform hover:scale-105 focus-visible:ring-primary',
+				'flex items-center justify-center rounded-full border-2 border-surface text-sm font-semibold tabular-nums shadow-md ring-4 outline-none transition-transform hover:scale-105 focus-visible:ring-primary',
 				defaultClusterClass
 			)}
 			aria-label={`Cluster of ${cluster.count} markers`}

@@ -16,7 +16,7 @@ const defaultAvatarGroup = cva({
 });
 
 const defaultAvatarGroupCount = cva({
-	base: 'bg-background-lighter border-background-muted text-foreground text-center rounded-full flex items-center justify-center uppercase font-bold ml-[-0.75rem] z-[+1]',
+	base: 'bg-surface-floating border-neutral-muted text-neutral text-center rounded-full flex items-center justify-center uppercase font-bold ml-[-0.75rem] z-[+1]',
 	variants: {
 		size: {
 			normal: 'size-8 text-sm',

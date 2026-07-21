@@ -4,33 +4,12 @@ import type { Breakpoint } from '$lib/components/Theme/theme.js';
 
 // import type { Spinner } from '$lib/plugin/spinnner.js';
 export type Colors =
-	| 'primary'
-	| 'secondary'
-	| 'danger'
-	| 'success'
-	| 'warning'
-	| 'info'
-	| 'foreground'
-	| 'background';
+	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral';
 export type FontSize = `fontSize.${
-	| 'xs'
-	| 'sm'
-	| 'md'
-	| 'lg'
-	| 'xl'
-	| '2xl'
-	| '3xl'
-	| '4xl'
-	| 'DEFAULT'}`;
+	'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'DEFAULT'}`;
 export type ColorKeys = `${
-	| 'primary'
-	| 'secondary'
-	| 'danger'
-	| 'success'
-	| 'warning'
-	| 'info'
-	| 'foreground'
-	| 'background'}.${'light' | 'lighter' | 'DEFAULT' | 'contrast' | 'dark'}`;
+	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral'}.${
+	'light' | 'lighter' | 'DEFAULT' | 'contrast' | 'dark' | 'muted' | 'readable' | 'muted-readable'}`;
 
 export type ColorPath = `colors.${ColorKeys}`;
 

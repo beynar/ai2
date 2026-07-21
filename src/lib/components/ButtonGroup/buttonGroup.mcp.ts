@@ -23,7 +23,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 
 ### Shared Button Props
 - **size**: 'small' | 'normal' | 'large' - Applied to all buttons in the group
-- **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' - Shared color for all buttons
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Shared color for all buttons
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' | 'link' - Shared variant for all buttons
 - **disabled**: boolean - Disables all buttons in the group
 
@@ -147,7 +147,7 @@ The ButtonGroup component displays a collection of related buttons as a cohesive
 	variant="outline"
 	items={[
 		{ children: 'Active', color: 'primary' },
-		{ children: 'Default', color: 'background' },
+		{ children: 'Default', color: 'neutral' },
 		{ children: 'Disabled', disabled: true }
 	]}
 />

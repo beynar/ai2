@@ -55,11 +55,11 @@
 			{#each presets as preset}
 				<button
 					type="button"
-					class="state-layer border-background-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition {Math.abs(
+					class="state-layer border-neutral-muted inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition {Math.abs(
 						frameWidth - preset.width
 					) < 24
 						? 'bg-primary text-primary-contrast'
-						: 'bg-background text-foreground'}"
+						: 'bg-surface text-neutral'}"
 					aria-pressed={Math.abs(frameWidth - preset.width) < 24}
 					onclick={() => setFrameWidth(preset.width)}
 				>
@@ -68,7 +68,7 @@
 			{/each}
 		</div>
 
-		<label class="flex min-w-64 items-center gap-3 text-sm text-foreground/65">
+		<label class="flex min-w-64 items-center gap-3 text-sm text-neutral/65">
 			<span class="tabular-nums">{frameWidth}px</span>
 			<input
 				class="accent-primary"
@@ -82,9 +82,9 @@
 		</label>
 	</div>
 
-	<div class="overflow-auto rounded-xl border border-background-muted bg-background-muted p-3">
+	<div class="overflow-auto rounded-xl border border-neutral-muted bg-neutral-muted p-3">
 		<div
-			class="relative mx-auto h-[640px] min-w-[320px] overflow-hidden rounded-lg border border-background-muted bg-background shadow-sm"
+			class="relative mx-auto h-[640px] min-w-[320px] overflow-hidden rounded-lg border border-neutral-muted bg-surface shadow-sm"
 			style={`width: ${frameWidth}px;`}
 		>
 			<iframe
@@ -95,7 +95,7 @@
 			<button
 				type="button"
 				aria-label="Resize preview"
-				class="absolute inset-y-0 right-0 w-3 cursor-ew-resize border-l border-background-muted/70 bg-background/40 transition hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-primary"
+				class="absolute inset-y-0 right-0 w-3 cursor-ew-resize border-l border-neutral-muted/70 bg-surface/40 transition hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-primary"
 				onpointerdown={startResize}
 				onpointermove={resizeFrame}
 				onpointerup={stopResize}

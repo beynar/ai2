@@ -122,7 +122,7 @@
 			<div class="flex w-full max-w-2xl flex-col gap-3">
 				<div class="grid gap-6 sm:grid-cols-2">
 					<div class="flex flex-col gap-2">
-						<span class="text-foreground/70 text-sm font-medium">Today ({today.length})</span>
+						<span class="text-neutral/70 text-sm font-medium">Today ({today.length})</span>
 						<SortableList
 							bind:items={today}
 							group="planner"
@@ -133,7 +133,7 @@
 						/>
 					</div>
 					<div class="flex flex-col gap-2">
-						<span class="text-foreground/70 text-sm font-medium">Tomorrow ({tomorrow.length})</span>
+						<span class="text-neutral/70 text-sm font-medium">Tomorrow ({tomorrow.length})</span>
 						<SortableList
 							bind:items={tomorrow}
 							group="planner"
@@ -144,7 +144,7 @@
 						/>
 					</div>
 				</div>
-				<p class="text-foreground-muted text-xs">
+				<p class="text-neutral/60 text-xs">
 					{lastCrossMove || 'Drag a task into the other list to see onReceive.'}
 				</p>
 			</div>
@@ -181,7 +181,7 @@
 	{#snippet item({ item })}
 		<div class="flex flex-col">
 			<span class="font-medium">{item.title}</span>
-			<span class="text-foreground-muted text-sm">{item.description}</span>
+			<span class="text-neutral/60 text-sm">{item.description}</span>
 		</div>
 	{/snippet}
 </SortableList>`}
@@ -190,7 +190,7 @@
 				{#snippet item({ item })}
 					<div class="flex flex-col">
 						<span class="font-medium">{item.title}</span>
-						<span class="text-foreground-muted text-sm">{item.description}</span>
+						<span class="text-neutral/60 text-sm">{item.description}</span>
 					</div>
 				{/snippet}
 			</SortableList>
@@ -225,7 +225,7 @@
 		>
 			<div class="flex w-full max-w-md flex-col gap-3">
 				<SortableList bind:items={bound} />
-				<p class="text-foreground-muted text-sm">{boundOrder}</p>
+				<p class="text-neutral/60 text-sm">{boundOrder}</p>
 			</div>
 		</ComponentCard>
 

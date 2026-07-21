@@ -91,7 +91,7 @@ const cancelledTool: AIMcpToolCall = {
   error: 'Stopped by the user'
 };`}
 		>
-			<p class="max-w-xl text-sm text-foreground/70">
+			<p class="max-w-xl text-sm text-neutral/70">
 				A result is never sent before complete input. Pending and loading calls wait for input,
 				while cancelled calls deliver an explicit reason.
 			</p>
@@ -178,7 +178,7 @@ export function GET({ request }) {
 	  {closed}
 	  theme={{
 	    root: { base: 'rounded-none' },
-	    frame: { base: 'bg-background-muted' }
+	    frame: { base: 'bg-neutral-muted' }
   }}
 />`}
 		>
@@ -196,7 +196,7 @@ export function GET({ request }) {
 			class="!min-h-fit"
 			code={`<AIThread {messages} mcpHost={hostConfig} />`}
 		>
-			<p class="max-w-xl text-sm text-foreground/70">
+			<p class="max-w-xl text-sm text-neutral/70">
 				The connected client resolves resources only. App-originated tool calls cross the host
 				allowlist and conversation callback instead of automatic client forwarding.
 			</p>

@@ -54,7 +54,7 @@ Stat renders a compact metric card with semantic regions for label, value, indic
 ### Core Props
 - **ref**: HTMLElement | null - Bindable reference to the root element.
 - **class**: string - Additional classes for the root element.
-- **color**: Colors (default: 'background') - Semantic color token for the stat surface.
+- **color**: Colors (default: 'neutral') - Semantic color token for the stat surface.
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'solid') - Surface treatment.
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Scales typography and icons only (label, value, trend, description, indicator). Combine with density to control spacing independently.
 - **density**: 'small' | 'normal' | 'large' (default: 'normal') - Controls the surface padding and gaps between regions (small: p-3 / gap-x-3, normal: p-4 / gap-x-4, large: p-5 / gap-x-5).
@@ -71,7 +71,7 @@ Stat renders a compact metric card with semantic regions for label, value, indic
 
 ### Indicator Props
 - **indicatorVariant**: 'default' | 'icon' | 'badge' | 'action' (default: 'default') - Indicator presentation.
-- **indicatorColor**: Colors (default: 'foreground') - Semantic color for the indicator.
+- **indicatorColor**: Colors (default: 'neutral') - Semantic color for the indicator.
 - **onIndicatorClick**: (event: MouseEvent) => void - Renders the indicator as a native button.
 - **indicatorLabel**: string - Accessible label for icon-only clickable indicators.
 - **indicatorType**: HTMLButtonAttributes['type'] (default: 'button') - Button type used for clickable indicators.

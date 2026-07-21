@@ -130,94 +130,95 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 
 	return {
 		link: {
-			base: 'text-primary wrap-anywhere font-medium underline hover:text-primary/80',
-			blocked: 'text-foreground-muted'
+			base: 'text-primary-readable wrap-anywhere font-medium underline hover:text-primary-readable/80',
+			blocked: 'text-neutral/60'
 		},
 		h1: {
-			base: `${s.headingMargin} ${s.h1} font-semibold text-foreground`
+			base: `${s.headingMargin} ${s.h1} font-semibold text-neutral`
 		},
 		h2: {
-			base: `${s.headingMargin} ${s.h2} font-semibold text-foreground`
+			base: `${s.headingMargin} ${s.h2} font-semibold text-neutral`
 		},
 		h3: {
-			base: `${s.headingMargin} ${s.h3} font-semibold text-foreground`
+			base: `${s.headingMargin} ${s.h3} font-semibold text-neutral`
 		},
 		h4: {
-			base: `${s.headingMargin} ${s.h4} font-semibold text-foreground`
+			base: `${s.headingMargin} ${s.h4} font-semibold text-neutral`
 		},
 		h5: {
-			base: `${s.headingMargin} ${s.h5} font-semibold text-foreground`
+			base: `${s.headingMargin} ${s.h5} font-semibold text-neutral`
 		},
 		h6: {
-			base: `${s.headingMargin} ${s.h6} font-semibold text-foreground`
+			base: `${s.headingMargin} ${s.h6} font-semibold text-neutral`
 		},
 		paragraph: {
-			base: `${s.blockMargin} text-foreground`
+			base: `${s.blockMargin} text-neutral`
 		},
 		ul: {
-			base: `${s.listIndent} list-inside list-disc whitespace-normal text-foreground`
+			base: `${s.listIndent} list-inside list-disc whitespace-normal text-neutral`
 		},
 		ol: {
-			base: `${s.listIndent} list-inside whitespace-normal text-foreground`
+			base: `${s.listIndent} list-inside whitespace-normal text-neutral`
 		},
 		li: {
 			base: s.listItemPad,
 			checkbox: ' mr-2'
 		},
 		code: {
-			base: `${s.blockMargin} w-full overflow-hidden rounded-lg border border-background-muted flex flex-col`,
-			container: 'relative overflow-visible bg-background-muted p-2 font-mono text-sm',
-			header: `flex items-center justify-between bg-background-muted/80 px-2 py-1 text-foreground-muted ${s.smallText}`,
+			base: `${s.blockMargin} w-full overflow-hidden rounded-lg border border-neutral-muted bg-surface flex flex-col`,
+			container: 'relative overflow-visible bg-surface p-2 font-mono text-sm',
+			header: `flex items-center justify-between bg-surface-raised px-2 py-1 text-neutral/60 ${s.smallText}`,
 			buttons: 'flex items-center gap-2',
 			language: 'ml-1 font-mono lowercase',
 			skeleton:
-				'block rounded-md font-mono text-transparent bg-background-muted/80 scale-y-90 w-fit animate-pulse whitespace-nowrap',
-			pre: 'overflow-x-auto font-mono p-0 bg-background-muted/40',
+				'block rounded-md font-mono text-transparent bg-neutral-muted/80 scale-y-90 w-fit animate-pulse whitespace-nowrap',
+			pre: 'overflow-x-auto font-mono p-0 bg-surface',
 			line: 'block '
 		},
 		codespan: {
-			base: `bg-background-muted rounded px-1.5 py-0.5 font-mono text-foreground ${s.smallText}`
+			base: `bg-surface-raised rounded px-1.5 py-0.5 font-mono text-neutral ${s.smallText}`
 		},
 		image: {
 			base: `group relative ${s.blockMargin} mx-auto w-fit block`,
 			image: 'max-w-full rounded-lg'
 		},
 		blockquote: {
-			base: `border-foreground-muted/30 text-foreground-muted ${s.blockMargin} border-l-4 pl-4 italic`
+			base: `border-neutral/30 text-neutral/60 ${s.blockMargin} border-l-4 pl-4 italic`
 		},
 		alert: {
-			base: `relative ${s.blockMargin} border-l-4 p-4 bg-background-light`,
+			base: `relative ${s.blockMargin} border-l-4 p-4 bg-surface-raised`,
 			title: `${s.smallText} font-semibold flex items-center gap-2 mb-2 capitalize`,
 			icon: 'size-5',
-			note: '[&>[data-alert-title]]:text-info border-info/40 stroke-info bg-info-muted',
-			tip: '[&>[data-alert-title]]:text-success border-success/40 stroke-success bg-success-muted',
+			note: '[&>[data-alert-title]]:text-info-muted-readable border-info/40 stroke-info bg-info-muted',
+			tip: '[&>[data-alert-title]]:text-success-muted-readable border-success/40 stroke-success bg-success-muted',
 			warning:
-				'[&>[data-alert-title]]:text-warning border-warning/40 stroke-warning bg-warning-muted',
-			caution: '[&>[data-alert-title]]:text-danger border-danger/40 stroke-danger bg-danger-muted',
+				'[&>[data-alert-title]]:text-warning-muted-readable border-warning/40 stroke-warning bg-warning-muted',
+			caution:
+				'[&>[data-alert-title]]:text-danger-muted-readable border-danger/40 stroke-danger bg-danger-muted',
 			important:
-				'[&>[data-alert-title]]:text-primary border-primary/40 stroke-primary bg-primary-muted'
+				'[&>[data-alert-title]]:text-primary-muted-readable border-primary/40 stroke-primary bg-primary-muted'
 		},
 		table: {
-			base: `overflow-x-auto max-w-full ${s.blockMargin} rounded-lg border border-background-muted`,
+			base: `overflow-x-auto max-w-full ${s.blockMargin} rounded-lg border border-neutral-muted`,
 			table: 'w-full border-collapse min-w-full'
 		},
 		thead: {
-			base: 'bg-background-muted/80'
+			base: 'bg-surface-raised'
 		},
 		tbody: {
 			base: ''
 		},
 		tfoot: {
-			base: 'bg-background-muted/50 border-t border-background-muted'
+			base: 'bg-surface-raised border-t border-neutral-muted'
 		},
 		tr: {
-			base: 'state-layer border-background-muted not-last:border-b transition-colors'
+			base: 'state-layer border-neutral-muted not-last:border-b transition-colors'
 		},
 		td: {
-			base: `px-4 py-3 ${s.smallText} text-foreground min-w-[200px] max-w-[400px] break-words`
+			base: `px-4 py-3 ${s.smallText} text-neutral min-w-[200px] max-w-[400px] break-words`
 		},
 		th: {
-			base: `px-4 py-3 ${s.smallText} text-foreground min-w-[200px] max-w-[400px] break-words`
+			base: `px-4 py-3 ${s.smallText} text-neutral min-w-[200px] max-w-[400px] break-words`
 		},
 		sup: {
 			base: s.smallText
@@ -226,19 +227,19 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			base: s.smallText
 		},
 		hr: {
-			base: `border-background-muted ${s.ruleMargin}`
+			base: `border-neutral-muted ${s.ruleMargin}`
 		},
 		strong: {
-			base: 'font-semibold text-foreground'
+			base: 'font-semibold text-neutral'
 		},
 		mermaid: {
-			base: `group relative ${s.blockMargin} h-auto rounded-lg border border-background-muted bg-background-light overflow-hidden items-center min-h-[500px]`,
+			base: `group relative ${s.blockMargin} h-auto rounded-lg border border-neutral-muted bg-surface-raised overflow-hidden items-center min-h-[500px]`,
 			icon: 'size-5',
 			buttons: 'absolute right-1 top-1 flex h-fit w-fit items-center gap-1'
 		},
 		math: {
-			block: 'text-foreground',
-			inline: 'text-foreground'
+			block: 'text-neutral',
+			inline: 'text-neutral'
 		},
 		br: {
 			base: ''
@@ -247,43 +248,43 @@ export const buildStreamdownTheme = (size: MarkdownSize): StreamdownProps['theme
 			base: 'italic'
 		},
 		del: {
-			base: 'text-foreground-muted'
+			base: 'text-neutral/60'
 		},
 		footnoteRef: {
-			base: `state-layer text-foreground-muted ${s.smallText} rounded-full bg-background-muted cursor-pointer border border-background-muted tabular-nums min-w-5 min-h-5 outline-none focus:ring-1 focus:ring-primary`
+			base: `state-layer text-neutral/60 ${s.smallText} rounded-full bg-neutral-muted cursor-pointer border border-neutral-muted tabular-nums min-w-5 min-h-5 outline-none focus:ring-1 focus:ring-primary`
 		},
 		descriptionList: {
 			base: `${s.blockMargin} space-y-2`
 		},
 		descriptionTerm: {
-			base: 'font-semibold text-foreground border-l-2 border-background-muted pl-4'
+			base: 'font-semibold text-neutral border-l-2 border-neutral-muted pl-4'
 		},
 		descriptionDetail: {
-			base: 'text-foreground-muted ml-4 leading-relaxed'
+			base: 'text-neutral/60 ml-4 leading-relaxed'
 		},
 		inlineCitation: {
-			preview: `state-layer ${s.smallText} text-foreground-muted bg-background-muted rounded-md px-2 py-0.5 cursor-pointer inline-flex border border-background-muted outline-none focus:ring-1 focus:ring-primary`,
+			preview: `state-layer ${s.smallText} text-neutral/60 bg-neutral-muted rounded-md px-2 py-0.5 cursor-pointer inline-flex border border-neutral-muted outline-none focus:ring-1 focus:ring-primary`,
 			carousel: {
 				header: 'flex items-center justify-between',
-				stepCounter: 'h-fit text-xs font-semibold text-foreground-muted tabular-nums',
+				stepCounter: 'h-fit text-xs font-semibold text-neutral/60 tabular-nums',
 				buttons: 'flex w-fit items-center justify-end gap-2',
 				title: 'mb-2 line-clamp-2 font-semibold',
-				url: 'flex items-center gap-2 text-sm text-foreground-muted',
+				url: 'flex items-center gap-2 text-sm text-neutral/60',
 				favicon: 'h-4 w-4 rounded'
 			},
 			list: {
 				base: 'grid gap-2',
 				item: 'state-layer grid gap-1 rounded-md p-2',
 				title: 'line-clamp-1 font-semibold text-sm',
-				url: 'flex items-center gap-2 text-xs text-foreground-muted',
+				url: 'flex items-center gap-2 text-xs text-neutral/60',
 				favicon: 'h-3 w-3 rounded'
 			}
 		},
 		components: {
 			button:
-				'state-layer disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer p-1 text-foreground-muted transition-all hover:text-foreground rounded flex items-center justify-center w-6 h-6',
+				'state-layer disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer p-1 text-neutral/60 transition-all hover:text-neutral rounded flex items-center justify-center w-6 h-6',
 			popover:
-				'min-w-[250px] max-w-md fixed z-[1000] max-h-md overflow-y-auto rounded-lg bg-background border border-background-muted p-2 shadow'
+				'min-w-[250px] max-w-md fixed z-[1000] max-h-md overflow-y-auto rounded-lg bg-surface-floating border border-neutral-muted p-2 shadow'
 		}
 	};
 };

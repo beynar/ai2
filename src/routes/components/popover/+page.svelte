@@ -111,8 +111,8 @@
 				}}
 			>
 				<div class="grid gap-2">
-					<h2 class="text-foreground text-base font-semibold">Mobile sheet</h2>
-					<p class="text-foreground-muted text-sm">{text}</p>
+					<h2 class="text-neutral text-base font-semibold">Mobile sheet</h2>
+					<p class="text-neutral/60 text-sm">{text}</p>
 				</div>
 			</Popover>
 

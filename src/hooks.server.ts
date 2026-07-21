@@ -106,7 +106,6 @@ import { aiMarkerDescription } from '$lib/components/AIMarker/aiMarker.mcp.js';
 import { aiModelSelectorDescription } from '$lib/components/AIModelSelector/aiModelSelector.mcp.js';
 import { aiComposerDescription } from '$lib/components/AIComposer/aiComposer.mcp.js';
 import { aiReasoningDescription } from '$lib/components/AIReasoning/aiReasoning.mcp.js';
-import { aiShimmerDescription } from '$lib/components/AIShimmer/aiShimmer.mcp.js';
 import { aiSuggestionDescription } from '$lib/components/AISuggestion/aiSuggestion.mcp.js';
 import { aiToolDescription } from '$lib/components/AITool/aiTool.mcp.js';
 import { aiMcpAppDescription } from '$lib/components/AIMcpApp/aiMcpApp.mcp.js';
@@ -217,7 +216,6 @@ const components = {
 	'ai-model-selector': aiModelSelectorDescription,
 	'ai-composer': aiComposerDescription,
 	'ai-reasoning': aiReasoningDescription,
-	'ai-shimmer': aiShimmerDescription,
 	'ai-suggestion': aiSuggestionDescription,
 	'ai-tool': aiToolDescription,
 	'ai-mcp-app': aiMcpAppDescription,

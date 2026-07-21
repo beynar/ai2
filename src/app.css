@@ -5,8 +5,8 @@
 	default: true;
 	spacing: normal;
 	colorscheme: light;
-	background: #f7fafa;
-	foreground: #1b1d29;
+	surface: #f7fafa;
+	neutral: #1b1d29;
 	primary: #dc2626;
 	danger: #dc2626;
 	success: #16a34a;
@@ -17,18 +17,21 @@
 	name: dark;
 	spacing: normal;
 	colorscheme: dark;
-	background: #15161c;
-	foreground: #ffffff;
+	surface: #15161c;
+	surface-floating: #27282f;
+	neutral: #ffffff;
 	primary: #6b77ff;
 	danger: #7f1d1d;
 	success: #22c55e;
 	warning: #f5a623;
 	info: #38bdf8;
+	state-hover-opacity: 0.16;
+	state-pressed-opacity: 0.32;
 }
 
 @utility dotted-grid {
 	background-image: radial-gradient(
-		color-mix(in oklab, var(--color-foreground) 9%, transparent) 1px,
+		color-mix(in oklab, var(--color-neutral) 9%, transparent) 1px,
 		transparent 1px
 	);
 	background-size: 16px 16px;

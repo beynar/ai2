@@ -18,8 +18,8 @@ The MenuOption component is a flexible menu item that can be used in dropdown me
 ### Core Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Scales typography and icons only
 - **density**: 'small' | 'normal' | 'large' (default: 'normal') - Owns paddings, gaps and min-height; reflected as \`data-density\` on the row. Combine freely with size.
-- **color**: Colors (default: 'primary') - Sets the text color and hover background color
-  - Available: primary, secondary, success, warning, danger, info, foreground, background
+- **color**: Colors (default: 'primary') - Sets the semantic text color and persistent active tint
+  - Available: primary, secondary, success, warning, danger, info, neutral
 
 ### Content Slots
 Either use **title/description** OR **children** (mutually exclusive):
@@ -249,7 +249,7 @@ MenuOption is also the shared row primitive for the listbox family (Command, Sel
 			<img src="/avatar.jpg" alt="User" class="w-8 h-8 rounded-full" />
 			<div>
 				<div class="font-bold">John Doe</div>
-				<div class="text-xs text-foreground/70">john@example.com</div>
+				<div class="text-xs text-neutral/70">john@example.com</div>
 			</div>
 		</div>
 	{/snippet}
@@ -262,7 +262,7 @@ MenuOption is also the shared row primitive for the listbox family (Command, Sel
 	import { Settings, User, LogOut, HelpCircle } from '$lib/components/Icons/index.svelte.js';
 </script>
 
-<div class="w-64 bg-background rounded-xl border border-background-muted p-1">
+<div class="w-64 bg-surface rounded-xl border border-neutral-muted p-1">
 	<MenuOption>
 		{#snippet prefix()}<User />{/snippet}
 		{#snippet title()}Profile{/snippet}
@@ -280,7 +280,7 @@ MenuOption is also the shared row primitive for the listbox family (Command, Sel
 		{#snippet title()}Help & Support{/snippet}
 	</MenuOption>
 	
-	<div class="border-t border-background-muted my-1"></div>
+	<div class="border-t border-neutral-muted my-1"></div>
 	
 	<MenuOption color="danger">
 		{#snippet prefix()}<LogOut />{/snippet}
@@ -360,7 +360,7 @@ The component automatically determines the HTML element to render:
 - Title and description snippets are mutually exclusive with children snippet
 - Hover states automatically apply background color based on the color prop
 - Prefix icons are positioned at the start, suffix icons at the end (with ml-auto)
-- All color variants include appropriate hover states with muted backgrounds
+- Hover and virtual focus use the shared current-color state layer
 - Works well within Popover or Dialog components for dropdown menus
 
 ## Theme Customization
@@ -384,7 +384,7 @@ The theme object contains the following parts:
 - Variants:
   - size: 'small' | 'normal' | 'large' - Text size
   - density: 'small' | 'normal' | 'large' - Padding, gap, and min-height
-  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme and hover states
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Color scheme and hover states
 
 **title**:
 - base: Base classes for title text

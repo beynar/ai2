@@ -47,10 +47,10 @@
 </script>
 
 {#if docs}
-	<div class="border-background-muted bg-background mt-12 w-full overflow-hidden rounded-xl border">
+	<div class="border-neutral-muted bg-surface mt-12 w-full overflow-hidden rounded-xl border">
 		{#if docs.htmlAttributes.length > 0}
-			<div class="border-background-muted/40 flex items-center gap-2 border-b px-6 py-3">
-				<span class="text-foreground/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
+			<div class="border-neutral-muted/40 flex items-center gap-2 border-b px-6 py-3">
+				<span class="text-neutral/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
 					Extends
 				</span>
 				{#each docs.htmlAttributes as htmlAttributes (htmlAttributes)}
@@ -67,7 +67,7 @@
 						<tr>
 							<th
 								colspan="3"
-								class="text-foreground/45 px-6 pt-5 pb-1.5 text-left text-[10.5px] font-semibold tracking-[0.12em] uppercase"
+								class="text-neutral/45 px-6 pt-5 pb-1.5 text-left text-[10.5px] font-semibold tracking-[0.12em] uppercase"
 							>
 								<span class="flex items-center gap-1.5">
 									{@render section.icon({ size: 13, color: section.color })}
@@ -77,11 +77,11 @@
 						</tr>
 						{#each section.props as prop (prop.name)}
 							<tr
-								class="state-layer border-background-muted/40 border-t align-top transition-colors"
+								class="state-layer border-neutral-muted/40 border-t align-top transition-colors"
 							>
 								<td class="px-6 py-3.5 whitespace-nowrap">
 									<span class="inline-flex items-center gap-2">
-										<span class="text-foreground font-mono text-[13px] font-medium"
+										<span class="text-neutral font-mono text-[13px] font-medium"
 											>{prop.name}</span
 										>
 										{#if !prop.optional}
@@ -125,10 +125,10 @@
 										<code class="text-primary/90 font-mono text-[13px]">{prop.value}</code>
 									{/if}
 								</td>
-								<td class="text-foreground/70 px-6 py-3.5 text-[13px] leading-relaxed">
+								<td class="text-neutral/70 px-6 py-3.5 text-[13px] leading-relaxed">
 									{#each describe(prop.description) as part, i (i)}
 										{#if part.code}
-											<code class="text-foreground font-mono text-[12.5px]">{part.value}</code>
+											<code class="text-neutral font-mono text-[12.5px]">{part.value}</code>
 										{:else}{part.value}{/if}
 									{/each}
 								</td>
@@ -140,5 +140,5 @@
 		</div>
 	</div>
 {:else}
-	<p class="text-foreground/70 text-sm">No documented props for <code>{component}</code>.</p>
+	<p class="text-neutral/70 text-sm">No documented props for <code>{component}</code>.</p>
 {/if}

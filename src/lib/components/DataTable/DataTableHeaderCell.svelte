@@ -347,7 +347,7 @@
 						label={`Column options for ${typeof config?.header === 'string' ? config.header : column.id}${filtered ? ', filter active' : ''}`}
 						prefix={dotsThreeVerticalIcon}
 						variant="ghost"
-						color={filtered ? 'primary' : 'foreground'}
+						color={filtered ? 'primary' : 'neutral'}
 						size="small"
 						disabled={model.props.disabled}
 						aria-haspopup="menu"

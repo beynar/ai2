@@ -87,7 +87,7 @@
 
 {#snippet row(title: string)}
 	<div
-		class="bg-background-light border-background-muted text-foreground flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+		class="bg-surface-raised border-neutral-muted text-neutral flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
 	>
 		{title}
 	</div>
@@ -143,9 +143,9 @@
 			<div class="grid w-full gap-4 md:grid-cols-3">
 				{#each [{ label: 'Todo', dnd: todoDnd, items: todo }, { label: 'Doing', dnd: doingDnd, items: doing }, { label: 'Blocked', dnd: blockedDnd, items: blocked }] as column (column.label)}
 					<div class="flex flex-col gap-2">
-						<span class="text-foreground/70 text-sm font-medium">{column.label}</span>
+						<span class="text-neutral/70 text-sm font-medium">{column.label}</span>
 						<div
-							class="border-background-muted data-[dnd-over=true]:border-primary/50 flex min-h-32 flex-col gap-1.5 rounded-xl border border-dashed p-2 transition-colors"
+							class="border-neutral-muted data-[dnd-over=true]:border-primary/50 flex min-h-32 flex-col gap-1.5 rounded-xl border border-dashed p-2 transition-colors"
 							{@attach column.dnd.list}
 						>
 							{#each column.items as item, index (item.id)}
@@ -180,9 +180,9 @@
 				{#each handled as item, index (item.id)}
 					<div {@attach handledDnd.item(item, index)}>
 						<div
-							class="bg-background-light border-background-muted text-foreground flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+							class="bg-surface-raised border-neutral-muted text-neutral flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
 						>
-							<span data-dnd-handle class="text-foreground-muted cursor-grab">
+							<span data-dnd-handle class="text-neutral/60 cursor-grab">
 								{@render dotsSixVerticalIcon({ class: 'size-4' })}
 							</span>
 							{item.title}

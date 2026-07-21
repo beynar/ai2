@@ -13,8 +13,8 @@
 </script>
 
 <div
-	class="border-background-muted bg-background relative w-full overflow-hidden rounded-lg border {className}"
+	class="border-neutral-muted bg-surface relative w-full overflow-hidden rounded-lg border {className}"
 >
 	{@render children()}
-	<span class="text-foreground/70 flex h-full items-center px-4 text-sm">{label}</span>
+	<span class="text-neutral/70 flex h-full items-center px-4 text-sm">{label}</span>
 </div>

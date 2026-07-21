@@ -9,7 +9,7 @@
 		suggestion,
 		selected = false,
 		disabled = false,
-		variant = 'outline',
+		variant = 'soft',
 		size = 'small',
 		type = 'button',
 		onSelect,

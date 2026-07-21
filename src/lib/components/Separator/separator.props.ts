@@ -34,9 +34,9 @@ export type SeparatorProps = WithAttachments<
 			line?: boolean;
 			/**
 			 * The color of the separator.
-			 * @default 'background'
+			 * @default 'neutral'
 			 */
-			color?: Colors | 'background';
+			color?: Colors | 'neutral';
 			/**
 			 * The size (thickness) of the separator in pixels.
 			 * @default 1

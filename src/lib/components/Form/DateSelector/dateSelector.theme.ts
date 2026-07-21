@@ -30,7 +30,7 @@ const defaultRoot = cva({
 });
 
 const defaultPresets = cva({
-	base: 'border-background-muted flex flex-wrap content-start gap-1 border-b p-2 sm:flex-col sm:border-r sm:border-b-0'
+	base: 'border-neutral-muted flex flex-wrap content-start gap-1 border-b p-2 sm:flex-col sm:border-r sm:border-b-0'
 });
 
 const defaultPreset = cva({

@@ -87,40 +87,53 @@ export const themePluginDescription = `
 - **Description**: Info state color
 - **Example**: \`info: #3b82f6;\`
 
-#### \`background\`
+#### \`surface\`
 - **Type**: \`string\` (hex color)
-- **Default**: \`#FAFAFA\` (light) / \`#121212\` (dark)
-- **Description**: Background background color
-- **Example**: \`background: #ffffff;\`
+- **Default**: \`#FFFFFF\` (light) / \`#000000\` (dark)
+- **Description**: Seed for the mode-aware surface elevation ladder
+- **Example**: \`surface: #ffffff;\`
 
-#### \`foreground\`
+#### \`neutral\`
 - **Type**: \`string\` (hex color)
-- **Default**: \`#121212\` (light) / \`#FAFAFA\` (dark)
-- **Description**: High foreground text/foreground color
-- **Example**: \`foreground: #0a0a0a;\`
+- **Default**: Derived as the perceptual reverse of \`surface\`
+- **Description**: Achromatic semantic color used for text, icons, solid neutral controls, and borders
+- **Example**: \`neutral: #0a0a0a;\`
+
+### Surface Elevation Overrides
+
+The surface ladder is separate from semantic color variants:
+
+- \`surface-recessed\`: inset wells and grouped-control tracks
+- \`surface-canvas\`: deepest app background
+- \`surface\`: ordinary resting surface
+- \`surface-raised\`: cards and raised containers
+- \`surface-floating\`: popovers, dialogs, and floating overlays
+
+Each value is optional. Missing grades preserve the surface seed's hue and chroma while using
+mode-aware OKLCH lightness targets.
 
 ### Interaction State Layers
 
-#### \`overlay-hover\`
-- **Type**: \`string\` (CSS color, alpha supported)
-- **Default**: Generated foreground at 5% opacity
-- **Description**: Global overlay composited by \`.state-layer\` on hover and \`data-highlighted="true"\`
-- **Example**: \`overlay-hover: #1018280d;\`
+#### \`state-hover-opacity\`
+- **Type**: \`number\`
+- **Default**: \`0.05\` in light themes; \`0.16\` in dark themes
+- **Description**: Opacity of the current-color state layer on hover and \`data-highlighted="true"\`
+- **Example**: \`state-hover-opacity: 0.06;\`
 
-#### \`overlay-pressed\`
-- **Type**: \`string\` (CSS color, alpha supported)
-- **Default**: Generated foreground at 10% opacity
-- **Description**: Global overlay composited by \`.state-layer\` while an element is pressed
-- **Example**: \`overlay-pressed: #1018281a;\`
+#### \`state-pressed-opacity\`
+- **Type**: \`number\`
+- **Default**: \`0.10\` in light themes; \`0.32\` in dark themes
+- **Description**: Opacity of the current-color state layer while an element is pressed
+- **Example**: \`state-pressed-opacity: 0.12;\`
 
-Use background grades for resting elevation, \`.state-layer\` for transient interaction,
+Use surface grades for resting elevation, \`.state-layer\` for transient interaction,
 focus rings for keyboard focus, and \`*-muted\` or solid colors for persistent semantic states.
-The overlay follows the theme foreground, so it darkens surfaces in light themes and lightens
-them in dark themes without changing their resting hue.
+The layer uses \`currentColor\`, so a surface with dark content darkens while a surface with light
+content lightens. Its direction follows the content contrast instead of a hard-coded palette grade.
 
 ### Color Variant Overrides
 
-For each base color (primary, secondary, danger, success, warning, info, background, foreground), you can override specific variants:
+For each semantic color (primary, secondary, danger, success, warning, info, neutral), you can override specific variants:
 
 #### \`{color}-light\`
 - **Type**: \`string\` (hex color)
@@ -142,7 +155,7 @@ For each base color (primary, secondary, danger, success, warning, info, backgro
 
 #### \`{color}-muted\`
 - **Type**: \`string\` (hex color)
-- **Default**: Auto-generated (mixed with background)
+- **Default**: Auto-generated (mixed with \`surface\`)
 - **Description**: Muted/subtle variant of the color
 - **Example**: \`primary-muted: #e0e7ff;\`
 
@@ -219,10 +232,10 @@ For each base color (primary, secondary, danger, success, warning, info, backgro
   success: #22c55e;
   warning: #f59e0b;
   info: #3b82f6;
-  background: #fafafa;
-  foreground: #121212;
-  overlay-hover: #1212120d;
-  overlay-pressed: #1212121a;
+  surface: #fafafa;
+  neutral: #121212;
+  state-hover-opacity: 0.05;
+  state-pressed-opacity: 0.10;
   
   primary-light: #a5b4fc;
   primary-dark: #4338ca;

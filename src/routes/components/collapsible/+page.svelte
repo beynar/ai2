@@ -12,7 +12,7 @@
 
 {#snippet repo(name: string)}
 	<div
-		class="border-background-muted bg-background-light/40 text-foreground rounded-md border px-4 py-2 font-mono text-sm"
+		class="border-neutral-muted bg-surface-raised/40 text-neutral rounded-md border px-4 py-2 font-mono text-sm"
 	>
 		{name}
 	</div>
@@ -43,10 +43,10 @@
 	</div>
 </Collapsible>`}
 	>
-		<div class="border-background-muted bg-background w-[360px] rounded-xl border p-2 shadow-sm">
+		<div class="border-neutral-muted bg-surface w-[360px] rounded-xl border p-2 shadow-sm">
 			<Collapsible icon={caretUpDownIcon}>
 				{#snippet trigger()}
-					<span class="text-foreground px-2 text-sm font-semibold">
+					<span class="text-neutral px-2 text-sm font-semibold">
 						@peduarte starred 3 repositories
 					</span>
 				{/snippet}
@@ -70,13 +70,13 @@
 	<p>Long article content…</p>
 </Collapsible>`}
 		>
-			<div class="border-background-muted bg-background w-[440px] rounded-xl border p-5 shadow-sm">
-				<h4 class="text-foreground mb-3 font-semibold">Terms of Service</h4>
+			<div class="border-neutral-muted bg-surface w-[440px] rounded-xl border p-5 shadow-sm">
+				<h4 class="text-neutral mb-3 font-semibold">Terms of Service</h4>
 				<Collapsible variant="peek" peekHeight={96} bind:open={peekOpen}>
 					{#snippet trigger()}
 						<span>{peekOpen ? 'Show less' : 'Read more'}</span>
 					{/snippet}
-					<div class="text-foreground-muted flex flex-col gap-3 text-sm leading-relaxed">
+					<div class="text-neutral/60 flex flex-col gap-3 text-sm leading-relaxed">
 						<p>
 							By using this service you agree to be bound by the following terms. These terms govern
 							your access to and use of the product, including any content, functionality and
@@ -104,23 +104,23 @@
 	{#snippet trigger()}
 		<div class="flex flex-col items-start">
 			<span class="font-medium">Can I change my plan later?</span>
-			<span class="text-foreground-muted text-sm">Tap to read the answer</span>
+			<span class="text-neutral/60 text-sm">Tap to read the answer</span>
 		</div>
 	{/snippet}
 	<p>Yes — upgrade or downgrade at any time from billing settings.</p>
 </Collapsible>`}
 		>
 			<div
-				class="border-background-muted bg-background w-[440px] divide-y divide-dashed rounded-xl border shadow-sm [&>*]:px-4"
+				class="border-neutral-muted bg-surface w-[440px] divide-y divide-dashed rounded-xl border shadow-sm [&>*]:px-4"
 			>
 				<Collapsible>
 					{#snippet trigger()}
 						<div class="flex flex-col items-start">
-							<span class="text-foreground font-medium">Can I change my plan later?</span>
-							<span class="text-foreground-muted text-sm">Tap to read the answer</span>
+							<span class="text-neutral font-medium">Can I change my plan later?</span>
+							<span class="text-neutral/60 text-sm">Tap to read the answer</span>
 						</div>
 					{/snippet}
-					<p class="text-foreground-muted text-sm">
+					<p class="text-neutral/60 text-sm">
 						Yes — upgrade or downgrade at any time from your billing settings. Changes are prorated
 						to the day.
 					</p>
@@ -128,11 +128,11 @@
 				<Collapsible>
 					{#snippet trigger()}
 						<div class="flex flex-col items-start">
-							<span class="text-foreground font-medium">Do you offer refunds?</span>
-							<span class="text-foreground-muted text-sm">Tap to read the answer</span>
+							<span class="text-neutral font-medium">Do you offer refunds?</span>
+							<span class="text-neutral/60 text-sm">Tap to read the answer</span>
 						</div>
 					{/snippet}
-					<p class="text-foreground-muted text-sm">
+					<p class="text-neutral/60 text-sm">
 						We offer a 30-day money-back guarantee, no questions asked.
 					</p>
 				</Collapsible>
@@ -149,12 +149,12 @@
 		>
 			<div class="flex w-[360px] flex-col gap-3">
 				{#each sizes as size (size)}
-					<div class="border-background-muted bg-background rounded-xl border px-2 shadow-sm">
+					<div class="border-neutral-muted bg-surface rounded-xl border px-2 shadow-sm">
 						<Collapsible {size} icon="caret">
 							{#snippet trigger()}
-								<span class="text-foreground capitalize">{size}</span>
+								<span class="text-neutral capitalize">{size}</span>
 							{/snippet}
-							<p class="text-foreground-muted text-sm">This is a {size} collapsible.</p>
+							<p class="text-neutral/60 text-sm">This is a {size} collapsible.</p>
 						</Collapsible>
 					</div>
 				{/each}
@@ -173,12 +173,12 @@
 <Button onClick={() => (open = !open)}>Toggle from outside</Button>`}
 		>
 			<div class="flex w-[360px] flex-col gap-4">
-				<div class="border-background-muted bg-background rounded-xl border px-2 shadow-sm">
+				<div class="border-neutral-muted bg-surface rounded-xl border px-2 shadow-sm">
 					<Collapsible bind:open={controlledOpen} icon="math">
 						{#snippet trigger()}
-							<span class="text-foreground">Status: {controlledOpen ? 'Open' : 'Closed'}</span>
+							<span class="text-neutral">Status: {controlledOpen ? 'Open' : 'Closed'}</span>
 						{/snippet}
-						<p class="text-foreground-muted text-sm">This panel's state lives in the parent.</p>
+						<p class="text-neutral/60 text-sm">This panel's state lives in the parent.</p>
 					</Collapsible>
 				</div>
 				<Button variant="soft" color="primary" onClick={() => (controlledOpen = !controlledOpen)}>
@@ -193,12 +193,12 @@
 			class="!min-h-fit !justify-center"
 			code={`<Collapsible disabled icon="caret">…</Collapsible>`}
 		>
-			<div class="border-background-muted bg-background w-[360px] rounded-xl border px-2 shadow-sm">
+			<div class="border-neutral-muted bg-surface w-[360px] rounded-xl border px-2 shadow-sm">
 				<Collapsible disabled icon="caret">
 					{#snippet trigger()}
-						<span class="text-foreground">Disabled section</span>
+						<span class="text-neutral">Disabled section</span>
 					{/snippet}
-					<p class="text-foreground-muted text-sm">You won't see this.</p>
+					<p class="text-neutral/60 text-sm">You won't see this.</p>
 				</Collapsible>
 			</div>
 		</ComponentCard>

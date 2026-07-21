@@ -6,7 +6,7 @@
 	import DocPage from '../../DocPage.svelte';
 
 	const sizes = ['small', 'normal', 'large'] as const;
-	const colors = ['primary', 'secondary', 'danger', 'success', 'foreground'] as const;
+	const colors = ['primary', 'secondary', 'danger', 'success', 'neutral'] as const;
 	const value = 'https://svelai.dev';
 
 	const controls = createComponentControls([
@@ -21,9 +21,9 @@
 			name: 'color',
 			type: 'segmented',
 			label: 'Color',
-			value: 'foreground',
+			value: 'neutral',
 			options: [
-				{ value: 'foreground', label: 'default' },
+				{ value: 'neutral', label: 'default' },
 				{ value: 'primary', label: 'primary' },
 				{ value: 'success', label: 'success' },
 				{ value: 'danger', label: 'danger' }

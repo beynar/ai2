@@ -227,7 +227,7 @@
 		{#if tab.menu}
 			{#snippet menuHeader()}
 				{#if typeof tab.label === 'string'}
-					<span class="text-foreground/50 px-2 py-1 text-sm">{tab.label}</span>
+					<span class="text-neutral/50 px-2 py-1 text-sm">{tab.label}</span>
 				{/if}
 			{/snippet}
 			<PopupMenu

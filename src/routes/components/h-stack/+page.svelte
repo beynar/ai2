@@ -46,7 +46,7 @@
 			padding={4}
 			width="100%"
 			maxWidth={620}
-			class="border-background-muted bg-background rounded-lg border"
+			class="border-neutral-muted bg-surface rounded-lg border"
 		>
 			<div
 				class="bg-primary/12 text-primary flex size-10 shrink-0 items-center justify-center rounded-md"
@@ -54,8 +54,8 @@
 				{@render bellSimpleIcon({ class: 'size-5' })}
 			</div>
 			<VStack gap={0.5} class="min-w-0 flex-1">
-				<strong class="text-foreground text-sm">Deployment complete</strong>
-				<span class="text-foreground-muted truncate text-xs">
+				<strong class="text-neutral text-sm">Deployment complete</strong>
+				<span class="text-neutral/60 truncate text-xs">
 					Production is running version 2.4.0.
 				</span>
 			</VStack>
@@ -77,13 +77,13 @@
 			<VStack gap={3} width="100%" maxWidth={720}>
 				{#each alignments as alignment (alignment)}
 					<VStack gap={1}>
-						<span class="text-foreground-muted font-mono text-[11px]">{alignment}</span>
+						<span class="text-neutral/60 font-mono text-[11px]">{alignment}</span>
 						<HStack
 							justify={alignment}
 							gap={2}
 							padding={2}
 							width="100%"
-							class="border-background-muted bg-background/70 min-h-12 rounded-md border"
+							class="border-neutral-muted bg-surface/70 min-h-12 rounded-md border"
 						>
 							<span class="bg-primary/15 text-primary rounded px-2 py-1 text-xs">Alpha</span>
 							<span class="bg-success/15 text-success rounded px-2 py-1 text-xs">Beta</span>
@@ -104,7 +104,7 @@
 		>
 			<HStack gap={2} wrap="wrap" width="100%" maxWidth={480}>
 				{#each filters as filter (filter)}
-					<Chip variant="soft" color={filter === 'Research' ? 'secondary' : 'foreground'}>
+					<Chip variant="soft" color={filter === 'Research' ? 'secondary' : 'neutral'}>
 						{filter}
 					</Chip>
 				{/each}
@@ -125,12 +125,12 @@
 				gap={5}
 				align="center"
 				aria-label="Project navigation"
-				class="text-foreground text-sm"
+				class="text-neutral text-sm"
 			>
 				<a class="hover:text-primary font-medium transition-colors" href="#overview">Overview</a>
 				<a class="hover:text-primary transition-colors" href="#activity">Activity</a>
 				<a class="hover:text-primary transition-colors" href="#settings">Settings</a>
-				<span class="text-foreground-muted ml-2 inline-flex items-center gap-1 text-xs">
+				<span class="text-neutral/60 ml-2 inline-flex items-center gap-1 text-xs">
 					{@render clockIcon({ class: 'size-3.5' })} Updated now
 				</span>
 			</HStack>

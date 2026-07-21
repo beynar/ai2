@@ -23,12 +23,14 @@ import type {
 	AIModelSelectorModel
 } from '../AIModelSelector/aiModelSelector.props.js';
 import type {
+	AIThreadDensity,
 	AIThreadAskUserQuestion,
 	AIThreadItem,
 	AIThreadRenderPayload,
 	AIThreadTocSide,
 	AIThreadTocState
 } from '../AIThread/aiThread.props.js';
+import type { AIMessageSize, AIMessageVariant } from '../AIMessage/aiMessage.props.js';
 import type { AIToolCall } from '../AITool/aiTool.props.js';
 import type { AIChatThemeProps } from './aiChat.theme.js';
 import type { HTMLAttributes } from 'svelte/elements';
@@ -128,6 +130,12 @@ type AIChatBaseProps<TMessage extends AIThreadItem> = AIChatComposerBehaviorProp
 	showToc?: boolean;
 	/** Side occupied by the default table of contents. */
 	tocSide?: AIThreadTocSide;
+	/** Transcript row and edge spacing. @default 'normal' */
+	density?: AIThreadDensity;
+	/** Size forwarded to default message rows. @default 'normal' */
+	messageSize?: AIMessageSize;
+	/** Presentation forwarded to default message rows. @default 'bubble' */
+	messageVariant?: AIMessageVariant;
 	/** Custom action renderer shared by default message rows. */
 	messageActions?: Slot<AIMessageActionState<TMessage>> | false;
 	/** Controls whether default message actions are always shown, hover-revealed, or omitted. */

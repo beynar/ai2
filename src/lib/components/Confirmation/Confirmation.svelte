@@ -67,7 +67,7 @@
 				{#if typeof confirmation.cancel === 'object'}
 					<Button
 						disabled={confirmation.loading}
-						color="background"
+						color="neutral"
 						{...confirmation.cancel}
 						onClick={actionConfirmation(confirmation, false)}
 						fullWidth={isMobile.current}
@@ -77,7 +77,7 @@
 				{:else}
 					<Button
 						disabled={confirmation.loading}
-						color="background"
+						color="neutral"
 						onClick={actionConfirmation(confirmation, false)}
 						fullWidth={isMobile.current}
 					>

@@ -5,7 +5,7 @@
 
 	let {
 		class: className,
-		color = 'foreground',
+		color = 'neutral',
 		children,
 		theme,
 		...attachments

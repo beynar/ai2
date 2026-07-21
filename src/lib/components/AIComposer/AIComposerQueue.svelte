@@ -79,7 +79,7 @@
 					>
 						<div class={classes.queueText()}>{getMessagePreview(item)}</div>
 						{#if item.attachments.length > 0}
-							<span class="text-xs text-foreground/50">
+							<span class="text-xs text-neutral/50">
 								{item.attachments.length} file{item.attachments.length === 1 ? '' : 's'}
 							</span>
 						{/if}

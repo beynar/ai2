@@ -175,6 +175,27 @@
 			label: 'Scroll',
 			value: 'smooth',
 			options: ['auto', 'smooth', 'instant']
+		},
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'messageSize',
+			type: 'segmented',
+			label: 'Message size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'messageVariant',
+			type: 'segmented',
+			label: 'Messages',
+			value: 'bubble',
+			options: ['bubble', 'minimal']
 		}
 	]);
 	const tocControls = createComponentControls([
@@ -210,6 +231,9 @@
 	]);
 	const mode = $derived(controls.value.mode);
 	const scrollBehavior = $derived(controls.value.scrollBehavior);
+	const density = $derived(controls.value.density);
+	const messageSize = $derived(controls.value.messageSize);
+	const messageVariant = $derived(controls.value.messageVariant);
 	const tocMode = $derived(tocControls.value.tocMode);
 	const tocSide = $derived(tocControls.value.tocSide);
 	const suggestionSource = $derived(suggestionControls.value.suggestionSource);
@@ -277,10 +301,10 @@
 	<div class="grid max-w-64 gap-1 text-left">
 		<strong class="truncate text-sm">{entry.title}</strong>
 		{#if entry.excerpt}
-			<p class="line-clamp-4 text-xs text-foreground/65">{entry.excerpt}</p>
+			<p class="line-clamp-4 text-xs text-neutral/65">{entry.excerpt}</p>
 		{/if}
 		{#if entry.fileCount > 0}
-			<p class="text-xs text-foreground/50">
+			<p class="text-xs text-neutral/50">
 				{entry.fileCount} attached {entry.fileCount === 1 ? 'file' : 'files'}
 			</p>
 		{/if}
@@ -306,6 +330,8 @@
 	relatedComponents={['AIThreadToc', 'AIConversation', 'AIMessage', 'AITool']}
 	features={[
 		'TanStack virtualization with initial end anchoring',
+		'Independent transcript density and message scale',
+		'Bubble or minimal default message presentation',
 		'Pinned append and same-row growth following',
 		'Absolute-start and middle-position prepend preservation',
 		'Context markers, AI SDK tool parts, grouped tools, and MCP Apps',
@@ -328,6 +354,9 @@ ${'</' + 'script>'}
   class="h-[32rem] rounded-lg border"
   {messages}
   getMessageKey={(message) => message.id}
+  density="normal"
+  messageSize="normal"
+  messageVariant="minimal"
   scrollBehavior="smooth"
   showToc
 />`}
@@ -363,7 +392,7 @@ ${'</' + 'script>'}
 						onClick={resetQuestion}>Reset question</Button
 					>
 					{#if questionResolution}
-						<span class="text-xs text-foreground-muted">{questionResolution}</span>
+						<span class="text-xs text-neutral/60">{questionResolution}</span>
 					{/if}
 				{/if}
 			</div>
@@ -372,13 +401,16 @@ ${'</' + 'script>'}
 					messages={displayedMessages}
 					{getMessageKey}
 					{scrollBehavior}
+					{density}
+					{messageSize}
+					{messageVariant}
 					showToc={mode === 'history' || mode === 'parts'}
 					liveText={mode === 'live' ? 'Assistant is drafting the next section.' : undefined}
 					isStreaming={mode === 'live'}
 					suggestions={mode === 'empty' ? directSuggestions : undefined}
 					onSuggestionClick={handleSuggestionClick}
 					onAskUserQuestionStateChange={handleQuestionStateChange}
-					class="rounded-lg border border-background-muted"
+					class="rounded-lg border border-neutral-muted"
 				/>
 			{/key}
 		</div>
@@ -413,7 +445,7 @@ ${'</' + 'script>'}
 					showToc
 					{tocSide}
 					toc={tocMode === 'custom' ? customToc : undefined}
-					class="h-full rounded-lg border border-background-muted"
+					class="h-full rounded-lg border border-neutral-muted"
 				/>
 			</div>
 		</ComponentCard>
@@ -437,10 +469,10 @@ ${'</' + 'script>'}
 						messages={[]}
 						suggestions={suggestionSource === 'direct' ? directSuggestions : undefined}
 						onSuggestionClick={handleSuggestionClick}
-						class="rounded-lg border border-background-muted"
+						class="rounded-lg border border-neutral-muted"
 					/>
 				</AIConversation>
-				<p class="truncate text-center text-xs text-foreground-muted" aria-live="polite">
+				<p class="truncate text-center text-xs text-neutral/60" aria-live="polite">
 					{selectedSuggestion ? `Selected: ${selectedSuggestion}` : ''}
 				</p>
 			</div>

@@ -12,10 +12,7 @@
 	const classes = $derived(usePageShellTheme(theme));
 </script>
 
-<footer
-	data-slot="page-shell-footer"
-	class={classes.footer({ scrolled: api.isContentScrolled, className })}
->
+<footer data-slot="page-shell-footer" class={classes.footer({ className })}>
 	<div class={classes.footerInner()}>
 		{#if api.footer}
 			<div class={classes.footerContent()}>

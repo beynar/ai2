@@ -26,7 +26,7 @@ const defaultRoot = cva({
 // selection); in handle mode only the grip drags. `dragging` marks the dimmed placeholder —
 // the dragged row shown at the slot it would land in.
 const defaultItem = cva({
-	base: 'border-background-muted bg-background text-foreground relative flex items-center rounded-xl border outline-none transition-[box-shadow,opacity] focus-visible:ring-2 focus-visible:ring-primary/50',
+	base: 'border-neutral-muted bg-surface text-neutral relative flex items-center rounded-xl border outline-none transition-[box-shadow,opacity] focus-visible:ring-2 focus-visible:ring-primary/50',
 	variants: {
 		size: {
 			small: 'gap-2 p-2 text-sm',
@@ -65,7 +65,7 @@ const defaultContent = cva({
 
 // The grip handle button rendered in handle mode; its content is the `handle` snippet.
 const defaultHandle = cva({
-	base: 'text-foreground-muted hover:text-foreground inline-flex shrink-0 cursor-grab touch-none items-center justify-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 active:cursor-grabbing disabled:pointer-events-none disabled:cursor-not-allowed',
+	base: 'text-neutral/60 hover:text-neutral inline-flex shrink-0 cursor-grab touch-none items-center justify-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 active:cursor-grabbing disabled:pointer-events-none disabled:cursor-not-allowed',
 	variants: {
 		size: {
 			small: 'size-6',
@@ -81,7 +81,7 @@ const defaultHandle = cva({
 // The empty state rendered when the list has no rows (only when the `empty`
 // slot is provided). min-h keeps an empty grouped list a hittable drop area.
 const defaultEmpty = cva({
-	base: 'text-foreground-muted border-background-muted flex min-h-12 w-full items-center justify-center rounded-xl border border-dashed px-3 py-2 text-sm'
+	base: 'text-neutral/60 border-neutral-muted flex min-h-12 w-full items-center justify-center rounded-xl border border-dashed px-3 py-2 text-sm'
 });
 
 export const sortableListTheme = {

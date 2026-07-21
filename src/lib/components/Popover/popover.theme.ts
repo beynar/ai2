@@ -9,7 +9,7 @@ const defaultPopoverContainer = cva({
 		mode: {
 			floating: 'top-0 left-0 h-fit w-fit',
 			mobileSheet:
-				'inset-0 flex h-dvh w-dvw max-w-none items-end justify-center overflow-hidden bg-background/40 backdrop-blur-xs'
+				'inset-0 flex h-dvh w-dvw max-w-none items-end justify-center overflow-hidden bg-neutral/40 backdrop-blur-xs'
 		}
 	},
 	defaultVariants: {
@@ -19,7 +19,7 @@ const defaultPopoverContainer = cva({
 
 // The visible, animated panel.
 const defaultPopover = cva({
-	base: 'ring-foreground/10 bg-background isolate h-fit w-fit rounded-lg text-sm shadow-md ring-1',
+	base: 'ring-neutral/10 bg-surface-floating text-neutral isolate h-fit w-fit rounded-lg text-sm shadow-md ring-1',
 	variants: {
 		size: {
 			small: 'max-w-3xs w-full p-1',

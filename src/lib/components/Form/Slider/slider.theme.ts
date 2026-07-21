@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultInputContainer = cva({
-	base: 'w-full rounded text-foreground-light transition-all flex items-center gap-3',
+	base: 'w-full rounded text-neutral transition-all flex items-center gap-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -98,7 +98,7 @@ const defaultControl = cva({
 });
 
 const defaultTrack = cva({
-	base: 'relative touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+	base: 'relative touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
 	variants: {
 		orientation: {
 			horizontal: 'w-full min-w-40',
@@ -116,8 +116,7 @@ const defaultTrack = cva({
 			success: 'text-success',
 			warning: 'text-warning',
 			info: 'text-info',
-			foreground: 'text-foreground',
-			background: 'text-background-contrast'
+			neutral: 'text-neutral'
 		},
 		disabled: {
 			true: 'cursor-not-allowed opacity-60',
@@ -126,7 +125,7 @@ const defaultTrack = cva({
 		variant: {
 			default: '',
 			thick: '',
-			contained: 'border-background-muted bg-background-light rounded-lg border'
+			contained: 'border-neutral-muted bg-surface-raised rounded-lg border'
 		}
 	},
 	defaultVariants: {
@@ -155,7 +154,7 @@ const defaultTrack = cva({
 });
 
 const defaultTrackBackground = cva({
-	base: 'bg-foreground/15 absolute rounded-full',
+	base: 'bg-neutral/15 absolute rounded-full',
 	variants: {
 		orientation: {
 			horizontal: '',
@@ -164,7 +163,7 @@ const defaultTrackBackground = cva({
 		variant: {
 			default: '',
 			thick: 'inset-0',
-			contained: 'bg-background-light inset-0 rounded-[inherit]'
+			contained: 'bg-surface-raised inset-0 rounded-[inherit]'
 		}
 	},
 	defaultVariants: {
@@ -270,14 +269,13 @@ const defaultThumb = cva({
 			success: '',
 			warning: '',
 			info: '',
-			foreground: '',
-			background: ''
+			neutral: ''
 		},
 		variant: {
 			default: '',
 			thick: '',
 			contained:
-				'peer-hover/thumb:[&>[data-slider-thumb-visual]]:scale-100 peer-hover/thumb:[&>[data-slider-thumb-visual]]:bg-foreground/80'
+				'peer-hover/thumb:[&>[data-slider-thumb-visual]]:scale-100 peer-hover/thumb:[&>[data-slider-thumb-visual]]:bg-neutral/80'
 		}
 	},
 	defaultVariants: {
@@ -320,7 +318,7 @@ const defaultThumbHitbox = cva({
 });
 
 const defaultThumbVisual = cva({
-	base: 'pointer-events-none rounded-full border-2 border-background bg-current shadow-sm ring-offset-background transition-[box-shadow,transform] group-focus-visible:ring-2 group-focus-visible:ring-current group-focus-visible:ring-offset-2',
+	base: 'pointer-events-none rounded-full border-2 border-surface bg-current shadow-sm ring-offset-surface transition-[box-shadow,transform] group-focus-visible:ring-2 group-focus-visible:ring-current group-focus-visible:ring-offset-2',
 	variants: {
 		orientation: {
 			horizontal: '',
@@ -338,8 +336,7 @@ const defaultThumbVisual = cva({
 			success: '',
 			warning: '',
 			info: '',
-			foreground: '',
-			background: ''
+			neutral: ''
 		},
 		variant: {
 			default: '',
@@ -361,8 +358,7 @@ const defaultThumbVisual = cva({
 		{ variant: 'thick', color: 'success', class: 'bg-success-contrast' },
 		{ variant: 'thick', color: 'warning', class: 'bg-warning-contrast' },
 		{ variant: 'thick', color: 'info', class: 'bg-info-contrast' },
-		{ variant: 'thick', color: 'foreground', class: 'bg-foreground-contrast' },
-		{ variant: 'thick', color: 'background', class: 'bg-background' },
+		{ variant: 'thick', color: 'neutral', class: 'bg-neutral-contrast' },
 		{ orientation: 'horizontal', variant: 'thick', size: 'small', class: 'h-3 w-5' },
 		{ orientation: 'horizontal', variant: 'thick', size: 'normal', class: 'h-4 w-7' },
 		{ orientation: 'horizontal', variant: 'thick', size: 'large', class: 'h-5 w-9' },
@@ -372,7 +368,7 @@ const defaultThumbVisual = cva({
 		{
 			variant: 'contained',
 			class:
-				'bg-foreground/45 scale-75 border-0 shadow-none transition-[background-color,transform] duration-150 ease-out group-focus-visible:scale-100 group-focus-visible:bg-foreground/80'
+				'bg-neutral/45 scale-75 border-0 shadow-none transition-[background-color,transform] duration-150 ease-out group-focus-visible:scale-100 group-focus-visible:bg-neutral/80'
 		},
 		{ orientation: 'horizontal', variant: 'contained', size: 'small', class: 'h-5 w-1' },
 		{ orientation: 'horizontal', variant: 'contained', size: 'normal', class: 'h-7 w-1.5' },
@@ -456,7 +452,7 @@ const defaultValueLabels = cva({
 });
 
 const defaultValueLabel = cva({
-	base: 'border-background-muted bg-background text-foreground inline-flex shrink-0 items-center justify-center rounded-full border font-medium leading-none tabular-nums',
+	base: 'border-neutral-muted bg-surface text-neutral inline-flex shrink-0 items-center justify-center rounded-full border font-medium leading-none tabular-nums',
 	variants: {
 		orientation: {
 			horizontal: '',
@@ -501,7 +497,7 @@ const defaultValueLabel = cva({
 });
 
 const defaultContainedLabel = cva({
-	base: 'text-foreground-muted pointer-events-none absolute top-0 left-0 z-30 flex max-w-[55%] min-w-0 items-center truncate font-medium',
+	base: 'text-neutral/60 pointer-events-none absolute top-0 left-0 z-30 flex max-w-[55%] min-w-0 items-center truncate font-medium',
 	variants: {
 		size: {
 			small: 'h-8 pl-3 text-xs',
@@ -509,11 +505,11 @@ const defaultContainedLabel = cva({
 			large: 'h-12 pl-5 text-base'
 		},
 		required: {
-			true: "after:text-danger after:ml-1 after:content-['*']",
+			true: "after:text-danger-readable after:ml-1 after:content-['*']",
 			false: ''
 		},
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		}
 	},
@@ -525,7 +521,7 @@ const defaultContainedLabel = cva({
 });
 
 const defaultContainedTicks = cva({
-	base: 'text-foreground pointer-events-none absolute inset-0 z-0',
+	base: 'text-neutral pointer-events-none absolute inset-0 z-0',
 	variants: {
 		orientation: {
 			horizontal: '',
@@ -597,11 +593,11 @@ const defaultMark = cva({
 });
 
 const defaultMarkDot = cva({
-	base: 'bg-background-muted size-1.5 shrink-0 rounded-full'
+	base: 'bg-neutral-muted size-1.5 shrink-0 rounded-full'
 });
 
 const defaultMarkLabel = cva({
-	base: 'text-foreground-muted leading-none whitespace-nowrap tabular-nums'
+	base: 'text-neutral/60 leading-none whitespace-nowrap tabular-nums'
 });
 
 export const sliderTheme = {

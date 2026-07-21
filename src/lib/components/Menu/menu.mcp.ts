@@ -102,7 +102,7 @@ The Menu accepts a discriminated union of four item types:
 {
 	type: 'separator';
 	// All SeparatorProps are available
-	color?: Colors | 'background';
+	color?: Colors | 'neutral';
 	size?: number;
 	decorative?: boolean;
 	children?: Snippet; // Optional label
@@ -600,9 +600,9 @@ const customTheme: MenuThemeProps = {
     separator: {
       root: {
         base: 'my-3',
-        color: {
-          background: 'before:border-gray-200 after:border-gray-200'
-        }
+		color: {
+			neutral: 'before:border-gray-200 after:border-gray-200'
+		}
       }
     }
   }}

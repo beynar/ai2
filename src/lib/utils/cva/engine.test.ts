@@ -17,7 +17,7 @@ describe('cx', () => {
 	});
 
 	it('preserves custom design-system classes and opacity modifiers', () => {
-		expect(cx('bg-background-dark', 'bg-background-light')).toBe('bg-background-light');
+		expect(cx('bg-surface-canvas', 'bg-surface-raised')).toBe('bg-surface-raised');
 		expect(cx('bg-color/90', 'bg-color/80')).toBe('bg-color/80');
 	});
 });
@@ -66,13 +66,13 @@ describe('cva', () => {
 		const button = cva({
 			base: 'btn',
 			variants: {
-				color: { background: 'bg-background', primary: 'bg-primary' },
+				color: { neutral: 'bg-surface', primary: 'bg-primary' },
 				variant: { solid: 'font-bold', outline: 'border' }
 			},
-			compoundVariants: [{ color: 'background', variant: 'outline', class: 'border-background' }]
+			compoundVariants: [{ color: 'neutral', variant: 'outline', class: 'border-surface' }]
 		});
-		expect(button({ color: 'background', variant: 'outline' })).toBe(
-			'btn bg-background border border-background'
+		expect(button({ color: 'neutral', variant: 'outline' })).toBe(
+			'btn bg-surface border border-surface'
 		);
 		expect(button({ color: 'primary', variant: 'outline' })).toBe('btn bg-primary border');
 	});
@@ -81,11 +81,11 @@ describe('cva', () => {
 		const button = cva({
 			base: 'btn',
 			variants: {
-				color: { background: 'bg-background', primary: 'bg-primary', danger: 'bg-danger' }
+				color: { neutral: 'bg-surface', primary: 'bg-primary', danger: 'bg-danger' }
 			},
-			compoundVariants: [{ color: ['background', 'danger'], class: 'ring-1' }]
+			compoundVariants: [{ color: ['neutral', 'danger'], class: 'ring-1' }]
 		});
-		expect(button({ color: 'background' })).toBe('btn bg-background ring-1');
+		expect(button({ color: 'neutral' })).toBe('btn bg-surface ring-1');
 		expect(button({ color: 'danger' })).toBe('btn bg-danger ring-1');
 		expect(button({ color: 'primary' })).toBe('btn bg-primary');
 	});
@@ -93,11 +93,11 @@ describe('cva', () => {
 	it('matches compoundVariants against defaultVariants when the prop is omitted', () => {
 		const button = cva({
 			base: 'btn',
-			variants: { color: { background: 'bg-background', primary: 'bg-primary' } },
-			defaultVariants: { color: 'background' },
-			compoundVariants: [{ color: 'background', class: 'ring-1' }]
+			variants: { color: { neutral: 'bg-surface', primary: 'bg-primary' } },
+			defaultVariants: { color: 'neutral' },
+			compoundVariants: [{ color: 'neutral', class: 'ring-1' }]
 		});
-		expect(button()).toBe('btn bg-background ring-1');
+		expect(button()).toBe('btn bg-surface ring-1');
 	});
 
 	it('appends the class prop last and lets it win tailwind conflicts', () => {

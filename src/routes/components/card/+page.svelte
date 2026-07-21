@@ -217,7 +217,7 @@
 				{/snippet}
 				{#snippet footer()}
 					<div class="flex w-full items-center justify-between">
-						<span class="text-foreground-muted text-sm">Next invoice: $87</span>
+						<span class="text-neutral/60 text-sm">Next invoice: $87</span>
 						<Button size="small">Manage plan</Button>
 					</div>
 				{/snippet}

@@ -24,7 +24,7 @@ export type SerializedAIComposerTokenNode = SerializedTextNode & AIComposerToken
 
 function setTokenAttributes(dom: HTMLElement, data: AIComposerTokenData) {
 	dom.className =
-		'cn-ai-composer-token inline-flex max-w-full select-none items-center gap-1 rounded-md border bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground align-baseline';
+		'cn-ai-composer-token inline-flex max-w-full select-none items-center gap-1 rounded-md border border-neutral-muted bg-neutral-muted px-1.5 py-0.5 text-xs font-medium text-neutral-muted-readable align-baseline';
 	dom.setAttribute('data-ai-token', data.kind);
 	dom.setAttribute('data-ai-token-id', data.id);
 	dom.setAttribute('contenteditable', 'false');

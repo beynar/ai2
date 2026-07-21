@@ -26,7 +26,7 @@ const defaultTableOfContentsItem = cva({
 });
 
 const defaultTableOfContentsLink = cva({
-	base: 'text-foreground-muted hover:text-foreground block min-w-0 rounded-md py-[var(--table-of-contents-link-padding)] pe-2 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+	base: 'text-neutral/60 hover:text-neutral block min-w-0 rounded-md py-[var(--table-of-contents-link-padding)] pe-2 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-color/45 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
 	variants: {
 		size: {
 			small: 'text-xs/5',
@@ -49,7 +49,7 @@ const defaultTableOfContentsRail = cva({
 });
 
 const defaultTableOfContentsTrack = cva({
-	base: 'stroke-foreground/15'
+	base: 'stroke-neutral/15'
 });
 
 const defaultTableOfContentsActive = cva({
@@ -57,11 +57,11 @@ const defaultTableOfContentsActive = cva({
 });
 
 const defaultTableOfContentsMarker = cva({
-	base: 'stroke-background',
+	base: 'stroke-surface',
 	variants: {
 		highlighted: {
 			true: 'text-color-readable fill-current',
-			false: 'fill-foreground/15'
+			false: 'fill-neutral/15'
 		}
 	},
 	defaultVariants: {

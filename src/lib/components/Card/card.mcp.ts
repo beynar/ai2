@@ -22,7 +22,7 @@ The Card component is a flexible container component used to display content in 
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'background')
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' (default: 'neutral')
   - Determines the color scheme of the card
 
 - **variant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'solid')
@@ -46,7 +46,7 @@ The Card component is a flexible container component used to display content in 
   - Disables interactions and applies opacity styling
 
 - **showBorders**: boolean (default: false)
-  - Shows subtle borders (background-muted, 1px) between sections (header/content, content/footer)
+  - Shows subtle borders (neutral-muted, 1px) between sections (header/content, content/footer)
 
 ### Interactive Props
 - **href**: string - Makes the card a link (renders as <a>)
@@ -320,7 +320,7 @@ Enable subtle borders between sections using the \`showBorders\` prop.
 - The \`solid\` variant includes a \`raised\` class for elevation effect
 - Header uses CSS Grid with container queries (@container) for responsive layout
 - Action slot is automatically positioned top-right when present (via \`hasAction\` variant)
-- Borders are optional and can be enabled with \`showBorders={true}\` (subtle background-muted, 1px)
+- Borders are optional and can be enabled with \`showBorders={true}\` (subtle neutral-muted, 1px)
 - All slots are optional - the card adapts to missing sections
 - \`children\` slot is rendered inside the content section by default
 - Custom \`header\` or \`content\` slots override the default structure
@@ -354,10 +354,10 @@ const customTheme: CardThemeProps = {
       normal: 'py-4 gap-4',
       large: 'py-6 gap-6'
     },
-    color: {
-      primary: 'bg-primary text-primary-contrast',
-      background: 'bg-background text-color-contrast'
-    },
+		color: {
+			primary: 'bg-primary text-primary-contrast',
+			neutral: 'bg-neutral text-neutral-contrast'
+		},
     variant: {
       solid: 'bg-color border-color shadow-sm',
       outline: 'bg-transparent border-color'
@@ -391,7 +391,7 @@ const customTheme: CardThemeProps = {
 - Variants:
   - size: 'small' | 'normal' | 'large' - Typography scale
   - density: 'small' | 'normal' | 'large' - Padding and gap spacing
-  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' | 'ghost' - Visual style variant
   - clickable: boolean - Internal; set automatically when href/onClick is present (hover, press, focus ring)
   - disabled: boolean - Disabled state styling

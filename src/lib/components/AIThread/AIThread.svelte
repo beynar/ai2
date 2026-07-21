@@ -1,6 +1,6 @@
 <script lang="ts" generics="TMessage extends AIThreadItem = AIThreadItem">
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
-	import { onDestroy, tick } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { get } from 'svelte/store';
 	import Alert from '../Alert/Alert.svelte';
@@ -20,6 +20,7 @@
 	import type {
 		AIThreadAskUserQuestion,
 		AIThreadAskUserQuestionState,
+		AIThreadDensity,
 		AIThreadItem,
 		AIThreadProps,
 		AIThreadScrollBehavior
@@ -33,6 +34,14 @@
 	type EndStateVirtualizer = {
 		isAtEnd: (threshold?: number) => boolean;
 	};
+	const DENSITY_PADDING = { small: 8, normal: 16, large: 24 } satisfies Record<
+		AIThreadDensity,
+		number
+	>;
+	const DENSITY_ESTIMATE_SIZE = { small: 80, normal: 96, large: 120 } satisfies Record<
+		AIThreadDensity,
+		number
+	>;
 
 	let {
 		ref = $bindable(),
@@ -40,13 +49,16 @@
 		getMessageKey,
 		liveText,
 		isStreaming,
+		density = 'normal',
+		messageSize = 'normal',
+		messageVariant = 'bubble',
 		followOutput = true,
 		bottomThreshold = 80,
-		estimateSize = 96,
+		estimateSize,
 		overscan = 4,
-		padding = 16,
-		paddingStart = padding,
-		paddingEnd = padding,
+		padding,
+		paddingStart,
+		paddingEnd,
 		scrollBehavior = 'smooth',
 		showScrollButton = true,
 		scrollButtonPosition = 'right',
@@ -117,6 +129,12 @@
 	let prependScrollTarget: 'start' | 'end' | undefined;
 	let initialEndFrame: number | undefined;
 	let initialEndSchedule = 0;
+	const resolvedEstimateSize = $derived(
+		Math.max(1, estimateSize ?? DENSITY_ESTIMATE_SIZE[density])
+	);
+	const resolvedPadding = $derived(Math.max(0, padding ?? DENSITY_PADDING[density]));
+	const resolvedPaddingStart = $derived(Math.max(0, paddingStart ?? resolvedPadding));
+	const resolvedPaddingEnd = $derived(Math.max(0, paddingEnd ?? resolvedPadding));
 
 	const resolvedMessages = $derived(messages ?? conversation?.messages ?? []);
 	const resolvedLiveText = $derived(liveText ?? conversation?.liveText);
@@ -161,20 +179,24 @@
 			renderItems.length > 0
 	);
 
-	const virtualizerStore = createVirtualizer<HTMLDivElement, HTMLElement>({
-		count: initialThreadCount(),
-		getScrollElement: () => viewport ?? null,
-		estimateSize: () => 96,
-		overscan: 4,
-		initialRect: { width: 1, height: 96 },
-		getItemKey: renderItemKey,
-		scrollToFn: scrollController.scrollToFn,
-		anchorTo: 'end',
-		followOnAppend: followOnAppendBehavior(),
-		scrollEndThreshold: 80,
-		initialOffset: initialThreadOffset,
-		onChange: handleVirtualizerChange
-	});
+	const virtualizerStore = createVirtualizer<HTMLDivElement, HTMLElement>(
+		untrack(() => ({
+			count: initialThreadCount(),
+			getScrollElement: () => viewport ?? null,
+			estimateSize: () => resolvedEstimateSize,
+			overscan: Math.max(0, overscan),
+			paddingStart: resolvedPaddingStart,
+			paddingEnd: resolvedPaddingEnd,
+			initialRect: { width: 1, height: resolvedEstimateSize },
+			getItemKey: renderItemKey,
+			scrollToFn: scrollController.scrollToFn,
+			anchorTo: 'end',
+			followOnAppend: followOnAppendBehavior(),
+			scrollEndThreshold: Math.max(0, bottomThreshold),
+			initialOffset: initialThreadOffset,
+			onChange: handleVirtualizerChange
+		}))
+	);
 
 	const virtualItems = $derived($virtualizerStore.getVirtualItems());
 	const totalSize = $derived($virtualizerStore.getTotalSize());
@@ -188,7 +210,7 @@
 			scrollOffset: effectiveScrollOffset,
 			viewportSize: viewportHeight,
 			isPinnedToBottom: isPinned || isSettlingInitialEnd,
-			estimateSize: Math.max(1, estimateSize),
+			estimateSize: resolvedEstimateSize,
 			getItemOffset: (index) => virtualizer.getOffsetForIndex(index, 'start')?.[0],
 			getItemSize: (index) => virtualizer.measurementsCache[index]?.size,
 			scrollToIndex(index, behavior) {
@@ -199,6 +221,9 @@
 			}
 		});
 	});
+	const shouldRenderToc = $derived(
+		showToc && tocState.entries.length > 1 && viewportHeight > 0 && totalSize > viewportHeight + 1
+	);
 
 	$effect(() => {
 		questionPublisher.sync(conversation, detectedQuestion, activeAskUserQuestion !== undefined);
@@ -240,10 +265,10 @@
 		get(virtualizerStore).setOptions({
 			count,
 			getScrollElement: () => currentViewport ?? null,
-			estimateSize: () => Math.max(1, estimateSize),
+			estimateSize: () => resolvedEstimateSize,
 			overscan: Math.max(0, overscan),
-			paddingStart: Math.max(0, paddingStart),
-			paddingEnd: Math.max(0, paddingEnd),
+			paddingStart: resolvedPaddingStart,
+			paddingEnd: resolvedPaddingEnd,
 			getItemKey: renderItemKey,
 			scrollToFn: scrollController.scrollToFn,
 			anchorTo: 'end',
@@ -324,9 +349,7 @@
 	function initialThreadOffset(): number {
 		return Math.max(
 			0,
-			Math.max(0, paddingStart) +
-				Math.max(0, paddingEnd) +
-				renderItems.length * Math.max(1, estimateSize)
+			resolvedPaddingStart + resolvedPaddingEnd + renderItems.length * resolvedEstimateSize
 		);
 	}
 
@@ -467,6 +490,7 @@
 <div
 	bind:this={ref}
 	data-slot="ai-thread"
+	data-density={density}
 	{role}
 	aria-busy={resolvedStreaming}
 	class={classes.root({ className })}
@@ -486,7 +510,7 @@
 			bind:this={viewport}
 			data-slot="ai-thread-viewport"
 			class={classes.viewport({
-				tocSide: showToc && !toc && tocState.entries.length > 0 ? tocSide : undefined
+				tocSide: shouldRenderToc && !toc ? tocSide : undefined
 			})}
 			tabindex="0"
 			aria-label={viewportLabel}
@@ -498,6 +522,9 @@
 				{totalSize}
 				{measureItem}
 				{conversation}
+				{density}
+				{messageSize}
+				{messageVariant}
 				suggestions={resolvedSuggestions}
 				onSuggestionClick={handleSuggestionClick}
 				{empty}
@@ -528,7 +555,7 @@
 			/>
 		</div>
 
-		{#if showToc && tocState.entries.length > 0}
+		{#if shouldRenderToc}
 			{#if toc}
 				<Slot render={toc} payload={tocState} />
 			{:else}

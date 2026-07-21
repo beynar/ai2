@@ -31,7 +31,7 @@
 	openOnClick
 	closeOnClickOutside
 	closeOnEscape
-	class="z-50 w-72 rounded-md border border-background-muted bg-background p-3 text-sm text-foreground shadow-md outline-none"
+	class="z-50 w-72 rounded-md border border-neutral-muted bg-surface-floating p-3 text-sm text-neutral shadow-md outline-none"
 >
 	{#snippet trigger(popover)}
 		{@render children(popover.reference)}
@@ -47,7 +47,7 @@
 				{/if}
 			</p>
 			{#if args.marker.description}
-				<p class="text-foreground-muted">{args.marker.description}</p>
+				<p class="text-neutral/60">{args.marker.description}</p>
 			{/if}
 		</div>
 	{:else if typeof content === 'string'}

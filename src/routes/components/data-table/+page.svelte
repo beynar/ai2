@@ -53,8 +53,8 @@
 	]}
 >
 	<section class="grid gap-3">
-		<h2 class="text-foreground text-xl font-semibold">Table or DataTable?</h2>
-		<p class="text-foreground-muted max-w-3xl text-sm leading-6">
+		<h2 class="text-neutral text-xl font-semibold">Table or DataTable?</h2>
+		<p class="text-neutral/60 max-w-3xl text-sm leading-6">
 			Use <code>Table</code> for static tabular content. Use <code>DataTable</code> when rows need
 			stable identity, processing state, virtualization, or interactive columns. DataTable requires
 			<code>getRowId</code> and fills a parent with a definite height by default; pass

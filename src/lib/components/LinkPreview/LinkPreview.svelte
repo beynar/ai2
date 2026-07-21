@@ -40,7 +40,7 @@
 		class: className,
 		cardClass,
 		popoverClass,
-		cardColor = 'background',
+		cardColor = 'neutral',
 		cardVariant = 'solid',
 		showBorders = false,
 		onOpen,

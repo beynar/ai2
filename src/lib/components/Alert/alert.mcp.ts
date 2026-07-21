@@ -19,7 +19,7 @@ The Alert component displays important messages and notifications to users. It s
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'background')
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' (default: 'neutral')
   - Determines the color scheme of the alert
   - danger: For error messages
   - success: For success messages
@@ -243,7 +243,7 @@ The grid layout:
 
 ### Alert without Icon
 \`\`\`svelte
-<Alert color="background" variant="soft">
+<Alert color="neutral" variant="soft">
 	{#snippet title()}
 		No Icon Alert
 	{/snippet}
@@ -364,7 +364,7 @@ const customTheme: AlertThemeProps = {
 - base: Base classes applied to all alerts
 - Variants:
   - hasIcon: boolean - Grid layout adjustment when icon is present
-  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' - Visual style variant
   - size: 'small' | 'normal' | 'large' - Controls padding and text size
   - disabled: boolean - Disabled state styling

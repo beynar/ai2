@@ -50,7 +50,7 @@
 			base: 'mt-1 ml-0 justify-center'
 		},
 		valueLabel: {
-			base: 'min-w-14 border-background-muted bg-background text-center text-foreground'
+			base: 'min-w-14 border-neutral-muted bg-surface text-center text-neutral'
 		}
 	});
 </script>

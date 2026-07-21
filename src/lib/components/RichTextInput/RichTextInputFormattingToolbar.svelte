@@ -251,7 +251,7 @@
 		type="button"
 		label="Dismiss formatting toolbar"
 		prefix={xIcon}
-		color={color ?? 'foreground'}
+		color={color ?? 'neutral'}
 		variant={variant ?? 'ghost'}
 		{size}
 		{disabled}
@@ -283,7 +283,7 @@
 		bind:items={menuItems}
 		ariaLabel="Rich text formatting"
 		{size}
-		color="foreground"
+		color="neutral"
 		variant="ghost"
 		theme={menuTheme}
 		position="top"
@@ -301,7 +301,7 @@
 		bind:items={menuItems}
 		ariaLabel="Rich text formatting"
 		{size}
-		color="foreground"
+		color="neutral"
 		variant="ghost"
 		theme={menuTheme}
 		{@attach preserveSelection}

@@ -37,7 +37,7 @@ Most components share these prop patterns:
 
 ### Colors
 
-`color`: `'primary'` | `'secondary'` | `'success'` | `'warning'` | `'danger'` | `'info'` | `'background'` | `'foreground'`
+`color`: `'primary'` | `'secondary'` | `'success'` | `'warning'` | `'danger'` | `'info'` | `'neutral'`
 
 ### Sizes
 
@@ -83,8 +83,8 @@ Three layers: Tailwind plugin (colors/tokens), `<Theme>` component (wraps app), 
 	success: #22c55e;
 	warning: #f59e0b;
 	info: #3b82f6;
-	background: #fafafa;
-	foreground: #121212;
+	surface: #fafafa;
+	neutral: #121212;
 	radius: normal;
 	spacing: large;
 	scale: majorThird;
@@ -104,28 +104,28 @@ Dark theme via `prefersDark: true` or named theme with `colorscheme: dark`. See 
 
 ## Color Tokens
 
-Each base color generates variants: `{color}-light` (+15%), `{color}-lighter` (+25%), `{color}-dark` (-15%), `{color}-muted` (mixed with background), `{color}-contrast` (auto contrast). All overridable in plugin config.
+Each semantic color (`primary`, `secondary`, `danger`, `success`, `warning`, `info`, `neutral`) generates variants: `{color}-light` (+15%), `{color}-lighter` (+25%), `{color}-dark` (-15%), `{color}-muted` (mixed with the base surface), `{color}-contrast` (auto contrast). All are overridable in plugin config.
 
-Usage: `bg-primary`, `text-primary-contrast`, `border-danger-dark`, `bg-background-muted`.
+Usage: `bg-primary`, `text-primary-contrast`, `border-danger-dark`, `bg-neutral-muted`.
 
-Resting elevation uses background grades. Transient hover, virtual focus, and press use the global `state-layer` utility, which composites foreground-derived overlays without changing the resting color. Use focus rings for focus and `*-muted` or solid colors for persistent selected, checked, open, or semantic states.
+Opaque surfaces use `surface-recessed` for inset wells and grouped-control tracks, followed by the elevation ladder `surface-canvas`, `surface`, `surface-raised`, and `surface-floating`. Transient hover, virtual focus, and press use the global `state-layer` utility, which composites `currentColor` without changing the resting surface. Use focus rings for focus and `*-muted` or solid colors for persistent selected, checked, open, or semantic states.
 
 ```svelte
 <button class="state-layer bg-primary text-primary-contrast">Save</button>
 ```
 
-`overlay-hover` and `overlay-pressed` can be overridden per theme; their defaults are the generated foreground at 5% and 10% opacity.
+`state-hover-opacity` and `state-pressed-opacity` can be overridden per theme. Their light-theme defaults are 0.05 and 0.10; their dark-theme defaults are 0.16 and 0.32.
 
 ## Design Tokens
 
-| Token                | Values                                                                                                 | Default           |
-| -------------------- | ------------------------------------------------------------------------------------------------------ | ----------------- |
-| `radius`             | `none` \| `subtile` \| `small` \| `normal` \| `large` \| `round` \| number                             | `normal`          |
-| `spacing`            | `small` \| `normal` \| `large` \| number                                                               | `normal`          |
-| `scale`              | `minorSecond` \| `majorSecond` \| `minorThird` \| `majorThird` \| `perfectFourth` \| `augmentedFourth` | `majorThird`      |
-| `raised-with-border` | boolean                                                                                                | `false`           |
-| `overlay-hover`      | CSS color                                                                                              | foreground at 5%  |
-| `overlay-pressed`    | CSS color                                                                                              | foreground at 10% |
+| Token                   | Values                                                                                                 | Default                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------- |
+| `radius`                | `none` \| `subtile` \| `small` \| `normal` \| `large` \| `round` \| number                             | `normal`                   |
+| `spacing`               | `small` \| `normal` \| `large` \| number                                                               | `normal`                   |
+| `scale`                 | `minorSecond` \| `majorSecond` \| `minorThird` \| `majorThird` \| `perfectFourth` \| `augmentedFourth` | `majorThird`               |
+| `raised-with-border`    | boolean                                                                                                | `false`                    |
+| `state-hover-opacity`   | number                                                                                                 | `0.05` light / `0.16` dark |
+| `state-pressed-opacity` | number                                                                                                 | `0.10` light / `0.32` dark |
 
 ## Component Theme Customization
 

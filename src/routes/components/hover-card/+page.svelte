@@ -19,7 +19,7 @@
 		<Avatar user={{ name: 'Svelai' }} />
 		<div class="grid gap-1">
 			<p class="text-sm font-semibold">@svelai</p>
-			<p class="text-foreground-muted text-sm">
+			<p class="text-neutral/60 text-sm">
 				Configuration-first Svelte components with theme-aware primitives.
 			</p>
 		</div>
@@ -53,7 +53,7 @@
 			title="@svelai"
 			description="Configuration-first Svelte components."
 		>
-			<p class="text-foreground-muted text-sm">
+			<p class="text-neutral/60 text-sm">
 				Theme-aware primitives for building application interfaces.
 			</p>
 		</HoverCard>
@@ -173,14 +173,14 @@
 			>
 				<div class="grid grid-cols-3 gap-2">
 					{#each stats as stat (stat.label)}
-						<div class="bg-background-muted rounded-md p-2 text-center">
-							<div class="text-foreground text-sm font-semibold">{stat.value}</div>
-							<div class="text-foreground-muted text-xs">{stat.label}</div>
+						<div class="bg-neutral-muted rounded-md p-2 text-center">
+							<div class="text-neutral text-sm font-semibold">{stat.value}</div>
+							<div class="text-neutral/60 text-xs">{stat.label}</div>
 						</div>
 					{/each}
 				</div>
 				{#snippet footer()}
-					<span class="text-foreground-muted text-xs">Updated just now</span>
+					<span class="text-neutral/60 text-xs">Updated just now</span>
 				{/snippet}
 			</HoverCard>
 		</ComponentCard>
@@ -203,7 +203,7 @@
 				{#snippet trigger(hoverCard)}
 					<Button variant={hoverCard.isOpen ? 'solid' : 'outline'}>Preview</Button>
 				{/snippet}
-				<p class="text-foreground-muted text-sm">
+				<p class="text-neutral/60 text-sm">
 					The trigger snippet receives the hover card state.
 				</p>
 			</HoverCard>

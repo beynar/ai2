@@ -23,6 +23,6 @@
 </script>
 
 <div class="flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2">
-	<span class="text-foreground-muted text-xs font-medium">{label}</span>
+	<span class="text-neutral/60 text-xs font-medium">{label}</span>
 	<SegmentedControl {items} bind:value size="small" variant="pill" ariaLabel={label} />
 </div>

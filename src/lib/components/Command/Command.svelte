@@ -88,7 +88,11 @@
 	// visually (it still carries the accessible title) and the close button (Escape still closes,
 	// since `closable` also gates Escape), and match the palette's radius.
 	const dialogTheme = {
-		content: { base: 'rounded-xl p-0 overflow-hidden' },
+		align: { type: { modal: 'items-start pt-[15vh]' } },
+		content: {
+			base: 'rounded-xl p-0 overflow-hidden',
+			type: { drawerBottom: 'h-[min(70dvh,23rem)] [&>div]:h-full' }
+		},
 		header: { base: 'sr-only' },
 		closeButton: { base: 'hidden' }
 	} satisfies DialogThemeProps;

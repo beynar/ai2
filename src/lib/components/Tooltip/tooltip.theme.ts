@@ -2,25 +2,32 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 export const defaultTooltip = cva({
-	// Visual only — positioning (fixed, z-index) lives on the Popover's wrapper. A `fixed` here
-	// would take the panel out of flow and collapse the wrapper floating-ui measures.
-	base: 'w-fit rounded raised isolate h-fit',
+	base: 'box-border w-fit max-w-fit min-w-min inline-flex items-center justify-center whitespace-nowrap rounded-full border border-transparent bg-clip-padding font-medium',
 	variants: {
 		size: {
-			small: 'text-xs px-1 py-0.5',
-			normal: 'text-sm px-1 py-0.5',
-			large: 'text-base px-1.5 py-1'
+			small: 'h-5 px-2 gap-1 text-xs',
+			normal: 'h-6 px-2.5 gap-1.5 text-xs',
+			large: 'h-7 px-3 gap-1.5 text-sm'
 		},
 		color: {
-			background: 'bg-background-light text-foreground',
 			primary: 'bg-primary text-primary-contrast',
 			secondary: 'bg-secondary text-secondary-contrast',
-			foreground: 'bg-foreground text-foreground-contrast',
+			neutral: 'bg-surface-floating text-neutral',
 			success: 'bg-success text-success-contrast',
 			warning: 'bg-warning text-warning-contrast',
 			info: 'bg-info text-info-contrast',
 			danger: 'bg-danger text-danger-contrast'
+		},
+		variant: {
+			solid: 'bg-color text-color-contrast',
+			outline: 'border-color bg-color/0 text-color-readable',
+			soft: 'bg-color-muted text-color-muted-readable'
 		}
+	},
+	defaultVariants: {
+		color: 'neutral',
+		variant: 'solid',
+		size: 'normal'
 	}
 });
 

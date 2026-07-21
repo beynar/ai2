@@ -10,7 +10,7 @@
 		orientation = 'horizontal',
 		align = 'center',
 		line = true,
-		color = 'background',
+		color = 'neutral',
 		size = 1,
 		theme,
 		...attachments

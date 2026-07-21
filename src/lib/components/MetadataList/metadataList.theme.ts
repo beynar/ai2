@@ -34,7 +34,7 @@ const defaultHeader = cva({
 });
 
 const defaultTitle = cva({
-	base: 'font-medium text-foreground',
+	base: 'font-medium text-neutral',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -48,7 +48,7 @@ const defaultTitle = cva({
 });
 
 const defaultDescription = cva({
-	base: 'text-foreground-muted',
+	base: 'text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -90,7 +90,7 @@ const defaultItem = cva({
 });
 
 const defaultKey = cva({
-	base: 'flex items-center w-[35%] min-w-24 shrink-0 text-foreground-muted',
+	base: 'flex items-center w-[35%] min-w-24 shrink-0 text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -124,7 +124,7 @@ const defaultKeyIcon = cva({
 });
 
 const defaultValue = cva({
-	base: 'flex-1 min-w-0 text-foreground',
+	base: 'flex-1 min-w-0 text-neutral',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -138,7 +138,7 @@ const defaultValue = cva({
 });
 
 const defaultLink = cva({
-	base: 'underline decoration-foreground-muted/40 underline-offset-2 hover:decoration-current transition-colors'
+	base: 'underline decoration-neutral-muted/40 underline-offset-2 hover:decoration-current transition-colors'
 });
 
 const defaultChips = cva({
@@ -156,7 +156,7 @@ const defaultChips = cva({
 });
 
 const defaultToggle = cva({
-	base: 'inline-flex items-center self-start cursor-pointer rounded text-foreground-muted outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50',
+	base: 'inline-flex items-center self-start cursor-pointer rounded text-neutral/60 outline-none transition-colors hover:text-neutral focus-visible:ring-2 focus-visible:ring-primary/50',
 	variants: {
 		size: {
 			small: 'text-xs',

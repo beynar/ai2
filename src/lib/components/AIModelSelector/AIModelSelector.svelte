@@ -296,7 +296,7 @@
 		<Button
 			type="button"
 			data-slot="ai-model-selector-trigger"
-			variant="outline"
+			variant="soft"
 			size="small"
 			{disabled}
 			aria-haspopup="menu"

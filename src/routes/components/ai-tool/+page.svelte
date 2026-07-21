@@ -152,7 +152,7 @@ ${'</' + 'script>'}
 <AITool tool={analysisTool}>
   {#snippet output({ tool })}
     <div class="flex items-center justify-between gap-4 p-3 text-sm">
-      <span class="text-foreground/60">Release score</span>
+      <span class="text-neutral/60">Release score</span>
       <strong>{String((tool.output as { score?: number }).score ?? 'n/a')}</strong>
     </div>
   {/snippet}
@@ -161,7 +161,7 @@ ${'</' + 'script>'}
 			<AITool tool={analysisTool} class="w-full max-w-2xl">
 				{#snippet output({ tool })}
 					<div class="flex items-center justify-between gap-4 p-3 text-sm">
-						<span class="text-foreground/60">Release score</span>
+						<span class="text-neutral/60">Release score</span>
 						<strong>{String((tool.output as { score?: number }).score ?? 'n/a')}</strong>
 					</div>
 				{/snippet}

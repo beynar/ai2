@@ -55,7 +55,7 @@
 	>
 		<div class="w-full max-w-md">
 			<TagGroup label="Category" bind:value={category} items={categoryItems} />
-			<p class="text-foreground-muted mt-4 text-sm">Selected: {category || 'none'}</p>
+			<p class="text-neutral/60 mt-4 text-sm">Selected: {category || 'none'}</p>
 		</div>
 	</ComponentCard>
 
@@ -76,14 +76,14 @@
 />`}
 		>
 			<div
-				class="bg-foreground text-foreground-contrast flex min-h-48 w-full items-center justify-center rounded border border-foreground/15 p-8"
+				class="bg-neutral text-neutral-contrast flex min-h-48 w-full items-center justify-center rounded border border-neutral/15 p-8"
 			>
 				<TagGroup
 					attrs={{ 'aria-label': 'Featured category' }}
 					bind:value={featured}
 					items={categoryItemsWithIcons}
-					color="foreground"
-					unselectedColor="background"
+					color="neutral"
+					unselectedColor="neutral"
 				/>
 			</div>
 		</ComponentCard>
@@ -101,7 +101,7 @@
 		>
 			<div class="w-full max-w-md">
 				<TagGroup multiple label="Interests" bind:value={interests} items={categoryItems} />
-				<p class="text-foreground-muted mt-4 text-sm">
+				<p class="text-neutral/60 mt-4 text-sm">
 					Selected: {interests.join(', ') || 'none'}
 				</p>
 			</div>

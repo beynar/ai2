@@ -16,7 +16,7 @@ const defaultCheckboxesInputItem = cva({
 	base: 'transition-all relative grid items-start min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
 	variants: {
 		mode: {
-			card: 'rounded bg-background-light raised py-2',
+			card: 'rounded bg-surface-raised raised py-2',
 			normal: 'py-1',
 			control: '!inline-grid !size-5 !min-h-0 !w-5 !grid-cols-1 !place-items-center !gap-0 !p-0'
 		},
@@ -33,7 +33,7 @@ const defaultCheckboxesInputItem = cva({
 		{
 			mode: 'card',
 			checked: true,
-			class: 'ring-2 ring-primary bg-primary-muted'
+			class: 'ring-2 ring-primary bg-primary-muted text-primary-muted-readable'
 		}
 	]
 });
@@ -43,7 +43,7 @@ const defaultCheckboxesInputItemLabel = cva({
 });
 
 const defaultCheckboxesInputItemTrack = cva({
-	base: 'size-5 origin-center content-[""] bg-background-light border border-background-muted rounded absolute left-2',
+	base: 'size-5 origin-center content-[""] bg-surface-raised border border-neutral-muted rounded absolute left-2',
 	variants: {
 		checked: {
 			true: '',
@@ -62,8 +62,8 @@ const defaultCheckboxesInputItemTrack = cva({
 });
 
 const defaultCheckboxesInputItemThumb = cva({
-	base: `size-5 origin-center radio bg-foreground rounded flex items-center justify-center transition-all content-[""] absolute left-2 scale-[85%] opacity-0 
-	stroke-background [&>svg]:fill-background p-1
+	base: `size-5 origin-center radio bg-neutral rounded flex items-center justify-center transition-all content-[""] absolute left-2 scale-[85%] opacity-0
+	stroke-primary-contrast [&>svg]:fill-primary-contrast p-1
 	`,
 	variants: {
 		checked: {
@@ -87,7 +87,25 @@ const defaultCheckboxesInputItemIcon = cva({
 });
 
 const defaultCheckboxesInputItemDescription = cva({
-	base: 'text-xs text-foreground-muted'
+	base: 'text-xs text-neutral/60',
+	variants: {
+		mode: {
+			card: '',
+			normal: '',
+			control: ''
+		},
+		checked: {
+			true: '',
+			false: ''
+		}
+	},
+	compoundVariants: [
+		{
+			mode: 'card',
+			checked: true,
+			class: 'text-primary-muted-readable/70'
+		}
+	]
 });
 
 const defaultCheckboxesInputContainer = cva({

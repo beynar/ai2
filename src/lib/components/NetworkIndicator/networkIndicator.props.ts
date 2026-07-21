@@ -12,7 +12,7 @@ export type NetworkIndicatorProps = WithAttachments<{
 	ref?: HTMLDivElement | null;
 	/**
 	 * The color scheme of the network indicator.
-	 * @default 'foreground'
+	 * @default 'neutral'
 	 */
 	color?: Colors;
 	/**

@@ -28,7 +28,7 @@
 <Button
 	type="button"
 	variant="ghost"
-	color="background"
+	color="neutral"
 	{size}
 	{disabled}
 	{label}

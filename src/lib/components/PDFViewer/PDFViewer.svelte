@@ -57,7 +57,7 @@
 		],
 		toolbarPosition = 'top',
 		size = 'normal',
-		color = 'foreground',
+		color = 'neutral',
 		onLoad,
 		onError,
 		onPageChange,

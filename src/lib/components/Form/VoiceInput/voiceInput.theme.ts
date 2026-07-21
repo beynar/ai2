@@ -25,7 +25,7 @@ const defaultRoot = cva({
 });
 
 const defaultInputContainer = cva({
-	base: 'relative ml-auto flex w-full min-w-0 items-center overflow-hidden rounded-lg border border-background-muted bg-background-light px-3 transition-[max-width,background-color,border-color,box-shadow] duration-300 ease-out motion-reduce:transition-none focus-within:border-color/60 focus-within:ring-2 focus-within:ring-color/25',
+	base: 'relative ml-auto flex w-full min-w-0 items-center overflow-hidden rounded-lg border border-neutral-muted bg-surface-raised px-3 transition-[max-width,background-color,border-color,box-shadow] duration-300 ease-out motion-reduce:transition-none focus-within:border-color/60 focus-within:ring-2 focus-within:ring-color/25',
 	variants: {
 		size: {
 			small: 'min-h-9 gap-1.5 py-1.5',
@@ -221,7 +221,7 @@ const defaultPlaybackAction = cva({
 			compact: '!m-0 !self-auto !rounded-full'
 		},
 		playing: {
-			true: 'bg-color/15 text-color-readable',
+			true: 'bg-color-muted text-color-muted-readable',
 			false: null
 		}
 	},
@@ -286,7 +286,7 @@ const defaultWaveformContainer = cva({
 });
 
 const defaultWaveform = cva({
-	base: 'block w-full min-w-0 text-foreground-muted transition-colors',
+	base: 'block w-full min-w-0 text-neutral/60 transition-colors',
 	variants: {
 		size: {
 			small: 'h-6',
@@ -314,7 +314,7 @@ const defaultWaveformInput = cva({
 });
 
 const defaultTimer = cva({
-	base: 'shrink-0 text-right font-medium tabular-nums text-foreground-muted',
+	base: 'shrink-0 text-right font-medium tabular-nums text-neutral/60',
 	variants: {
 		size: {
 			small: 'min-w-8 text-xs',
@@ -333,7 +333,7 @@ const defaultTimer = cva({
 });
 
 const defaultError = cva({
-	base: 'min-w-0 flex-1 truncate text-danger',
+	base: 'min-w-0 flex-1 truncate text-danger-readable',
 	variants: {
 		size: {
 			small: 'text-xs',

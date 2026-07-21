@@ -24,11 +24,11 @@ const defaultFormHeader = cva({
 });
 
 const defaultFormTitle = cva({
-	base: 'text-lg font-bold text-foreground'
+	base: 'text-lg font-bold text-neutral'
 });
 
 const defaultFormDescription = cva({
-	base: 'text-base text-foreground-muted'
+	base: 'text-base text-neutral/60'
 });
 
 export const formTheme = {

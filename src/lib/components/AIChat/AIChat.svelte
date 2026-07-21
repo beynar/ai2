@@ -37,6 +37,9 @@
 		showModelSelector,
 		showToc,
 		tocSide,
+		density,
+		messageSize,
+		messageVariant,
 		messageActions,
 		messageActionsVisibility,
 		messageCopyable,
@@ -170,6 +173,9 @@
 			{showModelSelector}
 			{showToc}
 			{tocSide}
+			{density}
+			{messageSize}
+			{messageVariant}
 			{messageActions}
 			{messageActionsVisibility}
 			{messageCopyable}

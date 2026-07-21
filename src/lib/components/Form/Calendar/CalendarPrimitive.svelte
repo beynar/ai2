@@ -244,7 +244,7 @@
 			bind:ref={viewTriggerElement}
 			size="normal"
 			variant="ghost"
-			color="foreground"
+			color="neutral"
 			class={classes.viewTrigger()}
 			{disabled}
 			label={`${activeView === 'picker' ? 'Show days for' : 'Choose month and year, currently'} ${calendar.displayedMonthLabel}`}

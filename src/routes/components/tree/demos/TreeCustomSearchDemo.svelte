@@ -57,11 +57,11 @@
 
 <div class="grid w-full max-w-2xl gap-3">
 	<div
-		class="flex flex-wrap items-center gap-2 rounded-lg border border-background-muted bg-background p-2"
+		class="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-muted bg-surface p-2"
 	>
 		<div class="relative min-w-56 flex-1">
 			<span
-				class="text-foreground-muted pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
+				class="text-neutral/60 pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
 			>
 				{@render magnifyingGlassIcon({ size: 16 })}
 			</span>
@@ -70,15 +70,15 @@
 				type="search"
 				aria-label="Search tree paths"
 				placeholder="Search paths..."
-				class="border-background-muted bg-background text-foreground placeholder:text-foreground-muted h-9 w-full rounded-md border pr-2 pl-8 text-sm outline-none focus:border-primary"
+				class="border-neutral-muted bg-surface text-neutral placeholder:text-neutral/60 h-9 w-full rounded-md border pr-2 pl-8 text-sm outline-none focus:border-primary"
 				oninput={(event) => setQuery(event.currentTarget.value)}
 			/>
 		</div>
-		<div class="text-foreground-muted min-w-20 text-right text-xs">{matchLabel}</div>
+		<div class="text-neutral/60 min-w-20 text-right text-xs">{matchLabel}</div>
 		<Button
 			size="small"
 			variant="outline"
-			color="foreground"
+			color="neutral"
 			label="Previous search match"
 			disabled={fileTree == null || query.length === 0}
 			onClick={() => fileTree?.focusPreviousSearchMatch()}
@@ -88,7 +88,7 @@
 		<Button
 			size="small"
 			variant="outline"
-			color="foreground"
+			color="neutral"
 			label="Next search match"
 			disabled={fileTree == null || query.length === 0}
 			onClick={() => fileTree?.focusNextSearchMatch()}

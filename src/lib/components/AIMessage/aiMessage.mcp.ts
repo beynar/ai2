@@ -14,6 +14,11 @@ links are the safe defaults; callers may narrow or extend those prefix lists thr
 options. File, Reference, Mention, Skill, and Command tokens are parsed inside prose, and
 caller-provided \`mdxComponents\` may replace their default renderers.
 
+\`variant\` accepts \`bubble\` or \`minimal\`. Bubble preserves the framed role surfaces. Minimal
+keeps user and system semantics visible with a neutral user surface while rendering assistant and
+tool content without a background container. \`size\` accepts \`small\`, \`normal\`, or \`large\`
+and scales typography, content padding, file previews, and the default action controls together.
+
 \`\`\`svelte
 <script>
   import { AIMessage } from 'svelai/ai-message';
@@ -23,6 +28,8 @@ caller-provided \`mdxComponents\` may replace their default renderers.
   from="assistant"
   content={'Review <File id="brief" label="launch-brief.md" /> before launch.'}
   files={[{ name: 'launch-brief.md', size: 18420, type: 'text/markdown' }]}
+  variant="minimal"
+  size="normal"
   actionsVisibility="always"
 />
 \`\`\`
@@ -38,8 +45,9 @@ Default edit and retry actions use the nearest \`AIConversation\`. A direct \`co
 and \`conversation={null}\` explicitly disables context lookup. Direct \`onCopy\`, \`onEdit\`, and
 \`onRetry\` handlers take precedence over conversation behavior.
 
-\`children\` replaces the body only and receives the resolved message, index, role, and content;
+\`children\` replaces the body only and receives the resolved message, index, role, content, size,
+and variant;
 the role layout, files, and action region remain owned by AIMessage. Native article attributes,
 attachments, bindable \`ref\`, \`class\`, and \`theme\` are forwarded. Theme parts are \`root\`,
-\`body\`, \`header\`, \`files\`, \`bubble\`, and \`actions\`.
+\`body\`, \`header\`, \`files\`, \`bubble\`, \`markdown\`, and \`actions\`.
 `;

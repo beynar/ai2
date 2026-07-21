@@ -47,7 +47,7 @@
 			<div class="w-full max-w-md">
 				<DateInput label="Date" bind:value={date} />
 				{#if date}
-					<p class="text-foreground-muted mt-2 text-xs">Value: {date.toLocaleDateString()}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Value: {date.toLocaleDateString()}</p>
 				{/if}
 			</div>
 		</ComponentCard>

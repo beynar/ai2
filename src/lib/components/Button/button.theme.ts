@@ -10,10 +10,9 @@ const defaultButton = cva({
 			large: 'h-9 px-4 gap-2 text-sm'
 		},
 		color: {
-			background: 'bg-background-dark text-color-contrast',
 			primary: 'bg-primary text-primary-contrast',
 			secondary: 'bg-secondary text-secondary-contrast',
-			foreground: 'bg-foreground text-foreground-contrast',
+			neutral: 'bg-neutral text-neutral-contrast',
 			danger: 'bg-danger text-danger-contrast',
 			success: 'bg-success text-success-contrast',
 			warning: 'bg-warning text-warning-contrast',
@@ -43,27 +42,11 @@ const defaultButton = cva({
 		}
 	},
 	defaultVariants: {
-		color: 'foreground',
+		color: 'neutral',
 		variant: 'solid',
 		size: 'normal'
 	},
-	compoundVariants: [
-		{
-			color: 'background',
-			variant: 'outline',
-			class: 'border-background-muted text-foreground'
-		},
-		{
-			color: 'background',
-			variant: 'soft',
-			class: 'bg-background-lighter text-color-contrast'
-		},
-		{
-			color: 'foreground',
-			variant: 'link',
-			class: 'text-foreground'
-		}
-	]
+	compoundVariants: []
 });
 
 const defaultButtonPrefix = cva({

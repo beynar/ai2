@@ -49,7 +49,7 @@
 	const statusColors: Record<string, string> = {
 		online: 'bg-success',
 		away: 'bg-warning',
-		offline: 'bg-foreground-muted'
+		offline: 'bg-neutral-muted'
 	};
 </script>
 

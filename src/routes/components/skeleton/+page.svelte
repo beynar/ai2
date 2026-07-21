@@ -1,7 +1,36 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import Skeleton from '$lib/components/Skeleton/Skeleton.svelte';
+
+	const controls = createComponentControls([
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'neutral',
+			options: ['neutral', 'primary', 'success', 'warning', 'danger']
+		},
+		{
+			name: 'shape',
+			type: 'segmented',
+			label: 'Shape',
+			value: 'line',
+			options: ['line', 'block', 'avatar']
+		}
+	]);
+
+	const skeletonClass = $derived.by(() => {
+		switch (controls.value.shape) {
+			case 'block':
+				return 'h-24 w-full max-w-xs';
+			case 'avatar':
+				return 'size-16 rounded-full';
+			default:
+				return 'h-4 w-full max-w-xs';
+		}
+	});
 </script>
 
 <DocPage
@@ -15,18 +44,22 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="A single line placeholder while content loads."
-		code={`<Skeleton class="h-4 w-full max-w-xs" />`}
+		code={`<Skeleton color="${controls.value.color}" class="${skeletonClass}" />`}
 	>
-		<Skeleton class="h-4 w-full max-w-xs" />
+		<Skeleton color={controls.value.color} class={skeletonClass} />
 	</ComponentCard>
 
 	{#snippet examples()}
-		<ComponentCard description="Default skeleton with foreground-muted fill." class="!min-h-fit">
+		<ComponentCard description="Default skeleton with a subtle neutral fill." class="!min-h-fit">
 			<Skeleton />
 		</ComponentCard>
 
-		<ComponentCard description="Semantic color variants for different content types." class="!min-h-fit">
+		<ComponentCard
+			description="Semantic color variants for different content types."
+			class="!min-h-fit"
+		>
 			<div class="space-y-2">
 				<Skeleton color="primary" class="h-4 w-full" />
 				<Skeleton color="secondary" class="h-4 w-full" />
@@ -34,8 +67,8 @@
 				<Skeleton color="success" class="h-4 w-full" />
 				<Skeleton color="warning" class="h-4 w-full" />
 				<Skeleton color="info" class="h-4 w-full" />
-				<Skeleton color="foreground" class="h-4 w-full" />
-				<Skeleton color="background" class="h-4 w-full" />
+				<Skeleton color="neutral" class="h-4 w-full" />
+				<Skeleton color="neutral" class="h-4 w-full" />
 			</div>
 		</ComponentCard>
 
@@ -65,7 +98,10 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Table row with avatar, content, and action columns." class="!min-h-fit">
+		<ComponentCard
+			description="Table row with avatar, content, and action columns."
+			class="!min-h-fit"
+		>
 			<div class="flex gap-4">
 				<Skeleton class="h-10 w-10 rounded" />
 				<Skeleton class="h-10 flex-1" />
@@ -73,7 +109,10 @@
 			</div>
 		</ComponentCard>
 
-		<ComponentCard description="Repeated skeleton blocks for list loading states." class="!min-h-fit">
+		<ComponentCard
+			description="Repeated skeleton blocks for list loading states."
+			class="!min-h-fit"
+		>
 			<div class="space-y-4">
 				{#each { length: 3 } as _}
 					<Skeleton class="h-20 w-full" />

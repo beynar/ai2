@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
@@ -13,6 +14,42 @@
 		{ label: 'Expo', easing: 'expoOut', delay: 450 },
 		{ label: 'Back', easing: 'backOut', delay: 500 }
 	];
+	const controls = createComponentControls([
+		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'bar',
+			options: ['bar', 'trail', 'trail-bounce']
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'warning', 'danger', 'info']
+		},
+		{
+			name: 'size',
+			type: 'slider',
+			label: 'Height',
+			value: 3,
+			min: 2,
+			max: 6,
+			step: 1,
+			showValue: true
+		},
+		{
+			name: 'delay',
+			type: 'slider',
+			label: 'Delay',
+			value: 300,
+			min: 150,
+			max: 700,
+			step: 50,
+			showValue: true
+		}
+	]);
 
 	let isPreviewLoading = $state(false);
 	let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -41,6 +78,7 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Trigger the mounted page indicator from explicit async work."
 		class="!min-h-[260px]"
 		code={`<script lang="ts">
@@ -55,21 +93,35 @@
 	}
 ${'</' + 'script>'}
 
-<div class="relative overflow-hidden rounded-lg border">
-	<NetworkIndicator {loading} color="primary" class="!absolute" />
-	<Button onClick={previewRequest} loading={loading}>
+	<div class="relative overflow-hidden rounded-lg border">
+		<NetworkIndicator
+			{loading}
+			variant="${controls.value.variant}"
+			color="${controls.value.color}"
+			size={${controls.value.size}}
+			delay={${controls.value.delay}}
+			class="!absolute"
+		/>
+		<Button onClick={previewRequest} loading={loading}>
 		{loading ? 'Syncing' : 'Preview async work'}
 	</Button>
 </div>`}
 	>
 		<div
-			class="border-background-muted bg-background relative flex min-h-24 w-full max-w-md flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border p-6"
+			class="border-neutral-muted bg-surface relative flex min-h-24 w-full max-w-md flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border p-6"
 		>
-			<NetworkIndicator loading={isPreviewLoading} color="primary" class="!absolute !z-10" />
+			<NetworkIndicator
+				loading={isPreviewLoading}
+				variant={controls.value.variant}
+				color={controls.value.color}
+				size={controls.value.size}
+				delay={controls.value.delay}
+				class="!absolute !z-10"
+			/>
 			<Button onClick={previewNetworkRequest} loading={isPreviewLoading}>
 				{isPreviewLoading ? 'Syncing' : 'Preview async work'}
 			</Button>
-			<p class="text-foreground/60 text-sm">The local indicator runs for 1.4 seconds.</p>
+			<p class="text-neutral/60 text-sm">The local indicator runs for 1.4 seconds.</p>
 		</div>
 	</ComponentCard>
 
@@ -97,7 +149,7 @@ ${'</' + 'script>'}
 </div>`}
 		>
 			<div
-				class="border-background-muted bg-background relative flex min-h-24 w-full max-w-xl items-center justify-center overflow-hidden rounded-lg border p-6"
+				class="border-neutral-muted bg-surface relative flex min-h-24 w-full max-w-xl items-center justify-center overflow-hidden rounded-lg border p-6"
 			>
 				<NetworkIndicator loading={isPreviewLoading} color="primary" class="!absolute !z-10" />
 				<Button onClick={previewNetworkRequest} loading={isPreviewLoading}>
@@ -165,7 +217,7 @@ ${'</' + 'script>'}
 						<NetworkIndicator
 							loading
 							{size}
-							color={size === 2 ? 'foreground' : size === 4 ? 'primary' : 'info'}
+							color={size === 2 ? 'neutral' : size === 4 ? 'primary' : 'info'}
 							class="!absolute !z-10"
 						/>
 					</NetworkIndicatorPreview>

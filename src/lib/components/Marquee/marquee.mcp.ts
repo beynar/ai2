@@ -18,7 +18,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 
 <Marquee>
 	{#each items as item}
-		<div class="px-4 py-2 bg-background rounded">
+		<div class="px-4 py-2 bg-surface rounded">
 			{item.text}
 		</div>
 	{/each}
@@ -100,7 +100,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 
 <Marquee>
 	{#each testimonials as item}
-		<div class="px-8 py-4 bg-background rounded-lg">
+		<div class="px-8 py-4 bg-surface rounded-lg">
 			<p class="text-lg font-semibold">"{item.quote}"</p>
 			<p class="text-sm text-muted">— {item.author}</p>
 		</div>
@@ -133,7 +133,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 \`\`\`svelte
 <Marquee direction="up" class="h-[400px]">
 	{#each items as item}
-		<div class="px-6 py-4 bg-background rounded">
+		<div class="px-6 py-4 bg-surface rounded">
 			{item.content}
 		</div>
 	{/each}
@@ -226,7 +226,7 @@ The Marquee component creates an infinite scrolling animation for displaying con
 	size="large"
 >
 	{#each items as item}
-		<div class="px-8 py-6 bg-background rounded-lg">
+		<div class="px-8 py-6 bg-surface rounded-lg">
 			{item.content}
 		</div>
 	{/each}

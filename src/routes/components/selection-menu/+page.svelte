@@ -57,10 +57,10 @@
 				role="textbox"
 				aria-multiline="true"
 				aria-label="Editable release note"
-				class="border-background-muted focus:ring-primary min-h-48 rounded-md border p-6 text-left outline-none focus:ring-1"
+				class="border-neutral-muted focus:ring-primary min-h-48 rounded-md border p-6 text-left outline-none focus:ring-1"
 			>
 				<h3 class="mb-3 text-lg font-semibold">Release note</h3>
-				<p class="text-foreground-muted leading-7">
+				<p class="text-neutral/60 leading-7">
 					Selection-aware controls should follow the passage being edited without coupling the
 					toolbar to a particular editor engine. The editor remains responsible for formatting state
 					and commands.
@@ -72,7 +72,7 @@
 				ariaLabel="Selection tools"
 				onSelectionChange={(selection) => (currentSelection = selection)}
 			/>
-			<p class="text-foreground-muted min-h-5 text-center text-xs" aria-live="polite">
+			<p class="text-neutral/60 min-h-5 text-center text-xs" aria-live="polite">
 				{currentSelection ? `${currentSelection.text.length} characters selected` : ''}
 			</p>
 		</div>
@@ -94,7 +94,7 @@
 			<div class="mx-auto grid w-full max-w-xl gap-4">
 				<blockquote
 					id="selection-menu-quote"
-					class="border-primary text-foreground-muted border-l-2 py-2 pl-5 text-left leading-7"
+					class="border-primary text-neutral/60 border-l-2 py-2 pl-5 text-left leading-7"
 				>
 					A selection menu knows where a range is. The editor still knows what that range means.
 				</blockquote>

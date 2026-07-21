@@ -69,9 +69,9 @@ ${'</' + 'script>'}
 			icon={controls.value.composition === 'icon' ? markerIcon : undefined}
 			content={controls.value.composition === 'content' ? markerContent : undefined}
 			aria-label="System checkpoint"
-			class="w-full max-w-2xl"
+			class="w-full max-w-2xl text-neutral/80"
 		>
-			{#if controls.value.composition === 'children'}System checkpoint{/if}
+			{#if controls.value.composition !== 'content'}System checkpoint{/if}
 		</AIMarker>
 	</ComponentCard>
 

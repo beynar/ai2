@@ -42,7 +42,7 @@
 			>
 				<Hitbox size="large" theme={visibleHitboxTheme} />
 			</button>
-			<Chip color="background" variant="soft">Activations: {activations}</Chip>
+			<Chip color="neutral" variant="soft">Activations: {activations}</Chip>
 		</div>
 	</ComponentCard>
 
@@ -62,7 +62,7 @@
 						>
 							<Hitbox {size} theme={visibleHitboxTheme} />
 						</button>
-						<span class="text-foreground-muted text-xs capitalize">{size}</span>
+						<span class="text-neutral/60 text-xs capitalize">{size}</span>
 					</div>
 				{/each}
 			</div>

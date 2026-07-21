@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultLinkPreviewTrigger = cva({
-	base: 'text-primary inline-flex max-w-full items-center rounded-sm underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45',
+	base: 'text-primary-readable inline-flex max-w-full items-center rounded-sm underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45',
 	variants: {
 		disabled: {
 			true: 'pointer-events-none opacity-55',
@@ -43,7 +43,7 @@ const defaultLinkPreviewContent = cva({
 });
 
 const defaultLinkPreviewMedia = cva({
-	base: 'bg-background-muted overflow-hidden rounded-t-xl rounded-b-none',
+	base: 'bg-neutral-muted overflow-hidden rounded-t-xl rounded-b-none',
 	variants: {
 		size: {
 			small: 'aspect-[1.9/1]',
@@ -83,11 +83,11 @@ const defaultLinkPreviewFavicon = cva({
 });
 
 const defaultLinkPreviewSite = cva({
-	base: 'text-foreground-muted min-w-0 truncate text-xs font-medium'
+	base: 'text-neutral/60 min-w-0 truncate text-xs font-medium'
 });
 
 const defaultLinkPreviewTitle = cva({
-	base: 'text-foreground line-clamp-2 font-semibold leading-snug',
+	base: 'text-neutral line-clamp-2 font-semibold leading-snug',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -101,7 +101,7 @@ const defaultLinkPreviewTitle = cva({
 });
 
 const defaultLinkPreviewDescription = cva({
-	base: 'text-foreground-muted line-clamp-3 leading-relaxed',
+	base: 'text-neutral/60 line-clamp-3 leading-relaxed',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -115,7 +115,7 @@ const defaultLinkPreviewDescription = cva({
 });
 
 const defaultLinkPreviewUrl = cva({
-	base: 'text-foreground/45 truncate font-mono text-xs'
+	base: 'text-neutral/45 truncate font-mono text-xs'
 });
 
 const defaultLinkPreviewLoading = cva({
@@ -123,7 +123,7 @@ const defaultLinkPreviewLoading = cva({
 });
 
 const defaultLinkPreviewError = cva({
-	base: 'border-danger/20 bg-danger-muted/20 text-danger rounded-lg border p-3'
+	base: 'border-danger/20 bg-danger-muted/20 text-danger-muted-readable rounded-lg border p-3'
 });
 
 export const linkPreviewTheme = {

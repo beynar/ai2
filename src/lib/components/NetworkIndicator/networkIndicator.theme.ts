@@ -12,8 +12,7 @@ const defaultNetworkIndicator = cva({
 		color: {
 			primary: 'bg-primary shadow-primary',
 			secondary: 'bg-secondary shadow-secondary',
-			foreground: 'bg-foreground shadow-foreground',
-			background: 'bg-background shadow-background',
+			neutral: 'bg-neutral shadow-neutral',
 			danger: 'bg-danger shadow-danger',
 			success: 'bg-success shadow-success',
 			warning: 'bg-warning shadow-warning',
@@ -23,22 +22,13 @@ const defaultNetworkIndicator = cva({
 	compoundVariants: [
 		{
 			variant: ['trail', 'trail-bounce'],
-			color: [
-				'primary',
-				'secondary',
-				'foreground',
-				'background',
-				'danger',
-				'success',
-				'warning',
-				'info'
-			],
+			color: ['primary', 'secondary', 'neutral', 'danger', 'success', 'warning', 'info'],
 			class: '!bg-transparent !shadow-none'
 		}
 	],
 	defaultVariants: {
 		variant: 'bar',
-		color: 'foreground'
+		color: 'neutral'
 	}
 });
 
@@ -48,8 +38,7 @@ const defaultNetworkIndicatorSegment = cva({
 		color: {
 			primary: 'bg-primary shadow-primary',
 			secondary: 'bg-secondary shadow-secondary',
-			foreground: 'bg-foreground shadow-foreground',
-			background: 'bg-background shadow-background',
+			neutral: 'bg-neutral shadow-neutral',
 			danger: 'bg-danger shadow-danger',
 			success: 'bg-success shadow-success',
 			warning: 'bg-warning shadow-warning',
@@ -57,7 +46,7 @@ const defaultNetworkIndicatorSegment = cva({
 		}
 	},
 	defaultVariants: {
-		color: 'foreground'
+		color: 'neutral'
 	}
 });
 

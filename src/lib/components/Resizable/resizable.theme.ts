@@ -34,7 +34,7 @@ const defaultPanel = cva({
 	variants: {
 		variant: {
 			default: null,
-			splitted: 'border-background-muted bg-background rounded-md border shadow-sm'
+			splitted: 'border-neutral-muted bg-surface rounded-md border shadow-sm'
 		},
 		animating: {
 			true: 'motion-safe:will-change-[flex] motion-safe:transition-[flex] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -55,7 +55,7 @@ const defaultHandle = cva({
 			vertical: 'cursor-row-resize'
 		},
 		variant: {
-			default: 'bg-background-muted hover:bg-primary/30 data-[dragging=true]:bg-primary/45',
+			default: 'bg-neutral-muted hover:bg-primary/30 data-[dragging=true]:bg-primary/45',
 			splitted: 'bg-transparent hover:bg-transparent data-[dragging=true]:bg-transparent'
 		},
 		lines: {
@@ -96,14 +96,14 @@ const defaultHandle = cva({
 			variant: 'splitted',
 			lines: true,
 			class:
-				'after:bg-background-muted hover:after:bg-primary/50 data-[dragging=true]:after:bg-primary'
+				'after:bg-neutral-muted hover:after:bg-primary/50 data-[dragging=true]:after:bg-primary'
 		},
 		{
 			orientation: 'vertical',
 			variant: 'splitted',
 			lines: true,
 			class:
-				'after:bg-background-muted hover:after:bg-primary/50 data-[dragging=true]:after:bg-primary'
+				'after:bg-neutral-muted hover:after:bg-primary/50 data-[dragging=true]:after:bg-primary'
 		},
 		{
 			orientation: 'horizontal',
@@ -136,9 +136,9 @@ const defaultGrip = cva({
 			vertical: null
 		},
 		handleVariant: {
-			grip: 'border-background-muted/80 bg-background/95 text-foreground-muted/70 grid place-items-center rounded-full border shadow-[0_1px_2px_rgb(0_0_0/0.12)] transition-colors group-hover/resizable-handle:border-primary/40 group-hover/resizable-handle:text-primary/80 group-data-[dragging=true]/resizable-handle:border-primary/55 group-data-[dragging=true]/resizable-handle:text-primary',
+			grip: 'border-neutral-muted/80 bg-surface/95 text-neutral/70 grid place-items-center rounded-full border shadow-[0_1px_2px_rgb(0_0_0/0.12)] transition-colors group-hover/resizable-handle:border-primary/40 group-hover/resizable-handle:text-primary-readable/80 group-data-[dragging=true]/resizable-handle:border-primary/55 group-data-[dragging=true]/resizable-handle:text-primary-readable',
 			thumb:
-				'bg-foreground/20 rounded-full transition-colors group-hover/resizable-handle:bg-primary/55 group-data-[dragging=true]/resizable-handle:bg-primary'
+				'bg-neutral/20 rounded-full transition-colors group-hover/resizable-handle:bg-primary/55 group-data-[dragging=true]/resizable-handle:bg-primary'
 		}
 	},
 	compoundVariants: [

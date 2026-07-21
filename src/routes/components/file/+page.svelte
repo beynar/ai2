@@ -46,7 +46,7 @@
 			<div class="w-full max-w-md">
 				<FileInput label="Avatar" mode="single" types={['image/*']} bind:value={single} />
 				{#if single}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {single.name}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {single.name}</p>
 				{/if}
 			</div>
 		</ComponentCard>

@@ -16,7 +16,7 @@
 
 <div class="bg-secondary/20 raised-xl m-10 size-20"></div>
 
-<p class="text-foreground-muted">hello</p>
+<p class="text-neutral/60">hello</p>
 
 {#snippet Test({ text }: { text: string })}
 	<button class="bg-primary text-color-light p-2">{text}</button>
@@ -48,8 +48,8 @@
 <Chip color="success">Hello</Chip>
 <Chip color="warning">Hello</Chip>
 <Chip color="info">Hello</Chip>
-<Chip color="foreground">Hello</Chip>
-<Chip color="background">Helloeaz</Chip>
+<Chip color="neutral">Hello</Chip>
+<Chip color="neutral">Helloeaz</Chip>
 <br />
 <Chip color="primary" variant="outline">Hello</Chip>
 <Chip color="secondary" variant="outline">Hello</Chip>
@@ -57,8 +57,8 @@
 <Chip color="success" variant="outline">Hello</Chip>
 <Chip color="warning" variant="outline">Hello</Chip>
 <Chip color="info" variant="outline">Hello</Chip>
-<Chip color="foreground" variant="outline">Hello</Chip>
-<Chip color="background" variant="outline">Helloeaz</Chip>
+<Chip color="neutral" variant="outline">Hello</Chip>
+<Chip color="neutral" variant="outline">Helloeaz</Chip>
 <br />
 <Chip color="primary" variant="soft">Hello</Chip>
 <Chip color="secondary" variant="soft">Hello</Chip>
@@ -66,8 +66,8 @@
 <Chip color="success" variant="soft">Hello</Chip>
 <Chip color="warning" variant="soft">Hello</Chip>
 <Chip color="info" variant="soft">Hello</Chip>
-<Chip color="foreground" variant="soft">Hello</Chip>
-<Chip color="background" variant="soft">Helloeaz</Chip>
+<Chip color="neutral" variant="soft">Hello</Chip>
+<Chip color="neutral" variant="soft">Helloeaz</Chip>
 
 <div class="flex">
 	<div class="flex">

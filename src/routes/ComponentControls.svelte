@@ -18,7 +18,7 @@
 	<div class={controls.isVisible(control) ? 'contents' : 'hidden'}>
 		{#if control.type === 'segmented'}
 			<div class="flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2">
-				<span class="text-foreground-muted text-xs font-medium">{control.label}</span>
+				<span class="text-neutral/60 text-xs font-medium">{control.label}</span>
 				<SegmentedControl
 					items={getSegmentedItems(control.options)}
 					bind:value={

@@ -84,7 +84,7 @@
 </script>
 
 <div class="grid w-full max-w-2xl gap-3">
-	<div class="border-background-muted bg-background-muted rounded-lg border px-3 py-2 text-sm">
+	<div class="border-neutral-muted bg-neutral-muted rounded-lg border px-3 py-2 text-sm">
 		{lastAction}
 	</div>
 	<Tree
@@ -104,7 +104,7 @@
 	>
 		{#snippet header()}
 			<div
-				class="border-background-muted bg-background-muted text-foreground-muted flex items-center justify-between border-b px-3 py-2 text-xs"
+				class="border-neutral-muted bg-neutral-muted text-neutral/60 flex items-center justify-between border-b px-3 py-2 text-xs"
 			>
 				<span>Workspace</span>
 				<span>{workspaceTreePaths.length} paths</span>

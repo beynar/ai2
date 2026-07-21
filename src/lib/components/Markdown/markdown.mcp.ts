@@ -62,7 +62,7 @@ MDX attributes support string, number, and boolean values. Imperative event hand
 
 ## Theming
 
-The full theme is derived from svelai design tokens (translated from the shadcn preset): borders use \\\`border-background-muted\\\`, muted surfaces use \\\`bg-background-muted\\\`, secondary text uses \\\`text-foreground-muted\\\`, and so on. Because it is token-based, the rendered Markdown adapts to light and dark automatically and stays visually consistent with the rest of the app. Per-instance tweaks to the root wrapper go through the \\\`theme\\\` prop; deeper element overrides fall back safely to the built-in theme.
+The full theme is derived from svelai design tokens (translated from the shadcn preset): borders use \\\`border-neutral-muted\\\`, muted surfaces use \\\`bg-neutral-muted\\\`, secondary text uses \\\`text-neutral/60\\\`, and so on. Because it is token-based, the rendered Markdown adapts to light and dark automatically and stays visually consistent with the rest of the app. Per-instance tweaks to the root wrapper go through the \\\`theme\\\` prop; deeper element overrides fall back safely to the built-in theme.
 
 ## Examples
 

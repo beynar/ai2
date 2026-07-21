@@ -3,7 +3,7 @@
 	import Separator from '$lib/components/Separator/Separator.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
 
-	const usageCode = `<div class="raised rounded-lg bg-background p-4">
+	const usageCode = `<div class="raised rounded-lg bg-surface p-4">
 	Content
 </div>`;
 
@@ -28,13 +28,13 @@
 </script>
 
 {#snippet ic(text: string)}
-	<code class="bg-background-muted rounded px-1 py-0.5 text-sm">{text}</code>
+	<code class="bg-neutral-muted rounded px-1 py-0.5 text-sm">{text}</code>
 {/snippet}
 
-<article class="text-foreground mx-auto grid max-w-3xl gap-4 pb-20">
+<article class="text-neutral mx-auto grid max-w-3xl gap-4 pb-20">
 	<header class="grid gap-2">
 		<h1 class="text-3xl font-semibold">Raised</h1>
-		<p class="text-foreground-muted text-balance">
+		<p class="text-neutral/60 text-balance">
 			Tailwind utilities for giving surfaces theme-aware elevation.
 		</p>
 	</header>
@@ -44,26 +44,26 @@
 		code={usageCode}
 		class="!min-h-[240px]"
 	>
-		<div class="raised bg-background rounded-lg p-4 text-sm">Content</div>
+		<div class="raised bg-surface rounded-lg p-4 text-sm">Content</div>
 	</ComponentCard>
 
 	<Separator class="my-2" children="Usage" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Use {@render ic('raised')} on a surface. The utility maps to the Tailwind shadow scale and uses theme
 		variables for borders in light and dark modes.
 	</p>
 	<Code language="html" code={usageCode} />
 
-	<div class="border-background-muted overflow-hidden rounded-xl border">
+	<div class="border-neutral-muted overflow-hidden rounded-xl border">
 		{#each utilityRows as [name, description], index (name)}
 			<div
 				class="grid gap-2 p-3 md:grid-cols-[14rem_1fr] {index % 2 === 0
-					? 'bg-background'
-					: 'bg-background-dark'}"
+					? 'bg-surface'
+					: 'bg-surface-canvas'}"
 			>
 				<code class="text-primary text-sm font-medium">{name}</code>
-				<p class="text-foreground-muted text-sm">{description}</p>
+				<p class="text-neutral/60 text-sm">{description}</p>
 			</div>
 		{/each}
 	</div>
@@ -76,16 +76,16 @@
 		class="!min-h-[280px]"
 	>
 		<div class="grid w-full gap-3 text-sm sm:grid-cols-2">
-			<div class="raised-sm bg-background rounded-lg p-4">raised-sm</div>
-			<div class="raised bg-background rounded-lg p-4">raised</div>
-			<div class="raised-lg bg-background rounded-lg p-4">raised-lg</div>
-			<div class="raised-none bg-background rounded-lg p-4">raised-none</div>
+			<div class="raised-sm bg-surface rounded-lg p-4">raised-sm</div>
+			<div class="raised bg-surface rounded-lg p-4">raised</div>
+			<div class="raised-lg bg-surface rounded-lg p-4">raised-lg</div>
+			<div class="raised-none bg-surface rounded-lg p-4">raised-none</div>
 		</div>
 	</ComponentCard>
 
 	<Separator class="my-2" children="Theme option" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Set {@render ic('raised-with-border')} on the default theme plugin when light-mode raised surfaces
 		should include a border.
 	</p>

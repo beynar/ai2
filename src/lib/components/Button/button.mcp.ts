@@ -18,10 +18,10 @@ The Button component is a flexible and customizable button element that supports
   - solid: Filled background with color
   - outline: Transparent background with colored border
   - soft: Muted color background
-  - ghost: Transparent background, shows background on hover
+  - ghost: Transparent background with a transient state layer on hover and press
   - link: Text-only styling with underline on hover
 
-- **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' (default: 'foreground')
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' (default: 'neutral')
   - Determines the color scheme of the button
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
@@ -192,7 +192,7 @@ const customTheme: ButtonThemeProps = {
 - base: Base classes applied to all buttons
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls padding, text size, and height
-  - color: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' | 'ghost' | 'link' - Visual style variant
   - loading: boolean - Loading state styling
   - disabled: boolean - Disabled state styling

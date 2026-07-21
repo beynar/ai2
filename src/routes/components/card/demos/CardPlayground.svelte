@@ -14,7 +14,7 @@
 	] as const satisfies ReadonlyArray<{ value: CardVariant; label: string }>;
 
 	const colorItems = [
-		{ value: 'background', label: 'Background' },
+		{ value: 'neutral', label: 'Background' },
 		{ value: 'primary', label: 'Primary' },
 		{ value: 'success', label: 'Success' },
 		{ value: 'danger', label: 'Danger' }
@@ -35,7 +35,7 @@
 	type PlaygroundColor = (typeof colorItems)[number]['value'];
 
 	let variant = $state<CardVariant>('solid');
-	let color = $state<PlaygroundColor>('background');
+	let color = $state<PlaygroundColor>('neutral');
 	let size = $state<Sizes>('normal');
 	let density = $state<CardDensity>('normal');
 	let showBorders = $state(false);
@@ -46,23 +46,23 @@
 <div class="grid w-full gap-6">
 	<section
 		aria-label="Card controls"
-		class="border-background-muted bg-background grid gap-5 rounded-lg border p-4"
+		class="border-neutral-muted bg-surface grid gap-5 rounded-lg border p-4"
 	>
 		<div class="grid gap-5 sm:grid-cols-2">
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Variant</span>
+				<span class="text-neutral text-sm font-medium">Variant</span>
 				<SegmentedControl items={variantItems} bind:value={variant} size="small" ariaLabel="Variant" />
 			</div>
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Color</span>
+				<span class="text-neutral text-sm font-medium">Color</span>
 				<SegmentedControl items={colorItems} bind:value={color} size="small" ariaLabel="Color" />
 			</div>
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Size</span>
+				<span class="text-neutral text-sm font-medium">Size</span>
 				<SegmentedControl items={sizeItems} bind:value={size} size="small" ariaLabel="Typography size" />
 			</div>
 			<div class="grid gap-2">
-				<span class="text-foreground text-sm font-medium">Density</span>
+				<span class="text-neutral text-sm font-medium">Density</span>
 				<SegmentedControl
 					items={densityItems}
 					bind:value={density}

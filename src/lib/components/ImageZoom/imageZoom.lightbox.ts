@@ -217,7 +217,7 @@ export class ImageZoomLightbox {
 		if (!this.zoom.zoomedSrc) return false;
 
 		triggerElement.setAttribute('data-src', this.zoom.zoomedSrc);
-		triggerElement.setAttribute('lg-background-color', this.zoom.backgroundColor);
+		triggerElement.setAttribute('lg-surface-color', this.zoom.backgroundColor);
 		const imageSize = this.getZoomedImageSize(imageElement);
 		if (imageSize) {
 			triggerElement.setAttribute('data-lg-size', `${imageSize.width}-${imageSize.height}`);

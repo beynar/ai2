@@ -195,7 +195,7 @@
 			<div class="w-full max-w-md">
 				<Combobox placeholder="Search async..." items={getAsyncOptions} bind:value={value2} />
 				{#if value2}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {value2}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {value2}</p>
 				{/if}
 			</div>
 		</ComponentCard>
@@ -205,7 +205,7 @@
 			<div class="w-full max-w-md">
 				<Combobox placeholder="Search languages..." items={getSyncOptions} bind:value={value3} />
 				{#if value3}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {value3}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {value3}</p>
 				{/if}
 			</div>
 		</ComponentCard>
@@ -219,7 +219,7 @@
 					bind:value={value4}
 				/>
 				{#if value4}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {value4}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {value4}</p>
 				{/if}
 			</div>
 		</ComponentCard>
@@ -234,7 +234,7 @@
 					bind:value={value5}
 				/>
 				{#if value5}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {value5}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {value5}</p>
 				{/if}
 			</div>
 		</ComponentCard>
@@ -249,7 +249,7 @@
 					bind:value={value6}
 				/>
 				{#if value6}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {value6}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {value6}</p>
 				{/if}
 			</div>
 		</ComponentCard>

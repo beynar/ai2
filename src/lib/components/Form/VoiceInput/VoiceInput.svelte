@@ -207,7 +207,7 @@
 		<FieldActionButton
 			id={`${id}-playback`}
 			{size}
-			color={recorder.isPlaying ? color : 'foreground'}
+			color={recorder.isPlaying ? color : 'neutral'}
 			label={playbackButtonLabel}
 			disabled={field.disabled}
 			edge={variant === 'compact' ? 'none' : 'start'}
@@ -257,7 +257,7 @@
 	<FieldActionButton
 		{id}
 		{size}
-		color={recorder.isRecording ? color : 'foreground'}
+		color={recorder.isRecording ? color : 'neutral'}
 		label={buttonLabel}
 		disabled={field.disabled || recorder.isBusy}
 		edge={isExpanded ? 'end' : 'none'}

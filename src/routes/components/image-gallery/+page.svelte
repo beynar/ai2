@@ -84,9 +84,9 @@
 			<ImageGallery>
 				<article class="grid gap-5">
 					<div>
-						<p class="text-foreground-muted text-sm font-medium">Field notes</p>
+						<p class="text-neutral/60 text-sm font-medium">Field notes</p>
 						<h3 class="mt-1 text-2xl font-semibold">Two scenes, one gallery</h3>
-						<p class="text-foreground-muted mt-2 max-w-prose">
+						<p class="text-neutral/60 mt-2 max-w-prose">
 							The wrapper keeps the article structure intact while image descendants become gallery
 							triggers.
 						</p>

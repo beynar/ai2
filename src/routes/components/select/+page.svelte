@@ -88,7 +88,7 @@
 			<div class="w-full max-w-md">
 				<Select label="Role" placeholder="Select a role" items={roles} bind:value />
 				{#if value}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {value}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {value}</p>
 				{/if}
 			</div>
 		</ComponentCard>
@@ -104,7 +104,7 @@
 					bind:value={timezone}
 				/>
 				{#if timezone}
-					<p class="text-foreground-muted mt-2 text-xs">Selected: {timezone}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Selected: {timezone}</p>
 				{/if}
 			</div>
 		</ComponentCard>

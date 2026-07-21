@@ -12,7 +12,7 @@ in via a fade. Colors accept theme tokens and recolor automatically when the app
 </script>
 
 <Globe />
-<Globe baseColor="foreground" glowColor="primary" markerColor="primary" />
+<Globe baseColor="neutral" glowColor="primary" markerColor="primary" />
 \`\`\`
 
 ## Props

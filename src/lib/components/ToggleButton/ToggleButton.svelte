@@ -7,7 +7,7 @@
 		class: className,
 		ariaLabel,
 		type = 'button',
-		color = 'foreground',
+		color = 'neutral',
 		prefix,
 		suffix,
 		children,

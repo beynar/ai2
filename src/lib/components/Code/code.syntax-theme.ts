@@ -12,7 +12,7 @@ import type { RawThemeSetting, ThemeRegistration } from 'shiki';
  */
 
 const token = {
-	background: 'var(--code-token-background)',
+	background: 'var(--code-token-surface)',
 	plain: 'var(--code-token-plain)',
 	comment: 'var(--code-token-comment)',
 	punctuation: 'var(--code-token-punctuation)',
@@ -30,9 +30,9 @@ const token = {
 	inserted: 'var(--code-token-inserted)',
 	deleted: 'var(--code-token-deleted)',
 	changed: 'var(--code-token-changed)',
-	insertedBackground: 'var(--code-token-inserted-background)',
-	deletedBackground: 'var(--code-token-deleted-background)',
-	changedBackground: 'var(--code-token-changed-background)'
+	insertedBackground: 'var(--code-token-inserted-surface)',
+	deletedBackground: 'var(--code-token-deleted-surface)',
+	changedBackground: 'var(--code-token-changed-surface)'
 } as const;
 
 const settings: RawThemeSetting[] = [

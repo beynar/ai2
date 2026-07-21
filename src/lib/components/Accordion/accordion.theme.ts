@@ -32,8 +32,8 @@ const defaultAccordion = cva({
 	},
 	compoundVariants: [
 		// One container surface holding all rows (same surface as the Card component).
-		{ variant: 'card', splitted: false, class: 'raised rounded-lg bg-background-light' },
-		{ variant: 'outlined', splitted: false, class: 'rounded-lg border border-background-muted' },
+		{ variant: 'card', splitted: false, class: 'raised rounded-lg bg-surface-raised' },
+		{ variant: 'outlined', splitted: false, class: 'rounded-lg border border-neutral-muted' },
 		// Gap between the per-item surfaces.
 		{ splitted: true, density: 'small', class: 'gap-2' },
 		{ splitted: true, density: 'normal', class: 'gap-3' },
@@ -76,11 +76,11 @@ const defaultAccordionItem = cva({
 	},
 	compoundVariants: [
 		// Shared container (any variant): muted separator between rows.
-		{ splitted: false, class: 'border-b border-background-muted last:border-b-0' },
+		{ splitted: false, class: 'border-b border-neutral-muted last:border-b-0' },
 		// One surface per item.
-		{ variant: 'classic', splitted: true, class: 'border-b border-background-muted' },
-		{ variant: 'card', splitted: true, class: 'raised rounded-lg bg-background-light' },
-		{ variant: 'outlined', splitted: true, class: 'rounded-lg border border-background-muted' }
+		{ variant: 'classic', splitted: true, class: 'border-b border-neutral-muted' },
+		{ variant: 'card', splitted: true, class: 'raised rounded-lg bg-surface-raised' },
+		{ variant: 'outlined', splitted: true, class: 'rounded-lg border border-neutral-muted' }
 	],
 	defaultVariants: {
 		size: 'normal',
@@ -141,7 +141,7 @@ const defaultAccordionHeader = cva({
 });
 
 const defaultAccordionTitle = cva({
-	base: 'text-foreground font-medium group-hover/accordion-trigger:underline',
+	base: 'text-neutral font-medium group-hover/accordion-trigger:underline',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -152,7 +152,7 @@ const defaultAccordionTitle = cva({
 });
 
 const defaultAccordionDescription = cva({
-	base: 'text-foreground-muted',
+	base: 'text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -165,7 +165,7 @@ const defaultAccordionDescription = cva({
 // Layout (shrink/nudge) and open-state rotation live on the span wrapper in the
 // component — this part only styles the glyph itself.
 const defaultAccordionIcon = cva({
-	base: 'text-foreground-muted block',
+	base: 'text-neutral/60 block',
 	variants: {
 		size: {
 			small: 'size-3.5',

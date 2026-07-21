@@ -39,11 +39,11 @@ export const defaultDialogAlign = cva({
 });
 
 export const defaultDialogBackdrop = cva({
-	base: 'fixed inset-0 bg-background/40 backdrop-blur-xs'
+	base: 'fixed inset-0 bg-neutral/40 backdrop-blur-xs'
 });
 
 export const defaultDialogContent = cva({
-	base: 'z-10 relative px-4 py-2 raised-xl h-fit bg-background rounded flex flex-col z-50 will-change-transform transition-transform duration-200 ease-out',
+	base: 'z-10 relative px-4 py-2 raised-xl h-fit bg-surface-floating text-neutral rounded flex flex-col z-50 will-change-transform transition-transform duration-200 ease-out',
 	variants: {
 		size: {
 			small: 'max-w-md w-full',
@@ -78,7 +78,7 @@ export const defaultDialogThumb = cva({
 	// Absolute so the bar overlays the panel edge instead of taking flow space (the header
 	// sits flush at the top). The ::before oversizes the hitbox around the 6px bar (~38px
 	// touch target); pointer events on it target the thumb, so drags there count as handle drags.
-	base: "absolute z-10 touch-none rounded-full bg-background-muted before:absolute before:-inset-4 before:content-['']",
+	base: "absolute z-10 touch-none rounded-full bg-neutral-muted before:absolute before:-inset-4 before:content-['']",
 	variants: {
 		type: {
 			fullScreen: 'hidden',
@@ -93,7 +93,7 @@ export const defaultDialogThumb = cva({
 });
 
 export const defaultDialogHeader = cva({
-	base: 'grid gap-1 mb-2 border-b border-background-muted py-2',
+	base: 'grid gap-1 mb-2 border-b border-neutral-muted py-2',
 	variants: {
 		size: {
 			small: '',
@@ -115,7 +115,7 @@ export const defaultDialogFooter = cva({
 });
 
 export const defaultDialogCloseButton = cva({
-	base: 'ml-auto rounded-full absolute top-1 right-1 p-1',
+	base: 'state-layer ml-auto rounded-full absolute top-1 right-1 p-1 text-neutral',
 	variants: {
 		size: {
 			small: '',
@@ -126,7 +126,7 @@ export const defaultDialogCloseButton = cva({
 });
 
 export const defaultDialogTitle = cva({
-	base: 'text-lg font-semibold text-foreground',
+	base: 'text-lg font-semibold text-neutral',
 	variants: {
 		size: {
 			small: '',
@@ -137,7 +137,7 @@ export const defaultDialogTitle = cva({
 });
 
 export const defaultDialogDescription = cva({
-	base: 'text-sm text-foreground-muted',
+	base: 'text-sm text-neutral/60',
 	variants: {
 		size: {
 			small: '',

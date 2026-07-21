@@ -14,14 +14,13 @@ const defaultProgressCircleRoot = cva({
 			large: '[--progress-circle-size:2.5rem]'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info',
-			foreground: 'text-foreground',
-			background: 'text-background'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable',
+			neutral: 'text-neutral'
 		}
 	},
 	defaultVariants: {
@@ -35,7 +34,7 @@ const defaultProgressCircleSvg = cva({
 });
 
 const defaultProgressCircleTrack = cva({
-	base: 'stroke-foreground/20'
+	base: 'stroke-neutral/20'
 });
 
 const defaultProgressCircleIndicator = cva({

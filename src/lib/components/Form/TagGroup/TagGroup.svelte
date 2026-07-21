@@ -13,7 +13,7 @@
 		items,
 		multiple = false,
 		color = 'primary',
-		unselectedColor = 'background',
+		unselectedColor = 'neutral',
 		selectedVariant = 'solid',
 		unselectedVariant = 'soft',
 		size = 'normal',

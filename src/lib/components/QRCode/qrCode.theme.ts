@@ -16,13 +16,12 @@ const defaultQRCode = cva({
 			success: 'text-success',
 			warning: 'text-warning',
 			info: 'text-info',
-			foreground: 'text-foreground',
-			background: 'text-background'
+			neutral: 'text-neutral'
 		}
 	},
 	defaultVariants: {
 		size: 'normal',
-		color: 'foreground'
+		color: 'neutral'
 	}
 });
 

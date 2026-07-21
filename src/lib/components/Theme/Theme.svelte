@@ -1,17 +1,12 @@
-<script lang="ts" generics="const T extends string[]">
-	import type { Snippet } from 'svelte';
+<script lang="ts" generics="const T extends readonly string[]">
 	import BeforeHydratation from '../Utils/BeforeHydratation.svelte';
-	import { type SvelteThemeProps, Theme as SvelteTheme } from 'svelte-themes';
-	import type { SpinnerVariant } from '../Spinner/spinner.props.js';
+	import { Theme as SvelteTheme } from 'svelte-themes';
 	import { ThemeState } from './theme.state.svelte.js';
 	import { escapeForInlineScript, escapeJsString, MEDIA } from './helper.js';
 	import Tooltip from '../Tooltip/Tooltip.svelte';
 	import DialogBackdrop from '../Dialog/DialogBackdrop.svelte';
+	import type { ThemeProps } from './theme.props.js';
 
-	type SvelaiThemeProps = SvelteThemeProps<T> & {
-		children: Snippet<[ThemeState]>;
-		spinnerVariant?: SpinnerVariant;
-	};
 	let {
 		children,
 		forcedTheme = undefined,
@@ -24,8 +19,9 @@
 		attribute = 'data-theme',
 		value = undefined,
 		spinnerVariant = 'default',
+		transition,
 		colorScheme
-	}: SvelaiThemeProps = $props();
+	}: ThemeProps<T> = $props();
 
 	const validatedDefaultTheme = (() => {
 		const defaultThemes = ['light', 'dark'];
@@ -82,6 +78,9 @@
 		{
 			get spinnerVariant() {
 				return spinnerVariant;
+			},
+			get themeTransition() {
+				return transition;
 			}
 		},
 		theme
@@ -148,3 +147,19 @@
 
 <DialogBackdrop />
 <Tooltip />
+
+<style>
+	:global(html[data-svelai-theme-transition]::view-transition-old(root)),
+	:global(html[data-svelai-theme-transition]::view-transition-new(root)) {
+		animation: none;
+		mix-blend-mode: normal;
+	}
+
+	:global(html[data-svelai-theme-transition]::view-transition-old(root)) {
+		z-index: 0;
+	}
+
+	:global(html[data-svelai-theme-transition]::view-transition-new(root)) {
+		z-index: 1;
+	}
+</style>

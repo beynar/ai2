@@ -34,7 +34,7 @@ NetworkIndicator is a fixed top loading bar for SvelteKit navigation and explici
   - Pause between trail passes in milliseconds. Only applies to \`variant="trail"\`.
 - **trailDuration**: number = 650
   - Duration of one trail pass in milliseconds. Only applies to \`variant="trail"\`. Lower values make the trail move faster.
-- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' = 'foreground'
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' = 'neutral'
   - Applies the semantic color token to the bar.
 - **size**: number = 3
   - Height in pixels. Keep most navigation indicators between 2 and 6.

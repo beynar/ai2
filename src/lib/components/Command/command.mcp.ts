@@ -41,7 +41,7 @@ default, or inside a modal Dialog (⌘K style) with \`dialog\`.
 		<Button variant="outline" onClick={open}>Search... ⌘K</Button>
 	{/snippet}
 	{#snippet footer({ close })}
-		<div class="border-background-muted text-foreground-muted border-t px-3 py-2 text-xs">
+		<div class="border-neutral-muted text-neutral/60 border-t px-3 py-2 text-xs">
 			↵ Select · Esc Close
 		</div>
 	{/snippet}

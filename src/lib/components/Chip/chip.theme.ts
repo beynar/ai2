@@ -20,8 +20,7 @@ const defaultChip = cva({
 		color: {
 			primary: 'bg-primary text-primary-contrast',
 			secondary: 'bg-secondary text-secondary-contrast',
-			foreground: 'bg-foreground text-foreground-contrast',
-			background: 'bg-background-muted text-color-contrast',
+			neutral: 'bg-neutral text-neutral-contrast',
 			danger: 'bg-danger text-danger-contrast',
 			success: 'bg-success text-success-contrast',
 			warning: 'bg-warning text-warning-contrast',
@@ -60,16 +59,6 @@ const defaultChip = cva({
 			size: 'large',
 			isEmpty: true,
 			class: 'w-7'
-		},
-		{
-			color: 'background',
-			variant: 'outline',
-			class: 'border-background-muted text-foreground'
-		},
-		{
-			color: 'background',
-			variant: 'soft',
-			class: 'bg-background-lighter text-color-contrast'
 		}
 	]
 });

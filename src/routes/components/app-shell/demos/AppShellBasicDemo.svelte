@@ -57,14 +57,14 @@
 		subtitle="Sidebar navigation with sticky page chrome"
 		theme={{
 			root: {
-				base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+				base: 'h-full min-h-full overflow-auto rounded-lg border border-neutral-muted'
 			}
 		}}
 	>
 		{#snippet headerActions({ sidebar })}
 			<button
 				type="button"
-				class="state-layer border-background-muted inline-flex size-8 items-center justify-center rounded-md border text-foreground"
+				class="state-layer border-neutral-muted inline-flex size-8 items-center justify-center rounded-md border text-neutral"
 				aria-label="Toggle sidebar"
 				onclick={sidebar.toggle}
 			>
@@ -80,8 +80,8 @@
 		{#snippet children()}
 			<div class="grid gap-4 p-4 md:grid-cols-3">
 				{#each ['Pipeline', 'Revenue', 'Support'] as metric}
-					<section class="rounded-lg border border-background-muted bg-background-light p-4">
-						<p class="text-sm font-medium text-foreground">{metric}</p>
+					<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
+						<p class="text-sm font-medium text-neutral">{metric}</p>
 						<p class="mt-2 text-2xl font-semibold text-primary">Healthy</p>
 					</section>
 				{/each}

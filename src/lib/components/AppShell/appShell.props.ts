@@ -30,7 +30,7 @@ export type AppShellBack = AppShellRegion | PageShellAction;
 export type AppShellBreadcrumbs = AppShellRegion | BreadcrumbItem[];
 
 export type AppShellConfig = {
-	/** Shared shell geometry forwarded to Sidebar. */
+	/** Shared Sidebar geometry and PageShell chrome treatment. */
 	variant?: SidebarVariant;
 	/** Small metadata above the PageShell title. Ignored when breadcrumbs are provided. */
 	eyebrow?: PageShellTextRegion;

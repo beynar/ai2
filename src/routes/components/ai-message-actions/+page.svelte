@@ -23,6 +23,13 @@
 			label: 'Visibility',
 			value: 'always',
 			options: ['always', 'hover', 'none']
+		},
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
 		}
 	]);
 	const providerMessage = {
@@ -32,8 +39,8 @@
 	};
 </script>
 
-{#snippet customActions({ copied, copy }: AIMessageActionState)}
-	<Button type="button" variant="ghost" size="small" onClick={() => void copy()}>
+{#snippet customActions({ copied, copy, size }: AIMessageActionState)}
+	<Button type="button" variant="ghost" {size} onClick={() => void copy()}>
 		{copied ? 'Copied' : 'Copy answer'}
 	</Button>
 {/snippet}
@@ -45,6 +52,7 @@
 	features={[
 		'Clipboard integration',
 		'Role-aware edit and retry defaults',
+		'Small, normal, and large action scales',
 		'Custom action snippet',
 		'Accessible icon buttons',
 		'Direct callbacks or conversation retry',
@@ -62,6 +70,7 @@ ${'</' + 'script>'}
 <AIMessageActions
   role="assistant"
   content="A generated answer"
+  size="normal"
   visibility="always"
   onRetry={({ content }) => regenerate(content)}
 />`}
@@ -70,6 +79,7 @@ ${'</' + 'script>'}
 			<AIMessageActions
 				role={controls.value.role}
 				visibility={controls.value.visibility}
+				size={controls.value.size}
 				content="A generated answer"
 				onCopy={({ content }) => {
 					lastAction = `Copied ${content.length} characters`;
@@ -81,7 +91,7 @@ ${'</' + 'script>'}
 					lastAction = 'Retry requested';
 				}}
 			/>
-			<div class="text-sm text-foreground/60">{lastAction}</div>
+			<div class="text-sm text-neutral/60">{lastAction}</div>
 		</div>
 	</ComponentCard>
 
@@ -90,8 +100,8 @@ ${'</' + 'script>'}
 			title="Actions prop"
 			description="The actions snippet receives copied state, capability flags, context, and awaitable copy, edit, and retry methods."
 			class="!min-h-[220px]"
-			code={`{#snippet actions({ copied, copy })}
-  <Button type="button" onClick={() => void copy()}>
+			code={`{#snippet actions({ copied, copy, size })}
+  <Button type="button" {size} onClick={() => void copy()}>
     {copied ? 'Copied' : 'Copy answer'}
   </Button>
 {/snippet}
@@ -150,7 +160,7 @@ ${'</' + 'script>'}
 				>
 					<AIMessageActions message={providerMessage} messageIndex={0} visibility="always" />
 				</AIConversation>
-				<div class="text-sm text-foreground/60">{providerAction}</div>
+				<div class="text-sm text-neutral/60">{providerAction}</div>
 			</div>
 		</ComponentCard>
 	{/snippet}

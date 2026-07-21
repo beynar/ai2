@@ -14,7 +14,7 @@ Overlay layers concise content and actions over bounded media or another visual 
 \t<Overlay
 \t\ttitle="Design system foundations"
 \t\tdescription="A practical tour of tokens, primitives, and composition."
-\t\tactions={[{ content: 'Open gallery', color: 'background', variant: 'soft' }]}
+\t\tactions={[{ content: 'Open gallery', color: 'neutral', variant: 'soft' }]}
 \t/>
 \t<img src="/cover.jpg" alt="Coastal landscape" class="size-full object-cover" />
 </div>
@@ -65,7 +65,7 @@ Top and bottom content enters from its corresponding edge while the scrim fades 
 \t\tshowOn="hover"
 \t\tposition="bottom"
 \t\ttitle="Mountain archive"
-\t\tactions={[{ content: 'View collection', color: 'background', variant: 'soft' }]}
+\t\tactions={[{ content: 'View collection', color: 'neutral', variant: 'soft' }]}
 \t/>
 \t<img src="/mountain.jpg" alt="Snow-covered mountain" />
 </div>

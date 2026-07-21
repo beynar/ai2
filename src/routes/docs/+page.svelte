@@ -21,7 +21,7 @@
 			name: 'colorscheme',
 			type: "'light' | 'dark'",
 			def: "'light'",
-			desc: 'Base scheme driving background/foreground generation.'
+			desc: 'Base scheme driving surface elevation and the default reversed neutral.'
 		},
 		{
 			name: 'prefersDark',
@@ -60,16 +60,16 @@
 			desc: 'Add a border to raised-* elements in light mode.'
 		},
 		{
-			name: 'overlay-hover',
-			type: 'string',
-			def: 'foreground at 5%',
-			desc: 'Optional CSS color for hover and virtual-focus state layers. Alpha is supported.'
+			name: 'state-hover-opacity',
+			type: 'number',
+			def: '0.05 light / 0.16 dark',
+			desc: 'Opacity of the current-color layer used for hover and virtual focus.'
 		},
 		{
-			name: 'overlay-pressed',
-			type: 'string',
-			def: 'foreground at 10%',
-			desc: 'Optional CSS color for the pressed state layer. Alpha is supported.'
+			name: 'state-pressed-opacity',
+			type: 'number',
+			def: '0.10 light / 0.32 dark',
+			desc: 'Opacity of the current-color layer used for the pressed state.'
 		}
 	];
 
@@ -80,8 +80,7 @@
 		'success',
 		'warning',
 		'info',
-		'background',
-		'foreground'
+		'neutral'
 	] as const;
 
 	const variants = ['DEFAULT', 'light', 'lighter', 'dark', 'muted', 'contrast'] as const;
@@ -122,13 +121,13 @@
 	warning: #f59e0b;
 	info: #3b82f6;
 
-	/* background = page background, foreground = default text color */
-	background: #ffffff;
-	foreground: #0a0a0a;
+	/* surface drives elevation; neutral is the achromatic semantic color */
+	surface: #ffffff;
+	neutral: #0a0a0a;
 
-	/* optional interaction calibration; defaults use foreground at 5% and 10% */
-	overlay-hover: #0a0a0a0d;
-	overlay-pressed: #0a0a0a1a;
+	/* optional interaction calibration */
+	state-hover-opacity: 0.05;
+	state-pressed-opacity: 0.10;
 
 	/* optional per-variant overrides */
 	primary-dark: #4338ca;
@@ -139,9 +138,9 @@
 	Primary
 </button>
 
-<div class="bg-background-dark border-background-muted rounded-xl border p-4">
-	<p class="text-foreground">Title</p>
-	<p class="text-foreground-muted">Muted body copy</p>
+<div class="bg-surface-canvas border-neutral-muted rounded-xl border p-4">
+	<p class="text-neutral">Title</p>
+	<p class="text-neutral/60">Muted body copy</p>
 </div>
 
 <!-- opacity modifiers work on every token -->
@@ -152,14 +151,13 @@
 </html>`;
 </script>
 
-{#snippet ic(text: string)}<code class="bg-background-muted rounded px-1 py-0.5 text-sm"
-		>{text}</code
+{#snippet ic(text: string)}<code class="bg-neutral-muted rounded px-1 py-0.5 text-sm">{text}</code
 	>{/snippet}
 
-<article class="text-foreground mx-auto grid max-w-3xl gap-4 pb-20">
+<article class="text-neutral mx-auto grid max-w-3xl gap-4 pb-20">
 	<header class="grid gap-2">
 		<h1 class="text-3xl font-semibold">Getting started</h1>
-		<p class="text-foreground-muted text-balance">
+		<p class="text-neutral/60 text-balance">
 			This library is a set of Svelte components on top of a small Tailwind CSS theme engine,
 			configured entirely from your {@render ic('app.css')} — no JavaScript config file needed.
 		</p>
@@ -167,10 +165,10 @@
 
 	<Separator class="my-2" children="Installation" />
 
-	<p class="text-foreground-muted">Install Tailwind and its Vite plugin.</p>
+	<p class="text-neutral/60">Install Tailwind and its Vite plugin.</p>
 	<Code language="bash" code={installCode} />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Then wire up the theme in your {@render ic('src/app.css')}. Declare the {@render ic(
 			"@plugin './lib/tailwind/theme'"
 		)} block once per theme — each generates a scoped color palette and design tokens. The block marked
@@ -182,28 +180,28 @@
 
 	<Separator class="my-2" children="Theme options" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Every key below is passed inside the {@render ic("@plugin './lib/tailwind/theme'")} block.
 	</p>
 
-	<div class="border-background-muted rounded-xl overflow-hidden border">
+	<div class="border-neutral-muted rounded-xl overflow-hidden border">
 		{#each themeOptions as option, i (option.name)}
 			<div
 				class="grid grid-cols-[1fr_1.4fr] gap-4 p-3 {i % 2 === 0
-					? 'bg-background'
-					: 'bg-background-dark'}"
+					? 'bg-surface'
+					: 'bg-surface-canvas'}"
 			>
 				<div class="grid content-start gap-1">
 					<code class="text-primary text-sm font-medium">{option.name}</code>
-					<code class="text-foreground-muted text-xs">{option.type}</code>
-					<span class="text-foreground-muted text-xs">default: {option.def}</span>
+					<code class="text-neutral/60 text-xs">{option.type}</code>
+					<span class="text-neutral/60 text-xs">default: {option.def}</span>
 				</div>
-				<p class="text-foreground-muted text-sm">{option.desc}</p>
+				<p class="text-neutral/60 text-sm">{option.desc}</p>
 			</div>
 		{/each}
 	</div>
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Each base color ({@render ic('primary')}, {@render ic('danger')}, …) accepts a hex value or a
 		Tailwind color name. Variants ({@render ic('-light')}, {@render ic('-dark')}, {@render ic(
 			'-muted'
@@ -213,22 +211,22 @@
 
 	<Separator class="my-2" children="Color tokens" />
 
-	<p class="text-foreground-muted">
-		The palette exposes eight semantic colors, each with five variants. Use them like any Tailwind
+	<p class="text-neutral/60">
+		The palette exposes seven semantic colors, each with five variants. Use them like any Tailwind
 		color: {@render ic('bg-primary')}, {@render ic('text-danger-contrast')}, {@render ic(
-			'border-background-muted'
+			'border-neutral-muted'
 		)}. Opacity modifiers ({@render ic('/20')}) are supported.
 	</p>
 
 	<div class="grid gap-3">
 		{#each semanticColors as color (color)}
 			<div class="grid gap-1">
-				<span class="text-foreground-muted text-xs font-medium">{color}</span>
+				<span class="text-neutral/60 text-xs font-medium">{color}</span>
 				<div class="flex flex-wrap gap-2">
 					{#each variants as variant (variant)}
 						{@const token = variant === 'DEFAULT' ? color : `${color}-${variant}`}
 						<div
-							class="border-background-muted grid h-12 min-w-20 flex-1 place-items-center rounded border text-xs"
+							class="border-neutral-muted grid h-12 min-w-20 flex-1 place-items-center rounded border text-xs"
 							style:background-color="var(--color-{token})"
 						>
 							<span class="rounded bg-black/40 px-1 text-white">
@@ -241,15 +239,18 @@
 		{/each}
 	</div>
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		See the <a class="text-primary underline" href="/colors">Colors</a> page for the full palette.
 	</p>
 
-	<p class="text-foreground-muted">
-		Background grades express resting elevation. Add {@render ic('state-layer')} to interactive elements
-		so hover and press composite the global overlays without replacing that resting color. Use focus rings
-		for keyboard focus, and use {@render ic('*-muted')} or solid colors for persistent selected, checked,
-		open, or semantic states.
+	<p class="text-neutral/60">
+		Use {@render ic('surface-recessed')} for inset wells, then the {@render ic('surface-canvas')} → {@render ic(
+			'surface-floating'
+		)}
+		ladder for resting elevation. Add {@render ic('state-layer')} to interactive elements so hover and
+		press composite the element's current text color without replacing that resting surface. Use focus
+		rings for keyboard focus, and use {@render ic('*-muted')} or solid colors for persistent selected,
+		checked, open, or semantic states.
 	</p>
 
 	<Separator class="my-2" children="Using tokens" />
@@ -258,7 +259,7 @@
 
 	<Separator class="my-2" children="Dark mode" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Any non-default theme is applied through its {@render ic('data-theme')} attribute or a matching class.
 		Toggle it on {@render ic('<html>')} to switch themes. Add {@render ic('prefersDark: true;')} to follow
 		the system setting automatically.

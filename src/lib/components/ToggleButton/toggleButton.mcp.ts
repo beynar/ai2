@@ -23,7 +23,7 @@ The ToggleButton component is a two-state button that can be toggled on and off,
 - **type**: 'button' | 'submit' | 'reset' (default: 'button') - Native button type. The default prevents accidental form submission.
 
 ### Visual Props
-- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'foreground')
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' (default: 'neutral')
 - **variant**: 'outline' | 'ghost' (default: 'ghost')
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
 

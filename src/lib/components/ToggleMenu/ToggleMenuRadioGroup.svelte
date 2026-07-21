@@ -58,7 +58,7 @@
 >
 	{#each Object.entries(item.items) as [key, button]}
 		{@const resolvedSize = item.size ?? size ?? 'normal'}
-		{@const resolvedColor = item.color ?? color ?? 'foreground'}
+		{@const resolvedColor = item.color ?? color ?? 'neutral'}
 		{@const resolvedVariant = item.variant ?? variant ?? 'ghost'}
 		{@const isDisabled = disabled || !!item.disabled || !!button.disabled}
 		{@const isChecked = item.value === key}

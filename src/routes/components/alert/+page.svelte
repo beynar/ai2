@@ -2,12 +2,37 @@
 	import Alert from '$lib/components/Alert/Alert.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import { infoIcon } from '$lib/components/Icons/info.js';
 
 	const statusColors = ['success', 'info', 'warning', 'danger'] as const;
 	const variants = ['solid', 'outline', 'soft'] as const;
 	const sizes = ['small', 'normal', 'large'] as const;
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: sizes
+		},
+		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'soft',
+			options: variants
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'success',
+			options: ['primary', 'success', 'info', 'warning', 'danger']
+		},
+		{ name: 'disabled', type: 'switch', label: 'Disabled', value: false }
+	]);
 
 	let dismissed = $state(false);
 </script>
@@ -25,13 +50,23 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="The soft variant gives the tinted status look. A matching filled icon is added automatically."
-		code={`<Alert variant="soft" color="success" title="Payment received" description="Your invoice has been paid in full." />`}
+		code={`<Alert
+	size="${controls.value.size}"
+	variant="${controls.value.variant}"
+	color="${controls.value.color}"
+	disabled={${controls.value.disabled}}
+	title="Payment received"
+	description="Your invoice has been paid in full."
+/>`}
 	>
 		<div class="w-full max-w-md">
 			<Alert
-				variant="soft"
-				color="success"
+				size={controls.value.size}
+				variant={controls.value.variant}
+				color={controls.value.color}
+				disabled={controls.value.disabled}
 				title="Payment received"
 				description="Your invoice has been paid in full."
 			/>
@@ -132,12 +167,7 @@
 						description="You've used 90% of your quota."
 					/>
 				{:else}
-					<Button
-						variant="soft"
-						color="foreground"
-						size="small"
-						onClick={() => (dismissed = false)}
-					>
+					<Button variant="soft" color="neutral" size="small" onClick={() => (dismissed = false)}>
 						Reset alert
 					</Button>
 				{/if}

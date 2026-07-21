@@ -31,7 +31,7 @@
 	subtitle="Application layout that shares one surface variant across Sidebar and PageShell."
 	component="AppShell"
 	features={[
-		'Forwards one variant to Sidebar for consistent shell geometry',
+		'Coordinates Sidebar geometry with matching PageShell header and footer surfaces',
 		'Composes Sidebar-owned surfaces with PageShell page chrome',
 		'Keeps page scrolling on the document for native navigation restoration',
 		'Keeps Sidebar responsive drawer, collapse, rail, and edge reveal behavior',
@@ -113,9 +113,9 @@ ${'</' + 'script>'}
 		<ShellMentalModel current="app-shell" />
 
 		<section
-			class="grid gap-3 rounded-xl border border-background-muted bg-background p-4 text-sm text-foreground/70"
+			class="grid gap-3 rounded-xl border border-neutral-muted bg-surface p-4 text-sm text-neutral/70"
 		>
-			<p class="font-medium text-foreground">Nested and two-sided sidebars</p>
+			<p class="font-medium text-neutral">Nested and two-sided sidebars</p>
 			<p>
 				AppShell intentionally manages one Sidebar. For one right-side navigation panel, pass <code
 					>side: 'right'</code
@@ -219,7 +219,7 @@ ${'</' + 'script>'}
 
 <section>Customer content</section>`}
 		>
-			<div class="max-w-xl text-sm text-foreground/70">
+			<div class="max-w-xl text-sm text-neutral/70">
 				AppShell does not replace PageShell. It composes it, so route-level PageShell injection
 				stays available under the combined frame.
 			</div>

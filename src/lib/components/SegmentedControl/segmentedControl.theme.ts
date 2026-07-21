@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultSegmentedControl = cva({
-	base: 'relative isolate inline-flex w-fit max-w-full items-center overflow-visible bg-background-muted/60 p-1',
+	base: 'relative isolate inline-flex w-fit max-w-full items-center overflow-visible bg-surface-recessed p-1',
 	variants: {
 		size: {
 			small: 'gap-0.5',
@@ -26,7 +26,7 @@ const defaultSegmentedControl = cva({
 });
 
 const defaultSegment = cva({
-	base: "relative z-10 inline-flex cursor-pointer select-none items-center justify-center whitespace-nowrap font-medium text-foreground/70 outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45 hover:text-foreground before:absolute before:top-1/2 before:-translate-y-1/2 before:content-[''] first-of-type:before:-left-1 last:before:-right-1",
+	base: "relative z-10 inline-flex cursor-pointer select-none items-center justify-center whitespace-nowrap font-medium text-neutral/70 outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45 hover:text-neutral before:absolute before:top-1/2 before:-translate-y-1/2 before:content-[''] first-of-type:before:-left-1 last:before:-right-1",
 	variants: {
 		size: {
 			small: 'gap-1 px-2 py-1 text-xs before:-right-px before:-left-px before:h-9 [&>svg]:size-3',
@@ -39,8 +39,17 @@ const defaultSegment = cva({
 			normal: 'rounded-md',
 			pill: 'rounded-full'
 		},
+		color: {
+			primary: '',
+			secondary: '',
+			neutral: '',
+			danger: '',
+			success: '',
+			warning: '',
+			info: ''
+		},
 		selected: {
-			true: 'text-color-contrast hover:text-color-contrast',
+			true: '',
 			false: ''
 		},
 		disabled: {
@@ -51,34 +60,67 @@ const defaultSegment = cva({
 	defaultVariants: {
 		size: 'normal',
 		variant: 'normal',
+		color: 'neutral',
 		selected: false,
 		disabled: false
-	}
+	},
+	compoundVariants: [
+		{
+			color: 'neutral',
+			selected: true,
+			class: 'text-neutral hover:text-neutral'
+		},
+		{
+			color: ['primary', 'secondary', 'danger', 'success', 'warning', 'info'],
+			selected: true,
+			class: 'text-color-contrast hover:text-color-contrast'
+		}
+	]
 });
 
 const defaultIndicator = cva({
-	base: 'pointer-events-none absolute top-0 left-0 bg-color shadow-sm will-change-transform data-[ready=true]:transition-[transform,width,height] data-[ready=true]:duration-300 data-[ready=true]:ease-[cubic-bezier(0.4,0,0.2,1)]',
+	base: 'pointer-events-none absolute top-0 left-0 shadow-sm will-change-transform data-[ready=true]:transition-[transform,width,height] data-[ready=true]:duration-300 data-[ready=true]:ease-[cubic-bezier(0.4,0,0.2,1)]',
 	variants: {
 		variant: {
 			normal: 'rounded-md',
 			pill: 'rounded-full'
+		},
+		color: {
+			primary: 'bg-color',
+			secondary: 'bg-color',
+			neutral: 'bg-surface-floating',
+			danger: 'bg-color',
+			success: 'bg-color',
+			warning: 'bg-color',
+			info: 'bg-color'
 		}
 	},
 	defaultVariants: {
-		variant: 'normal'
+		variant: 'normal',
+		color: 'neutral'
 	}
 });
 
 const defaultStaticIndicator = cva({
-	base: 'pointer-events-none absolute inset-0 -z-10 bg-color shadow-sm',
+	base: 'pointer-events-none absolute inset-0 -z-10 shadow-sm',
 	variants: {
 		variant: {
 			normal: 'rounded-md',
 			pill: 'rounded-full'
+		},
+		color: {
+			primary: 'bg-color',
+			secondary: 'bg-color',
+			neutral: 'bg-surface-floating',
+			danger: 'bg-color',
+			success: 'bg-color',
+			warning: 'bg-color',
+			info: 'bg-color'
 		}
 	},
 	defaultVariants: {
-		variant: 'normal'
+		variant: 'normal',
+		color: 'neutral'
 	}
 });
 

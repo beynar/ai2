@@ -83,7 +83,7 @@
 	onSelect={(value) => console.log(value)}
 />`}
 	>
-		<div class="border-background-muted w-full rounded-xl border">
+		<div class="border-neutral-muted w-full rounded-xl border">
 			<Command items={groups} onSelect={(value) => (lastSelected = value)} />
 		</div>
 	</ComponentCard>
@@ -93,10 +93,10 @@
 			description="Inline palette — type to filter, navigate with ↑↓ / Home / End, select with Enter. The Calculator item is disabled."
 			class="max-w-md"
 		>
-			<div class="border-background-muted w-full rounded-xl border">
+			<div class="border-neutral-muted w-full rounded-xl border">
 				<Command items={groups} onSelect={(value) => (lastSelected = value)} />
 			</div>
-			<p class="text-foreground text-center text-sm">
+			<p class="text-neutral text-center text-sm">
 				Last selected: <span class="font-medium">{lastSelected}</span>
 			</p>
 		</ComponentCard>
@@ -110,12 +110,12 @@
 					<Button variant="outline" onClick={() => open()}>
 						{@render magnifyingGlassIcon({ size: 16 })}
 						Search commands...
-						<span class="text-foreground-muted ml-2 text-xs tracking-widest">⌘K</span>
+						<span class="text-neutral/60 ml-2 text-xs tracking-widest">⌘K</span>
 					</Button>
 				{/snippet}
 				{#snippet footer({ close })}
 					<div
-						class="border-background-muted text-foreground-muted mt-1 flex items-center gap-3 border-t px-3 py-2 text-xs"
+						class="border-neutral-muted text-neutral/60 mt-1 flex items-center gap-3 border-t px-3 py-2 text-xs"
 					>
 						<span>↵ Select</span>
 						<span>↑↓ Navigate</span>
@@ -123,7 +123,7 @@
 					</div>
 				{/snippet}
 			</Command>
-			<p class="text-foreground text-center text-sm">
+			<p class="text-neutral text-center text-sm">
 				Last selected: <span class="font-medium">{lastSelected}</span>
 			</p>
 		</ComponentCard>

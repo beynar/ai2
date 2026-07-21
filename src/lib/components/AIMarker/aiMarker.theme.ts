@@ -6,22 +6,22 @@ import {
 } from '$lib/utils/cva/index.js';
 
 const defaultRoot = cva({
-	base: 'group/ai-marker relative flex min-h-4 w-full items-center gap-2 text-left text-sm text-foreground/60 [&_svg:not([class*=size-])]:size-4',
+	base: 'group/ai-marker relative flex min-h-4 w-full items-center gap-2 text-left text-sm text-neutral/60 [&_svg:not([class*=size-])]:size-4',
 	variants: {
 		variant: {
 			default: null,
 			separator: null,
-			border: 'border-b border-background-muted pb-2'
+			border: 'border-b border-neutral-muted pb-2'
 		}
 	},
 	defaultVariants: { variant: 'default' }
 });
-const defaultRule = cva({ base: 'h-px min-w-0 flex-1 bg-background-muted' });
+const defaultRule = cva({ base: 'h-px min-w-0 flex-1 bg-neutral-muted' });
 const defaultIcon = cva({
 	base: 'flex size-4 shrink-0 items-center justify-center [&_svg:not([class*=size-])]:size-4'
 });
 const defaultContent = cva({
-	base: 'min-w-0 break-words [&_a]:underline [&_a]:underline-offset-3 [&_a:hover]:text-foreground',
+	base: 'min-w-0 break-words [&_a]:underline [&_a]:underline-offset-3 [&_a:hover]:text-neutral',
 	variants: { centered: { true: 'flex-none text-center', false: null } },
 	defaultVariants: { centered: false }
 });

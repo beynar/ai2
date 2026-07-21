@@ -3,7 +3,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultCode = cva({
 	// `group` + `relative` support the floating copy button on headerless blocks.
-	base: 'group relative my-4 flex w-full flex-col overflow-hidden rounded-lg border border-background-muted bg-background'
+	base: 'group relative my-4 flex w-full flex-col overflow-hidden rounded-lg border border-neutral-muted bg-surface'
 });
 
 // Floating copy button for headerless blocks: top-right, revealed on hover/focus.
@@ -12,7 +12,7 @@ const defaultCodeFloatingCopy = cva({
 });
 
 const defaultCodeHeader = cva({
-	base: 'flex items-center justify-between gap-2 border-b border-background-muted bg-background-muted px-3 py-1.5 text-xs text-foreground-muted'
+	base: 'flex items-center justify-between gap-2 border-b border-neutral-muted bg-surface-raised px-3 py-1.5 text-xs text-neutral/60'
 });
 
 const defaultCodeTitle = cva({
@@ -23,11 +23,11 @@ const defaultCodeContainer = cva({
 	// The scroll + padding live on the inner Shiki <pre> (via the highlighter's pre transformer)
 	// so the focusable node is the scroller; the container is just the surface. `tab-size` is
 	// driven by a CSS var set on the root (defaults to 2).
-	base: 'min-w-0 bg-background text-sm [&_pre]:!bg-transparent [&_pre]:[tab-size:var(--code-tab-size,2)] [&_code]:font-mono'
+	base: 'min-w-0 bg-surface text-sm [&_pre]:!bg-transparent [&_pre]:[tab-size:var(--code-tab-size,2)] [&_code]:font-mono'
 });
 
 const defaultCodeFooter = cva({
-	base: 'flex items-center justify-between gap-2 border-t border-background-muted bg-background-muted px-3 py-1.5 text-xs text-foreground-muted'
+	base: 'flex items-center justify-between gap-2 border-t border-neutral-muted bg-surface-raised px-3 py-1.5 text-xs text-neutral/60'
 });
 
 export const codeTheme = {

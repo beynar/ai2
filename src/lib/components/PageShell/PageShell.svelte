@@ -31,7 +31,7 @@
 	let isContentScrolled = $state(false);
 
 	const trackPageScroll: Attachment<HTMLElement> = (node) => {
-		const scrollContainer = findScrollContainer(node);
+		const scrollContainer = isScrollContainer(node) ? node : findScrollContainer(node);
 		const update = () => {
 			isContentScrolled = scrollContainer ? scrollContainer.scrollTop > 0 : window.scrollY > 0;
 		};
@@ -101,11 +101,14 @@
 		}
 		return null;
 	}
+
+	function isScrollContainer(node: HTMLElement) {
+		return /(auto|scroll)/.test(getComputedStyle(node).overflowY);
+	}
 </script>
 
 <div
 	bind:this={ref}
-	{@attach trackPageScroll}
 	data-slot="page-shell"
 	data-scrolled={isContentScrolled ? 'true' : undefined}
 	class={classes.root({ className })}
@@ -115,7 +118,7 @@
 		<PageShellHeader api={shell.api} {theme} />
 	{/if}
 
-	<main data-slot="page-shell-content" class={classes.content()}>
+	<main {@attach trackPageScroll} data-slot="page-shell-content" class={classes.content()}>
 		<div
 			data-slot="page-shell-content-inner"
 			class={classes.contentInner({

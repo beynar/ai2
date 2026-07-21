@@ -108,7 +108,7 @@
 	];
 ${'</' + 'script>'}
 
-<Stepper {items} class="w-full rounded-lg border border-background-muted bg-background/30">
+<Stepper {items} class="w-full rounded-lg border border-neutral-muted bg-surface/30">
 	{#snippet children({ stepper, item, index })}
 		<div class="p-3">
 			<div class="{item.card} {item.height} grid gap-4 rounded-md border p-5">
@@ -147,7 +147,7 @@ ${'</' + 'script>'}
 	>
 		<Stepper
 			items={syncedPanels}
-			class="w-full rounded-lg border border-background-muted bg-background/30"
+			class="w-full rounded-lg border border-neutral-muted bg-surface/30"
 		>
 			{#snippet children({ stepper, item, index })}
 				<div class="p-3">
@@ -162,11 +162,11 @@ ${'</' + 'script>'}
 							<div class="{item.accent} h-12 w-12 rounded-full"></div>
 						</div>
 
-						<p class="text-foreground-muted max-w-xl">{item.description}</p>
+						<p class="text-neutral/60 max-w-xl">{item.description}</p>
 
 						<div class="flex flex-wrap gap-2">
 							{#each item.chips as chip}
-								<span class="{item.text} bg-background/60 rounded px-2 py-1 text-xs">
+								<span class="{item.text} bg-surface/60 rounded px-2 py-1 text-xs">
 									{chip}
 								</span>
 							{/each}
@@ -175,7 +175,7 @@ ${'</' + 'script>'}
 						<div class="mt-auto flex gap-2">
 							{#if index > 0}
 								<button
-									class="rounded bg-background/70 px-3 py-1.5"
+									class="rounded bg-surface/70 px-3 py-1.5"
 									onclick={() => stepper.previous()}>previous</button
 								>
 							{/if}
@@ -203,7 +203,7 @@ ${'</' + 'script>'}
 						<button
 							class="rounded border px-3 py-1.5 text-sm font-medium transition {syncedStep === index
 								? `${panel.card} ${panel.text}`
-								: 'border-background-muted bg-background-muted/60 text-foreground-muted'}"
+								: 'border-neutral-muted bg-neutral-muted/60 text-neutral/60'}"
 							onclick={() => {
 								syncedStep = index;
 							}}
@@ -217,7 +217,7 @@ ${'</' + 'script>'}
 					<Stepper
 						bind:activeStep={syncedStep}
 						{items}
-						class="rounded-lg border border-background-muted bg-background/30"
+						class="rounded-lg border border-neutral-muted bg-surface/30"
 					>
 						{#snippet children({ stepper, item, index })}
 							{@const panel = syncedPanels[index] ?? syncedPanels[0]}
@@ -235,12 +235,12 @@ ${'</' + 'script>'}
 
 									<div class="grid gap-2">
 										<p class="text-lg font-medium">{panel.title}</p>
-										<p class="text-foreground-muted max-w-xl">{panel.description}</p>
+										<p class="text-neutral/60 max-w-xl">{panel.description}</p>
 									</div>
 
 									<div class="flex flex-wrap gap-2">
 										{#each panel.chips as chip}
-											<span class="{panel.text} bg-background/60 rounded px-2 py-1 text-xs">
+											<span class="{panel.text} bg-surface/60 rounded px-2 py-1 text-xs">
 												{chip}
 											</span>
 										{/each}
@@ -249,7 +249,7 @@ ${'</' + 'script>'}
 									<div class="mt-auto flex gap-2">
 										{#if index > 0}
 											<button
-												class="rounded bg-background/70 px-3 py-1.5"
+												class="rounded bg-surface/70 px-3 py-1.5"
 												onclick={() => stepper.previous()}>previous</button
 											>
 										{/if}
@@ -268,7 +268,7 @@ ${'</' + 'script>'}
 					<Stepper
 						bind:activeStep={syncedStep}
 						{items}
-						class="rounded-lg border border-background-muted bg-background/30"
+						class="rounded-lg border border-neutral-muted bg-surface/30"
 					>
 						{#snippet children({ stepper, item, index })}
 							{@const panel = syncedPanels[index] ?? syncedPanels[0]}
@@ -286,23 +286,23 @@ ${'</' + 'script>'}
 
 									<div class="grid gap-2">
 										<p class="text-lg font-medium">{item.content}</p>
-										<p class="text-foreground-muted max-w-xl">{panel.detail}</p>
+										<p class="text-neutral/60 max-w-xl">{panel.detail}</p>
 									</div>
 
 									<div class="grid gap-2 text-sm">
-										<div class="bg-background/50 h-2 overflow-hidden rounded-full">
+										<div class="bg-surface/50 h-2 overflow-hidden rounded-full">
 											<div
 												class="{panel.accent} h-full"
 												style:width={`${(index + 1) * 33.33}%`}
 											></div>
 										</div>
-										<p class="text-foreground-muted">Active panel {index + 1} of 3</p>
+										<p class="text-neutral/60">Active panel {index + 1} of 3</p>
 									</div>
 
 									<div class="mt-auto flex gap-2">
 										{#if index > 0}
 											<button
-												class="rounded bg-background/70 px-3 py-1.5"
+												class="rounded bg-surface/70 px-3 py-1.5"
 												onclick={() => stepper.previous()}>previous</button
 											>
 										{/if}

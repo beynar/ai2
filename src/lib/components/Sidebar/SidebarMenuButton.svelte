@@ -55,8 +55,8 @@
 	const openClass = $derived(
 		menu && !compact
 			? resolvedOpenStyle === 'muted'
-				? 'aria-expanded:bg-background-muted'
-				: 'aria-expanded:bg-primary/10 aria-expanded:text-primary'
+				? 'aria-expanded:bg-neutral-muted'
+				: 'aria-expanded:bg-primary-muted aria-expanded:text-primary-muted-readable'
 			: ''
 	);
 	const collapsedMediaPadding = $derived(
@@ -159,7 +159,7 @@
 	<div class="flex items-center gap-2 px-2 py-1 text-left">
 		{@render media()}
 		<div class="grid min-w-0 flex-1 leading-tight">
-			<span class="truncate font-medium text-foreground">{title}</span>
+			<span class="truncate font-medium text-neutral">{title}</span>
 			{#if subtitle}
 				<span class={classes.menuSecondary({ componentSize: size })}>{subtitle}</span>
 			{/if}

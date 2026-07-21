@@ -124,7 +124,7 @@ Loading placeholder with pulse animation. Shape/size controlled entirely via `cl
 ### Props
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `color` | Color | `'foreground'` | Background color |
+| `color` | Color | `'neutral'` | Background color |
 | `children` | `Snippet` | - | Optional inner content |
 
 ### Common Patterns

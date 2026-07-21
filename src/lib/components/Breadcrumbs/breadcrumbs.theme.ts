@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultBreadcrumbsContainer = cva({
-	base: 'text-foreground-muted flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-4.5',
+	base: 'text-neutral/60 flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-4.5',
 	variants: {},
 	defaultVariants: {}
 });
@@ -11,26 +11,26 @@ const defaultBreadcrumbsItem = cva({
 	base: 'inline-flex items-center gap-1.5',
 	variants: {
 		disabled: {
-			true: 'text-foreground-muted/50 cursor-not-allowed *:pointer-events-none',
+			true: 'text-neutral/50 cursor-not-allowed *:pointer-events-none',
 			false: 'cursor-pointer'
 		},
 		active: {
-			true: 'text-foreground font-normal cursor-auto',
-			false: 'hover:text-foreground'
+			true: 'text-neutral font-normal cursor-auto',
+			false: 'hover:text-neutral'
 		}
 	},
 	defaultVariants: {}
 });
 
 const defaultBreadcrumbsLink = cva({
-	base: 'px-2 py-0.5  outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-offset-1 ring-offset-background rounded',
+	base: 'px-2 py-0.5  outline-none focus-visible:ring-1 focus-visible:ring-neutral focus-visible:ring-offset-1 ring-offset-surface rounded',
 	variants: {
 		disabled: {
 			true: '',
 			false: ''
 		},
 		active: {
-			true: 'text-foreground font-normal',
+			true: 'text-neutral font-normal',
 			false: ''
 		}
 	},
@@ -46,7 +46,7 @@ const defaultBreadcrumbsPage = cva({
 });
 
 const defaultBreadcrumbsSeparator = cva({
-	base: 'flex items-center text-foreground-muted [&>svg]:size-3.5',
+	base: 'flex items-center text-neutral/60 [&>svg]:size-3.5',
 	variants: {},
 	defaultVariants: {}
 });

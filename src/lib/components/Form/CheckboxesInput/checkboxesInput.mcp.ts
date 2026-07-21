@@ -301,7 +301,7 @@ The component renders as a fieldset with the following DOM structure:
 
 ### Card Mode
 - Each option displayed as a card with elevation
-- Selected cards show a foreground ring
+- Selected cards show a primary selection ring
 - Better visual feedback
 - Ideal for feature selection or important choices
 

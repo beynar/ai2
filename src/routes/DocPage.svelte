@@ -34,9 +34,9 @@
 
 <article class="mx-auto w-full max-w-6xl">
 	<header class="mb-6">
-		<h1 class="text-foreground text-3xl font-bold tracking-tight">{title}</h1>
+		<h1 class="text-neutral text-3xl font-bold tracking-tight">{title}</h1>
 		{#if subtitle}
-			<p class="text-foreground/70 mt-2 text-base">{subtitle}</p>
+			<p class="text-neutral/70 mt-2 text-base">{subtitle}</p>
 		{/if}
 	</header>
 
@@ -44,7 +44,7 @@
 		<ul class="mb-8 flex flex-wrap gap-2">
 			{#each features as feature (feature)}
 				<li
-					class="border-background-muted bg-background text-foreground/80 inline-flex items-center gap-1.5 rounded-full border py-1 pr-3 pl-2 text-xs"
+					class="border-neutral-muted bg-surface text-neutral/80 inline-flex items-center gap-1.5 rounded-full border py-1 pr-3 pl-2 text-xs"
 				>
 					<svg
 						class="text-primary size-3.5 shrink-0"
@@ -76,7 +76,7 @@
 			{/if}
 			{#each relatedComponents as relatedComponent (relatedComponent)}
 				<section class="mt-12">
-					<h2 class="text-foreground text-xl font-semibold">{relatedComponent}</h2>
+					<h2 class="text-neutral text-xl font-semibold">{relatedComponent}</h2>
 					<PropsTable component={relatedComponent} />
 				</section>
 			{/each}
@@ -86,7 +86,7 @@
 					{@render examples()}
 				</div>
 			{:else}
-				<p class="text-foreground/60 text-sm">No examples yet for this component.</p>
+				<p class="text-neutral/60 text-sm">No examples yet for this component.</p>
 			{/if}
 		{:else if component}
 			<div class="grid gap-8">
@@ -94,7 +94,7 @@
 				<ThemeSchema {component} />
 			</div>
 		{:else}
-			<p class="text-foreground/60 text-sm">No structural schema for this component.</p>
+			<p class="text-neutral/60 text-sm">No structural schema for this component.</p>
 		{/if}
 	</div>
 </article>

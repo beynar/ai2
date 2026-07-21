@@ -37,7 +37,7 @@ const defaultScrollAreaScrollbarX = cva({
 });
 
 const defaultScrollAreaScrollbarThumb = cva({
-	base: 'bg-background-muted'
+	base: "relative bg-neutral-muted after:absolute after:-inset-1 after:content-['']"
 });
 
 export const scrollAreaTheme = {

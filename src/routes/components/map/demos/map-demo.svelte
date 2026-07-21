@@ -93,18 +93,18 @@
 		{#snippet clusterMarker(cluster: MapClusterSnippetArg<OfficeData>)}
 			<button
 				type="button"
-				class="grid size-14 place-items-center rounded-full bg-background text-xs font-medium shadow-md ring-4 ring-primary/25"
+				class="grid size-14 place-items-center rounded-full bg-surface text-xs font-medium shadow-md ring-4 ring-primary/25"
 				aria-label={`Cluster of ${cluster.count} offices`}
 			>
 				<span class="text-base font-semibold tabular-nums">{cluster.count}</span>
-				<span class="-mt-2 text-[10px] text-foreground-muted">{getHeadcount(cluster.data)}</span>
+				<span class="-mt-2 text-[10px] text-neutral/60">{getHeadcount(cluster.data)}</span>
 			</button>
 		{/snippet}
 
 		{#snippet popup(arg: MapMarkerPopupContentArg<OfficeData>)}
 			<div class="space-y-1">
 				<p class="font-medium leading-none">{arg.marker.label}</p>
-				<p class="text-foreground-muted">{arg.marker.description}</p>
+				<p class="text-neutral/60">{arg.marker.description}</p>
 				<p class="text-xs">{arg.data?.team} / {arg.data?.headcount} people</p>
 			</div>
 		{/snippet}

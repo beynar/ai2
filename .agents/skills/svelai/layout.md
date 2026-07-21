@@ -1,6 +1,7 @@
 # Svelai Layout and Navigation Components
 
 ## Table of Contents
+
 - [Tabs](#tabs)
 - [Tabbar](#tabbar)
 - [Stepper](#stepper)
@@ -19,11 +20,13 @@
 ---
 
 ## Tabs
+
 `import { Tabs } from 'svelai/tabs'`
 
 Combines Tabbar + Stepper for a complete tabbed interface with animated content panels.
 
 **Props:**
+
 - `tabs`: `Array<string | TabItem>` (required)
 - `activeTab`: number (default: 0, bindable)
 - `placement`: `'top' | 'bottom' | 'left' | 'right'` (default: `'top'`) -- auto-sets orientation
@@ -36,8 +39,8 @@ Combines Tabbar + Stepper for a complete tabbed interface with animated content 
 
 ```svelte
 <Tabs tabs={['Home', 'Settings']} bind:activeTab placement="left">
-  {#snippet tab1()}<div>Home content</div>{/snippet}
-  {#snippet tab2()}<div>Settings content</div>{/snippet}
+	{#snippet tab1()}<div>Home content</div>{/snippet}
+	{#snippet tab2()}<div>Settings content</div>{/snippet}
 </Tabs>
 ```
 
@@ -46,11 +49,13 @@ Combines Tabbar + Stepper for a complete tabbed interface with animated content 
 ---
 
 ## Tabbar
+
 `import { Tabbar } from 'svelai/tabbar'`
 
 Standalone tab navigation bar with active indicator.
 
 **Props:**
+
 - `tabs`: `Array<string | TabItem>` (required) -- TabItem: `{ label, prefix?, suffix?, href?, disabled?, target?, rel? }`
 - `activeTab`: number (default: 0, bindable)
 - `size`: `'small' | 'normal' | 'large'` (default: `'normal'`)
@@ -71,11 +76,13 @@ When `href` is provided, tab renders as `<a>`. Roving tabindex + full keyboard n
 ---
 
 ## Stepper
+
 `import { Stepper } from 'svelai/stepper'`
 
 Animated multi-step content container with smooth height transitions.
 
 **Props:**
+
 - `items`: `Array<Item>` (required) -- any type
 - `activeStep`: number (default: 0, bindable)
 - `mode`: `'classic' | 'vertical'`
@@ -87,8 +94,8 @@ Animated multi-step content container with smooth height transitions.
 
 ```svelte
 <Stepper items={['Step 1', 'Step 2']} bind:stepper>
-  {#snippet step1({ stepper })}<Button onclick={() => stepper.next()}>Next</Button>{/snippet}
-  {#snippet step2({ stepper })}<Button onclick={() => stepper.previous()}>Back</Button>{/snippet}
+	{#snippet step1({ stepper })}<Button onclick={() => stepper.next()}>Next</Button>{/snippet}
+	{#snippet step2({ stepper })}<Button onclick={() => stepper.previous()}>Back</Button>{/snippet}
 </Stepper>
 ```
 
@@ -97,11 +104,13 @@ Animated multi-step content container with smooth height transitions.
 ---
 
 ## Breadcrumbs
+
 `import { Breadcrumbs } from 'svelai/breadcrumbs'`
 
 Hierarchical navigation path. Semantic `<nav><ol><li>` structure.
 
 **Props:**
+
 - `items`: `BreadcrumbItem[]` (required) -- `{ label, href?, active?, disabled?, onClick?, icon?, menu? }`
 - `home`: BreadcrumbItem -- prepended first item
 - `maxItems`: number -- shows first + ellipsis + last N items
@@ -113,12 +122,12 @@ Items with `menu` render as PopupMenu. Items can be strings or config objects.
 
 ```svelte
 <Breadcrumbs
-  home={{ label: 'Home', href: '/' }}
-  items={[
-    { label: 'Products', href: '/products' },
-    { label: 'Details', active: true }
-  ]}
-  maxItems={3}
+	home={{ label: 'Home', href: '/' }}
+	items={[
+		{ label: 'Products', href: '/products' },
+		{ label: 'Details', active: true }
+	]}
+	maxItems={3}
 />
 ```
 
@@ -127,11 +136,13 @@ Items with `menu` render as PopupMenu. Items can be strings or config objects.
 ---
 
 ## Accordion
+
 `import { Accordion } from 'svelai/accordion'`
 
 Collapsible content sections with single/multiple expand modes.
 
 **Props:**
+
 - `items`: `Array<Item>` (bindable)
 - `titleKey` / `contentKey` / `descriptionKey`: string -- custom keys (defaults: `'title'`, `'content'`, `'description'`)
 - `variant`: `'classic' | 'card' | 'outlined'`
@@ -146,11 +157,11 @@ Collapsible content sections with single/multiple expand modes.
 
 ```svelte
 <Accordion
-  items={[{ question: 'Q?', answer: 'A.' }]}
-  titleKey="question"
-  contentKey="answer"
-  variant="card"
-  splitted
+	items={[{ question: 'Q?', answer: 'A.' }]}
+	titleKey="question"
+	contentKey="answer"
+	variant="card"
+	splitted
 />
 ```
 
@@ -159,11 +170,13 @@ Collapsible content sections with single/multiple expand modes.
 ---
 
 ## Collapsible
+
 `import { Collapsible } from 'svelai/collapsible'`
 
 Single toggle show/hide with slide transition.
 
 **Props:**
+
 - `open`: boolean (controlled mode)
 - `defaultOpen`: boolean (default: false, uncontrolled)
 - `size`: `'small' | 'normal' | 'large'` (default: `'normal'`)
@@ -176,8 +189,8 @@ Uses Svelte slide transition (200ms). Content removed from DOM when closed.
 
 ```svelte
 <Collapsible bind:open={isOpen}>
-  {#snippet trigger()}Toggle{/snippet}
-  {#snippet content()}<p>Hidden content</p>{/snippet}
+	{#snippet trigger()}Toggle{/snippet}
+	{#snippet content()}<p>Hidden content</p>{/snippet}
 </Collapsible>
 ```
 
@@ -186,13 +199,15 @@ Uses Svelte slide transition (200ms). Content removed from DOM when closed.
 ---
 
 ## Separator
+
 `import { Separator } from 'svelai/separator'`
 
 Visual divider with optional label.
 
 **Props:**
+
 - `orientation`: `'horizontal' | 'vertical'`
-- `color`: Colors or `'background'` (default: `'background'`)
+- `color`: Colors (default: `'neutral'`)
 - `size`: number (default: 1) -- thickness in px
 - `decorative`: boolean -- sets role none when true, role separator when false
 
@@ -200,7 +215,7 @@ Visual divider with optional label.
 
 ```svelte
 <Separator color="primary" size={2}>
-  {#snippet children()}OR{/snippet}
+	{#snippet children()}OR{/snippet}
 </Separator>
 ```
 
@@ -209,30 +224,39 @@ Visual divider with optional label.
 ---
 
 ## Menu
+
 `import { Menu } from 'svelai/menu'`
 
 Renders an array of items: buttons, options, separators, and submenus.
 
 **Props:**
+
 - `items`: `MenuItem[]` (required) -- discriminated union by `type`
 - `header` / `footer`: Snippet
 
 **Item types:**
+
 - `{ type: 'option', title, description?, prefix?, suffix?, onClick?, href?, color?, size? }`
 - `{ type: 'button', children, variant?, color?, onClick? }`
 - `{ type: 'separator', color?, size?, children? }`
 - `{ type: 'submenu', title, menu: MenuItem[], openOnHover?, openOnClick?, hoverDelay?, closeOnMouseLeave? }`
 
 ```svelte
-<Menu items={[
-  { type: 'option', title: 'Profile', prefix: userIcon },
-  { type: 'separator' },
-  { type: 'submenu', title: 'Settings', menu: [
-    { type: 'option', title: 'General' },
-    { type: 'option', title: 'Privacy' }
-  ]},
-  { type: 'button', children: 'Logout', color: 'danger', variant: 'ghost' }
-]} />
+<Menu
+	items={[
+		{ type: 'option', title: 'Profile', prefix: userIcon },
+		{ type: 'separator' },
+		{
+			type: 'submenu',
+			title: 'Settings',
+			menu: [
+				{ type: 'option', title: 'General' },
+				{ type: 'option', title: 'Privacy' }
+			]
+		},
+		{ type: 'button', children: 'Logout', color: 'danger', variant: 'ghost' }
+	]}
+/>
 ```
 
 **Theme forwarding:** `menu` (variants: gap), `button`, `option`, `separator`, `submenu` -- each forwarded to child components
@@ -240,11 +264,13 @@ Renders an array of items: buttons, options, separators, and submenus.
 ---
 
 ## PopupMenu
+
 `import { PopupMenu } from 'svelai/popup-menu'`
 
 Popover + Menu combo. Inherits all Popover props.
 
 **Key props:**
+
 - `menu`: `{ items: MenuItem[], class?, theme? }` (required)
 - `trigger`: `Snippet | ButtonProps | false`
 - `closeOnItemClick`: boolean (default: true)
@@ -252,20 +278,22 @@ Popover + Menu combo. Inherits all Popover props.
 
 ```svelte
 <PopupMenu
-  trigger={{ content: 'Open', variant: 'outline' }}
-  position="bottom-start"
-  menu={{ items: menuItems }}
+	trigger={{ content: 'Open', variant: 'outline' }}
+	position="bottom-start"
+	menu={{ items: menuItems }}
 />
 ```
 
 ---
 
 ## MenuOption
+
 `import { MenuOption } from 'svelai/menu-option'`
 
 Individual menu item with title/description layout.
 
 **Props:**
+
 - `title` / `description` / `children`: Snippet (title+description OR children, mutually exclusive)
 - `prefix` / `suffix`: Snippet
 - `size`: `'small' | 'normal' | 'large'` (default: `'normal'`)
@@ -278,9 +306,9 @@ Individual menu item with title/description layout.
 
 ```svelte
 <MenuOption href="/settings" color="primary">
-  {#snippet prefix()}<Icon />{/snippet}
-  {#snippet title()}Settings{/snippet}
-  {#snippet description()}Manage preferences{/snippet}
+	{#snippet prefix()}<Icon />{/snippet}
+	{#snippet title()}Settings{/snippet}
+	{#snippet description()}Manage preferences{/snippet}
 </MenuOption>
 ```
 
@@ -289,11 +317,13 @@ Individual menu item with title/description layout.
 ---
 
 ## Carousel
+
 `import { Carousel } from 'svelai/carousel'`
 
 Scrollable item collection with navigation, dots, drag/touch support.
 
 **Props:**
+
 - `layout`: ResponsiveProperty (default: `{ default: 1 }`) -- items per breakpoint `{ xs, sm, md, lg, xl }`
 - `gaps`: ResponsiveProperty (default: `{ default: 20 }`) -- gap in px
 - `partialDelta`: ResponsiveProperty -- px to peek next item
@@ -304,11 +334,15 @@ Scrollable item collection with navigation, dots, drag/touch support.
 **Children snippet** receives CarouselState: `next(count?)`, `prev(count?)`, `moveToSlide()`, `canScrollNext`, `canScrollPrev`, `currentSlide`, `sortedSlides`, `dots`
 
 ```svelte
-<Carousel layout={{ xs: 1, md: 2, lg: 3 }} gaps={{ default: 16 }}
-  navigationButton={{ color: 'primary' }} dots={{ color: 'primary' }}>
-  {#each items as item}
-    <div>{item.content}</div>
-  {/each}
+<Carousel
+	layout={{ xs: 1, md: 2, lg: 3 }}
+	gaps={{ default: 16 }}
+	navigationButton={{ color: 'primary' }}
+	dots={{ color: 'primary' }}
+>
+	{#each items as item}
+		<div>{item.content}</div>
+	{/each}
 </Carousel>
 ```
 
@@ -317,18 +351,20 @@ Scrollable item collection with navigation, dots, drag/touch support.
 ---
 
 ## ScrollArea
+
 `import { ScrollArea } from 'svelai/scroll-area'`
 
 Custom scrollbar container.
 
 **Props:**
+
 - `orientation`: `'vertical' | 'horizontal' | 'both'` (default: `'vertical'`)
 - `hideScrollbar`: boolean
 - `fadeScrollbar`: boolean (default: true)
 
 ```svelte
 <ScrollArea class="h-64" orientation="vertical">
-  <!-- long content -->
+	<!-- long content -->
 </ScrollArea>
 ```
 
@@ -337,19 +373,21 @@ Custom scrollbar container.
 ---
 
 ## AspectRatio
+
 `import { AspectRatio } from 'svelai/aspect-ratio'`
 
 Maintains aspect ratio for content (images, videos, etc.).
 
 **Props:**
+
 - `ratio`: `'2x1' | '2x3' | '16x9' | '4x3' | '1x1' | '3x4' | '3x2' | '9x16' | '1x2'` (default: `'2x1'`)
 - `ref`: HTMLElement
 
 ```svelte
 <AspectRatio ratio="16x9">
-  {#snippet children()}
-    <img src="/img.jpg" alt="" class="h-full w-full object-cover" />
-  {/snippet}
+	{#snippet children()}
+		<img src="/img.jpg" alt="" class="h-full w-full object-cover" />
+	{/snippet}
 </AspectRatio>
 ```
 
@@ -358,11 +396,13 @@ Maintains aspect ratio for content (images, videos, etc.).
 ---
 
 ## Marquee
+
 `import { Marquee } from 'svelai/marquee'`
 
 Infinite scrolling animation. Content auto-duplicated for seamless loop.
 
 **Props:**
+
 - `direction`: `'left' | 'up'` (default: `'left'`)
 - `speed`: `'fast' | 'normal' | 'slow' | number` (default: `'fast'`) -- fast=20s, normal=40s, slow=80s
 - `size`: `'small' | 'normal' | 'large'` (default: `'normal'`)
@@ -376,9 +416,9 @@ Vertical marquees need a container with defined height.
 
 ```svelte
 <Marquee speed="normal" fade direction="up" class="h-[400px]">
-  {#each items as item}
-    <div class="px-4 py-2 bg-background rounded">{item.text}</div>
-  {/each}
+	{#each items as item}
+		<div class="px-4 py-2 bg-surface rounded">{item.text}</div>
+	{/each}
 </Marquee>
 ```
 

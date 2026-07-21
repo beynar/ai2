@@ -118,7 +118,7 @@ export const LOCALE = 'en-GB';
 			<Button
 				size="small"
 				variant={current === option ? 'solid' : 'ghost'}
-				color="foreground"
+				color="neutral"
 				onClick={() => onSelect(option)}
 			>
 				{option}
@@ -294,7 +294,7 @@ export const LOCALE = 'en-GB';
 		>
 			<div class="grid w-full max-w-3xl gap-2">
 				<Diff files={greetFiles} bind:selectedLines />
-				<p class="text-foreground-muted text-xs">
+				<p class="text-neutral/60 text-xs">
 					Selection: {selectedLines
 						? `${selectedLines.start}–${selectedLines.end}`
 						: 'none — drag across the gutter to select lines'}

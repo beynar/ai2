@@ -29,7 +29,7 @@
 		<ScrollArea type="hover" scrollFade class="raised h-52 w-full max-w-md">
 			<div class="flex flex-col gap-3 p-4">
 				{#each paragraphs as p}
-					<p class="text-foreground/80 text-sm">
+					<p class="text-neutral/80 text-sm">
 						Paragraph {p}. The quick brown fox jumps over the lazy dog. Scroll to see the custom
 						overlay scrollbar appear on hover.
 					</p>
@@ -44,7 +44,7 @@
 				<ScrollArea {type} class="raised h-52 w-full max-w-md">
 					<div class="flex flex-col gap-3 p-4">
 						{#each paragraphs as p}
-							<p class="text-foreground/80 text-sm">
+							<p class="text-neutral/80 text-sm">
 								Paragraph {p}. The quick brown fox jumps over the lazy dog.
 							</p>
 						{/each}
@@ -58,7 +58,7 @@
 				<div class="flex gap-3 p-4">
 					{#each paragraphs as p}
 						<div
-							class="bg-background-muted text-foreground/80 grid aspect-square w-40 shrink-0 place-items-center rounded text-sm"
+							class="bg-neutral-muted text-neutral/80 grid aspect-square w-40 shrink-0 place-items-center rounded text-sm"
 						>
 							Card {p}
 						</div>

@@ -7,4 +7,4 @@ export {
 	type TooltipThemeProps
 } from './tooltip.theme.js';
 
-export { tooltip } from './tooltip.svelte.js';
+export { tooltip, type TooltipProps } from './tooltip.svelte.js';

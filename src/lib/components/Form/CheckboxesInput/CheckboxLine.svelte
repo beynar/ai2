@@ -93,5 +93,5 @@
 	</div>
 
 	<Slot render={label} class={classes.checkboxesInputItemLabel()} />
-	<Slot render={description} class={classes.checkboxesInputItemDescription()} />
+	<Slot render={description} class={classes.checkboxesInputItemDescription({ mode, checked })} />
 </button>

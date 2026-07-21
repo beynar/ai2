@@ -4,7 +4,7 @@ export const AI_COMPOSER_LEXICAL_THEME = {
 		h2: 'text-lg font-semibold leading-snug',
 		h3: 'text-base font-semibold leading-snug'
 	},
-	link: 'text-primary underline underline-offset-2',
+	link: 'text-primary-readable underline underline-offset-2',
 	list: {
 		listitem: 'my-1',
 		nested: {
@@ -14,10 +14,10 @@ export const AI_COMPOSER_LEXICAL_THEME = {
 		ul: 'list-disc pl-5'
 	},
 	paragraph: 'm-0',
-	quote: 'border-l-2 border-border pl-3 text-muted-foreground',
+	quote: 'border-l-2 border-neutral-muted pl-3 text-neutral/60',
 	text: {
 		bold: 'font-semibold',
-		code: 'rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]',
+		code: 'rounded bg-surface-canvas px-1 py-0.5 font-mono text-[0.9em]',
 		highlight: 'rounded bg-primary/15 px-0.5',
 		italic: 'italic',
 		strikethrough: 'line-through'

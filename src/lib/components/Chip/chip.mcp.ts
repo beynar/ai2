@@ -14,7 +14,7 @@ The Chip component is a compact element for displaying tags, labels, categories,
 ## Props
 
 ### Core Props
-- **color**: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' (default: 'primary')
   - Determines the color scheme
 
 - **variant**: 'solid' | 'outline' | 'soft' (default: 'solid')
@@ -179,7 +179,7 @@ The Chip component is a compact element for displaying tags, labels, categories,
 	{#each filters as filter}
 		<Chip 
 			variant={selected === filter ? 'solid' : 'outline'}
-			color={selected === filter ? 'primary' : 'background'}
+			color={selected === filter ? 'primary' : 'neutral'}
 			onClick={() => selected = filter}
 		>
 			{filter}
@@ -285,7 +285,7 @@ const customTheme: ChipThemeProps = {
 - base: Base classes applied to all chips
 - Variants:
   - size: 'small' | 'normal' | 'large' - Controls padding, height, text size, and gap
-  - color: 'primary' | 'secondary' | 'foreground' | 'background' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
+  - color: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' - Color scheme
   - variant: 'solid' | 'outline' | 'soft' - Visual style variant
   - position: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' - Optional absolute corner placement
 

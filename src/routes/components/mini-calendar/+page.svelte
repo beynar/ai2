@@ -90,7 +90,7 @@
 		>
 			<div class="flex flex-col items-center gap-3">
 				<MiniCalendar bind:value={selected} />
-				<p class="text-foreground-muted text-sm">Selected: {readout}</p>
+				<p class="text-neutral/60 text-sm">Selected: {readout}</p>
 			</div>
 		</ComponentCard>
 

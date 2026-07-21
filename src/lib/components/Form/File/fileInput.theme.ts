@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultInputContainer = cva({
-	base: 'px-3 py-2 bg-background-light border border-background-muted rounded text-foreground w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all min-h-32 flex flex-col items-center justify-center cursor-pointer',
+	base: 'px-3 py-2 bg-surface-raised border border-neutral-muted rounded text-neutral w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all min-h-32 flex flex-col items-center justify-center cursor-pointer',
 	variants: {
 		size: {
 			small: 'min-h-24',
@@ -11,7 +11,7 @@ const defaultInputContainer = cva({
 		},
 		state: {
 			idle: '',
-			potential: 'border-foreground/50',
+			potential: 'border-neutral/50',
 			valid: 'border-success bg-success/5',
 			invalid: 'border-danger bg-danger/5'
 		},
@@ -26,7 +26,7 @@ const defaultInputContainer = cva({
 });
 
 const defaultPlaceholder = cva({
-	base: 'flex flex-col items-center justify-center gap-2 text-foreground-muted',
+	base: 'flex flex-col items-center justify-center gap-2 text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs gap-1',
@@ -54,7 +54,7 @@ const defaultFileList = cva({
 });
 
 const defaultFile = cva({
-	base: 'flex items-center gap-3 p-2 bg-background-dark',
+	base: 'flex items-center gap-3 p-2 bg-surface-canvas',
 	variants: {
 		size: {
 			small: 'p-1 text-xs gap-2',

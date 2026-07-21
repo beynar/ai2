@@ -12,21 +12,21 @@
 -->
 <style>
 	:global(:root) {
-		--code-token-background: var(--color-background);
-		--code-token-plain: var(--color-foreground);
-		--code-token-comment: var(--color-foreground-muted);
+		--code-token-surface: var(--color-surface);
+		--code-token-plain: var(--color-neutral);
+		--code-token-comment: color-mix(in oklab, var(--color-neutral) 58%, var(--code-token-surface));
 		--code-token-punctuation: color-mix(
 			in oklab,
-			var(--color-foreground-muted) 65%,
-			var(--color-foreground)
+			var(--color-neutral) 72%,
+			var(--code-token-surface)
 		);
 		--code-token-keyword: var(--color-primary);
 		--code-token-string: var(--color-success);
 		--code-token-number: var(--color-warning);
 		--code-token-constant: var(--color-warning);
 		--code-token-function: var(--color-info);
-		--code-token-variable: color-mix(in oklab, var(--color-foreground) 88%, var(--color-info));
-		--code-token-property: color-mix(in oklab, var(--color-info) 60%, var(--color-foreground));
+		--code-token-variable: color-mix(in oklab, var(--color-neutral) 88%, var(--color-info));
+		--code-token-property: color-mix(in oklab, var(--color-info) 60%, var(--color-neutral));
 		--code-token-tag: var(--color-danger);
 		--code-token-regex: var(--color-success);
 		--code-token-escape: var(--color-warning);
@@ -34,23 +34,19 @@
 		--code-token-inserted: var(--color-success);
 		--code-token-deleted: var(--color-danger);
 		--code-token-changed: var(--color-warning);
-		--code-token-inserted-background: color-mix(in oklab, var(--color-success) 14%, transparent);
-		--code-token-deleted-background: color-mix(in oklab, var(--color-danger) 14%, transparent);
-		--code-token-changed-background: color-mix(in oklab, var(--color-warning) 14%, transparent);
+		--code-token-inserted-surface: color-mix(in oklab, var(--color-success) 14%, transparent);
+		--code-token-deleted-surface: color-mix(in oklab, var(--color-danger) 14%, transparent);
+		--code-token-changed-surface: color-mix(in oklab, var(--color-warning) 14%, transparent);
 	}
 
 	:global(html[data-theme='dark']),
 	:global(.dark) {
 		/* Dark `--color-danger` (#7f1d1d) is too dark to read as syntax; lift it. */
-		--code-token-tag: color-mix(in oklab, var(--color-danger-light) 70%, var(--color-foreground));
-		--code-token-deleted: color-mix(
-			in oklab,
-			var(--color-danger-light) 70%,
-			var(--color-foreground)
-		);
-		--code-token-error: color-mix(in oklab, var(--color-danger-light) 70%, var(--color-foreground));
+		--code-token-tag: color-mix(in oklab, var(--color-danger-light) 70%, var(--color-neutral));
+		--code-token-deleted: color-mix(in oklab, var(--color-danger-light) 70%, var(--color-neutral));
+		--code-token-error: color-mix(in oklab, var(--color-danger-light) 70%, var(--color-neutral));
 		/* Keep property distinct from function against the darker surface. */
-		--code-token-property: color-mix(in oklab, var(--color-info) 70%, var(--color-foreground));
+		--code-token-property: color-mix(in oklab, var(--color-info) 70%, var(--color-neutral));
 	}
 
 	/* Shiki output uses inline `style="color:var(--code-token-*)"`, so no per-span
@@ -103,8 +99,8 @@
 		padding-right: 1rem;
 		margin-right: 1rem;
 		text-align: right;
-		color: var(--color-foreground-muted);
-		background-color: var(--code-token-background);
+		color: var(--code-token-comment);
+		background-color: var(--code-token-surface);
 		user-select: none;
 		-webkit-user-select: none;
 	}

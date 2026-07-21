@@ -151,7 +151,7 @@
 					id={optionId(country.iso2)}
 					type="button"
 					variant="ghost"
-					color="background"
+					color="neutral"
 					{size}
 					fullWidth
 					role="option"

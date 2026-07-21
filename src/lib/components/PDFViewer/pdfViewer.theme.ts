@@ -32,7 +32,7 @@ const defaultPDFViewerToolbar = cva({
 });
 
 const defaultPDFViewerPageInfo = cva({
-	base: 'text-foreground-lighter tabular-nums select-none px-2',
+	base: 'text-neutral/60 tabular-nums select-none px-2',
 	variants: {
 		size: { small: 'text-xs', normal: 'text-sm', large: 'text-base' }
 	},
@@ -41,7 +41,7 @@ const defaultPDFViewerPageInfo = cva({
 
 // Hosts the ScrollArea, so it needs a bounded height for scrolling.
 const defaultPDFViewerViewer = cva({
-	base: 'relative rounded border border-background-muted bg-background-light overflow-hidden h-[70vh] min-h-48'
+	base: 'relative rounded border border-neutral-muted bg-surface-raised overflow-hidden h-[70vh] min-h-48'
 });
 
 // The stack of pages inside the scroll viewport (continuous mode).
@@ -85,11 +85,11 @@ const defaultPDFViewerCanvas = cva({
 });
 
 const defaultPDFViewerPageError = cva({
-	base: 'absolute inset-0 flex items-center justify-center bg-background-light text-danger text-sm z-[4]'
+	base: 'absolute inset-0 flex items-center justify-center bg-surface-raised text-danger-readable text-sm z-[4]'
 });
 
 const defaultPDFViewerError = cva({
-	base: 'flex items-center justify-center p-6 text-danger text-sm w-full text-center'
+	base: 'flex items-center justify-center p-6 text-danger-readable text-sm w-full text-center'
 });
 
 const defaultPDFViewerSkeleton = cva({
@@ -104,7 +104,7 @@ const defaultPDFViewerSearch = cva({
 });
 
 const defaultPDFViewerSearchInput = cva({
-	base: 'bg-background border border-background-muted rounded px-2 py-1 text-sm outline-none focus:border-primary flex-1 min-w-0',
+	base: 'bg-surface border border-neutral-muted rounded px-2 py-1 text-sm outline-none focus:border-primary flex-1 min-w-0',
 	variants: {
 		size: { small: 'text-xs py-0.5', normal: 'text-sm', large: 'text-base' }
 	},
@@ -112,7 +112,7 @@ const defaultPDFViewerSearchInput = cva({
 });
 
 const defaultPDFViewerSearchCount = cva({
-	base: 'text-foreground-lighter text-xs tabular-nums px-1 select-none min-w-12 text-center'
+	base: 'text-neutral/60 text-xs tabular-nums px-1 select-none min-w-12 text-center'
 });
 
 export const pdfViewerTheme = {

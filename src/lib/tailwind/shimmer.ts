@@ -161,7 +161,7 @@ const shimmerUtilities: UtilityRules = {
 		'background-size': 'calc(200% + var(--_spread) * 2) 100%',
 		'background-position': '0 0',
 		'background-clip': 'text',
-		'-webkit-background-clip': 'text',
+		'-webkit-surface-clip': 'text',
 		'-webkit-text-fill-color': 'var(--shimmer-text-fill, transparent)',
 		animation: 'tw-shimmer var(--shimmer-duration, 2s) linear infinite',
 		'html[data-theme="dark"] &, .dark &, [data-color-scheme="dark"] &': {

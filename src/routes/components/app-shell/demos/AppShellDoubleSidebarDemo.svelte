@@ -39,7 +39,7 @@
 </script>
 
 <div
-	class="h-[560px] w-full overflow-auto rounded-lg border border-background-muted bg-background-muted"
+	class="h-[560px] w-full overflow-auto rounded-lg border border-neutral-muted bg-neutral-muted"
 >
 	<Sidebar
 		open={leftOpen}
@@ -117,19 +117,19 @@
 							<div class="grid gap-4 lg:grid-cols-3">
 								{#each ['Pipeline', 'Expansion', 'Risk'] as metric, index}
 									<section
-										class="rounded-lg border border-background-muted bg-background-light p-4"
+										class="rounded-lg border border-neutral-muted bg-surface-raised p-4"
 									>
-										<p class="text-sm font-medium text-foreground/70">{metric}</p>
-										<p class="mt-3 text-2xl font-semibold text-foreground">{76 + index * 8}%</p>
+										<p class="text-sm font-medium text-neutral/70">{metric}</p>
+										<p class="mt-3 text-2xl font-semibold text-neutral">{76 + index * 8}%</p>
 									</section>
 								{/each}
 							</div>
 
 							<section
-								class="mt-4 rounded-lg border border-background-muted bg-background-light p-4"
+								class="mt-4 rounded-lg border border-neutral-muted bg-surface-raised p-4"
 							>
-								<p class="text-sm font-medium text-foreground">Manual shell composition</p>
-								<p class="mt-2 text-sm leading-6 text-foreground/70">
+								<p class="text-sm font-medium text-neutral">Manual shell composition</p>
+								<p class="mt-2 text-sm leading-6 text-neutral/70">
 									This keeps AppShell simple while still allowing advanced layouts. Promote this to
 									a first-class AppShell API if both sidebars need coordinated collapse and mobile
 									behavior.

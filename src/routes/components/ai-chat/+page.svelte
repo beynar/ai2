@@ -7,7 +7,7 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
-	import AIElementsDemo from '../ai-elements/AIElementsDemo.svelte';
+	import AIChatDemo from './AIChatDemo.svelte';
 
 	const controls = createComponentControls([
 		{
@@ -16,6 +16,27 @@
 			label: 'State',
 			value: 'ready',
 			options: ['ready', 'loading', 'error']
+		},
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'messageSize',
+			type: 'segmented',
+			label: 'Message size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'messageVariant',
+			type: 'segmented',
+			label: 'Messages',
+			value: 'bubble',
+			options: ['bubble', 'minimal']
 		}
 	]);
 	const skeletonControls = createComponentControls([
@@ -44,6 +65,7 @@
 	relatedComponents={['AIChatSkeleton']}
 	features={[
 		'Central conversation-state payloads',
+		'Transcript density, message size, and presentation controls',
 		'Before, after, context, and model regions',
 		'Message actions and transcript navigation',
 		'Product-level composer sources, files, and queueing',
@@ -65,6 +87,9 @@ ${'</' + 'script>'}
   {models}
   {contextUsage}
   {suggestions}
+  density="normal"
+  messageSize="normal"
+  messageVariant="minimal"
   showToc
   messageActionsVisibility="hover"
   fileDropzone
@@ -73,11 +98,21 @@ ${'</' + 'script>'}
 />`}
 	>
 		{#if controls.value.previewState === 'ready'}
-			<AIElementsDemo />
+			<AIChatDemo
+				density={controls.value.density}
+				messageSize={controls.value.messageSize}
+				messageVariant={controls.value.messageVariant}
+			/>
 		{:else if controls.value.previewState === 'loading'}
 			<AIChatSkeleton class="h-[520px] w-full" />
 		{:else}
-			<AIChat error={new Error('The model provider is unavailable.')} class="h-[520px] w-full" />
+			<AIChat
+				error={new Error('The model provider is unavailable.')}
+				density={controls.value.density}
+				messageSize={controls.value.messageSize}
+				messageVariant={controls.value.messageVariant}
+				class="h-[520px] w-full"
+			/>
 		{/if}
 	</ComponentCard>
 
@@ -111,17 +146,17 @@ ${'</' + 'script>'}
 				class="h-[420px] w-full"
 			>
 				{#snippet beforeThread(state)}
-					<div class="border-b border-background-muted px-4 py-2 text-xs text-foreground/65">
+					<div class="border-b border-neutral-muted px-4 py-2 text-xs text-neutral/65">
 						{state.status} · {state.messages.length} messages
 					</div>
 				{/snippet}
 				{#snippet context(state)}
-					<span class="text-xs text-foreground/65"
+					<span class="text-xs text-neutral/65"
 						>{state.contextUsage?.totalTokens ?? 0} tokens</span
 					>
 				{/snippet}
 				{#snippet afterThread(state)}
-					<div class="border-t border-background-muted px-4 py-2 text-xs text-foreground/65">
+					<div class="border-t border-neutral-muted px-4 py-2 text-xs text-neutral/65">
 						Latest role: {state.messages.at(-1)?.role ?? 'none'}
 					</div>
 				{/snippet}
@@ -133,10 +168,13 @@ ${'</' + 'script>'}
 			description="Message actions and the user-turn table of contents are forwarded to the default AIThread."
 			class="!min-h-0 p-3 sm:p-6"
 			code={`<AIChat
-	  {messages}
-	  showToc
-	  tocSide="right"
-	  messageActionsVisibility="always"
+  {messages}
+  density="small"
+  messageSize="small"
+  messageVariant="minimal"
+  showToc
+  tocSide="right"
+  messageActionsVisibility="always"
   messageEditable={false}
   onMessageCopy={recordCopy}
 />`}
@@ -150,6 +188,9 @@ ${'</' + 'script>'}
 						content: 'The private beta remains gated until the rollback drill passes.'
 					}
 				]}
+				density="small"
+				messageSize="small"
+				messageVariant="minimal"
 				showToc
 				messageActionsVisibility="always"
 				messageEditable={false}
@@ -171,7 +212,7 @@ ${'</' + 'script>'}
 					<AIThread
 						estimateSize={120}
 						overscan={8}
-						class="rounded-lg border border-background-muted"
+						class="rounded-lg border border-neutral-muted"
 					/>
 					<AIComposer toolbar="fixed" submitShortcut="command-enter" />
 				</AIConversation>

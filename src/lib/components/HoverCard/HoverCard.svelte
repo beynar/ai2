@@ -33,7 +33,7 @@
 		class: className,
 		triggerClass,
 		popoverClass,
-		cardColor = 'background',
+		cardColor = 'neutral',
 		cardVariant = 'solid',
 		showBorders = false,
 		onOpen,

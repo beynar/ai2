@@ -489,8 +489,8 @@ type TableRow = {
 - The \`prefix\` and \`suffix\` slots are designed for future features like search and pagination
 - All parts of the table can be styled via the theme system
 - The table container includes horizontal scroll for responsive design
-- Rows have a subtle hover effect with \`bg-background-muted/40\`
-- All borders use \`border-background-muted\` for consistency
+- Rows have a subtle hover effect with \`bg-neutral-muted/40\`
+- All borders use \`border-neutral-muted\` for consistency
 - Row/cell spacing follows the \`density\` prop; the default 'normal' keeps rows at \`py-0.5\` with \`p-2\` cells
 
 ## Theme Customization

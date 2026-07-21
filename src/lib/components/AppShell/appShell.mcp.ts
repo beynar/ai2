@@ -59,7 +59,7 @@ AppShell renders PageShell internally, so child pages can use the PageShell cont
 
 ## Props
 
-- **variant**: 'admin' | 'floating' | 'inset' | 'split' - Shared shell geometry forwarded to Sidebar.
+- **variant**: 'admin' | 'floating' | 'inset' | 'split' - Shared shell treatment forwarded to Sidebar and PageShell chrome. Admin chrome uses the Sidebar canvas surface; floating chrome uses detached raised, rounded surfaces.
 - **sidebar**: AppShellSidebarProps - Sidebar props except \`children\`, \`mode\`, \`frame\`, and \`variant\`.
   Configure Sidebar \`size\` and \`density\` independently inside this object.
 - **eyebrow**: string | Snippet<[PageShellApi]> - Small metadata above the PageShell title.

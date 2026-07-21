@@ -20,7 +20,7 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 
-	let textColor = $state<Colors>('foreground');
+	let textColor = $state<Colors>('neutral');
 
 	function selectTextColor(color: Colors): void {
 		textColor = color;
@@ -32,8 +32,8 @@
 				type: 'option',
 				title: 'Default',
 				prefix: foregroundSwatch,
-				suffix: textColor === 'foreground' ? checkIcon : undefined,
-				onClick: () => selectTextColor('foreground')
+				suffix: textColor === 'neutral' ? checkIcon : undefined,
+				onClick: () => selectTextColor('neutral')
 			},
 			{
 				type: 'option',
@@ -119,19 +119,19 @@
 </script>
 
 {#snippet foregroundSwatch()}
-	<span class="size-3 rounded-full bg-foreground ring-1 ring-background-muted"></span>
+	<span class="size-3 rounded-full bg-neutral ring-1 ring-neutral-muted"></span>
 {/snippet}
 
 {#snippet primarySwatch()}
-	<span class="size-3 rounded-full bg-primary ring-1 ring-background-muted"></span>
+	<span class="size-3 rounded-full bg-primary ring-1 ring-neutral-muted"></span>
 {/snippet}
 
 {#snippet dangerSwatch()}
-	<span class="size-3 rounded-full bg-danger ring-1 ring-background-muted"></span>
+	<span class="size-3 rounded-full bg-danger ring-1 ring-neutral-muted"></span>
 {/snippet}
 
 {#snippet warningSwatch()}
-	<span class="size-3 rounded-full bg-warning ring-1 ring-background-muted"></span>
+	<span class="size-3 rounded-full bg-warning ring-1 ring-neutral-muted"></span>
 {/snippet}
 
 <DocPage

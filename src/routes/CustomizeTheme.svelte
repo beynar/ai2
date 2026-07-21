@@ -15,14 +15,14 @@
 	size="large"
 	title="Customize the {component} theme"
 	description="Copy a ready-to-use override for the set{component}Theme method. Full ships the current default classes; empty gives a blank scaffold to fill in."
-	trigger={{ content: 'Customize', variant: 'outline', color: 'foreground', size: 'small' }}
+	trigger={{ content: 'Customize', variant: 'outline', color: 'neutral', size: 'small' }}
 >
 	<div class="flex flex-col gap-4">
-		<div class="border-background-muted inline-flex w-fit gap-1 self-start rounded-lg border p-1">
+		<div class="border-neutral-muted inline-flex w-fit gap-1 self-start rounded-lg border p-1">
 			<Button
 				size="small"
 				variant={mode === 'default' ? 'solid' : 'ghost'}
-				color="foreground"
+				color="neutral"
 				onClick={() => (mode = 'default')}
 			>
 				Full default
@@ -30,7 +30,7 @@
 			<Button
 				size="small"
 				variant={mode === 'empty' ? 'solid' : 'ghost'}
-				color="foreground"
+				color="neutral"
 				onClick={() => (mode = 'empty')}
 			>
 				Empty scaffold

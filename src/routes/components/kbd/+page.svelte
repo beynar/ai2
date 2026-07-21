@@ -19,8 +19,8 @@
 			name: 'color',
 			type: 'segmented',
 			label: 'Color',
-			value: 'background',
-			options: ['background', 'primary', 'success', 'danger']
+			value: 'neutral',
+			options: ['neutral', 'primary', 'success', 'danger']
 		}
 	]);
 </script>
@@ -87,7 +87,7 @@
 			</div>
 
 			<!-- Inline in a sentence -->
-			<p class="text-foreground flex items-center justify-center gap-1 text-sm">
+			<p class="text-neutral flex items-center justify-center gap-1 text-sm">
 				Press <Kbd keys={['⌘', 'K']} /> to open the command palette, or <Kbd>Esc</Kbd> to close it.
 			</p>
 
@@ -96,7 +96,7 @@
 				<!-- Button's suffix slot is icon-sized (max-w-4) by default — widen it for a key combo. -->
 				<Button
 					variant="outline"
-					color="background"
+					color="neutral"
 					theme={{ suffix: { base: 'max-w-none max-h-none' } }}
 				>
 					Search

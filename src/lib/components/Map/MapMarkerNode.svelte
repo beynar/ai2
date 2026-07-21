@@ -33,7 +33,7 @@
 	let { map, Marker, marker, content, popup, tooltip, onmarkerclick }: Props<TData> = $props();
 
 	let popupOpen = $state(false);
-	let markerColor = $derived(marker.color ?? 'var(--foreground)');
+	let markerColor = $derived(marker.color ?? 'var(--color-neutral)');
 	let lngLat = $derived<[number, number]>([marker.lng, marker.lat]);
 	let snippetArg = $derived<MapMarkerSnippetArg<TData>>({
 		marker,

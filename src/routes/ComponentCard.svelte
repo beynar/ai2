@@ -39,11 +39,11 @@
 				<Heading>{title}</Heading>
 			{/if}
 			{#if description}
-				<p class="text-foreground-muted mt-1 text-sm">{description}</p>
+				<p class="text-neutral/60 mt-1 text-sm">{description}</p>
 			{/if}
 		</div>
 	{/if}
-	<div class="border-background-muted bg-background raised overflow-hidden rounded-xl border">
+	<div class="border-neutral-muted bg-surface raised overflow-hidden rounded-xl border">
 		<div
 			class="dotted-grid relative flex min-h-[400px] w-full items-center justify-center gap-4 p-8 {controls
 				? 'flex-col items-stretch justify-start'
@@ -53,7 +53,7 @@
 				<div
 					role="group"
 					aria-label="Preview controls"
-					class="border-background-muted bg-background/95 raised z-20 mx-auto flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-lg border p-2 backdrop-blur-sm"
+					class="border-neutral-muted bg-surface/95 raised z-20 mx-auto flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-lg border p-2 backdrop-blur-sm"
 				>
 					<ComponentControls {controls} />
 				</div>
@@ -63,7 +63,7 @@
 			</div>
 		</div>
 		{#if code}
-			<div class="border-background-muted border-t p-2">
+			<div class="border-neutral-muted border-t p-2">
 				<Collapsible variant="peek" peekHeight={84} bind:open={showCode} trigger={codeTrigger}>
 					<Code
 						{code}
@@ -79,5 +79,5 @@
 </div>
 
 {#snippet codeTrigger()}
-	<span class="text-foreground/80 text-sm font-medium">{showCode ? 'Hide code' : 'View code'}</span>
+	<span class="text-neutral/80 text-sm font-medium">{showCode ? 'Hide code' : 'View code'}</span>
 {/snippet}

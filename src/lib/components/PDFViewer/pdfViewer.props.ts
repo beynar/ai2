@@ -128,7 +128,7 @@ export type PDFViewerProps = WithAttachments<
 			size?: Sizes;
 			/**
 			 * The theme color of the toolbar controls.
-			 * @default 'foreground'
+			 * @default 'neutral'
 			 */
 			color?: Colors;
 			/**

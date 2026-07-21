@@ -120,14 +120,16 @@ Attachment directive (not a component). Uses `{@attach}` on any element.
 |---|---|---|
 | `content` | `string \| Snippet` (required) | - |
 | `position` | `Placement` (12 options) | `'top'` |
-| `color` | `Colors` | `'background'` |
+| `size` | `Sizes` | `'normal'` |
+| `color` | `Colors` | `'neutral'` |
+| `variant` | `'solid' \| 'outline' \| 'soft'` | `'solid'` |
 | `delay` | `number` | `400` |
 | `offset` | `number` | - |
 | `onOpen` | `() => void` | - |
 | `onClose` | `() => void` | - |
 
 ### Theme Parts
-`tooltip` (base, size, color)
+`tooltip` (base, size, color, variant)
 
 ### Examples
 ```svelte
@@ -139,6 +141,11 @@ Attachment directive (not a component). Uses `{@attach}` on any element.
   <strong>Pro Tip:</strong> Use Ctrl+S
 {/snippet}
 <button {@attach tooltip({ content: tip, position: 'right', color: 'info' })}>
+  Help
+</button>
+
+<!-- Same visual variants and sizes as Chip -->
+<button {@attach tooltip({ content: 'More context', variant: 'soft', size: 'large' })}>
   Help
 </button>
 
@@ -165,7 +172,7 @@ t.remove(); // dismiss programmatically
 ```
 
 ### Color Methods
-`toast.primary()` | `toast.secondary()` | `toast.success()` | `toast.warning()` | `toast.danger()` | `toast.info()` | `toast.background()` | `toast.foreground()`
+`toast.primary()` | `toast.secondary()` | `toast.success()` | `toast.warning()` | `toast.danger()` | `toast.info()` | `toast.neutral()`
 
 ### Options
 | Option | Type | Default |

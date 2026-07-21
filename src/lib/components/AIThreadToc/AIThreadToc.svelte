@@ -23,6 +23,7 @@
 	const PIN_STACK_INTERACTION_PADDING = 12;
 	const PIN_MAGNIFICATION_RADIUS = 44;
 	const PIN_MAX_SCALE = 2.25;
+	const PIN_TARGET_SCALE = 2.75;
 	const PIN_NEIGHBOR_MAX_OPACITY = 0.68;
 	const PREVIEW_DELAY = 80;
 	const PREVIEW_CLOSE_DELAY = 120;
@@ -113,7 +114,8 @@
 		return proximity * proximity * (3 - 2 * proximity);
 	}
 
-	function pinScale(influence: number): string {
+	function pinScale(influence: number, targeted: boolean): string {
+		if (targeted) return PIN_TARGET_SCALE.toFixed(3);
 		return (1 + influence * (PIN_MAX_SCALE - 1)).toFixed(3);
 	}
 
@@ -379,7 +381,7 @@
 									<span
 										data-slot="ai-thread-toc-pin-indicator"
 										class={classes.pinIndicator({ side })}
-										style:--ai-thread-toc-scale={pinScale(influence)}
+										style:--ai-thread-toc-scale={pinScale(influence, targeted)}
 										style:--ai-thread-toc-opacity={pinOpacity(influence, active, visible, targeted)}
 									></span>
 								{/if}

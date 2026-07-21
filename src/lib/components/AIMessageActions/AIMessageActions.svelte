@@ -19,6 +19,7 @@
 		index,
 		role,
 		content,
+		size = 'normal',
 		conversation: conversationProp,
 		visibility = 'always',
 		copyable,
@@ -57,6 +58,7 @@
 		index: resolvedIndex,
 		role: resolvedRole,
 		content: resolvedContent,
+		size,
 		copied: clipboard.copied,
 		canCopy: isCopyEnabled && resolvedContent.length > 0,
 		canEdit:
@@ -79,6 +81,7 @@
 			actions !== false &&
 			Boolean(customActions || actionState.canCopy || actionState.canEdit || actionState.canRetry)
 	);
+	const buttonSize = $derived(size === 'large' ? 'normal' : 'small');
 
 	function resolveRoleLayout(
 		value: AIThreadItem['role']
@@ -153,37 +156,38 @@
 	<div
 		bind:this={ref}
 		data-slot="ai-message-actions"
-		class={classes.root({ role: roleLayout, visibility, className })}
+		data-size={size}
+		class={classes.root({ role: roleLayout, visibility, size, className })}
 		{...attachments}
 	>
 		{#if customActions}<Slot render={customActions} payload={actionState} />{:else}
 			{#if actionState.canCopy}<Button
 					type="button"
 					squared
-					size="small"
+					size={buttonSize}
 					variant="ghost"
 					label={actionState.copied ? 'Copied' : 'Copy'}
 					onClick={() => void handleCopy()}
-					class={classes.button()}
+					class={classes.button({ size })}
 					>{@render (actionState.copied ? checkIcon : copyIcon)({ size: 14 })}</Button
 				>{/if}
 			{#if actionState.canEdit}<Button
 					type="button"
 					squared
-					size="small"
+					size={buttonSize}
 					variant="ghost"
 					label="Edit message"
 					onClick={() => void handleEdit()}
-					class={classes.button()}>{@render pencilSimpleIcon({ size: 14 })}</Button
+					class={classes.button({ size })}>{@render pencilSimpleIcon({ size: 14 })}</Button
 				>{/if}
 			{#if actionState.canRetry}<Button
 					type="button"
 					squared
-					size="small"
+					size={buttonSize}
 					variant="ghost"
 					label="Retry response"
 					onClick={() => void handleRetry()}
-					class={classes.button()}>{@render arrowsClockwiseIcon({ size: 14 })}</Button
+					class={classes.button({ size })}>{@render arrowsClockwiseIcon({ size: 14 })}</Button
 				>{/if}
 		{/if}
 		{#if errorMessage}<div data-slot="ai-message-actions-error" class={classes.error()}>

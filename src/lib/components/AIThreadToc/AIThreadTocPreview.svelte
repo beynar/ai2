@@ -23,9 +23,9 @@
 
 	const COMPACT_FILE_THEME = {
 		preview: { base: 'size-4 rounded-sm' },
-		fallback: { base: 'size-4 bg-transparent text-foreground/45' },
+		fallback: { base: 'size-4 bg-transparent text-neutral/45' },
 		content: { base: 'min-w-0' },
-		name: { base: 'text-xs font-normal text-foreground/55' },
+		name: { base: 'text-xs font-normal text-neutral/55' },
 		meta: { base: 'hidden' },
 		error: { base: 'hidden' }
 	} satisfies AIFilePreviewThemeProps;

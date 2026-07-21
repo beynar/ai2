@@ -19,9 +19,9 @@
 </script>
 
 {#if parts.length}
-	<div class="border-background-muted bg-background w-full overflow-hidden rounded-xl border">
-		<div class="border-background-muted/60 flex items-center justify-between gap-4 border-b px-6 py-3">
-			<span class="text-foreground/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
+	<div class="border-neutral-muted bg-surface w-full overflow-hidden rounded-xl border">
+		<div class="border-neutral-muted/60 flex items-center justify-between gap-4 border-b px-6 py-3">
+			<span class="text-neutral/45 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
 				Default theme
 			</span>
 			<div class="flex items-center gap-4">
@@ -35,7 +35,7 @@
 			</div>
 		</div>
 
-		<div class="divide-background-muted/60 divide-y">
+		<div class="divide-neutral-muted/60 divide-y">
 			{#each parts as part (part.name)}
 				<section class="px-6 py-4">
 					<h3 class="text-primary mb-3 font-mono text-[13px]">theme.{part.name}</h3>
@@ -43,18 +43,18 @@
 					{#if part.base}
 						<div class="mb-3 flex flex-col gap-1 sm:flex-row sm:gap-3">
 							<span
-								class="text-foreground/40 shrink-0 pt-0.5 font-mono text-[11px] tracking-wide uppercase sm:w-20"
+								class="text-neutral/40 shrink-0 pt-0.5 font-mono text-[11px] tracking-wide uppercase sm:w-20"
 							>
 								base
 							</span>
-							<code class="text-foreground/75 font-mono text-[12.5px] break-words">{part.base}</code>
+							<code class="text-neutral/75 font-mono text-[12.5px] break-words">{part.base}</code>
 						</div>
 					{/if}
 
 					{#each part.variants ?? [] as variant (variant.name)}
 						<div class="mb-3 flex flex-col gap-1 sm:flex-row sm:gap-3">
 							<span
-								class="text-foreground/40 shrink-0 pt-0.5 font-mono text-[11px] tracking-wide uppercase sm:w-20"
+								class="text-neutral/40 shrink-0 pt-0.5 font-mono text-[11px] tracking-wide uppercase sm:w-20"
 							>
 								{variant.name}
 							</span>
@@ -68,11 +68,11 @@
 												option.value
 											)
 												? 'bg-success/15 text-success'
-												: 'bg-background-lighter text-foreground/70'}"
+												: 'bg-surface-floating text-neutral/70'}"
 										>
 											{option.value}
 										</span>
-										<code class="text-foreground/70 font-mono text-[12.5px] break-words"
+										<code class="text-neutral/70 font-mono text-[12.5px] break-words"
 											>{option.classes}</code
 										>
 									</div>

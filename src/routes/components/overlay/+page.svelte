@@ -35,7 +35,7 @@
 		actions={[
 			{
 				content: 'Open gallery',
-				color: 'background',
+				color: 'neutral',
 				variant: 'soft',
 				fullWidth: true
 			}
@@ -51,7 +51,7 @@
 				actions={[
 					{
 						content: 'Open gallery',
-						color: 'background',
+						color: 'neutral',
 						variant: 'soft',
 						fullWidth: true
 					}
@@ -113,7 +113,7 @@
 		title="Mountain archive"
 		description="Hover the image or focus its action."
 		actions={[
-			{ content: 'View collection', color: 'background', variant: 'soft' }
+			{ content: 'View collection', color: 'neutral', variant: 'soft' }
 		]}
 	/>
 	<img src={mountainImage} alt="Mountain landscape" class="size-full object-cover" />
@@ -125,7 +125,7 @@
 					position="bottom"
 					title="Mountain archive"
 					description="Hover the image or focus its action."
-					actions={[{ content: 'View collection', color: 'background', variant: 'soft' }]}
+					actions={[{ content: 'View collection', color: 'neutral', variant: 'soft' }]}
 				/>
 				<img src={mountainImage} alt="Mountain landscape" class="size-full object-cover" />
 			</div>

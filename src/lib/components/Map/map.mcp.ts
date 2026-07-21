@@ -63,7 +63,7 @@ An interactive vector map (pan, zoom, markers, clustering, shapes, geolocation) 
 
 ## Theming
 
-The base style is generated at runtime from the current svelai \`--color-*\` tokens (background, foreground, primary, secondary, success, info, danger, and the muted/light background scales) and re-generated when the theme flips. To fully override the cartography, pass \`styleUrl\` or \`styles\`.
+The base style is generated at runtime from the current svelai \`--color-*\` tokens (surface elevation, neutral, primary, secondary, success, info, and danger) and re-generated when the theme flips. To fully override the cartography, pass \`styleUrl\` or \`styles\`.
 
 ## Accessibility
 

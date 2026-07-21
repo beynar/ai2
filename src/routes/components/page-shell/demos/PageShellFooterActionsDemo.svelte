@@ -9,7 +9,7 @@
 	] satisfies PageShellAction[];
 </script>
 
-<div class="h-[420px] w-full overflow-auto rounded-lg border border-background-muted">
+<div class="h-[420px] w-full overflow-auto rounded-lg border border-neutral-muted">
 	<PageShell
 		eyebrow="Settings"
 		title="Billing profile"
@@ -25,9 +25,9 @@
 		{#snippet children()}
 			<div class="grid gap-3">
 				{#each ['Company name', 'Billing email', 'VAT number', 'Address', 'Invoice notes', 'Purchase order'] as field}
-					<div class="grid gap-1 rounded-lg border border-background-muted bg-background-light p-3">
-						<span class="text-sm font-medium text-foreground">{field}</span>
-						<span class="h-9 rounded-md border border-background-muted bg-background"></span>
+					<div class="grid gap-1 rounded-lg border border-neutral-muted bg-surface-raised p-3">
+						<span class="text-sm font-medium text-neutral">{field}</span>
+						<span class="h-9 rounded-md border border-neutral-muted bg-surface"></span>
 					</div>
 				{/each}
 			</div>

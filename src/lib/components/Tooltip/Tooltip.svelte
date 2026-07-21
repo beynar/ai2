@@ -7,25 +7,33 @@
 	const theme = useTheme();
 	const id = $props.id();
 	const currentTooltip = $derived(theme.tooltip);
+	const color = $derived(currentTooltip?.color ?? 'neutral');
+	const size = $derived(currentTooltip?.size ?? 'normal');
+	const variant = $derived(currentTooltip?.variant ?? 'solid');
 
-	const classes = $derived(useTooltipTheme());
+	const classes = $derived(useTooltipTheme(currentTooltip?.theme));
 </script>
 
 <Popover
 	{id}
 	open={!!currentTooltip}
 	ref={currentTooltip?.ref}
-	size={currentTooltip?.size}
 	lockScroll={false}
 	position={currentTooltip?.position}
 	transition={currentTooltip?.transition}
 	closeOnMouseLeave={false}
 	offset={currentTooltip?.offset}
-	class={classes.root({
-		size: currentTooltip?.size || 'normal',
-		color: currentTooltip?.color || 'background',
-		className: currentTooltip?.class
-	})}
+	onOpen={currentTooltip?.onOpen}
+	onClose={currentTooltip?.onClose}
+	class="!w-fit !max-w-fit !bg-transparent !p-0 !shadow-none !ring-0"
 >
-	<Slot render={currentTooltip?.content} />
+	<div
+		role="tooltip"
+		data-color={color}
+		data-size={size}
+		data-variant={variant}
+		class={classes.root({ color, size, variant, className: currentTooltip?.class })}
+	>
+		<Slot render={currentTooltip?.content} />
+	</div>
 </Popover>

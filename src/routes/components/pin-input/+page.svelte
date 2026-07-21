@@ -107,7 +107,7 @@
 					submitButton={{ children: 'Verify code' }}
 				/>
 				{#if formValue}
-					<p class="text-foreground-muted text-sm">{formValue}</p>
+					<p class="text-neutral/60 text-sm">{formValue}</p>
 				{/if}
 			</div>
 		</ComponentCard>

@@ -16,7 +16,7 @@ const defaultCollapsibleContainer = cva({
 });
 
 const defaultCollapsibleTrigger = cva({
-	base: 'flex items-center justify-between cursor-pointer transition-all hover:opacity-80 bg-transparent border-0 text-left w-full gap-2',
+	base: 'state-layer flex items-center justify-between cursor-pointer transition-all bg-transparent border-0 text-left w-full gap-2 rounded-md',
 	variants: {
 		size: {
 			small: 'px-1.5 py-1.5 text-sm ',

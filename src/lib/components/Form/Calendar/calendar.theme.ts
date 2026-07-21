@@ -2,11 +2,11 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultContainer = cva({
-	base: 'flex w-full flex-col gap-3 rounded-lg border border-background-muted bg-background-light p-2'
+	base: 'flex w-full flex-col gap-3 rounded-lg border border-neutral-muted bg-surface-raised p-2'
 });
 
 const defaultHeader = cva({
-	base: 'flex min-h-8 items-center gap-2 px-1 font-semibold text-foreground',
+	base: 'flex min-h-8 items-center gap-2 px-1 font-semibold text-neutral',
 	variants: {
 		picker: {
 			true: 'justify-center',
@@ -56,7 +56,7 @@ const defaultPickerColumn = cva({
 });
 
 const defaultPickerLabel = cva({
-	base: 'px-2 text-center text-xs font-medium text-foreground-muted'
+	base: 'px-2 text-center text-xs font-medium text-neutral/60'
 });
 
 const defaultPickerScrollArea = cva({
@@ -68,10 +68,10 @@ const defaultPickerOptions = cva({
 });
 
 const defaultPickerOption = cva({
-	base: 'state-layer w-full cursor-pointer rounded-md px-2 py-1.5 text-center text-sm text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-40',
+	base: 'state-layer w-full cursor-pointer rounded-md px-2 py-1.5 text-center text-sm text-neutral outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-40',
 	variants: {
 		selected: {
-			true: 'bg-primary-lighter font-semibold text-primary-dark',
+			true: 'bg-primary-muted font-semibold text-primary-muted-readable',
 			false: null
 		},
 		disabled: {
@@ -82,21 +82,21 @@ const defaultPickerOption = cva({
 });
 
 const defaultWeekday = cva({
-	base: 'text-center text-xs font-medium text-foreground-muted uppercase py-2'
+	base: 'text-center text-xs font-medium text-neutral/60 uppercase py-2'
 });
 
 const defaultDay = cva({
 	base: 'state-layer relative flex aspect-square max-h-10 w-full cursor-pointer items-center justify-center rounded-md text-sm ring-inset outline-none transition-colors hover:z-[1] hover:ring-2 hover:ring-primary focus-visible:z-[2] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50',
 	variants: {
 		selected: {
-			true: 'bg-primary-lighter !text-primary-dark font-semibold'
+			true: 'bg-primary-muted text-primary-muted-readable font-semibold'
 		},
 		inMonth: {
-			true: 'text-foreground',
-			false: 'text-foreground-muted opacity-50'
+			true: 'text-neutral',
+			false: 'text-neutral/60 opacity-50'
 		},
 		inRange: {
-			true: 'bg-primary-lighter text-primary '
+			true: 'bg-primary-muted text-primary-muted-readable'
 		},
 		today: {
 			true: ''
@@ -105,10 +105,10 @@ const defaultDay = cva({
 			true: 'opacity-30 cursor-not-allowed'
 		},
 		startOfRange: {
-			true: `relative rounded-r-none before:content-["|"] before:text-primary-dark before:text-sm before:font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2`
+			true: `relative rounded-r-none after:content-["|"] after:text-primary-muted-readable after:text-sm after:font-semibold after:absolute after:left-0 after:top-1/2 after:-translate-y-1/2`
 		},
 		endOfRange: {
-			true: `relative rounded-l-none before:content-["|"] before:text-primary-dark before:text-sm before:font-semibold before:absolute before:right-0 before:top-1/2 before:-translate-y-1/2`
+			true: `relative rounded-l-none after:content-["|"] after:text-primary-muted-readable after:text-sm after:font-semibold after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2`
 		},
 		isPast: {
 			true: ''

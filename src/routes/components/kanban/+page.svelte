@@ -254,7 +254,7 @@
 				disabled={controls.value.disabled}
 				onCardMove={(move) => (lastMove = move)}
 			/>
-			<p class="text-foreground-muted mt-3 text-xs">
+			<p class="text-neutral/60 mt-3 text-xs">
 				{#if lastMove}
 					Last move: "{lastMove.card.title}" — {lastMove.from.columnId} #{lastMove.from.index} → {lastMove
 						.to.columnId} #{lastMove.to.index}
@@ -275,12 +275,12 @@
 				<Kanban bind:columns={teamColumns} columnHeight="26rem" sortableColumns={false}>
 					{#snippet card({ card })}
 						<div
-							class="bg-background-lighter ring-foreground/10 flex cursor-grab items-center gap-3 rounded-lg px-3 py-2 shadow-xs ring-1 select-none"
+							class="bg-surface-floating ring-neutral/10 flex cursor-grab items-center gap-3 rounded-lg px-3 py-2 shadow-xs ring-1 select-none"
 						>
 							<Avatar size="small" user={{ name: card.title }} />
 							<div class="min-w-0">
-								<div class="text-foreground truncate text-sm font-medium">{card.title}</div>
-								<div class="text-foreground-muted truncate text-xs">{card.description}</div>
+								<div class="text-neutral truncate text-sm font-medium">{card.title}</div>
+								<div class="text-neutral/60 truncate text-xs">{card.description}</div>
 							</div>
 						</div>
 					{/snippet}
@@ -350,7 +350,7 @@
 						<div class="p-2 pt-1">
 							<button
 								type="button"
-								class="state-layer text-foreground-muted hover:text-foreground w-full cursor-pointer rounded-lg px-3 py-1.5 text-left text-sm transition-colors"
+								class="state-layer text-neutral/60 hover:text-neutral w-full cursor-pointer rounded-lg px-3 py-1.5 text-left text-sm transition-colors"
 								onclick={() => addCard(column.id)}
 							>
 								+ Add card
@@ -374,9 +374,9 @@
 				<Kanban bind:columns={priorityColumns} sortableColumns={false}>
 					{#snippet card({ card })}
 						<div
-							class="bg-background-lighter ring-foreground/10 flex items-center justify-between gap-2 rounded-lg px-3 py-2 ring-1"
+							class="bg-surface-floating ring-neutral/10 flex items-center justify-between gap-2 rounded-lg px-3 py-2 ring-1"
 						>
-							<span class="text-foreground truncate text-sm font-medium">{card.title}</span>
+							<span class="text-neutral truncate text-sm font-medium">{card.title}</span>
 							<Chip size="small" color={card.priority === 'high' ? 'danger' : 'info'}>
 								{card.priority}
 							</Chip>

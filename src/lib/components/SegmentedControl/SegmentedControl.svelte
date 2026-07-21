@@ -14,7 +14,7 @@
 		onChange,
 		item: itemRenderer,
 		size = 'normal',
-		color = 'background',
+		color = 'neutral',
 		variant = 'normal',
 		disabled = false,
 		ariaLabel = 'Segmented control',
@@ -73,7 +73,7 @@
 >
 	{#if indicator.isHydrated && selectedIndex >= 0}
 		<span
-			class={classes.indicator({ variant })}
+			class={classes.indicator({ variant, color })}
 			style={indicator.style}
 			data-ready={indicator.isReady ? 'true' : 'false'}
 			aria-hidden="true"
@@ -94,7 +94,7 @@
 			tabindex={isFocused || (navigation.focusedIndex === null && tabStopIndex === index) ? 0 : -1}
 			data-value={controlItem.value}
 			data-selected={isSelected ? 'true' : 'false'}
-			class={classes.item({ size, variant, selected: isSelected, disabled: isDisabled })}
+			class={classes.item({ size, variant, color, selected: isSelected, disabled: isDisabled })}
 			onclick={() => {
 				selectItem(index);
 				navigation.focusItem(index);
@@ -103,7 +103,7 @@
 			{@attach indicator.itemReference(index)}
 		>
 			{#if !indicator.isHydrated && isSelected}
-				<span class={classes.staticIndicator({ variant })} aria-hidden="true"></span>
+				<span class={classes.staticIndicator({ variant, color })} aria-hidden="true"></span>
 			{/if}
 
 			{#if itemRenderer}

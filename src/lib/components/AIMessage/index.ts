@@ -5,7 +5,9 @@ export type {
 	AIMessageMarkdownProps,
 	AIMessageProps,
 	AIMessageRenderPayload,
-	AIMessageRole
+	AIMessageRole,
+	AIMessageSize,
+	AIMessageVariant
 } from './aiMessage.props.js';
 export type {
 	AIMessageActionHandler,

@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultToggleMenuRoot = cva({
-	base: 'border-background-muted bg-background-muted/40 relative inline-flex max-w-full items-center gap-1 rounded-lg border p-1'
+	base: 'border-neutral-muted bg-neutral-muted/40 relative inline-flex max-w-full items-center gap-1 rounded-lg border p-1'
 });
 
 const defaultToggleMenuRail = cva({

@@ -110,7 +110,7 @@ ${'</' + 'script>'}
 			/>
 			{#if submitted}
 				<pre
-					class="max-h-28 overflow-auto rounded border border-background-muted p-3 text-xs">{JSON.stringify(
+					class="max-h-28 overflow-auto rounded border border-neutral-muted p-3 text-xs">{JSON.stringify(
 						{ modelInput: submitted.modelInput, tokens: submitted.tokens },
 						null,
 						2
@@ -135,10 +135,10 @@ ${'</' + 'script>'}
 		>
 			<AIComposer fileDropzone class="w-full max-w-3xl">
 				{#snippet footerStart({ files })}
-					<span class="text-foreground/60 text-xs">{files.length} files</span>
+					<span class="text-neutral/60 text-xs">{files.length} files</span>
 				{/snippet}
 				{#snippet actions({ isBusy })}
-					<span class="text-foreground/60 text-xs">{isBusy ? 'Streaming' : 'Ready'}</span>
+					<span class="text-neutral/60 text-xs">{isBusy ? 'Streaming' : 'Ready'}</span>
 				{/snippet}
 			</AIComposer>
 		</ComponentCard>
@@ -158,7 +158,7 @@ ${'</' + 'script>'}
 			<div class="grid w-full max-w-3xl gap-3">
 				<div class="flex flex-wrap items-center justify-between gap-3">
 					<Switch size="small" label="Conversation streaming" bind:value={isStreaming} />
-					<span class="text-foreground/60 text-xs">
+					<span class="text-neutral/60 text-xs">
 						{queuedMessages.length} queued
 					</span>
 				</div>

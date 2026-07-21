@@ -13,10 +13,9 @@ const defaultButton = cva({
 			false: null
 		},
 		color: {
-			background: 'focus-visible:ring-foreground/25',
 			primary: '',
 			secondary: '',
-			foreground: 'focus-visible:ring-foreground/25',
+			neutral: 'focus-visible:ring-neutral/25',
 			danger: '',
 			success: '',
 			warning: '',
@@ -44,55 +43,17 @@ const defaultButton = cva({
 		{
 			variant: 'ghost',
 			checked: true,
-			class: 'bg-color/20'
+			class: 'bg-color-muted text-color-muted-readable'
 		},
 		{
 			variant: 'outline',
 			checked: true,
-			class: 'bg-color/20'
+			class: 'bg-color-muted text-color-muted-readable'
 		},
 		{
 			variant: 'outline',
 			checked: true,
 			class: 'border-color/55 hover:border-color/70'
-		},
-		{
-			color: 'background',
-			checked: false,
-			class: '!bg-transparent text-foreground'
-		},
-		{
-			color: 'background',
-			checked: true,
-			class: '!bg-background-lighter/70 text-foreground'
-		},
-		{
-			color: 'foreground',
-			checked: false,
-			class: '!bg-transparent text-foreground'
-		},
-		{
-			color: 'foreground',
-			checked: true,
-			class: '!bg-foreground/16 text-foreground'
-		},
-		{
-			variant: 'outline',
-			color: 'background',
-			checked: [true, false],
-			class: '!border-background-muted hover:!border-background-muted'
-		},
-		{
-			variant: 'outline',
-			color: 'foreground',
-			checked: false,
-			class: '!border-foreground/20 hover:!border-foreground/30'
-		},
-		{
-			variant: 'outline',
-			color: 'foreground',
-			checked: true,
-			class: '!border-foreground/35 hover:!border-foreground/45'
 		}
 	]
 });

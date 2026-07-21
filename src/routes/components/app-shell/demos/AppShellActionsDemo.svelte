@@ -61,14 +61,14 @@
 		contentWidth="normal"
 		theme={{
 			root: {
-				base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+				base: 'h-full min-h-full overflow-auto rounded-lg border border-neutral-muted'
 			}
 		}}
 	>
 		{#snippet children()}
-			<section class="rounded-lg border border-background-muted bg-background-light p-5">
-				<p class="text-sm font-medium text-foreground">AppShell array actions</p>
-				<p class="mt-2 text-sm text-foreground/60">
+			<section class="rounded-lg border border-neutral-muted bg-surface-raised p-5">
+				<p class="text-sm font-medium text-neutral">AppShell array actions</p>
+				<p class="mt-2 text-sm text-neutral/60">
 					Use arrays for normal buttons, snippets when actions need Sidebar API access.
 				</p>
 			</section>

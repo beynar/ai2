@@ -29,7 +29,7 @@ const defaultTabbar = cva({
 		},
 		variant: {
 			underline: '',
-			pill: 'rounded-full bg-background-muted/60 p-1'
+			pill: 'rounded-full bg-neutral-muted/60 p-1'
 		},
 		fullWidth: {
 			true: 'w-full',
@@ -44,12 +44,12 @@ const defaultTabbar = cva({
 		{
 			variant: 'underline',
 			orientation: 'horizontal',
-			class: 'shadow-[inset_0_-1px_0_0_var(--color-background-muted)]'
+			class: 'shadow-[inset_0_-1px_0_0_var(--color-neutral-muted)]'
 		},
 		{
 			variant: 'underline',
 			orientation: 'vertical',
-			class: 'shadow-[inset_-1px_0_0_0_var(--color-background-muted)]'
+			class: 'shadow-[inset_-1px_0_0_0_var(--color-neutral-muted)]'
 		},
 		// A vertical pill track shouldn't be a stadium — soften to a large radius.
 		{ variant: 'pill', orientation: 'vertical', class: 'rounded-2xl' }
@@ -71,7 +71,7 @@ const defaultTab = cva({
 	// scroll) rather than compress when they don't fit. transition-colors (NOT
 	// transition-all) eases only the label colour as the indicator slides — scoped
 	// to colour so it never lags a layout/transform change.
-	base: 'rounded relative cursor-pointer inline-flex items-center justify-center outline-none whitespace-nowrap text-foreground/70 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45',
+	base: 'rounded relative cursor-pointer inline-flex items-center justify-center outline-none whitespace-nowrap text-neutral/70 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/45',
 	variants: {
 		size: {
 			small: 'px-2 py-1 text-xs gap-1',
@@ -79,10 +79,9 @@ const defaultTab = cva({
 			large: 'px-4 py-1 text-base gap-2.5 '
 		},
 		color: {
-			background: '',
 			primary: '',
 			secondary: '',
-			foreground: '',
+			neutral: '',
 			danger: '',
 			success: '',
 			warning: '',
@@ -96,7 +95,7 @@ const defaultTab = cva({
 			// No background change on focus — it clashes with the sliding indicator
 			// (especially the pill). Keyboard focus is still signalled by the text
 			// lifting to full contrast.
-			true: 'text-foreground',
+			true: 'text-neutral',
 			false: ''
 		},
 		disabled: {
@@ -137,7 +136,7 @@ const defaultTab = cva({
 		// visuals. Active-tab text: the underline leaves it on the page surface (full
 		// contrast foreground); the pill sits on a `color`-filled surface, so its text
 		// flips to that color's contrast tone.
-		{ active: true, variant: 'underline', class: 'text-foreground' },
+		{ active: true, variant: 'underline', class: 'text-neutral' },
 		{ active: true, variant: 'pill', class: 'text-color-contrast' }
 	]
 });
@@ -152,7 +151,7 @@ const defaultTabIndicator = cva({
 		variant: {
 			underline: 'rounded-full bg-color',
 			// Colored raised pill (driven by data-color on the indicator). color
-			// 'background' gives the neutral segmented-control look.
+			// 'neutral' gives the neutral segmented-control look.
 			pill: 'rounded-full bg-color shadow-sm'
 		}
 	},

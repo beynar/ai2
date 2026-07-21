@@ -309,7 +309,7 @@ import type { DialogThemeProps } from 'svelai/dialog';
 // Example theme customization
 const customTheme: DialogThemeProps = {
   root: {
-    base: 'z-[+50] fixed py-4 left-0 flex bg-background-contrast/20',
+    base: 'z-[+50] fixed py-4 left-0 flex bg-neutral/20',
     size: {
       small: 'max-w-screen max-h-screen',
       normal: 'max-w-screen max-h-screen',

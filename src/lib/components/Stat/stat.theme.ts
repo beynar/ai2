@@ -20,8 +20,7 @@ const defaultStatRoot = cva({
 		color: {
 			primary: 'border-primary',
 			secondary: 'border-secondary',
-			foreground: 'border-foreground',
-			background: 'border-background-muted',
+			neutral: 'border-neutral',
 			danger: 'border-danger',
 			success: 'border-success',
 			warning: 'border-warning',
@@ -37,35 +36,26 @@ const defaultStatRoot = cva({
 	defaultVariants: {
 		size: 'normal',
 		density: 'normal',
-		color: 'background',
+		color: 'neutral',
 		variant: 'solid'
 	},
 	compoundVariants: [
 		{
-			color: 'background',
+			color: 'neutral',
 			variant: 'solid',
-			class: 'border-background-muted bg-background text-foreground'
+			class: 'border-neutral-muted bg-surface text-neutral'
 		},
 		{
-			color: 'background',
+			color: 'neutral',
 			variant: 'outline',
-			class: 'border-background-muted text-foreground'
+			class: 'border-neutral-muted text-neutral'
 		},
 		{
-			color: 'background',
+			color: 'neutral',
 			variant: 'soft',
-			class: 'border-background-muted/70 bg-background-muted/45 text-foreground'
+			class: 'border-neutral-muted/70 bg-neutral-muted/45 text-neutral-muted-readable'
 		},
-		{
-			color: 'background',
-			variant: 'ghost',
-			class: 'text-foreground'
-		},
-		{
-			color: 'foreground',
-			variant: 'solid',
-			class: 'bg-foreground text-foreground-contrast'
-		}
+		{ color: 'neutral', variant: 'ghost', class: 'text-neutral' }
 	]
 });
 
@@ -113,20 +103,19 @@ const defaultStatIndicator = cva({
 				'state-layer border border-transparent bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			foreground: 'text-foreground-muted',
-			background: 'text-foreground-muted',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral/60',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		}
 	},
 	defaultVariants: {
 		size: 'normal',
 		variant: 'default',
-		color: 'foreground'
+		color: 'neutral'
 	},
 	compoundVariants: [
 		{ variant: ['icon', 'action'], size: 'small', class: 'size-7 rounded-lg [&_svg]:size-3.5' },
@@ -159,8 +148,8 @@ const defaultStatTrend = cva({
 			large: 'text-sm [&_svg]:size-3.5'
 		},
 		trend: {
-			up: 'text-success',
-			down: 'text-danger',
+			up: 'text-success-readable',
+			down: 'text-danger-readable',
 			neutral: 'text-current/60'
 		}
 	},

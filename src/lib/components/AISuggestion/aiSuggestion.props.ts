@@ -69,6 +69,8 @@ export type SuggestionsProps = Omit<
 		value?: string;
 		/** Disables every suggestion. */
 		disabled?: boolean;
+		/** Button treatment applied to the built-in suggestion items. */
+		variant?: SuggestionProps['variant'];
 		/** Enables the shared scroll-fade utility on horizontal overflow. */
 		scrollFade?: boolean;
 		/** Custom suggestion renderer with selection state and action. */

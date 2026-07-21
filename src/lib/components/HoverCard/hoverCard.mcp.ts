@@ -51,7 +51,7 @@ HoverCard previews supplemental content when a trigger is hovered or focused. It
 - **class**: string - Extra classes on the inner Card.
 - **triggerClass**: string - Extra classes on the trigger wrapper.
 - **popoverClass**: string - Extra classes on the transparent Popover panel.
-- **cardColor**: Colors (default: 'background') - Card color token.
+- **cardColor**: Colors (default: 'neutral') - Card color token.
 - **cardVariant**: 'solid' | 'outline' | 'soft' | 'ghost' (default: 'solid') - Card variant.
 - **showBorders**: boolean (default: false) - Card section borders.
 - **theme**: HoverCardThemeProps - Theme overrides for HoverCard wrapper parts.

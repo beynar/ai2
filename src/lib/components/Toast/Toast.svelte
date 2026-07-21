@@ -44,15 +44,7 @@
 					: checkCircleIconFill;
 	});
 
-	// The loading spinner's color mirrors the prefix icon color: neutral toasts and
-	// rich foreground toasts invert to stay legible on their filled square.
-	const spinnerColor = $derived(
-		toast.opts.richColors && toast.opts.color === 'foreground'
-			? 'background'
-			: toast.opts.color === 'background'
-				? 'foreground'
-				: toast.opts.color
-	);
+	const spinnerColor = $derived(toast.opts.color);
 
 	const classes = $derived(useToastTheme(theme));
 	const t = $derived(useI18n());
@@ -136,7 +128,7 @@
 </script>
 
 <li
-	data-color={toast.opts.color || 'background'}
+	data-color={toast.opts.color || 'neutral'}
 	bind:this={toast.element}
 	bind:clientHeight={toast.height}
 	{...attachments}

@@ -15,7 +15,7 @@ ProgressCircle is a compact determinate circular progress indicator with a visib
   - Progress value from 0 to 100. Values outside the range are clamped.
 - **size**: 'small' | 'normal' | 'large' | number (default: 'normal')
   - Named tokens use the component theme. Numbers are treated as pixel sizes.
-- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'primary')
+- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' (default: 'primary')
   - Applies a theme color token to the animated arc.
 - **label**: string (default: 'Progress')
   - Accessible label used when the component is not decorative.

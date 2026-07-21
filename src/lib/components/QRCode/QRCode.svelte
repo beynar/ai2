@@ -25,7 +25,7 @@
 		ref = $bindable(null),
 		value,
 		size = 'normal',
-		color = 'foreground',
+		color = 'neutral',
 		level = DEFAULT_LEVEL,
 		minVersion = DEFAULT_MINVERSION,
 		boostLevel,

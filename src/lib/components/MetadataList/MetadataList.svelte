@@ -108,7 +108,7 @@
 
 {#snippet valueContent(item: MetadataListItem, type: MetadataListItemType, formatted: string)}
 	{#if item.value === null || item.value === undefined}
-		<span class="text-foreground-muted">—</span>
+		<span class="text-neutral/60">—</span>
 	{:else if type === 'url' || type === 'email' || type === 'phone'}
 		<a
 			href={resolveHref(item, type)}
@@ -120,18 +120,18 @@
 		<Chip
 			variant="soft"
 			size={chipSize}
-			color={item.color ?? (item.value ? 'success' : 'foreground')}
+			color={item.color ?? (item.value ? 'success' : 'neutral')}
 		>
 			{item.value ? t.trueLabel : t.falseLabel}
 		</Chip>
 	{:else if type === 'chip'}
-		<Chip variant="soft" size={chipSize} color={item.color ?? 'foreground'}
+		<Chip variant="soft" size={chipSize} color={item.color ?? 'neutral'}
 			>{String(item.value)}</Chip
 		>
 	{:else if type === 'chips'}
 		<div class={classes.chips({ density })}>
 			{#each Array.isArray(item.value) ? item.value : [item.value] as entry, i (i)}
-				<Chip variant="soft" size={chipSize} color={item.color ?? 'foreground'}
+				<Chip variant="soft" size={chipSize} color={item.color ?? 'neutral'}
 					>{String(entry)}</Chip
 				>
 			{/each}

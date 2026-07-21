@@ -50,7 +50,7 @@
 <Button
 	squared
 	variant="ghost"
-	color="background"
+	color="neutral"
 	{size}
 	{label}
 	{disabled}

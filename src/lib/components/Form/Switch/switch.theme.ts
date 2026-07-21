@@ -2,11 +2,11 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultSwitchToggle = cva({
-	base: 'relative inline-flex shrink-0 border cursor-pointer items-center rounded-full transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
+	base: 'relative inline-flex shrink-0 border cursor-pointer items-center rounded-full transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-md',
 	variants: {
 		checked: {
-			true: 'bg-primary-light border-primary shadow-sm',
-			false: 'bg-background-light border-background-muted border '
+			true: 'bg-primary border-primary shadow-sm',
+			false: 'bg-surface-raised border-neutral-muted border '
 		},
 		size: {
 			small: 'h-[20px] w-[36px]',
@@ -24,8 +24,8 @@ const defaultSwitchThumb = cva({
 	base: 'pointer-events-none block rounded-full shadow-lg ring-0 transition-all duration-200 ease-in-out transform',
 	variants: {
 		checked: {
-			true: 'border-primary border bg-background',
-			false: 'bg-background-lighter border-background-muted border'
+			true: 'border-primary border bg-primary-contrast',
+			false: 'bg-surface-floating border-neutral-muted border'
 		},
 		size: {
 			small: 'h-4 w-4',

@@ -148,7 +148,10 @@
 			</div>
 
 			<!-- Description -->
-			<Slot render={option.description} class={componentTheme.radiosInputItemDescription()} />
+			<Slot
+				render={option.description}
+				class={componentTheme.radiosInputItemDescription({ mode, checked })}
+			/>
 		</button>
 	{/each}
 </Field>

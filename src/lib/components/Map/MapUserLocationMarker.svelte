@@ -92,7 +92,7 @@
 			<span class="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-35"
 			></span>
 			<span class="absolute size-7 rounded-full bg-primary/20"></span>
-			<span class="relative size-4 rounded-full border-2 border-background bg-primary shadow-md"
+			<span class="relative size-4 rounded-full border-2 border-surface bg-primary shadow-md"
 			></span>
 		</div>
 	{/if}

@@ -314,7 +314,7 @@
 			{#snippet trigger(popover)}
 				<Button
 					variant="ghost"
-					color="foreground"
+					color="neutral"
 					{size}
 					{disabled}
 					squared

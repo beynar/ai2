@@ -156,7 +156,7 @@
 				<Button
 					prefix={xIcon}
 					variant="ghost"
-					color="foreground"
+					color="neutral"
 					size="small"
 					disabled={model.props.disabled}
 					onClick={() => model.clearFilters()}
@@ -175,7 +175,7 @@
 						content: 'Columns',
 						prefix: columnsIcon,
 						variant: 'ghost',
-						color: 'foreground',
+						color: 'neutral',
 						size: 'small',
 						disabled: model.props.disabled
 					}}

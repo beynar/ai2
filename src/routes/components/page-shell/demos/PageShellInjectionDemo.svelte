@@ -3,7 +3,7 @@
 	import PageShellInjectedChildDemo from './PageShellInjectedChildDemo.svelte';
 </script>
 
-<div class="h-[420px] w-full overflow-auto rounded-lg border border-background-muted">
+<div class="h-[420px] w-full overflow-auto rounded-lg border border-neutral-muted">
 	<PageShell title="Fallback page" subtitle="This text is replaced by the child route">
 		{#snippet children()}
 			<PageShellInjectedChildDemo />

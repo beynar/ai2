@@ -21,7 +21,7 @@
 		spinner,
 		label = 'Loading',
 		size = 'normal',
-		color = 'foreground',
+		color = 'neutral',
 		theme,
 		...attachments
 	}: SpinnerTextProps = $props();

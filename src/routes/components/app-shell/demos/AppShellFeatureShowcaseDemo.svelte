@@ -100,7 +100,7 @@
 		mobileActionCount={1}
 		theme={{
 			root: {
-				base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+				base: 'h-full min-h-full overflow-auto rounded-lg border border-neutral-muted'
 			}
 		}}
 	>
@@ -111,22 +111,22 @@
 		{#snippet children()}
 			<div class="grid gap-5">
 				<section
-					class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-background-muted bg-background-light p-4"
+					class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-muted bg-surface-raised p-4"
 				>
 					<div>
-						<p class="text-sm font-medium text-foreground">Header context</p>
-						<p class="mt-1 text-sm text-foreground/60">
+						<p class="text-sm font-medium text-neutral">Header context</p>
+						<p class="mt-1 text-sm text-neutral/60">
 							Swap between collapsed breadcrumbs and an eyebrow without replacing the header.
 						</p>
 					</div>
 
-					<div class="inline-flex rounded-md border border-background-muted bg-background p-1">
+					<div class="inline-flex rounded-md border border-neutral-muted bg-surface p-1">
 						<button
 							type="button"
 							class="state-layer rounded px-3 py-1.5 text-sm font-medium transition {contextMode ===
 							'breadcrumbs'
-								? 'bg-primary text-primary-foreground'
-								: 'text-foreground/70'}"
+								? 'bg-primary text-primary-neutral'
+								: 'text-neutral/70'}"
 							aria-pressed={contextMode === 'breadcrumbs'}
 							onclick={() => (contextMode = 'breadcrumbs')}
 						>
@@ -136,8 +136,8 @@
 							type="button"
 							class="state-layer rounded px-3 py-1.5 text-sm font-medium transition {contextMode ===
 							'eyebrow'
-								? 'bg-primary text-primary-foreground'
-								: 'text-foreground/70'}"
+								? 'bg-primary text-primary-neutral'
+								: 'text-neutral/70'}"
 							aria-pressed={contextMode === 'eyebrow'}
 							onclick={() => (contextMode = 'eyebrow')}
 						>
@@ -148,9 +148,9 @@
 
 				<div class="grid gap-4 md:grid-cols-3">
 					{#each metrics as metric}
-						<section class="rounded-lg border border-background-muted bg-background-light p-4">
-							<p class="text-sm font-medium text-foreground/70">{metric.label}</p>
-							<p class="mt-3 text-3xl font-semibold tracking-normal text-foreground">
+						<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
+							<p class="text-sm font-medium text-neutral/70">{metric.label}</p>
+							<p class="mt-3 text-3xl font-semibold tracking-normal text-neutral">
 								{metric.value}
 							</p>
 							<p class="mt-1 text-sm text-primary">{metric.detail}</p>
@@ -158,52 +158,52 @@
 					{/each}
 				</div>
 
-				<section class="rounded-lg border border-background-muted bg-background-light p-4">
+				<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
 					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p class="text-sm font-medium text-foreground">Pipeline review</p>
-							<p class="mt-1 text-sm text-foreground/60">
+							<p class="text-sm font-medium text-neutral">Pipeline review</p>
+							<p class="mt-1 text-sm text-neutral/60">
 								Content uses the shell width and padding presets.
 							</p>
 						</div>
 						<span
-							class="rounded-full border border-background-muted bg-background px-2.5 py-1 text-xs font-medium text-foreground/70"
+							class="rounded-full border border-neutral-muted bg-surface px-2.5 py-1 text-xs font-medium text-neutral/70"
 						>
 							Wide content
 						</span>
 					</div>
 
 					<div class="mt-4 grid gap-3 md:grid-cols-[1.2fr_0.8fr]">
-						<div class="rounded-md border border-background-muted bg-background p-4">
-							<p class="text-sm font-medium text-foreground">Priority accounts</p>
+						<div class="rounded-md border border-neutral-muted bg-surface p-4">
+							<p class="text-sm font-medium text-neutral">Priority accounts</p>
 							<div class="mt-4 space-y-3">
 								{#each ['Mercury Health', 'Northstar', 'Falcon Works'] as account}
 									<div class="flex items-center justify-between gap-4">
-										<span class="text-sm text-foreground">{account}</span>
+										<span class="text-sm text-neutral">{account}</span>
 										<span class="text-sm font-medium text-primary">Review</span>
 									</div>
 								{/each}
 							</div>
 						</div>
 
-						<div class="rounded-md border border-background-muted bg-background p-4">
-							<p class="text-sm font-medium text-foreground">Next milestone</p>
-							<p class="mt-4 text-sm leading-6 text-foreground/70">
+						<div class="rounded-md border border-neutral-muted bg-surface p-4">
+							<p class="text-sm font-medium text-neutral">Next milestone</p>
+							<p class="mt-4 text-sm leading-6 text-neutral/70">
 								Confirm owner coverage, then publish the weekly customer-health summary.
 							</p>
 						</div>
 					</div>
 				</section>
 
-				<section class="rounded-lg border border-background-muted bg-background-light p-4">
-					<p class="text-sm font-medium text-foreground">Recent activity</p>
+				<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
+					<p class="text-sm font-medium text-neutral">Recent activity</p>
 					<div
-						class="mt-4 divide-y divide-background-muted overflow-hidden rounded-md border border-background-muted"
+						class="mt-4 divide-y divide-neutral-muted overflow-hidden rounded-md border border-neutral-muted"
 					>
 						{#each activities as activity}
-							<div class="flex items-start gap-3 bg-background px-4 py-3">
+							<div class="flex items-start gap-3 bg-surface px-4 py-3">
 								<span class="mt-2 size-2 shrink-0 rounded-full bg-primary"></span>
-								<p class="text-sm leading-6 text-foreground/70">{activity}</p>
+								<p class="text-sm leading-6 text-neutral/70">{activity}</p>
 							</div>
 						{/each}
 					</div>

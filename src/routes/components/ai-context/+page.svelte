@@ -152,16 +152,16 @@ ${'</' + 'script>'}
 					{#snippet children({ percent, tone })}
 						<button
 							type="button"
-							class="state-layer border-background-muted inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium"
+							class="state-layer border-neutral-muted inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium"
 						>
 							<span>{Math.round(percent)}% used</span>
-							<span class="text-foreground/55 capitalize">{tone}</span>
+							<span class="text-neutral/55 capitalize">{tone}</span>
 						</button>
 					{/snippet}
 					{#snippet content({ formattedUsed, formattedMax, formattedRemaining })}
 						<div class="grid min-w-64 gap-2 p-4 text-sm">
 							<div class="font-medium">Custom context details</div>
-							<div class="text-foreground/65">{formattedUsed} of {formattedMax} used</div>
+							<div class="text-neutral/65">{formattedUsed} of {formattedMax} used</div>
 							<div>{formattedRemaining} tokens remaining</div>
 						</div>
 					{/snippet}

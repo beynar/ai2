@@ -1,5 +1,6 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
+import type { Sizes } from '$lib/types/theme.js';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { MarkdownProps } from '../Markdown/markdown.props.js';
 import type {
@@ -14,6 +15,8 @@ import type { AIMessageThemeProps } from './aiMessage.theme.js';
 export type { AIMessageActionVisibility } from '../AIMessageActions/aiMessageActions.props.js';
 export type AIMessageRole = AIThreadRole;
 export type AIMessageFile = AIFileSource;
+export type AIMessageSize = Sizes;
+export type AIMessageVariant = 'bubble' | 'minimal';
 export type AIMessageMarkdownProps = Omit<MarkdownProps, 'content' | 'renderHtml'>;
 export type AIMessageRenderPayload<TMessage extends AIThreadItem = AIThreadItem> = {
 	message?: TMessage;
@@ -21,6 +24,8 @@ export type AIMessageRenderPayload<TMessage extends AIThreadItem = AIThreadItem>
 	messageIndex?: number;
 	role: AIThreadRole;
 	content: string;
+	size: AIMessageSize;
+	variant: AIMessageVariant;
 };
 
 type AIMessageRootAttributes = Omit<HTMLAttributes<HTMLElement>, 'children' | 'class' | 'content'>;
@@ -43,6 +48,10 @@ export type AIMessageProps<TMessage extends AIThreadItem = AIThreadItem> = WithA
 		content?: string;
 		/** Files displayed with the message. */
 		files?: readonly AIFileSource[];
+		/** Type and control scale. @default 'normal' */
+		size?: AIMessageSize;
+		/** Message presentation. Minimal keeps user bubbles but unframes assistant and tool content. @default 'bubble' */
+		variant?: AIMessageVariant;
 		/** Renders content with the shared Markdown component. */
 		markdown?: boolean;
 		/** Props forwarded to Markdown except for its owned safety boundary. */

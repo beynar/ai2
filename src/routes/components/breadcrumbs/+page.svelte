@@ -106,7 +106,7 @@
 				]}
 			>
 				{#snippet separator()}
-					<span class="text-foreground-muted">›</span>
+					<span class="text-neutral/60">›</span>
 				{/snippet}
 			</Breadcrumbs>
 		</ComponentCard>

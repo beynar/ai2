@@ -33,7 +33,7 @@
 
 <Button
 	type="button"
-	color="background"
+	color="neutral"
 	variant={active ? 'soft' : 'ghost'}
 	{size}
 	{label}

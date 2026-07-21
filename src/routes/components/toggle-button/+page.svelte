@@ -31,11 +31,11 @@
 			<div class="grid w-full gap-6">
 				{#each variants as variant (variant)}
 					<div class="grid gap-3">
-						<p class="text-foreground/60 text-sm font-medium capitalize">{variant}</p>
+						<p class="text-neutral/60 text-sm font-medium capitalize">{variant}</p>
 						<div class="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
 							{#each colors as color (color)}
 								<div class="flex min-w-0 items-center justify-between gap-2">
-									<span class="text-foreground/70 truncate text-sm capitalize">{color}</span>
+									<span class="text-neutral/70 truncate text-sm capitalize">{color}</span>
 									<div class="flex shrink-0 gap-1.5">
 										<ToggleButton
 											{variant}
@@ -62,7 +62,7 @@
 		<ComponentCard description="Three sizes to match surrounding density.">
 			<div class="flex flex-wrap items-center justify-center gap-3">
 				{#each sizes as size (size)}
-					<ToggleButton {size} color="foreground" prefix={eyeClosedIcon}>{size}</ToggleButton>
+					<ToggleButton {size} color="neutral" prefix={eyeClosedIcon}>{size}</ToggleButton>
 				{/each}
 			</div>
 		</ComponentCard>
@@ -88,7 +88,7 @@
 				}}
 			>
 				<ToggleButton>Formatting</ToggleButton>
-				<span class="text-foreground-muted text-sm">Submissions: {formSubmissions}</span>
+				<span class="text-neutral/60 text-sm">Submissions: {formSubmissions}</span>
 			</form>
 		</ComponentCard>
 

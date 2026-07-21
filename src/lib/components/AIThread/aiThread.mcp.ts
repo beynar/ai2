@@ -41,11 +41,14 @@ When text parts are present, top-level message content is not rendered again. Co
 - **getMessageKey**: (message, index) => string | number | bigint | undefined - Stable virtualization key. Prefer persistent identifiers.
 - **liveText**: string - Screen-reader announcement. Falls back to AIConversation.
 - **isStreaming**: boolean - Sets the busy state. Falls back to AIConversation.
+- **density**: 'small' | 'normal' | 'large' - Transcript row and edge spacing. Default 'normal'.
+- **messageSize**: 'small' | 'normal' | 'large' - Size forwarded to default AIMessage rows. Default 'normal'.
+- **messageVariant**: 'bubble' | 'minimal' - Presentation forwarded to default AIMessage rows. Default 'bubble'.
 - **followOutput**: boolean - Follow appended rows only while pinned. Default true.
 - **bottomThreshold**: number - End-pinned tolerance in pixels. Default 80.
-- **estimateSize**: number - Estimated row height. Default 96.
+- **estimateSize**: number - Estimated row height. Defaults to 80, 96, or 120 from density.
 - **overscan**: number - Extra virtual rows. Default 4.
-- **padding**: number - Shared start/end virtual padding. Default 16.
+- **padding**: number - Shared start/end virtual padding. Defaults to 8, 16, or 24 from density.
 - **paddingStart**, **paddingEnd**: number - Per-edge virtual padding overrides.
 - **scrollBehavior**: 'auto' | 'smooth' | 'instant' - Append, TOC, and scroll-button behavior. Default 'smooth'.
 - **showScrollButton**: boolean - Show the latest-message action away from the end. Default true.
@@ -66,6 +69,7 @@ When text parts are present, top-level message content is not rendered again. Co
 ## Message composition
 
 - **message**: Slot<{ message, index }> - Replaces a complete message row.
+- **messageSize**, **messageVariant** - Configure only the default AIMessage renderer; a custom message slot owns its presentation.
 - **messageActions**: AIMessageActionSnippet | false - Replaces or disables default actions.
 - **messageActionsVisibility**: 'hover' | 'always' | 'none'
 - **messageCopyable**, **messageEditable**, **messageRetryable**: boolean
@@ -92,7 +96,7 @@ Pending ask-user-question tools are auto-detected. Inside AIConversation, AIThre
 
 ## Minimap
 
-- **showToc**: boolean - Show the default user-turn minimap.
+- **showToc**: boolean - Show the user-turn minimap when at least two user turns overflow the viewport.
 - **tocSide**: 'left' | 'right' - Default 'left'.
 - **tocMaxPins**: number - Maximum compacted pins.
 - **tocTheme**: AIThreadTocThemeProps - Theme overrides forwarded to the default standalone primitive.

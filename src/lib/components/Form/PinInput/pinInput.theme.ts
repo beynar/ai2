@@ -2,7 +2,7 @@ import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultInputContainer = cva({
-	base: 'relative w-fit bg-transparent p-0 text-foreground',
+	base: 'relative w-fit bg-transparent p-0 text-neutral',
 	variants: {
 		disabled: {
 			true: 'cursor-not-allowed opacity-50',
@@ -34,7 +34,7 @@ const defaultInput = cva({
 });
 
 const defaultCell = cva({
-	base: 'relative grid shrink-0 place-items-center overflow-hidden border border-background-muted bg-background-light font-mono font-medium tabular-nums text-foreground shadow-sm transition-all',
+	base: 'relative grid shrink-0 place-items-center overflow-hidden border border-neutral-muted bg-surface-raised font-mono font-medium tabular-nums text-neutral shadow-sm transition-all',
 	variants: {
 		size: {
 			small: 'size-8 rounded-md text-sm',

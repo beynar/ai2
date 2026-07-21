@@ -9,7 +9,7 @@ const defaultKanban = cva({
 });
 
 const defaultKanbanColumn = cva({
-	base: 'bg-background-light ring-foreground/10 flex max-h-full w-72 shrink-0 flex-col rounded-xl ring-1'
+	base: 'bg-surface-raised ring-neutral/10 flex max-h-full w-72 shrink-0 flex-col rounded-xl ring-1'
 });
 
 const defaultKanbanColumnHeader = cva({
@@ -36,11 +36,11 @@ const defaultKanbanColumnDot = cva({
 });
 
 const defaultKanbanColumnTitle = cva({
-	base: 'text-foreground flex-1 truncate text-sm font-medium'
+	base: 'text-neutral flex-1 truncate text-sm font-medium'
 });
 
 const defaultKanbanCount = cva({
-	base: 'text-foreground-muted bg-background-muted rounded-full px-1.5 py-0.5 text-xs tabular-nums'
+	base: 'text-neutral/60 bg-neutral-muted rounded-full px-1.5 py-0.5 text-xs tabular-nums'
 });
 
 const defaultKanbanList = cva({
@@ -60,7 +60,7 @@ const defaultKanbanList = cva({
 });
 
 const defaultKanbanCard = cva({
-	base: 'bg-background-lighter ring-foreground/10 rounded-lg text-sm shadow-xs ring-1 select-none',
+	base: 'bg-surface-floating ring-neutral/10 rounded-lg text-sm shadow-xs ring-1 select-none',
 	variants: {
 		density: {
 			small: 'px-2.5 py-1.5',
@@ -80,15 +80,15 @@ const defaultKanbanCard = cva({
 });
 
 const defaultKanbanCardTitle = cva({
-	base: 'text-foreground font-medium leading-normal'
+	base: 'text-neutral font-medium leading-normal'
 });
 
 const defaultKanbanCardDescription = cva({
-	base: 'text-foreground-muted mt-0.5 text-xs leading-normal'
+	base: 'text-neutral/60 mt-0.5 text-xs leading-normal'
 });
 
 const defaultKanbanEmpty = cva({
-	base: 'text-foreground-muted px-2 py-4 text-center text-xs'
+	base: 'text-neutral/60 px-2 py-4 text-center text-xs'
 });
 
 // Rendered below the card list (columnFooter snippet / the `footer` param of
@@ -138,7 +138,7 @@ const defaultKanbanColumnWrapper = cva({
 
 // The grip rendered by the DEFAULT card when cardHandle is on.
 const defaultKanbanCardHandle = cva({
-	base: 'text-foreground-muted hover:text-foreground mt-0.5 inline-flex shrink-0 cursor-grab items-center justify-center'
+	base: 'text-neutral/60 hover:text-neutral mt-0.5 inline-flex shrink-0 cursor-grab items-center justify-center'
 });
 
 export const kanbanTheme = {

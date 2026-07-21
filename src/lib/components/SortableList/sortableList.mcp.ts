@@ -71,7 +71,7 @@ Items need a stable, unique \`id\` property (primitive items are matched by valu
 	{#snippet item({ item, isDragging })}
 		<div class="flex flex-col">
 			<span class="font-medium">{item.title}</span>
-			<span class="text-foreground-muted text-sm">{item.description}</span>
+			<span class="text-neutral/60 text-sm">{item.description}</span>
 		</div>
 	{/snippet}
 </SortableList>

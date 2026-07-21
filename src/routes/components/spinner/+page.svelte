@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import Spinner from '$lib/components/Spinner/Spinner.svelte';
 	import type { SpinnerVariant } from '$lib/components/Spinner/spinner.props.js';
@@ -13,6 +14,30 @@
 		'lines',
 		'circles'
 	];
+	const controls = createComponentControls([
+		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'default',
+			options: ['default', 'grid', 'pulse', 'puff', 'lines', 'circles']
+		},
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'warning', 'danger', 'neutral']
+		},
+		{ name: 'showText', type: 'switch', label: 'Visible text', value: true }
+	]);
 </script>
 
 <DocPage
@@ -28,10 +53,22 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="A compact loading status with visible text. Its animation follows the Theme default."
-		code={`<Spinner text="Loading" />`}
+		code={`<Spinner
+	variant="${controls.value.variant}"
+	size="${controls.value.size}"
+	color="${controls.value.color}"
+	${controls.value.showText ? 'text="Loading"' : 'label="Loading"'}
+/>`}
 	>
-		<Spinner text="Loading" />
+		<Spinner
+			variant={controls.value.variant}
+			size={controls.value.size}
+			color={controls.value.color}
+			text={controls.value.showText ? 'Loading' : undefined}
+			label="Loading"
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}
@@ -50,7 +87,7 @@
 				{#each spinnerVariants as variant}
 					<div class="flex min-w-0 flex-col items-center gap-3">
 						<Spinner {variant} size="large" color="primary" label={`${variant} loader`} />
-						<span class="text-foreground-muted text-xs font-medium capitalize">{variant}</span>
+						<span class="text-neutral/60 text-xs font-medium capitalize">{variant}</span>
 					</div>
 				{/each}
 			</div>
@@ -88,7 +125,7 @@
 		>
 			<Spinner color="primary">
 				{#snippet children()}
-					<span class="text-foreground text-sm font-medium">Syncing workspace</span>
+					<span class="text-neutral text-sm font-medium">Syncing workspace</span>
 				{/snippet}
 			</Spinner>
 		</ComponentCard>
@@ -98,10 +135,10 @@
 			class="!min-h-fit"
 		>
 			<div
-				class="border-background-muted bg-background flex items-center gap-3 rounded-lg border px-4 py-3"
+				class="border-neutral-muted bg-surface flex items-center gap-3 rounded-lg border px-4 py-3"
 			>
 				<Spinner decorative size="small" color="primary" />
-				<span class="text-foreground text-sm" aria-busy="true">Saving changes</span>
+				<span class="text-neutral text-sm" aria-busy="true">Saving changes</span>
 			</div>
 		</ComponentCard>
 	{/snippet}

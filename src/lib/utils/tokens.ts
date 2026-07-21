@@ -3,8 +3,7 @@ export const sizes = ['small', 'normal', 'large'] as const;
 export const colors = [
 	'primary',
 	'secondary',
-	'foreground',
-	'background',
+	'neutral',
 	'danger',
 	'success',
 	'warning',

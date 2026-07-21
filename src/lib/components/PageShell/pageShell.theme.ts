@@ -2,20 +2,11 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultShell = cva({
-	base: 'flex min-h-full w-full flex-col rounded-[inherit] bg-background !bg-[var(--page-shell-surface,var(--color-background))] text-foreground'
+	base: 'flex min-h-full w-full flex-col overflow-clip rounded-[inherit] bg-surface !bg-[var(--page-shell-surface,var(--color-surface))] text-neutral'
 });
 
 const defaultHeader = cva({
-	base: "sticky top-[var(--page-shell-edge-inset,0px)] z-20 shrink-0 rounded-t-[inherit] bg-transparent backdrop-blur before:pointer-events-none before:absolute before:inset-y-0 before:inset-x-0 before:-z-10 before:rounded-t-[inherit] before:border-b before:border-background-muted before:bg-[var(--page-shell-chrome,var(--color-background))] before:shadow-[var(--page-shell-edge-shadow,none)] before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-[calc(-1*var(--page-shell-edge-inset,0px))] after:bottom-0 after:-z-20 after:bg-[var(--page-shell-underlay,var(--page-shell-chrome,var(--color-background)))] after:shadow-[var(--page-shell-gap-shadow,none)] after:content-['']",
-	variants: {
-		scrolled: {
-			true: '',
-			false: ''
-		}
-	},
-	defaultVariants: {
-		scrolled: false
-	}
+	base: 'sticky top-[calc(var(--page-shell-edge-inset,0px)_+_var(--page-shell-chrome-block-gap,0px))] z-20 mx-[var(--page-shell-chrome-inline-gap,0px)] mt-[var(--page-shell-chrome-block-gap,0px)] mb-[var(--page-shell-chrome-block-gap,0px)] shrink-0 rounded-tl-[var(--page-shell-header-top-radius,inherit)] rounded-tr-[var(--page-shell-header-top-radius,inherit)] rounded-br-[var(--page-shell-header-bottom-radius,0px)] rounded-bl-[var(--page-shell-header-bottom-radius,0px)] border-b [border-bottom-color:var(--page-shell-chrome-divider,var(--color-neutral-muted))] bg-[var(--page-shell-chrome,var(--color-surface))] shadow-[var(--page-shell-chrome-shadow,none)] ring-1 ring-inset ring-[var(--page-shell-chrome-border,transparent)] backdrop-blur'
 });
 
 const defaultHeaderInner = cva({
@@ -27,7 +18,7 @@ const defaultTitleStack = cva({
 });
 
 const defaultMeta = cva({
-	base: 'flex min-w-0 items-center gap-1.5 text-xs leading-4 text-foreground/55'
+	base: 'flex min-w-0 items-center gap-1.5 text-xs leading-4 text-neutral/55'
 });
 
 const defaultBack = cva({
@@ -39,15 +30,15 @@ const defaultBreadcrumbs = cva({
 });
 
 const defaultEyebrow = cva({
-	base: 'truncate text-[0.6875rem] leading-4 font-medium tracking-normal text-foreground/55 uppercase'
+	base: 'truncate text-[0.6875rem] leading-4 font-medium tracking-normal text-neutral/55 uppercase'
 });
 
 const defaultTitle = cva({
-	base: 'truncate text-sm leading-5 font-semibold text-foreground'
+	base: 'truncate text-sm leading-5 font-semibold text-neutral'
 });
 
 const defaultSubtitle = cva({
-	base: 'truncate text-xs leading-4 text-foreground/60'
+	base: 'truncate text-xs leading-4 text-neutral/60'
 });
 
 const defaultActions = cva({
@@ -55,7 +46,7 @@ const defaultActions = cva({
 });
 
 const defaultContent = cva({
-	base: 'flex-1 shadow-[var(--page-shell-edge-shadow,none)]'
+	base: 'flex-1'
 });
 
 const defaultContentInner = cva({
@@ -82,20 +73,11 @@ const defaultContentInner = cva({
 });
 
 const defaultFooter = cva({
-	base: "sticky bottom-[var(--page-shell-edge-inset,0px)] z-20 shrink-0 rounded-b-[inherit] bg-transparent backdrop-blur before:pointer-events-none before:absolute before:inset-y-0 before:inset-x-0 before:-z-10 before:rounded-b-[inherit] before:border-t before:border-background-muted before:bg-[var(--page-shell-chrome,var(--color-background))] before:shadow-[var(--page-shell-edge-shadow,none)] before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:bottom-[calc(-1*var(--page-shell-edge-inset,0px))] after:-z-20 after:bg-[var(--page-shell-underlay,var(--page-shell-chrome,var(--color-background)))] after:shadow-[var(--page-shell-gap-shadow,none)] after:content-['']",
-	variants: {
-		scrolled: {
-			true: '',
-			false: ''
-		}
-	},
-	defaultVariants: {
-		scrolled: false
-	}
+	base: 'sticky bottom-[calc(var(--page-shell-edge-inset,0px)_+_var(--page-shell-chrome-block-gap,0px))] z-20 mx-[var(--page-shell-chrome-inline-gap,0px)] mt-[var(--page-shell-chrome-block-gap,0px)] mb-[var(--page-shell-chrome-block-gap,0px)] shrink-0 rounded-tl-[var(--page-shell-footer-top-radius,0px)] rounded-tr-[var(--page-shell-footer-top-radius,0px)] rounded-br-[var(--page-shell-footer-bottom-radius,inherit)] rounded-bl-[var(--page-shell-footer-bottom-radius,inherit)] border-t [border-top-color:var(--page-shell-chrome-divider,var(--color-neutral-muted))] bg-[var(--page-shell-chrome,var(--color-surface))] shadow-[var(--page-shell-chrome-shadow,none)] ring-1 ring-inset ring-[var(--page-shell-chrome-border,transparent)] backdrop-blur'
 });
 
 const defaultFooterInner = cva({
-	base: 'flex min-h-12 items-center justify-between gap-3 px-4 py-2 text-sm text-foreground/70'
+	base: 'flex min-h-12 items-center justify-between gap-3 px-4 py-2 text-sm text-neutral/70'
 });
 
 const defaultFooterContent = cva({

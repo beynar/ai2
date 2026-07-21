@@ -1,12 +1,38 @@
 <script lang="ts">
 	import DocPage from '../../DocPage.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import Empty from '$lib/components/Empty/Empty.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import Card from '$lib/components/Card/Card.svelte';
 	import { folderIcon } from '$lib/components/Icons/folder.js';
 	import { magnifyingGlassIcon } from '$lib/components/Icons/magnifyingGlass.js';
 	import { trayIcon } from '$lib/components/Icons/tray.js';
+
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'mode',
+			type: 'segmented',
+			label: 'Mode',
+			value: 'normal',
+			options: ['normal', 'card']
+		},
+		{
+			name: 'mediaVariant',
+			type: 'segmented',
+			label: 'Media',
+			value: 'icon',
+			options: ['default', 'icon']
+		},
+		{ name: 'bordered', type: 'switch', label: 'Bordered', value: true }
+	]);
 </script>
 
 <DocPage
@@ -21,10 +47,13 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Icon media with title, description, and a primary action."
 		code={`<Empty
-	bordered
-	mediaVariant="icon"
+	size="${controls.value.size}"
+	mode="${controls.value.mode}"
+	bordered={${controls.value.bordered}}
+	mediaVariant="${controls.value.mediaVariant}"
 	media={folderIcon}
 	title="No projects yet"
 	description="You haven't created any projects yet. Get started by creating your first project."
@@ -35,8 +64,10 @@
 </Empty>`}
 	>
 		<Empty
-			bordered
-			mediaVariant="icon"
+			size={controls.value.size}
+			mode={controls.value.mode}
+			bordered={controls.value.bordered}
+			mediaVariant={controls.value.mediaVariant}
 			media={folderIcon}
 			title="No projects yet"
 			description="You haven't created any projects yet. Get started by creating your first project."
@@ -59,7 +90,7 @@
 				{#snippet content()}
 					<div class="flex items-center gap-2">
 						<Button size="small">Create project</Button>
-						<Button size="small" variant="outline" color="background">Import project</Button>
+						<Button size="small" variant="outline" color="neutral">Import project</Button>
 					</div>
 				{/snippet}
 				{#snippet note()}
@@ -74,7 +105,7 @@
 				description="Try adjusting your search filters or check the spelling of your query."
 			>
 				{#snippet media()}
-					{@render magnifyingGlassIcon({ class: 'text-foreground-muted size-10' })}
+					{@render magnifyingGlassIcon({ class: 'text-neutral/60 size-10' })}
 				{/snippet}
 				{#snippet content()}
 					<Button size="small" variant="ghost">Clear filters</Button>
@@ -92,13 +123,15 @@
 					description="Notifications about your account and projects will show up here."
 				>
 					{#snippet content()}
-						<Button size="small" variant="outline" color="background">Refresh</Button>
+						<Button size="small" variant="outline" color="neutral">Refresh</Button>
 					{/snippet}
 				</Empty>
 			</Card>
 		</ComponentCard>
 
-		<ComponentCard description="Buttons rendered from an array of Button props via the actions prop.">
+		<ComponentCard
+			description="Buttons rendered from an array of Button props via the actions prop."
+		>
 			<Empty
 				bordered
 				class="max-w-md"
@@ -108,7 +141,7 @@
 				description="Buttons rendered from an array of Button props."
 				actions={[
 					{ content: 'Create project', size: 'small' },
-					{ content: 'Import', size: 'small', variant: 'outline', color: 'background' }
+					{ content: 'Import', size: 'small', variant: 'outline', color: 'neutral' }
 				]}
 			/>
 		</ComponentCard>
@@ -169,15 +202,18 @@
 					<Button size="small">Deploy now</Button>
 				{/snippet}
 				{#snippet footer()}
-					<a class="text-foreground-muted hover:text-primary text-xs underline underline-offset-4" href="/docs">
+					<a
+						class="text-neutral/60 hover:text-primary text-xs underline underline-offset-4"
+						href="/docs"
+					>
 						Learn more about deployments
 					</a>
 				{/snippet}
 			</Empty>
 			<Empty bordered>
-				<div class="text-foreground-muted flex flex-col items-center gap-2 text-sm">
+				<div class="text-neutral/60 flex flex-col items-center gap-2 text-sm">
 					{@render magnifyingGlassIcon({ class: 'size-8' })}
-					<p>Fully custom composition via <code class="text-foreground">children</code>.</p>
+					<p>Fully custom composition via <code class="text-neutral">children</code>.</p>
 				</div>
 			</Empty>
 		</ComponentCard>

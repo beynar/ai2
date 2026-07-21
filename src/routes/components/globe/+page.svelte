@@ -12,7 +12,7 @@
 			type: 'segmented',
 			label: 'Land',
 			value: 'primary',
-			options: ['primary', 'success', 'info', 'foreground']
+			options: ['primary', 'success', 'info', 'neutral']
 		},
 		{
 			name: 'autoRotate',
@@ -73,7 +73,7 @@
 						<Button
 							size="small"
 							variant="outline"
-							color="background"
+							color="neutral"
 							onClick={() => goTo?.(...city.coords)}
 						>
 							{city.label}
@@ -88,7 +88,7 @@
 				class="size-[320px]"
 				baseColor="success"
 				glowColor="success"
-				markerColor="foreground"
+				markerColor="neutral"
 				markers={[{ location: [48.85, 2.35], size: 0.12 }]}
 				autoRotate={0.6}
 			/>

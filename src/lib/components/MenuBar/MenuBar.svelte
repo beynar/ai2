@@ -50,7 +50,7 @@
 					type="button"
 					role="menuitem"
 					variant="ghost"
-					color="foreground"
+					color="neutral"
 					{size}
 					prefix={menu.prefix}
 					suffix={menu.suffix}

@@ -173,7 +173,7 @@
 		</div>
 
 		<div class="grid gap-1.5">
-			<span class="text-xs font-medium text-foreground/55">Size</span>
+			<span class="text-xs font-medium text-neutral/55">Size</span>
 			<SegmentedControl
 				items={sidebarSizes}
 				bind:value={sidebarSize}
@@ -183,7 +183,7 @@
 		</div>
 
 		<div class="grid gap-1.5">
-			<span class="text-xs font-medium text-foreground/55">Density</span>
+			<span class="text-xs font-medium text-neutral/55">Density</span>
 			<SegmentedControl
 				items={sidebarDensities}
 				bind:value={sidebarDensity}
@@ -204,7 +204,7 @@
 			contentWidth="normal"
 			theme={{
 				root: {
-					base: 'h-full min-h-full overflow-auto rounded-lg border border-background-muted'
+					base: 'h-full min-h-full overflow-auto rounded-lg border border-neutral-muted'
 				}
 			}}
 		>

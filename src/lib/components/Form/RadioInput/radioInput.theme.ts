@@ -15,7 +15,7 @@ const defaultRadioInputItem = cva({
 	base: 'transition-all relative grid items-start min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
 	variants: {
 		mode: {
-			card: 'rounded bg-background-light raised py-2 ',
+			card: 'rounded bg-surface-raised raised py-2 ',
 			normal: 'py-1'
 		},
 		checked: {
@@ -31,7 +31,7 @@ const defaultRadioInputItem = cva({
 		{
 			mode: 'card',
 			checked: true,
-			class: 'ring-2 ring-primary bg-primary-muted'
+			class: 'ring-2 ring-primary bg-primary-muted text-primary-muted-readable'
 		}
 	]
 });
@@ -41,7 +41,7 @@ const defaultRadioInputItemLabel = cva({
 });
 
 const defaultRadioInputItemTrack = cva({
-	base: 'size-5 origin-center content-[""] bg-background-light border border-background-muted rounded-full absolute left-2',
+	base: 'size-5 origin-center content-[""] bg-surface-raised border border-neutral-muted rounded-full absolute left-2',
 	variants: {
 		checked: {
 			true: '',
@@ -59,7 +59,7 @@ const defaultRadioInputItemTrack = cva({
 });
 
 const defaultRadioInputItemThumb = cva({
-	base: 'size-5 origin-center radio bg-foreground rounded-full transition-all content-[""] absolute left-2 scale-[40%] opacity-0',
+	base: 'size-5 origin-center radio bg-neutral rounded-full transition-all content-[""] absolute left-2 scale-[40%] opacity-0',
 	variants: {
 		checked: {
 			true: 'bg-primary scale-[60%] opacity-100',
@@ -81,7 +81,24 @@ const defaultRadioInputItemIcon = cva({
 });
 
 const defaultRadioInputItemDescription = cva({
-	base: 'text-xs text-foreground-muted'
+	base: 'text-xs text-neutral/60',
+	variants: {
+		mode: {
+			card: '',
+			normal: ''
+		},
+		checked: {
+			true: '',
+			false: ''
+		}
+	},
+	compoundVariants: [
+		{
+			mode: 'card',
+			checked: true,
+			class: 'text-primary-muted-readable/70'
+		}
+	]
 });
 
 const defaultRadioInputContainer = cva({

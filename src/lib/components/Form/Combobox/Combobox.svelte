@@ -330,7 +330,7 @@
 				aria-invalid={!!optionsAsync.error}
 				autocomplete="off"
 				class={classes.input({ size, hasValue: field.value !== null, disabled: field.disabled })}
-				class:placeholder:text-foreground={selectedOption && !searchValue}
+				class:placeholder:text-neutral={selectedOption && !searchValue}
 				{@attach keyDownHook.reference}
 			/>
 			{#if showClear && !suffix}

@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultKbd = cva({
-	base: 'border-foreground/20 shadow-foreground/20 pointer-events-none inline-flex w-fit items-center justify-center rounded-sm border font-sans font-medium shadow-[0_1px_0] select-none',
+	base: 'border-neutral/20 shadow-neutral/20 pointer-events-none inline-flex w-fit items-center justify-center rounded-sm border font-sans font-medium shadow-[0_1px_0] select-none',
 	variants: {
 		size: {
 			small: 'h-4 min-w-4 gap-0.5 px-1 text-[0.625rem] [&_svg:not([class*=size-])]:size-2.5',
@@ -11,8 +11,7 @@ const defaultKbd = cva({
 		},
 		color: {
 			// Neutral keycap; semantic colors resolve through the data-color CSS vars (soft tint).
-			background: 'bg-background-muted text-foreground',
-			foreground: 'bg-color-muted text-color-muted-readable',
+			neutral: 'bg-color-muted text-color-muted-readable',
 			primary: 'bg-color-muted text-color-muted-readable',
 			secondary: 'bg-color-muted text-color-muted-readable',
 			danger: 'bg-color-muted text-color-muted-readable',
@@ -23,7 +22,7 @@ const defaultKbd = cva({
 	},
 	defaultVariants: {
 		size: 'normal',
-		color: 'background'
+		color: 'neutral'
 	}
 });
 
@@ -42,7 +41,7 @@ const defaultKbdGroup = cva({
 });
 
 const defaultKbdSeparator = cva({
-	base: 'text-foreground-muted select-none',
+	base: 'text-neutral/60 select-none',
 	variants: {
 		size: {
 			small: 'text-[0.625rem]',

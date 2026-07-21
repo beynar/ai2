@@ -90,7 +90,7 @@
 						</Button>
 					{/snippet}
 				</DateSelector>
-				<p class="text-foreground-muted text-xs">Selected: {formatDate(selectedDate)}</p>
+				<p class="text-neutral/60 text-xs">Selected: {formatDate(selectedDate)}</p>
 			</div>
 		</ComponentCard>
 
@@ -101,7 +101,7 @@
 		>
 			<div class="flex flex-col items-center gap-3">
 				<DateSelector mode="range" bind:value={selectedRange} presets={rangePresets} />
-				<p class="text-foreground-muted text-xs">
+				<p class="text-neutral/60 text-xs">
 					{selectedRange?.[0]?.toLocaleDateString() ?? 'Start'} -
 					{selectedRange?.[1]?.toLocaleDateString() ?? 'End'}
 				</p>
@@ -115,7 +115,7 @@
 		>
 			<div class="flex flex-col items-center gap-3">
 				<DateSelector mode="multiple" bind:value={selectedDates} presets={multiplePresets} />
-				<p class="text-foreground-muted text-xs">
+				<p class="text-neutral/60 text-xs">
 					{selectedDates.length}
 					{selectedDates.length === 1 ? 'date' : 'dates'} selected
 				</p>

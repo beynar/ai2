@@ -173,7 +173,7 @@ export type QRCodeProps = WithAttachments<{
 	size?: Sizes;
 	/**
 	 * The color of the QR code modules, mapped to the theme colors.
-	 * @default 'foreground'
+	 * @default 'neutral'
 	 */
 	color?: Colors;
 	/**

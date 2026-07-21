@@ -1,5 +1,6 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
+import type { Density } from '$lib/types/theme.js';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { AIMarkerVariant } from '$lib/components/AIMarker/aiMarker.props.js';
 import type {
@@ -15,6 +16,7 @@ import type {
 	AIMessageActionSnippet,
 	AIMessageActionVisibility
 } from '$lib/components/AIMessageActions/aiMessageActions.props.js';
+import type { AIMessageSize, AIMessageVariant } from '$lib/components/AIMessage/aiMessage.props.js';
 import type { AIThreadTocThemeProps } from '$lib/components/AIThreadToc/aiThreadToc.theme.js';
 import type { AIThreadThemeProps } from './aiThread.theme.js';
 
@@ -115,6 +117,7 @@ export type AIThreadRenderPayload<TMessage extends AIThreadItem = AIThreadItem> 
 
 export type AIThreadScrollBehavior = 'auto' | 'smooth' | 'instant';
 export type AIThreadScrollButtonPosition = 'left' | 'center' | 'right';
+export type AIThreadDensity = Density;
 export type AIThreadTocSide = 'left' | 'right';
 export type AIThreadTocPreviewSide = 'left' | 'right';
 export type AIThreadTocPreviewAlign = 'start' | 'center' | 'end';
@@ -179,6 +182,12 @@ export type AIThreadProps<TMessage extends AIThreadItem = AIThreadItem> = WithAt
 		liveText?: string;
 		/** Whether an assistant response is currently streaming. */
 		isStreaming?: boolean;
+		/** Transcript row and edge spacing. @default 'normal' */
+		density?: AIThreadDensity;
+		/** Size forwarded to default AIMessage rows. @default 'normal' */
+		messageSize?: AIMessageSize;
+		/** Presentation forwarded to default AIMessage rows. @default 'bubble' */
+		messageVariant?: AIMessageVariant;
 		/** Follows appended output while the viewport remains pinned to the bottom. */
 		followOutput?: boolean;
 		/** Distance from the bottom, in pixels, considered pinned. */
@@ -199,7 +208,7 @@ export type AIThreadProps<TMessage extends AIThreadItem = AIThreadItem> = WithAt
 		showScrollButton?: boolean;
 		/** Horizontal alignment of the scroll-to-latest action. */
 		scrollButtonPosition?: AIThreadScrollButtonPosition;
-		/** Displays the optional user-turn minimap. */
+		/** Displays the user-turn minimap when multiple turns overflow the viewport. */
 		showToc?: boolean;
 		/** Side occupied by the default user-turn minimap. @default 'left' */
 		tocSide?: AIThreadTocSide;

@@ -387,7 +387,7 @@
 		<ComponentCard description="Open and observe menu state from outside the trigger.">
 			<div class="flex gap-4">
 				<button
-					class="border-foreground rounded border px-4 py-2"
+					class="border-neutral rounded border px-4 py-2"
 					onclick={() => (externalMenuOpen = true)}
 				>
 					Open Menu Externally
@@ -400,7 +400,7 @@
 					menu={{ items: basicItems }}
 				/>
 
-				<span class="text-foreground/70 self-center text-sm">
+				<span class="text-neutral/70 self-center text-sm">
 					Menu is {externalMenuOpen ? 'open' : 'closed'}
 				</span>
 			</div>
@@ -408,10 +408,10 @@
 
 		<ComponentCard description="Context menu opened at the pointer on right-click.">
 			<div
-				class="bg-background-light rounded-xl border-background-muted flex h-48 w-full cursor-context-menu items-center justify-center border"
+				class="bg-surface-raised rounded-xl border-neutral-muted flex h-48 w-full cursor-context-menu items-center justify-center border"
 				oncontextmenu={handleContextMenu}
 			>
-				<p class="text-foreground/70">Right-click anywhere in this area</p>
+				<p class="text-neutral/70">Right-click anywhere in this area</p>
 			</div>
 
 			<PopupMenu
@@ -468,7 +468,7 @@
 				/>
 
 				<PopupMenu
-					trigger={{ content: 'Link', variant: 'link', color: 'foreground' }}
+					trigger={{ content: 'Link', variant: 'link', color: 'neutral' }}
 					menu={{ items: basicItems }}
 				/>
 			</div>
@@ -509,7 +509,7 @@
 		</ComponentCard>
 
 		<ComponentCard description="Application toolbar with multiple nested popup menus.">
-			<div class="bg-background rounded-xl border-background-muted flex gap-1 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted flex gap-1 border p-1">
 				<PopupMenu
 					trigger={{ content: 'File', variant: 'ghost', size: 'small' }}
 					position="bottom-start"
@@ -528,7 +528,7 @@
 					menu={{ items: viewItems }}
 				/>
 
-				<div class="border-background-muted mx-1 border-l"></div>
+				<div class="border-neutral-muted mx-1 border-l"></div>
 
 				<PopupMenu
 					trigger={{ prefix: userIcon, variant: 'ghost', size: 'small', squared: true }}

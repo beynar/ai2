@@ -57,7 +57,7 @@
 	dots={{ color: 'primary' }}
 >
 	{#snippet children({ item, index })}
-		<article class="bg-background raised-lg grid h-64 content-between rounded-xl border border-background-muted p-5">
+		<article class="bg-surface raised-lg grid h-64 content-between rounded-xl border border-neutral-muted p-5">
 			<div class="flex items-start justify-between gap-4">
 				<div class="bg-primary text-primary-contrast flex h-10 w-10 items-center justify-center rounded font-semibold">
 					{index + 1}
@@ -66,7 +66,7 @@
 			</div>
 			<div>
 				<h2 class="text-2xl font-semibold">{item.title}</h2>
-				<p class="text-foreground-muted mt-2">{item.description}</p>
+				<p class="text-neutral/60 mt-2">{item.description}</p>
 			</div>
 		</article>
 	{/snippet}
@@ -82,20 +82,20 @@
 	dots={{ color: 'primary' }}
 >
 	{#snippet children({ item, index })}
-		<article class="bg-background raised-lg grid h-[360px] content-between overflow-hidden rounded-xl border border-background-muted">
+		<article class="bg-surface raised-lg grid h-[360px] content-between overflow-hidden rounded-xl border border-neutral-muted">
 			<div class="bg-primary-muted border-primary h-2 border-b"></div>
 			<div class="grid gap-5 p-6">
 				<div class="flex items-center justify-between">
 					<span class="text-primary text-sm font-semibold">0{index + 1}</span>
-					<span class="bg-background-muted text-foreground-muted rounded-full px-3 py-1 text-sm">
+					<span class="bg-neutral-muted text-neutral/60 rounded-full px-3 py-1 text-sm">
 						generated slide
 					</span>
 				</div>
 				<div>
 					<h2 class="text-3xl font-semibold">{item.title}</h2>
-					<p class="text-foreground-muted mt-3">{item.description}</p>
+					<p class="text-neutral/60 mt-3">{item.description}</p>
 				</div>
-				<p class="text-foreground-muted text-sm leading-relaxed">{item.content}</p>
+				<p class="text-neutral/60 text-sm leading-relaxed">{item.content}</p>
 			</div>
 		</article>
 	{/snippet}
@@ -106,7 +106,7 @@
 	layout={{ default: 1, md: 2 }}
 	gaps={{ default: 18 }}
 	class="w-full max-w-[90vw]"
-	theme={{ slide: { base: 'rounded-xl border border-background-muted bg-background p-2' } }}
+	theme={{ slide: { base: 'rounded-xl border border-neutral-muted bg-surface p-2' } }}
 	dots={{ color: 'secondary' }}
 >
 	{#snippet children({ item, index })}
@@ -114,7 +114,7 @@
 			<p class="text-secondary text-sm font-semibold">0{index + 1}</p>
 			<div>
 				<h2 class="text-2xl font-semibold">{item.title}</h2>
-				<p class="text-foreground-muted mt-2">{item.description}</p>
+				<p class="text-neutral/60 mt-2">{item.description}</p>
 			</div>
 		</article>
 	{/snippet}
@@ -130,7 +130,7 @@
 			{...attributes}
 			disabled={direction === 'prev' ? !carousel.canScrollPrev : !carousel.canScrollNext}
 			onclick={() => direction === 'prev' ? carousel.prev() : carousel.next()}
-			class="bg-background/90 text-foreground raised absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-background-muted disabled:opacity-40"
+			class="bg-surface/90 text-neutral raised absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-muted disabled:opacity-40"
 			class:left-3={direction === 'prev'}
 			class:right-3={direction === 'next'}
 		>
@@ -139,9 +139,9 @@
 	{/snippet}
 
 	{#snippet children({ item })}
-		<div class="bg-background raised-lg grid h-72 content-end rounded-xl border border-background-muted p-6">
+		<div class="bg-surface raised-lg grid h-72 content-end rounded-xl border border-neutral-muted p-6">
 			<h2 class="text-3xl font-semibold">{item.title}</h2>
-			<p class="text-foreground-muted mt-2">{item.content}</p>
+			<p class="text-neutral/60 mt-2">{item.content}</p>
 		</div>
 	{/snippet}
 </Carousel>`;
@@ -157,7 +157,7 @@
 		<div class="bg-info-muted h-48 rounded-xl p-5">
 			<p class="text-info text-sm font-semibold">Card {index + 1}</p>
 			<h2 class="mt-6 text-2xl font-semibold">{item.title}</h2>
-			<p class="text-foreground-muted mt-2 text-sm">{item.description}</p>
+			<p class="text-neutral/60 mt-2 text-sm">{item.description}</p>
 		</div>
 	{/snippet}
 </Carousel>`;
@@ -189,7 +189,7 @@
 		>
 			{#snippet children({ item, index })}
 				<article
-					class="bg-background raised-lg grid h-64 content-between rounded-xl border border-background-muted p-5"
+					class="bg-surface raised-lg grid h-64 content-between rounded-xl border border-neutral-muted p-5"
 				>
 					<div class="flex items-start justify-between gap-4">
 						<div
@@ -201,7 +201,7 @@
 					</div>
 					<div>
 						<h2 class="text-2xl font-semibold">{item.title}</h2>
-						<p class="text-foreground-muted mt-2">{item.description}</p>
+						<p class="text-neutral/60 mt-2">{item.description}</p>
 					</div>
 				</article>
 			{/snippet}
@@ -224,23 +224,23 @@
 			>
 				{#snippet children({ item, index })}
 					<article
-						class="bg-background raised-lg grid h-[360px] content-between overflow-hidden rounded-xl border border-background-muted"
+						class="bg-surface raised-lg grid h-[360px] content-between overflow-hidden rounded-xl border border-neutral-muted"
 					>
 						<div class="bg-primary-muted border-primary h-2 border-b"></div>
 						<div class="grid gap-5 p-6">
 							<div class="flex items-center justify-between">
 								<span class="text-primary text-sm font-semibold">0{index + 1}</span>
 								<span
-									class="bg-background-muted text-foreground-muted rounded-full px-3 py-1 text-sm"
+									class="bg-neutral-muted text-neutral/60 rounded-full px-3 py-1 text-sm"
 								>
 									generated slide
 								</span>
 							</div>
 							<div>
 								<h2 class="text-3xl font-semibold">{item.title}</h2>
-								<p class="text-foreground-muted mt-3">{item.description}</p>
+								<p class="text-neutral/60 mt-3">{item.description}</p>
 							</div>
-							<p class="text-foreground-muted text-sm leading-relaxed">{item.content}</p>
+							<p class="text-neutral/60 text-sm leading-relaxed">{item.content}</p>
 						</div>
 					</article>
 				{/snippet}
@@ -257,7 +257,7 @@
 				gaps={{ default: 18 }}
 				class="w-full max-w-[90vw]"
 				theme={{
-					slide: { base: 'rounded-xl border border-background-muted bg-background p-2' }
+					slide: { base: 'rounded-xl border border-neutral-muted bg-surface p-2' }
 				}}
 				dots={{ color: 'secondary' }}
 			>
@@ -266,7 +266,7 @@
 						<p class="text-secondary text-sm font-semibold">0{index + 1}</p>
 						<div>
 							<h2 class="text-2xl font-semibold">{item.title}</h2>
-							<p class="text-foreground-muted mt-2">{item.description}</p>
+							<p class="text-neutral/60 mt-2">{item.description}</p>
 						</div>
 					</article>
 				{/snippet}
@@ -283,7 +283,7 @@
 						{...attributes}
 						disabled={direction === 'prev' ? !carousel.canScrollPrev : !carousel.canScrollNext}
 						onclick={() => (direction === 'prev' ? carousel.prev() : carousel.next())}
-						class="bg-background/90 text-foreground raised absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-background-muted disabled:opacity-40"
+						class="bg-surface/90 text-neutral raised absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-muted disabled:opacity-40"
 						class:left-3={direction === 'prev'}
 						class:right-3={direction === 'next'}
 					>
@@ -293,10 +293,10 @@
 
 				{#snippet children({ item })}
 					<div
-						class="bg-background raised-lg grid h-72 content-end rounded-xl border border-background-muted p-6"
+						class="bg-surface raised-lg grid h-72 content-end rounded-xl border border-neutral-muted p-6"
 					>
 						<h2 class="text-3xl font-semibold">{item.title}</h2>
-						<p class="text-foreground-muted mt-2">{item.content}</p>
+						<p class="text-neutral/60 mt-2">{item.content}</p>
 					</div>
 				{/snippet}
 			</Carousel>
@@ -314,7 +314,7 @@
 					<div class="bg-info-muted h-48 rounded-xl p-5">
 						<p class="text-info text-sm font-semibold">Card {index + 1}</p>
 						<h2 class="mt-6 text-2xl font-semibold">{item.title}</h2>
-						<p class="text-foreground-muted mt-2 text-sm">{item.description}</p>
+						<p class="text-neutral/60 mt-2 text-sm">{item.description}</p>
 					</div>
 				{/snippet}
 			</Carousel>

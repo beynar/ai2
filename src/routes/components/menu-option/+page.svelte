@@ -37,14 +37,14 @@
 		description="Single item with icon, title, and description."
 		code={`<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />`}
 	>
-		<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+		<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 			<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
 		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
 		<ComponentCard description="Basic menu items with optional description.">
-			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 				<MenuOption title="Simple Menu Item" />
 
 				<MenuOption title="With Description" description="This is a helpful description" />
@@ -52,7 +52,7 @@
 		</ComponentCard>
 
 		<ComponentCard description="Prefix and suffix icon slots.">
-			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 				<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
 
 				<MenuOption prefix={gearIcon} suffix={caretRightIcon} title="Settings" />
@@ -62,7 +62,7 @@
 		</ComponentCard>
 
 		<ComponentCard description="Small, normal, and large sizes.">
-			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 				<MenuOption size="small" prefix={userIcon} title="Small Menu Item" />
 
 				<MenuOption size="normal" prefix={userIcon} title="Normal Menu Item" />
@@ -84,7 +84,7 @@
 					size="small"
 					ariaLabel="Row density"
 				/>
-				<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+				<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 					<MenuOption
 						density={rowDensity}
 						prefix={userIcon}
@@ -98,7 +98,7 @@
 		</ComponentCard>
 
 		<ComponentCard description="Semantic color variants.">
-			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 				<MenuOption color="primary" title="Primary" />
 
 				<MenuOption color="secondary" title="Secondary" />
@@ -112,7 +112,7 @@
 		</ComponentCard>
 
 		<ComponentCard description="Click, hover, and link interactions.">
-			<div class="bg-background rounded-xl border-background-muted w-64 space-y-1 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-64 space-y-1 border p-1">
 				<MenuOption onClick={() => clickCount++} title="Clicked {clickCount} times" />
 
 				<MenuOption
@@ -130,10 +130,10 @@
 		</ComponentCard>
 
 		<ComponentCard description="Complete menu with dividers and a danger action.">
-			<div class="bg-background rounded-xl border-background-muted w-72 border p-1">
+			<div class="bg-surface rounded-xl border-neutral-muted w-72 border p-1">
 				<MenuOption prefix={userIcon} title="John Doe" description="john@example.com" />
 
-				<div class="border-background-muted my-1 border-t"></div>
+				<div class="border-neutral-muted my-1 border-t"></div>
 
 				<MenuOption prefix={userIcon} title="Profile" description="View and edit your profile" />
 
@@ -141,7 +141,7 @@
 
 				<MenuOption prefix={questionIcon} title="Help & Support" />
 
-				<div class="border-background-muted my-1 border-t"></div>
+				<div class="border-neutral-muted my-1 border-t"></div>
 
 				<MenuOption color="danger" prefix={signOutIcon} title="Log Out" />
 			</div>

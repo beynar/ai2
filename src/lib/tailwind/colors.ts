@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { mix as mixRgb, toHex, hasBadContrast } from 'color2k';
+import { toHex, hasBadContrast } from 'color2k';
 import {
 	darken,
 	lighten,
@@ -324,12 +324,15 @@ export const tailwindColors = {
 	}
 } as const;
 
-type ColorName =
-	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'background' | 'foreground';
+type ColorName = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral';
 type ColorVariant = 'light' | 'lighter' | 'dark' | 'muted' | 'contrast';
+type SurfaceName =
+	'surface' | 'surface-recessed' | 'surface-canvas' | 'surface-raised' | 'surface-floating';
 
 export type ColorTheme = {
 	[K in ColorName | `${ColorName}-${ColorVariant}`]?: string;
+} & {
+	[K in SurfaceName]?: string;
 };
 
 export type TailwindColor = keyof typeof tailwindColors;
@@ -354,9 +357,17 @@ type Colors = {
 	success: ColorRecord;
 	warning: ColorRecord;
 	info: ColorRecord;
-	background: ColorRecord;
-	foreground: ColorRecord;
+	neutral: ColorRecord;
 };
+
+type SurfaceRecord = {
+	DEFAULT: string;
+	recessed: string | null;
+	canvas: string | null;
+	raised: string | null;
+	floating: string | null;
+};
+type SurfacePalette = DeepNonNullable<SurfaceRecord>;
 
 type DeepNonNullable<T> = {
 	[K in keyof T]: T[K] extends object
@@ -374,8 +385,7 @@ export const colors = [
 	'success',
 	'warning',
 	'info',
-	'background',
-	'foreground'
+	'neutral'
 ] as const;
 
 const baseBlackColor = '#000000';
@@ -401,8 +411,7 @@ const defaultColorsLight = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	background: baseWhiteColor,
-	foreground: baseBlackColor
+	neutral: baseBlackColor
 } as const;
 const defaultColorsDark = {
 	primary: '#6366f1',
@@ -411,20 +420,26 @@ const defaultColorsDark = {
 	success: '#0070f3',
 	warning: '#f5a623',
 	info: '#50e3c2',
-	background: baseBlackColor,
-	foreground: baseWhiteColor
+	neutral: baseWhiteColor
 } as const;
 
 type ColorThemeOption = {
 	saturation?: number;
 	luminance?: number;
 	colorscheme?: 'dark' | 'light';
-	'overlay-hover'?: string;
-	'overlay-pressed'?: string;
+	'state-hover-opacity'?: number;
+	'state-pressed-opacity'?: number;
 } & ColorTheme;
 
 export const generateBaseColors = (theme: ColorThemeOption) => {
-	const isDark = theme.colorscheme === 'dark';
+	const defaultSurface = theme.colorscheme === 'dark' ? baseBlackColor : baseWhiteColor;
+	const surface = {
+		DEFAULT: theme.surface || defaultSurface,
+		recessed: theme['surface-recessed'] || null,
+		canvas: theme['surface-canvas'] || null,
+		raised: theme['surface-raised'] || null,
+		floating: theme['surface-floating'] || null
+	} satisfies SurfaceRecord;
 	const baseColors = colors.reduce(
 		(acc, color) => {
 			const configuredColor = theme[color];
@@ -458,8 +473,7 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 			success: {},
 			warning: {},
 			info: {},
-			background: {},
-			foreground: {}
+			neutral: {}
 		} as Colors
 	);
 
@@ -467,12 +481,12 @@ export const generateBaseColors = (theme: ColorThemeOption) => {
 		baseColors.secondary.DEFAULT = generateComplementaryAccent(baseColors.primary.DEFAULT);
 	}
 
-	return baseColors;
+	return { colors: baseColors, surface };
 };
 
 export const generateColorPalette = (opts: ColorThemeOption) => {
 	const { luminance, saturation, colorscheme } = opts;
-	const colors = generateBaseColors(opts);
+	const { colors, surface } = generateBaseColors(opts);
 	const isDark = colorscheme === 'dark';
 
 	const adjustColor = (color: string) => {
@@ -503,9 +517,9 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		return text;
 	};
 
-	const backgroundLightness = isDark
-		? { DEFAULT: 0.18, dark: 0.15, light: 0.22, lighter: 0.27, muted: 0.32 }
-		: { DEFAULT: 0.98, dark: 0.965, light: 0.99, lighter: 1, muted: 0.92 };
+	const surfaceLightness = isDark
+		? { DEFAULT: 0.18, recessed: 0.12, canvas: 0.15, raised: 0.22, floating: 0.28 }
+		: { DEFAULT: 0.98, recessed: 0.93, canvas: 0.965, raised: 0.99, floating: 1 };
 
 	const setPerceptualLightness = (color: string, lightness: number) => {
 		const { c, h } = hex2oklch(toHex(color));
@@ -513,11 +527,15 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		return toGamut(oklch, 'hex');
 	};
 
-	// The normalized page background: where ghost/outline/link text sits.
-	const backgroundSurface = setPerceptualLightness(
-		colors.background.DEFAULT,
-		backgroundLightness.DEFAULT
-	);
+	const surfacePalette = {
+		DEFAULT: setPerceptualLightness(surface.DEFAULT, surfaceLightness.DEFAULT),
+		recessed:
+			surface.recessed || setPerceptualLightness(surface.DEFAULT, surfaceLightness.recessed),
+		canvas: surface.canvas || setPerceptualLightness(surface.DEFAULT, surfaceLightness.canvas),
+		raised: surface.raised || setPerceptualLightness(surface.DEFAULT, surfaceLightness.raised),
+		floating: surface.floating || setPerceptualLightness(surface.DEFAULT, surfaceLightness.floating)
+	};
+	const baseSurface = surfacePalette.DEFAULT;
 
 	const generateSemanticPalette = (color: ColorRecord, surface: string) => {
 		const baseColor = adjustColor(color.DEFAULT as string);
@@ -535,66 +553,49 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 			muted,
 			contrast:
 				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
-			readable: readableOn(color.DEFAULT as string, backgroundSurface),
+			readable: readableOn(color.DEFAULT as string, baseSurface),
 			'muted-readable': readableOn(color.DEFAULT as string, muted)
 		};
 	};
 
-	const generateBackgroundPalette = (color: ColorRecord) => {
-		const seedColor = color.DEFAULT;
-		const baseColor = setPerceptualLightness(seedColor, backgroundLightness.DEFAULT);
-		const muted = color.muted || setPerceptualLightness(seedColor, backgroundLightness.muted);
-		return {
-			DEFAULT: baseColor,
-			dark: color.dark || setPerceptualLightness(seedColor, backgroundLightness.dark),
-			light: color.light || setPerceptualLightness(seedColor, backgroundLightness.light),
-			lighter: color.lighter || setPerceptualLightness(seedColor, backgroundLightness.lighter),
-			muted,
-			contrast:
-				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
-			readable: readableOn(baseColor, backgroundSurface),
-			'muted-readable': readableOn(baseColor, muted)
-		};
-	};
-
-	const generateForegroundPalette = (color: ColorRecord) => {
-		const baseColor = color.DEFAULT || (isDark ? baseBlackColor : baseWhiteColor);
+	const generateNeutralPalette = (color: ColorRecord) => {
+		const baseColor = opts.neutral
+			? adjustColor(color.DEFAULT)
+			: setPerceptualLightness(surface.DEFAULT, isDark ? 0.96 : 0.22);
 		const muted =
 			color.muted ||
-			(isDark ? mixRgb(baseColor, baseBlackColor, 0.5) : mixRgb(baseColor, baseWhiteColor, 0.5));
+			mixPerceptual(baseSurface, baseColor, isDark ? 0.2 : 0.1, {
+				space: 'oklab',
+				format: 'hex'
+			});
 		return {
-			DEFAULT: color.DEFAULT,
+			DEFAULT: baseColor,
 			dark: color.dark || darken(baseColor, 2),
 			light: color.light || lighten(baseColor, 5),
 			lighter: color.lighter || lighten(baseColor, 15),
 			muted,
 			contrast:
 				color.contrast || (readableColorIsBlack(baseColor) ? baseBlackColor : baseWhiteColor),
-			readable: readableOn(baseColor, backgroundSurface),
+			readable: readableOn(baseColor, baseSurface),
 			'muted-readable': readableOn(baseColor, muted)
 		};
 	};
 
 	const colorsPalette = {
-		primary: generateSemanticPalette(colors.primary, backgroundSurface),
-		secondary: generateSemanticPalette(colors.secondary, backgroundSurface),
-		danger: generateSemanticPalette(colors.danger, backgroundSurface),
-		success: generateSemanticPalette(colors.success, backgroundSurface),
-		warning: generateSemanticPalette(colors.warning, backgroundSurface),
-		info: generateSemanticPalette(colors.info, backgroundSurface),
-		background: generateBackgroundPalette(colors.background),
-		foreground: generateForegroundPalette(colors.foreground)
+		primary: generateSemanticPalette(colors.primary, baseSurface),
+		secondary: generateSemanticPalette(colors.secondary, baseSurface),
+		danger: generateSemanticPalette(colors.danger, baseSurface),
+		success: generateSemanticPalette(colors.success, baseSurface),
+		warning: generateSemanticPalette(colors.warning, baseSurface),
+		info: generateSemanticPalette(colors.info, baseSurface),
+		neutral: generateNeutralPalette(colors.neutral)
 	} satisfies Colors;
 
-	const foreground = toHex(colorsPalette.foreground.DEFAULT) as `#${string}`;
 	const cssVariables = {
 		...paletteToCssVariables(colorsPalette),
-		'--color-overlay-hover': opts['overlay-hover']
-			? opts['overlay-hover']
-			: formatCSS(foreground, { format: 'oklab', alpha: 0.05 }),
-		'--color-overlay-pressed': opts['overlay-pressed']
-			? opts['overlay-pressed']
-			: formatCSS(foreground, { format: 'oklab', alpha: 0.1 })
+		...surfaceToCssVariables(surfacePalette),
+		'--state-hover-opacity': String(opts['state-hover-opacity'] ?? (isDark ? 0.16 : 0.05)),
+		'--state-pressed-opacity': String(opts['state-pressed-opacity'] ?? (isDark ? 0.32 : 0.1))
 	};
 
 	return {
@@ -602,6 +603,14 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 		cssVariables
 	};
 };
+
+const surfaceToCssVariables = (surface: SurfacePalette) => ({
+	'--color-surface': formatCSS(surface.DEFAULT as `#${string}`, { format: 'oklab' }),
+	'--color-surface-recessed': formatCSS(surface.recessed as `#${string}`, { format: 'oklab' }),
+	'--color-surface-canvas': formatCSS(surface.canvas as `#${string}`, { format: 'oklab' }),
+	'--color-surface-raised': formatCSS(surface.raised as `#${string}`, { format: 'oklab' }),
+	'--color-surface-floating': formatCSS(surface.floating as `#${string}`, { format: 'oklab' })
+});
 
 const paletteToCssVariables = (colors: DeepNonNullable<Colors>) => {
 	const colorVariables = {};
@@ -622,7 +631,7 @@ const paletteToCssVariables = (colors: DeepNonNullable<Colors>) => {
 };
 
 export const toTailwindCssTheme = () => {
-	return colors.reduce((acc, color) => {
+	const colorTheme = colors.reduce((acc, color) => {
 		Object.assign(acc, {
 			[color]: variants.reduce(
 				(acc, shade) => {
@@ -632,10 +641,22 @@ export const toTailwindCssTheme = () => {
 					return acc;
 				},
 				{
-					DEFAULT: `var(--color-${color})`
+					DEFAULT: `var(--color-${color})`,
+					readable: `var(--color-${color}-readable)`,
+					'muted-readable': `var(--color-${color}-muted-readable)`
 				}
 			)
 		});
 		return acc;
 	}, {});
+	return {
+		...colorTheme,
+		surface: {
+			DEFAULT: 'var(--color-surface)',
+			recessed: 'var(--color-surface-recessed)',
+			canvas: 'var(--color-surface-canvas)',
+			raised: 'var(--color-surface-raised)',
+			floating: 'var(--color-surface-floating)'
+		}
+	};
 };

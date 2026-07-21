@@ -1,10 +1,36 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import { ProgressCircle } from '$lib/components/ProgressCircle/index.js';
 	import { colors } from '$lib/utils/tokens.js';
 
-	let progress = $state(35);
+	const controls = createComponentControls([
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'warning', 'danger', 'info']
+		},
+		{
+			name: 'value',
+			type: 'slider',
+			label: 'Progress',
+			value: 35,
+			min: 0,
+			max: 100,
+			step: 1,
+			showValue: true
+		}
+	]);
 </script>
 
 <DocPage
@@ -19,40 +45,22 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Progress value animates when it changes."
-		code={`<ProgressCircle value={35} />
-<ProgressCircle value={65} size="large" />
-<ProgressCircle value={80} size={56} />`}
+		code={`<ProgressCircle
+	value={${controls.value.value}}
+	size="${controls.value.size}"
+	color="${controls.value.color}"
+	label="Upload progress"
+/>`}
 		class="!min-h-fit"
 	>
-		<div class="grid gap-6">
-			<div class="flex flex-wrap items-center justify-center gap-8">
-				<ProgressCircle value={progress} size="small" label="Small progress" />
-				<ProgressCircle value={progress} label="Normal progress" />
-				<ProgressCircle value={progress} size="large" label="Large progress" />
-				<ProgressCircle value={progress} size={56} label="Numeric progress" />
-			</div>
-			<div class="flex items-center justify-center gap-2">
-				<button
-					class="state-layer border-background-muted bg-background text-foreground rounded-md border px-3 py-1.5 text-sm"
-					onclick={() => (progress = 20)}
-				>
-					20
-				</button>
-				<button
-					class="state-layer border-background-muted bg-background text-foreground rounded-md border px-3 py-1.5 text-sm"
-					onclick={() => (progress = 65)}
-				>
-					65
-				</button>
-				<button
-					class="state-layer border-background-muted bg-background text-foreground rounded-md border px-3 py-1.5 text-sm"
-					onclick={() => (progress = 90)}
-				>
-					90
-				</button>
-			</div>
-		</div>
+		<ProgressCircle
+			value={controls.value.value}
+			size={controls.value.size}
+			color={controls.value.color}
+			label="Upload progress"
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}

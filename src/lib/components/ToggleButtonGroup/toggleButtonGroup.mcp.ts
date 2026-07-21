@@ -13,7 +13,7 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 <ToggleButtonGroup
 	bind:value={formatting}
 	ariaLabel="Text formatting"
-	color="foreground"
+	color="neutral"
 	items={{
 		bold: { children: 'Bold' },
 		italic: { children: 'Italic' },
@@ -58,7 +58,7 @@ ToggleButtonGroup renders a keyed set of ToggleButton items and exposes a bindab
 <ToggleButtonGroup
 	joined
 	variant="outline"
-	color="foreground"
+	color="neutral"
 	ariaLabel="Text formatting"
 	value={{ bold: true }}
 	items={{

@@ -42,7 +42,7 @@
 		<div class={classes.progressGroup()}>
 			<Chip
 				prefix={chatCircleTextIcon}
-				color="background"
+				color="neutral"
 				variant="soft"
 				size="normal"
 				class={classes.progress()}

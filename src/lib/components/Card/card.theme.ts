@@ -6,7 +6,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 // only; `density` owns paddings and gaps ('large' matches vega's default
 // 6-scale, 'normal' its sm 4-scale).
 const defaultCard = cva({
-	base: 'group/card text-foreground flex flex-col rounded-xl tabular-nums transition-all',
+	base: 'group/card text-neutral flex flex-col rounded-xl tabular-nums transition-all',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -24,8 +24,7 @@ const defaultCard = cva({
 		color: {
 			primary: '',
 			secondary: '',
-			foreground: '',
-			background: '',
+			neutral: '',
 			danger: '',
 			success: '',
 			warning: '',
@@ -35,11 +34,11 @@ const defaultCard = cva({
 		// plain foreground on transparent/tinted surfaces (contrast text there is
 		// unreadable — it's meant for a color-filled background).
 		variant: {
-			solid: 'bg-color text-color-contrast ring-1 ring-foreground/10 shadow-xs',
-			outline: 'bg-transparent text-foreground ring-1 ring-color',
-			soft: 'bg-color-muted text-foreground',
+			solid: 'bg-color text-color-contrast ring-1 ring-neutral/10 shadow-xs',
+			outline: 'bg-transparent text-color-readable ring-1 ring-color',
+			soft: 'bg-color-muted text-color-muted-readable',
 			// No ! on bg-transparent: it would also defeat the clickable hover bg.
-			ghost: 'bg-transparent text-foreground'
+			ghost: 'bg-transparent text-neutral'
 		},
 		// Internal: set when the card has an onClick or href — interactive cards
 		// get cursor, hover, press and keyboard-focus treatment.
@@ -55,7 +54,7 @@ const defaultCard = cva({
 	defaultVariants: {
 		size: 'normal',
 		density: 'normal',
-		color: 'background',
+		color: 'neutral',
 		variant: 'solid',
 		clickable: false,
 		disabled: false
@@ -63,28 +62,18 @@ const defaultCard = cva({
 	compoundVariants: [
 		// Solid cards also lift through border/shadow; the shared state layer owns
 		// transient fill feedback for every clickable surface.
-		{ clickable: true, variant: 'solid', class: 'hover:ring-foreground/25 hover:shadow-sm' },
+		{ clickable: true, variant: 'solid', class: 'hover:ring-neutral/25 hover:shadow-sm' },
 		// Neutral card: an elevated surface distinct from the page background
-		// (bg-background would blend in, especially in dark mode).
+		// (bg-surface would blend in, especially in dark mode).
 		{
-			color: 'background',
+			color: 'neutral',
 			variant: 'solid',
-			class: 'bg-background-light text-foreground'
+			class: 'bg-surface-raised text-neutral'
 		},
 		{
-			color: 'background',
+			color: 'neutral',
 			variant: 'outline',
-			class: 'ring-foreground/15 text-foreground'
-		},
-		{
-			color: 'background',
-			variant: 'soft',
-			class: 'bg-background-lighter text-foreground'
-		},
-		{
-			color: 'foreground',
-			variant: 'outline',
-			class: 'ring-foreground/50'
+			class: 'ring-neutral/15 text-neutral'
 		}
 	]
 });
@@ -128,10 +117,10 @@ const defaultCardTitle = cva({
 			large: 'text-lg'
 		},
 		variant: {
-			solid: 'text-color-contrast group-data-[color=background]/card:text-foreground',
-			outline: 'text-color group-data-[color=background]/card:text-foreground',
-			soft: 'text-color group-data-[color=background]/card:text-foreground',
-			ghost: 'text-color group-data-[color=background]/card:text-foreground'
+			solid: 'text-color-contrast group-data-[color=neutral]/card:text-neutral',
+			outline: 'text-color-readable group-data-[color=neutral]/card:text-neutral',
+			soft: 'text-color-muted-readable',
+			ghost: 'text-color-readable group-data-[color=neutral]/card:text-neutral'
 		}
 	},
 	defaultVariants: {
@@ -140,7 +129,7 @@ const defaultCardTitle = cva({
 });
 
 const defaultCardDescription = cva({
-	base: 'text-foreground-muted leading-normal',
+	base: 'text-neutral/60 leading-normal',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -148,7 +137,7 @@ const defaultCardDescription = cva({
 			large: 'text-base'
 		},
 		variant: {
-			solid: 'text-color-contrast/70 group-data-[color=background]/card:text-foreground-muted',
+			solid: 'text-color-contrast/70 group-data-[color=neutral]/card:text-neutral/60',
 			outline: '',
 			soft: '',
 			ghost: ''
@@ -172,11 +161,11 @@ const defaultCardContent = cva({
 			large: 'px-6'
 		},
 		hasBorderTop: {
-			true: 'border-t border-background-muted',
+			true: 'border-t border-neutral-muted',
 			false: ''
 		},
 		hasBorderBottom: {
-			true: 'border-b border-background-muted',
+			true: 'border-b border-neutral-muted',
 			false: ''
 		}
 	},

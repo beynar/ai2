@@ -43,10 +43,10 @@
 
 <section
 	aria-labelledby="shell-mental-model-title"
-	class="grid gap-3 rounded-xl border border-background-muted bg-background p-4 text-sm text-foreground/70"
+	class="grid gap-3 rounded-xl border border-neutral-muted bg-surface p-4 text-sm text-neutral/70"
 >
 	<div class="grid gap-1">
-		<p id="shell-mental-model-title" class="font-medium text-foreground">Shell mental model</p>
+		<p id="shell-mental-model-title" class="font-medium text-neutral">Shell mental model</p>
 		<p>
 			Sidebar moves and paints the application frame; AppShell composes it with PageShell; PageShell
 			shapes the page. Each card links to the component that owns that layer.
@@ -59,17 +59,17 @@
 				href={item.href}
 				aria-current={current === item.id ? 'page' : undefined}
 				class="rounded-lg border p-3 transition {current === item.id
-					? 'border-primary bg-primary/10 text-foreground'
-					: 'border-background-muted bg-background-light text-foreground/75 hover:border-primary/50 hover:text-foreground'}"
+					? 'border-primary bg-primary/10 text-neutral'
+					: 'border-neutral-muted bg-surface-raised text-neutral/75 hover:border-primary/50 hover:text-neutral'}"
 			>
-				<span class="block font-medium text-foreground">{item.label}</span>
+				<span class="block font-medium text-neutral">{item.label}</span>
 				<span class="mt-2 block">{item.responsibility}</span>
 				<span class="mt-2 block">
-					<span class="font-medium text-foreground">Use:</span>
+					<span class="font-medium text-neutral">Use:</span>
 					{item.use}
 				</span>
 				<span class="mt-1 block">
-					<span class="font-medium text-foreground">How:</span>
+					<span class="font-medium text-neutral">How:</span>
 					{item.how}
 				</span>
 			</a>

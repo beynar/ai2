@@ -124,13 +124,13 @@ ${'</' + 'script>'}
 	>
 		<div class="grid h-[520px] w-full grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
 			<div class="flex items-center justify-between gap-3">
-				<span class="text-sm text-foreground/65"
+				<span class="text-sm text-neutral/65"
 					>Status: {conversation?.status ?? 'initializing'}</span
 				>
 				<Button size="small" variant="outline" onClick={appendSystemMessage}>Append event</Button>
 			</div>
 			<AIConversation bind:conversation bind:messages bind:status={controls.value.status}>
-				<AIThread class="rounded-lg border border-background-muted" />
+				<AIThread class="rounded-lg border border-neutral-muted" />
 				<AIComposer />
 			</AIConversation>
 		</div>
@@ -138,27 +138,27 @@ ${'</' + 'script>'}
 
 	<section aria-labelledby="conversation-methods" class="grid gap-5">
 		<div>
-			<h2 id="conversation-methods" class="text-xl font-semibold text-foreground">State methods</h2>
-			<p class="mt-1 text-sm text-foreground/65">
+			<h2 id="conversation-methods" class="text-xl font-semibold text-neutral">State methods</h2>
+			<p class="mt-1 text-sm text-neutral/65">
 				Message and tool targets must resolve exactly one item. Missing or ambiguous targets throw.
 			</p>
 		</div>
 		{#each methodGroups as group (group.label)}
-			<div class="overflow-hidden rounded-lg border border-background-muted">
+			<div class="overflow-hidden rounded-lg border border-neutral-muted">
 				<div
-					class="border-b border-background-muted bg-background-muted/25 px-4 py-2 text-sm font-semibold"
+					class="border-b border-neutral-muted bg-neutral-muted/25 px-4 py-2 text-sm font-semibold"
 				>
 					{group.label}
 				</div>
 				<div class="overflow-x-auto">
 					<table class="w-full min-w-[640px] text-left text-sm">
-						<tbody class="divide-y divide-background-muted">
+						<tbody class="divide-y divide-neutral-muted">
 							{#each group.methods as method (method[0])}
 								<tr>
 									<td class="w-[46%] px-4 py-3 align-top"
 										><code class="text-xs text-primary">{method[0]}</code></td
 									>
-									<td class="px-4 py-3 text-foreground/70">{method[1]}</td>
+									<td class="px-4 py-3 text-neutral/70">{method[1]}</td>
 								</tr>
 							{/each}
 						</tbody>
@@ -180,7 +180,7 @@ ${'</' + 'script>'}
 }`}
 			language="typescript"
 		>
-			<p class="max-w-xl text-sm text-foreground/70">
+			<p class="max-w-xl text-sm text-neutral/70">
 				The state object never reports a successful mutation when the requested target was not
 				changed.
 			</p>

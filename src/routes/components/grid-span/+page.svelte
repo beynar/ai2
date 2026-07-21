@@ -48,8 +48,8 @@
 						<span class="text-primary">{@render chartBarIcon({ class: 'size-5' })}</span>
 					</HStack>
 					<VStack gap={1}>
-						<strong class="text-foreground text-3xl">74%</strong>
-						<span class="text-foreground-muted text-xs">Quarterly target</span>
+						<strong class="text-neutral text-3xl">74%</strong>
+						<span class="text-neutral/60 text-xs">Quarterly target</span>
 					</VStack>
 				</VStack>
 			</GridSpan>
@@ -62,8 +62,8 @@
 				>
 					<span class="text-success">{@render usersThreeIcon({ class: 'size-5' })}</span>
 					<VStack gap={0.5}>
-						<strong class="text-foreground text-sm">18 members</strong>
-						<span class="text-foreground-muted text-xs">3 online now</span>
+						<strong class="text-neutral text-sm">18 members</strong>
+						<span class="text-neutral/60 text-xs">3 online now</span>
 					</VStack>
 				</HStack>
 			</GridSpan>
@@ -76,8 +76,8 @@
 				>
 					<span class="text-warning">{@render checksIcon({ class: 'size-5' })}</span>
 					<VStack gap={0.5}>
-						<strong class="text-foreground text-sm">32 completed</strong>
-						<span class="text-foreground-muted text-xs">8 remaining</span>
+						<strong class="text-neutral text-sm">32 completed</strong>
+						<span class="text-neutral/60 text-xs">8 remaining</span>
 					</VStack>
 				</HStack>
 			</GridSpan>
@@ -86,9 +86,9 @@
 					justify="between"
 					align="center"
 					paddingInline={3}
-					class="border-background-muted bg-background h-full rounded-lg border"
+					class="border-neutral-muted bg-surface h-full rounded-lg border"
 				>
-					<span class="text-foreground text-xs font-medium">Systems operational</span>
+					<span class="text-neutral text-xs font-medium">Systems operational</span>
 					<span class="bg-success size-2 rounded-full"></span>
 				</HStack>
 			</GridSpan>
@@ -111,10 +111,10 @@
 						Two columns
 					</div>
 				</GridSpan>
-				<div class="bg-background-light text-foreground rounded-md p-5 text-center text-sm">
+				<div class="bg-surface-raised text-neutral rounded-md p-5 text-center text-sm">
 					One
 				</div>
-				<div class="bg-background-light text-foreground rounded-md p-5 text-center text-sm">
+				<div class="bg-surface-raised text-neutral rounded-md p-5 text-center text-sm">
 					One
 				</div>
 			</Grid>
@@ -138,7 +138,7 @@
 				</GridSpan>
 				{#each ['Design', 'Build', 'Ship'] as phase (phase)}
 					<div
-						class="border-background-muted bg-background rounded-md border p-4 text-center text-sm"
+						class="border-neutral-muted bg-surface rounded-md border p-4 text-center text-sm"
 					>
 						{phase}
 					</div>

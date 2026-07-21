@@ -71,7 +71,7 @@ adapt to light and dark automatically from the design tokens.
 ## Theming
 
 The block chrome (border, header, footer, container) is styled with cva parts and
-uses \`bg-background-muted\` / \`text-foreground-muted\` for the header and footer.
+uses \`bg-neutral-muted\` / \`text-neutral/60\` for the header and footer.
 The syntax colors are NOT part of cva — they come from the Shiki HTML plus the
 colocated \`CodeTheme.svelte\`, which maps each \`--code-token-*\` variable onto our
 \`--color-*\` design tokens (keyword → primary, string → success, number → warning,

@@ -165,10 +165,10 @@
 				{formats}
 				placeholder="Use / for commands, @ for files or references, $ for skills..."
 			/>
-			<div class="border-background-muted bg-background-light rounded-lg border p-3 text-sm">
-				<div class="text-foreground-muted mb-2 text-xs font-medium">Markdown value</div>
+			<div class="border-neutral-muted bg-surface-raised rounded-lg border p-3 text-sm">
+				<div class="text-neutral/60 mb-2 text-xs font-medium">Markdown value</div>
 				<pre
-					class="text-foreground max-h-40 overflow-auto whitespace-pre-wrap break-words text-xs">{value}</pre>
+					class="text-neutral max-h-40 overflow-auto whitespace-pre-wrap break-words text-xs">{value}</pre>
 			</div>
 		</div>
 	</ComponentCard>

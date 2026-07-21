@@ -160,7 +160,7 @@ ${'</' + 'script>'}
 					{#snippet trigger({ message, open })}
 						<span class="flex w-full items-center justify-between gap-3 font-medium">
 							<span>{message}</span>
-							<span class="text-foreground/50 text-xs">{open ? 'Hide' : 'Show'}</span>
+							<span class="text-neutral/50 text-xs">{open ? 'Hide' : 'Show'}</span>
 						</span>
 					{/snippet}
 					{#snippet children({ message })}

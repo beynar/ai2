@@ -59,10 +59,10 @@ Full example with all keys:
 	success: #22c55e;
 	warning: #f59e0b;
 	info: #3b82f6;
-	background: #fafafa; /* hex only */
-	foreground: #121212; /* hex only */
-	overlay-hover: #1212120d; /* optional; defaults to foreground at 5% */
-	overlay-pressed: #1212121a; /* optional; defaults to foreground at 10% */
+	surface: #fafafa; /* seed for the elevation ladder */
+	neutral: #121212; /* optional; otherwise reversed from surface by mode */
+	state-hover-opacity: 0.05;
+	state-pressed-opacity: 0.1;
 
 	primary-light: #a5b4fc; /* override auto-generated variants */
 	primary-dark: #4338ca;
@@ -76,16 +76,20 @@ Full example with all keys:
 
 ## Color Tokens
 
-| Token        | Default (light) | Default (dark) | Accepts            |
-| ------------ | --------------- | -------------- | ------------------ |
-| `primary`    | `#6366f1`       | `#818cf8`      | hex, TW color name |
-| `secondary`  | `#6366f1`       | `#818cf8`      | hex, TW color name |
-| `danger`     | `#ff0000`       | `#ff0000`      | hex, TW color name |
-| `success`    | `#0070f3`       | `#0070f3`      | hex, TW color name |
-| `warning`    | `#f5a623`       | `#f5a623`      | hex, TW color name |
-| `info`       | `#50e3c2`       | `#50e3c2`      | hex, TW color name |
-| `background` | `#FAFAFA`       | `#121212`      | hex only           |
-| `foreground` | `#121212`       | `#FAFAFA`      | hex only           |
+| Token       | Default (light)      | Default (dark)       | Accepts            |
+| ----------- | -------------------- | -------------------- | ------------------ |
+| `primary`   | `#6366f1`            | `#6366f1`            | hex, TW color name |
+| `secondary` | complementary accent | complementary accent | hex, TW color name |
+| `danger`    | `#ff0000`            | `#ff0000`            | hex, TW color name |
+| `success`   | `#0070f3`            | `#0070f3`            | hex, TW color name |
+| `warning`   | `#f5a623`            | `#f5a623`            | hex, TW color name |
+| `info`      | `#50e3c2`            | `#50e3c2`            | hex, TW color name |
+| `neutral`   | reversed surface     | reversed surface     | hex, TW color name |
+| `surface`   | `#FFFFFF`            | `#000000`            | hex only           |
+
+Opaque surfaces use `surface-recessed` for inset wells and grouped-control tracks, followed by
+the elevation ladder `surface-canvas`, `surface`, `surface-raised`, and `surface-floating`.
+Override any grade directly when the generated mode-aware OKLCH lightness is not appropriate.
 
 ## Color Variants
 
@@ -96,22 +100,22 @@ Each base color generates five variants (all overridable with `{color}-{variant}
 | `-light`    | +15% lightness                        |
 | `-lighter`  | +25% lightness                        |
 | `-dark`     | -15% lightness                        |
-| `-muted`    | mixed with background color           |
+| `-muted`    | mixed with the base surface           |
 | `-contrast` | auto black/white for foreground on bg |
 
-Usage: `primary-light`, `danger-contrast`, `background-muted`, etc.
+Usage: `primary-light`, `danger-contrast`, `neutral-muted`, etc.
 
 ## Interaction States
 
-Use background grades for resting elevation and the global `state-layer` utility
+Use surface grades for resting elevation and the global `state-layer` utility
 for transient hover, virtual-focus, and pressed feedback:
 
 ```svelte
 <button class="state-layer bg-primary text-primary-contrast rounded-md px-3 py-2"> Save </button>
 ```
 
-The utility composites `--color-overlay-hover` for pointer hover and
-`data-highlighted="true"`, then `--color-overlay-pressed` for `:active`. Pressed
+The utility composites `currentColor` at `--state-hover-opacity` for pointer hover and
+`data-highlighted="true"`, then at `--state-pressed-opacity` for `:active`. Pressed
 takes precedence. Disabled, `data-disabled`, and `aria-disabled="true"` elements
 do not receive the layer. Focus remains a ring concern; persistent selected,
 checked, open, and semantic states continue to use `*-muted` or solid colors.

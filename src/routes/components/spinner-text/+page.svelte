@@ -3,10 +3,46 @@
 	import SpinnerText from '$lib/components/SpinnerText/SpinnerText.svelte';
 	import type { Sizes } from '$lib/types/theme.js';
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 
 	const messages = ['Reading files', 'Building context', 'Preparing answer'];
 	const sizes: Sizes[] = ['small', 'normal', 'large'];
+	const controls = createComponentControls([
+		{
+			name: 'transition',
+			type: 'segmented',
+			label: 'Transition',
+			value: 'vertical',
+			options: ['vertical', 'reveal']
+		},
+		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: ['small', 'normal', 'large']
+		},
+		{
+			name: 'color',
+			type: 'segmented',
+			label: 'Color',
+			value: 'primary',
+			options: ['primary', 'success', 'warning', 'danger', 'neutral']
+		},
+		{
+			name: 'delay',
+			type: 'slider',
+			label: 'Delay',
+			value: 1800,
+			min: 600,
+			max: 3000,
+			step: 200,
+			showValue: true
+		},
+		{ name: 'shimmer', type: 'switch', label: 'Shimmer', value: true },
+		{ name: 'showSpinner', type: 'switch', label: 'Spinner', value: true }
+	]);
 </script>
 
 <DocPage
@@ -23,19 +59,32 @@
 	]}
 >
 	<ComponentCard
+		{controls}
 		description="Cycle through progress messages while keeping the longest message width reserved. The spinner follows Theme unless overridden."
 		code={`<script lang="ts">
 \timport { SpinnerText } from 'svelai/spinner-text';
 ${'</' + 'script>'}
 
 <SpinnerText
-\ttexts={['Reading files', 'Building context', 'Preparing answer']}
-\tdelay={1800}
-\tshimmer
+	\ttexts={['Reading files', 'Building context', 'Preparing answer']}
+	\tdelay={${controls.value.delay}}
+	\ttransition="${controls.value.transition}"
+	\tsize="${controls.value.size}"
+	\tcolor="${controls.value.color}"
+	\tshimmer={${controls.value.shimmer}}
+	\tshowSpinner={${controls.value.showSpinner}}
 />`}
 		class="!min-h-[240px]"
 	>
-		<SpinnerText texts={messages} delay={1800} shimmer color="primary" />
+		<SpinnerText
+			texts={messages}
+			delay={controls.value.delay}
+			transition={controls.value.transition}
+			size={controls.value.size}
+			color={controls.value.color}
+			shimmer={controls.value.shimmer}
+			showSpinner={controls.value.showSpinner}
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}
@@ -54,11 +103,11 @@ ${'</' + 'script>'}
 		>
 			<div class="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:gap-16">
 				<div class="grid gap-2">
-					<span class="text-foreground-muted text-xs font-medium">Vertical</span>
+					<span class="text-neutral/60 text-xs font-medium">Vertical</span>
 					<SpinnerText texts={messages} delay={1800} transition="vertical" />
 				</div>
 				<div class="grid gap-2">
-					<span class="text-foreground-muted text-xs font-medium">Reveal</span>
+					<span class="text-neutral/60 text-xs font-medium">Reveal</span>
 					<SpinnerText texts={messages} delay={1800} transition="reveal" />
 				</div>
 			</div>

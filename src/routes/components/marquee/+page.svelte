@@ -68,11 +68,11 @@
 	pauseOnHover={${controls.value.pauseOnHover}}
 	class="w-full max-w-[90vw]"
 >
-	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 1</div>
-	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 2</div>
-	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 3</div>
-	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 4</div>
-	<div class="bg-background border-background-muted rounded-lg border px-6 py-4">Item 5</div>
+	<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">Item 1</div>
+	<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">Item 2</div>
+	<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">Item 3</div>
+	<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">Item 4</div>
+	<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">Item 5</div>
 </Marquee>`}
 	>
 		<Marquee
@@ -82,7 +82,7 @@
 			class="w-full max-w-[90vw]"
 		>
 			{#each simpleItems as item}
-				<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
+				<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">
 					{item.text}
 				</div>
 			{/each}
@@ -93,7 +93,7 @@
 		<ComponentCard description="Basic horizontal marquee.">
 			<Marquee class="w-full max-w-[90vw]">
 				{#each simpleItems as item}
-					<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
+					<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">
 						{item.text}
 					</div>
 				{/each}
@@ -104,10 +104,10 @@
 			<Marquee class="w-full">
 				{#each testimonials as item}
 					<div
-						class="bg-background border-background-muted w-[400px] flex-shrink-0 rounded-xl border px-8 py-6"
+						class="bg-surface border-neutral-muted w-[400px] flex-shrink-0 rounded-xl border px-8 py-6"
 					>
 						<p class="mb-2 text-lg font-semibold">"{item.quote}"</p>
-						<p class="text-foreground-muted text-sm">— {item.author}</p>
+						<p class="text-neutral/60 text-sm">— {item.author}</p>
 					</div>
 				{/each}
 			</Marquee>
@@ -116,14 +116,14 @@
 		<ComponentCard description="Marquee above static content.">
 			<Marquee class="w-full max-w-[90vw]">
 				{#each simpleItems as item}
-					<div class="bg-background border-background-muted rounded-lg border px-6 py-4">
+					<div class="bg-surface border-neutral-muted rounded-lg border px-6 py-4">
 						{item.text}
 					</div>
 				{/each}
 			</Marquee>
 
 			<div
-				class="bg-background-muted text-foreground-muted flex h-10 w-full items-center justify-center"
+				class="bg-neutral-muted text-neutral/60 flex h-10 w-full items-center justify-center"
 			>
 				<p class="text-sm">This is a test of the marquee component.</p>
 			</div>

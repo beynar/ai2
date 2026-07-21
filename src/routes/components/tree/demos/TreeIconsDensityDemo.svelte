@@ -41,7 +41,7 @@
 			<Button
 				size="small"
 				variant={current === option.value ? 'solid' : 'ghost'}
-				color="foreground"
+				color="neutral"
 				onClick={() => onSelect(option.value)}
 			>
 				{option.label}
@@ -52,13 +52,13 @@
 
 <div class="grid w-full max-w-2xl gap-3">
 	<div
-		class="flex flex-wrap items-center gap-2 rounded-lg border border-background-muted bg-background p-2"
+		class="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-muted bg-surface p-2"
 	>
 		{@render segmented(density, densityOptions, (value) => (density = value))}
 		<Button
 			size="small"
 			variant={coloredIcons ? 'solid' : 'outline'}
-			color="foreground"
+			color="neutral"
 			onClick={() => (coloredIcons = !coloredIcons)}
 		>
 			Color icons

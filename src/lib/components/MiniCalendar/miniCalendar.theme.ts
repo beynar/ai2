@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 
 const defaultRoot = cva({
-	base: 'inline-flex w-fit items-center rounded-2xl border bg-background',
+	base: 'inline-flex w-fit items-center rounded-2xl border bg-surface',
 	variants: {
 		size: {
 			small: 'gap-0.5 p-0.5',
@@ -21,7 +21,7 @@ const defaultRoot = cva({
 });
 
 const defaultNavButton = cva({
-	base: 'state-layer inline-flex shrink-0 items-center justify-center rounded-xl text-foreground-muted outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none',
+	base: 'state-layer inline-flex shrink-0 items-center justify-center rounded-xl text-neutral/60 outline-none transition-colors hover:text-neutral focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none',
 	variants: {
 		size: {
 			small: 'size-7',
@@ -69,12 +69,11 @@ const defaultDay = cva({
 			success: '',
 			warning: '',
 			info: '',
-			foreground: '',
-			background: ''
+			neutral: ''
 		},
 		selected: {
 			true: 'raised',
-			false: 'text-foreground'
+			false: 'text-neutral'
 		},
 		today: {
 			true: '',
@@ -93,26 +92,49 @@ const defaultDay = cva({
 		{ selected: true, color: 'success', class: 'bg-success text-success-contrast' },
 		{ selected: true, color: 'warning', class: 'bg-warning text-warning-contrast' },
 		{ selected: true, color: 'info', class: 'bg-info text-info-contrast' },
-		{ selected: true, color: 'foreground', class: 'bg-foreground text-foreground-contrast' },
-		{ selected: true, color: 'background', class: 'bg-background-dark text-foreground' },
+		{ selected: true, color: 'neutral', class: 'bg-neutral text-neutral-contrast' },
 		// Today (when not selected): a subtle accent tint.
-		{ selected: false, today: true, color: 'primary', class: 'bg-primary/10 text-primary' },
-		{ selected: false, today: true, color: 'secondary', class: 'bg-secondary/10 text-secondary' },
-		{ selected: false, today: true, color: 'danger', class: 'bg-danger/10 text-danger' },
-		{ selected: false, today: true, color: 'success', class: 'bg-success/10 text-success' },
-		{ selected: false, today: true, color: 'warning', class: 'bg-warning/10 text-warning' },
-		{ selected: false, today: true, color: 'info', class: 'bg-info/10 text-info' },
 		{
 			selected: false,
 			today: true,
-			color: 'foreground',
-			class: 'bg-foreground/10 text-foreground'
+			color: 'primary',
+			class: 'bg-primary/10 text-primary-muted-readable'
 		},
 		{
 			selected: false,
 			today: true,
-			color: 'background',
-			class: 'bg-background-muted text-foreground'
+			color: 'secondary',
+			class: 'bg-secondary/10 text-secondary-muted-readable'
+		},
+		{
+			selected: false,
+			today: true,
+			color: 'danger',
+			class: 'bg-danger/10 text-danger-muted-readable'
+		},
+		{
+			selected: false,
+			today: true,
+			color: 'success',
+			class: 'bg-success/10 text-success-muted-readable'
+		},
+		{
+			selected: false,
+			today: true,
+			color: 'warning',
+			class: 'bg-warning/10 text-warning-muted-readable'
+		},
+		{
+			selected: false,
+			today: true,
+			color: 'info',
+			class: 'bg-info/10 text-info-muted-readable'
+		},
+		{
+			selected: false,
+			today: true,
+			color: 'neutral',
+			class: 'bg-neutral/10 text-neutral-muted-readable'
 		}
 	],
 	defaultVariants: {

@@ -104,11 +104,11 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 
 	addBase({
 		'body *': {
-			'border-color': 'var(--color-background-muted)',
-			'--tw-ring-offset-color': 'var(--color-background-dark)'
+			'border-color': 'var(--color-neutral-muted)',
+			'--tw-ring-offset-color': 'var(--color-surface-canvas)'
 		},
 		'[data-color-scheme="dark"]': {
-			'--dark-raised-border': '1px solid var(--current-border, var(--color-background-muted))',
+			'--dark-raised-border': '1px solid var(--current-border, var(--color-neutral-muted))',
 			'--dark-raised-shadow': 'none'
 		},
 		':has([data-chip-position])': {
@@ -130,22 +130,23 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 				'z-index': '-1',
 				'pointer-events': 'none',
 				'border-radius': 'inherit',
-				'background-color': 'transparent',
-				'transition-property': 'background-color',
+				'background-color': 'currentColor',
+				opacity: '0',
+				'transition-property': 'opacity',
 				'transition-duration': '100ms',
 				'transition-timing-function': 'ease-out'
 			},
 			'@media (hover: hover)': {
 				'&:not(:disabled):not([data-disabled]):not([aria-disabled="true"]):hover::before': {
-					'background-color': 'var(--color-overlay-hover)'
+					opacity: 'var(--state-hover-opacity)'
 				}
 			},
 			'&:not(:disabled):not([data-disabled]):not([aria-disabled="true"])[data-highlighted="true"]::before':
 				{
-					'background-color': 'var(--color-overlay-hover)'
+					opacity: 'var(--state-hover-opacity)'
 				},
 			'&:not(:disabled):not([data-disabled]):not([aria-disabled="true"]):active::before': {
-				'background-color': 'var(--color-overlay-pressed)'
+				opacity: 'var(--state-pressed-opacity)'
 			}
 		}
 	});
@@ -168,7 +169,7 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 	addVariant('disabled', ['&:disabled', '&[data-disabled="true"]']);
 
 	addBase({
-		'border-color': 'var(--color-background-muted)',
+		'border-color': 'var(--color-neutral-muted)',
 		'border-width': '1px'
 	});
 

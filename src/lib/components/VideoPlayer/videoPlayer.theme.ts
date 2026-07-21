@@ -2,7 +2,7 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultVideoPlayerRoot = cva({
-	base: 'group/video-player relative isolate w-full min-w-0 overflow-hidden rounded-lg border border-background-muted bg-black text-white outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+	base: 'group/video-player relative isolate w-full min-w-0 overflow-hidden rounded-lg border border-neutral-muted bg-black text-white outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
 	variants: {
 		size: {
 			small: 'text-xs',

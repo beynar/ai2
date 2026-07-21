@@ -49,7 +49,7 @@
 	<ShellMentalModel current="sidebar" />
 
 	<section
-		class="rounded-xl border border-background-muted bg-background p-4 text-sm text-foreground/70"
+		class="rounded-xl border border-neutral-muted bg-surface p-4 text-sm text-neutral/70"
 	>
 		<p>
 			These examples keep the page side inert with skeleton content so the focus stays on Sidebar.

@@ -48,7 +48,7 @@
 				<ColorPicker bind:value={color} />
 				<div class="flex items-center gap-2 text-sm">
 					<span
-						class="border-background-muted size-5 rounded border"
+						class="border-neutral-muted size-5 rounded border"
 						style="background-color: {color}"
 					></span>
 					<code class="font-mono">{color}</code>
@@ -110,7 +110,7 @@
 		>
 			<div class="flex flex-col items-center gap-3">
 				<ColorPicker value="#3b82f6" onChange={(hex) => (lastChange = hex)} />
-				<p class="text-foreground-muted text-xs">
+				<p class="text-neutral/60 text-xs">
 					Last change: <code class="font-mono">{lastChange || '—'}</code>
 				</p>
 			</div>

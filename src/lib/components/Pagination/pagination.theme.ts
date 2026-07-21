@@ -60,10 +60,9 @@ const defaultPaginationControl = cva({
 			large: 'h-9 min-w-9 px-3 text-sm'
 		},
 		color: {
-			background: 'text-background-readable',
 			primary: 'text-primary-readable',
 			secondary: 'text-secondary-readable',
-			foreground: 'text-foreground-readable',
+			neutral: 'text-neutral-readable',
 			danger: 'text-danger-readable',
 			success: 'text-success-readable',
 			warning: 'text-warning-readable',
@@ -71,11 +70,9 @@ const defaultPaginationControl = cva({
 		},
 		controlVariant: {
 			solid: 'state-layer border-transparent bg-color text-color-contrast',
-			outline:
-				'state-layer border-background-muted bg-background text-foreground hover:border-color hover:text-color-readable',
+			outline: 'state-layer border-neutral-muted bg-surface text-color-readable',
 			soft: 'state-layer border-transparent bg-color-muted text-color-muted-readable',
-			ghost:
-				'state-layer border-transparent bg-transparent text-foreground hover:text-color-readable'
+			ghost: 'state-layer border-transparent bg-transparent text-color-readable'
 		},
 		active: {
 			true: 'border-color bg-color text-color-contrast hover:text-color-contrast',
@@ -98,23 +95,7 @@ const defaultPaginationControl = cva({
 		disabled: false,
 		control: 'page'
 	},
-	compoundVariants: [
-		{
-			color: 'background',
-			controlVariant: 'outline',
-			class: 'text-foreground hover:text-foreground'
-		},
-		{
-			color: 'background',
-			active: true,
-			class: 'bg-background-dark text-foreground'
-		},
-		{
-			color: 'foreground',
-			controlVariant: 'ghost',
-			class: 'text-foreground'
-		}
-	]
+	compoundVariants: []
 });
 
 const defaultPaginationDot = cva({
@@ -126,10 +107,9 @@ const defaultPaginationDot = cva({
 			large: 'size-5 before:size-2.5'
 		},
 		color: {
-			background: null,
 			primary: null,
 			secondary: null,
-			foreground: null,
+			neutral: null,
 			danger: null,
 			success: null,
 			warning: null,
@@ -137,7 +117,7 @@ const defaultPaginationDot = cva({
 		},
 		active: {
 			true: 'before:bg-color',
-			false: 'before:bg-foreground-muted/30 hover:before:bg-color/50'
+			false: 'before:bg-neutral/30 hover:before:bg-color/50'
 		},
 		disabled: {
 			true: 'pointer-events-none cursor-not-allowed opacity-45',
@@ -150,13 +130,7 @@ const defaultPaginationDot = cva({
 		active: false,
 		disabled: false
 	},
-	compoundVariants: [
-		{
-			color: 'background',
-			active: true,
-			class: 'before:bg-foreground'
-		}
-	]
+	compoundVariants: []
 });
 
 const defaultPaginationIcon = cva({
@@ -174,7 +148,7 @@ const defaultPaginationIcon = cva({
 });
 
 const defaultPaginationEllipsis = cva({
-	base: 'text-foreground-muted inline-flex shrink-0 items-center justify-center',
+	base: 'text-neutral/60 inline-flex shrink-0 items-center justify-center',
 	variants: {
 		size: {
 			small: 'h-7 min-w-7',
@@ -188,7 +162,7 @@ const defaultPaginationEllipsis = cva({
 });
 
 const defaultPaginationSummary = cva({
-	base: 'text-foreground-muted shrink-0 whitespace-nowrap font-medium',
+	base: 'text-neutral/60 shrink-0 whitespace-nowrap font-medium',
 	variants: {
 		size: {
 			small: 'text-xs',

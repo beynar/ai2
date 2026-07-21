@@ -97,7 +97,7 @@
 	{#snippet clusterMarker(cluster)}
 		<button
 			type="button"
-			class="grid size-14 place-items-center rounded-full bg-background text-xs font-medium shadow-md ring-4 ring-primary/25"
+			class="grid size-14 place-items-center rounded-full bg-surface text-xs font-medium shadow-md ring-4 ring-primary/25"
 			aria-label={\`Cluster of \${cluster.count} offices\`}
 		>
 			<span class="text-base font-semibold tabular-nums">{cluster.count}</span>
@@ -107,7 +107,7 @@
 	{#snippet popup(arg)}
 		<div class="space-y-1">
 			<p class="font-medium leading-none">{arg.marker.label}</p>
-			<p class="text-foreground-muted">{arg.marker.description}</p>
+			<p class="text-neutral/60">{arg.marker.description}</p>
 			<p class="text-xs">{arg.data?.team} / {arg.data?.headcount} people</p>
 		</div>
 	{/snippet}

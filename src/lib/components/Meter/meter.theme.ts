@@ -36,7 +36,7 @@ const defaultMeterContainer = cva({
 });
 
 const defaultMeterLabel = cva({
-	base: 'text-sm text-foreground-lighter',
+	base: 'text-sm text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -47,7 +47,7 @@ const defaultMeterLabel = cva({
 });
 
 const defaultMeterHelper = cva({
-	base: 'text-sm text-foreground-lighter',
+	base: 'text-sm text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -58,7 +58,7 @@ const defaultMeterHelper = cva({
 });
 
 const defaultMeterDescription = cva({
-	base: 'text-foreground-lighter text-sm',
+	base: 'text-neutral/60 text-sm',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -80,7 +80,7 @@ const defaultMeterProgress = cva({
 });
 
 const defaultMeterTrack = cva({
-	base: 'flex items-center justify-start bg-background-muted/50 rounded-full relative',
+	base: 'flex items-center justify-start bg-neutral-muted/50 rounded-full relative',
 	variants: {
 		size: {
 			small: 'h-1',
@@ -96,7 +96,7 @@ const defaultMeterTrack = cva({
 });
 
 const defaultMeterIndicator = cva({
-	base: 'absolute whitespace-nowrap w-fit rounded text-color mx-auto left-0 right-0 leading-none',
+	base: 'absolute whitespace-nowrap w-fit rounded text-color-readable mx-auto left-0 right-0 leading-none',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -125,7 +125,7 @@ const defaultMeterLegend = cva({
 });
 
 const defaultMeterLegendItem = cva({
-	base: 'flex items-center gap-2 [&[data-color="danger"]_*]:text-danger [&[data-color="warning"]_*]:text-warning [&[data-color="success"]_*]:text-success [&[data-color="info"]_*]:text-info',
+	base: 'flex items-center gap-2 [&[data-color="danger"]_*]:text-danger-readable [&[data-color="warning"]_*]:text-warning-readable [&[data-color="success"]_*]:text-success-readable [&[data-color="info"]_*]:text-info-readable',
 	variants: {
 		size: {
 			small: 'gap-1.5',
@@ -147,7 +147,7 @@ const defaultMeterLegendIcon = cva({
 });
 
 const defaultMeterLegendLabel = cva({
-	base: 'text-foreground-lighter',
+	base: 'text-neutral/60',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -158,7 +158,7 @@ const defaultMeterLegendLabel = cva({
 });
 
 const defaultMeterLegendPercentage = cva({
-	base: 'text-foreground-lighter font-medium',
+	base: 'text-neutral/60 font-medium',
 	variants: {
 		size: {
 			small: 'text-xs',

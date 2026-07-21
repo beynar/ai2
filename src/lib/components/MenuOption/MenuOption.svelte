@@ -4,7 +4,7 @@
 	import { useMenuOptionTheme } from './menuOption.theme.js';
 
 	let {
-		color = 'foreground',
+		color = 'neutral',
 		size = 'normal',
 		density = 'normal',
 		class: className = '',

@@ -7,7 +7,7 @@
 
 	<div class="mb-8" data-test="xy">
 		<h2 class="mb-2 text-xl font-semibold">Both axes</h2>
-		<ScrollArea type="hover" class="border-border h-40 w-72 rounded-md border">
+		<ScrollArea type="hover" class="border-neutral-muted h-40 w-72 rounded-md border">
 			<div class="p-4" style="width: 1200px; height: 600px;">
 				A very wide and tall box to exercise both horizontal and vertical custom scrollbars.
 			</div>
@@ -16,7 +16,7 @@
 
 	<div class="mb-8">
 		<h2 class="mb-2 text-xl font-semibold">Hover Type (Default)</h2>
-		<ScrollArea type="hover" class="border-border h-64 w-64 rounded-md border">
+		<ScrollArea type="hover" class="border-neutral-muted h-64 w-64 rounded-md border">
 			<div class="p-4">
 				<h3 class="mb-2 text-lg font-medium">Simple Content</h3>
 				<p class="mb-4">This is a test of the ScrollArea component with type="hover".</p>
@@ -96,7 +96,7 @@
 
 	<div class="mb-8">
 		<h2 class="mb-2 text-xl font-semibold">Always Type</h2>
-		<ScrollArea type="always" class="border-border h-64 w-64 rounded-md border">
+		<ScrollArea type="always" class="border-neutral-muted h-64 w-64 rounded-md border">
 			<div class="p-4">
 				<h3 class="mb-2 text-lg font-medium">List Content</h3>
 				<ul>
@@ -120,7 +120,7 @@
 
 	<div class="mb-8">
 		<h2 class="mb-2 text-xl font-semibold">Auto Type</h2>
-		<ScrollArea type="auto" class="border-border h-64 w-96 rounded-md border">
+		<ScrollArea type="auto" class="border-neutral-muted h-64 w-96 rounded-md border">
 			<div class="p-4">
 				<h3 class="mb-2 text-lg font-medium">Wide Content</h3>
 				<div class="whitespace-nowrap">
@@ -138,11 +138,11 @@
 
 	<div>
 		<h2 class="mb-2 text-xl font-semibold">Scroll Type</h2>
-		<ScrollArea type="scroll" class="border-border h-64 w-64 rounded-md border">
+		<ScrollArea type="scroll" class="border-neutral-muted h-64 w-64 rounded-md border">
 			<div class="p-4">
 				<h3 class="mb-2 text-lg font-medium">Complex Content</h3>
 				<p class="mb-4">This is a test of the ScrollArea component with type="scroll".</p>
-				<div class="bg-muted mb-4 rounded p-2">
+				<div class="bg-surface-raised mb-4 rounded p-2">
 					<p>This is a div with some content inside.</p>
 					<p>It has multiple paragraphs.</p>
 					<p>And it's styled with a background color.</p>

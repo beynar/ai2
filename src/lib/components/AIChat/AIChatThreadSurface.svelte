@@ -19,6 +19,9 @@
 		| 'mcpHost'
 		| 'showToc'
 		| 'tocSide'
+		| 'density'
+		| 'messageSize'
+		| 'messageVariant'
 		| 'messageActions'
 		| 'messageActionsVisibility'
 		| 'messageCopyable'
@@ -47,6 +50,9 @@
 		mcpHost,
 		showToc = false,
 		tocSide = 'right',
+		density = 'normal',
+		messageSize = 'normal',
+		messageVariant = 'bubble',
 		messageActions,
 		messageActionsVisibility,
 		messageCopyable = true,
@@ -110,6 +116,9 @@
 		{mcpHost}
 		{showToc}
 		{tocSide}
+		{density}
+		{messageSize}
+		{messageVariant}
 		{messageActions}
 		{messageActionsVisibility}
 		{messageCopyable}

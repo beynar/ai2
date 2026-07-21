@@ -45,7 +45,7 @@
 			<div class="w-full max-w-md">
 				<ColorInput label="Brand color" bind:value={color} />
 				{#if color}
-					<p class="text-foreground-muted mt-2 text-xs">Value: {color}</p>
+					<p class="text-neutral/60 mt-2 text-xs">Value: {color}</p>
 				{/if}
 			</div>
 		</ComponentCard>

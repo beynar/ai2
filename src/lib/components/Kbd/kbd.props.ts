@@ -24,7 +24,7 @@ export type KbdProps = WithAttachments<
 			 */
 			size?: Sizes;
 			/**
-			 * Color of the keys. `background` (default) is the neutral keycap; semantic colors use their muted tint.
+			 * Color of the keys. `neutral` (default) is the neutral keycap; semantic colors use their muted tint.
 			 */
 			color?: Colors;
 			/**

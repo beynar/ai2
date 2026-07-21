@@ -20,13 +20,14 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		links: [
 			{ href: '/docs', text: 'Theme & setup' },
 			{ href: '/docs/conventions', text: 'Conventions' },
+			{ href: '/docs/colors', text: 'Color system' },
+			{ href: '/docs/theme-transitions', text: 'Theme transitions' },
 			{ href: '/docs/i18n', text: 'Internationalization' }
 		]
 	},
 	{
 		label: 'AI',
 		links: [
-			{ href: '/components/ai-elements', text: 'AI elements' },
 			{ href: '/components/ai-conversation', text: 'Conversation' },
 			{ href: '/components/ai-ask-user-question', text: 'Ask user question' },
 			{ href: '/components/ai-chat', text: 'Chat' },
@@ -39,7 +40,6 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/ai-model-selector', text: 'Model selector' },
 			{ href: '/components/ai-composer', text: 'Composer' },
 			{ href: '/components/ai-reasoning', text: 'Reasoning' },
-			{ href: '/components/ai-shimmer', text: 'Shimmer' },
 			{ href: '/components/ai-suggestion', text: 'Suggestion' },
 			{ href: '/components/ai-tool', text: 'Tool' },
 			{ href: '/components/ai-mcp-app', text: 'MCP App' }
@@ -179,6 +179,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		label: 'Overlays',
 		links: [
 			{ href: '/components/dialog', text: 'Dialog' },
+			{ href: '/components/floating-window', text: 'Floating window' },
 			{ href: '/components/hover-card', text: 'Hover card' },
 			{ href: '/components/link-preview', text: 'Link preview' },
 			{ href: '/components/overlay', text: 'Overlay' },

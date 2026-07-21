@@ -72,13 +72,13 @@
 </script>
 
 {#snippet ic(text: string)}
-	<code class="bg-background-muted rounded px-1 py-0.5 text-sm">{text}</code>
+	<code class="bg-neutral-muted rounded px-1 py-0.5 text-sm">{text}</code>
 {/snippet}
 
-<article class="text-foreground mx-auto grid max-w-3xl gap-4 pb-20">
+<article class="text-neutral mx-auto grid max-w-3xl gap-4 pb-20">
 	<header class="grid gap-2">
 		<h1 class="text-3xl font-semibold">Scroll fade</h1>
-		<p class="text-foreground-muted text-balance">
+		<p class="text-neutral/60 text-balance">
 			Tailwind utilities for fading the edges of scroll containers without overlay colors.
 		</p>
 	</header>
@@ -91,12 +91,12 @@
 	>
 		{#if controls.value.preview === 'horizontal'}
 			<div
-				class="border-background-muted bg-background mx-auto w-full max-w-sm overflow-hidden rounded-xl border"
+				class="border-neutral-muted bg-surface mx-auto w-full max-w-sm overflow-hidden rounded-xl border"
 			>
 				<div class="scroll-fade-x flex gap-2 overflow-x-auto p-3">
 					{#each tags as tag (tag)}
 						<span
-							class="bg-background-dark border-background-muted shrink-0 rounded-md border px-3 py-2 text-sm"
+							class="bg-surface-canvas border-neutral-muted shrink-0 rounded-md border px-3 py-2 text-sm"
 						>
 							{tag}
 						</span>
@@ -105,7 +105,7 @@
 			</div>
 		{:else}
 			<div
-				class="border-background-muted bg-background mx-auto w-full max-w-xs overflow-hidden rounded-xl border"
+				class="border-neutral-muted bg-surface mx-auto w-full max-w-xs overflow-hidden rounded-xl border"
 			>
 				<div
 					class:scroll-fade={controls.value.preview === 'vertical' ||
@@ -116,7 +116,7 @@
 				>
 					{#each items as item (item)}
 						<div
-							class="border-background-muted bg-background-dark mb-2 rounded-md border px-3 py-2 text-sm"
+							class="border-neutral-muted bg-surface-canvas mb-2 rounded-md border px-3 py-2 text-sm"
 						>
 							{item}
 						</div>
@@ -128,11 +128,11 @@
 
 	<Separator class="my-2" children="Usage" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Apply {@render ic('scroll-fade')} to the scrollable element, not the outer card. Keep backgrounds
 		and borders on a wrapper so the mask dissolves the content only.
 	</p>
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		{@render ic('scroll-fade-l')} and {@render ic('scroll-fade-r')} stay physical in RTL, while
 		{@render ic('scroll-fade-s')}, {@render ic('scroll-fade-e')}, and {@render ic('scroll-fade-x')}
 		follow the logical inline direction. Browsers without scroll-driven animations keep the configured
@@ -140,15 +140,15 @@
 	</p>
 	<Code language="html" code={usageCode} />
 
-	<div class="border-background-muted overflow-hidden rounded-xl border">
+	<div class="border-neutral-muted overflow-hidden rounded-xl border">
 		{#each utilityRows as [name, description], index (name)}
 			<div
 				class="grid gap-2 p-3 md:grid-cols-[15rem_1fr] {index % 2 === 0
-					? 'bg-background'
-					: 'bg-background-dark'}"
+					? 'bg-surface'
+					: 'bg-surface-canvas'}"
 			>
 				<code class="text-primary text-sm font-medium">{name}</code>
-				<p class="text-foreground-muted text-sm">{description}</p>
+				<p class="text-neutral/60 text-sm">{description}</p>
 			</div>
 		{/each}
 	</div>
@@ -161,12 +161,12 @@
 		class="!min-h-[220px]"
 	>
 		<div
-			class="border-background-muted bg-background mx-auto w-full max-w-sm overflow-hidden rounded-xl border"
+			class="border-neutral-muted bg-surface mx-auto w-full max-w-sm overflow-hidden rounded-xl border"
 		>
 			<div class="scroll-fade-x flex gap-2 overflow-x-auto p-3">
 				{#each tags as tag (tag)}
 					<span
-						class="bg-background-dark border-background-muted shrink-0 rounded-md border px-3 py-2 text-sm"
+						class="bg-surface-canvas border-neutral-muted shrink-0 rounded-md border px-3 py-2 text-sm"
 					>
 						{tag}
 					</span>
@@ -181,12 +181,12 @@
 		class="!min-h-[260px]"
 	>
 		<div
-			class="border-background-muted bg-background mx-auto w-full max-w-xs overflow-hidden rounded-xl border"
+			class="border-neutral-muted bg-surface mx-auto w-full max-w-xs overflow-hidden rounded-xl border"
 		>
 			<div class="scroll-fade-b max-h-48 overflow-y-auto p-2">
 				{#each items.slice(0, 8) as item (item)}
 					<div
-						class="border-background-muted bg-background-dark mb-2 rounded-md border px-3 py-2 text-sm"
+						class="border-neutral-muted bg-surface-canvas mb-2 rounded-md border px-3 py-2 text-sm"
 					>
 						{item}
 					</div>

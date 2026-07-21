@@ -40,7 +40,7 @@
 			disabled={player.disabled}
 			onClick={() => player.runInteraction(() => player.togglePlay())}
 		/>
-		<span class="text-foreground-muted shrink-0 text-xs tabular-nums">
+		<span class="text-neutral/60 shrink-0 text-xs tabular-nums">
 			{formatTime(player.currentTime)} / {formatTime(player.duration)}
 		</span>
 	</div>
@@ -160,7 +160,7 @@
 					controls={transportControls}
 					waveform={controlledWaveform}
 				/>
-				<p class="text-foreground-muted text-sm">
+				<p class="text-neutral/60 text-sm">
 					{paused ? 'Paused' : 'Playing'} at {currentTime.toFixed(1)}s
 				</p>
 			</div>

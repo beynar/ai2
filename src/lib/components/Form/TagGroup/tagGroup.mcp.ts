@@ -64,7 +64,7 @@ TagGroup renders a finite set of selectable tags as chips. It is a form input fo
 ### Style Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Controls chip density.
 - **color**: Colors (default: 'primary') - Selected chip color.
-- **unselectedColor**: Colors (default: 'background') - Unselected chip color.
+- **unselectedColor**: Colors (default: 'neutral') - Unselected chip color.
 - **selectedVariant**: 'solid' | 'outline' | 'soft' (default: 'solid') - Selected chip variant.
 - **unselectedVariant**: 'solid' | 'outline' | 'soft' (default: 'soft') - Unselected chip variant.
 - **theme**: TagGroupThemeProps - Theme overrides for TagGroup and Field parts.

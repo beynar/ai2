@@ -13,7 +13,7 @@ The Spinner component is a standalone indeterminate loading indicator. It inheri
 
 - **size**: 'small' | 'normal' | 'large' (default: 'normal')
   - Controls indicator size and label typography.
-- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'foreground' | 'background' (default: 'foreground')
+- **color**: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' (default: 'neutral')
   - Applies a theme color token to the indicator.
 - **variant**: 'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles' (default: Theme spinnerVariant, then 'default')
   - Selects the indicator animation and overrides the global Theme setting.

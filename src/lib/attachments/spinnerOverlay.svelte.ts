@@ -29,7 +29,7 @@ const defaultSpinnerOverlay = cva({
 });
 
 const defaultSpinnerOverlaySpinner = cva({
-	base: 'order-2 text-color-contrast',
+	base: 'order-2',
 	variants: {
 		size: {
 			small: 'w-4 h-4',
@@ -37,23 +37,23 @@ const defaultSpinnerOverlaySpinner = cva({
 			large: 'w-6 h-6'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			foreground: 'text-foreground',
-			background: 'text-background',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		color: 'neutral'
 	}
 });
 
 const defaultSpinnerOverlayText = cva({
-	base: 'text-sm order-1 text-color-contrast',
+	base: 'text-sm order-1',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -61,18 +61,18 @@ const defaultSpinnerOverlayText = cva({
 			large: 'text-lg'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			foreground: 'text-foreground',
-			background: 'text-background',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		color: 'neutral'
 	}
 });
 
@@ -149,6 +149,7 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 		} else {
 			mounted = true;
 		}
+		overlay.dataset.color = opts.color ?? 'neutral';
 		overlay.className = classes.overlay({ class: opts.class });
 
 		return [overlay, mounted] as const;

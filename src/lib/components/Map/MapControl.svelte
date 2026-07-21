@@ -227,7 +227,7 @@
 	data-slot="map-control"
 	role="group"
 	aria-label="Map controls"
-	class="maplibregl-ctrl flex flex-col overflow-hidden rounded-md border border-background-muted bg-background text-foreground shadow-sm"
+	class="maplibregl-ctrl flex flex-col overflow-hidden rounded-md border border-neutral-muted bg-surface-floating text-neutral shadow-sm"
 >
 	{#each actionList as action (action)}
 		{@const disabled = isActionDisabled(action)}
@@ -235,14 +235,14 @@
 		{#if controlButton}
 			<div
 				{@attach customMapControlEvents(buttonArg.onclick)}
-				class="border-b border-background-muted last:border-b-0"
+				class="border-b border-neutral-muted last:border-b-0"
 			>
 				{@render controlButton(buttonArg)}
 			</div>
 		{:else}
 			<button
 				type="button"
-				class="state-layer flex size-8 items-center justify-center border-b border-background-muted bg-background outline-none transition-colors last:border-b-0 hover:text-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-foreground"
+				class="state-layer flex size-8 items-center justify-center border-b border-neutral-muted bg-surface-floating outline-none transition-colors last:border-b-0 hover:text-neutral focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-neutral"
 				aria-label={buttonArg.label}
 				{disabled}
 				onpointerdown={stopMapControlEvent}

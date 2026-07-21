@@ -58,7 +58,10 @@ Product-level snippets receive the central \`AIConversationState\` instance dire
 
 ## Thread controls
 
-Use \`showToc\`, \`tocSide\`, and \`toc\` for user-turn navigation. Configure advanced transcript tuning on \`AIThread\` through direct composition.
+Use \`density\` for transcript spacing, \`messageSize\` for the default message scale, and
+\`messageVariant\` (\`bubble\` or \`minimal\`) for default message presentation. Use \`showToc\`,
+\`tocSide\`, and \`toc\` for user-turn navigation. Custom message snippets own their message
+presentation. Configure advanced virtualizer tuning on \`AIThread\` through direct composition.
 
 Use \`messageActions\`, \`messageActionsVisibility\` (\`hover\`, \`always\`, or \`none\`), \`messageCopyable\`, \`messageEditable\`, \`messageRetryable\`, \`onMessageCopy\`, \`onMessageEdit\`, and \`onMessageRetry\` for default message actions. Explicit message-action callbacks take precedence over conversation fallbacks.
 

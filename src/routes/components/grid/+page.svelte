@@ -59,9 +59,9 @@
 	>
 		<Grid columns={{ minWidth: 180, max: 3 }} gap={4} width="100%" maxWidth={900}>
 			{#each metrics as metric (metric.label)}
-				<VStack gap={4} padding={4} class="border-background-muted bg-background rounded-lg border">
+				<VStack gap={4} padding={4} class="border-neutral-muted bg-surface rounded-lg border">
 					<HStack align="center" justify="between">
-						<span class="text-foreground-muted text-xs font-medium">{metric.label}</span>
+						<span class="text-neutral/60 text-xs font-medium">{metric.label}</span>
 						<span
 							class="{metricIconClasses[
 								metric.color
@@ -71,7 +71,7 @@
 						</span>
 					</HStack>
 					<VStack gap={1}>
-						<strong class="text-foreground text-2xl">{metric.value}</strong>
+						<strong class="text-neutral text-2xl">{metric.value}</strong>
 						<span class="text-success text-xs">{metric.change} this month</span>
 					</VStack>
 				</VStack>
@@ -92,7 +92,7 @@
 			<Grid columns={3} gap={3} width="100%" maxWidth={720}>
 				{#each panels.slice(0, 3) as panel (panel)}
 					<div
-						class="border-background-muted bg-background-light text-foreground flex min-h-24 items-center justify-center rounded-md border text-sm font-medium"
+						class="border-neutral-muted bg-surface-raised text-neutral flex min-h-24 items-center justify-center rounded-md border text-sm font-medium"
 					>
 						{panel}
 					</div>
@@ -112,7 +112,7 @@
 			<Grid columns={{ minWidth: 140, max: 4 }} gap={3} width="100%" maxWidth={840}>
 				{#each panels as panel (panel)}
 					<div
-						class="border-background-muted bg-background text-foreground flex min-h-20 items-center justify-center rounded-md border text-sm"
+						class="border-neutral-muted bg-surface text-neutral flex min-h-20 items-center justify-center rounded-md border text-sm"
 					>
 						Panel {panel}
 					</div>
@@ -128,7 +128,7 @@
 		>
 			<VStack gap={5} width="100%" maxWidth={780}>
 				<VStack gap={2}>
-					<span class="text-foreground-muted font-mono text-[11px]">fill</span>
+					<span class="text-neutral/60 font-mono text-[11px]">fill</span>
 					<Grid columns={{ minWidth: 150, repeat: 'fill' }} gap={3}>
 						<div class="bg-primary/12 text-primary rounded-md p-4 text-center text-sm">Alpha</div>
 						<div class="bg-secondary/12 text-secondary rounded-md p-4 text-center text-sm">
@@ -137,7 +137,7 @@
 					</Grid>
 				</VStack>
 				<VStack gap={2}>
-					<span class="text-foreground-muted font-mono text-[11px]">fit</span>
+					<span class="text-neutral/60 font-mono text-[11px]">fit</span>
 					<Grid columns={{ minWidth: 150, repeat: 'fit' }} gap={3}>
 						<div class="bg-primary/12 text-primary rounded-md p-4 text-center text-sm">Alpha</div>
 						<div class="bg-secondary/12 text-secondary rounded-md p-4 text-center text-sm">

@@ -230,13 +230,13 @@ const readToken = (name: string, fallback: string): string => readColor(`var(${n
 // give faint surface tints, higher ones give soft strokes/lines. Everything is
 // derived from a token + the background so it adapts to light/dark automatically.
 const mixOver = (token: string, pct: number, fallback: string): string =>
-	readColor(`color-mix(in oklab, var(${token}) ${pct}%, var(--color-background))`, fallback);
-const mixFg = (pct: number, fallback: string) => mixOver('--color-foreground', pct, fallback);
+	readColor(`color-mix(in oklab, var(${token}) ${pct}%, var(--color-surface))`, fallback);
+const mixFg = (pct: number, fallback: string) => mixOver('--color-neutral', pct, fallback);
 const mixAccent = (pct: number, fallback: string) => mixOver('--color-primary', pct, fallback);
 
 const buildThemeVariables = (fontFamily: string): Record<string, string> => {
-	const foreground = readToken('--color-foreground', '#1f2328');
-	const background = readToken('--color-background', '#ffffff');
+	const foreground = readToken('--color-neutral', '#1f2328');
+	const background = readToken('--color-surface', '#ffffff');
 
 	// GitHub-flavoured, but not black-and-white: surfaces carry a faint accent tint
 	// and borders/links a soft (not saturated) accent, so the diagram has colour

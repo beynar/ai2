@@ -342,7 +342,7 @@ import type { PopoverThemeProps } from 'svelai/popover';
 // Example theme customization
 const customTheme: PopoverThemeProps = {
   popover: {
-    base: 'z-[+50] fixed bg-background-light w-fit rounded-xl raised isolate h-fit',
+    base: 'z-[+50] fixed bg-surface-floating text-neutral w-fit rounded-xl raised isolate h-fit',
     size: {
       small: 'max-w-3xs w-full p-2',
       normal: 'max-w-xs w-full p-3',

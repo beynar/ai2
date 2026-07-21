@@ -99,25 +99,25 @@
 		<article class="mx-auto max-w-2xl py-4 text-left">
 			<header class="grid gap-2">
 				<p class="text-primary text-sm font-medium">Field notes</p>
-				<h2 class="text-foreground text-3xl font-semibold">Along the waterline</h2>
-				<p class="text-foreground-muted text-sm">Three images embedded in a reading flow.</p>
+				<h2 class="text-neutral text-3xl font-semibold">Along the waterline</h2>
+				<p class="text-neutral/60 text-sm">Three images embedded in a reading flow.</p>
 			</header>
 
-			<p class="text-foreground-muted my-6 text-base leading-7">
+			<p class="text-neutral/60 my-6 text-base leading-7">
 				The path narrowed as it reached the lake. Click any photograph to expand it directly from
 				its position in the article.
 			</p>
 
 			<ImageZoom {...mediumLandscape} width={860} height={605} backgroundColor="#fff" />
 
-			<p class="text-foreground-muted my-6 text-base leading-7">
+			<p class="text-neutral/60 my-6 text-base leading-7">
 				Farther north, the shoreline became rougher and the horizon less certain. The larger source
 				replaces the thumbnail without changing its final rectangle.
 			</p>
 
 			<ImageZoom {...mediumCoast} width={860} height={573} backgroundColor="rgb(22 37 44)" />
 
-			<p class="text-foreground-muted my-6 text-base leading-7">
+			<p class="text-neutral/60 my-6 text-base leading-7">
 				The final image sits inside the prose rather than taking the full column. Its portrait
 				geometry uses the same origin transition as the wider photographs.
 			</p>
@@ -126,7 +126,7 @@
 				<ImageZoom {...mediumPortrait} width={340} height={510} backgroundColor="rgb(28 62 74)" />
 			</div>
 
-			<p class="text-foreground-muted text-base leading-7">
+			<p class="text-neutral/60 text-base leading-7">
 				The forest held the remaining light above the trail. Beneath it, the air cooled quickly and
 				the details disappeared into a single dark plane.
 			</p>
@@ -261,7 +261,7 @@
 							class="h-full w-full object-cover"
 						/>
 						<span
-							class="bg-background/85 text-foreground absolute right-3 bottom-3 rounded-full px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md"
+							class="bg-surface/85 text-neutral absolute right-3 bottom-3 rounded-full px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md"
 						>
 							Open detail
 						</span>

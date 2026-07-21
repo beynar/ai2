@@ -67,14 +67,14 @@ onEnter={(event) => ...}
 onLeave={(event) => ...}`;
 </script>
 
-{#snippet ic(text: string)}<code class="bg-background-muted rounded px-1 py-0.5 text-sm"
+{#snippet ic(text: string)}<code class="bg-neutral-muted rounded px-1 py-0.5 text-sm"
 		>{text}</code
 	>{/snippet}
 
-<article class="text-foreground mx-auto grid max-w-3xl gap-4 pb-20">
+<article class="text-neutral mx-auto grid max-w-3xl gap-4 pb-20">
 	<header class="grid gap-2">
 		<h1 class="text-3xl font-semibold">Conventions</h1>
-		<p class="text-foreground-muted text-balance">
+		<p class="text-neutral/60 text-balance">
 			This is the public API contract. When writing code, examples, or generated output, copy these
 			shapes first.
 		</p>
@@ -82,7 +82,7 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Imports" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Package paths use kebab-case. Exported component names use PascalCase.
 	</p>
 
@@ -90,12 +90,12 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Props and bindings" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Public props use the shortest platform-shaped name that is still precise. Bindings use the same
 		name as the prop.
 	</p>
 
-	<ul class="text-foreground-muted grid gap-2 text-sm">
+	<ul class="text-neutral/60 grid gap-2 text-sm">
 		<li>Overlay state: {@render ic('open')} and {@render ic('bind:open')}.</li>
 		<li>Checkable controls: {@render ic('checked')} and {@render ic('bind:checked')}.</li>
 		<li>
@@ -109,7 +109,7 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Collections" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		The top-level prop for a repeated rendered collection is {@render ic('items')}. The item type
 		carries the domain meaning: {@render ic('RadioOption')}, {@render ic('TabItem')}, {@render ic(
 			'TableRow'
@@ -123,7 +123,7 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Snippets" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Snippet names describe the public part they fill: {@render ic('prefix')}, {@render ic(
 			'suffix'
 		)}, {@render ic('trigger')}, {@render ic('title')}, {@render ic('description')}, {@render ic(
@@ -136,7 +136,7 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Themes" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Theme keys describe public classable parts. The outermost component part is {@render ic(
 			'root'
 		)}. Nested parts use stable nouns: {@render ic('trigger')}, {@render ic('content')}, {@render ic(
@@ -148,7 +148,7 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Events" />
 
-	<p class="text-foreground-muted">
+	<p class="text-neutral/60">
 		Change callbacks describe the value that changed. The callback argument uses the same name as
 		the public prop. Pointer callbacks use component casing.
 	</p>
@@ -157,7 +157,7 @@ onLeave={(event) => ...}`;
 
 	<Separator class="my-2" children="Canonical names" />
 
-	<p class="text-foreground-muted">Use the exact public spellings from the docs and exports.</p>
+	<p class="text-neutral/60">Use the exact public spellings from the docs and exports.</p>
 
 	<Code language="txt" code={namesCode} />
 </article>
