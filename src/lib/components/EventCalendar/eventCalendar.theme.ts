@@ -37,13 +37,13 @@ const eventCalendarVariants = {
 	invalid: { true: 'ring-2 ring-danger/70', false: '' },
 	disabled: { true: '', false: '' },
 	today: { true: 'bg-color-muted/30', false: '' },
-	outside: { true: 'text-neutral/45', false: '' },
+	outside: { true: 'text-neutral/70', false: '' },
 	offDay: { true: 'bg-surface-recessed/70', false: '' },
 	display: { auto: '', background: 'pointer-events-none opacity-40' },
 	isStart: { true: '', false: 'rounded-s-none' },
 	isEnd: { true: '', false: 'rounded-e-none' },
-	continuesBefore: { true: 'border-s-2 border-s-color', false: '' },
-	continuesAfter: { true: 'border-e-2 border-e-color', false: '' }
+	continuesBefore: { true: 'border-s-2 border-s-[var(--event-calendar-item-color)]', false: '' },
+	continuesAfter: { true: 'border-e-2 border-e-[var(--event-calendar-item-color)]', false: '' }
 } as const;
 
 const defaultVariants = {
@@ -107,7 +107,7 @@ const actions = createEventCalendarPart('flex shrink-0 items-center', {
 	large: 'gap-3'
 });
 const content = createEventCalendarPart('relative min-h-0 flex-1');
-const viewport = createEventCalendarPart('relative min-h-0 w-full');
+const viewport = createEventCalendarPart('relative h-full min-h-0 w-full');
 const loading = createEventCalendarPart(
 	'absolute inset-0 z-50 grid place-items-center bg-surface/75 backdrop-blur-[1px]'
 );
@@ -117,17 +117,29 @@ const empty = createEventCalendarPart('text-center text-neutral/70', {
 	large: 'p-4 text-base'
 });
 
-const month = createEventCalendarPart('relative min-w-0');
-const monthHeader = createEventCalendarPart('grid');
-const dayHeader = createEventCalendarPart('min-w-0 truncate font-medium');
-const monthGrid = createEventCalendarPart('grid min-w-0');
-const weekRow = createEventCalendarPart('grid min-w-0');
-const weekNumber = createEventCalendarPart('text-center text-neutral/50');
-const monthCell = createEventCalendarPart('relative min-w-0 border-neutral-muted');
+const month = createEventCalendarPart('relative flex h-full min-w-0 flex-col');
+const monthHeader = createEventCalendarPart('grid shrink-0 border-b border-neutral-muted');
+const dayHeader = createEventCalendarPart('min-w-0 truncate px-1 py-1.5 text-center font-medium', {
+	small: 'text-xs',
+	normal: 'text-sm',
+	large: 'py-2 text-base'
+});
+const monthGrid = createEventCalendarPart(
+	'grid min-h-0 min-w-0 flex-1 auto-rows-[minmax(6rem,1fr)]'
+);
+const weekRow = createEventCalendarPart('relative grid min-h-24 min-w-0');
+const weekNumber = createEventCalendarPart('grid place-items-center text-center text-neutral/70', {
+	small: 'text-[0.625rem]',
+	normal: 'text-xs',
+	large: 'text-sm'
+});
+const monthCell = createEventCalendarPart(
+	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted p-1 outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+);
 const dayNumber = createEventCalendarPart(
 	'inline-flex min-h-6 min-w-6 items-center justify-center rounded-full'
 );
-const barLayer = createEventCalendarPart('relative min-w-0');
+const barLayer = createEventCalendarPart('pointer-events-none absolute inset-0 min-w-0');
 
 const timeGrid = createEventCalendarPart('relative min-w-0');
 const timeHeader = createEventCalendarPart(
@@ -147,13 +159,17 @@ const item = createEventCalendarPart(
 	'relative min-h-[var(--event-calendar-item-min-height)] min-w-0'
 );
 const itemControl = createEventCalendarPart(
-	'state-layer h-full w-full min-w-0 rounded bg-[var(--event-calendar-item-color)] text-start outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'state-layer h-full w-full min-w-0 rounded bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] px-1.5 py-0.5 text-start text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
 );
-const itemContent = createEventCalendarPart('flex min-w-0 flex-col overflow-hidden');
+const itemContent = createEventCalendarPart('flex min-w-0 items-baseline gap-1 overflow-hidden');
 const itemTitle = createEventCalendarPart('truncate font-medium');
-const itemTime = createEventCalendarPart('truncate text-xs opacity-75 tabular-nums');
-const overflow = createEventCalendarPart('state-layer rounded text-color-readable');
-const overflowPopover = createEventCalendarPart('min-w-56');
+const itemTime = createEventCalendarPart(
+	'truncate bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] text-xs text-neutral tabular-nums'
+);
+const overflow = createEventCalendarPart(
+	'state-layer min-h-6 w-full truncate rounded px-1 text-start text-xs font-medium text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+);
+const overflowPopover = createEventCalendarPart('min-w-56 max-w-80 p-2');
 const dragPreview = createEventCalendarPart(
 	'pointer-events-none rounded bg-color text-color-contrast shadow-lg'
 );

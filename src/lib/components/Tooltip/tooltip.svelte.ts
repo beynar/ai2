@@ -52,6 +52,11 @@ export const tooltip = (props: TooltipProps) => {
 		return () => {
 			off?.();
 			hoverAction.destroy();
+			if (theme.tooltip?.ref === ref) {
+				theme.tooltip = null;
+				theme.lastTooltipClosed = Date.now();
+			}
+			if (refElement === ref) refElement = null;
 		};
 	};
 };

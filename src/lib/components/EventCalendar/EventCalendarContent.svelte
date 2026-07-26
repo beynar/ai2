@@ -8,35 +8,98 @@
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
+	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
+	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarEmptyPayload,
+		EventCalendarItemPayload,
+		EventCalendarItemTooltipPayload,
+		EventCalendarMonthCellPayload,
+		EventCalendarOverflowContentPayload,
+		EventCalendarOverflowPayload,
 		EventCalendarSnapshot,
-		EventCalendarViewPayload
+		EventCalendarViewPayload,
+		EventCalendarDayHeaderPayload
 	} from './eventCalendar.props.js';
+	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
+	import type {
+		EventCalendarDateOnly,
+		EventCalendarOccurrence,
+		EventCalendarOffDaysConfig
+	} from './eventCalendar.types.js';
 
 	let {
+		calendar,
 		snapshot,
+		a11y,
 		messages,
+		direction,
 		density,
 		color,
 		loading,
 		disabled,
 		scrollMode,
 		classes,
+		showWeekNumbers,
+		maxItemsPerCell,
+		offDays,
+		showItemTooltip,
+		monthCell,
+		dayHeader,
+		item,
+		itemTooltip,
+		overflow,
+		overflowContent,
 		empty,
-		loadingContent
+		loadingContent,
+		onItemClick,
+		onItemDoubleClick,
+		onSlotClick,
+		onMoreClick
 	}: {
+		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
+		a11y: EventCalendarA11y;
 		messages: Messages;
+		direction: 'ltr' | 'rtl';
 		density: Density;
 		color: Colors;
 		loading: boolean;
 		disabled: boolean;
 		scrollMode: 'contained' | 'page';
 		classes: EventCalendarClasses;
+		showWeekNumbers: boolean;
+		maxItemsPerCell: number | 'auto';
+		offDays: boolean | EventCalendarOffDaysConfig;
+		showItemTooltip: boolean;
+		monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
+		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
+		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
+		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
+		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
+		overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
 		empty?: Snippet<[EventCalendarEmptyPayload]>;
 		loadingContent?: Snippet<[EventCalendarViewPayload]>;
+		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
+		onItemDoubleClick?: (
+			occurrence: EventCalendarOccurrence<TItemFields>,
+			event: MouseEvent
+		) => void;
+		onSlotClick?: (
+			slot: {
+				view: 'month';
+				allDay: true;
+				start: EventCalendarDateOnly;
+				end: EventCalendarDateOnly;
+			},
+			event: MouseEvent
+		) => void;
+		onMoreClick?: (
+			day: EventCalendarDateOnly,
+			occurrences: readonly EventCalendarOccurrence<TItemFields>[],
+			event: MouseEvent
+		) => false | void;
 	} = $props();
 
 	const viewPayload = $derived<EventCalendarViewPayload>({
@@ -44,8 +107,7 @@
 		visibleRange: snapshot.range.renderRange,
 		visibleDays: snapshot.range.visibleDays
 	});
-	// Until Phase 3 owns the occurrence index, only an empty source collection proves an empty range.
-	const hasProvableEmptyRange = $derived(snapshot.items.length === 0);
+	const hasProvableEmptyRange = $derived(calendar.itemIndex.occurrences.length === 0);
 	const emptyMode = $derived(snapshot.view === 'agenda' ? 'agenda-replacement' : 'grid-status');
 	const emptyPayload = $derived<EventCalendarEmptyPayload>({
 		...viewPayload,
@@ -87,7 +149,35 @@
 			data-view={snapshot.view}
 			inert={loading ? true : undefined}
 			class={classes.viewport({ density, color, view: snapshot.view, disabled })}
-		></div>
+		>
+			{#if snapshot.view === 'month'}
+				<EventCalendarMonthView
+					{calendar}
+					{snapshot}
+					{a11y}
+					{messages}
+					{direction}
+					{density}
+					{color}
+					{classes}
+					{disabled}
+					{showWeekNumbers}
+					{maxItemsPerCell}
+					{offDays}
+					{showItemTooltip}
+					{monthCell}
+					{dayHeader}
+					{item}
+					{itemTooltip}
+					{overflow}
+					{overflowContent}
+					{onItemClick}
+					{onItemDoubleClick}
+					{onSlotClick}
+					{onMoreClick}
+				/>
+			{/if}
+		</div>
 		{#if hasProvableEmptyRange}
 			<div
 				role="status"

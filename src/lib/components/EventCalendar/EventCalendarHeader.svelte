@@ -199,6 +199,7 @@
 
 {#snippet titlePart()}
 	<div
+		role="status"
 		data-event-calendar-part="title"
 		class={classes.title({ density, color, view: calendar.view, disabled })}
 		aria-live="polite"

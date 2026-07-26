@@ -175,6 +175,8 @@ export const de: Messages = {
 	eventCalendarDaysView: 'Tage',
 	eventCalendarAgendaView: 'Agenda',
 	eventCalendarResourceView: 'Ressourcen',
+	eventCalendarMore: (count: string | number) => `+${count} weitere`,
+	eventCalendarWeekNumber: (week: string | number) => `Woche ${week}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `${title} wird angezeigt`,
 	eventCalendarViewAnnouncement: (view: string | number) => `Ansicht ${view} ausgewählt`
 };

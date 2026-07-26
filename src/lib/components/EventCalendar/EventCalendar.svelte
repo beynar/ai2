@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import EventCalendarContent from './EventCalendarContent.svelte';
 	import EventCalendarHeader from './EventCalendarHeader.svelte';
+	import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
 	import { EventCalendarError } from './eventCalendar.error.js';
 	import type { EventCalendarProps, EventCalendarSnapshot } from './eventCalendar.props.js';
@@ -122,6 +123,8 @@
 	}: EventCalendarProps<TItemFields, TResourceFields> = $props();
 
 	const messages = $derived(useI18n(i18n));
+	const componentId = $props.id();
+	const a11y = new EventCalendarA11y(`${componentId}-status`);
 	const resolvedLocale = $derived(locale ?? messages.locale);
 	const resolvedWeekStartsOn = $derived(weekStartsOn ?? getLocaleWeekStartsOn(resolvedLocale));
 	const resolvedCreateActivation = $derived({
@@ -401,6 +404,7 @@
 
 		return () => {
 			observer.disconnect();
+			a11y.destroy();
 			calendar.unmount();
 		};
 	});
@@ -438,9 +442,7 @@
 	});
 
 	function consumeFuturePhaseProps(): void {
-		void showWeekNumbers;
 		void scrollbars;
-		void showItemTooltip;
 		void interactions;
 		void allowOverlap;
 		void constrainToBusinessHours;
@@ -449,25 +451,15 @@
 		void canSelectSlot;
 		void recurrenceEditScope;
 		void getOccurrenceExceptionId;
-		void item;
-		void itemTooltip;
-		void monthCell;
-		void dayHeader;
 		void timeGutter;
 		void allDay;
-		void overflow;
-		void overflowContent;
 		void agendaItem;
 		void agendaDetails;
 		void resourceHeader;
 		void nowIndicatorContent;
 		void dragPreview;
 		void onItemsChange;
-		void onItemClick;
-		void onItemDoubleClick;
-		void onSlotClick;
 		void onSlotSelect;
-		void onMoreClick;
 		void onInteractionBlocked;
 	}
 
@@ -513,15 +505,35 @@
 		/>
 	{/if}
 	<EventCalendarContent
+		{calendar}
 		{snapshot}
+		{a11y}
 		{messages}
+		direction={resolvedDirection}
 		{density}
 		{color}
 		{loading}
 		{disabled}
 		{scrollMode}
 		{classes}
+		{showWeekNumbers}
+		{maxItemsPerCell}
+		{offDays}
+		{showItemTooltip}
+		{monthCell}
+		{dayHeader}
+		{item}
+		{itemTooltip}
+		{overflow}
+		{overflowContent}
 		{empty}
 		{loadingContent}
+		{onItemClick}
+		{onItemDoubleClick}
+		{onSlotClick}
+		{onMoreClick}
 	/>
+	<span id={a11y.liveRegionId} class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+		{a11y.announcement}
+	</span>
 </div>

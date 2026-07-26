@@ -173,6 +173,8 @@ export const ja: Messages = {
 	eventCalendarDaysView: '日間',
 	eventCalendarAgendaView: '予定一覧',
 	eventCalendarResourceView: 'リソース',
+	eventCalendarMore: (count: string | number) => `他${count}件`,
+	eventCalendarWeekNumber: (week: string | number) => `第${week}週`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `${title}を表示中`,
 	eventCalendarViewAnnouncement: (view: string | number) => `${view}表示を選択しました`
 };

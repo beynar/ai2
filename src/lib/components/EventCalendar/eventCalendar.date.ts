@@ -501,24 +501,25 @@ export function getWeekNumber(
 		);
 	}
 	const { year } = parseDateOnly(day);
-	const currentWeek = startOfCivilWeek(day, weekStartsOn);
-	const firstWeek = startOfCivilWeek(
-		toDateOnly({ year, month: 1, day: firstWeekContainsDate }),
-		weekStartsOn
-	);
-	if (currentWeek < firstWeek) {
-		return getWeekNumber(
-			toDateOnly({ year: year - 1, month: 12, day: 31 }),
+	const dayOrdinal = civilDayDifference(MIN_EVENT_CALENDAR_DAY, day);
+	const currentWeekOrdinal = dayOrdinal - modulo(getCivilWeekday(day) - weekStartsOn, 7);
+	const firstWeekOrdinal = getFirstWeekStartOrdinal(year, weekStartsOn, firstWeekContainsDate);
+	if (currentWeekOrdinal < firstWeekOrdinal) {
+		if (year === 1) return 1;
+		const previousFirstWeekOrdinal = getFirstWeekStartOrdinal(
+			year - 1,
 			weekStartsOn,
 			firstWeekContainsDate
 		);
+		return Math.floor((currentWeekOrdinal - previousFirstWeekOrdinal) / 7) + 1;
 	}
-	const nextFirstWeek = startOfCivilWeek(
-		toDateOnly({ year: year + 1, month: 1, day: firstWeekContainsDate }),
-		weekStartsOn
+	const nextFirstWeekOrdinal = getFirstWeekStartOrdinal(
+		year + 1,
+		weekStartsOn,
+		firstWeekContainsDate
 	);
-	if (currentWeek >= nextFirstWeek) return 1;
-	return civilDayDifference(firstWeek, currentWeek) / 7 + 1;
+	if (currentWeekOrdinal >= nextFirstWeekOrdinal) return 1;
+	return Math.floor((currentWeekOrdinal - firstWeekOrdinal) / 7) + 1;
 }
 
 export function getCachedDateTimeFormatter(
@@ -1110,6 +1111,25 @@ function civilDayDifference(start: EventCalendarDateOnly, end: EventCalendarDate
 	const startTime = civilToUtcDate(parseDateOnly(start)).getTime();
 	const endTime = civilToUtcDate(parseDateOnly(end)).getTime();
 	return Math.round((endTime - startTime) / DAY_MS);
+}
+
+function getFirstWeekStartOrdinal(
+	year: number,
+	weekStartsOn: EventCalendarWeekday,
+	firstWeekContainsDate: number
+): number {
+	const completedYears = year - 1;
+	const yearStartOrdinal =
+		completedYears * 365 +
+		Math.floor(completedYears / 4) -
+		Math.floor(completedYears / 100) +
+		Math.floor(completedYears / 400);
+	const containedDayOrdinal = yearStartOrdinal + firstWeekContainsDate - 1;
+	const containedDayWeekday = modulo(
+		getCivilWeekday(MIN_EVENT_CALENDAR_DAY) + containedDayOrdinal,
+		7
+	);
+	return containedDayOrdinal - modulo(containedDayWeekday - weekStartsOn, 7);
 }
 
 function daysInMonth(year: number, month: number): number {
