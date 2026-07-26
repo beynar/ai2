@@ -182,5 +182,13 @@ export const pt: Messages = {
 		`${count} ${Number(count) === 1 ? 'evento' : 'eventos'}`,
 	eventCalendarDetails: (title: string | number) => `Detalhes de ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `Exibindo ${title}`,
-	eventCalendarViewAnnouncement: (view: string | number) => `Visualização ${view} selecionada`
+	eventCalendarViewAnnouncement: (view: string | number) => `Visualização ${view} selecionada`,
+	eventCalendarRecurringEvent: 'Evento recorrente',
+	eventCalendarTimeZone: (timeZone: string | number) => `Fuso horário: ${timeZone}`,
+	eventCalendarMoveGesture: 'Mover evento',
+	eventCalendarResizeStartGesture: 'Alterar início do evento',
+	eventCalendarResizeEndGesture: 'Alterar fim do evento',
+	eventCalendarSelectRangeGesture: 'Selecionar período do calendário',
+	eventCalendarValidTarget: 'Destino válido',
+	eventCalendarInvalidTarget: 'Destino inválido'
 };

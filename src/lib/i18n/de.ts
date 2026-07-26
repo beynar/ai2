@@ -182,5 +182,13 @@ export const de: Messages = {
 		`${count} ${Number(count) === 1 ? 'Termin' : 'Termine'}`,
 	eventCalendarDetails: (title: string | number) => `Details zu ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `${title} wird angezeigt`,
-	eventCalendarViewAnnouncement: (view: string | number) => `Ansicht ${view} ausgewählt`
+	eventCalendarViewAnnouncement: (view: string | number) => `Ansicht ${view} ausgewählt`,
+	eventCalendarRecurringEvent: 'Wiederkehrender Termin',
+	eventCalendarTimeZone: (timeZone: string | number) => `Zeitzone: ${timeZone}`,
+	eventCalendarMoveGesture: 'Termin verschieben',
+	eventCalendarResizeStartGesture: 'Terminbeginn ändern',
+	eventCalendarResizeEndGesture: 'Terminende ändern',
+	eventCalendarSelectRangeGesture: 'Kalenderzeitraum auswählen',
+	eventCalendarValidTarget: 'Gültiges Ziel',
+	eventCalendarInvalidTarget: 'Ungültiges Ziel'
 };

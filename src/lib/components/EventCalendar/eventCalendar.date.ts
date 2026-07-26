@@ -1129,7 +1129,10 @@ function applySnap(value: number, mode: EventCalendarSnapMode): number {
 	return Math.round(value);
 }
 
-function civilDayDifference(start: EventCalendarDateOnly, end: EventCalendarDateOnly): number {
+export function civilDayDifference(
+	start: EventCalendarDateOnly,
+	end: EventCalendarDateOnly
+): number {
 	const startTime = civilToUtcDate(parseDateOnly(start)).getTime();
 	const endTime = civilToUtcDate(parseDateOnly(end)).getTime();
 	return Math.round((endTime - startTime) / DAY_MS);

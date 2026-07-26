@@ -188,7 +188,15 @@ export const en = {
 		`${count} ${Number(count) === 1 ? 'event' : 'events'}`,
 	eventCalendarDetails: (title: string | number) => `Details for ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `Showing ${title}`,
-	eventCalendarViewAnnouncement: (view: string | number) => `${view} view selected`
+	eventCalendarViewAnnouncement: (view: string | number) => `${view} view selected`,
+	eventCalendarRecurringEvent: 'Recurring event',
+	eventCalendarTimeZone: (timeZone: string | number) => `Time zone: ${timeZone}`,
+	eventCalendarMoveGesture: 'Move event',
+	eventCalendarResizeStartGesture: 'Resize event start',
+	eventCalendarResizeEndGesture: 'Resize event end',
+	eventCalendarSelectRangeGesture: 'Select calendar range',
+	eventCalendarValidTarget: 'Valid target',
+	eventCalendarInvalidTarget: 'Invalid target'
 };
 
 export type Messages = typeof en;

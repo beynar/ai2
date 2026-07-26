@@ -15,6 +15,7 @@ import type { Attachment } from 'svelte/attachments';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import {
 	addCivilDays,
+	civilDayDifference,
 	getCivilWeekday,
 	getZonedDay,
 	isSupportedDateDomainError,
@@ -24,6 +25,12 @@ import {
 	startOfZonedDay
 } from './eventCalendar.date.js';
 import { EventCalendarError } from './eventCalendar.error.js';
+import {
+	createEventCalendarRecurrenceMutation,
+	regenerateEventCalendarSeriesMutation,
+	type CreateRecurrenceMutationOptions,
+	type EventCalendarRecurrenceMutation
+} from './eventCalendar.recurrenceMutation.js';
 import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 import type {
 	EventCalendarChange,
@@ -34,6 +41,7 @@ import type {
 	EventCalendarOccurrence,
 	EventCalendarProposedUpdate,
 	EventCalendarSegment,
+	EventCalendarSelection,
 	EventCalendarSlot,
 	EventCalendarUpdateAdjustment,
 	EventCalendarView
@@ -393,13 +401,6 @@ export class EventCalendarInteractionsController<
 		if (this.blockDisabledApiMutation()) return;
 		const previousItem = this.calendar.items.find((candidate) => candidate.id === item.id);
 		if (!previousItem) this.missingTarget('item', item.id);
-		if (previousItem.recurrence !== undefined || previousItem.recurringItemId !== undefined) {
-			throw new EventCalendarError(
-				'unsupported-recurrence',
-				'Recurring item mutations are implemented by the Phase 8 recurrence transform engine.',
-				{ id: item.id }
-			);
-		}
 		this.commitProposal({ kind: 'update', source: 'api', previousItem, item });
 	}
 
@@ -411,18 +412,25 @@ export class EventCalendarInteractionsController<
 		if (this.blockDisabledApiMutation()) return;
 		const occurrence = this.calendar.getOccurrence(key);
 		if (!occurrence) this.missingTarget('occurrence', key);
-		if (
-			occurrence.isRecurring ||
-			occurrence.item.recurringItemId !== undefined ||
-			options?.scope === 'series'
-		) {
-			throw new EventCalendarError(
-				'unsupported-recurrence',
-				'Recurring occurrence mutations are implemented by the Phase 8 recurrence transform engine.',
-				{ key, scope: options?.scope }
+		const item = this.applyAdjustment(this.getOccurrencePlacementItem(occurrence), adjustment);
+		if (occurrence.isRecurring || occurrence.item.recurringItemId !== undefined) {
+			const scope = options?.scope ?? this.calendar.recurrenceEditScope;
+			if (scope === 'disabled') {
+				this.reportBlocked({ reason: 'disabled', source: 'api' });
+				return;
+			}
+			this.commitRecurrenceProposal(
+				{
+					kind: 'update',
+					source: 'api',
+					occurrence,
+					previousItem: occurrence.item,
+					item
+				},
+				scope
 			);
+			return;
 		}
-		const item = this.applyAdjustment(occurrence.item, adjustment);
 		this.commitProposal({
 			kind: 'update',
 			source: 'api',
@@ -436,22 +444,27 @@ export class EventCalendarInteractionsController<
 		if (this.blockDisabledApiMutation()) return;
 		const previousItem = this.calendar.items.find((candidate) => candidate.id === id);
 		if (!previousItem) this.missingTarget('item', id);
-		if (previousItem.recurrence !== undefined) {
-			throw new EventCalendarError(
-				'unsupported-recurrence',
-				'Removing a recurring series and its exceptions is implemented by Phase 8.',
-				{ id }
-			);
-		}
 		const previousItems = this.calendar.items;
-		const committedItems = previousItems.filter((candidate) => candidate.id !== id);
+		const removedItems =
+			previousItem.recurrence === undefined
+				? [previousItem]
+				: previousItems.filter(
+						(candidate) => candidate === previousItem || candidate.recurringItemId === id
+					);
+		const removedIds = new Set(removedItems.map((item) => item.id));
+		const committedItems = previousItems.filter((candidate) => !removedIds.has(candidate.id));
 		this.calendar.validateCandidateItems(committedItems);
-		this.commitCollection(committedItems, (revert) => ({
-			kind: 'remove',
-			source: 'api',
-			previousItems: [previousItem],
-			revert
-		}));
+		this.commitCollection(
+			committedItems,
+			(revert) => ({
+				kind: 'remove',
+				source: 'api',
+				previousItems: removedItems,
+				revert
+			}),
+			undefined,
+			previousItem.recurrence === undefined ? undefined : previousItem.id
+		);
 	}
 
 	private handleItemDragStart(payload: ElementEventPayloadMap['onDragStart']): void {
@@ -567,6 +580,7 @@ export class EventCalendarInteractionsController<
 	): EventCalendarProposedUpdate<TItemFields> | null {
 		const { occurrence } = gesture;
 		const sourceItem = occurrence.item;
+		const placementItem = this.getOccurrencePlacementItem(occurrence);
 		const isTimedMonthResize =
 			gesture.kind !== 'move' && target.allDay && target.view === 'month' && !occurrence.allDay;
 		if (gesture.kind !== 'move' && target.allDay !== occurrence.allDay && !isTimedMonthResize) {
@@ -577,10 +591,10 @@ export class EventCalendarInteractionsController<
 			if (gesture.kind === 'move') {
 				item =
 					target.allDay && target.view === 'month' && !occurrence.allDay
-						? this.moveTimedToMonthDay(sourceItem, occurrence, target.day)
+						? this.moveTimedToMonthDay(placementItem, occurrence, target.day)
 						: target.allDay
-							? this.moveToAllDay(sourceItem, occurrence, target.day, gesture.grabOffsetDays)
-							: this.moveToTimed(sourceItem, occurrence, target, pointerY, gesture.grabOffsetMs);
+							? this.moveToAllDay(placementItem, occurrence, target.day, gesture.grabOffsetDays)
+							: this.moveToTimed(placementItem, occurrence, target, pointerY, gesture.grabOffsetMs);
 			} else if (isTimedMonthResize) {
 				const sourceEndpoint = gesture.kind === 'resize-start' ? occurrence.start : occurrence.end;
 				const endpoint = resolveZonedMinutesOnDay(
@@ -588,13 +602,13 @@ export class EventCalendarInteractionsController<
 					getWallMinutes(sourceEndpoint, this.calendar.timeZone),
 					this.calendar.timeZone
 				);
-				item = this.resizeTimed(sourceItem, gesture.kind, endpoint);
+				item = this.resizeTimed(placementItem, gesture.kind, endpoint);
 			} else if (target.allDay) {
 				const endpoint = gesture.kind === 'resize-start' ? target.day : addCivilDays(target.day, 1);
-				item = this.resizeAllDay(sourceItem, gesture.kind, endpoint);
+				item = this.resizeAllDay(placementItem, gesture.kind, endpoint);
 			} else {
 				const endpoint = this.getTimedTargetInstant(target, pointerY);
-				item = this.resizeTimed(sourceItem, gesture.kind, endpoint);
+				item = this.resizeTimed(placementItem, gesture.kind, endpoint);
 			}
 		} catch (error) {
 			if (isSupportedDateDomainError(error)) return null;
@@ -840,7 +854,9 @@ export class EventCalendarInteractionsController<
 	}
 
 	private validateProposal(
-		proposal: EventCalendarProposedUpdate<TItemFields>
+		proposal: EventCalendarProposedUpdate<TItemFields>,
+		ignoredSeriesId?: string,
+		skipCustomPolicy = false
 	): InvalidReason | null {
 		const item = proposal.item;
 		if (this.calendar.disabled || this.calendar.loading) return 'disabled';
@@ -851,13 +867,13 @@ export class EventCalendarInteractionsController<
 		if (this.calendar.constrainToBusinessHours && !this.isInsideBusinessHours(item))
 			return 'business-hours';
 		let areConflictsAllowed = true;
-		for (const conflict of this.findConflicts(item, proposal.occurrence?.key)) {
+		for (const conflict of this.findConflicts(item, proposal.occurrence?.key, ignoredSeriesId)) {
 			if (!this.allowsConflict({ kind: 'item', proposal, conflictingOccurrence: conflict })) {
 				areConflictsAllowed = false;
 			}
 		}
 		if (!areConflictsAllowed) return 'overlap';
-		if (this.calendar.canUpdateItem && !this.calendar.canUpdateItem(proposal))
+		if (!skipCustomPolicy && this.calendar.canUpdateItem && !this.calendar.canUpdateItem(proposal))
 			return 'custom-policy';
 		return null;
 	}
@@ -883,6 +899,17 @@ export class EventCalendarInteractionsController<
 		initialProposal: EventCalendarProposedUpdate<TItemFields>,
 		gestureBoundary?: readonly unknown[]
 	): void {
+		if (
+			initialProposal.occurrence?.isRecurring ||
+			initialProposal.occurrence?.item.recurringItemId !== undefined
+		) {
+			this.commitRecurrenceProposal(
+				initialProposal,
+				this.calendar.recurrenceEditScope,
+				gestureBoundary
+			);
+			return;
+		}
 		const initialCandidate = this.getCandidateMutation(initialProposal);
 		if (!initialCandidate) {
 			this.reportStaleProposal(initialProposal, gestureBoundary);
@@ -953,13 +980,203 @@ export class EventCalendarInteractionsController<
 		if (gestureBoundary && this.cancelStaleGesture(gestureBoundary)) return;
 		const kind =
 			proposal.kind === 'move' ? 'move' : proposal.kind.startsWith('resize') ? 'resize' : 'update';
-		this.commitCollection(candidate.committedItems, (revert) => ({
-			kind,
-			source: proposal.source,
-			item: proposal.item,
-			previousItem: proposal.previousItem,
-			revert
-		}));
+		this.commitCollection(
+			candidate.committedItems,
+			(revert) => ({
+				kind,
+				source: proposal.source,
+				item: proposal.item,
+				previousItem: proposal.previousItem,
+				revert
+			}),
+			undefined,
+			proposal.previousItem.recurrence === undefined ? undefined : proposal.previousItem.id
+		);
+	}
+
+	private commitRecurrenceProposal(
+		initialProposal: EventCalendarProposedUpdate<TItemFields>,
+		scope: 'occurrence' | 'series' | 'disabled',
+		gestureBoundary?: readonly unknown[]
+	): void {
+		if (scope === 'disabled') {
+			this.reportBlocked({
+				reason: 'disabled',
+				source: initialProposal.source,
+				proposal: initialProposal
+			});
+			return;
+		}
+		const mutationOptions = this.getRecurrenceMutationOptions(initialProposal, scope);
+		const previousItems = mutationOptions.items;
+		let mutation = createEventCalendarRecurrenceMutation(mutationOptions);
+		this.calendar.validateCandidateItems(mutation.committedItems);
+		let reason = this.validateRecurrenceMutation(mutation);
+		if (gestureBoundary && this.cancelStaleGesture(gestureBoundary)) return;
+		if (reason) {
+			this.reportBlocked({ reason, source: initialProposal.source, proposal: mutation.proposal });
+			return;
+		}
+		const updateResult = this.calendar.onItemUpdate?.(mutation.proposal);
+		if (gestureBoundary && this.cancelStaleGesture(gestureBoundary)) return;
+		if (this.calendar.items !== previousItems) {
+			this.reportStaleProposal(mutation.proposal, gestureBoundary);
+			return;
+		}
+		if (updateResult === false) {
+			this.reportBlocked({
+				reason: 'custom-policy',
+				source: initialProposal.source,
+				proposal: mutation.proposal
+			});
+			return;
+		}
+		const adjustment = updateResult && typeof updateResult === 'object' ? updateResult : null;
+		if (adjustment) {
+			const adjustedItem = this.applyAdjustment(mutation.proposal.item, adjustment);
+			try {
+				mutation =
+					mutation.scope === 'series'
+						? regenerateEventCalendarSeriesMutation(
+								mutationOptions,
+								adjustedItem,
+								mutation.operation
+							)
+						: createEventCalendarRecurrenceMutation({
+								...mutationOptions,
+								exceptionId: mutation.exceptionId,
+								proposal: { ...mutation.proposal, item: adjustedItem }
+							});
+				this.calendar.validateCandidateItems(mutation.committedItems);
+				reason = this.validateRecurrenceMutation(mutation);
+			} catch (error) {
+				throw this.invalidAdjustmentError(error, adjustedItem.id);
+			}
+			if (reason) {
+				throw new EventCalendarError(
+					'invalid-adjustment',
+					'onItemUpdate returned an invalid recurring adjustment.',
+					{ reason, id: adjustedItem.id }
+				);
+			}
+		}
+		if (gestureBoundary && this.cancelStaleGesture(gestureBoundary)) return;
+		if (this.calendar.items !== previousItems) {
+			this.reportStaleProposal(mutation.proposal, gestureBoundary);
+			return;
+		}
+		this.commitCollection(
+			mutation.committedItems,
+			(revert) =>
+				mutation.scope === 'series'
+					? {
+							kind: 'recurrence-series-update',
+							source: initialProposal.source,
+							operation: mutation.operation,
+							seriesItem: mutation.seriesItem,
+							previousSeriesItem: mutation.previousSeriesItem,
+							exceptionItems: mutation.exceptionItems,
+							previousExceptionItems: mutation.previousExceptionItems,
+							revert
+						}
+					: mutation.previousItem
+						? {
+								kind: 'recurrence-exception-update',
+								source: initialProposal.source,
+								seriesItem: mutation.seriesItem,
+								item: mutation.item,
+								previousItem: mutation.previousItem,
+								revert
+							}
+						: {
+								kind: 'recurrence-exception-add',
+								source: initialProposal.source,
+								seriesItem: mutation.seriesItem,
+								item: mutation.item,
+								revert
+							},
+			mutation.scope === 'series'
+				? {
+						forward: mutation.remapOccurrenceKey,
+						backward: mutation.restoreOccurrenceKey
+					}
+				: undefined
+		);
+	}
+
+	private getRecurrenceMutationOptions(
+		proposal: EventCalendarProposedUpdate<TItemFields>,
+		scope: 'occurrence' | 'series'
+	): CreateRecurrenceMutationOptions<TItemFields> {
+		return {
+			items: this.calendar.items,
+			proposal,
+			scope,
+			displayTimeZone: this.calendar.timeZone,
+			maintainDurationOnAllDayChange: this.calendar.interactions.maintainDurationOnAllDayChange,
+			defaultTimedItemDuration: this.calendar.defaultTimedItemDuration,
+			defaultAllDayItemDuration: this.calendar.defaultAllDayItemDuration,
+			getOccurrenceExceptionId: this.calendar.getOccurrenceExceptionId
+		};
+	}
+
+	private validateRecurrenceMutation(
+		mutation: EventCalendarRecurrenceMutation<TItemFields>
+	): InvalidReason | null {
+		if (mutation.scope === 'occurrence') {
+			return this.validateProposal(mutation.proposal);
+		}
+		const seriesId = mutation.previousSeriesItem.id;
+		const interactionReason = this.validateProposal(mutation.interactedProposal, seriesId, true);
+		if (interactionReason) return interactionReason;
+		const occurrences = this.calendar.getCandidateOccurrences(mutation.committedItems);
+		const seriesOccurrences = occurrences.filter(
+			(occurrence) => getOccurrenceSeriesId(occurrence) === seriesId
+		);
+		for (const occurrence of seriesOccurrences) {
+			const item = this.getOccurrencePlacementItem(occurrence);
+			if (!isValidPlacement(item, this.calendar.snapDuration)) return 'invalid-target';
+			if (!this.isInsideValidRange(item)) return 'valid-range';
+			if (this.calendar.constrainToBusinessHours && !this.isInsideBusinessHours(item)) {
+				return 'business-hours';
+			}
+			const proposal: EventCalendarProposedUpdate<TItemFields> = {
+				...mutation.proposal,
+				occurrence,
+				item
+			};
+			for (const conflict of occurrences) {
+				if (
+					conflict.key === occurrence.key ||
+					conflict.item.display === 'background' ||
+					!rangesIntersect(
+						{ start: occurrence.start, end: occurrence.end },
+						{ start: conflict.start, end: conflict.end }
+					)
+				)
+					continue;
+				if (!this.allowsConflict({ kind: 'item', proposal, conflictingOccurrence: conflict })) {
+					return 'overlap';
+				}
+			}
+		}
+		if (this.calendar.canUpdateItem && !this.calendar.canUpdateItem(mutation.proposal)) {
+			return 'custom-policy';
+		}
+		return null;
+	}
+
+	private invalidAdjustmentError(error: unknown, id: string): EventCalendarError {
+		if (error instanceof EventCalendarError && error.code === 'invalid-adjustment') return error;
+		return new EventCalendarError(
+			'invalid-adjustment',
+			'onItemUpdate returned a structurally invalid recurring adjustment.',
+			{
+				id,
+				underlyingCode: error instanceof EventCalendarError ? error.code : 'structural-validation',
+				underlyingMessage: error instanceof Error ? error.message : String(error)
+			}
+		);
 	}
 
 	private getCandidateMutation(proposal: EventCalendarProposedUpdate<TItemFields>): {
@@ -984,7 +1201,7 @@ export class EventCalendarInteractionsController<
 		const end = adjustment.end ?? item.end;
 		const resourceId =
 			adjustment.resourceId === null ? undefined : (adjustment.resourceId ?? item.resourceId);
-		const adjusted = replaceSchedule(item, { allDay, start, end });
+		const adjusted = replacePlacement(item, { allDay, start, end });
 		if (adjustment.resourceId === null) {
 			delete adjusted.resourceId;
 			return adjusted;
@@ -994,24 +1211,69 @@ export class EventCalendarInteractionsController<
 			: ({ ...adjusted, resourceId } as EventCalendarItem<TItemFields>);
 	}
 
+	private getOccurrencePlacementItem(
+		occurrence: EventCalendarOccurrence<TItemFields>
+	): EventCalendarItem<TItemFields> {
+		return replacePlacement(occurrence.item, {
+			allDay: occurrence.allDay,
+			start: occurrence.allDay
+				? getZonedDay(occurrence.start, this.calendar.timeZone)
+				: new Date(occurrence.start),
+			end: occurrence.allDay
+				? getZonedDay(occurrence.end, this.calendar.timeZone)
+				: new Date(occurrence.end)
+		});
+	}
+
 	private commitCollection(
 		items: EventCalendarItem<TItemFields>[],
-		createChange: (revert: () => void) => EventCalendarChange<TItemFields>
+		createChange: (revert: () => void) => EventCalendarChange<TItemFields>,
+		keyRemap?: {
+			forward: (key: string) => string;
+			backward: (key: string) => string;
+		},
+		clearMissingRecurringSeriesId?: string
 	): void {
 		const previousItems = this.calendar.items;
 		this.calendar.items = items;
 		const publishedItems = this.calendar.items;
-		const change = createChange(this.createRevert(previousItems, publishedItems));
+		const selectionTransaction = keyRemap
+			? this.calendar.applyOccurrenceKeyRemap(keyRemap.forward)
+			: clearMissingRecurringSeriesId
+				? this.calendar.clearMissingRecurringSelection(
+						publishedItems,
+						clearMissingRecurringSeriesId
+					)
+				: null;
+		const change = createChange(
+			this.createRevert(previousItems, publishedItems, selectionTransaction, keyRemap?.backward)
+		);
 		this.calendar.onItemsChange?.(publishedItems, change);
+		if (
+			selectionTransaction &&
+			this.calendar.selection === selectionTransaction.committedSelection
+		) {
+			this.calendar.notifySelectionChange(selectionTransaction.committedSelection);
+		}
 	}
 
 	private createRevert(
 		previousItems: EventCalendarItem<TItemFields>[],
-		committedItems: EventCalendarItem<TItemFields>[]
+		committedItems: EventCalendarItem<TItemFields>[],
+		selectionTransaction: {
+			previousSelection: EventCalendarSelection;
+			committedSelection: EventCalendarSelection;
+		} | null = null,
+		restoreOccurrenceKey?: (key: string) => string
 	): () => void {
 		let isConsumed = false;
 		return () => {
-			if (isConsumed || this.calendar.items !== committedItems) {
+			if (
+				isConsumed ||
+				this.calendar.items !== committedItems ||
+				(selectionTransaction !== null &&
+					this.calendar.selection !== selectionTransaction.committedSelection)
+			) {
 				throw new EventCalendarError(
 					'stale-transaction',
 					'This EventCalendar transaction can no longer be reverted.'
@@ -1019,6 +1281,9 @@ export class EventCalendarInteractionsController<
 			}
 			isConsumed = true;
 			this.calendar.items = previousItems;
+			if (selectionTransaction || restoreOccurrenceKey) {
+				this.calendar.restoreOccurrenceKeyRemap(selectionTransaction, restoreOccurrenceKey);
+			}
 		};
 	}
 
@@ -1054,12 +1319,17 @@ export class EventCalendarInteractionsController<
 		);
 	}
 
-	private findConflicts(item: EventCalendarItem<TItemFields>, ignoredOccurrenceKey?: string) {
+	private findConflicts(
+		item: EventCalendarItem<TItemFields>,
+		ignoredOccurrenceKey?: string,
+		ignoredSeriesId?: string
+	) {
 		if (item.display === 'background') return [];
 		const range = itemRange(item, this.calendar.timeZone);
 		return this.calendar.itemIndex.occurrences.filter(
 			(occurrence) =>
 				occurrence.key !== ignoredOccurrenceKey &&
+				getOccurrenceSeriesId(occurrence) !== ignoredSeriesId &&
 				occurrence.item.id !== item.id &&
 				occurrence.item.display !== 'background' &&
 				rangesIntersect(range, { start: occurrence.start, end: occurrence.end })
@@ -1101,7 +1371,11 @@ export class EventCalendarInteractionsController<
 			item.readOnly
 		)
 			return false;
-		if (occurrence.isRecurring || item.recurringItemId !== undefined) return false;
+		if (
+			(occurrence.isRecurring || item.recurringItemId !== undefined) &&
+			this.calendar.recurrenceEditScope === 'disabled'
+		)
+			return false;
 		if (operation === 'move') return this.calendar.interactions.drag && item.draggable !== false;
 		return this.calendar.interactions.resize && item.resizable !== false;
 	}
@@ -1192,6 +1466,7 @@ export class EventCalendarInteractionsController<
 			this.calendar.canSelectSlot,
 			this.calendar.onItemUpdate,
 			this.calendar.recurrenceEditScope,
+			this.calendar.getOccurrenceExceptionId,
 			this.calendar.expandRecurrence,
 			this.calendar.direction
 		];
@@ -1343,6 +1618,29 @@ function replaceSchedule<TItemFields extends object>(
 	return next as EventCalendarItem<TItemFields>;
 }
 
+function replacePlacement<TItemFields extends object>(
+	item: EventCalendarItem<TItemFields>,
+	schedule: {
+		allDay: boolean;
+		start: Date | EventCalendarDateOnly;
+		end: Date | EventCalendarDateOnly;
+	}
+): EventCalendarItem<TItemFields> {
+	const next: Record<string, unknown> = { ...item };
+	next.start = schedule.start;
+	next.end = schedule.end;
+	if (schedule.allDay) next.allDay = true;
+	else delete next.allDay;
+	return next as EventCalendarItem<TItemFields>;
+}
+
+function getOccurrenceSeriesId<TItemFields extends object>(
+	occurrence: EventCalendarOccurrence<TItemFields>
+): string | undefined {
+	if (!occurrence.isRecurring && occurrence.item.recurringItemId === undefined) return undefined;
+	return occurrence.item.recurringItemId ?? occurrence.item.id;
+}
+
 function applyTargetResource<TItemFields extends object>(
 	item: EventCalendarItem<TItemFields>,
 	target: EventCalendarDropTarget
@@ -1468,30 +1766,6 @@ function getWallMinutes(instant: Date, timeZone: string): number {
 	const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0);
 	const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
 	return hour * 60 + minute;
-}
-
-function civilDayDifference(start: EventCalendarDateOnly, end: EventCalendarDateOnly): number {
-	return civilSerial(end) - civilSerial(start);
-}
-
-function civilSerial(day: EventCalendarDateOnly): number {
-	const [yearValue, monthValue, dayValue] = day.split('-').map(Number);
-	let year = yearValue;
-	let month = monthValue;
-	if (month <= 2) {
-		year -= 1;
-		month += 12;
-	}
-	const era = Math.floor(year / 400);
-	const yearOfEra = year - era * 400;
-	const dayOfYear = Math.floor((153 * (month - 3) + 2) / 5) + dayValue - 1;
-	return (
-		era * 146097 +
-		yearOfEra * 365 +
-		Math.floor(yearOfEra / 4) -
-		Math.floor(yearOfEra / 100) +
-		dayOfYear
-	);
 }
 
 function edgeScrollDelta(distance: number): number {

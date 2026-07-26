@@ -178,5 +178,13 @@ export const zh: Messages = {
 	eventCalendarEventCount: (count: string | number) => `${count} 个事件`,
 	eventCalendarDetails: (title: string | number) => `${title} 的详情`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `正在显示${title}`,
-	eventCalendarViewAnnouncement: (view: string | number) => `已选择${view}视图`
+	eventCalendarViewAnnouncement: (view: string | number) => `已选择${view}视图`,
+	eventCalendarRecurringEvent: '重复事件',
+	eventCalendarTimeZone: (timeZone: string | number) => `时区：${timeZone}`,
+	eventCalendarMoveGesture: '移动事件',
+	eventCalendarResizeStartGesture: '调整事件开始时间',
+	eventCalendarResizeEndGesture: '调整事件结束时间',
+	eventCalendarSelectRangeGesture: '选择日历时段',
+	eventCalendarValidTarget: '有效目标',
+	eventCalendarInvalidTarget: '无效目标'
 };

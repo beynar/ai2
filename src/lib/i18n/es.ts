@@ -182,5 +182,13 @@ export const es: Messages = {
 		`${count} ${Number(count) === 1 ? 'evento' : 'eventos'}`,
 	eventCalendarDetails: (title: string | number) => `Detalles de ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `Mostrando ${title}`,
-	eventCalendarViewAnnouncement: (view: string | number) => `Vista ${view} seleccionada`
+	eventCalendarViewAnnouncement: (view: string | number) => `Vista ${view} seleccionada`,
+	eventCalendarRecurringEvent: 'Evento recurrente',
+	eventCalendarTimeZone: (timeZone: string | number) => `Zona horaria: ${timeZone}`,
+	eventCalendarMoveGesture: 'Mover evento',
+	eventCalendarResizeStartGesture: 'Cambiar el inicio del evento',
+	eventCalendarResizeEndGesture: 'Cambiar el final del evento',
+	eventCalendarSelectRangeGesture: 'Seleccionar intervalo del calendario',
+	eventCalendarValidTarget: 'Destino válido',
+	eventCalendarInvalidTarget: 'Destino no válido'
 };

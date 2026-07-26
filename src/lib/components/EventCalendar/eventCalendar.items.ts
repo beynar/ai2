@@ -153,6 +153,29 @@ export function createRecurringOccurrenceKey(
 	return encodeKey('recurring', [seriesId, origin]);
 }
 
+export function decodeRecurringOccurrenceKey(
+	key: string
+): { seriesId: string; originalStart: Date | EventCalendarDateOnly } | null {
+	const parts = decodeKey(key);
+	if (!parts || parts.namespace !== 'recurring' || parts.values.length !== 2) return null;
+	const [seriesId, encodedOrigin] = parts.values;
+	if (encodedOrigin.startsWith('instant:')) {
+		const timestamp = Number(encodedOrigin.slice('instant:'.length));
+		if (!Number.isFinite(timestamp)) return null;
+		const originalStart = new Date(timestamp);
+		return Number.isFinite(originalStart.getTime()) ? { seriesId, originalStart } : null;
+	}
+	if (!encodedOrigin.startsWith('day:')) return null;
+	const originalStart = encodedOrigin.slice('day:'.length);
+	try {
+		assertDateOnly(originalStart, 'occurrence key origin');
+		return { seriesId, originalStart };
+	} catch (error) {
+		if (error instanceof EventCalendarError) return null;
+		throw error;
+	}
+}
+
 export function createEventCalendarSegmentKey(
 	occurrenceKey: string,
 	day: EventCalendarDateOnly,
@@ -891,6 +914,30 @@ function compareOccurrenceValues(
 
 function encodeKey(namespace: string, parts: readonly string[]): string {
 	return `${namespace.length}:${namespace}${parts.map((part) => `${part.length}:${part}`).join('')}`;
+}
+
+function decodeKey(key: string): { namespace: string; values: string[] } | null {
+	let cursor = 0;
+	const readPart = (): string | null => {
+		const separator = key.indexOf(':', cursor);
+		if (separator < 0) return null;
+		const length = Number(key.slice(cursor, separator));
+		if (!Number.isInteger(length) || length < 0) return null;
+		const start = separator + 1;
+		const end = start + length;
+		if (end > key.length) return null;
+		cursor = end;
+		return key.slice(start, end);
+	};
+	const namespace = readPart();
+	if (namespace === null) return null;
+	const values: string[] = [];
+	while (cursor < key.length) {
+		const value = readPart();
+		if (value === null) return null;
+		values.push(value);
+	}
+	return { namespace, values };
 }
 
 function canonicalOrigin(origin: Date | EventCalendarDateOnly): string {

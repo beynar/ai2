@@ -179,5 +179,13 @@ export const ja: Messages = {
 	eventCalendarEventCount: (count: string | number) => `${count} 件の予定`,
 	eventCalendarDetails: (title: string | number) => `${title} の詳細`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `${title}を表示中`,
-	eventCalendarViewAnnouncement: (view: string | number) => `${view}表示を選択しました`
+	eventCalendarViewAnnouncement: (view: string | number) => `${view}表示を選択しました`,
+	eventCalendarRecurringEvent: '繰り返し予定',
+	eventCalendarTimeZone: (timeZone: string | number) => `タイムゾーン: ${timeZone}`,
+	eventCalendarMoveGesture: '予定を移動',
+	eventCalendarResizeStartGesture: '予定の開始を変更',
+	eventCalendarResizeEndGesture: '予定の終了を変更',
+	eventCalendarSelectRangeGesture: 'カレンダーの範囲を選択',
+	eventCalendarValidTarget: '有効な移動先',
+	eventCalendarInvalidTarget: '無効な移動先'
 };

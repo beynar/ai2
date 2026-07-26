@@ -147,7 +147,6 @@
 	let contentComponent = $state<{
 		scrollToTime(dateOrMinutes: Date | number): boolean;
 	} | null>(null);
-
 	const calendar = new EventCalendarState<TItemFields, TResourceFields>(componentId, {
 		get items() {
 			return items;
@@ -281,9 +280,13 @@
 		get recurrenceEditScope() {
 			return recurrenceEditScope;
 		},
+		get getOccurrenceExceptionId() {
+			return getOccurrenceExceptionId;
+		},
 		get expandRecurrence() {
 			return expandRecurrence;
 		},
+		onOccurrenceKeysRemap: (remap) => a11y.remapOccurrenceKeys(remap),
 		get onItemsChange() {
 			return onItemsChange;
 		},
@@ -308,6 +311,25 @@
 		get onSelectionChange() {
 			return onSelectionChange;
 		}
+	});
+	const localizedInteractionStatus = $derived.by(() => {
+		const gesture = calendar.interaction.gesture;
+		if (!gesture) return '';
+		let gestureLabel = messages.eventCalendarSelectRangeGesture;
+		if (gesture.kind === 'move') gestureLabel = messages.eventCalendarMoveGesture;
+		if (gesture.kind === 'resize-start') {
+			gestureLabel = messages.eventCalendarResizeStartGesture;
+		}
+		if (gesture.kind === 'resize-end') gestureLabel = messages.eventCalendarResizeEndGesture;
+		const labels = [
+			gestureLabel,
+			gesture.isValid ? messages.eventCalendarValidTarget : messages.eventCalendarInvalidTarget,
+			messages.eventCalendarTimeZone(calendar.timeZone)
+		];
+		if (calendar.interaction.proposal?.occurrence?.isRecurring) {
+			labels.unshift(messages.eventCalendarRecurringEvent);
+		}
+		return labels.join('. ');
 	});
 
 	export function next(): void {
@@ -488,7 +510,6 @@
 
 	function consumeFuturePhaseProps(): void {
 		void scrollbars;
-		void getOccurrenceExceptionId;
 		void resourceHeader;
 	}
 
@@ -632,7 +653,7 @@
 	<span id={a11y.liveRegionId} class="sr-only" role="status" aria-live="polite" aria-atomic="true">
 		{a11y.announcement}
 	</span>
-	<span class="sr-only" data-event-calendar-interaction-status>{calendar.interaction.status}</span>
+	<span class="sr-only" data-event-calendar-interaction-status>{localizedInteractionStatus}</span>
 </div>
 
 {#snippet defaultDragPreview()}

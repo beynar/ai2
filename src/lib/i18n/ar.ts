@@ -180,5 +180,13 @@ export const ar: Messages = {
 	eventCalendarEventCount: (count: string | number) => `${count} حدث`,
 	eventCalendarDetails: (title: string | number) => `تفاصيل ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `عرض ${title}`,
-	eventCalendarViewAnnouncement: (view: string | number) => `تم اختيار عرض ${view}`
+	eventCalendarViewAnnouncement: (view: string | number) => `تم اختيار عرض ${view}`,
+	eventCalendarRecurringEvent: 'حدث متكرر',
+	eventCalendarTimeZone: (timeZone: string | number) => `المنطقة الزمنية: ${timeZone}`,
+	eventCalendarMoveGesture: 'نقل الحدث',
+	eventCalendarResizeStartGesture: 'تغيير بداية الحدث',
+	eventCalendarResizeEndGesture: 'تغيير نهاية الحدث',
+	eventCalendarSelectRangeGesture: 'تحديد نطاق في التقويم',
+	eventCalendarValidTarget: 'هدف صالح',
+	eventCalendarInvalidTarget: 'هدف غير صالح'
 };

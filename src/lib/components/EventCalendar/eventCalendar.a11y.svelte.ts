@@ -215,6 +215,30 @@ export class EventCalendarA11y {
 		});
 	}
 
+	remapOccurrenceKeys(remap: (key: string) => string): void {
+		if (typeof document === 'undefined') return;
+		const root = document
+			.getElementById(this.liveRegionId)
+			?.closest<HTMLElement>('[data-event-calendar-part="root"]');
+		if (!root) return;
+		const activeElement = document.activeElement;
+		if (!(activeElement instanceof HTMLElement) || !root.contains(activeElement)) return;
+		const item = activeElement.closest<HTMLElement>('[data-occurrence-key]');
+		const previousKey = item?.dataset.occurrenceKey;
+		if (!previousKey) return;
+		const nextKey = remap(previousKey);
+		if (nextKey === previousKey) return;
+		const version = ++this.restoreVersion;
+		queueMicrotask(() => {
+			if (version !== this.restoreVersion) return;
+			for (const candidate of root.querySelectorAll<HTMLElement>('[data-occurrence-key]')) {
+				if (candidate.dataset.occurrenceKey !== nextKey) continue;
+				(candidate.querySelector<HTMLElement>('button') ?? candidate).focus();
+				return;
+			}
+		});
+	}
+
 	destroy(): void {
 		this.lifecycleVersion += 1;
 		this.restoreVersion += 1;

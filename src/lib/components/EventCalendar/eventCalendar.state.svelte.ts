@@ -15,6 +15,7 @@ import {
 	getZonedDay,
 	isSupportedDateDomainError,
 	isDateOnly,
+	MAX_EVENT_CALENDAR_DAY,
 	normalizeLocale,
 	parseDateOnly,
 	reconcileAnchorDay,
@@ -24,6 +25,8 @@ import { EventCalendarError } from './eventCalendar.error.js';
 import { EventCalendarInteractionsController } from './eventCalendar.interactions.svelte.js';
 import {
 	createEventCalendarItemIndex,
+	createRecurringOccurrenceKey,
+	decodeRecurringOccurrenceKey,
 	type EventCalendarItemIndex
 } from './eventCalendar.items.js';
 import type {
@@ -32,6 +35,7 @@ import type {
 	EventCalendarCreateActivation,
 	EventCalendarDateOnly,
 	EventCalendarItem,
+	EventCalendarOccurrence,
 	EventCalendarInteractionBlockedInfo,
 	EventCalendarInteractions,
 	EventCalendarOffDaysConfig,
@@ -135,7 +139,12 @@ export type EventCalendarStateOptions<
 	onItemUpdate?: (proposal: EventCalendarProposedUpdate<TItemFields>) => EventCalendarUpdateResult;
 	canSelectSlot?: (slot: EventCalendarSlot) => boolean;
 	recurrenceEditScope: 'occurrence' | 'series' | 'disabled';
+	getOccurrenceExceptionId?: (
+		seriesItem: EventCalendarItem<TItemFields>,
+		occurrence: EventCalendarOccurrence<TItemFields>
+	) => string;
 	expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
+	onOccurrenceKeysRemap?: (remap: (key: string) => string) => void;
 	onItemsChange?: (
 		items: EventCalendarItem<TItemFields>[],
 		change: EventCalendarChange<TItemFields>
@@ -262,6 +271,74 @@ export class EventCalendarState<
 
 	validateCandidateItems(items: EventCalendarItem<TItemFields>[]): void {
 		validateItems(items, this.resources);
+		void this.getCandidateOccurrences(items);
+	}
+
+	getCandidateOccurrences(
+		items: EventCalendarItem<TItemFields>[]
+	): readonly EventCalendarOccurrence<TItemFields>[] {
+		const profile = this.dateProfile;
+		return createEventCalendarItemIndex({
+			items,
+			range: profile.activeRange,
+			displayTimeZone: this.timeZone,
+			profileKey: `${getItemProfileKey(profile)}:candidate`,
+			visibleDays: profile.visibleDays,
+			expandRecurrence: this.expandRecurrence
+		}).occurrences;
+	}
+
+	hasRecurringOccurrence(
+		items: EventCalendarItem<TItemFields>[],
+		key: string,
+		seriesId: string
+	): boolean {
+		const decoded = decodeRecurringOccurrenceKey(key);
+		if (!decoded || decoded.seriesId !== seriesId) return false;
+		const source = items.find((item) => item.id === seriesId);
+		if (!source || source.recurrence === undefined || source.recurringItemId !== undefined) {
+			return false;
+		}
+		if (
+			items.some(
+				(item) =>
+					item.recurringItemId === seriesId &&
+					item.originalStart !== undefined &&
+					createRecurringOccurrenceKey(seriesId, item.originalStart) === key
+			)
+		) {
+			return true;
+		}
+		if (
+			typeof decoded.originalStart === 'string' &&
+			decoded.originalStart > MAX_EVENT_CALENDAR_DAY
+		) {
+			return false;
+		}
+		const range =
+			typeof decoded.originalStart === 'string'
+				? {
+						start: startOfZonedDay(decoded.originalStart, this.timeZone),
+						end: startOfZonedDay(addCivilDays(decoded.originalStart, 1), this.timeZone)
+					}
+				: {
+						start: new Date(decoded.originalStart),
+						end: new Date(decoded.originalStart.getTime() + 1)
+					};
+		return (
+			createEventCalendarItemIndex({
+				items,
+				range,
+				displayTimeZone: this.timeZone,
+				profileKey: `selection:${key}`,
+				expandRecurrence: this.expandRecurrence
+			}).getOccurrence(key) !== null
+		);
+	}
+
+	isSelectionInRecurringSeries(seriesId: string): boolean {
+		if (this.selection.kind !== 'item') return false;
+		return decodeRecurringOccurrenceKey(this.selection.itemKey)?.seriesId === seriesId;
 	}
 
 	addItem(item: EventCalendarItem<TItemFields>): void {
@@ -361,6 +438,70 @@ export class EventCalendarState<
 
 	clearSelection(): void {
 		this.select(EMPTY_EVENT_CALENDAR_SELECTION);
+	}
+
+	applyOccurrenceKeyRemap(remap: (key: string) => string): {
+		previousSelection: EventCalendarSelection;
+		committedSelection: EventCalendarSelection;
+	} | null {
+		this.onOccurrenceKeysRemap?.(remap);
+		if (this.selection.kind !== 'item') return null;
+		const itemKey = remap(this.selection.itemKey);
+		if (itemKey === this.selection.itemKey) return null;
+		const previousSelection = this.selection;
+		const selection: EventCalendarSelection = { kind: 'item', itemKey, slot: null };
+		this.selection = selection;
+		return { previousSelection, committedSelection: this.selection };
+	}
+
+	clearSelectionForCollection(): {
+		previousSelection: EventCalendarSelection;
+		committedSelection: EventCalendarSelection;
+	} | null {
+		if (this.selection.kind === null) return null;
+		const previousSelection = this.selection;
+		this.selection = EMPTY_EVENT_CALENDAR_SELECTION;
+		return { previousSelection, committedSelection: this.selection };
+	}
+
+	clearMissingRecurringSelection(
+		items: EventCalendarItem<TItemFields>[],
+		seriesId: string
+	): {
+		previousSelection: EventCalendarSelection;
+		committedSelection: EventCalendarSelection;
+	} | null {
+		if (
+			this.selection.kind !== 'item' ||
+			!this.isSelectionInRecurringSeries(seriesId) ||
+			this.hasRecurringOccurrence(items, this.selection.itemKey, seriesId)
+		) {
+			return null;
+		}
+		return this.clearSelectionForCollection();
+	}
+
+	restoreOccurrenceKeyRemap(
+		selectionTransaction: {
+			previousSelection: EventCalendarSelection;
+			committedSelection: EventCalendarSelection;
+		} | null,
+		remap?: (key: string) => string
+	): void {
+		if (selectionTransaction && this.selection !== selectionTransaction.committedSelection) {
+			throw new EventCalendarError(
+				'stale-transaction',
+				'The EventCalendar selection changed after its recurrence transaction.'
+			);
+		}
+		if (remap) this.onOccurrenceKeysRemap?.(remap);
+		if (!selectionTransaction) return;
+		this.selection = selectionTransaction.previousSelection;
+		this.onSelectionChange?.(selectionTransaction.previousSelection);
+	}
+
+	notifySelectionChange(selection: EventCalendarSelection): void {
+		this.onSelectionChange?.(selection);
 	}
 
 	getVisibleRange(): EventCalendarRange {
@@ -547,6 +688,7 @@ export class EventCalendarState<
 		void this.onItemUpdate;
 		void this.canSelectSlot;
 		void this.recurrenceEditScope;
+		void this.getOccurrenceExceptionId;
 		void this.businessHours;
 		void this.offDays;
 		void this.expandRecurrence;
