@@ -1,32 +1,5 @@
 <script lang="ts" module>
-	import type { Colors as ModuleColors } from '$lib/types/theme.js';
-	import type {
-		EventCalendarOccurrence as ModuleOccurrence,
-		EventCalendarSegment as ModuleSegment
-	} from './eventCalendar.types.js';
-
-	const SEMANTIC_COLORS: ReadonlySet<string> = new Set<ModuleColors>([
-		'primary',
-		'secondary',
-		'danger',
-		'success',
-		'warning',
-		'info',
-		'neutral'
-	]);
-
-	function isSemanticColor(value: string | undefined): value is ModuleColors {
-		return value !== undefined && SEMANTIC_COLORS.has(value);
-	}
-
-	function getItemColor<TItemFields extends object>(
-		occurrence: ModuleOccurrence<TItemFields>,
-		fallback: ModuleColors
-	): string {
-		const itemColor = occurrence.item.color;
-		if (!itemColor) return `var(--color-${fallback})`;
-		return isSemanticColor(itemColor) ? `var(--color-${itemColor})` : itemColor;
-	}
+	import type { EventCalendarSegment as ModuleSegment } from './eventCalendar.types.js';
 
 	function getPlacementSegment<TItemFields extends object>(
 		segments: readonly ModuleSegment<TItemFields>[]
@@ -49,10 +22,11 @@
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import EventCalendarMonthOverflow from './EventCalendarMonthOverflow.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
+	import { getEventCalendarItemColor } from './eventCalendar.color.js';
 	import {
 		addCivilDays,
 		getCachedDateTimeFormatter,
-		getCivilWeekday,
+		isEventCalendarOffDay,
 		getWeekNumber,
 		startOfZonedDay
 	} from './eventCalendar.date.js';
@@ -174,13 +148,7 @@
 	);
 
 	function isOffDay(day: EventCalendarDateOnly): boolean {
-		if (offDays === false) return false;
-		if (offDays === true) return calendar.weekendDays.includes(getCivilWeekday(day));
-		return (
-			(offDays.weekdays?.includes(getCivilWeekday(day)) ?? false) ||
-			(offDays.dates?.includes(day) ?? false) ||
-			(offDays.isOffDay?.(day) ?? false)
-		);
+		return isEventCalendarOffDay(day, offDays, calendar.weekendDays);
 	}
 
 	function getDayLabel(day: EventCalendarDateOnly): string {
@@ -343,7 +311,7 @@
 						data-event-calendar-background
 						data-occurrence-key={segment.occurrence.key}
 						class="pointer-events-none absolute inset-x-0 bottom-0 top-7 bg-[var(--event-calendar-item-color)] opacity-20"
-						style:--event-calendar-item-color={getItemColor(segment.occurrence, color)}
+						style:--event-calendar-item-color={getEventCalendarItemColor(segment.occurrence, color)}
 					></div>
 				{/each}
 

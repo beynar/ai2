@@ -9,6 +9,7 @@
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
+	import EventCalendarTimeGrid from './EventCalendarTimeGrid.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarEmptyPayload,
@@ -19,14 +20,18 @@
 		EventCalendarOverflowPayload,
 		EventCalendarSnapshot,
 		EventCalendarViewPayload,
-		EventCalendarDayHeaderPayload
+		EventCalendarDayHeaderPayload,
+		EventCalendarTimeGutterPayload,
+		EventCalendarAllDayPayload,
+		EventCalendarNowIndicatorPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
 	import type {
 		EventCalendarDateOnly,
 		EventCalendarOccurrence,
-		EventCalendarOffDaysConfig
+		EventCalendarOffDaysConfig,
+		EventCalendarSlot
 	} from './eventCalendar.types.js';
 
 	let {
@@ -40,13 +45,18 @@
 		loading,
 		disabled,
 		scrollMode,
+		scrollbars,
 		classes,
+		nowIndicator,
 		showWeekNumbers,
 		maxItemsPerCell,
 		offDays,
 		showItemTooltip,
 		monthCell,
 		dayHeader,
+		timeGutter,
+		allDay,
+		nowIndicatorContent,
 		item,
 		itemTooltip,
 		overflow,
@@ -68,13 +78,18 @@
 		loading: boolean;
 		disabled: boolean;
 		scrollMode: 'contained' | 'page';
+		scrollbars: 'custom' | 'native';
 		classes: EventCalendarClasses;
+		nowIndicator: boolean;
 		showWeekNumbers: boolean;
 		maxItemsPerCell: number | 'auto';
 		offDays: boolean | EventCalendarOffDaysConfig;
 		showItemTooltip: boolean;
 		monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
 		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
+		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
+		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
+		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
@@ -86,21 +101,19 @@
 			occurrence: EventCalendarOccurrence<TItemFields>,
 			event: MouseEvent
 		) => void;
-		onSlotClick?: (
-			slot: {
-				view: 'month';
-				allDay: true;
-				start: EventCalendarDateOnly;
-				end: EventCalendarDateOnly;
-			},
-			event: MouseEvent
-		) => void;
+		onSlotClick?: (slot: EventCalendarSlot, event: MouseEvent) => void;
 		onMoreClick?: (
 			day: EventCalendarDateOnly,
 			occurrences: readonly EventCalendarOccurrence<TItemFields>[],
 			event: MouseEvent
 		) => false | void;
 	} = $props();
+
+	let timeGrid = $state<{ scrollToTime(dateOrMinutes: Date | number): boolean } | null>(null);
+
+	export function scrollToTime(dateOrMinutes: Date | number): boolean {
+		return timeGrid?.scrollToTime(dateOrMinutes) ?? false;
+	}
 
 	const viewPayload = $derived<EventCalendarViewPayload>({
 		view: snapshot.view,
@@ -175,6 +188,34 @@
 					{onItemDoubleClick}
 					{onSlotClick}
 					{onMoreClick}
+				/>
+			{:else if snapshot.view === 'week' || snapshot.view === 'day' || snapshot.view === 'days'}
+				<EventCalendarTimeGrid
+					bind:this={timeGrid}
+					view={snapshot.view}
+					{calendar}
+					{snapshot}
+					{a11y}
+					{messages}
+					{direction}
+					{density}
+					{color}
+					{classes}
+					{disabled}
+					{offDays}
+					{scrollMode}
+					{scrollbars}
+					{nowIndicator}
+					{showItemTooltip}
+					{dayHeader}
+					{timeGutter}
+					{allDay}
+					{nowIndicatorContent}
+					{item}
+					{itemTooltip}
+					{onItemClick}
+					{onItemDoubleClick}
+					{onSlotClick}
 				/>
 			{/if}
 		</div>

@@ -141,17 +141,23 @@ const dayNumber = createEventCalendarPart(
 );
 const barLayer = createEventCalendarPart('pointer-events-none absolute inset-0 min-w-0');
 
-const timeGrid = createEventCalendarPart('relative min-w-0');
-const timeHeader = createEventCalendarPart(
-	'sticky top-[var(--event-calendar-sticky-offset)] z-20 grid bg-surface-raised'
+const timeGrid = createEventCalendarPart('relative min-h-full min-w-0');
+const timeHeader = createEventCalendarPart('grid bg-surface-raised');
+const timeGutter = createEventCalendarPart(
+	'relative w-[var(--event-calendar-time-gutter-width)] shrink-0 border-e border-neutral-muted bg-surface'
 );
-const timeGutter = createEventCalendarPart('w-[var(--event-calendar-time-gutter-width)] shrink-0');
-const timeLabel = createEventCalendarPart('text-neutral/55 tabular-nums');
-const allDayRow = createEventCalendarPart('grid border-b border-neutral-muted');
-const allDayCell = createEventCalendarPart('relative min-w-0');
-const dayColumn = createEventCalendarPart('relative min-w-[var(--event-calendar-day-min-width)]');
+const timeLabel = createEventCalendarPart(
+	'block whitespace-nowrap pe-2 text-end text-xs text-neutral/75 tabular-nums'
+);
+const allDayRow = createEventCalendarPart('relative grid border-b border-neutral-muted bg-surface');
+const allDayCell = createEventCalendarPart(
+	'relative min-w-0 border-e border-neutral-muted outline-none focus-visible:z-20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+);
+const dayColumn = createEventCalendarPart(
+	'relative min-w-[var(--event-calendar-day-min-width)] border-e border-neutral-muted'
+);
 const timeSlot = createEventCalendarPart(
-	'h-[var(--event-calendar-slot-height)] border-b border-neutral-muted/60'
+	'h-[var(--event-calendar-slot-height)] w-full bg-transparent outline-none focus-visible:z-20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
 );
 const nowIndicator = createEventCalendarPart('pointer-events-none absolute z-30 h-px bg-danger');
 

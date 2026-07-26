@@ -1,0 +1,600 @@
+<script
+	lang="ts"
+	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
+>
+	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
+	import Slot from '$lib/components/Slot/Slot.svelte';
+	import type { Messages } from '$lib/i18n/en.js';
+	import type { Colors, Density } from '$lib/types/theme.js';
+	import { tick, type Snippet } from 'svelte';
+	import EventCalendarTimeGridAllDay from './EventCalendarTimeGridAllDay.svelte';
+	import EventCalendarTimeGridDayColumn from './EventCalendarTimeGridDayColumn.svelte';
+	import type { EventCalendarA11y, EventCalendarTimeTarget } from './eventCalendar.a11y.svelte.js';
+	import {
+		addCivilDays,
+		assertValidInstant,
+		getCachedDateTimeFormatter,
+		getZonedDay,
+		isEventCalendarOffDay,
+		resolveZonedMinutesOnDay,
+		startOfZonedDay
+	} from './eventCalendar.date.js';
+	import { packEventCalendarLanes } from './eventCalendar.layout.js';
+	import { EventCalendarError } from './eventCalendar.error.js';
+	import type {
+		EventCalendarAllDayPayload,
+		EventCalendarDayHeaderPayload,
+		EventCalendarItemPayload,
+		EventCalendarItemTooltipPayload,
+		EventCalendarNowIndicatorPayload,
+		EventCalendarSnapshot,
+		EventCalendarTimeGutterPayload
+	} from './eventCalendar.props.js';
+	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
+	import type { EventCalendarClasses } from './eventCalendar.theme.js';
+	import {
+		createEventCalendarTimeGridDayGeometry,
+		EVENT_CALENDAR_MINUTE_MS,
+		getEventCalendarElapsedMinutes,
+		type EventCalendarTimeGridDayGeometry,
+		type EventCalendarTimeSlot
+	} from './eventCalendar.timeGrid.js';
+	import type {
+		EventCalendarDateOnly,
+		EventCalendarOffDaysConfig,
+		EventCalendarOccurrence,
+		EventCalendarSegment,
+		EventCalendarSlot
+	} from './eventCalendar.types.js';
+
+	let {
+		view,
+		calendar,
+		snapshot,
+		a11y,
+		messages,
+		direction,
+		density,
+		color,
+		classes,
+		disabled,
+		offDays,
+		scrollMode,
+		scrollbars,
+		nowIndicator,
+		showItemTooltip,
+		dayHeader,
+		timeGutter,
+		allDay,
+		nowIndicatorContent,
+		item,
+		itemTooltip,
+		onItemClick,
+		onItemDoubleClick,
+		onSlotClick
+	}: {
+		view: 'week' | 'day' | 'days';
+		calendar: EventCalendarState<TItemFields, TResourceFields>;
+		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
+		a11y: EventCalendarA11y;
+		messages: Messages;
+		direction: 'ltr' | 'rtl';
+		density: Density;
+		color: Colors;
+		classes: EventCalendarClasses;
+		disabled: boolean;
+		offDays: boolean | EventCalendarOffDaysConfig;
+		scrollMode: 'contained' | 'page';
+		scrollbars: 'custom' | 'native';
+		nowIndicator: boolean;
+		showItemTooltip: boolean;
+		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
+		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
+		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
+		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
+		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
+		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
+		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
+		onItemDoubleClick?: (
+			occurrence: EventCalendarOccurrence<TItemFields>,
+			event: MouseEvent
+		) => void;
+		onSlotClick?: (slot: EventCalendarSlot, event: MouseEvent) => void;
+	} = $props();
+
+	let rootElement = $state<HTMLDivElement | null>(null);
+	let stickyHeader = $state<HTMLDivElement | null>(null);
+	let scrollViewport = $state<HTMLDivElement | null>(null);
+	let timeBody = $state<HTMLDivElement | null>(null);
+	let initialScrollVersion = 0;
+	const profile = $derived(calendar.dateProfile);
+	const itemIndex = $derived(calendar.itemIndex);
+	const visibleDays = $derived(profile.visibleDays);
+	const offDaysByDay = $derived(
+		new Map(
+			visibleDays.map((day) => [day, isEventCalendarOffDay(day, offDays, calendar.weekendDays)])
+		)
+	);
+	const todayDay = $derived(
+		calendar.todayInstant ? getZonedDay(calendar.todayInstant, calendar.timeZone) : null
+	);
+	const dayStartMinutes = $derived(calendar.dayStartHour * 60);
+	const dayEndMinutes = $derived(calendar.dayEndHour * 60);
+	const selectionKey = $derived(
+		snapshot.selection.kind === 'item' ? snapshot.selection.itemKey : null
+	);
+	const dayFormatter = $derived(
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
+			weekday: 'short',
+			month: 'short',
+			day: 'numeric'
+		})
+	);
+	const longDayFormatter = $derived(
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		})
+	);
+	const timeFormatter = $derived(
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
+			hour: 'numeric',
+			minute: '2-digit'
+		})
+	);
+	const accessibleTimeFormatter = $derived(
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
+			hour: 'numeric',
+			minute: '2-digit',
+			timeZoneName: 'shortOffset'
+		})
+	);
+
+	const dayGeometries = $derived.by(() =>
+		visibleDays.map((day, column): EventCalendarTimeGridDayGeometry<TItemFields> =>
+			createEventCalendarTimeGridDayGeometry({
+				day,
+				column,
+				timeZone: calendar.timeZone,
+				dayStartMinutes,
+				dayEndMinutes,
+				interval: calendar.interval,
+				slotDuration: calendar.slotDuration,
+				snapDuration: calendar.snapDuration,
+				businessHours: calendar.businessHours,
+				bucket: itemIndex.segmentsByDay.get(day)
+			})
+		)
+	);
+	const maximumMinuteCount = $derived(
+		Math.max(...dayGeometries.map((geometry) => geometry.minuteCount), 0)
+	);
+	const allDaySegments = $derived(
+		visibleDays.flatMap((day) =>
+			(itemIndex.segmentsByDay.get(day)?.allDay ?? []).filter(
+				(segment) => segment.occurrence.item.display !== 'background'
+			)
+		)
+	);
+	const allDayBackgroundSegments = $derived(
+		new Map(
+			visibleDays.map((day) => [
+				day,
+				(itemIndex.segmentsByDay.get(day)?.allDay ?? []).filter(
+					(segment) => segment.occurrence.item.display === 'background'
+				)
+			])
+		)
+	);
+	const allDayLayout = $derived(packEventCalendarLanes(allDaySegments, visibleDays));
+	const allDayHeight = $derived(
+		`calc(${Math.max(1, allDayLayout.laneCount)} * var(--event-calendar-item-min-height) + 0.5rem)`
+	);
+	const gridTemplateColumns = $derived(
+		`var(--event-calendar-time-gutter-width) repeat(${visibleDays.length}, minmax(var(--event-calendar-day-min-width), 1fr))`
+	);
+	const gridMinimumWidth = $derived(
+		`calc(var(--event-calendar-time-gutter-width) + ${visibleDays.length} * var(--event-calendar-day-min-width))`
+	);
+	const timeTargets = $derived.by(() => {
+		if (disabled) return [];
+		const targets: EventCalendarTimeTarget[] = [];
+		for (const geometry of dayGeometries) {
+			let verticalOrder = 0;
+			const pushTarget = (target: Omit<EventCalendarTimeTarget, 'verticalOrder'>): void => {
+				targets.push({ ...target, verticalOrder });
+				verticalOrder += 1;
+			};
+			pushTarget({
+				key: `day-header:${geometry.day}`,
+				day: geometry.day,
+				column: geometry.column,
+				row: 0,
+				kind: 'day-header'
+			});
+			pushTarget({
+				key: `all-day:${geometry.day}`,
+				day: geometry.day,
+				column: geometry.column,
+				row: 1,
+				kind: 'all-day'
+			});
+			for (const placement of allDayLayout.placements
+				.filter((candidate) => candidate.startIndex === geometry.column)
+				.sort((left, right) => left.lane - right.lane || left.key.localeCompare(right.key))) {
+				pushTarget({
+					key: `all-day-item:${placement.key}`,
+					day: geometry.day,
+					column: geometry.column,
+					row: 1,
+					kind: 'item'
+				});
+			}
+			const timedTargets: Omit<EventCalendarTimeTarget, 'verticalOrder'>[] = [
+				...geometry.slots.map((slot) => ({
+					key: slot.key,
+					day: geometry.day,
+					column: geometry.column,
+					row: slot.row,
+					kind: 'time-slot' as const
+				})),
+				...geometry.timedPlacements.map((placement) => ({
+					key: `time-item:${placement.segment.key}`,
+					day: geometry.day,
+					column: geometry.column,
+					row:
+						2 +
+						getEventCalendarElapsedMinutes(geometry.windowStart, placement.visualStart) /
+							calendar.slotDuration,
+					kind: 'item' as const
+				}))
+			].sort((left, right) => {
+				if (left.row !== right.row) return left.row - right.row;
+				if (left.kind !== right.kind) return left.kind === 'time-slot' ? -1 : 1;
+				return left.key.localeCompare(right.key);
+			});
+			for (const target of timedTargets) {
+				pushTarget(target);
+			}
+		}
+		return targets;
+	});
+	const allDayPayload = $derived<EventCalendarAllDayPayload<TItemFields>>({
+		visibleDays,
+		segments: allDaySegments,
+		defaultContent: defaultAllDay
+	});
+	const nowPayload = $derived<EventCalendarNowIndicatorPayload | null>(
+		nowIndicator && calendar.nowInstant
+			? { now: calendar.nowInstant, defaultContent: defaultNowIndicator }
+			: null
+	);
+	const currentViewLabel = $derived.by(() => {
+		if (view === 'week') return messages.eventCalendarWeekView;
+		if (view === 'day') return messages.eventCalendarDayView;
+		return messages.eventCalendarDaysView;
+	});
+
+	$effect(() => {
+		a11y.configureTimeGrid({
+			targets: timeTargets,
+			direction,
+			onPage: (pageDirection) => {
+				const previousDate = calendar.date.getTime();
+				if (pageDirection < 0) calendar.previous();
+				else calendar.next();
+				return previousDate !== calendar.date.getTime();
+			}
+		});
+	});
+
+	$effect(() => {
+		if (!calendar.isMounted) return;
+		void profile.currentRange.start.getTime();
+		void profile.currentRange.end.getTime();
+		void scrollMode;
+		void scrollbars;
+		const scrollHour = calendar.scrollToHour;
+		const version = ++initialScrollVersion;
+		void tick().then(() => {
+			if (version !== initialScrollVersion) return;
+			scrollToTime(scrollHour * 60);
+		});
+		return () => {
+			initialScrollVersion += 1;
+		};
+	});
+
+	export function scrollToTime(dateOrMinutes: Date | number): boolean {
+		if (!rootElement || !timeBody) return false;
+		let geometry: EventCalendarTimeGridDayGeometry<TItemFields> | undefined;
+		let instant: Date;
+		if (dateOrMinutes instanceof Date) {
+			assertValidInstant(dateOrMinutes, 'dateOrMinutes');
+			geometry = dayGeometries.find(
+				(candidate) => candidate.day === getZonedDay(dateOrMinutes, calendar.timeZone)
+			);
+			instant = new Date(dateOrMinutes);
+		} else {
+			if (!Number.isInteger(dateOrMinutes) || dateOrMinutes < 0 || dateOrMinutes >= 24 * 60) {
+				throw new EventCalendarError(
+					'invalid-prop',
+					'scrollToTime minute values must be whole minutes inside [0, 1440).',
+					{ dateOrMinutes }
+				);
+			}
+			geometry = dayGeometries[0];
+			if (!geometry) return false;
+			instant = resolveZonedMinutesOnDay(geometry.day, dateOrMinutes, calendar.timeZone);
+		}
+		if (!geometry || instant < geometry.windowStart || instant >= geometry.windowEnd) return false;
+
+		const measuredSlot = rootElement.querySelector<HTMLElement>(
+			'[data-event-calendar-part="time-slot"]'
+		);
+		const measuredStart = measuredSlot?.dataset.slotStart;
+		const measuredEnd = measuredSlot?.dataset.slotEnd;
+		const measuredMinutes =
+			measuredStart && measuredEnd
+				? (Date.parse(measuredEnd) - Date.parse(measuredStart)) / EVENT_CALENDAR_MINUTE_MS
+				: 0;
+		const slotHeight = measuredSlot
+			? (measuredSlot.getBoundingClientRect().height * calendar.interval) / measuredMinutes
+			: Number.NaN;
+		if (!Number.isFinite(slotHeight) || slotHeight <= 0) return false;
+		const stickyTop = stickyHeader ? Number.parseFloat(getComputedStyle(stickyHeader).top) : 0;
+		const stickyObstruction =
+			(stickyHeader?.offsetHeight ?? 0) + (Number.isFinite(stickyTop) ? stickyTop : 0);
+		const targetOffset =
+			timeBody.offsetTop +
+			(getEventCalendarElapsedMinutes(geometry.windowStart, instant) / calendar.interval) *
+				slotHeight -
+			stickyObstruction;
+		if (scrollMode === 'contained') {
+			if (!scrollViewport) return false;
+			const maximumScroll = scrollViewport.scrollHeight - scrollViewport.clientHeight;
+			if (maximumScroll <= 0) return false;
+			const scrollTop = Math.min(maximumScroll, Math.max(0, targetOffset));
+			scrollViewport.scrollTo({ top: scrollTop, behavior: 'auto' });
+			return Math.abs(scrollViewport.scrollTop - scrollTop) < 1;
+		}
+		const bodyTop = timeBody.getBoundingClientRect().top + window.scrollY;
+		const documentScroller = document.scrollingElement;
+		if (!documentScroller) return false;
+		const maximumScroll = documentScroller.scrollHeight - documentScroller.clientHeight;
+		if (maximumScroll <= 0) return false;
+		const targetTop = bodyTop + targetOffset - timeBody.offsetTop;
+		const scrollTop = Math.min(maximumScroll, Math.max(0, targetTop));
+		window.scrollTo({ top: scrollTop, behavior: 'auto' });
+		return Math.abs(documentScroller.scrollTop - scrollTop) < 1;
+	}
+
+	function registerTimeTarget(targetKey: string) {
+		return (node: HTMLElement) => a11y.registerTimeTarget(targetKey, node);
+	}
+
+	function handleTargetKeydown(event: KeyboardEvent, targetKey: string, activate = false): void {
+		if (a11y.handleTimeTargetKeydown(event, targetKey)) return;
+		if (!activate || (event.key !== 'Enter' && event.key !== ' ')) return;
+		event.preventDefault();
+		(event.currentTarget as HTMLElement).click();
+	}
+
+	function handleAllDayClick(day: EventCalendarDateOnly, event: MouseEvent): void {
+		if (disabled) return;
+		(event.currentTarget as HTMLElement).focus();
+		const slot = {
+			view,
+			allDay: true as const,
+			start: day,
+			end: addCivilDays(day, 1)
+		};
+		onSlotClick?.(slot, event);
+		if (event.defaultPrevented) return;
+		calendar.select({ kind: 'slot', itemKey: null, slot });
+	}
+
+	function handleTimedSlotClick(slot: EventCalendarTimeSlot, event: MouseEvent): void {
+		if (disabled) return;
+		(event.currentTarget as HTMLElement).focus();
+		const selectionSlot = { view, allDay: false as const, start: slot.start, end: slot.end };
+		onSlotClick?.(selectionSlot, event);
+		if (event.defaultPrevented) return;
+		calendar.select({ kind: 'slot', itemKey: null, slot: selectionSlot });
+	}
+
+	function handleItemActivate(segment: EventCalendarSegment<TItemFields>, event: MouseEvent): void {
+		onItemClick?.(segment.occurrence, event);
+		if (event.defaultPrevented) return;
+		calendar.select({ kind: 'item', itemKey: segment.occurrence.key, slot: null });
+	}
+</script>
+
+{#snippet timeGridContent()}
+	<div
+		bind:this={rootElement}
+		role="group"
+		aria-label={`${currentViewLabel}: ${profile.title}`}
+		data-event-calendar-part="time-grid"
+		data-view={view}
+		data-time-zone={calendar.timeZone}
+		data-day-start-minutes={dayStartMinutes}
+		data-day-end-minutes={dayEndMinutes}
+		data-interval={calendar.interval}
+		data-slot-duration={calendar.slotDuration}
+		data-snap-duration={calendar.snapDuration}
+		class={classes.timeGrid({ density, color, view, disabled })}
+		style:min-width={gridMinimumWidth}
+	>
+		<div
+			bind:this={stickyHeader}
+			class="sticky top-[var(--event-calendar-sticky-offset)] z-20 bg-surface"
+		>
+			<div
+				data-event-calendar-part="time-header"
+				class={classes.timeHeader({ density, color, view, disabled })}
+				style:grid-template-columns={gridTemplateColumns}
+			>
+				<div aria-hidden="true" class={classes.timeGutter()}></div>
+				{#each dayGeometries as geometry (geometry.day)}
+					{@const dayInstant = startOfZonedDay(geometry.day, calendar.timeZone)}
+					{@const isOff = offDaysByDay.get(geometry.day) ?? false}
+					{@const defaultLabel = dayFormatter.format(dayInstant)}
+					{@const targetKey = `day-header:${geometry.day}`}
+					{@const headerPayload = {
+						day: geometry.day,
+						view,
+						isToday: geometry.day === todayDay,
+						defaultLabel,
+						defaultContent: defaultDayHeader
+					} satisfies EventCalendarDayHeaderPayload}
+					<button
+						type="button"
+						tabindex={disabled ? -1 : a11y.getTimeTargetTabIndex(targetKey)}
+						aria-label={longDayFormatter.format(dayInstant)}
+						{disabled}
+						data-event-calendar-part="day-header"
+						data-day={geometry.day}
+						data-today={geometry.day === todayDay || undefined}
+						data-off-day={isOff || undefined}
+						class={classes.dayHeader({
+							density,
+							color,
+							view,
+							today: geometry.day === todayDay,
+							offDay: isOff,
+							disabled
+						})}
+						onfocus={() => a11y.handleTimeTargetFocus(targetKey)}
+						onclick={(event) => handleAllDayClick(geometry.day, event)}
+						onkeydown={(event) => handleTargetKeydown(event, targetKey, true)}
+						{@attach disabled ? null : registerTimeTarget(targetKey)}
+					>
+						<Slot render={dayHeader ?? defaultDayHeader} payload={headerPayload} />
+					</button>
+
+					{#snippet defaultDayHeader()}
+						<span>{defaultLabel}</span>
+					{/snippet}
+				{/each}
+			</div>
+
+			<EventCalendarTimeGridAllDay
+				{view}
+				{calendar}
+				{snapshot}
+				{a11y}
+				{dayGeometries}
+				{allDayBackgroundSegments}
+				{allDayLayout}
+				{allDayHeight}
+				{gridTemplateColumns}
+				{allDayPayload}
+				{offDaysByDay}
+				messagesAllDay={messages.eventCalendarAllDay}
+				{longDayFormatter}
+				{density}
+				{color}
+				{classes}
+				{disabled}
+				{showItemTooltip}
+				{selectionKey}
+				{allDay}
+				{item}
+				{itemTooltip}
+				{registerTimeTarget}
+				{handleTargetKeydown}
+				{handleAllDayClick}
+				{handleItemActivate}
+				{onItemDoubleClick}
+			/>
+		</div>
+
+		<div
+			bind:this={timeBody}
+			class="relative grid"
+			style:grid-template-columns={gridTemplateColumns}
+			style:height={`calc(${maximumMinuteCount / calendar.interval} * var(--event-calendar-slot-height))`}
+		>
+			<div
+				data-event-calendar-part="time-gutter"
+				class={classes.timeGutter({ density, color, view })}
+			>
+				{#each dayGeometries[0]?.intervalInstants ?? [] as instant (instant.getTime())}
+					{@const defaultLabel = timeFormatter.format(instant)}
+					{@const gutterPayload = {
+						instant,
+						defaultLabel
+					} satisfies EventCalendarTimeGutterPayload}
+					<time
+						datetime={instant.toISOString()}
+						data-event-calendar-part="time-label"
+						class={classes.timeLabel({ density, color, view })}
+						style:height="var(--event-calendar-slot-height)"
+					>
+						<Slot render={timeGutter ?? defaultTimeGutter} payload={gutterPayload} />
+					</time>
+
+					{#snippet defaultTimeGutter()}
+						{defaultLabel}
+					{/snippet}
+				{/each}
+			</div>
+
+			{#each dayGeometries as geometry (geometry.day)}
+				<EventCalendarTimeGridDayColumn
+					{view}
+					{calendar}
+					{snapshot}
+					{a11y}
+					{geometry}
+					{density}
+					{color}
+					{classes}
+					{disabled}
+					isOffDay={offDaysByDay.get(geometry.day) ?? false}
+					{showItemTooltip}
+					{selectionKey}
+					{longDayFormatter}
+					{accessibleTimeFormatter}
+					{nowPayload}
+					{nowIndicatorContent}
+					{item}
+					{itemTooltip}
+					{registerTimeTarget}
+					{handleTargetKeydown}
+					{handleTimedSlotClick}
+					{handleItemActivate}
+					{onItemDoubleClick}
+				/>
+			{/each}
+		</div>
+	</div>
+{/snippet}
+
+{#if scrollMode === 'contained' && scrollbars === 'custom'}
+	<ScrollArea bind:viewportRef={scrollViewport} class="h-full min-h-0" ariaLabel={profile.title}>
+		{@render timeGridContent()}
+	</ScrollArea>
+{:else}
+	<div
+		bind:this={scrollViewport}
+		class={scrollMode === 'contained'
+			? 'h-full min-h-0 overflow-auto'
+			: 'overflow-x-auto overflow-y-visible'}
+	>
+		{@render timeGridContent()}
+	</div>
+{/if}
+
+{#snippet defaultAllDay()}
+	<span class="px-1 text-xs text-neutral/70">{messages.eventCalendarAllDay}</span>
+{/snippet}
+
+{#snippet defaultNowIndicator()}
+	<span class="sr-only">
+		{calendar.nowInstant ? accessibleTimeFormatter.format(calendar.nowInstant) : ''}
+	</span>
+{/snippet}

@@ -134,6 +134,9 @@
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
 	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
 	const classes = $derived(useEventCalendarTheme(theme));
+	let contentComponent = $state<{
+		scrollToTime(dateOrMinutes: Date | number): boolean;
+	} | null>(null);
 
 	const calendar = new EventCalendarState<TItemFields, TResourceFields>({
 		get items() {
@@ -282,13 +285,8 @@
 	}
 
 	export function scrollToTime(dateOrMinutes: Date | number): boolean {
-		void dateOrMinutes;
 		if (calendar.view === 'month' || calendar.view === 'agenda') return false;
-		throw new EventCalendarError(
-			'missing-target',
-			'scrollToTime is unavailable until the active time-grid surface is mounted.',
-			{ method: 'scrollToTime', phase: 2, view: calendar.view }
-		);
+		return contentComponent?.scrollToTime(dateOrMinutes) ?? false;
 	}
 
 	export function getVisibleRange(): EventCalendarRange {
@@ -451,12 +449,9 @@
 		void canSelectSlot;
 		void recurrenceEditScope;
 		void getOccurrenceExceptionId;
-		void timeGutter;
-		void allDay;
 		void agendaItem;
 		void agendaDetails;
 		void resourceHeader;
-		void nowIndicatorContent;
 		void dragPreview;
 		void onItemsChange;
 		void onSlotSelect;
@@ -505,6 +500,7 @@
 		/>
 	{/if}
 	<EventCalendarContent
+		bind:this={contentComponent}
 		{calendar}
 		{snapshot}
 		{a11y}
@@ -515,13 +511,18 @@
 		{loading}
 		{disabled}
 		{scrollMode}
+		{scrollbars}
 		{classes}
+		{nowIndicator}
 		{showWeekNumbers}
 		{maxItemsPerCell}
 		{offDays}
 		{showItemTooltip}
 		{monthCell}
 		{dayHeader}
+		{timeGutter}
+		{allDay}
+		{nowIndicatorContent}
 		{item}
 		{itemTooltip}
 		{overflow}

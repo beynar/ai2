@@ -176,6 +176,7 @@ export const ar: Messages = {
 	eventCalendarResourceView: 'الموارد',
 	eventCalendarMore: (count: string | number) => `+${count} إضافية`,
 	eventCalendarWeekNumber: (week: string | number) => `الأسبوع ${week}`,
+	eventCalendarAllDay: 'طوال اليوم',
 	eventCalendarRangeAnnouncement: (title: string | number) => `عرض ${title}`,
 	eventCalendarViewAnnouncement: (view: string | number) => `تم اختيار عرض ${view}`
 };

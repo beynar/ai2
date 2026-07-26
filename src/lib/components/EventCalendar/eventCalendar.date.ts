@@ -2,6 +2,7 @@ import { TZDateMini, tzOffset, tzScan } from '@date-fns/tz';
 import { EventCalendarError } from './eventCalendar.error.js';
 import type {
 	EventCalendarDateOnly,
+	EventCalendarOffDaysConfig,
 	EventCalendarRange,
 	EventCalendarRangeChangeInfo,
 	EventCalendarView,
@@ -175,6 +176,21 @@ export function isDateOnly(value: unknown): value is EventCalendarDateOnly {
 	}
 }
 
+export function isEventCalendarOffDay(
+	day: EventCalendarDateOnly,
+	offDays: boolean | EventCalendarOffDaysConfig,
+	weekendDays: readonly EventCalendarWeekday[]
+): boolean {
+	if (offDays === false) return false;
+	const weekday = getCivilWeekday(day);
+	if (offDays === true) return weekendDays.includes(weekday);
+	return (
+		(offDays.weekdays?.includes(weekday) ?? false) ||
+		(offDays.dates?.includes(day) ?? false) ||
+		(offDays.isOffDay?.(day) ?? false)
+	);
+}
+
 export function toDateOnly(parts: CivilDate): EventCalendarDateOnly {
 	if (
 		!Number.isInteger(parts.year) ||
@@ -332,8 +348,8 @@ export function enumerateInstantSlots(
 		});
 	}
 
-	const start = resolveMinutesOnDay(day, startMinutes, timeZone);
-	const end = resolveMinutesOnDay(day, endMinutes, timeZone);
+	const start = resolveZonedMinutesOnDay(day, startMinutes, timeZone);
+	const end = resolveZonedMinutesOnDay(day, endMinutes, timeZone);
 	const slots: Date[] = [];
 	for (
 		let instant = start.getTime();
@@ -1021,7 +1037,13 @@ function wallTimesEqual(
 	);
 }
 
-function resolveMinutesOnDay(day: EventCalendarDateOnly, minutes: number, timeZone: string): Date {
+/** Resolves a whole wall minute on a civil day; `1440` is the next day's boundary. */
+export function resolveZonedMinutesOnDay(
+	day: EventCalendarDateOnly,
+	minutes: number,
+	timeZone: string
+): Date {
+	assertMinuteOfDay(minutes, 'minutes', true);
 	const civil = parseDateOnly(day);
 	return resolveZonedDateTime(
 		{

@@ -2,7 +2,9 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
+	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
 	import type { Snippet } from 'svelte';
+	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
 	import type {
 		EventCalendarItemPayload,
@@ -10,20 +12,6 @@
 	} from './eventCalendar.props.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
 	import type { EventCalendarSegment, EventCalendarView } from './eventCalendar.types.js';
-
-	const SEMANTIC_COLORS: ReadonlySet<string> = new Set<Colors>([
-		'primary',
-		'secondary',
-		'danger',
-		'success',
-		'warning',
-		'info',
-		'neutral'
-	]);
-
-	function isSemanticColor(value: string | undefined): value is Colors {
-		return value !== undefined && SEMANTIC_COLORS.has(value);
-	}
 
 	let {
 		segment,
@@ -39,6 +27,12 @@
 		showItemTooltip = false,
 		item,
 		itemTooltip,
+		class: className,
+		compactContent = false,
+		tabindex,
+		registerControl,
+		onControlFocus,
+		onControlKeydown,
 		resizeStart,
 		resizeEnd,
 		actionTrigger,
@@ -58,6 +52,12 @@
 		showItemTooltip?: boolean;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
+		class?: string;
+		compactContent?: boolean;
+		tabindex?: 0 | -1;
+		registerControl?: (node: HTMLElement) => () => void;
+		onControlFocus?: () => void;
+		onControlKeydown?: (event: KeyboardEvent) => void;
 		resizeStart?: Snippet;
 		resizeEnd?: Snippet;
 		actionTrigger?: Snippet;
@@ -65,12 +65,24 @@
 		onDoubleClick?: (event: MouseEvent) => void;
 	} = $props();
 
+	let isCompact = $state(false);
+	const contentResizeObserver = useResizeObserver({
+		isActive: () => compactContent,
+		callback: (entry) => {
+			const nextCompact = entry.contentRect.height < 30;
+			if (isCompact !== nextCompact) isCompact = nextCompact;
+		}
+	});
+	$effect(() => {
+		if (!compactContent) isCompact = false;
+	});
+
 	const occurrence = $derived(segment.occurrence);
 	const semanticColor = $derived(
-		isSemanticColor(occurrence.item.color) ? occurrence.item.color : color
+		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : color
 	);
 	const itemColor = $derived(
-		occurrence.item.color && !isSemanticColor(occurrence.item.color)
+		occurrence.item.color && !isEventCalendarSemanticColor(occurrence.item.color)
 			? occurrence.item.color
 			: 'var(--color)'
 	);
@@ -130,6 +142,7 @@
 	data-display="auto"
 	data-selected={isSelected || undefined}
 	data-dragging={isDragging || undefined}
+	data-compact={isCompact || undefined}
 	data-start={segment.isStart || undefined}
 	data-end={segment.isEnd || undefined}
 	data-continues-before={segment.continuesBefore || undefined}
@@ -147,8 +160,10 @@
 		isStart: segment.isStart,
 		isEnd: segment.isEnd,
 		continuesBefore: segment.continuesBefore,
-		continuesAfter: segment.continuesAfter
+		continuesAfter: segment.continuesAfter,
+		class: className
 	})}
+	{@attach compactContent ? contentResizeObserver.reference : null}
 >
 	{#if resizeStart}
 		<div data-event-calendar-part="resize-handle" data-edge="start" class={classes.resizeHandle()}>
@@ -160,6 +175,7 @@
 		aria-label={defaultAccessibleLabel}
 		aria-pressed={isSelected}
 		{disabled}
+		{tabindex}
 		class={classes.itemControl({
 			density,
 			color: semanticColor,
@@ -176,6 +192,9 @@
 			event.stopPropagation();
 			onDoubleClick?.(event);
 		}}
+		onfocus={onControlFocus}
+		onkeydown={onControlKeydown}
+		{@attach registerControl ?? null}
 		{@attach showItemTooltip ? itemTooltipAttachment : null}
 	>
 		<Slot render={item ?? defaultContent} payload={itemPayload} />
@@ -194,7 +213,7 @@
 
 {#snippet defaultContent()}
 	<span class={classes.itemContent({ density, color: semanticColor, view })}>
-		{#if !occurrence.allDay && segment.isStart}
+		{#if !isCompact && !occurrence.allDay && segment.isStart}
 			<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
 		{/if}
 		<span class={classes.itemTitle({ density, color: semanticColor, view })}>
