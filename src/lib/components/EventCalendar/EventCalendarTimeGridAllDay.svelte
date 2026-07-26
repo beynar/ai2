@@ -23,6 +23,7 @@
 	import { getEventCalendarItemColor } from './eventCalendar.color.js';
 	import { startOfZonedDay } from './eventCalendar.date.js';
 	import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
+	import { serializeEventCalendarTarget } from './eventCalendar.interactions.svelte.js';
 	import type {
 		EventCalendarAllDayPayload,
 		EventCalendarItemPayload,
@@ -115,6 +116,12 @@
 			snapshot.selection.kind === 'slot' &&
 			snapshot.selection.slot.allDay &&
 			snapshot.selection.slot.start === geometry.day}
+		{@const dropTarget = {
+			key: `${view}:all-day:${geometry.day}`,
+			view,
+			allDay: true as const,
+			day: geometry.day
+		}}
 		<div
 			data-event-calendar-part="all-day-cell"
 			data-day={geometry.day}
@@ -125,9 +132,14 @@
 				view,
 				selected: isSelected,
 				offDay: isOff,
-				disabled
+				disabled,
+				invalid: calendar.interaction.isInvalidTarget(dropTarget.key)
 			})}
 			style:height={allDayHeight}
+			data-event-calendar-target={serializeEventCalendarTarget(dropTarget)}
+			data-calendar-instance-id={calendar.interaction.instanceId}
+			data-event-calendar-target-key={dropTarget.key}
+			{@attach disabled ? null : calendar.interaction.dropTarget(dropTarget)}
 		>
 			<button
 				type="button"
@@ -145,7 +157,22 @@
 				onclick={(event) => handleAllDayClick(geometry.day, event)}
 				onkeydown={(event) => handleTargetKeydown(event, targetKey, true)}
 				{@attach disabled ? null : registerTimeTarget(targetKey)}
-			></button>
+				{@attach disabled ? null : calendar.interaction.slotDrag(dropTarget)}
+			>
+				{#if calendar.interaction.isSlotDraftTarget(dropTarget)}
+					<span
+						aria-hidden="true"
+						data-event-calendar-part="slot-selection"
+						class={classes.slotSelection({
+							density,
+							color,
+							view,
+							invalid: calendar.interaction.isValid === false,
+							class: 'absolute inset-0'
+						})}
+					></span>
+				{/if}
+			</button>
 			{#each allDayBackgroundSegments.get(geometry.day) ?? [] as segment (segment.key)}
 				<div
 					aria-hidden="true"
@@ -172,6 +199,8 @@
 						{density}
 						{color}
 						{classes}
+						interaction={calendar.interaction}
+						isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 						isSelected={selectionKey === placement.occurrence.key}
 						{disabled}
 						{showItemTooltip}

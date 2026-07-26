@@ -21,15 +21,19 @@ import {
 	startOfZonedDay
 } from './eventCalendar.date.js';
 import { EventCalendarError } from './eventCalendar.error.js';
+import { EventCalendarInteractionsController } from './eventCalendar.interactions.svelte.js';
 import {
 	createEventCalendarItemIndex,
 	type EventCalendarItemIndex
 } from './eventCalendar.items.js';
 import type {
 	EventCalendarBusinessHours,
+	EventCalendarChange,
 	EventCalendarCreateActivation,
 	EventCalendarDateOnly,
 	EventCalendarItem,
+	EventCalendarInteractionBlockedInfo,
+	EventCalendarInteractions,
 	EventCalendarOffDaysConfig,
 	EventCalendarRange,
 	EventCalendarRangeChangeInfo,
@@ -37,6 +41,10 @@ import type {
 	EventCalendarResource,
 	EventCalendarSelection,
 	EventCalendarSlot,
+	EventCalendarProposedUpdate,
+	EventCalendarUpdateAdjustment,
+	EventCalendarUpdateResult,
+	EventCalendarOverlapPredicate,
 	EventCalendarView,
 	EventCalendarWeekday
 } from './eventCalendar.types.js';
@@ -118,7 +126,22 @@ export type EventCalendarStateOptions<
 	businessHours: EventCalendarBusinessHours[];
 	offDays: boolean | EventCalendarOffDaysConfig;
 	disabled: boolean;
+	loading: boolean;
+	direction: 'ltr' | 'rtl';
+	interactions: EventCalendarInteractions;
+	allowOverlap: boolean | EventCalendarOverlapPredicate<TItemFields>;
+	constrainToBusinessHours: boolean;
+	canUpdateItem?: (proposal: EventCalendarProposedUpdate<TItemFields>) => boolean;
+	onItemUpdate?: (proposal: EventCalendarProposedUpdate<TItemFields>) => EventCalendarUpdateResult;
+	canSelectSlot?: (slot: EventCalendarSlot) => boolean;
+	recurrenceEditScope: 'occurrence' | 'series' | 'disabled';
 	expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
+	onItemsChange?: (
+		items: EventCalendarItem<TItemFields>[],
+		change: EventCalendarChange<TItemFields>
+	) => void;
+	onSlotSelect?: (slot: EventCalendarSlot) => void;
+	onInteractionBlocked?: (info: EventCalendarInteractionBlockedInfo<TItemFields>) => void;
 	onRangeChange?: (info: EventCalendarRangeChangeInfo) => void;
 	onViewChange?: (view: EventCalendarView) => void;
 	onDateChange?: (date: Date) => void;
@@ -136,6 +159,7 @@ export class EventCalendarState<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
 > {
+	readonly interaction: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 	isMounted = $state(false);
 	todayInstant = $state<Date | null>(null);
 	nowInstant = $state<Date | null>(null);
@@ -189,8 +213,12 @@ export class EventCalendarState<
 		});
 	}
 
-	constructor(options: EventCalendarStateOptions<TItemFields, TResourceFields>) {
+	constructor(
+		instanceId: string,
+		options: EventCalendarStateOptions<TItemFields, TResourceFields>
+	) {
 		bind(this, options);
+		this.interaction = new EventCalendarInteractionsController(instanceId, this);
 		this.synchronize(false);
 
 		$effect.pre(() => {
@@ -225,10 +253,35 @@ export class EventCalendarState<
 	}
 
 	unmount(): void {
+		this.interaction.destroy();
 		this.isMounted = false;
 		this.todayInstant = null;
 		this.nowInstant = null;
 		this.lastRangeSignature = null;
+	}
+
+	validateCandidateItems(items: EventCalendarItem<TItemFields>[]): void {
+		validateItems(items, this.resources);
+	}
+
+	addItem(item: EventCalendarItem<TItemFields>): void {
+		this.interaction.addItem(item);
+	}
+
+	updateItem(item: EventCalendarItem<TItemFields>): void {
+		this.interaction.updateItem(item);
+	}
+
+	updateOccurrence(
+		key: string,
+		adjustment: EventCalendarUpdateAdjustment,
+		options?: { scope?: 'occurrence' | 'series' }
+	): void {
+		this.interaction.updateOccurrence(key, adjustment, options);
+	}
+
+	removeItem(id: string): void {
+		this.interaction.removeItem(id);
 	}
 
 	refreshNow(now = new Date()): void {
@@ -485,6 +538,15 @@ export class EventCalendarState<
 		void this.nowIndicatorInterval;
 		void this.maxItemsPerCell;
 		void this.createActivation;
+		void this.loading;
+		void this.direction;
+		void this.interactions;
+		void this.allowOverlap;
+		void this.constrainToBusinessHours;
+		void this.canUpdateItem;
+		void this.onItemUpdate;
+		void this.canSelectSlot;
+		void this.recurrenceEditScope;
 		void this.businessHours;
 		void this.offDays;
 		void this.expandRecurrence;

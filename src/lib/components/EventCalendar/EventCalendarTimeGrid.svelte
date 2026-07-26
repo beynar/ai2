@@ -291,6 +291,13 @@
 	});
 
 	$effect(() => {
+		if (scrollMode !== 'contained') return;
+		const viewport = scrollViewport;
+		if (!viewport) return;
+		return calendar.interaction.autoScroll('contained')(viewport);
+	});
+
+	$effect(() => {
 		if (!calendar.isMounted) return;
 		void profile.currentRange.start.getTime();
 		void profile.currentRange.end.getTime();
@@ -383,6 +390,7 @@
 	}
 
 	function handleAllDayClick(day: EventCalendarDateOnly, event: MouseEvent): void {
+		if (calendar.interaction.shouldSuppressSlotClick()) return;
 		if (disabled) return;
 		(event.currentTarget as HTMLElement).focus();
 		const slot = {
@@ -397,6 +405,7 @@
 	}
 
 	function handleTimedSlotClick(slot: EventCalendarTimeSlot, event: MouseEvent): void {
+		if (calendar.interaction.shouldSuppressSlotClick()) return;
 		if (disabled) return;
 		(event.currentTarget as HTMLElement).focus();
 		const selectionSlot = { view, allDay: false as const, start: slot.start, end: slot.end };

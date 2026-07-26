@@ -31,6 +31,7 @@
 		startOfZonedDay
 	} from './eventCalendar.date.js';
 	import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
+	import { serializeEventCalendarTarget } from './eventCalendar.interactions.svelte.js';
 	import type {
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload,
@@ -190,6 +191,7 @@
 	}
 
 	function handleDayClick(day: EventCalendarDateOnly, event: MouseEvent): void {
+		if (calendar.interaction.shouldSuppressSlotClick()) return;
 		if (!enabledDays.has(day)) return;
 		(event.currentTarget as HTMLElement).focus();
 		const slot = {
@@ -265,6 +267,12 @@
 			overflowCount: hiddenSegments.length,
 			defaultContent: defaultMonthCell
 		} satisfies EventCalendarMonthCellPayload<TItemFields>}
+		{@const dropTarget = {
+			key: `month:${day}`,
+			view: 'month' as const,
+			allDay: true as const,
+			day
+		}}
 		<div
 			role="gridcell"
 			aria-label={isRenderedDay ? getDayLabel(day) : undefined}
@@ -281,6 +289,11 @@
 			data-drop-view={isRenderedDay ? 'month' : undefined}
 			data-drop-all-day={isRenderedDay ? 'true' : undefined}
 			data-drop-disabled={isDisabled || undefined}
+			data-event-calendar-target={isRenderedDay
+				? serializeEventCalendarTarget(dropTarget)
+				: undefined}
+			data-calendar-instance-id={calendar.interaction.instanceId}
+			data-event-calendar-target-key={dropTarget.key}
 			class={classes.monthCell({
 				density,
 				color,
@@ -289,7 +302,8 @@
 				disabled: isDisabled,
 				today: isToday,
 				outside: isOutside,
-				offDay: isOff
+				offDay: isOff,
+				invalid: calendar.interaction.isInvalidTarget(dropTarget.key)
 			})}
 			onfocus={() => isRenderedDay && a11y.handleDayFocus(day)}
 			onclick={(event) => isRenderedDay && handleDayClick(day, event)}
@@ -301,8 +315,23 @@
 				(event.currentTarget as HTMLElement).click();
 			}}
 			{@attach isRenderedDay ? registerDay(day) : null}
+			{@attach isRenderedDay && !isDisabled ? calendar.interaction.dropTarget(dropTarget) : null}
+			{@attach isRenderedDay && !isDisabled ? calendar.interaction.slotDrag(dropTarget) : null}
 		>
 			{#if isRenderedDay}
+				{#if calendar.interaction.isSlotDraftTarget(dropTarget)}
+					<div
+						aria-hidden="true"
+						data-event-calendar-part="slot-selection"
+						class={classes.slotSelection({
+							density,
+							color,
+							view: 'month',
+							invalid: calendar.interaction.isValid === false,
+							class: 'absolute inset-0'
+						})}
+					></div>
+				{/if}
 				<Slot render={monthCell ?? defaultMonthCell} payload={cellPayload} />
 
 				{#each segments.filter((segment) => segment.occurrence.item.display === 'background') as segment (segment.key)}
@@ -330,6 +359,8 @@
 							{density}
 							{color}
 							{classes}
+							interaction={calendar.interaction}
+							isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 							isSelected={selectionKey === placement.occurrence.key}
 							{disabled}
 							{showItemTooltip}
@@ -353,6 +384,7 @@
 							{density}
 							{color}
 							{classes}
+							interaction={calendar.interaction}
 							{disabled}
 							{selectionKey}
 							{showItemTooltip}

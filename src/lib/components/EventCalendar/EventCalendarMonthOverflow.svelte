@@ -1,4 +1,7 @@
-<script lang="ts" generics="TItemFields extends object = Record<never, never>">
+<script
+	lang="ts"
+	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
+>
 	import Popover from '$lib/components/Popover/Popover.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
@@ -12,6 +15,7 @@
 		EventCalendarOverflowPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
+	import type { EventCalendarInteractionsController } from './eventCalendar.interactions.svelte.js';
 	import type {
 		EventCalendarDateOnly,
 		EventCalendarOccurrence,
@@ -28,6 +32,7 @@
 		density,
 		color,
 		classes,
+		interaction,
 		disabled,
 		selectionKey,
 		showItemTooltip,
@@ -48,6 +53,7 @@
 		density: Density;
 		color: Colors;
 		classes: EventCalendarClasses;
+		interaction: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 		disabled: boolean;
 		selectionKey: string | null;
 		showItemTooltip: boolean;
@@ -122,6 +128,8 @@
 						{density}
 						{color}
 						{classes}
+						{interaction}
+						isDragging={interaction.isDragging(segment.occurrence.key)}
 						isSelected={selectionKey === segment.occurrence.key}
 						{disabled}
 						{showItemTooltip}

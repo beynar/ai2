@@ -7,6 +7,7 @@ export type PointerDragPayload<Node extends HTMLElement = HTMLElement> = {
 	pointerId: number;
 	startX: number;
 	startY: number;
+	startTarget: EventTarget | null;
 	x: number;
 	y: number;
 	deltaX: number;
@@ -17,10 +18,16 @@ export type PointerDragPayload<Node extends HTMLElement = HTMLElement> = {
 export type PointerDragOptions<Node extends HTMLElement = HTMLElement> = {
 	disabled?: () => boolean;
 	moveTolerance?: number;
+	activation?: () => {
+		distancePx: number;
+		touchDelayMs: number;
+		touchTolerancePx: number;
+	};
 	stopPropagation?: boolean;
 	onStart?: (payload: PointerDragPayload<Node>) => boolean | void;
 	onMove?: (payload: PointerDragPayload<Node>) => void;
 	onEnd?: (payload: PointerDragPayload<Node>) => void;
+	onCancel?: (payload: PointerDragPayload<Node>) => void;
 };
 
 type PointerDragSession<Node extends HTMLElement> = {
@@ -28,8 +35,12 @@ type PointerDragSession<Node extends HTMLElement> = {
 	pointerId: number;
 	startX: number;
 	startY: number;
+	startTarget: EventTarget | null;
 	lastEvent: PointerEvent;
 	hasMoved: boolean;
+	isActive: boolean;
+	usesActivation: boolean;
+	activationTimer: number | null;
 };
 
 const DEFAULT_MOVE_TOLERANCE = 2;
@@ -55,6 +66,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 			pointerId: currentSession.pointerId,
 			startX: currentSession.startX,
 			startY: currentSession.startY,
+			startTarget: currentSession.startTarget,
 			x: event.clientX,
 			y: event.clientY,
 			deltaX,
@@ -69,14 +81,51 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 		}
 	};
 
+	const clearActivationTimer = (currentSession: PointerDragSession<Node>) => {
+		if (currentSession.activationTimer === null) return;
+		window.clearTimeout(currentSession.activationTimer);
+		currentSession.activationTimer = null;
+	};
+
+	const activate = (event: PointerEvent, currentSession: PointerDragSession<Node>): boolean => {
+		if (currentSession.isActive) return true;
+		clearActivationTimer(currentSession);
+		const payload = getPayload(event, currentSession);
+		if (options.onStart?.(payload) === false) return false;
+		currentSession.isActive = true;
+		if (options.stopPropagation) event.stopPropagation();
+		event.preventDefault();
+		return true;
+	};
+
+	const cancel = (event: PointerEvent, currentSession: PointerDragSession<Node>) => {
+		clearActivationTimer(currentSession);
+		const payload = getPayload(event, currentSession);
+		if (session === currentSession) session = null;
+		releasePointer(currentSession);
+		options.onCancel?.(payload);
+	};
+
 	const end = (event: PointerEvent) => {
 		if (!session || event.pointerId !== session.pointerId) return;
 
 		const currentSession = session;
 		const payload = getPayload(event, currentSession);
 		session = null;
+		clearActivationTimer(currentSession);
 		releasePointer(currentSession);
-		options.onEnd?.(payload);
+		if (currentSession.isActive) options.onEnd?.(payload);
+		else options.onCancel?.(payload);
+	};
+
+	const abort = (event: PointerEvent) => {
+		if (!session || event.pointerId !== session.pointerId) return;
+		const currentSession = session;
+		if (!currentSession.usesActivation && !options.onCancel) {
+			end(event);
+			return;
+		}
+		cancel(event, currentSession);
 	};
 
 	return (node) => {
@@ -88,36 +137,71 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 				pointerId: event.pointerId,
 				startX: event.clientX,
 				startY: event.clientY,
+				startTarget: event.target,
 				lastEvent: event,
-				hasMoved: false
+				hasMoved: false,
+				isActive: false,
+				usesActivation: false,
+				activationTimer: null
 			};
-			const payload = getPayload(event, nextSession);
-			if (options.onStart?.(payload) === false) return;
-
-			if (options.stopPropagation) event.stopPropagation();
-			event.preventDefault();
 			node.setPointerCapture(event.pointerId);
 			session = nextSession;
+			const activation = options.activation?.();
+			if (!activation) {
+				if (!activate(event, nextSession)) cancel(event, nextSession);
+				return;
+			}
+			nextSession.usesActivation = true;
+			if (event.pointerType !== 'touch') return;
+			nextSession.activationTimer = window.setTimeout(() => {
+				if (session !== nextSession) return;
+				if (!activate(nextSession.lastEvent, nextSession)) {
+					cancel(nextSession.lastEvent, nextSession);
+					return;
+				}
+				options.onMove?.(getPayload(nextSession.lastEvent, nextSession));
+			}, activation.touchDelayMs);
 		};
 
 		const move = (event: PointerEvent) => {
 			if (!session || event.pointerId !== session.pointerId) return;
 
-			event.preventDefault();
-			options.onMove?.(getPayload(event, session));
+			const currentSession = session;
+			const activation = options.activation?.();
+			const payload = getPayload(event, currentSession);
+			if (!activation || currentSession.isActive) {
+				event.preventDefault();
+				options.onMove?.(payload);
+				return;
+			}
+			const distance = Math.hypot(payload.deltaX, payload.deltaY);
+			if (event.pointerType === 'touch') {
+				if (distance > activation.touchTolerancePx) cancel(event, currentSession);
+				return;
+			}
+			if (distance < activation.distancePx) return;
+			if (!activate(event, currentSession)) {
+				cancel(event, currentSession);
+				return;
+			}
+			options.onMove?.(getPayload(event, currentSession));
 		};
 
 		const cleanup = () => {
-			if (session?.node === node) {
-				end(session.lastEvent);
+			if (!session || session.node !== node) return;
+			const currentSession = session;
+			if (currentSession.isActive && !currentSession.usesActivation && !options.onCancel) {
+				end(currentSession.lastEvent);
+				return;
 			}
+			cancel(currentSession.lastEvent, currentSession);
 		};
 
 		const offPointerDown = on(node, 'pointerdown', start);
 		const offPointerMove = on(node, 'pointermove', move);
 		const offPointerUp = on(node, 'pointerup', end);
-		const offPointerCancel = on(node, 'pointercancel', end);
-		const offLostPointerCapture = on(node, 'lostpointercapture', end);
+		const offPointerCancel = on(node, 'pointercancel', abort);
+		const offLostPointerCapture = on(node, 'lostpointercapture', abort);
 
 		return () => {
 			cleanup();

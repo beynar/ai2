@@ -3,12 +3,12 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import { useI18n } from '$lib/i18n/context.svelte.js';
+	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { onMount } from 'svelte';
 	import EventCalendarContent from './EventCalendarContent.svelte';
 	import EventCalendarHeader from './EventCalendarHeader.svelte';
 	import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
-	import { EventCalendarError } from './eventCalendar.error.js';
 	import type { EventCalendarProps, EventCalendarSnapshot } from './eventCalendar.props.js';
 	import {
 		EMPTY_EVENT_CALENDAR_SELECTION,
@@ -20,6 +20,7 @@
 		EventCalendarCreateActivation,
 		EventCalendarDateOnly,
 		EventCalendarItem,
+		EventCalendarInteractions,
 		EventCalendarOccurrence,
 		EventCalendarRange,
 		EventCalendarSelection,
@@ -32,6 +33,14 @@
 		distancePx: 5,
 		touchDelayMs: 300,
 		touchTolerancePx: 8
+	};
+	const DEFAULT_INTERACTIONS: EventCalendarInteractions = {
+		drag: true,
+		resize: true,
+		selectSlot: true,
+		keyboard: true,
+		singlePointer: true,
+		maintainDurationOnAllDayChange: false
 	};
 
 	let {
@@ -131,6 +140,7 @@
 		...DEFAULT_CREATE_ACTIVATION,
 		...createActivation
 	});
+	const resolvedInteractions = $derived({ ...DEFAULT_INTERACTIONS, ...interactions });
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
 	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
 	const classes = $derived(useEventCalendarTheme(theme));
@@ -138,7 +148,7 @@
 		scrollToTime(dateOrMinutes: Date | number): boolean;
 	} | null>(null);
 
-	const calendar = new EventCalendarState<TItemFields, TResourceFields>({
+	const calendar = new EventCalendarState<TItemFields, TResourceFields>(componentId, {
 		get items() {
 			return items;
 		},
@@ -244,8 +254,44 @@
 		get disabled() {
 			return disabled;
 		},
+		get loading() {
+			return loading;
+		},
+		get direction() {
+			return resolvedDirection;
+		},
+		get interactions() {
+			return resolvedInteractions;
+		},
+		get allowOverlap() {
+			return allowOverlap;
+		},
+		get constrainToBusinessHours() {
+			return constrainToBusinessHours;
+		},
+		get canUpdateItem() {
+			return canUpdateItem;
+		},
+		get onItemUpdate() {
+			return onItemUpdate;
+		},
+		get canSelectSlot() {
+			return canSelectSlot;
+		},
+		get recurrenceEditScope() {
+			return recurrenceEditScope;
+		},
 		get expandRecurrence() {
 			return expandRecurrence;
+		},
+		get onItemsChange() {
+			return onItemsChange;
+		},
+		get onSlotSelect() {
+			return onSlotSelect;
+		},
+		get onInteractionBlocked() {
+			return onInteractionBlocked;
 		},
 		get onRangeChange() {
 			return onRangeChange;
@@ -325,12 +371,28 @@
 		calendar.clearSelection();
 	}
 
-	function unavailableItemMutation(method: string, details?: Record<string, unknown>): never {
-		throw new EventCalendarError(
-			'invalid-item',
-			`${method} mutation is unavailable until the EventCalendar interaction engine is active.`,
-			{ method, phase: 3, ...details }
-		);
+	export function addItem(item: EventCalendarItem<TItemFields>): void {
+		calendar.addItem(item);
+	}
+
+	export function updateItem(item: EventCalendarItem<TItemFields>): void {
+		calendar.updateItem(item);
+	}
+
+	export function updateOccurrence(
+		key: string,
+		adjustment: EventCalendarUpdateAdjustment,
+		options?: { scope?: 'occurrence' | 'series' }
+	): void {
+		calendar.updateOccurrence(key, adjustment, options);
+	}
+
+	export function removeItem(id: string): void {
+		calendar.removeItem(id);
+	}
+
+	export function cancelInteraction(): void {
+		calendar.interaction.cancel();
 	}
 
 	const api: EventCalendarApi<TItemFields> = {
@@ -346,29 +408,13 @@
 		getOccurrence,
 		getOccurrences,
 		getOccurrencesForDay,
-		addItem(item: EventCalendarItem<TItemFields>): void {
-			unavailableItemMutation('addItem', { id: item.id });
-		},
-		updateItem(item: EventCalendarItem<TItemFields>): void {
-			unavailableItemMutation('updateItem', { id: item.id });
-		},
-		updateOccurrence(
-			key: string,
-			adjustment: EventCalendarUpdateAdjustment,
-			options?: { scope?: 'occurrence' | 'series' }
-		): void {
-			void adjustment;
-			void options;
-			unavailableItemMutation('updateOccurrence', { key });
-		},
-		removeItem(id: string): void {
-			unavailableItemMutation('removeItem', { id });
-		},
+		addItem,
+		updateItem,
+		updateOccurrence,
+		removeItem,
 		select,
 		clearSelection,
-		cancelInteraction(): void {
-			// No interaction controller exists before Phase 7, so cancellation is already complete.
-		}
+		cancelInteraction
 	};
 
 	const snapshot = $derived<EventCalendarSnapshot<TItemFields, TResourceFields>>({
@@ -385,6 +431,7 @@
 
 	onMount(() => {
 		calendar.mount();
+		calendar.interaction.mount();
 		const parentElement = ref?.parentElement;
 		const updateAmbientDirection = () => {
 			if (!parentElement) return;
@@ -441,19 +488,8 @@
 
 	function consumeFuturePhaseProps(): void {
 		void scrollbars;
-		void interactions;
-		void allowOverlap;
-		void constrainToBusinessHours;
-		void canUpdateItem;
-		void onItemUpdate;
-		void canSelectSlot;
-		void recurrenceEditScope;
 		void getOccurrenceExceptionId;
 		void resourceHeader;
-		void dragPreview;
-		void onItemsChange;
-		void onSlotSelect;
-		void onInteractionBlocked;
 	}
 
 	consumeFuturePhaseProps();
@@ -472,6 +508,8 @@
 	data-direction={resolvedDirection}
 	data-loading={loading || undefined}
 	data-disabled={disabled || undefined}
+	data-interaction-kind={calendar.interaction.gesture?.kind}
+	data-interaction-valid={calendar.interaction.isValid ?? undefined}
 	class={classes.root({
 		density,
 		color,
@@ -479,6 +517,7 @@
 		disabled,
 		class: [scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden', className]
 	})}
+	{@attach scrollMode === 'page' ? calendar.interaction.autoScroll('page') : null}
 >
 	{#if showHeader}
 		<EventCalendarHeader
@@ -534,7 +573,68 @@
 		{onSlotClick}
 		{onMoreClick}
 	/>
+	{#if calendar.interaction.proposal}
+		{@const proposal = calendar.interaction.proposal}
+		{@const previewPayload = {
+			proposal,
+			isValid: calendar.interaction.isValid === true,
+			defaultContent: defaultDragPreview
+		}}
+		<div
+			aria-hidden="true"
+			data-event-calendar-part="drag-preview"
+			data-invalid={calendar.interaction.isValid === false || undefined}
+			class={classes.dragPreview({
+				density,
+				color,
+				view: calendar.view,
+				invalid: calendar.interaction.isValid === false
+			})}
+			style:position="fixed"
+			style:left={`${calendar.interaction.gesture?.pointerX ?? 0}px`}
+			style:top={`${calendar.interaction.gesture?.pointerY ?? 0}px`}
+		>
+			<Slot render={dragPreview ?? defaultDragPreview} payload={previewPayload} />
+		</div>
+	{/if}
+	{#if calendar.interaction.gesture}
+		<div
+			aria-hidden="true"
+			data-event-calendar-part="drop-indicator"
+			data-invalid={calendar.interaction.isValid === false || undefined}
+			class={classes.dropIndicator({
+				density,
+				color,
+				view: calendar.view,
+				invalid: calendar.interaction.isValid === false,
+				class: 'fixed h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full'
+			})}
+			style:left={`${calendar.interaction.gesture.pointerX}px`}
+			style:top={`${calendar.interaction.gesture.pointerY}px`}
+		></div>
+		{#if calendar.interaction.gesture.kind === 'slot-create'}
+			<div
+				aria-hidden="true"
+				data-event-calendar-part="slot-selection"
+				data-invalid={calendar.interaction.isValid === false || undefined}
+				class={classes.slotSelection({
+					density,
+					color,
+					view: calendar.view,
+					invalid: calendar.interaction.isValid === false,
+					class: 'fixed h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded'
+				})}
+				style:left={`${calendar.interaction.gesture.pointerX}px`}
+				style:top={`${calendar.interaction.gesture.pointerY}px`}
+			></div>
+		{/if}
+	{/if}
 	<span id={a11y.liveRegionId} class="sr-only" role="status" aria-live="polite" aria-atomic="true">
 		{a11y.announcement}
 	</span>
+	<span class="sr-only" data-event-calendar-interaction-status>{calendar.interaction.status}</span>
 </div>
+
+{#snippet defaultDragPreview()}
+	{calendar.interaction.proposal?.item.title ?? ''}
+{/snippet}

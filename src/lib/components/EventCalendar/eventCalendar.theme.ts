@@ -177,11 +177,11 @@ const overflow = createEventCalendarPart(
 );
 const overflowPopover = createEventCalendarPart('min-w-56 max-w-80 p-2');
 const dragPreview = createEventCalendarPart(
-	'pointer-events-none rounded bg-color text-color-contrast shadow-lg'
+	'pointer-events-none z-50 -translate-x-1/2 translate-y-3 rounded bg-color px-2 py-1 text-sm text-color-contrast shadow-lg'
 );
-const dropIndicator = createEventCalendarPart('pointer-events-none absolute z-40 bg-color');
+const dropIndicator = createEventCalendarPart('pointer-events-none z-40 bg-color');
 const slotSelection = createEventCalendarPart(
-	'pointer-events-none absolute z-20 border border-color bg-color/15'
+	'pointer-events-none z-20 border border-color bg-color/15'
 );
 const resizeHandle = createEventCalendarPart(
 	'absolute z-30 touch-none outline-none focus-visible:ring-2 focus-visible:ring-color'
