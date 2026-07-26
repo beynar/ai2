@@ -3,6 +3,7 @@ import type { WithAttachments } from '$lib/types/props.js';
 import type { Colors, Density } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
+import type { EventCalendarThemeProps } from './eventCalendar.theme.js';
 import type {
 	EventCalendarApi,
 	EventCalendarBusinessHours,
@@ -28,81 +29,7 @@ import type {
 	EventCalendarWeekday
 } from './eventCalendar.types.js';
 
-type EventCalendarThemePart =
-	| 'root'
-	| 'header'
-	| 'navigation'
-	| 'title'
-	| 'viewSwitcher'
-	| 'actions'
-	| 'content'
-	| 'viewport'
-	| 'loading'
-	| 'empty'
-	| 'month'
-	| 'monthHeader'
-	| 'dayHeader'
-	| 'monthGrid'
-	| 'weekRow'
-	| 'weekNumber'
-	| 'monthCell'
-	| 'dayNumber'
-	| 'barLayer'
-	| 'timeGrid'
-	| 'timeHeader'
-	| 'timeGutter'
-	| 'timeLabel'
-	| 'allDayRow'
-	| 'allDayCell'
-	| 'dayColumn'
-	| 'timeSlot'
-	| 'nowIndicator'
-	| 'item'
-	| 'itemControl'
-	| 'itemContent'
-	| 'itemTitle'
-	| 'itemTime'
-	| 'overflow'
-	| 'overflowPopover'
-	| 'dragPreview'
-	| 'dropIndicator'
-	| 'slotSelection'
-	| 'resizeHandle'
-	| 'actionTrigger'
-	| 'agenda'
-	| 'agendaDay'
-	| 'agendaItem'
-	| 'agendaDetails'
-	| 'resourceHeader';
-
-type EventCalendarThemeBooleanVariant = Partial<Record<'true' | 'false', string>>;
-
-/** Stable shape implemented by the concrete EventCalendar CVA theme. */
-type EventCalendarThemePartProps = {
-	base?: string;
-	density?: Partial<Record<Density, string>>;
-	color?: Partial<Record<Colors, string>>;
-	view?: Partial<Record<EventCalendarView, string>>;
-	selected?: EventCalendarThemeBooleanVariant;
-	dragging?: EventCalendarThemeBooleanVariant;
-	invalid?: EventCalendarThemeBooleanVariant;
-	disabled?: EventCalendarThemeBooleanVariant;
-	today?: EventCalendarThemeBooleanVariant;
-	outside?: EventCalendarThemeBooleanVariant;
-	offDay?: EventCalendarThemeBooleanVariant;
-	display?: Partial<Record<'auto' | 'background', string>>;
-	isStart?: EventCalendarThemeBooleanVariant;
-	isEnd?: EventCalendarThemeBooleanVariant;
-	continuesBefore?: EventCalendarThemeBooleanVariant;
-	continuesAfter?: EventCalendarThemeBooleanVariant;
-};
-
-/** Per-instance overrides for the stable EventCalendar CVA parts and variants. */
-export type EventCalendarThemeProps = Partial<
-	Record<EventCalendarThemePart, EventCalendarThemePartProps>
-> & {
-	override?: boolean;
-};
+export type { EventCalendarThemeProps } from './eventCalendar.theme.js';
 
 export type EventCalendarSnapshot<
 	TItemFields extends object,
@@ -404,5 +331,6 @@ export type EventCalendarProps<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
 > = WithAttachments<
-	HTMLAttributes<HTMLDivElement> & EventCalendarOwnProps<TItemFields, TResourceFields>
+	Omit<HTMLAttributes<HTMLDivElement>, 'children'> &
+		EventCalendarOwnProps<TItemFields, TResourceFields>
 >;

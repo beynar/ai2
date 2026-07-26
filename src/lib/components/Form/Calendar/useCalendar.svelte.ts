@@ -1,8 +1,8 @@
-import { bind } from '$lib/utils/state.svelte.js';
 import { untrack } from 'svelte';
 import { on } from 'svelte/events';
 
 export type CalendarType = 'calendar' | 'calendar-range' | 'calendar-multiple';
+export type CalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type CalendarValue<T extends CalendarType> = T extends 'calendar'
 	? Date | null
@@ -48,6 +48,8 @@ export interface CalendarStateOptions<E extends Event, T extends CalendarType> {
 	maxDate?: Date | null;
 	type?: T;
 	weekStartsOnMonday?: boolean;
+	weekStartsOn?: CalendarWeekday;
+	today?: Date;
 	view?: 'single' | 'double';
 	disabledDates?: (Date | [Date, Date])[];
 	disabled?: boolean;
@@ -56,8 +58,13 @@ export interface CalendarStateOptions<E extends Event, T extends CalendarType> {
 	value?: CalendarValue<T>;
 }
 
-export const createCalendarDate = (year: number, month: number, day: number) =>
-	new Date(year, month, day, 12, 0, 0, 0);
+export const createCalendarDate = (year: number, month: number, day: number) => {
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- Calendar dates are host-local-noon value snapshots; setFullYear preserves years 0-99.
+	const date = new Date(0);
+	date.setFullYear(year, month, day);
+	date.setHours(12, 0, 0, 0);
+	return date;
+};
 
 export const normalizeCalendarDate = (date: Date) =>
 	createCalendarDate(date.getFullYear(), date.getMonth(), date.getDate());
@@ -118,13 +125,19 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 	minDate: Date | null = null;
 	maxDate: Date | null = null;
 	weekStartsOnMonday = true;
+	weekStartsOn: CalendarWeekday | undefined = undefined;
 	disabledDates: (Date | [Date, Date])[] = [];
 	disabled = false;
 	locale: string | undefined;
 
-	today = normalizeCalendarDate(new Date());
-	date = $state(this.today);
-	focusedDate = $state(this.today);
+	today = $state(createCalendarDate(1970, 0, 1));
+	date = $state(createCalendarDate(1970, 0, 1));
+	focusedDate = $state(createCalendarDate(1970, 0, 1));
+	private fallbackToday: Date | null = null;
+
+	resolvedWeekStartsOn = $derived(
+		this.weekStartsOn ?? ((this.weekStartsOnMonday ? 1 : 0) satisfies CalendarWeekday)
+	);
 
 	currentMonth = $derived(this.date.getMonth());
 	currentYear = $derived(this.date.getFullYear());
@@ -205,12 +218,33 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 	nextMonthRows = $derived.by(() => this.getCalendarRows(this.nextMonthDate, true));
 
 	constructor(options: CalendarStateOptions<E, T>) {
-		bind(this, options);
+		const descriptors = Object.getOwnPropertyDescriptors(options);
+		delete descriptors.today;
+		Object.defineProperties(this, descriptors);
+		const initialToday = this.resolveToday(options.today);
+		this.today = initialToday;
+		this.date = initialToday;
+		this.focusedDate = initialToday;
 		const initialDate = getFirstValueDate(options.type ?? ('calendar' as T), options.value);
 		if (initialDate) {
 			this.date = createCalendarDate(initialDate.getFullYear(), initialDate.getMonth(), 1);
 			this.focusedDate = normalizeCalendarDate(initialDate);
 		}
+
+		$effect.pre(() => {
+			const nextToday = this.resolveToday(options.today);
+			if (isSameCalendarDay(nextToday, this.today)) return;
+			const shouldMoveFocus = isSameCalendarDay(this.focusedDate, this.today);
+			this.today = nextToday;
+			if (shouldMoveFocus) this.focusedDate = nextToday;
+		});
+	}
+
+	private resolveToday(today: Date | undefined): Date {
+		if (today) return normalizeCalendarDate(today);
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- This captures the legacy current-day fallback once and never mutates it.
+		this.fallbackToday ??= normalizeCalendarDate(new Date());
+		return this.fallbackToday;
 	}
 
 	private isInVisibleMonths(date: Date) {
@@ -283,11 +317,7 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 		const daysInMonth = new Date(year, month + 1, 0).getDate();
 		const daysInPreviousMonth = new Date(year, month, 0).getDate();
 		const nativeFirstDay = new Date(year, month, 1).getDay();
-		const firstDay = this.weekStartsOnMonday
-			? nativeFirstDay === 0
-				? 6
-				: nativeFirstDay - 1
-			: nativeFirstDay;
+		const firstDay = (nativeFirstDay - this.resolvedWeekStartsOn + 7) % 7;
 		const weekCount = Math.ceil((firstDay + daysInMonth) / 7);
 		const tabStopDate = this.getTabStopDate();
 		const rows: Row<E>[] = [];
@@ -407,7 +437,21 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 		this.goToMonth(this.currentYear, this.currentMonth - 1);
 	};
 
+	canGoToMonth = (year: number, month: number) => {
+		const targetMonthIndex = year * 12 + month;
+		if (this.minDate) {
+			const minMonthIndex = this.minDate.getFullYear() * 12 + this.minDate.getMonth();
+			if (targetMonthIndex < minMonthIndex) return false;
+		}
+		if (this.maxDate) {
+			const maxMonthIndex = this.maxDate.getFullYear() * 12 + this.maxDate.getMonth();
+			if (targetMonthIndex > maxMonthIndex) return false;
+		}
+		return true;
+	};
+
 	goToMonth = (year: number, month: number) => {
+		if (!this.canGoToMonth(year, month)) return;
 		this.date = createCalendarDate(year, month, 1);
 	};
 
@@ -491,13 +535,13 @@ export class CalendarState<E extends Event = Event, T extends CalendarType = 'ca
 						break;
 					case 'Home': {
 						direction = -1;
-						const weekStart = this.weekStartsOnMonday ? 1 : 0;
+						const weekStart = this.resolvedWeekStartsOn;
 						const offset = (currentDate.getDay() - weekStart + 7) % 7;
 						targetDate = addDays(currentDate, -offset);
 						break;
 					}
 					case 'End': {
-						const weekStart = this.weekStartsOnMonday ? 1 : 0;
+						const weekStart = this.resolvedWeekStartsOn;
 						const offset = (currentDate.getDay() - weekStart + 7) % 7;
 						targetDate = addDays(currentDate, 6 - offset);
 						break;

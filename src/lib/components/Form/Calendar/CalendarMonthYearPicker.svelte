@@ -36,14 +36,35 @@
 
 	const componentId = untrack(() => id);
 	const initialYear = untrack(() => currentYear);
+	const yearWindowRadius = 100;
+	const yearWindowSpan = yearWindowRadius * 2;
 	const classes = $derived(useCalendarInputTheme(theme));
 	const months = $derived(
 		Array.from({ length: 12 }, (_, month) =>
 			createCalendarDate(2024, month, 1).toLocaleDateString(locale, { month: 'long' })
 		)
 	);
-	const firstYear = $derived(Math.min(minDate?.getFullYear() ?? initialYear - 100, currentYear));
-	const lastYear = $derived(Math.max(maxDate?.getFullYear() ?? initialYear + 100, currentYear));
+	const yearWindow = $derived.by(() => {
+		const allowedFirstYear = Math.min(
+			minDate?.getFullYear() ?? initialYear - yearWindowRadius,
+			currentYear
+		);
+		const allowedLastYear = Math.max(
+			maxDate?.getFullYear() ?? initialYear + yearWindowRadius,
+			currentYear
+		);
+		let firstYear = Math.max(allowedFirstYear, currentYear - yearWindowRadius);
+		let lastYear = Math.min(allowedLastYear, firstYear + yearWindowSpan);
+
+		if (lastYear - firstYear < yearWindowSpan) {
+			firstYear = Math.max(allowedFirstYear, lastYear - yearWindowSpan);
+			lastYear = Math.min(allowedLastYear, firstYear + yearWindowSpan);
+		}
+
+		return { firstYear, lastYear };
+	});
+	const firstYear = $derived(yearWindow.firstYear);
+	const lastYear = $derived(yearWindow.lastYear);
 	const years = $derived(
 		Array.from({ length: lastYear - firstYear + 1 }, (_, index) => firstYear + index)
 	);

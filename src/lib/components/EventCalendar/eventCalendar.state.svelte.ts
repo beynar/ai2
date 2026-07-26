@@ -12,6 +12,7 @@ import {
 	getHiddenWeekdays,
 	getNavigationDate,
 	getZonedDay,
+	isSupportedDateDomainError,
 	isDateOnly,
 	normalizeLocale,
 	parseDateOnly,
@@ -227,7 +228,9 @@ export class EventCalendarState<
 
 	today(): void {
 		if (this.disabled || !this.isMounted) return;
-		this.goTo(this.todayInstant ?? new Date());
+		const now = new Date();
+		this.refreshNow(now);
+		this.goTo(now);
 	}
 
 	goTo(value: Date | EventCalendarDateOnly): void {
@@ -303,7 +306,13 @@ export class EventCalendarState<
 		if (this.disabled) return;
 		const hiddenWeekdays = getHiddenWeekdays(this);
 		const target = getNavigationDate(this.dateProfile, direction, hiddenWeekdays);
-		this.commitDate(this.reconcileDateFor(target, this.view), true);
+		if (!target) return;
+		try {
+			this.commitDate(this.reconcileDateFor(target, this.view), true);
+		} catch (error) {
+			if (isSupportedDateDomainError(error)) return;
+			throw error;
+		}
 	}
 
 	private synchronize(notify: boolean): void {

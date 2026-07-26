@@ -156,5 +156,22 @@ export const zh: Messages = {
 	format: '格式',
 	percentage: '百分比',
 	pickColorFromScreen: '从屏幕拾取颜色',
-	dragToReorder: '拖动以重新排序'
+	dragToReorder: '拖动以重新排序',
+	eventCalendarLabel: '事件日历',
+	eventCalendarToday: '今天',
+	eventCalendarPrevious: '上一时段',
+	eventCalendarNext: '下一时段',
+	eventCalendarChooseDate: '选择日期',
+	eventCalendarViewSwitcher: '日历视图',
+	eventCalendarViewMenu: '选择日历视图',
+	eventCalendarEmpty: '此时段没有事件',
+	eventCalendarLoading: '正在加载日历',
+	eventCalendarMonthView: '月',
+	eventCalendarWeekView: '周',
+	eventCalendarDayView: '日',
+	eventCalendarDaysView: '多日',
+	eventCalendarAgendaView: '日程',
+	eventCalendarResourceView: '资源',
+	eventCalendarRangeAnnouncement: (title: string | number) => `正在显示${title}`,
+	eventCalendarViewAnnouncement: (view: string | number) => `已选择${view}视图`
 };

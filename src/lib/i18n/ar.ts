@@ -158,5 +158,22 @@ export const ar: Messages = {
 	format: 'التنسيق',
 	percentage: 'النسبة المئوية',
 	pickColorFromScreen: 'اختيار لون من الشاشة',
-	dragToReorder: 'اسحب لإعادة الترتيب'
+	dragToReorder: 'اسحب لإعادة الترتيب',
+	eventCalendarLabel: 'تقويم الأحداث',
+	eventCalendarToday: 'اليوم',
+	eventCalendarPrevious: 'الفترة السابقة',
+	eventCalendarNext: 'الفترة التالية',
+	eventCalendarChooseDate: 'اختيار تاريخ',
+	eventCalendarViewSwitcher: 'عرض التقويم',
+	eventCalendarViewMenu: 'اختيار عرض التقويم',
+	eventCalendarEmpty: 'لا توجد أحداث في هذا النطاق',
+	eventCalendarLoading: 'جارٍ تحميل التقويم',
+	eventCalendarMonthView: 'شهر',
+	eventCalendarWeekView: 'أسبوع',
+	eventCalendarDayView: 'يوم',
+	eventCalendarDaysView: 'أيام',
+	eventCalendarAgendaView: 'جدول الأعمال',
+	eventCalendarResourceView: 'الموارد',
+	eventCalendarRangeAnnouncement: (title: string | number) => `عرض ${title}`,
+	eventCalendarViewAnnouncement: (view: string | number) => `تم اختيار عرض ${view}`
 };

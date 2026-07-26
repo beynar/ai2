@@ -22,6 +22,8 @@
 		disabledDates = [],
 		view,
 		weekStartsOnMonday,
+		weekStartsOn,
+		today,
 		weekdayLength,
 		locale,
 		ariaLabel,
@@ -111,6 +113,8 @@
 			{maxDate}
 			{view}
 			{weekStartsOnMonday}
+			{weekStartsOn}
+			{today}
 			{weekdayLength}
 			{locale}
 			{ariaLabel}

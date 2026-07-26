@@ -165,7 +165,24 @@ export const en = {
 	format: 'format',
 	percentage: 'percentage',
 	pickColorFromScreen: 'Pick a color from the screen',
-	dragToReorder: 'Drag to reorder'
+	dragToReorder: 'Drag to reorder',
+	eventCalendarLabel: 'Event calendar',
+	eventCalendarToday: 'Today',
+	eventCalendarPrevious: 'Previous period',
+	eventCalendarNext: 'Next period',
+	eventCalendarChooseDate: 'Choose date',
+	eventCalendarViewSwitcher: 'Calendar view',
+	eventCalendarViewMenu: 'Choose calendar view',
+	eventCalendarEmpty: 'No events in this range',
+	eventCalendarLoading: 'Loading calendar',
+	eventCalendarMonthView: 'Month',
+	eventCalendarWeekView: 'Week',
+	eventCalendarDayView: 'Day',
+	eventCalendarDaysView: 'Days',
+	eventCalendarAgendaView: 'Agenda',
+	eventCalendarResourceView: 'Resources',
+	eventCalendarRangeAnnouncement: (title: string | number) => `Showing ${title}`,
+	eventCalendarViewAnnouncement: (view: string | number) => `${view} view selected`
 };
 
 export type Messages = typeof en;

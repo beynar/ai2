@@ -12,8 +12,13 @@ const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const FIXED_OFFSET_TIME_ZONE_PATTERN = /^[+-]\d{2}(?::?\d{2})?$/;
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
 const MAX_VISIBLE_DAY_SCAN = 100_000;
 const MAX_NEARBY_VISIBLE_DAY_SCAN = 8;
+export const MIN_EVENT_CALENDAR_DAY: EventCalendarDateOnly = '0001-01-01';
+export const MAX_EVENT_CALENDAR_DAY: EventCalendarDateOnly = '9999-12-30';
+export const MAX_EVENT_CALENDAR_BOUNDARY: EventCalendarDateOnly = '9999-12-31';
+const SUPPORTED_DATE_DOMAIN_REASON = 'supported-date-domain';
 
 type CivilDate = {
 	year: number;
@@ -182,6 +187,9 @@ export function toDateOnly(parts: CivilDate): EventCalendarDateOnly {
 		parts.day < 1 ||
 		parts.day > daysInMonth(parts.year, parts.month)
 	) {
+		if (Number.isInteger(parts.year) && (parts.year < 1 || parts.year > 9999)) {
+			throwSupportedDateDomainError({ parts });
+		}
 		throw new EventCalendarError('invalid-prop', 'Civil parts must form a real Gregorian date.', {
 			...parts
 		});
@@ -538,7 +546,25 @@ export function createDateProfile(
 	const locale = assertDateProfileOptions(options);
 	const hiddenWeekdays = getHiddenWeekdays(options);
 	const anchorDay = getZonedDay(options.date, options.timeZone);
-	const profileDays = getProfileDays(options, anchorDay, hiddenWeekdays);
+	let profileDays: ReturnType<typeof getProfileDays>;
+	try {
+		profileDays = getProfileDays(options, anchorDay, hiddenWeekdays);
+	} catch (error) {
+		if (!isSupportedDateDomainError(error)) throw error;
+		throw new EventCalendarError(
+			'invalid-prop',
+			`The ${options.view} date profile exceeds the supported civil-date domain.`,
+			{
+				reason: SUPPORTED_DATE_DOMAIN_REASON,
+				view: options.view,
+				anchorDay,
+				minimumDay: MIN_EVENT_CALENDAR_DAY,
+				maximumDay: MAX_EVENT_CALENDAR_DAY,
+				maximumExclusiveBoundary: MAX_EVENT_CALENDAR_BOUNDARY,
+				cause: error instanceof Error ? error.message : String(error)
+			}
+		);
+	}
 	const currentRange = civilRangeToInstantRange(
 		profileDays.currentStart,
 		profileDays.currentEnd,
@@ -618,16 +644,60 @@ export function getNavigationDate(
 	profile: EventCalendarDateProfile,
 	direction: -1 | 1,
 	hiddenWeekdays: ReadonlySet<EventCalendarWeekday>
-): Date {
+): Date | null {
 	const day = getZonedDay(profile.date, profile.timeZone);
 	const amount = direction * profile.navigationIncrement.amount;
 	const target =
 		profile.navigationIncrement.unit === 'month'
-			? addCivilMonths(day, amount)
+			? addCivilMonthsForNavigation(day, amount)
 			: profile.navigationIncrement.unit === 'civil-day'
-				? addCivilDays(day, amount)
-				: moveVisibleDays(day, amount, hiddenWeekdays);
+				? addCivilDaysForNavigation(day, amount)
+				: moveVisibleDaysForNavigation(day, amount, hiddenWeekdays);
+	if (!target) return null;
 	return startOfZonedDay(target, profile.timeZone);
+}
+
+export function isSupportedDateDomainError(error: unknown): error is EventCalendarError {
+	return (
+		error instanceof EventCalendarError &&
+		error.code === 'invalid-prop' &&
+		error.details?.reason === SUPPORTED_DATE_DOMAIN_REASON
+	);
+}
+
+export function getMaximumDateProfileAnchor(options: {
+	view: EventCalendarView;
+	weekStartsOn: EventCalendarWeekday;
+	showWeekends: boolean;
+	weekendDays: readonly EventCalendarWeekday[];
+	dayCount: number;
+	agendaDayCount: number;
+}): EventCalendarDateOnly {
+	const hiddenWeekdays = getHiddenWeekdays(options);
+	assertSomeWeekdayVisible(hiddenWeekdays);
+
+	if (options.view === 'month') return '9999-11-30';
+	if (options.view === 'week') {
+		let candidate = MAX_EVENT_CALENDAR_DAY;
+		while (
+			civilDayDifference(
+				startOfCivilWeek(candidate, options.weekStartsOn),
+				MAX_EVENT_CALENDAR_BOUNDARY
+			) < 7
+		) {
+			candidate = addCivilDays(candidate, -1);
+		}
+		return candidate;
+	}
+	if (options.view === 'day' || options.view === 'resource') return MAX_EVENT_CALENDAR_DAY;
+
+	const count = options.view === 'days' ? options.dayCount : options.agendaDayCount;
+	assertPositiveInteger(count, options.view === 'days' ? 'dayCount' : 'agendaDayCount');
+	let lastVisibleDay = MAX_EVENT_CALENDAR_DAY;
+	while (hiddenWeekdays.has(getCivilWeekday(lastVisibleDay))) {
+		lastVisibleDay = addCivilDays(lastVisibleDay, -1);
+	}
+	return moveVisibleDays(lastVisibleDay, -(count - 1), hiddenWeekdays);
 }
 
 export function getHiddenWeekdays(options: {
@@ -654,9 +724,10 @@ function getProfileDays(
 		const civil = parseDateOnly(anchorDay);
 		const monthStart = toDateOnly({ year: civil.year, month: civil.month, day: 1 });
 		const monthEnd = addCivilMonths(monthStart, 1);
-		const renderStart = startOfCivilWeek(monthStart, options.weekStartsOn);
+		const renderWeek = getProfileWeekStart(monthStart, options.weekStartsOn);
+		const renderStart = renderWeek.start;
 		const renderEnd = options.fixedWeeks
-			? addCivilDays(renderStart, 42)
+			? addCivilDays(renderStart, 42 - renderWeek.clippedDays)
 			: addCivilDays(startOfCivilWeek(addCivilDays(monthEnd, -1), options.weekStartsOn), 7);
 		return {
 			currentStart: monthStart,
@@ -669,8 +740,9 @@ function getProfileDays(
 	}
 
 	if (options.view === 'week') {
-		const weekStart = startOfCivilWeek(anchorDay, options.weekStartsOn);
-		const weekEnd = addCivilDays(weekStart, 7);
+		const profileWeek = getProfileWeekStart(anchorDay, options.weekStartsOn);
+		const weekStart = profileWeek.start;
+		const weekEnd = addCivilDays(weekStart, 7 - profileWeek.clippedDays);
 		return {
 			currentStart: weekStart,
 			currentEnd: weekEnd,
@@ -705,6 +777,65 @@ function getProfileDays(
 		visibleEnd: currentEnd,
 		count
 	};
+}
+
+function getProfileWeekStart(
+	day: EventCalendarDateOnly,
+	weekStartsOn: EventCalendarWeekday
+): { start: EventCalendarDateOnly; clippedDays: number } {
+	const difference = modulo(getCivilWeekday(day) - weekStartsOn, 7);
+	const daysSinceMinimum = civilDayDifference(MIN_EVENT_CALENDAR_DAY, day);
+	if (daysSinceMinimum >= difference) {
+		return { start: addCivilDays(day, -difference), clippedDays: 0 };
+	}
+	return {
+		start: MIN_EVENT_CALENDAR_DAY,
+		clippedDays: difference - daysSinceMinimum
+	};
+}
+
+function addCivilMonthsForNavigation(
+	day: EventCalendarDateOnly,
+	amount: number
+): EventCalendarDateOnly | null {
+	const civil = parseDateOnly(day);
+	const targetMonthIndex = (civil.year - 1) * 12 + civil.month - 1 + amount;
+	if (targetMonthIndex < 0 || targetMonthIndex >= 9999 * 12) return null;
+	return addCivilMonths(day, amount);
+}
+
+function addCivilDaysForNavigation(
+	day: EventCalendarDateOnly,
+	amount: number
+): EventCalendarDateOnly | null {
+	if (amount < 0 && civilDayDifference(MIN_EVENT_CALENDAR_DAY, day) < Math.abs(amount)) {
+		return null;
+	}
+	if (amount > 0 && civilDayDifference(day, MAX_EVENT_CALENDAR_DAY) < amount) return null;
+	return addCivilDays(day, amount);
+}
+
+function moveVisibleDaysForNavigation(
+	day: EventCalendarDateOnly,
+	amount: number,
+	hiddenWeekdays: ReadonlySet<EventCalendarWeekday>
+): EventCalendarDateOnly | null {
+	assertSomeWeekdayVisible(hiddenWeekdays);
+	if (amount === 0) return day;
+	const direction = Math.sign(amount);
+	let remaining = Math.abs(amount);
+	let candidate = day;
+	while (remaining > 0) {
+		if (
+			(direction < 0 && candidate === MIN_EVENT_CALENDAR_DAY) ||
+			(direction > 0 && candidate === MAX_EVENT_CALENDAR_DAY)
+		) {
+			return null;
+		}
+		candidate = addCivilDays(candidate, direction);
+		if (!hiddenWeekdays.has(getCivilWeekday(candidate))) remaining -= 1;
+	}
+	return candidate;
 }
 
 function getProfileTitle(
@@ -976,18 +1107,9 @@ function applySnap(value: number, mode: EventCalendarSnapMode): number {
 }
 
 function civilDayDifference(start: EventCalendarDateOnly, end: EventCalendarDateOnly): number {
-	const startDate = civilToUtcDate(parseDateOnly(start));
-	const endDate = civilToUtcDate(parseDateOnly(end));
-	let difference = 0;
-	while (startDate < endDate) {
-		startDate.setUTCDate(startDate.getUTCDate() + 1);
-		difference += 1;
-	}
-	while (startDate > endDate) {
-		startDate.setUTCDate(startDate.getUTCDate() - 1);
-		difference -= 1;
-	}
-	return difference;
+	const startTime = civilToUtcDate(parseDateOnly(start)).getTime();
+	const endTime = civilToUtcDate(parseDateOnly(end)).getTime();
+	return Math.round((endTime - startTime) / DAY_MS);
 }
 
 function daysInMonth(year: number, month: number): number {
@@ -1024,4 +1146,18 @@ function utcDate(
 
 function modulo(value: number, divisor: number): number {
 	return ((value % divisor) + divisor) % divisor;
+}
+
+function throwSupportedDateDomainError(details: Readonly<Record<string, unknown>>): never {
+	throw new EventCalendarError(
+		'invalid-prop',
+		`Civil date operations support ${MIN_EVENT_CALENDAR_DAY} through ${MAX_EVENT_CALENDAR_BOUNDARY}; ${MAX_EVENT_CALENDAR_BOUNDARY} is exclusive-only.`,
+		{
+			reason: SUPPORTED_DATE_DOMAIN_REASON,
+			minimumDay: MIN_EVENT_CALENDAR_DAY,
+			maximumDay: MAX_EVENT_CALENDAR_DAY,
+			maximumExclusiveBoundary: MAX_EVENT_CALENDAR_BOUNDARY,
+			...details
+		}
+	);
 }

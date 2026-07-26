@@ -27,6 +27,8 @@
 		disabledDates = [],
 		view = 'single',
 		weekStartsOnMonday = true,
+		weekStartsOn,
+		today,
 		weekdayLength = 'narrow',
 		locale,
 		ariaLabel = 'Calendar',
@@ -104,6 +106,12 @@
 		get weekStartsOnMonday() {
 			return weekStartsOnMonday;
 		},
+		get weekStartsOn() {
+			return weekStartsOn;
+		},
+		get today() {
+			return today;
+		},
 		get type() {
 			return (type ?? 'calendar') as T;
 		},
@@ -168,6 +176,7 @@
 
 	function handleMonthChange(direction: -1 | 1) {
 		if (disabled) return;
+		if (!calendar.canGoToMonth(calendar.currentYear, calendar.currentMonth + direction)) return;
 		if (direction < 0) calendar.goPrevMonth();
 		else calendar.goNextMonth();
 	}
@@ -232,15 +241,19 @@
 				size="small"
 				variant="ghost"
 				class="rotate-180"
-				{disabled}
 				label="Previous month"
 				{...buttonProps.prev}
+				type="button"
+				disabled={disabled ||
+					buttonProps.prev.disabled ||
+					!calendar.canGoToMonth(calendar.currentYear, calendar.currentMonth - 1)}
 				onClick={() => handleMonthChange(-1)}
 			>
 				{@render caretRightIcon()}
 			</Button>
 		{/if}
 		<Button
+			type="button"
 			bind:ref={viewTriggerElement}
 			size="normal"
 			variant="ghost"
@@ -259,9 +272,12 @@
 				squared
 				size="small"
 				variant="ghost"
-				{disabled}
 				label="Next month"
 				{...buttonProps.next}
+				type="button"
+				disabled={disabled ||
+					buttonProps.next.disabled ||
+					!calendar.canGoToMonth(calendar.currentYear, calendar.currentMonth + 1)}
 				onClick={() => handleMonthChange(1)}
 			>
 				{@render caretRightIcon()}
@@ -312,7 +328,7 @@
 	>
 		<div role="row" class="contents">
 			{#each Array(7) as _, dayIndex}
-				{@const weekDay = weekStartsOnMonday ? (dayIndex + 1) % 7 : dayIndex}
+				{@const weekDay = (calendar.resolvedWeekStartsOn + dayIndex) % 7}
 				<span
 					role="columnheader"
 					aria-label={new Date(2024, 0, 7 + weekDay).toLocaleDateString(locale, {

@@ -158,5 +158,22 @@ export const fr: Messages = {
 	format: 'format',
 	percentage: 'pourcentage',
 	pickColorFromScreen: 'Choisir une couleur à l’écran',
-	dragToReorder: 'Glisser pour réorganiser'
+	dragToReorder: 'Glisser pour réorganiser',
+	eventCalendarLabel: 'Calendrier des événements',
+	eventCalendarToday: "Aujourd'hui",
+	eventCalendarPrevious: 'Période précédente',
+	eventCalendarNext: 'Période suivante',
+	eventCalendarChooseDate: 'Choisir une date',
+	eventCalendarViewSwitcher: 'Vue du calendrier',
+	eventCalendarViewMenu: 'Choisir la vue du calendrier',
+	eventCalendarEmpty: 'Aucun événement dans cette période',
+	eventCalendarLoading: 'Chargement du calendrier',
+	eventCalendarMonthView: 'Mois',
+	eventCalendarWeekView: 'Semaine',
+	eventCalendarDayView: 'Jour',
+	eventCalendarDaysView: 'Jours',
+	eventCalendarAgendaView: 'Agenda',
+	eventCalendarResourceView: 'Ressources',
+	eventCalendarRangeAnnouncement: (title: string | number) => `Affichage de ${title}`,
+	eventCalendarViewAnnouncement: (view: string | number) => `Vue ${view} sélectionnée`
 };

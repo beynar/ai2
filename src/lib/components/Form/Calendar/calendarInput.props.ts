@@ -3,12 +3,18 @@ import type { InferComponentTheme } from '$lib/utils/cva/index.js';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { ButtonProps } from '$lib/components/Button/index.js';
 import type { Snippet } from 'svelte';
-import type { Event, CalendarType, CalendarValue } from './useCalendar.svelte.js';
+import type { Event, CalendarType, CalendarValue, CalendarWeekday } from './useCalendar.svelte.js';
 import type { calendarTheme } from './calendar.theme.js';
 import type { ChipProps } from '$lib/components/Chip/chip.props.js';
 
 // Re-export types and values from useCalendar
-export type { Event, Cell, CalendarType, CalendarValue } from './useCalendar.svelte.js';
+export type {
+	Event,
+	Cell,
+	CalendarType,
+	CalendarValue,
+	CalendarWeekday
+} from './useCalendar.svelte.js';
 export { CalendarState } from './useCalendar.svelte.js';
 
 export type CalendarPrimitiveProps<
@@ -27,8 +33,12 @@ export type BaseCalendarProps<E extends Event> = WithSlot<
 	{
 		/** Events associated with calendar dates. */
 		events?: E[];
-		/** When true, the week starts on Monday instead of Sunday. */
+		/** Legacy Monday/Sunday toggle, used when `weekStartsOn` is not provided. */
 		weekStartsOnMonday?: boolean;
+		/** Explicit first weekday. When provided, this takes precedence over `weekStartsOnMonday`. */
+		weekStartsOn?: CalendarWeekday;
+		/** Date marked as today. Defaults to the host-local current day. */
+		today?: Date;
 		/** Locale used for month, weekday, and accessible day labels. */
 		locale?: string;
 		/** Accessible label applied to the calendar group. Visible month grids use their month and year. */

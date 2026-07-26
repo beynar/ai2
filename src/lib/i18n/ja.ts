@@ -157,5 +157,22 @@ export const ja: Messages = {
 	format: '形式',
 	percentage: 'パーセント',
 	pickColorFromScreen: '画面から色を選択',
-	dragToReorder: 'ドラッグして並べ替え'
+	dragToReorder: 'ドラッグして並べ替え',
+	eventCalendarLabel: '予定カレンダー',
+	eventCalendarToday: '今日',
+	eventCalendarPrevious: '前の期間',
+	eventCalendarNext: '次の期間',
+	eventCalendarChooseDate: '日付を選択',
+	eventCalendarViewSwitcher: 'カレンダー表示',
+	eventCalendarViewMenu: 'カレンダー表示を選択',
+	eventCalendarEmpty: 'この期間に予定はありません',
+	eventCalendarLoading: 'カレンダーを読み込み中',
+	eventCalendarMonthView: '月',
+	eventCalendarWeekView: '週',
+	eventCalendarDayView: '日',
+	eventCalendarDaysView: '日間',
+	eventCalendarAgendaView: '予定一覧',
+	eventCalendarResourceView: 'リソース',
+	eventCalendarRangeAnnouncement: (title: string | number) => `${title}を表示中`,
+	eventCalendarViewAnnouncement: (view: string | number) => `${view}表示を選択しました`
 };
