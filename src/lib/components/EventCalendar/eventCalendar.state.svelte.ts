@@ -3,6 +3,7 @@
 import { untrack } from 'svelte';
 import { bind } from '$lib/utils/state.svelte.js';
 import {
+	addCivilDays,
 	assertDateOnly,
 	assertValidInstant,
 	assertValidRange,
@@ -20,6 +21,10 @@ import {
 	startOfZonedDay
 } from './eventCalendar.date.js';
 import { EventCalendarError } from './eventCalendar.error.js';
+import {
+	createEventCalendarItemIndex,
+	type EventCalendarItemIndex
+} from './eventCalendar.items.js';
 import type {
 	EventCalendarBusinessHours,
 	EventCalendarCreateActivation,
@@ -28,6 +33,7 @@ import type {
 	EventCalendarOffDaysConfig,
 	EventCalendarRange,
 	EventCalendarRangeChangeInfo,
+	EventCalendarRecurrenceExpander,
 	EventCalendarResource,
 	EventCalendarSelection,
 	EventCalendarSlot,
@@ -112,6 +118,7 @@ export type EventCalendarStateOptions<
 	businessHours: EventCalendarBusinessHours[];
 	offDays: boolean | EventCalendarOffDaysConfig;
 	disabled: boolean;
+	expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
 	onRangeChange?: (info: EventCalendarRangeChangeInfo) => void;
 	onViewChange?: (view: EventCalendarView) => void;
 	onDateChange?: (date: Date) => void;
@@ -139,6 +146,7 @@ export class EventCalendarState<
 	private validatedResourceLeafCount = 0;
 	private validatedItems: readonly EventCalendarItem<TItemFields>[] | null = null;
 	private validatedItemResources: readonly EventCalendarResource<TResourceFields>[] | null = null;
+	private validatedRecurrenceExpander?: EventCalendarRecurrenceExpander<TItemFields>;
 
 	get enabledViews(): readonly EventCalendarView[] {
 		return getEnabledViews(this.views, this.validateResourceCollection() > 0);
@@ -146,6 +154,18 @@ export class EventCalendarState<
 
 	get dateProfile(): EventCalendarDateProfile {
 		return this.createProfile(this.view, this.date, this.dayCount);
+	}
+
+	get itemIndex(): EventCalendarItemIndex<TItemFields> {
+		const profile = this.dateProfile;
+		return createEventCalendarItemIndex({
+			items: this.items,
+			range: profile.activeRange,
+			displayTimeZone: this.timeZone,
+			profileKey: getItemProfileKey(profile),
+			visibleDays: profile.visibleDays,
+			expandRecurrence: this.expandRecurrence
+		});
 	}
 
 	private createProfile(
@@ -302,6 +322,48 @@ export class EventCalendarState<
 		return [...this.dateProfile.visibleDays];
 	}
 
+	getOccurrence(key: string) {
+		return this.itemIndex.getOccurrence(key);
+	}
+
+	getOccurrences(range?: EventCalendarRange) {
+		if (!range) return this.itemIndex.occurrences;
+		assertValidRange(range, 'occurrence query range');
+		return createEventCalendarItemIndex({
+			items: this.items,
+			range,
+			displayTimeZone: this.timeZone,
+			profileKey: `query:${range.start.getTime()}:${range.end.getTime()}`,
+			expandRecurrence: this.expandRecurrence
+		}).occurrences;
+	}
+
+	getOccurrencesForDay(day: EventCalendarDateOnly) {
+		assertDateOnly(day, 'day');
+		let endDay: EventCalendarDateOnly;
+		try {
+			endDay = addCivilDays(day, 1);
+		} catch (error) {
+			if (!isSupportedDateDomainError(error)) throw error;
+			throw new EventCalendarError(
+				'invalid-prop',
+				`Cannot query ${day} because its exclusive day boundary exceeds the supported civil-date domain.`,
+				{ ...error.details, method: 'getOccurrencesForDay', day }
+			);
+		}
+		const range = {
+			start: startOfZonedDay(day, this.timeZone),
+			end: startOfZonedDay(endDay, this.timeZone)
+		};
+		return createEventCalendarItemIndex({
+			items: this.items,
+			range,
+			displayTimeZone: this.timeZone,
+			profileKey: `day-query:${day}`,
+			expandRecurrence: this.expandRecurrence
+		}).occurrences;
+	}
+
 	private navigate(direction: -1 | 1): void {
 		if (this.disabled) return;
 		const hiddenWeekdays = getHiddenWeekdays(this);
@@ -348,10 +410,16 @@ export class EventCalendarState<
 
 	private validateCollections(): number {
 		const resourceLeafCount = this.validateResourceCollection();
-		if (this.validatedItems !== this.items || this.validatedItemResources !== this.resources) {
+		if (
+			this.validatedItems !== this.items ||
+			this.validatedItemResources !== this.resources ||
+			this.validatedRecurrenceExpander !== this.expandRecurrence
+		) {
 			validateItems(this.items, this.resources);
+			void this.itemIndex;
 			this.validatedItems = this.items;
 			this.validatedItemResources = this.resources;
+			this.validatedRecurrenceExpander = this.expandRecurrence;
 		}
 		return resourceLeafCount;
 	}
@@ -419,7 +487,16 @@ export class EventCalendarState<
 		void this.createActivation;
 		void this.businessHours;
 		void this.offDays;
+		void this.expandRecurrence;
 	}
+}
+
+function getItemProfileKey(profile: EventCalendarDateProfile): string {
+	return JSON.stringify([
+		profile.view,
+		profile.activeRange.start.getTime(),
+		profile.activeRange.end.getTime()
+	]);
 }
 
 function validateConfiguration<TItemFields extends object, TResourceFields extends object>(

@@ -238,6 +238,9 @@
 		get disabled() {
 			return disabled;
 		},
+		get expandRecurrence() {
+			return expandRecurrence;
+		},
 		get onRangeChange() {
 			return onRangeChange;
 		},
@@ -297,6 +300,22 @@
 		return calendar.getVisibleDays();
 	}
 
+	export function getOccurrence(key: string): EventCalendarOccurrence<TItemFields> | null {
+		return calendar.getOccurrence(key);
+	}
+
+	export function getOccurrences(
+		range?: EventCalendarRange
+	): readonly EventCalendarOccurrence<TItemFields>[] {
+		return calendar.getOccurrences(range);
+	}
+
+	export function getOccurrencesForDay(
+		day: EventCalendarDateOnly
+	): readonly EventCalendarOccurrence<TItemFields>[] {
+		return calendar.getOccurrencesForDay(day);
+	}
+
 	export function select(nextSelection: EventCalendarSelection): void {
 		calendar.select(nextSelection);
 	}
@@ -305,11 +324,11 @@
 		calendar.clearSelection();
 	}
 
-	function unavailableItemEngine(method: string, details?: Record<string, unknown>): never {
+	function unavailableItemMutation(method: string, details?: Record<string, unknown>): never {
 		throw new EventCalendarError(
 			'invalid-item',
-			`${method} is unavailable until the EventCalendar item engine is active.`,
-			{ method, phase: 2, ...details }
+			`${method} mutation is unavailable until the EventCalendar interaction engine is active.`,
+			{ method, phase: 3, ...details }
 		);
 	}
 
@@ -323,22 +342,14 @@
 		getVisibleRange,
 		getActiveRange,
 		getVisibleDays,
-		getOccurrence(key: string): EventCalendarOccurrence<TItemFields> | null {
-			return unavailableItemEngine('getOccurrence', { key });
-		},
-		getOccurrences(range?: EventCalendarRange): readonly EventCalendarOccurrence<TItemFields>[] {
-			return unavailableItemEngine('getOccurrences', { range });
-		},
-		getOccurrencesForDay(
-			day: EventCalendarDateOnly
-		): readonly EventCalendarOccurrence<TItemFields>[] {
-			return unavailableItemEngine('getOccurrencesForDay', { day });
-		},
+		getOccurrence,
+		getOccurrences,
+		getOccurrencesForDay,
 		addItem(item: EventCalendarItem<TItemFields>): void {
-			unavailableItemEngine('addItem', { id: item.id });
+			unavailableItemMutation('addItem', { id: item.id });
 		},
 		updateItem(item: EventCalendarItem<TItemFields>): void {
-			unavailableItemEngine('updateItem', { id: item.id });
+			unavailableItemMutation('updateItem', { id: item.id });
 		},
 		updateOccurrence(
 			key: string,
@@ -347,10 +358,10 @@
 		): void {
 			void adjustment;
 			void options;
-			unavailableItemEngine('updateOccurrence', { key });
+			unavailableItemMutation('updateOccurrence', { key });
 		},
 		removeItem(id: string): void {
-			unavailableItemEngine('removeItem', { id });
+			unavailableItemMutation('removeItem', { id });
 		},
 		select,
 		clearSelection,
@@ -438,7 +449,6 @@
 		void canSelectSlot;
 		void recurrenceEditScope;
 		void getOccurrenceExceptionId;
-		void expandRecurrence;
 		void item;
 		void itemTooltip;
 		void monthCell;
