@@ -8,10 +8,15 @@
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
+	import EventCalendarAgendaView from './EventCalendarAgendaView.svelte';
 	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
 	import EventCalendarTimeGrid from './EventCalendarTimeGrid.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
+		EventCalendarAgendaDetailsPayload,
+		EventCalendarAgendaItemPayload,
+		EventCalendarAllDayPayload,
+		EventCalendarDayHeaderPayload,
 		EventCalendarEmptyPayload,
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload,
@@ -20,9 +25,7 @@
 		EventCalendarOverflowPayload,
 		EventCalendarSnapshot,
 		EventCalendarViewPayload,
-		EventCalendarDayHeaderPayload,
 		EventCalendarTimeGutterPayload,
-		EventCalendarAllDayPayload,
 		EventCalendarNowIndicatorPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
@@ -57,6 +60,8 @@
 		timeGutter,
 		allDay,
 		nowIndicatorContent,
+		agendaItem,
+		agendaDetails,
 		item,
 		itemTooltip,
 		overflow,
@@ -90,6 +95,8 @@
 		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
 		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
 		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
+		agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
+		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
@@ -120,7 +127,12 @@
 		visibleRange: snapshot.range.renderRange,
 		visibleDays: snapshot.range.visibleDays
 	});
-	const hasProvableEmptyRange = $derived(calendar.itemIndex.occurrences.length === 0);
+	const hasProvableEmptyRange = $derived.by(() => {
+		if (snapshot.view !== 'agenda') return calendar.itemIndex.occurrences.length === 0;
+		return !snapshot.range.visibleDays.some(
+			(day) => (calendar.itemIndex.segmentsByDay.get(day)?.foreground.length ?? 0) > 0
+		);
+	});
 	const emptyMode = $derived(snapshot.view === 'agenda' ? 'agenda-replacement' : 'grid-status');
 	const emptyPayload = $derived<EventCalendarEmptyPayload>({
 		...viewPayload,
@@ -217,6 +229,22 @@
 					{onItemDoubleClick}
 					{onSlotClick}
 				/>
+			{:else if snapshot.view === 'agenda'}
+				<EventCalendarAgendaView
+					{calendar}
+					{snapshot}
+					{messages}
+					{density}
+					{color}
+					{disabled}
+					{scrollMode}
+					{scrollbars}
+					{classes}
+					{agendaItem}
+					{agendaDetails}
+					{onItemClick}
+					{onItemDoubleClick}
+				/>
 			{/if}
 		</div>
 		{#if hasProvableEmptyRange}
@@ -249,5 +277,10 @@
 {/snippet}
 
 {#snippet defaultLoading()}
-	<Spinner {color} label={messages.eventCalendarLoading} text={messages.eventCalendarLoading} />
+	<Spinner
+		{color}
+		label={messages.eventCalendarLoading}
+		text={messages.eventCalendarLoading}
+		theme={{ label: { base: 'text-neutral/75' } }}
+	/>
 {/snippet}

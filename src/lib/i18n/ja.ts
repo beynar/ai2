@@ -176,6 +176,8 @@ export const ja: Messages = {
 	eventCalendarMore: (count: string | number) => `他${count}件`,
 	eventCalendarWeekNumber: (week: string | number) => `第${week}週`,
 	eventCalendarAllDay: '終日',
+	eventCalendarEventCount: (count: string | number) => `${count} 件の予定`,
+	eventCalendarDetails: (title: string | number) => `${title} の詳細`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `${title}を表示中`,
 	eventCalendarViewAnnouncement: (view: string | number) => `${view}表示を選択しました`
 };

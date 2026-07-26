@@ -177,6 +177,9 @@ export const fr: Messages = {
 	eventCalendarMore: (count: string | number) => `+${count} en plus`,
 	eventCalendarWeekNumber: (week: string | number) => `Semaine ${week}`,
 	eventCalendarAllDay: 'Toute la journée',
+	eventCalendarEventCount: (count: string | number) =>
+		`${count} ${Number(count) === 1 ? 'événement' : 'événements'}`,
+	eventCalendarDetails: (title: string | number) => `Détails de ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `Affichage de ${title}`,
 	eventCalendarViewAnnouncement: (view: string | number) => `Vue ${view} sélectionnée`
 };

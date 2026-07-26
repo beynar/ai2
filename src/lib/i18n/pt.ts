@@ -178,6 +178,9 @@ export const pt: Messages = {
 	eventCalendarMore: (count: string | number) => `+${count} mais`,
 	eventCalendarWeekNumber: (week: string | number) => `Semana ${week}`,
 	eventCalendarAllDay: 'Dia inteiro',
+	eventCalendarEventCount: (count: string | number) =>
+		`${count} ${Number(count) === 1 ? 'evento' : 'eventos'}`,
+	eventCalendarDetails: (title: string | number) => `Detalhes de ${title}`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `Exibindo ${title}`,
 	eventCalendarViewAnnouncement: (view: string | number) => `Visualização ${view} selecionada`
 };

@@ -449,8 +449,6 @@
 		void canSelectSlot;
 		void recurrenceEditScope;
 		void getOccurrenceExceptionId;
-		void agendaItem;
-		void agendaDetails;
 		void resourceHeader;
 		void dragPreview;
 		void onItemsChange;
@@ -523,6 +521,8 @@
 		{timeGutter}
 		{allDay}
 		{nowIndicatorContent}
+		{agendaItem}
+		{agendaDetails}
 		{item}
 		{itemTooltip}
 		{overflow}

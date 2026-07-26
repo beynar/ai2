@@ -175,6 +175,8 @@ export const zh: Messages = {
 	eventCalendarMore: (count: string | number) => `另有${count}项`,
 	eventCalendarWeekNumber: (week: string | number) => `第${week}周`,
 	eventCalendarAllDay: '全天',
+	eventCalendarEventCount: (count: string | number) => `${count} 个事件`,
+	eventCalendarDetails: (title: string | number) => `${title} 的详情`,
 	eventCalendarRangeAnnouncement: (title: string | number) => `正在显示${title}`,
 	eventCalendarViewAnnouncement: (view: string | number) => `已选择${view}视图`
 };
