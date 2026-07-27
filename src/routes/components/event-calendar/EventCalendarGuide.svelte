@@ -1,0 +1,50 @@
+<script lang="ts">
+	const guides = [
+		{
+			title: 'State, navigation, and loading',
+			body: 'items, resources, date, view, dayCount, and selection are controlled values. Treat collections and definitions as immutable: every application update needs a fresh outer array and replacement objects. Header and API navigation reassign the bindable date/view values; narrow layouts never change the requested view. onRangeChange reports the exact half-open fetchRange, while the application owns requests, caching, retry UI, and loading.'
+		},
+		{
+			title: 'Views and display settings',
+			body: 'Month supports fixed or natural rows, outside days, hidden weekends, week numbers, overflow, and multi-day bars. Week, day, and N-day share timed packing, all-day lanes, background ranges, now indication, and scrolling. Agenda groups the same occurrences across agendaDayCount. Resource is one day with a shared axis and one column per leaf. Use the documented hour, interval, snap, off-day, business-hour, chrome, and scroll props; invalid values throw instead of clamping.'
+		},
+		{
+			title: 'Mutations, validation, and dialogs',
+			body: 'Drag, keyboard mode, the single-pointer item menu, both resize edges, and API updates share one proposal pipeline. Structural/range checks run before business hours, overlap, and custom policy. onItemUpdate may reject or adjust, and adjustments are revalidated. onItemsChange receives one immutable transaction with guarded revert. Empty-slot creation ends at onSlotSelect: compose a Svelai Dialog and Form with DateInput, TimeInput, Select, and Switch, then add the validated domain item yourself.'
+		},
+		{
+			title: 'Snippets and theme',
+			body: 'header exposes ready-made navigation, title, view, date-picker, and action snippets. item, dayHeader, monthCell, timeGutter, allDay, overflow, agenda, resourceHeader, nowIndicatorContent, dragPreview, empty, and loadingContent customize owned regions. Render defaultContent when wrapping defaults. Semantic wrappers, focus, disclosures, drag wiring, and announcements remain calendar-owned. Override theme per instance or use setEventCalendarTheme globally; CSS metric variables tune geometry.'
+		},
+		{
+			title: 'Recurrence and time zones',
+			body: 'timeZone is always explicit. Timed recurrence also requires its scheduling recurrenceTimeZone; floating all-day recurrence stays date-only when the display zone changes. Occurrence scope persists an exception whose originalStart keeps the source representation. Series scope transforms the source and every bound exception atomically, so it is valid only when items contains the complete exception set. Windowed loading should keep occurrence or disabled scope unless it can prove completeness.'
+		},
+		{
+			title: 'Resources, RTL, and accessibility',
+			body: 'Resources are a typed flat tree: parents group and leaves accept assignment; unresolved items remain visible in Unassigned. Custom resource fields reach resourceHeader. dir mirrors physical horizontal movement while previous/next remain chronological. Grids, groups, buttons, disclosures, roving focus, keyboard move/resize, Enter commit, Escape cancel, single-pointer alternatives, live status, reduced motion, 24px targets, 200% reflow, and horizontal overflow are built in.'
+		}
+	];
+</script>
+
+<section aria-labelledby="event-calendar-contract">
+	<h2 id="event-calendar-contract" class="text-neutral text-xl font-semibold">
+		Integration contract
+	</h2>
+	<p class="text-neutral/60 mt-2 max-w-4xl text-sm leading-6">
+		Timed values are absolute <code>Date</code> instants. All-day values are canonical
+		<code>YYYY-MM-DD</code> civil dates with exclusive ends. The supported civil display domain runs
+		from <code>0001-01-01</code> through the last renderable day
+		<code>9999-12-30</code>; <code>9999-12-31</code> remains available as the maximum exclusive boundary.
+		Direct invalid profiles and jumps throw; previous/next beyond the domain are no-ops.
+	</p>
+
+	<div class="mt-5 grid gap-4 md:grid-cols-2">
+		{#each guides as guide (guide.title)}
+			<section class="border-neutral-muted bg-surface rounded-xl border p-4">
+				<h3 class="text-neutral font-semibold">{guide.title}</h3>
+				<p class="text-neutral/65 mt-2 text-sm leading-6">{guide.body}</p>
+			</section>
+		{/each}
+	</div>
+</section>

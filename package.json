@@ -299,6 +299,11 @@
 			"svelte": "./dist/components/Form/Calendar/index.js",
 			"default": "./dist/components/Form/Calendar/index.js"
 		},
+		"./event-calendar": {
+			"types": "./dist/components/EventCalendar/index.d.ts",
+			"svelte": "./dist/components/EventCalendar/index.js",
+			"default": "./dist/components/EventCalendar/index.js"
+		},
 		"./calendar-primitive": {
 			"types": "./dist/components/Form/Calendar/index.d.ts",
 			"svelte": "./dist/components/Form/Calendar/index.js",
@@ -865,6 +870,9 @@
 			],
 			"./calendar": [
 				"./dist/components/Form/Calendar/index.d.ts"
+			],
+			"./event-calendar": [
+				"./dist/components/EventCalendar/index.d.ts"
 			],
 			"./date-selector": [
 				"./dist/components/Form/DateSelector/index.d.ts"

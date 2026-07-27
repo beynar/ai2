@@ -23,6 +23,7 @@ import { emptyDescription } from '$lib/components/Empty/empty.mcp.js';
 import { kbdDescription } from '$lib/components/Kbd/kbd.mcp.js';
 import { dialogDescription } from '$lib/components/Dialog/dialog.mcp.js';
 import { calendarDescription } from '$lib/components/Form/Calendar/calendar.mcp.js';
+import { eventCalendarDescription } from '$lib/components/EventCalendar/eventCalendar.mcp.js';
 import { dateInputDescription } from '$lib/components/Form/DateInput/dateInput.mcp.js';
 import { dateSelectorDescription } from '$lib/components/Form/DateSelector/dateSelector.mcp.js';
 import { colorPickerDescription } from '$lib/components/Form/ColorPicker/colorPicker.mcp.js';
@@ -132,6 +133,7 @@ const components = {
 	markdown: markdownDescription,
 	dialog: dialogDescription,
 	calendar: calendarDescription,
+	'event-calendar': eventCalendarDescription,
 	'date-input': dateInputDescription,
 	'date-selector': dateSelectorDescription,
 	'color-picker': colorPickerDescription,

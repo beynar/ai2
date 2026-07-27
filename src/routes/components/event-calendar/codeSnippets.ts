@@ -1,0 +1,72 @@
+export const viewsCode = [
+	'<script lang="ts">',
+	"  import { EventCalendar, type EventCalendarItem } from 'svelai/event-calendar';",
+	"  let date = $state(new Date('2026-07-15T10:00:00.000Z'));",
+	'  let items = $state<EventCalendarItem[]>([]);',
+	'</script>',
+	'',
+	'<EventCalendar',
+	'  bind:date bind:items',
+	'  timeZone="Europe/Paris"',
+	'  class="h-[42rem]"',
+	'/>'
+].join('\n');
+
+export const interactionCode = [
+	'<EventCalendar',
+	'  bind:items bind:date view="week"',
+	'  timeZone="Europe/Paris"',
+	'  allowOverlap={false}',
+	'  constrainToBusinessHours',
+	'  onItemsChange={(nextItems, change) => persist(nextItems).catch((error) => {',
+	'    change.revert();',
+	'    throw error;',
+	'  })}',
+	'  onSlotSelect={(slot) => openCreateDialog(slot)}',
+	'  class="h-[42rem]"',
+	'/>'
+].join('\n');
+
+export const compositionCode = [
+	'<EventCalendar bind:items bind:date timeZone="Europe/Paris">',
+	'  {#snippet header({ previous, title, next, viewSwitcher })}',
+	'    {@render previous()}',
+	'    {@render title()}',
+	'    {@render next()}',
+	'    {@render viewSwitcher()}',
+	'  {/snippet}',
+	'',
+	'  {#snippet item({ occurrence, defaultContent })}',
+	'    {@render defaultContent()}',
+	'    <span class="sr-only">Owned by {occurrence.item.owner}</span>',
+	'  {/snippet}',
+	'</EventCalendar>'
+].join('\n');
+
+export const resourcesCode = [
+	'type RoomFields = { floor: string; capacity?: number };',
+	'let resources = $state<EventCalendarResource<RoomFields>[]>(rooms);',
+	'',
+	'<EventCalendar',
+	'  {resources} bind:items bind:date',
+	'  view="resource"',
+	'  timeZone="Europe/Paris"',
+	'  class="h-[42rem]"',
+	'>',
+	'  {#snippet resourceHeader({ resource, defaultContent })}',
+	'    {@render defaultContent()}',
+	'    {#if resource?.capacity}{resource.capacity} seats{/if}',
+	'  {/snippet}',
+	'</EventCalendar>'
+].join('\n');
+
+export const loadingRtlCode = [
+	'<EventCalendar',
+	'  bind:date {items} {loading}',
+	'  view="days" dayCount={2}',
+	'  dir="rtl" locale="ar"',
+	'  timeZone="Asia/Kathmandu"',
+	'  onRangeChange={({ fetchRange }) => loadOverlappingItems(fetchRange)}',
+	'  class="h-[42rem]"',
+	'/>'
+].join('\n');

@@ -1,0 +1,80 @@
+<script lang="ts">
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
+	import EventCalendarCompositionDemo from './EventCalendarCompositionDemo.svelte';
+	import EventCalendarGuide from './EventCalendarGuide.svelte';
+	import EventCalendarInteractionsDemo from './EventCalendarInteractionsDemo.svelte';
+	import EventCalendarLoadingRtlDemo from './EventCalendarLoadingRtlDemo.svelte';
+	import EventCalendarResourcesDemo from './EventCalendarResourcesDemo.svelte';
+	import EventCalendarViewsDemo from './EventCalendarViewsDemo.svelte';
+	import {
+		compositionCode,
+		interactionCode,
+		loadingRtlCode,
+		resourcesCode,
+		viewsCode
+	} from './codeSnippets.js';
+</script>
+
+<DocPage
+	title="Event calendar"
+	subtitle="A complete scheduling surface with typed recurrence, resources, immutable transactions, and accessible pointer or keyboard interaction."
+	component="EventCalendar"
+	features={[
+		'Month, week, day, N-day, agenda, and resource views',
+		'Timed, all-day, multi-day, background, and recurring items',
+		'Move, resize, range creation, keyboard, touch, and single-pointer controls',
+		'Explicit IANA time zones with DST-safe civil-day math',
+		'Typed snippets, resources, callbacks, and imperative API',
+		'Consumer-owned loading and persistence with guarded revert'
+	]}
+>
+	<EventCalendarGuide />
+
+	<ComponentCard
+		title="One model, six views"
+		description="Use the built-in switcher to inspect the same timed, all-day, background, multi-day, recurring, and resource-assigned definitions in every view."
+		code={viewsCode}
+		class="min-h-0 items-stretch p-3 md:p-5"
+	>
+		<EventCalendarViewsDemo />
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard
+			title="Validation and reversible mutations"
+			description="Drag an item, use its action menu, or focus it and press M, S, or E. Arrows propose a snapped target, Enter commits, and Escape cancels. Drag across empty slots to select a create range."
+			code={interactionCode}
+			class="min-h-0 items-stretch p-3 md:p-5"
+		>
+			<EventCalendarInteractionsDemo />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Owned semantics, custom content"
+			description="Header and cell snippets compose ready-made defaults; item content stays inside the calendar-owned activation button and retains interaction and accessibility behavior."
+			code={compositionCode}
+			class="min-h-0 items-stretch p-3 md:p-5"
+		>
+			<EventCalendarCompositionDemo />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Typed resource day"
+			description="Flat parent/leaf resources become grouped columns. Custom floor and capacity fields remain typed in resourceHeader, while unresolved items use the Unassigned column."
+			code={resourcesCode}
+			class="min-h-0 items-stretch p-3 md:p-5"
+		>
+			<EventCalendarResourcesDemo />
+		</ComponentCard>
+
+		<ComponentCard
+			title="Consumer loading, RTL, and a non-hour zone"
+			description="The range callback exposes the exact fetch envelope. Loading keeps navigation available, RTL mirrors physical controls without reversing time, and Asia/Kathmandu exercises a 45-minute offset."
+			code={loadingRtlCode}
+			class="min-h-0 items-stretch p-3 md:p-5"
+		>
+			<EventCalendarLoadingRtlDemo />
+		</ComponentCard>
+	{/snippet}
+</DocPage>
