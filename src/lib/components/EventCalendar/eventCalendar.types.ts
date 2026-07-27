@@ -3,8 +3,7 @@ import type { Colors } from '$lib/types/theme.js';
 export type EventCalendarColor = Colors | (string & {});
 export type EventCalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type EventCalendarDateOnly = `${number}-${number}-${number}`;
-export type EventCalendarView =
-	'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource' | 'timeline';
+export type EventCalendarView = 'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource';
 
 export type EventCalendarRange = {
 	start: Date;

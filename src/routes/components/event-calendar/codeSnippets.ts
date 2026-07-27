@@ -51,7 +51,7 @@ export const resourcesCode = [
 	'',
 	'<EventCalendar',
 	'  {resources} bind:items bind:date',
-	'  view="timeline" dayCount={3}',
+	'  view="resource"',
 	'  constrainToBusinessHours',
 	'  timeZone="Europe/Paris"',
 	'  class="h-[42rem]"',

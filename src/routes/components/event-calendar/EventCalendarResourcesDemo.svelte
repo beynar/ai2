@@ -10,16 +10,7 @@
 	} from './eventCalendarDemoData.js';
 
 	let items = $state(createDemoItems());
-	let resources = $state<EventCalendarResource<RoomFields>[]>([
-		...createDemoResources(),
-		...Array.from({ length: 40 }, (_, index) => ({
-			id: `desk-${index + 1}`,
-			title: `Desk ${String(index + 1).padStart(2, '0')}`,
-			parentId: 'hq',
-			floor: String(4 + Math.floor(index / 10)),
-			capacity: 1
-		}))
-	]);
+	let resources = $state<EventCalendarResource<RoomFields>[]>(createDemoResources());
 	let date = $state(new Date('2026-07-15T10:00:00.000Z'));
 </script>
 
@@ -27,9 +18,8 @@
 	bind:items
 	{resources}
 	bind:date
-	view="timeline"
-	views={['timeline', 'resource', 'day']}
-	dayCount={3}
+	view="resource"
+	views={['resource', 'day']}
 	timeZone="Europe/Paris"
 	dayStartHour={7}
 	dayEndHour={19}

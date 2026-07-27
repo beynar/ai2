@@ -35,15 +35,7 @@
 		EventCalendarView
 	} from './eventCalendar.types.js';
 
-	const DEFAULT_VIEWS: EventCalendarView[] = [
-		'month',
-		'week',
-		'day',
-		'days',
-		'agenda',
-		'resource',
-		'timeline'
-	];
+	const DEFAULT_VIEWS: EventCalendarView[] = ['month', 'week', 'day', 'days', 'agenda', 'resource'];
 	const DEFAULT_CREATE_ACTIVATION: EventCalendarCreateActivation = {
 		distancePx: 5,
 		touchDelayMs: 300,
@@ -94,9 +86,6 @@
 		defaultAllDayItemDuration = 1,
 		scrollToHour = 7,
 		agendaDayCount = 30,
-		timelineRowHeight = 48,
-		timelineSlotWidth = 48,
-		timelineOverscan = 6,
 		nowIndicator = true,
 		nowIndicatorInterval = 30000,
 		offDays = false,
@@ -228,15 +217,6 @@
 		},
 		get agendaDayCount() {
 			return agendaDayCount;
-		},
-		get timelineRowHeight() {
-			return timelineRowHeight;
-		},
-		get timelineSlotWidth() {
-			return timelineSlotWidth;
-		},
-		get timelineOverscan() {
-			return timelineOverscan;
 		},
 		get validRange() {
 			return validRange;
@@ -466,7 +446,7 @@
 			.map((resourceId) => calendar.resourceModel.resolveLeaf(resourceId)?.title)
 			.filter((title): title is string => Boolean(title));
 		if (resourceTitles.length > 0) return `${placement}, ${resourceTitles.join(', ')}`;
-		return calendar.view === 'resource' || calendar.view === 'timeline'
+		return calendar.view === 'resource'
 			? `${placement}, ${messages.eventCalendarUnassignedResource}`
 			: placement;
 	}
@@ -488,7 +468,7 @@
 			labels.unshift(messages.eventCalendarRecurringEvent);
 		}
 		if (
-			(calendar.view === 'resource' || calendar.view === 'timeline') &&
+			calendar.view === 'resource' &&
 			gesture.kind === 'move' &&
 			gesture.isValid &&
 			calendar.interaction.proposal
@@ -502,7 +482,7 @@
 		const gesture = calendar.interaction.gesture;
 		const proposal = calendar.interaction.proposal;
 		if (
-			(calendar.view !== 'resource' && calendar.view !== 'timeline') ||
+			calendar.view !== 'resource' ||
 			!gesture ||
 			gesture.kind !== 'move' ||
 			!gesture.isValid ||
@@ -817,9 +797,6 @@
 		{nowIndicator}
 		{showWeekNumbers}
 		{maxItemsPerCell}
-		{timelineRowHeight}
-		{timelineSlotWidth}
-		{timelineOverscan}
 		{offDays}
 		{showItemTooltip}
 		{monthCell}

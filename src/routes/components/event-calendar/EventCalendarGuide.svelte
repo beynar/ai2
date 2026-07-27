@@ -6,7 +6,7 @@
 		},
 		{
 			title: 'Views and display settings',
-			body: 'Month supports fixed or natural rows, outside days, hidden weekends, week numbers, overflow, and multi-day bars. Week, day, and N-day share timed packing, all-day lanes, background ranges, now indication, and scrolling. Agenda groups the same occurrences across agendaDayCount. Resource is one day with a shared vertical axis and one column per leaf. Timeline uses dayCount across a horizontal time axis and virtualizes leaf rows. Use the documented hour, interval, snap, timeline, off-day, business-hour, chrome, and scroll props; invalid values throw instead of clamping.'
+			body: 'Month supports fixed or natural rows, outside days, hidden weekends, week numbers, overflow, and multi-day bars. Week, day, and N-day share timed packing, all-day lanes, background ranges, now indication, and scrolling. Agenda groups the same occurrences across agendaDayCount. Resource is one day with a shared vertical axis and one column per leaf. Use the documented hour, interval, snap, off-day, business-hour, chrome, and scroll props; invalid values throw instead of clamping.'
 		},
 		{
 			title: 'Mutations, validation, and dialogs',

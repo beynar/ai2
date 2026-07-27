@@ -172,7 +172,6 @@ export const zh: Messages = {
 	eventCalendarDaysView: '多日',
 	eventCalendarAgendaView: '日程',
 	eventCalendarResourceView: '资源',
-	eventCalendarTimelineView: '时间线',
 	eventCalendarUnassignedResource: '未分配',
 	eventCalendarResourceMoveAnnouncement: (resource: string | number) => `将事件移动到${resource}`,
 	eventCalendarMore: (count: string | number) => `另有${count}项`,

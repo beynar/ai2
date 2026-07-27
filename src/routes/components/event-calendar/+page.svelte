@@ -21,7 +21,7 @@
 	subtitle="A complete scheduling surface with typed recurrence, resources, immutable transactions, and accessible pointer or keyboard interaction."
 	component="EventCalendar"
 	features={[
-		'Month, week, day, N-day, agenda, resource-day, and virtualized timeline views',
+		'Month, week, day, N-day, agenda, and resource-day views',
 		'Timed, all-day, multi-day, background, and recurring items',
 		'Move, resize, range creation, keyboard, touch, and two-click selection',
 		'Explicit IANA time zones with DST-safe civil-day math',
@@ -33,7 +33,7 @@
 	<EventCalendarGuide />
 
 	<ComponentCard
-		title="One model, seven views"
+		title="One model, six views"
 		description="Use the built-in switcher to inspect the same timed, all-day, background, multi-day, recurring, and resource-assigned definitions in every view."
 		code={viewsCode}
 		class="min-h-0 items-stretch p-3 md:p-5"
@@ -61,8 +61,8 @@
 		</ComponentCard>
 
 		<ComponentCard
-			title="Virtual resource timeline"
-			description="Virtual leaf rows share a horizontal time axis. Multi-assigned events project into every row; local hours and read-only resources reuse the same mutation validator. Switch to resource-day to compare the vertical projection."
+			title="Resource scheduling"
+			description="Leaf resources become day columns. Multi-assigned events project into every assigned column; local hours and read-only resources reuse the same mutation validator."
 			code={resourcesCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

@@ -66,8 +66,7 @@ const EVENT_CALENDAR_VIEWS: readonly EventCalendarView[] = [
 	'day',
 	'days',
 	'agenda',
-	'resource',
-	'timeline'
+	'resource'
 ];
 const VIEW_SET = new Set<EventCalendarView>(EVENT_CALENDAR_VIEWS);
 
@@ -124,9 +123,6 @@ export type EventCalendarStateOptions<
 	showWeekends: boolean;
 	weekendDays: EventCalendarWeekday[];
 	agendaDayCount: number;
-	timelineRowHeight: number;
-	timelineSlotWidth: number;
-	timelineOverscan: number;
 	validRange?: EventCalendarRange;
 	dayStartHour: number;
 	dayEndHour: number;
@@ -474,10 +470,10 @@ export class EventCalendarState<
 		if (!this.enabledViews.includes(view)) {
 			throw new EventCalendarError('invalid-view', `View is not enabled: ${view}.`, { view });
 		}
-		if (options?.dayCount !== undefined && view !== 'days' && view !== 'timeline') {
+		if (options?.dayCount !== undefined && view !== 'days') {
 			throw new EventCalendarError(
 				'invalid-view',
-				'The setView dayCount option is valid only for the days and timeline views.',
+				'The setView dayCount option is valid only for the days view.',
 				{ view }
 			);
 		}
@@ -723,11 +719,7 @@ export class EventCalendarState<
 	private reconcileDateFor(date: Date, view: EventCalendarView): Date {
 		assertValidInstant(date);
 		const shouldReconcileHiddenDay =
-			view === 'day' ||
-			view === 'days' ||
-			view === 'agenda' ||
-			view === 'resource' ||
-			view === 'timeline';
+			view === 'day' || view === 'days' || view === 'agenda' || view === 'resource';
 		if (!shouldReconcileHiddenDay && !this.validRange) return new Date(date);
 
 		const hiddenWeekdays = shouldReconcileHiddenDay
@@ -773,9 +765,6 @@ export class EventCalendarState<
 		void this.showWeekends;
 		void this.weekendDays;
 		void this.agendaDayCount;
-		void this.timelineRowHeight;
-		void this.timelineSlotWidth;
-		void this.timelineOverscan;
 		void this.validRange;
 		void this.dayStartHour;
 		void this.dayEndHour;
@@ -826,9 +815,6 @@ function validateConfiguration<TItemFields extends object, TResourceFields exten
 	validateWeekdays(state.weekendDays, 'weekendDays');
 	assertPositiveInteger(state.dayCount, 'dayCount');
 	assertPositiveInteger(state.agendaDayCount, 'agendaDayCount');
-	assertPositiveInteger(state.timelineRowHeight, 'timelineRowHeight');
-	assertPositiveInteger(state.timelineSlotWidth, 'timelineSlotWidth');
-	assertNonNegativeInteger(state.timelineOverscan, 'timelineOverscan');
 	assertPositiveInteger(state.interval, 'interval');
 	assertPositiveInteger(state.slotDuration, 'slotDuration');
 	assertPositiveInteger(state.snapDuration, 'snapDuration');
@@ -870,13 +856,11 @@ function getEnabledViews(
 	hasResourceLeaf: boolean
 ): readonly EventCalendarView[] {
 	validateViews(views);
-	const enabled = views.filter(
-		(view) => (view !== 'resource' && view !== 'timeline') || hasResourceLeaf
-	);
+	const enabled = views.filter((view) => view !== 'resource' || hasResourceLeaf);
 	if (enabled.length === 0) {
 		throw new EventCalendarError(
 			'invalid-view',
-			'No configured view is currently enabled. Resource and timeline views require a resource leaf.'
+			'No configured view is currently enabled. The resource view requires a resource leaf.'
 		);
 	}
 	return enabled;

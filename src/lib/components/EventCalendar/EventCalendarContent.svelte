@@ -12,7 +12,6 @@
 	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
 	import EventCalendarResourceView from './EventCalendarResourceView.svelte';
 	import EventCalendarTimeGrid from './EventCalendarTimeGrid.svelte';
-	import EventCalendarTimelineView from './EventCalendarTimelineView.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarAgendaDetailsPayload,
@@ -56,9 +55,6 @@
 		nowIndicator,
 		showWeekNumbers,
 		maxItemsPerCell,
-		timelineRowHeight,
-		timelineSlotWidth,
-		timelineOverscan,
 		offDays,
 		showItemTooltip,
 		monthCell,
@@ -95,9 +91,6 @@
 		nowIndicator: boolean;
 		showWeekNumbers: boolean;
 		maxItemsPerCell: number | 'auto';
-		timelineRowHeight: number;
-		timelineSlotWidth: number;
-		timelineOverscan: number;
 		offDays: boolean | EventCalendarOffDaysConfig;
 		showItemTooltip: boolean;
 		monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
@@ -278,28 +271,6 @@
 					{allDay}
 					{resourceHeader}
 					{nowIndicatorContent}
-					{item}
-					{itemTooltip}
-					{onItemClick}
-					{onItemDoubleClick}
-					{onSlotClick}
-				/>
-			{:else if snapshot.view === 'timeline'}
-				<EventCalendarTimelineView
-					bind:this={timeGrid}
-					{calendar}
-					{snapshot}
-					{a11y}
-					{messages}
-					{density}
-					{color}
-					{classes}
-					{disabled}
-					rowHeight={timelineRowHeight}
-					slotWidth={timelineSlotWidth}
-					overscan={timelineOverscan}
-					{showItemTooltip}
-					{resourceHeader}
 					{item}
 					{itemTooltip}
 					{onItemClick}

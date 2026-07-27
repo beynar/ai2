@@ -199,25 +199,6 @@ export class EventCalendarA11y<
 		const proposal = this.mutationController.proposal;
 		event.preventDefault();
 		const isAllDay = proposal ? proposal.item.allDay === true : occurrence.allDay;
-		if (this.mutationView === 'timeline' && !isAllDay) {
-			if (
-				this.mutationOperation === 'move' &&
-				(event.key === 'ArrowUp' || event.key === 'ArrowDown')
-			) {
-				this.mutationController.stepAssistedItem({
-					resourceDirection: event.key === 'ArrowDown' ? 1 : -1
-				});
-				return true;
-			}
-			if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-				this.mutationController.stepAssistedItem({
-					minuteDelta:
-						event.key === 'ArrowRight' ? this.mutationSnapDuration : -this.mutationSnapDuration
-				});
-				return true;
-			}
-			return true;
-		}
 		if (
 			this.mutationView === 'resource' &&
 			this.mutationOperation === 'move' &&

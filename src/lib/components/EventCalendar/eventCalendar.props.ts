@@ -213,11 +213,11 @@ type EventCalendarOwnProps<
 		items?: EventCalendarItem<TItemFields>[];
 		/** Bindable active view. Defaults to `month`. */
 		view?: EventCalendarView;
-		/** Ordered, unique views. Defaults to `['month', 'week', 'day', 'days', 'agenda', 'resource', 'timeline']`. */
+		/** Ordered, unique views. Defaults to `['month', 'week', 'day', 'days', 'agenda', 'resource']`. */
 		views?: EventCalendarView[];
 		/** Required bindable anchor instant. */
 		date: Date;
-		/** Bindable visible-day count for the `days` and `timeline` views. Defaults to `3`. */
+		/** Bindable visible-day count for the `days` view. Defaults to `3`. */
 		dayCount?: number;
 		/** Bindable item or slot selection. Defaults to the empty selection. */
 		selection?: EventCalendarSelection;
@@ -279,12 +279,6 @@ type EventCalendarOwnProps<
 		scrollToHour?: number;
 		/** Count of rendered agenda days. Defaults to `30`. */
 		agendaDayCount?: number;
-		/** Resource-timeline row height in pixels. Defaults to `48`. */
-		timelineRowHeight?: number;
-		/** Resource-timeline pixels per snap interval. Defaults to `48`. */
-		timelineSlotWidth?: number;
-		/** Extra virtual resource rows rendered around the viewport. Defaults to `6`. */
-		timelineOverscan?: number;
 		/** Enables the current-time line. Defaults to `true`. */
 		nowIndicator?: boolean;
 		/** Current-time refresh cadence in milliseconds. Defaults to `30000`. */

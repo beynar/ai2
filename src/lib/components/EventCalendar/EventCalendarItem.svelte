@@ -100,9 +100,7 @@
 		getCachedDateTimeFormatter(locale, timeZone, { month: 'short', day: 'numeric' })
 	);
 	const timeLabel = $derived(timeFormatter.format(segment.start));
-	const isTimedGridItem = $derived(
-		!occurrence.allDay && view !== 'month' && view !== 'agenda' && view !== 'timeline'
-	);
+	const isTimedGridItem = $derived(!occurrence.allDay && view !== 'month' && view !== 'agenda');
 	const timeRangeLabel = $derived(timeFormatter.formatRange(segment.start, segment.end));
 	const defaultAccessibleLabel = $derived.by(() => {
 		const formatter = occurrence.allDay ? dateFormatter : dateTimeFormatter;
@@ -144,7 +142,7 @@
 	const canResize = $derived(
 		isResizeAllowed && Boolean(interaction?.canResize(occurrence)) && !disabled
 	);
-	const isHorizontalResize = $derived(view === 'month' || view === 'timeline' || occurrence.allDay);
+	const isHorizontalResize = $derived(view === 'month' || occurrence.allDay);
 	const hasKeyboardActions = $derived(
 		Boolean(
 			interaction &&

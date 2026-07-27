@@ -10,7 +10,7 @@
 
 Svelai EventCalendar is already a **feature-complete core event calendar**, not yet a **full enterprise scheduler suite**.
 
-It covers the difficult calendar foundation: month/week/day/N-day/agenda/resource-day/resource-timeline views, timed and all-day layout, background and multi-day events, recurrence expansion and exception mutation, named time zones, DST-safe civil-day math, drag/resize/range selection, touch, keyboard editing, RTL, accessible semantics, immutable controlled state, guarded rollback, clipboard operations, bounded history, multi-resource assignment, resource-local constraints, virtual resource rows, and Svelte-native composition. The implemented contract is documented in the [component description](src/lib/components/EventCalendar/eventCalendar.mcp.ts) and [public props](src/lib/components/EventCalendar/eventCalendar.props.ts).
+It covers the difficult calendar foundation: month/week/day/N-day/agenda/resource-day views, timed and all-day layout, background and multi-day events, recurrence expansion and exception mutation, named time zones, DST-safe civil-day math, drag/resize/range selection, touch, keyboard editing, RTL, accessible semantics, immutable controlled state, guarded rollback, clipboard operations, bounded history, multi-resource assignment, resource-local constraints, and Svelte-native composition. The implemented contract is documented in the [component description](src/lib/components/EventCalendar/eventCalendar.mcp.ts) and [public props](src/lib/components/EventCalendar/eventCalendar.props.ts).
 
 The material gaps are concentrated in three areas:
 
@@ -39,18 +39,18 @@ Vendor columns link to official documentation. Specialist claims use additional 
 
 ## 1. Views and rendering
 
-| Capability                                | Svelai                   | [FullCalendar][fc-docs]                        | [React Big Calendar][rbc-core] | [Mobiscroll][mb-overview]             | [Syncfusion][sf-views]                                     | [Bryntum][br-features]                          |
-| ----------------------------------------- | ------------------------ | ---------------------------------------------- | ------------------------------ | ------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
-| Month grid                                | ✅                       | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
-| Week and day time grids                   | ✅                       | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
-| Configurable N-day/custom-duration view   | ✅                       | ✅                                             | ◐ custom view                  | ✅                                    | ✅ view interval                                           | ✅ dual-day/configurable time                   |
-| Agenda/list view                          | ✅                       | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
-| Year or multi-month planning              | —                        | ✅ day-grid year and multi-month               | —                              | ✅                                    | ✅ Year and Timeline Year                                  | ✅                                              |
-| Vertical resource day/time-grid           | ✅ leaf-resource day     | ⊕ Premium resource views [plugins][fc-plugins] | ✅ basic resource columns      | ✅ scheduler                          | ✅ multi-level resource grouping [resources][sf-resources] | ✅ resource view                                |
-| Horizontal resource timeline              | ✅ virtual resource rows | ⊕ Premium [plugins][fc-plugins]                | —                              | ✅                                    | ✅                                                         | ⊕ use Bryntum Scheduler for timeline scheduling |
-| Arbitrary whole-view extension            | — deliberate non-goal    | ✅ custom-view API                             | ✅ custom views                | ◐ configurable/composable stock views | ◐ view-specific configuration                              | ◐ class/API extension                           |
-| Background events and availability ranges | ✅                       | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅ time ranges                                  |
-| Month overflow and `+N more` disclosure   | ✅                       | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Capability                                | Svelai                    | [FullCalendar][fc-docs]                        | [React Big Calendar][rbc-core] | [Mobiscroll][mb-overview]             | [Syncfusion][sf-views]                                     | [Bryntum][br-features]                          |
+| ----------------------------------------- | ------------------------- | ---------------------------------------------- | ------------------------------ | ------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
+| Month grid                                | ✅                        | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Week and day time grids                   | ✅                        | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Configurable N-day/custom-duration view   | ✅                        | ✅                                             | ◐ custom view                  | ✅                                    | ✅ view interval                                           | ✅ dual-day/configurable time                   |
+| Agenda/list view                          | ✅                        | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Year or multi-month planning              | —                         | ✅ day-grid year and multi-month               | —                              | ✅                                    | ✅ Year and Timeline Year                                  | ✅                                              |
+| Vertical resource day/time-grid           | ✅ leaf-resource day      | ⊕ Premium resource views [plugins][fc-plugins] | ✅ basic resource columns      | ✅ scheduler                          | ✅ multi-level resource grouping [resources][sf-resources] | ✅ resource view                                |
+| Horizontal resource timeline              | — dedicated Gantt planned | ⊕ Premium [plugins][fc-plugins]                | —                              | ✅                                    | ✅                                                         | ⊕ use Bryntum Scheduler for timeline scheduling |
+| Arbitrary whole-view extension            | — deliberate non-goal     | ✅ custom-view API                             | ✅ custom views                | ◐ configurable/composable stock views | ◐ view-specific configuration                              | ◐ class/API extension                           |
+| Background events and availability ranges | ✅                        | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅ time ranges                                  |
+| Month overflow and `+N more` disclosure   | ✅                        | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
 
 ### Assessment
 
@@ -106,14 +106,14 @@ Recurrence and time-zone correctness are Svelai strengths. The missing feature i
 | Multiple resources on one event         | ✅ `resourceIds` with legacy single assignment | ⊕ Premium resource arrays                                            | —                              | ✅ resource arrays                       | ✅ multiple selection                                                             | ◐ documented resource assignment, exact multiplicity not verified |
 | Resource-specific hours and edit policy | ✅ local business hours and read-only leaves   | ⊕ Premium resource business hours                                    | ◐ consumer-owned               | ✅ per-resource controls                 | ✅ per-resource hours/workdays                                                    | ◐                                                                 |
 | Move between resources                  | ✅                                             | ⊕ Premium                                                            | ✅                             | ✅                                       | ✅                                                                                | ✅                                                                |
-| Virtualized large-resource rendering    | ✅ virtual timeline rows                       | — no general virtualization documented                               | —                              | ◐ optimized timeline/scheduler scrolling | ✅ virtual scrolling and lazy resource/event loading [virtualization][sf-virtual] | ◐ vendor claims massive-data performance                          |
+| Virtualized large-resource rendering    | —                                              | — no general virtualization documented                               | —                              | ◐ optimized timeline/scheduler scrolling | ✅ virtual scrolling and lazy resource/event loading [virtualization][sf-virtual] | ◐ vendor claims massive-data performance                          |
 | Exact visible/fetch range callback      | ✅                                             | ✅ event-source range fetching                                       | ◐ consumer derives range       | ✅ data loading lifecycle                | ✅ remote data/DataManager                                                        | ✅ Store/CrudManager                                              |
 | Immutable controlled collection         | ✅ explicit contract                           | ◐ internal mutable Event API plus callbacks                          | ✅ controlled events           | ◐ component data APIs                    | ◐ DataManager/store model                                                         | ◐ Store model                                                     |
 | Built-in remote/provider adapters       | — deliberate consumer boundary                 | ⊕ JSON, Google Calendar, and iCalendar sources [plugins][fc-plugins] | —                              | ✅ calendar integrations                 | ✅ remote DataManager and ICS import/export                                       | ◐ JSON Store/CrudManager                                          |
 
 ### Assessment
 
-Svelai now owns the coherent scheduler foundation: timeline, multi-assignment, resource-local availability, and virtual rows share the existing occurrence and mutation model. Capacity engines, lazy remote loading, and bulk workforce operations remain outside the component.
+Svelai owns coherent calendar resource scheduling through resource-day columns, multi-assignment, and resource-local availability. Horizontal planning, capacity engines, lazy remote loading, and bulk workforce operations remain outside EventCalendar.
 
 ## 5. Accessibility, composition, and product features
 
@@ -144,41 +144,41 @@ Svelai's accessibility and composition architecture is competitive. The absent r
 | -------------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Product calendar, meeting planner, booking UI            | **High**                      | Core views, recurrence, time zones, resource day, interactions, accessibility, and composition are present. |
 | Team calendar similar to Google Calendar basics          | **High with companion forms** | Needs an application-owned event/recurrence editor and persistence, which are deliberate boundaries.        |
-| Room or small-resource booking                           | **High**                      | Resource day/timeline, multi-assignment, and local availability policies are present.                       |
-| Dispatch, workforce, equipment, or operations scheduling | **Medium-high**               | Scheduler geometry and virtual rows are present; capacity and bulk operations remain missing.               |
+| Room or small-resource booking                           | **High**                      | Resource day, multi-assignment, and local availability policies are present.                                |
+| Dispatch, workforce, equipment, or operations scheduling | **Medium**                    | Resource-day scheduling is present; horizontal planning, capacity, and bulk operations belong in Gantt.     |
 | Enterprise calendaring suite                             | **Medium**                    | Editors, exports, provider integrations, print, and administration workflows remain outside the component.  |
 
 ## Prioritized gap backlog
 
 ### Completed — coherent scheduling expansion
 
-1. **Resource timeline with virtualization**
-
-   Implemented with a horizontal time axis, virtual resource rows, sticky resource labels, and the shared drag/resize proposal pipeline.
-
-2. **Multiple resource assignment**
+1. **Multiple resource assignment**
 
    Implemented as one occurrence with multiple resource projections. Dragging a projection replaces that assignment while preserving the others; legacy `resourceId` remains supported.
 
-3. **Per-resource availability and constraints**
+2. **Per-resource availability and constraints**
 
    Implemented through the existing validation owner with resource-local business hours and read-only leaves.
 
-4. **Copy/paste and undo/redo history**
+3. **Copy/paste and undo/redo history**
 
    Implemented as selected-occurrence clipboard operations and bounded immutable history. Keyboard shortcuts use <kbd>Mod+C</kbd>, <kbd>Mod+V</kbd>, <kbd>Mod+Z</kbd>, <kbd>Mod+Shift+Z</kbd>, and <kbd>Mod+Y</kbd> without intercepting editable controls.
 
+### Separate component track — GanttChart
+
+Horizontal task/resource planning is intentionally not an EventCalendar view. A dedicated GanttChart should own task hierarchy, dependencies, milestones, progress, and project-scale virtualization while reusing the neutral interval lane and overlap packing module under `src/lib/utils/scheduling`.
+
 ### Priority 2 — broad calendar parity
 
-5. **Year and multi-month views**
+4. **Year and multi-month views**
 
    Reuse the occurrence index and month segmentation. This is much smaller than timeline work and closes the most visible FullCalendar/Mobiscroll/Syncfusion/Bryntum view gap.
 
-6. **External and cross-calendar drag-and-drop**
+5. **External and cross-calendar drag-and-drop**
 
    Extend the existing Pragmatic DnD protocol with typed external payloads, source ownership, acceptance policy, copy-versus-move semantics, and guarded rollback.
 
-7. **Multi-select and bulk mutation**
+6. **Multi-select and bulk mutation**
 
    Extend the selection model only when a concrete bulk-operation contract exists. Single-selection copy/paste and history are already implemented.
 

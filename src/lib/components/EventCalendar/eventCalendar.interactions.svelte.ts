@@ -777,9 +777,7 @@ export class EventCalendarInteractionsController<
 											0,
 											Math.min(
 												segmentDuration,
-												(view === 'timeline'
-													? (input.clientX - rect.left) / Math.max(1, rect.width)
-													: (input.clientY - rect.top) / Math.max(1, rect.height)) * segmentDuration
+												((input.clientY - rect.top) / Math.max(1, rect.height)) * segmentDuration
 											)
 										)
 									: 0,
@@ -1103,7 +1101,7 @@ export class EventCalendarInteractionsController<
 		} else {
 			return this.clonePlacement(next);
 		}
-		if (slot.view !== 'resource' && slot.view !== 'timeline') return placed;
+		if (slot.view !== 'resource') return placed;
 		return setEventCalendarResourceIds(placed, slot.resourceId ? [slot.resourceId] : []);
 	}
 
@@ -1287,7 +1285,7 @@ export class EventCalendarInteractionsController<
 		const sourceItem = occurrence.item;
 		if (
 			initialKind !== 'move' &&
-			(target.view === 'resource' || target.view === 'timeline') &&
+			target.view === 'resource' &&
 			!this.itemUsesResource(sourceItem, target.resourceId)
 		) {
 			return null;
@@ -2287,8 +2285,7 @@ export class EventCalendarInteractionsController<
 		return this.calendar.itemIndex.occurrences.filter(
 			(occurrence) =>
 				occurrence.item.display !== 'background' &&
-				((slot.view !== 'resource' && slot.view !== 'timeline') ||
-					this.itemUsesResource(occurrence.item, slot.resourceId)) &&
+				(slot.view !== 'resource' || this.itemUsesResource(occurrence.item, slot.resourceId)) &&
 				rangesIntersect(range, { start: occurrence.start, end: occurrence.end })
 		);
 	}
@@ -2508,16 +2505,6 @@ export class EventCalendarInteractionsController<
 		const proposalDuration = item.end.getTime() - item.start.getTime();
 		if (slotDuration <= 0 || proposalDuration <= 0 || rect.height <= 0 || rect.width <= 0) {
 			return null;
-		}
-		if (target.view === 'timeline') {
-			const pixelsPerMillisecond = rect.width / slotDuration;
-			const width = Math.max(2, proposalDuration * pixelsPerMillisecond);
-			return {
-				left: rect.left + (item.start.getTime() - target.start.getTime()) * pixelsPerMillisecond,
-				top: rect.top + 2,
-				width,
-				height: Math.max(2, rect.height - 4)
-			};
 		}
 		const pixelsPerMillisecond = rect.height / slotDuration;
 		const top = rect.top + (item.start.getTime() - target.start.getTime()) * pixelsPerMillisecond;
@@ -2902,8 +2889,7 @@ function isEventCalendarView(value: unknown): value is EventCalendarView {
 		value === 'day' ||
 		value === 'days' ||
 		value === 'agenda' ||
-		value === 'resource' ||
-		value === 'timeline'
+		value === 'resource'
 	);
 }
 
@@ -2993,7 +2979,7 @@ function applyTargetResource<TItemFields extends object>(
 	target: EventCalendarDropTarget,
 	sourceResourceId?: string
 ): EventCalendarItem<TItemFields> {
-	if (target.view !== 'resource' && target.view !== 'timeline') return item;
+	if (target.view !== 'resource') return item;
 	return replaceEventCalendarResourceAssignment(item, sourceResourceId, target.resourceId);
 }
 
