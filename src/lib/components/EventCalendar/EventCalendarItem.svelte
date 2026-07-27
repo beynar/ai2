@@ -76,7 +76,7 @@
 	const contentResizeObserver = useResizeObserver({
 		isActive: () => compactContent,
 		callback: (entry) => {
-			const nextCompact = entry.contentRect.height < 30;
+			const nextCompact = entry.contentRect.height < 44;
 			if (isCompact !== nextCompact) isCompact = nextCompact;
 		}
 	});
@@ -108,6 +108,18 @@
 		getCachedDateTimeFormatter(locale, timeZone, { month: 'short', day: 'numeric' })
 	);
 	const timeLabel = $derived(timeFormatter.format(segment.start));
+	const isTimedGridItem = $derived(!occurrence.allDay && view !== 'month' && view !== 'agenda');
+	const timeRangeLabel = $derived.by(() => {
+		const proposal = interaction?.proposal;
+		if (
+			proposal?.occurrence?.key === occurrence.key &&
+			(proposal.kind === 'resize-start' || proposal.kind === 'resize-end') &&
+			proposal.item.allDay !== true
+		) {
+			return timeFormatter.formatRange(proposal.item.start, proposal.item.end);
+		}
+		return timeFormatter.formatRange(segment.start, segment.end);
+	});
 	const defaultAccessibleLabel = $derived.by(() => {
 		const formatter = occurrence.allDay ? dateFormatter : dateTimeFormatter;
 		const inclusiveEnd = occurrence.allDay
@@ -202,12 +214,20 @@
 			data-edge="start"
 			class={classes.resizeHandle({
 				class: isHorizontalResize
-					? 'inset-y-0 start-0 w-2 cursor-ew-resize'
-					: 'inset-x-0 top-0 h-2 -translate-y-1/2 cursor-ns-resize'
+					? 'inset-y-0 start-0 grid w-1.5 cursor-ew-resize place-items-center'
+					: 'inset-x-0 top-0 grid h-1.5 -translate-y-1/2 cursor-ns-resize place-items-center'
 			})}
 			{@attach interaction.draggableItem(segment, 'resize-start')}
 		>
-			{#if resizeStart}<Slot render={resizeStart} />{/if}
+			{#if resizeStart}
+				<Slot render={resizeStart} />
+			{:else}
+				<span
+					class={isHorizontalResize
+						? 'pointer-events-none h-3 w-0.5 rounded-full bg-current'
+						: 'pointer-events-none h-0.5 w-5 rounded-full bg-current'}
+				></span>
+			{/if}
 		</div>
 	{/if}
 	<button
@@ -223,7 +243,8 @@
 			view,
 			selected: isSelected,
 			dragging: isDragging,
-			disabled
+			disabled,
+			class: isTimedGridItem ? (isCompact ? 'px-1.5 py-0' : 'px-2 py-1.5') : undefined
 		})}
 		onclick={(event) => {
 			event.stopPropagation();
@@ -255,32 +276,60 @@
 			data-edge="end"
 			class={classes.resizeHandle({
 				class: isHorizontalResize
-					? 'inset-y-0 end-0 w-2 cursor-ew-resize'
-					: 'inset-x-0 bottom-0 h-2 translate-y-1/2 cursor-ns-resize'
+					? 'inset-y-0 end-0 grid w-1.5 cursor-ew-resize place-items-center'
+					: 'inset-x-0 bottom-0 grid h-1.5 translate-y-1/2 cursor-ns-resize place-items-center'
 			})}
 			{@attach interaction.draggableItem(segment, 'resize-end')}
 		>
-			{#if resizeEnd}<Slot render={resizeEnd} />{/if}
+			{#if resizeEnd}
+				<Slot render={resizeEnd} />
+			{:else}
+				<span
+					class={isHorizontalResize
+						? 'pointer-events-none h-3 w-0.5 rounded-full bg-current'
+						: 'pointer-events-none h-0.5 w-5 rounded-full bg-current'}
+				></span>
+			{/if}
 		</div>
 	{/if}
 </div>
 
 {#snippet defaultContent()}
-	<span class={classes.itemContent({ density, color: semanticColor, view })}>
-		{#if view === 'month'}
-			<span
-				aria-hidden="true"
-				class="size-1.5 shrink-0 rounded-full bg-[var(--event-calendar-item-color)]"
-			></span>
-		{/if}
-		{#if view !== 'month' && !isCompact && !occurrence.allDay && segment.isStart}
-			<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
-		{/if}
-		<span class={classes.itemTitle({ density, color: semanticColor, view })}>
-			{occurrence.item.title}
-		</span>
-		{#if view === 'month' && !isCompact && !occurrence.allDay && segment.isStart}
-			<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
+	<span
+		class={classes.itemContent({
+			density,
+			color: semanticColor,
+			view,
+			class: isTimedGridItem ? 'flex-col items-start justify-start gap-0.5' : undefined
+		})}
+	>
+		{#if isTimedGridItem}
+			<span class={classes.itemTitle({ density, color: semanticColor, view })}>
+				{occurrence.item.title}
+			</span>
+			{#if !isCompact}
+				<span
+					class={classes.itemTime({
+						density,
+						color: semanticColor,
+						view,
+						class: 'ms-0'
+					})}>{timeRangeLabel}</span
+				>
+			{/if}
+		{:else}
+			{#if view === 'month'}
+				<span
+					aria-hidden="true"
+					class="size-1.5 shrink-0 rounded-full bg-[var(--event-calendar-item-color)]"
+				></span>
+			{/if}
+			<span class={classes.itemTitle({ density, color: semanticColor, view })}>
+				{occurrence.item.title}
+			</span>
+			{#if view === 'month' && !isCompact && !occurrence.allDay && segment.isStart}
+				<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
+			{/if}
 		{/if}
 	</span>
 {/snippet}
