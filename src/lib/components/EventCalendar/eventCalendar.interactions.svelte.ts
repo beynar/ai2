@@ -107,6 +107,7 @@ export type EventCalendarDropTarget =
 
 type EventCalendarItemGesture<TItemFields extends object> = {
 	kind: EventCalendarItemOperation;
+	initialKind: EventCalendarItemOperation;
 	source: EventCalendarMutationSource;
 	inputMode: 'pointer' | 'assisted';
 	occurrence: EventCalendarOccurrence<TItemFields>;
@@ -475,6 +476,7 @@ export class EventCalendarInteractionsController<
 		this.gestureBoundary = this.getBoundary();
 		this.gesture = {
 			kind: operation,
+			initialKind: operation,
 			source,
 			inputMode: 'assisted',
 			occurrence,
@@ -539,6 +541,7 @@ export class EventCalendarInteractionsController<
 		const reason = proposal ? this.validateAssistedProposal(active, proposal) : 'invalid-target';
 		this.gesture = {
 			...active,
+			kind: proposal ? getProposalOperation(proposal, active.kind) : active.kind,
 			proposal,
 			targetKey: target.key,
 			isValid: proposal !== null && reason === null,
@@ -937,6 +940,7 @@ export class EventCalendarInteractionsController<
 		this.gestureBoundary = this.getBoundary();
 		this.gesture = {
 			kind: source.operation,
+			initialKind: source.operation,
 			source: this.operationSource(source.operation),
 			inputMode: 'pointer',
 			occurrence,
@@ -1062,6 +1066,8 @@ export class EventCalendarInteractionsController<
 		const reason = proposal ? this.validateProposal(proposal) : 'invalid-target';
 		this.gesture = {
 			...active,
+			kind: proposal ? getProposalOperation(proposal, active.kind) : active.kind,
+			source: proposal?.source ?? active.source,
 			proposal,
 			targetKey: target.key,
 			isValid: proposal !== null && reason === null,
@@ -1079,9 +1085,10 @@ export class EventCalendarInteractionsController<
 		pointerY: number
 	): EventCalendarProposedUpdate<TItemFields> | null {
 		const { occurrence } = gesture;
+		const initialKind = gesture.initialKind;
 		const sourceItem = occurrence.item;
 		if (
-			gesture.kind !== 'move' &&
+			initialKind !== 'move' &&
 			target.view === 'resource' &&
 			this.calendar.resourceModel.resolveLeafId(target.resourceId) !==
 				this.calendar.resourceModel.resolveLeafId(sourceItem.resourceId)
@@ -1090,13 +1097,14 @@ export class EventCalendarInteractionsController<
 		}
 		const placementItem = this.getOccurrencePlacementItem(occurrence);
 		const isTimedMonthResize =
-			gesture.kind !== 'move' && target.allDay && target.view === 'month' && !occurrence.allDay;
-		if (gesture.kind !== 'move' && target.allDay !== occurrence.allDay && !isTimedMonthResize) {
+			initialKind !== 'move' && target.allDay && target.view === 'month' && !occurrence.allDay;
+		if (initialKind !== 'move' && target.allDay !== occurrence.allDay && !isTimedMonthResize) {
 			return null;
 		}
+		let operation = initialKind;
 		let item: EventCalendarItem<TItemFields>;
 		try {
-			if (gesture.kind === 'move') {
+			if (initialKind === 'move') {
 				item =
 					target.allDay && target.view === 'month' && !occurrence.allDay
 						? this.moveTimedToMonthDay(placementItem, occurrence, target.day)
@@ -1104,28 +1112,43 @@ export class EventCalendarInteractionsController<
 							? this.moveToAllDay(placementItem, occurrence, target.day, gesture.grabOffsetDays)
 							: this.moveToTimed(placementItem, occurrence, target, pointerY, gesture.grabOffsetMs);
 			} else if (isTimedMonthResize) {
-				const sourceEndpoint = gesture.kind === 'resize-start' ? occurrence.start : occurrence.end;
-				const endpoint = resolveZonedMinutesOnDay(
+				const sourceEndpoint = initialKind === 'resize-start' ? occurrence.start : occurrence.end;
+				let endpoint = resolveZonedMinutesOnDay(
 					target.day,
 					getWallMinutes(sourceEndpoint, this.calendar.timeZone),
 					this.calendar.timeZone
 				);
-				item = this.resizeTimed(placementItem, gesture.kind, endpoint);
+				let resize = this.resizeTimedAcrossEdge(placementItem, initialKind, endpoint);
+				if (resize.operation !== initialKind) {
+					const oppositeEndpoint =
+						resize.operation === 'resize-start' ? occurrence.start : occurrence.end;
+					endpoint = resolveZonedMinutesOnDay(
+						target.day,
+						getWallMinutes(oppositeEndpoint, this.calendar.timeZone),
+						this.calendar.timeZone
+					);
+					resize = this.resizeTimedAcrossEdge(placementItem, initialKind, endpoint);
+				}
+				operation = resize.operation;
+				item = resize.item;
 			} else if (target.allDay) {
-				const endpoint = gesture.kind === 'resize-start' ? target.day : addCivilDays(target.day, 1);
-				item = this.resizeAllDay(placementItem, gesture.kind, endpoint);
+				const resize = this.resizeAllDayAcrossEdge(placementItem, initialKind, target.day);
+				operation = resize.operation;
+				item = resize.item;
 			} else {
 				const endpoint = this.getTimedTargetInstant(target, pointerY);
-				item = this.resizeTimed(placementItem, gesture.kind, endpoint);
+				const resize = this.resizeTimedAcrossEdge(placementItem, initialKind, endpoint);
+				operation = resize.operation;
+				item = resize.item;
 			}
 		} catch (error) {
 			if (isSupportedDateDomainError(error)) return null;
 			throw error;
 		}
-		if (gesture.kind === 'move') item = applyTargetResource(item, target);
+		if (initialKind === 'move') item = applyTargetResource(item, target);
 		return {
-			kind: gesture.kind,
-			source: gesture.source,
+			kind: operation,
+			source: gesture.inputMode === 'pointer' ? this.operationSource(operation) : gesture.source,
 			occurrence,
 			previousItem: sourceItem,
 			item
@@ -1214,28 +1237,48 @@ export class EventCalendarInteractionsController<
 		});
 	}
 
-	private resizeAllDay(
+	private resizeAllDayAcrossEdge(
 		item: EventCalendarItem<TItemFields>,
-		operation: Exclude<EventCalendarItemOperation, 'move'>,
-		endpoint: EventCalendarDateOnly
-	): EventCalendarItem<TItemFields> {
-		if (item.allDay !== true) return item;
-		const start = operation === 'resize-start' ? endpoint : item.start;
-		const end = operation === 'resize-end' ? endpoint : item.end;
-		return replaceSchedule(item, { allDay: true, start, end });
+		initialKind: Exclude<EventCalendarItemOperation, 'move'>,
+		targetDay: EventCalendarDateOnly
+	): {
+		operation: Exclude<EventCalendarItemOperation, 'move'>;
+		item: EventCalendarItem<TItemFields>;
+	} {
+		if (item.allDay !== true) return { operation: initialKind, item };
+		const anchor = initialKind === 'resize-start' ? item.end : item.start;
+		const operation = targetDay < anchor ? 'resize-start' : 'resize-end';
+		const start = operation === 'resize-start' ? targetDay : anchor;
+		const end = operation === 'resize-end' ? addCivilDays(targetDay, 1) : anchor;
+		return { operation, item: replaceSchedule(item, { allDay: true, start, end }) };
 	}
 
-	private resizeTimed(
+	private resizeTimedAcrossEdge(
 		item: EventCalendarItem<TItemFields>,
-		operation: Exclude<EventCalendarItemOperation, 'move'>,
+		initialKind: Exclude<EventCalendarItemOperation, 'move'>,
 		endpoint: Date
-	): EventCalendarItem<TItemFields> {
-		if (item.allDay === true) return item;
-		return replaceSchedule(item, {
-			allDay: false,
-			start: operation === 'resize-start' ? endpoint : item.start,
-			end: operation === 'resize-end' ? endpoint : item.end
-		});
+	): {
+		operation: Exclude<EventCalendarItemOperation, 'move'>;
+		item: EventCalendarItem<TItemFields>;
+	} {
+		if (item.allDay === true) return { operation: initialKind, item };
+		const anchor = initialKind === 'resize-start' ? item.end : item.start;
+		const endpointTime = endpoint.getTime();
+		const anchorTime = anchor.getTime();
+		const operation =
+			endpointTime < anchorTime
+				? 'resize-start'
+				: endpointTime > anchorTime
+					? 'resize-end'
+					: initialKind;
+		return {
+			operation,
+			item: replaceSchedule(item, {
+				allDay: false,
+				start: operation === 'resize-start' ? endpoint : anchor,
+				end: operation === 'resize-end' ? endpoint : anchor
+			})
+		};
 	}
 
 	private getTimedTargetInstant(
@@ -2553,6 +2596,13 @@ function isSameEndpoint(
 
 function getEndpointKey(endpoint: Date | EventCalendarDateOnly): string {
 	return endpoint instanceof Date ? `instant:${endpoint.getTime()}` : `day:${endpoint}`;
+}
+
+function getProposalOperation<TItemFields extends object>(
+	proposal: EventCalendarProposedUpdate<TItemFields>,
+	fallback: EventCalendarItemOperation
+): EventCalendarItemOperation {
+	return proposal.kind === 'update' ? fallback : proposal.kind;
 }
 
 function applyTargetResource<TItemFields extends object>(
