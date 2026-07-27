@@ -10,7 +10,11 @@
 	import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import type { EventCalendarInteractionStatus } from './eventCalendar.interactions.svelte.js';
-	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
+	import {
+		addCivilDays,
+		getCachedDateTimeFormatter,
+		startOfZonedDay
+	} from './eventCalendar.date.js';
 	import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
 	import type { EventCalendarProps, EventCalendarSnapshot } from './eventCalendar.props.js';
 	import {
@@ -364,10 +368,16 @@
 			timeZoneName: 'shortOffset'
 		})
 	);
-	const resizeIndicatorTimeFormatter = $derived(
+	const resizePreviewTimeFormatter = $derived(
 		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
 			hour: 'numeric',
 			minute: '2-digit'
+		})
+	);
+	const resizePreviewDateFormatter = $derived(
+		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
+			month: 'short',
+			day: 'numeric'
 		})
 	);
 
@@ -821,13 +831,27 @@
 	{@const proposal = calendar.interaction.proposal}
 	{#if proposal}
 		<span class="block max-w-64 truncate font-medium">{proposal.item.title}</span>
-		{#if (proposal.kind === 'resize-start' || proposal.kind === 'resize-end') && !proposal.item.allDay}
-			<span
-				data-event-calendar-part="drag-preview-time"
-				class="block whitespace-nowrap text-[0.6875rem] leading-4 text-neutral/60 tabular-nums"
-			>
-				{resizeIndicatorTimeFormatter.formatRange(proposal.item.start, proposal.item.end)}
-			</span>
+		{#if proposal.kind === 'resize-start' || proposal.kind === 'resize-end'}
+			{#if proposal.item.allDay}
+				{@const start = startOfZonedDay(proposal.item.start, calendar.timeZone)}
+				{@const inclusiveEnd = startOfZonedDay(
+					addCivilDays(proposal.item.end, -1),
+					calendar.timeZone
+				)}
+				<span
+					data-event-calendar-part="drag-preview-date"
+					class="block whitespace-nowrap text-[0.6875rem] leading-4 text-neutral/60 tabular-nums"
+				>
+					{resizePreviewDateFormatter.formatRange(start, inclusiveEnd)}
+				</span>
+			{:else}
+				<span
+					data-event-calendar-part="drag-preview-time"
+					class="block whitespace-nowrap text-[0.6875rem] leading-4 text-neutral/60 tabular-nums"
+				>
+					{resizePreviewTimeFormatter.formatRange(proposal.item.start, proposal.item.end)}
+				</span>
+			{/if}
 		{/if}
 	{/if}
 {/snippet}

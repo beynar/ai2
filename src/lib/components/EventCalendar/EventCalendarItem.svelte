@@ -132,8 +132,9 @@
 		delay: 350
 	});
 	const canMove = $derived(Boolean(interaction?.canMove(occurrence)) && !disabled);
+	const isResizeAllowed = $derived(allowResize && !(view === 'day' && occurrence.allDay));
 	const canResize = $derived(
-		allowResize && Boolean(interaction?.canResize(occurrence)) && !disabled
+		isResizeAllowed && Boolean(interaction?.canResize(occurrence)) && !disabled
 	);
 	const isHorizontalResize = $derived(view === 'month' || occurrence.allDay);
 	const hasKeyboardActions = $derived(
@@ -141,7 +142,7 @@
 			interaction &&
 			(['move', 'resize-start', 'resize-end'] as const).some(
 				(operation) =>
-					(operation === 'move' || allowResize) &&
+					(operation === 'move' || isResizeAllowed) &&
 					interaction.canBeginAssistedItem(occurrence, operation, 'keyboard')
 			)
 		)
@@ -243,7 +244,7 @@
 			onControlFocus?.();
 		}}
 		onkeydown={(event) => {
-			if (a11y.handleItemKeydown(event, occurrence, allowResize)) return;
+			if (a11y.handleItemKeydown(event, occurrence, isResizeAllowed)) return;
 			onControlKeydown?.(event);
 		}}
 		{@attach registerItemControl}
