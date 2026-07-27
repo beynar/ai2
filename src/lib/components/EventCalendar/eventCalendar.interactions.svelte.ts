@@ -2618,10 +2618,29 @@ export class EventCalendarInteractionsController<
 		const root = targetElement.closest<HTMLElement>('[data-event-calendar-part="root"]');
 		if (!root) return rect;
 		const rootRect = root.getBoundingClientRect();
-		const clipLeft = rootRect.left + root.clientLeft;
-		const clipTop = rootRect.top + root.clientTop;
-		const clipRight = clipLeft + root.clientWidth;
-		const clipBottom = clipTop + root.clientHeight;
+		let clipLeft = rootRect.left + root.clientLeft;
+		let clipTop = rootRect.top + root.clientTop;
+		let clipRight = clipLeft + root.clientWidth;
+		let clipBottom = clipTop + root.clientHeight;
+		const dayColumn = targetElement.closest<HTMLElement>('[data-event-calendar-part="day-column"]');
+		if (dayColumn) {
+			const columnRect = dayColumn.getBoundingClientRect();
+			clipLeft = Math.max(clipLeft, columnRect.left);
+			clipTop = Math.max(clipTop, columnRect.top);
+			clipRight = Math.min(clipRight, columnRect.right);
+			clipBottom = Math.min(clipBottom, columnRect.bottom);
+			if (
+				this.slotScrollMode === 'contained' &&
+				this.slotScrollElement?.isConnected &&
+				this.slotScrollElement.contains(targetElement)
+			) {
+				const viewportRect = this.slotScrollElement.getBoundingClientRect();
+				clipLeft = Math.max(clipLeft, viewportRect.left);
+				clipTop = Math.max(clipTop, viewportRect.top);
+				clipRight = Math.min(clipRight, viewportRect.right);
+				clipBottom = Math.min(clipBottom, viewportRect.bottom);
+			}
+		}
 		const left = Math.max(rect.left, clipLeft);
 		const top = Math.max(rect.top, clipTop);
 		const right = Math.min(rect.left + rect.width, clipRight);
