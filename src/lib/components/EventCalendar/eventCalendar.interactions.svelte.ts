@@ -693,6 +693,7 @@ export class EventCalendarInteractionsController<
 			!gesture ||
 			gesture.kind === 'slot-create' ||
 			gesture.inputMode !== 'pointer' ||
+			!gesture.isValid ||
 			!gesture.proposal ||
 			!gesture.targetKey
 		) {
@@ -718,6 +719,7 @@ export class EventCalendarInteractionsController<
 			!gesture ||
 			gesture.kind !== 'move' ||
 			gesture.inputMode !== 'pointer' ||
+			!gesture.isValid ||
 			!gesture.proposal ||
 			!gesture.targetKey
 		) {
