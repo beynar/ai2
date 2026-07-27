@@ -2104,25 +2104,34 @@ export class EventCalendarInteractionsController<
 		fallbackElement: HTMLElement
 	): EventCalendarDropIndicatorRect | null {
 		const item = gesture.proposal?.item;
-		if (!item || item.allDay !== true) return null;
-		const anchorElement = this.findAllDayTargetElement(target.view, item.start, item.resourceId);
+		if (!item || (item.allDay !== true && target.view !== 'month')) return null;
+		const anchorDay =
+			item.allDay === true ? item.start : getZonedDay(item.start, this.calendar.timeZone);
+		const anchorElement = this.findAllDayTargetElement(target.view, anchorDay, item.resourceId);
 		const element = anchorElement ?? fallbackElement;
 		const rect = element.getBoundingClientRect();
 		if (rect.height <= 0 || rect.width <= 0) return null;
 		const parentRect = element.parentElement?.getBoundingClientRect() ?? rect;
-		const dayCount = Math.max(1, civilDayDifference(item.start, item.end));
+		const dayCount =
+			item.allDay === true
+				? Math.max(1, civilDayDifference(item.start, item.end))
+				: touchedInstantDayCount(item.start, item.end, this.calendar.timeZone);
 		const proposedWidth = Math.max(2, dayCount * rect.width - 4);
 		const sourceWidth = gesture.sourceWidth ?? proposedWidth;
-		const shouldPreserveSourceWidth = gesture.kind === 'move' && gesture.occurrence.allDay;
-		const availableWidth = Math.max(2, parentRect.width - 4);
+		const shouldPreserveSourceWidth = gesture.kind === 'move';
+		const inlineInset = target.view === 'month' ? 6 : 2;
+		const availableWidth = Math.max(2, parentRect.width - inlineInset * 2);
 		const width = Math.min(shouldPreserveSourceWidth ? sourceWidth : proposedWidth, availableWidth);
 		const height = Math.min(
 			Math.max(2, gesture.sourceHeight ?? gesture.sourceMinHeight ?? 24),
 			Math.max(2, rect.height - 4)
 		);
-		const logicalStart = this.calendar.direction === 'rtl' ? rect.right - width - 2 : rect.left + 2;
-		const minimumLeft = parentRect.left + 2;
-		const maximumLeft = Math.max(minimumLeft, parentRect.right - width - 2);
+		const logicalStart =
+			this.calendar.direction === 'rtl'
+				? rect.right - width - inlineInset
+				: rect.left + inlineInset;
+		const minimumLeft = parentRect.left + inlineInset;
+		const maximumLeft = Math.max(minimumLeft, parentRect.right - width - inlineInset);
 		const topOffset =
 			target.view === 'month' ? Math.min(28, Math.max(2, rect.height - height - 2)) : 2;
 		return {
@@ -2145,7 +2154,7 @@ export class EventCalendarInteractionsController<
 				target?.allDay &&
 				target.view === view &&
 				target.day === day &&
-				target.resourceId === resourceId
+				(view !== 'resource' || target.resourceId === resourceId)
 			) {
 				return element;
 			}
@@ -2573,12 +2582,16 @@ function touchedCivilDayCount<TItemFields extends object>(
 	occurrence: EventCalendarOccurrence<TItemFields>,
 	timeZone: string
 ): number {
-	const start = getZonedDay(occurrence.start, timeZone);
-	const inclusiveEnd = getZonedDay(
-		new Date(Math.max(occurrence.start.getTime(), occurrence.end.getTime() - 1)),
+	return touchedInstantDayCount(occurrence.start, occurrence.end, timeZone);
+}
+
+function touchedInstantDayCount(start: Date, end: Date, timeZone: string): number {
+	const startDay = getZonedDay(start, timeZone);
+	const inclusiveEndDay = getZonedDay(
+		new Date(Math.max(start.getTime(), end.getTime() - 1)),
 		timeZone
 	);
-	return Math.max(1, civilDayDifference(start, inclusiveEnd) + 1);
+	return Math.max(1, civilDayDifference(startDay, inclusiveEndDay) + 1);
 }
 
 function getWallMinutes(instant: Date, timeZone: string): number {
