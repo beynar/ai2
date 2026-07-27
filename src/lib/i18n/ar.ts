@@ -191,11 +191,9 @@ export const ar: Messages = {
 	eventCalendarSelectRangeGesture: 'تحديد نطاق في التقويم',
 	eventCalendarValidTarget: 'هدف صالح',
 	eventCalendarInvalidTarget: 'هدف غير صالح',
-	eventCalendarItemActions: (title: string | number) => `إجراءات ${title}`,
 	eventCalendarMoveAction: 'نقل',
 	eventCalendarResizeStartAction: 'تغيير البداية',
 	eventCalendarResizeEndAction: 'تغيير النهاية',
-	eventCalendarCancelAction: 'إلغاء التفاعل',
 	eventCalendarKeyboardInstructions:
 		'اضغط M للنقل أو S لتغيير البداية أو E لتغيير النهاية. استخدم الأسهم للتعديل وEnter للتأكيد وEscape للإلغاء.',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

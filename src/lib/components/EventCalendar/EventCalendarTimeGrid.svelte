@@ -771,7 +771,6 @@
 					{calendar}
 					{snapshot}
 					{a11y}
-					{messages}
 					{geometry}
 					columnLabel={columnLabels.get(geometry.key) ?? geometry.day}
 					{density}

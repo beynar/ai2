@@ -68,9 +68,9 @@ Numeric and time settings are validated and never silently clamped. Hidden weekd
 
 ## Interaction and persistence
 
-Move, resize-start, resize-end, API updates, keyboard mode, and the single-pointer action menu share one proposal/validation/commit pipeline. Empty-slot drag creation produces a selected range; EventCalendar never fabricates a domain item.
+Move, resize-start, resize-end, API updates, and keyboard mode share one proposal/validation/commit pipeline. Empty-slot drag creation and two-click selection produce a selected range; EventCalendar never fabricates a domain item.
 
-- 'interactions': partial policy. Drag, resize, slot selection, keyboard, and single-pointer controls default on; duration preservation across all-day conversion defaults off.
+- 'interactions': partial policy. Drag, resize, slot selection, keyboard controls, and two-click range selection default on; duration preservation across all-day conversion defaults off.
 - 'createActivation': drag-create only; defaults to distancePx 5, touchDelayMs 300, touchTolerancePx 8.
 - 'allowOverlap': boolean or predicate = true.
 - 'canUpdateItem(proposal)': synchronous live item validation.
@@ -127,5 +127,5 @@ Unknown IDs/keys and invalid operations throw EventCalendarError. API mutations 
 
 'density' defaults to 'normal'; 'color' defaults to 'primary'; 'theme' accepts EventCalendarThemeProps. Import 'eventCalendarTheme', 'setEventCalendarTheme', and 'useEventCalendarTheme' from 'svelai/event-calendar'. Stable parts cover chrome, month, time grid, items/interactions, agenda, and resources. CSS metrics include --event-calendar-slot-height, --event-calendar-time-gutter-width, --event-calendar-day-min-width, --event-calendar-resource-min-width, --event-calendar-item-min-height, and --event-calendar-sticky-offset.
 
-The active view exposes grids/groups/buttons/disclosures, roving focus, keyboard move/resize, Escape cancellation, a single-pointer action menu, 24px interaction targets, polite announcements, reduced-motion behavior, narrow-container wrapping/scrolling, and RTL-aware physical movement. Keyboard mutation starts from a focused item, uses arrows to propose, Enter to commit, and Escape to cancel.
+The active view exposes grids/groups/buttons/disclosures, roving focus, keyboard move/resize, Escape cancellation, two-click range selection, 24px interaction targets, polite announcements, reduced-motion behavior, narrow-container wrapping/scrolling, and RTL-aware physical movement. Keyboard mutation starts from a focused item, uses arrows to propose, Enter to commit, and Escape to cancel.
 `;

@@ -23,7 +23,7 @@
 	features={[
 		'Month, week, day, N-day, agenda, and resource views',
 		'Timed, all-day, multi-day, background, and recurring items',
-		'Move, resize, range creation, keyboard, touch, and single-pointer controls',
+		'Move, resize, range creation, keyboard, touch, and two-click selection',
 		'Explicit IANA time zones with DST-safe civil-day math',
 		'Typed snippets, resources, callbacks, and imperative API',
 		'Consumer-owned loading and persistence with guarded revert'
@@ -43,7 +43,7 @@
 	{#snippet examples()}
 		<ComponentCard
 			title="Validation and reversible mutations"
-			description="Drag an item, use its action menu, or focus it and press M, S, or E. Arrows propose a snapped target, Enter commits, and Escape cancels. Drag across empty slots to select a create range."
+			description="Drag an item or focus it and press M, S, or E. Arrows propose a snapped target, Enter commits, and Escape cancels. Drag across empty slots to select a create range."
 			code={interactionCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

@@ -194,11 +194,9 @@ export const es: Messages = {
 	eventCalendarSelectRangeGesture: 'Seleccionar intervalo del calendario',
 	eventCalendarValidTarget: 'Destino válido',
 	eventCalendarInvalidTarget: 'Destino no válido',
-	eventCalendarItemActions: (title: string | number) => `Acciones para ${title}`,
 	eventCalendarMoveAction: 'Mover',
 	eventCalendarResizeStartAction: 'Cambiar inicio',
 	eventCalendarResizeEndAction: 'Cambiar final',
-	eventCalendarCancelAction: 'Cancelar interacción',
 	eventCalendarKeyboardInstructions:
 		'Pulsa M para mover, S para cambiar el inicio o E para cambiar el final. Usa las flechas para ajustar, Intro para confirmar y Escape para cancelar.',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

@@ -126,7 +126,6 @@
 					<EventCalendarItem
 						{segment}
 						{a11y}
-						{messages}
 						view="month"
 						{locale}
 						{timeZone}

@@ -10,7 +10,7 @@
 	let items = $state(createDemoItems().filter((item) => item.display !== 'background'));
 	let date = $state(new Date('2026-07-15T10:00:00.000Z'));
 	let lastChange = $state<EventCalendarChange<MeetingFields> | null>(null);
-	let status = $state('Focus an item or open its action menu to move or resize it.');
+	let status = $state('Focus an item and press M, S, or E to move or resize it.');
 
 	function handleItemsChange(
 		_nextItems: typeof items,

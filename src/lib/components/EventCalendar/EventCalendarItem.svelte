@@ -4,13 +4,11 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
-	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
 	import { untrack, type Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
-	import EventCalendarItemActions from './EventCalendarItemActions.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarItemPayload,
@@ -29,7 +27,6 @@
 		color,
 		classes,
 		a11y,
-		messages,
 		interaction,
 		isSelected,
 		isDragging = false,
@@ -45,7 +42,6 @@
 		onControlKeydown,
 		resizeStart,
 		resizeEnd,
-		actionTrigger,
 		onActivate,
 		onDoubleClick
 	}: {
@@ -57,7 +53,6 @@
 		color: Colors;
 		classes: EventCalendarClasses;
 		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
 		interaction?: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 		isSelected: boolean;
 		isDragging?: boolean;
@@ -73,7 +68,6 @@
 		onControlKeydown?: (event: KeyboardEvent) => void;
 		resizeStart?: Snippet;
 		resizeEnd?: Snippet;
-		actionTrigger?: Snippet;
 		onActivate: (event: MouseEvent) => void;
 		onDoubleClick?: (event: MouseEvent) => void;
 	} = $props();
@@ -266,23 +260,6 @@
 			{@attach interaction.draggableItem(segment, 'resize-end')}
 		>
 			{#if resizeEnd}<Slot render={resizeEnd} />{/if}
-		</div>
-	{/if}
-	{#if actionTrigger || interaction}
-		<div data-event-calendar-part="action-trigger" class={classes.actionTrigger()}>
-			{#if actionTrigger}
-				<Slot render={actionTrigger} />
-			{:else if interaction}
-				<EventCalendarItemActions
-					{occurrence}
-					{a11y}
-					{interaction}
-					{messages}
-					{density}
-					{color}
-					{disabled}
-				/>
-			{/if}
 		</div>
 	{/if}
 </div>

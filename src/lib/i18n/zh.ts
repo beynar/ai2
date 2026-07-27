@@ -189,11 +189,9 @@ export const zh: Messages = {
 	eventCalendarSelectRangeGesture: '选择日历时段',
 	eventCalendarValidTarget: '有效目标',
 	eventCalendarInvalidTarget: '无效目标',
-	eventCalendarItemActions: (title: string | number) => `${title}的操作`,
 	eventCalendarMoveAction: '移动',
 	eventCalendarResizeStartAction: '调整开始时间',
 	eventCalendarResizeEndAction: '调整结束时间',
-	eventCalendarCancelAction: '取消操作',
 	eventCalendarKeyboardInstructions:
 		'按 M 移动，按 S 调整开始时间，或按 E 调整结束时间。使用方向键调整，按 Enter 提交，按 Escape 取消。',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

@@ -10,7 +10,7 @@
 		},
 		{
 			title: 'Mutations, validation, and dialogs',
-			body: 'Drag, keyboard mode, the single-pointer item menu, both resize edges, and API updates share one proposal pipeline. Focus an empty slot and press Space, extend with arrows, then press Enter to create a keyboard range; pointer users can click its two endpoints. Structural/range checks run before business hours, overlap, and custom policy. onItemUpdate may reject or adjust, and adjustments are revalidated. onItemsChange receives one immutable transaction with guarded revert. Empty-slot creation ends at onSlotSelect: compose a Svelai Dialog and Form with DateInput, TimeInput, Select, and Switch, then add the validated domain item yourself.'
+			body: 'Drag, keyboard mode, both resize edges, and API updates share one proposal pipeline. Focus an empty slot and press Space, extend with arrows, then press Enter to create a keyboard range; pointer users can click its two endpoints. Structural/range checks run before business hours, overlap, and custom policy. onItemUpdate may reject or adjust, and adjustments are revalidated. onItemsChange receives one immutable transaction with guarded revert. Empty-slot creation ends at onSlotSelect: compose a Svelai Dialog and Form with DateInput, TimeInput, Select, and Switch, then add the validated domain item yourself.'
 		},
 		{
 			title: 'Snippets and theme',
@@ -22,7 +22,7 @@
 		},
 		{
 			title: 'Resources, RTL, and accessibility',
-			body: 'Resources are a typed flat tree: parents group and leaves accept assignment; unresolved items remain visible in Unassigned. Custom resource fields reach resourceHeader. dir mirrors physical horizontal movement while previous/next remain chronological. Grids, groups, buttons, disclosures, roving focus, keyboard move/resize/range creation, Enter commit, Escape cancel, single-pointer alternatives, live status, reduced motion, 24px targets, 200% reflow, and horizontal overflow are built in.'
+			body: 'Resources are a typed flat tree: parents group and leaves accept assignment; unresolved items remain visible in Unassigned. Custom resource fields reach resourceHeader. dir mirrors physical horizontal movement while previous/next remain chronological. Grids, groups, buttons, disclosures, roving focus, keyboard move/resize/range creation, Enter commit, Escape cancel, two-click range selection, live status, reduced motion, 24px targets, 200% reflow, and horizontal overflow are built in.'
 		}
 	];
 </script>

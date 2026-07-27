@@ -199,11 +199,9 @@ export const en = {
 	eventCalendarSelectRangeGesture: 'Select calendar range',
 	eventCalendarValidTarget: 'Valid target',
 	eventCalendarInvalidTarget: 'Invalid target',
-	eventCalendarItemActions: (title: string | number) => `Actions for ${title}`,
 	eventCalendarMoveAction: 'Move',
 	eventCalendarResizeStartAction: 'Resize start',
 	eventCalendarResizeEndAction: 'Resize end',
-	eventCalendarCancelAction: 'Cancel interaction',
 	eventCalendarKeyboardInstructions:
 		'Press M to move, S to resize the start, or E to resize the end. Use arrows to adjust, Enter to commit, and Escape to cancel.',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

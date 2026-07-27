@@ -194,11 +194,9 @@ export const de: Messages = {
 	eventCalendarSelectRangeGesture: 'Kalenderzeitraum auswählen',
 	eventCalendarValidTarget: 'Gültiges Ziel',
 	eventCalendarInvalidTarget: 'Ungültiges Ziel',
-	eventCalendarItemActions: (title: string | number) => `Aktionen für ${title}`,
 	eventCalendarMoveAction: 'Verschieben',
 	eventCalendarResizeStartAction: 'Beginn ändern',
 	eventCalendarResizeEndAction: 'Ende ändern',
-	eventCalendarCancelAction: 'Interaktion abbrechen',
 	eventCalendarKeyboardInstructions:
 		'M zum Verschieben, S zum Ändern des Beginns oder E zum Ändern des Endes drücken. Mit Pfeiltasten anpassen, mit Eingabe bestätigen und mit Escape abbrechen.',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

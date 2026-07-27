@@ -190,11 +190,9 @@ export const ja: Messages = {
 	eventCalendarSelectRangeGesture: 'カレンダーの範囲を選択',
 	eventCalendarValidTarget: '有効な移動先',
 	eventCalendarInvalidTarget: '無効な移動先',
-	eventCalendarItemActions: (title: string | number) => `${title}の操作`,
 	eventCalendarMoveAction: '移動',
 	eventCalendarResizeStartAction: '開始を変更',
 	eventCalendarResizeEndAction: '終了を変更',
-	eventCalendarCancelAction: '操作をキャンセル',
 	eventCalendarKeyboardInstructions:
 		'Mで移動、Sで開始変更、Eで終了変更。矢印キーで調整し、Enterで確定、Escapeでキャンセルします。',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

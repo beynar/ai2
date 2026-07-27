@@ -193,11 +193,9 @@ export const fr: Messages = {
 	eventCalendarSelectRangeGesture: 'Sélectionner une période du calendrier',
 	eventCalendarValidTarget: 'Cible valide',
 	eventCalendarInvalidTarget: 'Cible non valide',
-	eventCalendarItemActions: (title: string | number) => `Actions pour ${title}`,
 	eventCalendarMoveAction: 'Déplacer',
 	eventCalendarResizeStartAction: 'Redimensionner le début',
 	eventCalendarResizeEndAction: 'Redimensionner la fin',
-	eventCalendarCancelAction: 'Annuler l’interaction',
 	eventCalendarKeyboardInstructions:
 		'Appuyez sur M pour déplacer, S pour redimensionner le début ou E pour redimensionner la fin. Utilisez les flèches pour ajuster, Entrée pour valider et Échap pour annuler.',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

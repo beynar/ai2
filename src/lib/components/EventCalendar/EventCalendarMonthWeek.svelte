@@ -361,7 +361,6 @@
 						<EventCalendarItem
 							{segment}
 							{a11y}
-							{messages}
 							view="month"
 							locale={calendar.locale}
 							timeZone={calendar.timeZone}

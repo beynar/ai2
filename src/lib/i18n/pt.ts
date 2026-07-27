@@ -194,11 +194,9 @@ export const pt: Messages = {
 	eventCalendarSelectRangeGesture: 'Selecionar período do calendário',
 	eventCalendarValidTarget: 'Destino válido',
 	eventCalendarInvalidTarget: 'Destino inválido',
-	eventCalendarItemActions: (title: string | number) => `Ações para ${title}`,
 	eventCalendarMoveAction: 'Mover',
 	eventCalendarResizeStartAction: 'Alterar início',
 	eventCalendarResizeEndAction: 'Alterar fim',
-	eventCalendarCancelAction: 'Cancelar interação',
 	eventCalendarKeyboardInstructions:
 		'Pressione M para mover, S para alterar o início ou E para alterar o fim. Use as setas para ajustar, Enter para confirmar e Escape para cancelar.',
 	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>

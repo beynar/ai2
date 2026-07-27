@@ -4,7 +4,6 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Colors, Density } from '$lib/types/theme.js';
-	import type { Messages } from '$lib/i18n/en.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -32,7 +31,6 @@
 		calendar,
 		snapshot,
 		a11y,
-		messages,
 		geometry,
 		columnLabel,
 		density,
@@ -60,7 +58,6 @@
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
 		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
 		geometry: EventCalendarTimeGridDayGeometry<TItemFields>;
 		columnLabel: string;
 		density: Density;
@@ -269,7 +266,6 @@
 			<EventCalendarItem
 				{segment}
 				{a11y}
-				{messages}
 				{view}
 				locale={calendar.locale}
 				timeZone={calendar.timeZone}

@@ -168,7 +168,7 @@ const item = createEventCalendarPart(
 	'group/item relative min-h-[var(--event-calendar-item-min-height)] min-w-0'
 );
 const itemControl = createEventCalendarPart(
-	'state-layer h-full min-h-6 w-full min-w-0 rounded bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] py-0.5 ps-1.5 pe-7 text-start text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'state-layer h-full min-h-6 w-full min-w-0 rounded bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] px-1.5 py-0.5 text-start text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
 );
 const itemContent = createEventCalendarPart('flex min-w-0 items-baseline gap-1 overflow-hidden');
 const itemTitle = createEventCalendarPart('truncate font-medium');
@@ -189,10 +189,6 @@ const slotSelection = createEventCalendarPart(
 const resizeHandle = createEventCalendarPart(
 	'absolute z-30 touch-none outline-none focus-visible:ring-2 focus-visible:ring-color'
 );
-const actionTrigger = createEventCalendarPart(
-	'absolute end-0 top-0 z-40 grid min-h-6 min-w-6 place-items-center opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100'
-);
-
 const agenda = createEventCalendarPart('relative min-w-0');
 const agendaDay = createEventCalendarPart('border-b border-neutral-muted');
 const agendaItem = createEventCalendarPart('min-w-0');
@@ -241,7 +237,6 @@ export const eventCalendarTheme = {
 	dropIndicator,
 	slotSelection,
 	resizeHandle,
-	actionTrigger,
 	agenda,
 	agendaDay,
 	agendaItem,
