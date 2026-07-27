@@ -624,9 +624,10 @@ export class EventCalendarInteractionsController<
 		if (target.view === 'month' && gesture.kind === 'move' && gesture.inputMode === 'pointer') {
 			return null;
 		}
-		return target.allDay
+		const rect = target.allDay
 			? this.getAllDayDropIndicatorRect(gesture, target, targetElement)
 			: this.getTimedDropIndicatorRect(gesture, target, targetElement);
+		return rect ? this.clipDropIndicatorRect(rect, targetElement) : null;
 	}
 
 	getMonthInsertion(): EventCalendarMonthInsertion | null {
@@ -2208,6 +2209,25 @@ export class EventCalendarInteractionsController<
 			width,
 			height
 		};
+	}
+
+	private clipDropIndicatorRect(
+		rect: EventCalendarDropIndicatorRect,
+		targetElement: HTMLElement
+	): EventCalendarDropIndicatorRect | null {
+		const root = targetElement.closest<HTMLElement>('[data-event-calendar-part="root"]');
+		if (!root) return rect;
+		const rootRect = root.getBoundingClientRect();
+		const clipLeft = rootRect.left + root.clientLeft;
+		const clipTop = rootRect.top + root.clientTop;
+		const clipRight = clipLeft + root.clientWidth;
+		const clipBottom = clipTop + root.clientHeight;
+		const left = Math.max(rect.left, clipLeft);
+		const top = Math.max(rect.top, clipTop);
+		const right = Math.min(rect.left + rect.width, clipRight);
+		const bottom = Math.min(rect.top + rect.height, clipBottom);
+		if (right <= left || bottom <= top) return null;
+		return { left, top, width: right - left, height: bottom - top };
 	}
 
 	private findAllDayTargetElement(
