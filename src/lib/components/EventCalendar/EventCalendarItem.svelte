@@ -185,7 +185,6 @@
 		density,
 		color: semanticColor,
 		view,
-		selected: isSelected,
 		dragging: isDragging,
 		disabled,
 		display: 'auto',
