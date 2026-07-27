@@ -34,7 +34,7 @@ const eventCalendarVariants = {
 	},
 	selected: { true: 'ring-2 ring-color/60', false: '' },
 	dragging: { true: 'cursor-grabbing opacity-70', false: '' },
-	invalid: { true: 'ring-2 ring-danger/70', false: '' },
+	invalid: { true: 'cursor-not-allowed', false: '' },
 	disabled: { true: '', false: '' },
 	recurring: { true: 'border-dashed', false: '' },
 	today: { true: 'bg-color-muted/30', false: '' },

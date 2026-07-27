@@ -364,7 +364,7 @@
 					></div>
 				{/each}
 
-				{#if insertion?.startIndex === gridDayIndex && insertion.lane < visibleLaneCount}
+				{#if calendar.interaction.isValid === true && insertion?.startIndex === gridDayIndex && insertion.lane < visibleLaneCount}
 					{@const proposal = calendar.interaction.proposal}
 					{#if proposal}
 						{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
@@ -383,12 +383,10 @@
 							<div
 								data-event-calendar-part="drop-indicator"
 								data-color={indicatorColor}
-								data-invalid={calendar.interaction.isValid === false || undefined}
 								class={classes.dropIndicator({
 									density,
 									color: indicatorColor,
 									view: 'month',
-									invalid: calendar.interaction.isValid === false,
 									class: 'h-full w-full'
 								})}
 								style:--event-calendar-item-color={indicatorItemColor}

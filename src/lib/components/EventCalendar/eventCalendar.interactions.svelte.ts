@@ -197,6 +197,7 @@ export class EventCalendarInteractionsController<
 	private monitorCleanup: (() => void) | null = null;
 	private escapeCleanup: (() => void) | null = null;
 	private nativeCancelCleanup: (() => void) | null = null;
+	private nativeCursorCleanup: (() => void) | null = null;
 	private didNativeCancel = false;
 	private autoScrollCleanups = new Set<() => void>();
 	private slotScrollElement: HTMLElement | null = null;
@@ -291,6 +292,19 @@ export class EventCalendarInteractionsController<
 		};
 		window.addEventListener('dragend', handleDragEnd, true);
 		this.nativeCancelCleanup = () => window.removeEventListener('dragend', handleDragEnd, true);
+		const handleDragOver = (event: DragEvent) => {
+			if (
+				!this.gesture ||
+				this.gesture.kind === 'slot-create' ||
+				this.gesture.inputMode !== 'pointer' ||
+				this.gesture.isValid ||
+				!event.dataTransfer
+			)
+				return;
+			event.dataTransfer.dropEffect = 'none';
+		};
+		window.addEventListener('dragover', handleDragOver);
+		this.nativeCursorCleanup = () => window.removeEventListener('dragover', handleDragOver);
 	}
 
 	destroy(): void {
@@ -303,6 +317,8 @@ export class EventCalendarInteractionsController<
 		this.escapeCleanup = null;
 		this.nativeCancelCleanup?.();
 		this.nativeCancelCleanup = null;
+		this.nativeCursorCleanup?.();
+		this.nativeCursorCleanup = null;
 		for (const cleanup of this.autoScrollCleanups) cleanup();
 		this.autoScrollCleanups.clear();
 	}

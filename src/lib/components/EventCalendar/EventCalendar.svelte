@@ -853,17 +853,15 @@
 			{@const indicatorColor = isEventCalendarSemanticColor(eventColor) ? eventColor : color}
 			{@const indicatorItemColor =
 				eventColor && !isEventCalendarSemanticColor(eventColor) ? eventColor : 'var(--color)'}
-			{#if indicatorRect}
+			{#if indicatorRect && calendar.interaction.isValid === true}
 				<div
 					aria-hidden="true"
 					data-event-calendar-part="drop-indicator"
 					data-color={indicatorColor}
-					data-invalid={calendar.interaction.isValid === false || undefined}
 					class={classes.dropIndicator({
 						density,
 						color: indicatorColor,
 						view: calendar.view,
-						invalid: calendar.interaction.isValid === false,
 						class: 'fixed'
 					})}
 					style:--event-calendar-item-color={indicatorItemColor}
