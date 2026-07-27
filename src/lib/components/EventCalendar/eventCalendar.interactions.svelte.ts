@@ -2157,11 +2157,7 @@ export class EventCalendarInteractionsController<
 			proposalDuration * pixelsPerMillisecond,
 			2
 		);
-		const availableWidth = Math.max(2, rect.width - 4);
-		const width =
-			gesture.kind === 'move'
-				? Math.max(2, Math.min(gesture.sourceWidth ?? availableWidth, availableWidth))
-				: availableWidth;
+		const width = Math.max(2, rect.width - 4);
 		return {
 			left: rect.left + (rect.width - width) / 2,
 			top,
