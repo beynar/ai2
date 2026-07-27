@@ -1,4 +1,34 @@
-import { TZDateMini, tzOffset, tzScan } from '@date-fns/tz';
+import {
+	CivilDateError,
+	addCivilDateDays,
+	addCivilDateMonths,
+	formatCivilDate,
+	getCivilDateDifference,
+	getCivilDateWeekday,
+	getCivilDaysInMonth,
+	modulo,
+	parseCivilDate,
+	startOfCivilDateWeek,
+	type CivilDate
+} from '$lib/scheduling/civilDate.js';
+import {
+	assertScheduleInstant,
+	assertScheduleRange,
+	intersectScheduleRanges,
+	scheduleRangesIntersect
+} from '$lib/scheduling/scheduleRange.js';
+import {
+	ZonedTimeError,
+	assertIanaTimeZone,
+	getDateTimeFormatter,
+	getInstantZonedDay,
+	getInstantZonedParts,
+	normalizeFormattingLocale,
+	resolveZonedMinuteOnDay,
+	resolveZonedWallTime,
+	snapInstantWithinZonedDay,
+	startOfZonedCivilDay
+} from '$lib/scheduling/zonedTime.js';
 import { EventCalendarError } from './eventCalendar.error.js';
 import type {
 	EventCalendarDateOnly,
@@ -9,23 +39,13 @@ import type {
 	EventCalendarWeekday
 } from './eventCalendar.types.js';
 
-const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
-const FIXED_OFFSET_TIME_ZONE_PATTERN = /^[+-]\d{2}(?::?\d{2})?$/;
 const MINUTE_MS = 60_000;
-const HOUR_MS = 60 * MINUTE_MS;
-const DAY_MS = 24 * HOUR_MS;
 const MAX_VISIBLE_DAY_SCAN = 100_000;
 const MAX_NEARBY_VISIBLE_DAY_SCAN = 8;
 export const MIN_EVENT_CALENDAR_DAY: EventCalendarDateOnly = '0001-01-01';
 export const MAX_EVENT_CALENDAR_DAY: EventCalendarDateOnly = '9999-12-30';
 export const MAX_EVENT_CALENDAR_BOUNDARY: EventCalendarDateOnly = '9999-12-31';
 const SUPPORTED_DATE_DOMAIN_REASON = 'supported-date-domain';
-
-type CivilDate = {
-	year: number;
-	month: number;
-	day: number;
-};
 
 export type EventCalendarWallTime = CivilDate & {
 	hour?: number;
@@ -62,22 +82,15 @@ export type EventCalendarDateProfile = EventCalendarRangeChangeInfo & {
 	navigationIncrement: EventCalendarNavigationIncrement;
 };
 
-type ZoneTransition = {
-	instant: number;
-	beforeOffset: number;
-	afterOffset: number;
-};
-
-const formatterCache = new Map<string, Intl.DateTimeFormat>();
-const transitionCache = new Map<string, readonly ZoneTransition[]>();
-const validTimeZoneCache = new Set<string>();
-const localeCache = new Map<string, string>();
-
 export function assertValidInstant(value: Date, name = 'date'): void {
-	if (value instanceof Date && Number.isFinite(value.getTime())) return;
-	throw new EventCalendarError('invalid-prop', `${name} must be a valid Date instant.`, {
-		prop: name
-	});
+	try {
+		assertScheduleInstant(value, name);
+	} catch (error) {
+		if (!(error instanceof RangeError)) throw error;
+		throw new EventCalendarError('invalid-prop', `${name} must be a valid Date instant.`, {
+			prop: name
+		});
+	}
 }
 
 export function assertValidTimeZone(timeZone: string): void {
@@ -86,19 +99,10 @@ export function assertValidTimeZone(timeZone: string): void {
 			timeZone
 		});
 	}
-	if (FIXED_OFFSET_TIME_ZONE_PATTERN.test(timeZone)) {
-		throw new EventCalendarError(
-			'invalid-time-zone',
-			`timeZone must be a supported IANA name or UTC: ${timeZone}.`,
-			{ timeZone }
-		);
-	}
-	if (validTimeZoneCache.has(timeZone)) return;
-
 	try {
-		new Intl.DateTimeFormat('en', { timeZone }).format(0);
-		validTimeZoneCache.add(timeZone);
+		assertIanaTimeZone(timeZone);
 	} catch (error) {
+		if (!(error instanceof ZonedTimeError)) throw error;
 		throw new EventCalendarError(
 			'invalid-time-zone',
 			`timeZone must be a supported IANA name or UTC: ${timeZone}.`,
@@ -114,15 +118,10 @@ export function normalizeLocale(locale: string): string {
 			locale
 		});
 	}
-	const cached = localeCache.get(locale);
-	if (cached) return cached;
-
 	try {
-		const [normalized] = Intl.getCanonicalLocales(locale);
-		if (!normalized) throw new RangeError('No locale was returned.');
-		localeCache.set(locale, normalized);
-		return normalized;
+		return normalizeFormattingLocale(locale);
 	} catch (error) {
+		if (!(error instanceof ZonedTimeError)) throw error;
 		throw new EventCalendarError('invalid-prop', `locale must be a valid BCP-47 tag: ${locale}.`, {
 			prop: 'locale',
 			locale,
@@ -132,24 +131,16 @@ export function normalizeLocale(locale: string): string {
 }
 
 export function parseDateOnly(value: string, name = 'date'): CivilDate {
-	const match = DATE_ONLY_PATTERN.exec(value);
-	if (!match) {
-		throw new EventCalendarError('invalid-prop', `${name} must use canonical YYYY-MM-DD form.`, {
-			prop: name,
-			value
-		});
+	try {
+		return parseCivilDate(value);
+	} catch (error) {
+		if (!(error instanceof CivilDateError)) throw error;
+		const message =
+			error.code === 'invalid-format'
+				? `${name} must use canonical YYYY-MM-DD form.`
+				: `${name} must be a real Gregorian date.`;
+		throw new EventCalendarError('invalid-prop', message, { prop: name, value });
 	}
-
-	const year = Number(match[1]);
-	const month = Number(match[2]);
-	const day = Number(match[3]);
-	if (year === 0 || month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) {
-		throw new EventCalendarError('invalid-prop', `${name} must be a real Gregorian date.`, {
-			prop: name,
-			value
-		});
-	}
-	return { year, month, day };
 }
 
 export function assertDateOnly(
@@ -219,7 +210,7 @@ export function toDateOnly(parts: CivilDate): EventCalendarDateOnly {
 		parts.month < 1 ||
 		parts.month > 12 ||
 		parts.day < 1 ||
-		parts.day > daysInMonth(parts.year, parts.month)
+		parts.day > getCivilDaysInMonth(parts.year, parts.month)
 	) {
 		if (Number.isInteger(parts.year) && (parts.year < 1 || parts.year > 9999)) {
 			throwSupportedDateDomainError({ parts });
@@ -228,9 +219,7 @@ export function toDateOnly(parts: CivilDate): EventCalendarDateOnly {
 			...parts
 		});
 	}
-	const value = `${String(parts.year).padStart(4, '0')}-${String(parts.month).padStart(2, '0')}-${String(
-		parts.day
-	).padStart(2, '0')}`;
+	const value = formatCivilDate(parts);
 	assertDateOnly(value);
 	return value;
 }
@@ -238,20 +227,13 @@ export function toDateOnly(parts: CivilDate): EventCalendarDateOnly {
 export function getZonedParts(instant: Date, timeZone: string): Required<EventCalendarWallTime> {
 	assertValidInstant(instant);
 	assertValidTimeZone(timeZone);
-	const zoned = new TZDateMini(instant.getTime(), timeZone);
-	return {
-		year: zoned.getFullYear(),
-		month: zoned.getMonth() + 1,
-		day: zoned.getDate(),
-		hour: zoned.getHours(),
-		minute: zoned.getMinutes(),
-		second: zoned.getSeconds(),
-		millisecond: zoned.getMilliseconds()
-	};
+	return getInstantZonedParts(instant, timeZone);
 }
 
 export function getZonedDay(instant: Date, timeZone: string): EventCalendarDateOnly {
-	return toDateOnly(getZonedParts(instant, timeZone));
+	assertValidInstant(instant);
+	assertValidTimeZone(timeZone);
+	return getInstantZonedDay(instant, timeZone);
 }
 
 /**
@@ -261,49 +243,21 @@ export function getZonedDay(instant: Date, timeZone: string): EventCalendarDateO
 export function resolveZonedDateTime(wallTime: EventCalendarWallTime, timeZone: string): Date {
 	assertValidTimeZone(timeZone);
 	const normalized = normalizeWallTime(wallTime);
-	const localTimestamp = toUtcSurrogate(normalized);
-	const transitions = getZoneTransitions(timeZone, normalized.year);
-	const candidateOffsets = new Set<number>();
-
-	for (const transition of transitions) {
-		candidateOffsets.add(transition.beforeOffset);
-		candidateOffsets.add(transition.afterOffset);
+	try {
+		return resolveZonedWallTime(normalized, timeZone);
+	} catch (error) {
+		if (!(error instanceof ZonedTimeError)) throw error;
+		throw new EventCalendarError('invalid-prop', 'The wall time could not be resolved.', {
+			timeZone,
+			wallTime: normalized
+		});
 	}
-	for (const delta of [-370, -2, -1, 0, 1, 2, 370]) {
-		candidateOffsets.add(tzOffset(timeZone, new Date(localTimestamp + delta * 24 * HOUR_MS)));
-	}
-
-	const matchingInstants: number[] = [];
-	for (const offset of candidateOffsets) {
-		if (!Number.isFinite(offset)) continue;
-		const candidate = new Date(localTimestamp - offset * MINUTE_MS);
-		if (wallTimesEqual(getZonedParts(candidate, timeZone), normalized)) {
-			matchingInstants.push(candidate.getTime());
-		}
-	}
-
-	if (matchingInstants.length > 0) {
-		return new Date(Math.min(...matchingInstants));
-	}
-
-	for (const transition of transitions) {
-		if (transition.afterOffset <= transition.beforeOffset) continue;
-		const localBefore = transition.instant + transition.beforeOffset * MINUTE_MS;
-		const localAfter = transition.instant + transition.afterOffset * MINUTE_MS;
-		if (localTimestamp >= localBefore && localTimestamp < localAfter) {
-			return new Date(localTimestamp - transition.beforeOffset * MINUTE_MS);
-		}
-	}
-
-	throw new EventCalendarError('invalid-prop', 'The wall time could not be resolved.', {
-		timeZone,
-		wallTime: normalized
-	});
 }
 
 export function startOfZonedDay(day: EventCalendarDateOnly, timeZone: string): Date {
-	const civil = parseDateOnly(day);
-	return resolveZonedDateTime({ ...civil, hour: 0 }, timeZone);
+	parseDateOnly(day);
+	assertValidTimeZone(timeZone);
+	return startOfZonedCivilDay(day, timeZone);
 }
 
 export function endOfZonedDay(day: EventCalendarDateOnly, timeZone: string): Date {
@@ -312,31 +266,30 @@ export function endOfZonedDay(day: EventCalendarDateOnly, timeZone: string): Dat
 
 export function addCivilDays(day: EventCalendarDateOnly, amount: number): EventCalendarDateOnly {
 	assertInteger(amount, 'amount');
-	const civil = parseDateOnly(day);
-	const date = civilToUtcDate(civil);
-	date.setUTCDate(date.getUTCDate() + amount);
-	return toDateOnly({
-		year: date.getUTCFullYear(),
-		month: date.getUTCMonth() + 1,
-		day: date.getUTCDate()
-	});
+	try {
+		return toDateOnly(addCivilDateDays(parseDateOnly(day), amount));
+	} catch (error) {
+		if (error instanceof CivilDateError && error.code === 'outside-supported-range') {
+			throwSupportedDateDomainError({ day, amount });
+		}
+		throw error;
+	}
 }
 
 export function addCivilMonths(day: EventCalendarDateOnly, amount: number): EventCalendarDateOnly {
 	assertInteger(amount, 'amount');
-	const { year, month, day: dayOfMonth } = parseDateOnly(day);
-	const monthIndex = year * 12 + month - 1 + amount;
-	const nextYear = Math.floor(monthIndex / 12);
-	const nextMonth = modulo(monthIndex, 12) + 1;
-	return toDateOnly({
-		year: nextYear,
-		month: nextMonth,
-		day: Math.min(dayOfMonth, daysInMonth(nextYear, nextMonth))
-	});
+	try {
+		return toDateOnly(addCivilDateMonths(parseDateOnly(day), amount));
+	} catch (error) {
+		if (error instanceof CivilDateError && error.code === 'outside-supported-range') {
+			throwSupportedDateDomainError({ day, amount });
+		}
+		throw error;
+	}
 }
 
 export function getCivilWeekday(day: EventCalendarDateOnly): EventCalendarWeekday {
-	const weekday = civilToUtcDate(parseDateOnly(day)).getUTCDay();
+	const weekday = getCivilDateWeekday(parseDateOnly(day));
 	assertWeekday(weekday, 'weekday');
 	return weekday;
 }
@@ -345,8 +298,7 @@ export function startOfCivilWeek(
 	day: EventCalendarDateOnly,
 	weekStartsOn: EventCalendarWeekday
 ): EventCalendarDateOnly {
-	const difference = modulo(getCivilWeekday(day) - weekStartsOn, 7);
-	return addCivilDays(day, -difference);
+	return toDateOnly(startOfCivilDateWeek(parseDateOnly(day), weekStartsOn));
 }
 
 export function enumerateInstantSlots(
@@ -382,7 +334,7 @@ export function enumerateInstantSlots(
 export function rangesIntersect(left: EventCalendarRange, right: EventCalendarRange): boolean {
 	assertValidRange(left);
 	assertValidRange(right);
-	return left.start.getTime() < right.end.getTime() && right.start.getTime() < left.end.getTime();
+	return scheduleRangesIntersect(left, right);
 }
 
 export function intersectRanges(
@@ -391,11 +343,7 @@ export function intersectRanges(
 ): EventCalendarRange {
 	assertValidRange(range);
 	assertValidRange(boundary);
-	const start = Math.max(range.start.getTime(), boundary.start.getTime());
-	const end = Math.min(range.end.getTime(), boundary.end.getTime());
-	if (start <= end) return { start: new Date(start), end: new Date(end) };
-	const edge = range.end.getTime() <= boundary.start.getTime() ? boundary.start : boundary.end;
-	return { start: new Date(edge), end: new Date(edge) };
+	return intersectScheduleRanges(range, boundary);
 }
 
 export function assertValidRange(range: EventCalendarRange, name = 'range'): void {
@@ -406,7 +354,10 @@ export function assertValidRange(range: EventCalendarRange, name = 'range'): voi
 	}
 	assertValidInstant(range.start, `${name}.start`);
 	assertValidInstant(range.end, `${name}.end`);
-	if (range.end.getTime() < range.start.getTime()) {
+	try {
+		assertScheduleRange(range, name);
+	} catch (error) {
+		if (!(error instanceof RangeError)) throw error;
 		throw new EventCalendarError('invalid-prop', `${name}.end must not precede ${name}.start.`, {
 			prop: name
 		});
@@ -510,10 +461,8 @@ export function snapInstant(
 ): Date {
 	assertValidInstant(instant);
 	assertPositiveInteger(durationMinutes, 'durationMinutes');
-	const dayStart = startOfZonedDay(getZonedDay(instant, timeZone), timeZone).getTime();
-	const duration = durationMinutes * MINUTE_MS;
-	const units = (instant.getTime() - dayStart) / duration;
-	return new Date(dayStart + applySnap(units, mode) * duration);
+	assertValidTimeZone(timeZone);
+	return snapInstantWithinZonedDay(instant, timeZone, durationMinutes, mode);
 }
 
 export function getWeekNumber(
@@ -563,16 +512,7 @@ export function getCachedDateTimeFormatter(
 ): Intl.DateTimeFormat {
 	assertValidTimeZone(timeZone);
 	const normalizedLocale = normalizeLocale(locale);
-	const normalizedOptions = Object.entries(options).sort(([left], [right]) =>
-		left.localeCompare(right)
-	);
-	const key = JSON.stringify([normalizedLocale, timeZone, normalizedOptions]);
-	let formatter = formatterCache.get(key);
-	if (!formatter) {
-		formatter = new Intl.DateTimeFormat(normalizedLocale, { ...options, timeZone });
-		formatterCache.set(key, formatter);
-	}
-	return formatter;
+	return getDateTimeFormatter(normalizedLocale, timeZone, options);
 }
 
 export function createDateProfile(
@@ -986,42 +926,6 @@ function throwNoSelectableDay(day: EventCalendarDateOnly, timeZone: string): nev
 	});
 }
 
-function getZoneTransitions(timeZone: string, year: number): readonly ZoneTransition[] {
-	const cacheKey = `${timeZone}:${year}`;
-	const cached = transitionCache.get(cacheKey);
-	if (cached) return cached;
-	const start = utcDate({ year: year - 1, month: 12, day: 1 }, 0, 0, 0, 0);
-	const end = utcDate({ year: year + 1, month: 2, day: 1 }, 0, 0, 0, 0);
-	const transitions = tzScan(timeZone, { start, end }).map((change) => {
-		const beforeOffset = change.offset - change.change;
-		return {
-			instant: refineTransition(timeZone, change.date.getTime(), beforeOffset, change.offset),
-			beforeOffset,
-			afterOffset: change.offset
-		};
-	});
-	transitionCache.set(cacheKey, transitions);
-	return transitions;
-}
-
-function refineTransition(
-	timeZone: string,
-	approximate: number,
-	beforeOffset: number,
-	afterOffset: number
-): number {
-	let low = approximate - 6 * HOUR_MS;
-	let high = approximate + 6 * HOUR_MS;
-	while (tzOffset(timeZone, new Date(low)) !== beforeOffset) low -= 6 * HOUR_MS;
-	while (tzOffset(timeZone, new Date(high)) !== afterOffset) high += 6 * HOUR_MS;
-	while (high - low > 1) {
-		const middle = Math.floor((low + high) / 2);
-		if (tzOffset(timeZone, new Date(middle)) === beforeOffset) low = middle;
-		else high = middle;
-	}
-	return high;
-}
-
 function normalizeWallTime(wallTime: EventCalendarWallTime): Required<EventCalendarWallTime> {
 	const hour = wallTime.hour ?? 0;
 	const minute = wallTime.minute ?? 0;
@@ -1055,21 +959,6 @@ function normalizeWallTime(wallTime: EventCalendarWallTime): Required<EventCalen
 	return { ...parseDateOnly(day), hour, minute, second, millisecond };
 }
 
-function wallTimesEqual(
-	left: Required<EventCalendarWallTime>,
-	right: Required<EventCalendarWallTime>
-): boolean {
-	return (
-		left.year === right.year &&
-		left.month === right.month &&
-		left.day === right.day &&
-		left.hour === right.hour &&
-		left.minute === right.minute &&
-		left.second === right.second &&
-		left.millisecond === right.millisecond
-	);
-}
-
 /** Resolves a whole wall minute on a civil day; `1440` is the next day's boundary. */
 export function resolveZonedMinutesOnDay(
 	day: EventCalendarDateOnly,
@@ -1077,15 +966,9 @@ export function resolveZonedMinutesOnDay(
 	timeZone: string
 ): Date {
 	assertMinuteOfDay(minutes, 'minutes', true);
-	const civil = parseDateOnly(day);
-	return resolveZonedDateTime(
-		{
-			...civil,
-			hour: Math.floor(minutes / 60),
-			minute: minutes % 60
-		},
-		timeZone
-	);
+	parseDateOnly(day);
+	assertValidTimeZone(timeZone);
+	return resolveZonedMinuteOnDay(day, minutes, timeZone);
 }
 
 function civilRangeToInstantRange(
@@ -1157,19 +1040,11 @@ function assertMinuteOfDay(value: number, name: string, allowEnd: boolean): void
 	});
 }
 
-function applySnap(value: number, mode: EventCalendarSnapMode): number {
-	if (mode === 'floor') return Math.floor(value);
-	if (mode === 'ceil') return Math.ceil(value);
-	return Math.round(value);
-}
-
 export function civilDayDifference(
 	start: EventCalendarDateOnly,
 	end: EventCalendarDateOnly
 ): number {
-	const startTime = civilToUtcDate(parseDateOnly(start)).getTime();
-	const endTime = civilToUtcDate(parseDateOnly(end)).getTime();
-	return Math.round((endTime - startTime) / DAY_MS);
+	return getCivilDateDifference(parseDateOnly(start), parseDateOnly(end));
 }
 
 function getFirstWeekStartOrdinal(
@@ -1189,42 +1064,6 @@ function getFirstWeekStartOrdinal(
 		7
 	);
 	return containedDayOrdinal - modulo(containedDayWeekday - weekStartsOn, 7);
-}
-
-function daysInMonth(year: number, month: number): number {
-	const date = utcDate({ year, month: month + 1, day: 0 }, 0, 0, 0, 0);
-	return date.getUTCDate();
-}
-
-function civilToUtcDate(civil: CivilDate): Date {
-	return utcDate(civil, 0, 0, 0, 0);
-}
-
-function toUtcSurrogate(wallTime: Required<EventCalendarWallTime>): number {
-	return utcDate(
-		wallTime,
-		wallTime.hour,
-		wallTime.minute,
-		wallTime.second,
-		wallTime.millisecond
-	).getTime();
-}
-
-function utcDate(
-	civil: CivilDate,
-	hour: number,
-	minute: number,
-	second: number,
-	millisecond: number
-): Date {
-	const date = new Date(0);
-	date.setUTCFullYear(civil.year, civil.month - 1, civil.day);
-	date.setUTCHours(hour, minute, second, millisecond);
-	return date;
-}
-
-function modulo(value: number, divisor: number): number {
-	return ((value % divisor) + divisor) % divisor;
 }
 
 function throwSupportedDateDomainError(details: Readonly<Record<string, unknown>>): never {

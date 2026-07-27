@@ -1,3 +1,4 @@
+import { compareScheduleValues } from '$lib/scheduling/scheduleOrder.js';
 import {
 	addCivilDays,
 	assertDateOnly,
@@ -949,12 +950,16 @@ export function compareEventCalendarScheduleValues(
 	rightPriority: number,
 	rightKey: string
 ): number {
-	if (leftStart !== rightStart) return leftStart - rightStart;
-	const leftDuration = leftEnd - leftStart;
-	const rightDuration = rightEnd - rightStart;
-	if (leftDuration !== rightDuration) return rightDuration - leftDuration;
-	if (leftPriority !== rightPriority) return rightPriority - leftPriority;
-	return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+	return compareScheduleValues(
+		leftStart,
+		leftEnd,
+		leftPriority,
+		leftKey,
+		rightStart,
+		rightEnd,
+		rightPriority,
+		rightKey
+	);
 }
 
 function encodeKey(namespace: string, parts: readonly string[]): string {

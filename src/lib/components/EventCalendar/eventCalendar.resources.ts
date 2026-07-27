@@ -1,3 +1,4 @@
+import { FlatHierarchyError, buildFlatHierarchy } from '$lib/scheduling/flatHierarchy.js';
 import { EventCalendarError } from './eventCalendar.error.js';
 import type { EventCalendarDayBucket } from './eventCalendar.items.js';
 import type {
@@ -73,7 +74,7 @@ export class EventCalendarResourceIndex<TResourceFields extends object> {
 			resources.map((resource) => [resource.id, resource.parentId ?? null])
 		);
 		if (this.structure?.signature !== signature) {
-			this.structure = buildResourceStructure(resources, resourcesById, signature);
+			this.structure = buildResourceStructure(resources, signature);
 		}
 
 		const structure = this.structure;
@@ -270,77 +271,34 @@ function clockMinutes(value: string): number {
 
 function buildResourceStructure<TResourceFields extends object>(
 	resources: readonly EventCalendarResource<TResourceFields>[],
-	resourcesById: ReadonlyMap<string, EventCalendarResource<TResourceFields>>,
 	signature: string
 ): EventCalendarResourceStructure {
-	const childrenByParent = new Map<string | null, string[]>();
-	for (const resource of resources) {
-		const parentId = resource.parentId ?? null;
-		const siblings = childrenByParent.get(parentId) ?? [];
-		siblings.push(resource.id);
-		childrenByParent.set(parentId, siblings);
-	}
-	assertAcyclicResources(resources, resourcesById);
-
-	const nodes: Array<EventCalendarResourceStructureNode | null> = [];
-	const leaves: EventCalendarResourceStructureNode[] = [];
-	let maxDepth = 0;
-	const visit = (id: string, depth: number): EventCalendarResourceStructureNode => {
-		const childIds = childrenByParent.get(id) ?? [];
-		const nodeIndex = nodes.length;
-		nodes.push(null);
-		const leafStart = leaves.length;
-		const childNodes = childIds.map((childId) => visit(childId, depth + 1));
-		const isLeaf = childNodes.length === 0;
-		const resource = getRequiredResource(resourcesById, id);
-		const node: EventCalendarResourceStructureNode = {
-			id,
-			...(resource.parentId === undefined ? {} : { parentId: resource.parentId }),
-			depth,
-			isLeaf,
-			leafStart,
-			leafSpan: isLeaf ? 1 : leaves.length - leafStart
+	try {
+		const hierarchy = buildFlatHierarchy(resources);
+		const nodes = hierarchy.nodes.map((node) => ({
+			id: node.id,
+			...(node.parentId === null ? {} : { parentId: node.parentId }),
+			depth: node.depth,
+			isLeaf: node.isLeaf,
+			leafStart: node.leafStart,
+			leafSpan: node.leafSpan
+		}));
+		const nodesById = new Map(nodes.map((node) => [node.id, node]));
+		return {
+			signature,
+			nodes,
+			leaves: hierarchy.leaves.map((leaf) => {
+				const node = nodesById.get(leaf.id);
+				if (node) return node;
+				throw new EventCalendarError('invalid-resource', 'Resource hierarchy is incomplete.');
+			}),
+			maxDepth: hierarchy.maxDepth
 		};
-		if (isLeaf) {
-			leaves.push(node);
-			maxDepth = Math.max(maxDepth, depth);
-		}
-		nodes[nodeIndex] = node;
-		return node;
-	};
-	for (const rootId of childrenByParent.get(null) ?? []) visit(rootId, 0);
-
-	return {
-		signature,
-		nodes: nodes.map((node) => {
-			if (node) return node;
-			throw new EventCalendarError('invalid-resource', 'Resource hierarchy is incomplete.');
-		}),
-		leaves,
-		maxDepth
-	};
-}
-
-function assertAcyclicResources<TResourceFields extends object>(
-	resources: readonly EventCalendarResource<TResourceFields>[],
-	resourcesById: ReadonlyMap<string, EventCalendarResource<TResourceFields>>
-): void {
-	const visited = new Set<string>();
-	for (const resource of resources) {
-		if (visited.has(resource.id)) continue;
-		const path = new Set<string>();
-		let current: EventCalendarResource<TResourceFields> | undefined = resource;
-		while (current && !visited.has(current.id)) {
-			if (path.has(current.id)) {
-				throw new EventCalendarError('invalid-resource', 'Resource hierarchy contains a cycle.', {
-					id: resource.id,
-					parentId: current.id
-				});
-			}
-			path.add(current.id);
-			current = current.parentId ? resourcesById.get(current.parentId) : undefined;
-		}
-		for (const resourceId of path) visited.add(resourceId);
+	} catch (error) {
+		if (!(error instanceof FlatHierarchyError)) throw error;
+		throw new EventCalendarError('invalid-resource', 'Resource hierarchy contains a cycle.', {
+			...error.details
+		});
 	}
 }
 

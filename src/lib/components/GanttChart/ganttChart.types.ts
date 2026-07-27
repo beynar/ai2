@@ -168,7 +168,7 @@ export type GanttHoliday = Readonly<{
 
 export type GanttConstraintViolation = Readonly<{
 	taskId: string;
-	constraint: GanttConstraint;
+	constraint?: GanttConstraint;
 	code:
 		| 'completed-task-blocked'
 		| 'dependency-conflict'
@@ -199,6 +199,10 @@ export type GanttResolvedTaskNode<TTaskFields extends object = Record<never, nev
 	progress: number | null;
 	elapsedDurationMs: number | null;
 	workingDurationMinutes: number | null;
+	earliestStart: Date | null;
+	earliestEnd: Date | null;
+	latestStart: Date | null;
+	latestEnd: Date | null;
 	totalSlackMinutes: number | null;
 	freeSlackMinutes: number | null;
 	isCritical: boolean;

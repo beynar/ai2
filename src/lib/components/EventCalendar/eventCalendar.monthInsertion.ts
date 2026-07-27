@@ -1,6 +1,6 @@
+import { compareScheduleValues } from '$lib/scheduling/scheduleOrder.js';
 import { civilDayDifference } from './eventCalendar.date.js';
 import type { EventCalendarMonthInsertion } from './eventCalendar.interactions.svelte.js';
-import { compareEventCalendarScheduleValues } from './eventCalendar.items.js';
 import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
 import type { EventCalendarDateOnly } from './eventCalendar.types.js';
 
@@ -81,7 +81,7 @@ type MonthSchedule = {
 function compareMonthSchedules(left: MonthSchedule, right: MonthSchedule): number {
 	if (left.startIndex !== right.startIndex) return left.startIndex - right.startIndex;
 	if (left.endIndex !== right.endIndex) return right.endIndex - left.endIndex;
-	return compareEventCalendarScheduleValues(
+	return compareScheduleValues(
 		left.sortStart,
 		left.sortEnd,
 		left.priority,
