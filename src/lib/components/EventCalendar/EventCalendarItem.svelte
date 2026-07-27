@@ -208,7 +208,7 @@
 				<span
 					class={isHorizontalResize
 						? 'pointer-events-none h-3 w-0.5 rounded-full bg-current'
-						: 'pointer-events-none h-0.5 w-5 rounded-full bg-current'}
+						: 'pointer-events-none h-0.5 w-3 rounded-full bg-current'}
 				></span>
 			{/if}
 		</div>
@@ -270,7 +270,7 @@
 				<span
 					class={isHorizontalResize
 						? 'pointer-events-none h-3 w-0.5 rounded-full bg-current'
-						: 'pointer-events-none h-0.5 w-5 rounded-full bg-current'}
+						: 'pointer-events-none h-0.5 w-3 rounded-full bg-current'}
 				></span>
 			{/if}
 		</div>
