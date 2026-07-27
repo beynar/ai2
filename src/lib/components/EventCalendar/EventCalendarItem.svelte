@@ -142,6 +142,7 @@
 	});
 	const canMove = $derived(Boolean(interaction?.canMove(occurrence)) && !disabled);
 	const canResize = $derived(Boolean(interaction?.canResize(occurrence)) && !disabled);
+	const isHorizontalResize = $derived(view === 'month' || occurrence.allDay);
 	const hasKeyboardActions = $derived(
 		Boolean(
 			interaction &&
@@ -200,9 +201,9 @@
 			data-event-calendar-part="resize-handle"
 			data-edge="start"
 			class={classes.resizeHandle({
-				class: occurrence.allDay
-					? 'inset-y-0 start-0 w-6 cursor-ew-resize'
-					: 'inset-x-0 top-0 h-6 -translate-y-1/2 cursor-ns-resize'
+				class: isHorizontalResize
+					? 'inset-y-0 start-0 w-2 cursor-ew-resize'
+					: 'inset-x-0 top-0 h-2 -translate-y-1/2 cursor-ns-resize'
 			})}
 			{@attach interaction.draggableItem(segment, 'resize-start')}
 		>
@@ -253,9 +254,9 @@
 			data-event-calendar-part="resize-handle"
 			data-edge="end"
 			class={classes.resizeHandle({
-				class: occurrence.allDay
-					? 'inset-y-0 end-0 w-6 cursor-ew-resize'
-					: 'inset-x-0 bottom-0 h-6 translate-y-1/2 cursor-ns-resize'
+				class: isHorizontalResize
+					? 'inset-y-0 end-0 w-2 cursor-ew-resize'
+					: 'inset-x-0 bottom-0 h-2 translate-y-1/2 cursor-ns-resize'
 			})}
 			{@attach interaction.draggableItem(segment, 'resize-end')}
 		>
