@@ -411,6 +411,7 @@
 							{classes}
 							interaction={calendar.interaction}
 							isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
+							allowResize={segment.occurrence.allDay}
 							isSelected={selectionKey === placement.occurrence.key}
 							{disabled}
 							{showItemTooltip}

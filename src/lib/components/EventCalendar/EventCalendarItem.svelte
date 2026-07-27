@@ -30,6 +30,7 @@
 		interaction,
 		isSelected,
 		isDragging = false,
+		allowResize = true,
 		disabled = false,
 		showItemTooltip = false,
 		item,
@@ -56,6 +57,7 @@
 		interaction?: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 		isSelected: boolean;
 		isDragging?: boolean;
+		allowResize?: boolean;
 		disabled?: boolean;
 		showItemTooltip?: boolean;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
@@ -153,13 +155,17 @@
 		delay: 350
 	});
 	const canMove = $derived(Boolean(interaction?.canMove(occurrence)) && !disabled);
-	const canResize = $derived(Boolean(interaction?.canResize(occurrence)) && !disabled);
+	const canResize = $derived(
+		allowResize && Boolean(interaction?.canResize(occurrence)) && !disabled
+	);
 	const isHorizontalResize = $derived(view === 'month' || occurrence.allDay);
 	const hasKeyboardActions = $derived(
 		Boolean(
 			interaction &&
-			(['move', 'resize-start', 'resize-end'] as const).some((operation) =>
-				interaction.canBeginAssistedItem(occurrence, operation, 'keyboard')
+			(['move', 'resize-start', 'resize-end'] as const).some(
+				(operation) =>
+					(operation === 'move' || allowResize) &&
+					interaction.canBeginAssistedItem(occurrence, operation, 'keyboard')
 			)
 		)
 	);
@@ -261,7 +267,7 @@
 			onControlFocus?.();
 		}}
 		onkeydown={(event) => {
-			if (a11y.handleItemKeydown(event, occurrence)) return;
+			if (a11y.handleItemKeydown(event, occurrence, allowResize)) return;
 			onControlKeydown?.(event);
 		}}
 		{@attach registerItemControl}

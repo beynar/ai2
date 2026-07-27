@@ -157,11 +157,13 @@ export class EventCalendarA11y<
 
 	handleItemKeydown(
 		event: KeyboardEvent,
-		occurrence: EventCalendarOccurrence<TItemFields>
+		occurrence: EventCalendarOccurrence<TItemFields>,
+		allowResize = true
 	): boolean {
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		if (!this.mutationOccurrenceKey) {
 			const operation = getMutationShortcut(event.key);
+			if (!allowResize && operation !== 'move') return false;
 			if (!operation || !this.startItemMutation(occurrence, operation, 'keyboard')) return false;
 			event.preventDefault();
 			return true;

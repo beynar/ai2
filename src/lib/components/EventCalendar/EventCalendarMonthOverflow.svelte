@@ -135,6 +135,7 @@
 						{classes}
 						{interaction}
 						isDragging={interaction.isDragging(segment.occurrence.key)}
+						allowResize={false}
 						isSelected={selectionKey === segment.occurrence.key}
 						{disabled}
 						{showItemTooltip}
