@@ -173,7 +173,7 @@ const item = createEventCalendarPart(
 	'group/item relative min-h-[var(--event-calendar-item-min-height)] min-w-0'
 );
 const itemControl = createEventCalendarPart(
-	'state-layer h-full min-h-6 w-full min-w-0 rounded-md border border-[color-mix(in_oklab,var(--event-calendar-item-color)_24%,transparent)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_10%,var(--color-surface))] px-1.5 py-0 text-start text-neutral/90 outline-none focus-visible:ring-2 focus-visible:ring-color/50'
+	'state-layer block h-full min-h-6 w-full min-w-0 rounded-md border border-[color-mix(in_oklab,var(--event-calendar-item-color)_24%,transparent)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_10%,var(--color-surface))] px-1.5 py-0 text-start text-neutral/90 outline-none focus-visible:ring-2 focus-visible:ring-color/50'
 );
 const itemContent = createEventCalendarPart(
 	'flex h-full min-w-0 items-center gap-1 overflow-hidden'
