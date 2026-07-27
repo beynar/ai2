@@ -279,7 +279,7 @@
 				{showItemTooltip}
 				{item}
 				{itemTooltip}
-				class="h-full min-h-0 overflow-hidden"
+				class="h-full min-h-0"
 				compactContent
 				tabindex={disabled ? -1 : a11y.getTimeTargetTabIndex(targetKey)}
 				registerControl={disabled ? undefined : registerTimeTarget(targetKey)}
