@@ -174,6 +174,8 @@ export const ar: Messages = {
 	eventCalendarDaysView: 'أيام',
 	eventCalendarAgendaView: 'جدول الأعمال',
 	eventCalendarResourceView: 'الموارد',
+	eventCalendarUnassignedResource: 'غير معيّن',
+	eventCalendarResourceMoveAnnouncement: (resource: string | number) => `نقل الحدث إلى ${resource}`,
 	eventCalendarMore: (count: string | number) => `+${count} إضافية`,
 	eventCalendarWeekNumber: (week: string | number) => `الأسبوع ${week}`,
 	eventCalendarAllDay: 'طوال اليوم',

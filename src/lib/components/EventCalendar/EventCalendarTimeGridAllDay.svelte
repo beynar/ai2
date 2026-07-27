@@ -68,7 +68,7 @@
 		handleItemActivate,
 		onItemDoubleClick
 	}: {
-		view: 'week' | 'day' | 'days';
+		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
 		a11y: EventCalendarA11y;
@@ -92,7 +92,7 @@
 		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		registerTimeTarget: (targetKey: string) => (node: HTMLElement) => () => void;
 		handleTargetKeydown: (event: KeyboardEvent, targetKey: string, activate?: boolean) => void;
-		handleAllDayClick: (day: EventCalendarDateOnly, event: MouseEvent) => void;
+		handleAllDayClick: (day: EventCalendarDateOnly, event: MouseEvent, resourceId?: string) => void;
 		handleItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
 		onItemDoubleClick?: (
 			occurrence: EventCalendarOccurrence<TItemFields>,
@@ -109,22 +109,25 @@
 	<div data-event-calendar-part="time-gutter" class={classes.timeGutter({ density, color, view })}>
 		<Slot render={allDay ?? allDayPayload.defaultContent} payload={allDayPayload} />
 	</div>
-	{#each dayGeometries as geometry (geometry.day)}
+	{#each dayGeometries as geometry (geometry.key)}
 		{@const isOff = offDaysByDay.get(geometry.day) ?? false}
-		{@const targetKey = `all-day:${geometry.day}`}
+		{@const targetKey = `all-day:${geometry.key}`}
 		{@const isSelected =
 			snapshot.selection.kind === 'slot' &&
 			snapshot.selection.slot.allDay &&
-			snapshot.selection.slot.start === geometry.day}
+			snapshot.selection.slot.start === geometry.day &&
+			snapshot.selection.slot.resourceId === geometry.resourceId}
 		{@const dropTarget = {
-			key: `${view}:all-day:${geometry.day}`,
+			key: `${view}:all-day:${geometry.key}`,
 			view,
 			allDay: true as const,
-			day: geometry.day
+			day: geometry.day,
+			resourceId: geometry.resourceId
 		}}
 		<div
 			data-event-calendar-part="all-day-cell"
 			data-day={geometry.day}
+			data-resource-id={geometry.resourceId}
 			data-off-day={isOff || undefined}
 			class={classes.allDayCell({
 				density,
@@ -136,6 +139,7 @@
 				invalid: calendar.interaction.isInvalidTarget(dropTarget.key)
 			})}
 			style:height={allDayHeight}
+			style:min-width={view === 'resource' ? 'var(--event-calendar-resource-min-width)' : undefined}
 			data-event-calendar-target={serializeEventCalendarTarget(dropTarget)}
 			data-calendar-instance-id={calendar.interaction.instanceId}
 			data-event-calendar-target-key={dropTarget.key}
@@ -154,7 +158,7 @@
 				data-drop-disabled={disabled || undefined}
 				class="absolute inset-0 z-0 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60"
 				onfocus={() => a11y.handleTimeTargetFocus(targetKey)}
-				onclick={(event) => handleAllDayClick(geometry.day, event)}
+				onclick={(event) => handleAllDayClick(geometry.day, event, geometry.resourceId)}
 				onkeydown={(event) => handleTargetKeydown(event, targetKey, true)}
 				{@attach disabled ? null : registerTimeTarget(targetKey)}
 				{@attach disabled ? null : calendar.interaction.slotDrag(dropTarget)}
@@ -173,7 +177,7 @@
 					></span>
 				{/if}
 			</button>
-			{#each allDayBackgroundSegments.get(geometry.day) ?? [] as segment (segment.key)}
+			{#each allDayBackgroundSegments.get(geometry.key) ?? [] as segment (segment.key)}
 				<div
 					aria-hidden="true"
 					data-event-calendar-background

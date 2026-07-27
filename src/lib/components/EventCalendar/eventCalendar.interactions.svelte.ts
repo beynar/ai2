@@ -236,6 +236,7 @@ export class EventCalendarInteractionsController<
 	isSlotDraftTarget(target: EventCalendarDropTarget): boolean {
 		const slot = this.slot;
 		if (!slot || slot.allDay !== target.allDay) return false;
+		if (slot.resourceId !== target.resourceId) return false;
 		if (slot.allDay && target.allDay) return target.day >= slot.start && target.day < slot.end;
 		if (!slot.allDay && !target.allDay) {
 			return target.start < slot.end && slot.start < target.end;
@@ -580,6 +581,14 @@ export class EventCalendarInteractionsController<
 	): EventCalendarProposedUpdate<TItemFields> | null {
 		const { occurrence } = gesture;
 		const sourceItem = occurrence.item;
+		if (
+			gesture.kind !== 'move' &&
+			target.view === 'resource' &&
+			this.calendar.resourceModel.resolveLeafId(target.resourceId) !==
+				this.calendar.resourceModel.resolveLeafId(sourceItem.resourceId)
+		) {
+			return null;
+		}
 		const placementItem = this.getOccurrencePlacementItem(occurrence);
 		const isTimedMonthResize =
 			gesture.kind !== 'move' && target.allDay && target.view === 'month' && !occurrence.allDay;
@@ -1149,6 +1158,8 @@ export class EventCalendarInteractionsController<
 				if (
 					conflict.key === occurrence.key ||
 					conflict.item.display === 'background' ||
+					this.calendar.resourceModel.resolveLeafId(conflict.item.resourceId) !==
+						this.calendar.resourceModel.resolveLeafId(item.resourceId) ||
 					!rangesIntersect(
 						{ start: occurrence.start, end: occurrence.end },
 						{ start: conflict.start, end: conflict.end }
@@ -1332,6 +1343,8 @@ export class EventCalendarInteractionsController<
 				getOccurrenceSeriesId(occurrence) !== ignoredSeriesId &&
 				occurrence.item.id !== item.id &&
 				occurrence.item.display !== 'background' &&
+				this.calendar.resourceModel.resolveLeafId(occurrence.item.resourceId) ===
+					this.calendar.resourceModel.resolveLeafId(item.resourceId) &&
 				rangesIntersect(range, { start: occurrence.start, end: occurrence.end })
 		);
 	}
@@ -1341,6 +1354,9 @@ export class EventCalendarInteractionsController<
 		return this.calendar.itemIndex.occurrences.filter(
 			(occurrence) =>
 				occurrence.item.display !== 'background' &&
+				(slot.view !== 'resource' ||
+					this.calendar.resourceModel.resolveLeafId(occurrence.item.resourceId) ===
+						this.calendar.resourceModel.resolveLeafId(slot.resourceId)) &&
 				rangesIntersect(range, { start: occurrence.start, end: occurrence.end })
 		);
 	}

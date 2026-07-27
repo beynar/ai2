@@ -31,8 +31,10 @@ export type EventCalendarBusinessWindow = {
 };
 
 export type EventCalendarTimeGridDayGeometry<TItemFields extends object> = {
+	key: string;
 	day: EventCalendarDateOnly;
 	column: number;
+	resourceId?: string;
 	windowStart: Date;
 	windowEnd: Date;
 	minuteCount: number;
@@ -44,8 +46,10 @@ export type EventCalendarTimeGridDayGeometry<TItemFields extends object> = {
 };
 
 type CreateTimeGridDayGeometryOptions<TItemFields extends object> = {
+	columnKey?: string;
 	day: EventCalendarDateOnly;
 	column: number;
+	resourceId?: string;
 	timeZone: string;
 	dayStartMinutes: number;
 	dayEndMinutes: number;
@@ -61,8 +65,10 @@ export function getEventCalendarElapsedMinutes(start: Date, instant: Date): numb
 }
 
 export function createEventCalendarTimeGridDayGeometry<TItemFields extends object>({
+	columnKey,
 	day,
 	column,
+	resourceId,
 	timeZone,
 	dayStartMinutes,
 	dayEndMinutes,
@@ -72,6 +78,7 @@ export function createEventCalendarTimeGridDayGeometry<TItemFields extends objec
 	businessHours,
 	bucket
 }: CreateTimeGridDayGeometryOptions<TItemFields>): EventCalendarTimeGridDayGeometry<TItemFields> {
+	const key = columnKey ?? day;
 	const windowStart = resolveZonedMinutesOnDay(day, dayStartMinutes, timeZone);
 	const windowEnd = resolveZonedMinutesOnDay(day, dayEndMinutes, timeZone);
 	const slots = enumerateInstantSlots(
@@ -81,7 +88,7 @@ export function createEventCalendarTimeGridDayGeometry<TItemFields extends objec
 		dayEndMinutes,
 		slotDuration
 	).map((start, index) => ({
-		key: `time-slot:${day}:${start.getTime()}`,
+		key: `time-slot:${key}:${start.getTime()}`,
 		start,
 		end: new Date(
 			Math.min(start.getTime() + slotDuration * EVENT_CALENDAR_MINUTE_MS, windowEnd.getTime())
@@ -99,8 +106,10 @@ export function createEventCalendarTimeGridDayGeometry<TItemFields extends objec
 	);
 
 	return {
+		key,
 		day,
 		column,
+		...(resourceId === undefined ? {} : { resourceId }),
 		windowStart,
 		windowEnd,
 		minuteCount: getEventCalendarElapsedMinutes(windowStart, windowEnd),

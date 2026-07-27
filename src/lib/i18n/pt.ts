@@ -175,6 +175,9 @@ export const pt: Messages = {
 	eventCalendarDaysView: 'Dias',
 	eventCalendarAgendaView: 'Agenda',
 	eventCalendarResourceView: 'Recursos',
+	eventCalendarUnassignedResource: 'Não atribuído',
+	eventCalendarResourceMoveAnnouncement: (resource: string | number) =>
+		`Mover evento para ${resource}`,
 	eventCalendarMore: (count: string | number) => `+${count} mais`,
 	eventCalendarWeekNumber: (week: string | number) => `Semana ${week}`,
 	eventCalendarAllDay: 'Dia inteiro',

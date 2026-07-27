@@ -50,7 +50,7 @@
 		handleItemActivate,
 		onItemDoubleClick
 	}: {
-		view: 'week' | 'day' | 'days';
+		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
 		a11y: EventCalendarA11y;
@@ -70,7 +70,11 @@
 		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		registerTimeTarget: (targetKey: string) => (node: HTMLElement) => () => void;
 		handleTargetKeydown: (event: KeyboardEvent, targetKey: string, activate?: boolean) => void;
-		handleTimedSlotClick: (slot: EventCalendarTimeSlot, event: MouseEvent) => void;
+		handleTimedSlotClick: (
+			slot: EventCalendarTimeSlot,
+			event: MouseEvent,
+			resourceId?: string
+		) => void;
 		handleItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
 		onItemDoubleClick?: (
 			occurrence: EventCalendarOccurrence<TItemFields>,
@@ -82,7 +86,8 @@
 		return (
 			snapshot.selection.kind === 'slot' &&
 			!snapshot.selection.slot.allDay &&
-			snapshot.selection.slot.start.getTime() === slot.start.getTime()
+			snapshot.selection.slot.start.getTime() === slot.start.getTime() &&
+			snapshot.selection.slot.resourceId === geometry.resourceId
 		);
 	}
 
@@ -104,20 +109,23 @@
 		return `top:calc(${top} * var(--event-calendar-slot-height));height:calc(${height} * var(--event-calendar-slot-height));inset-inline-start:${inset * 100}%;width:${width * 100}%`;
 	}
 	const columnDropTarget = $derived({
-		key: `${view}:timed-column:${geometry.day}`,
+		key: `${view}:timed-column:${geometry.key}`,
 		view,
 		allDay: false as const,
 		start: geometry.windowStart,
-		end: geometry.windowEnd
+		end: geometry.windowEnd,
+		resourceId: geometry.resourceId
 	});
 </script>
 
 <div
 	data-event-calendar-part="day-column"
 	data-day={geometry.day}
+	data-resource-id={geometry.resourceId}
 	data-minute-count={geometry.minuteCount}
 	data-off-day={isOffDay || undefined}
 	class={classes.dayColumn({ density, color, view, offDay: isOffDay, disabled })}
+	style:min-width={view === 'resource' ? 'var(--event-calendar-resource-min-width)' : undefined}
 	style:height={`calc(${geometry.minuteCount / calendar.interval} * var(--event-calendar-slot-height))`}
 	data-event-calendar-target={serializeEventCalendarTarget(columnDropTarget)}
 	data-calendar-instance-id={calendar.interaction.instanceId}
@@ -155,7 +163,8 @@
 			view,
 			allDay: false as const,
 			start: slot.start,
-			end: slot.end
+			end: slot.end,
+			resourceId: geometry.resourceId
 		}}
 		<button
 			type="button"
@@ -166,6 +175,7 @@
 			data-event-calendar-part="time-slot"
 			data-slot-start={slot.start.toISOString()}
 			data-slot-end={slot.end.toISOString()}
+			data-resource-id={geometry.resourceId}
 			data-event-calendar-drop-target="time-slot"
 			data-drop-view={view}
 			data-drop-all-day="false"
@@ -186,7 +196,7 @@
 			style:top={`calc(${getEventCalendarElapsedMinutes(geometry.windowStart, slot.start) / calendar.interval} * var(--event-calendar-slot-height))`}
 			style:height={`calc(${getEventCalendarElapsedMinutes(slot.start, slot.end) / calendar.interval} * var(--event-calendar-slot-height))`}
 			onfocus={() => a11y.handleTimeTargetFocus(slot.key)}
-			onclick={(event) => handleTimedSlotClick(slot, event)}
+			onclick={(event) => handleTimedSlotClick(slot, event, geometry.resourceId)}
 			onkeydown={(event) => handleTargetKeydown(event, slot.key, true)}
 			{@attach disabled ? null : registerTimeTarget(slot.key)}
 			{@attach disabled ? null : calendar.interaction.slotDrag(dropTarget)}

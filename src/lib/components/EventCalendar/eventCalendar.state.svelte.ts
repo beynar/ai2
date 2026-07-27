@@ -29,6 +29,10 @@ import {
 	decodeRecurringOccurrenceKey,
 	type EventCalendarItemIndex
 } from './eventCalendar.items.js';
+import {
+	EventCalendarResourceIndex,
+	type EventCalendarResourceModel
+} from './eventCalendar.resources.js';
 import type {
 	EventCalendarBusinessHours,
 	EventCalendarChange,
@@ -175,14 +179,16 @@ export class EventCalendarState<
 	private pendingViewChange: EventCalendarView | null = null;
 	private pendingDateChange: Date | null = null;
 	private lastRangeSignature: string | null = null;
-	private validatedResources: readonly EventCalendarResource<TResourceFields>[] | null = null;
-	private validatedResourceLeafCount = 0;
+	private readonly resourceIndex = new EventCalendarResourceIndex<TResourceFields>();
 	private validatedItems: readonly EventCalendarItem<TItemFields>[] | null = null;
-	private validatedItemResources: readonly EventCalendarResource<TResourceFields>[] | null = null;
 	private validatedRecurrenceExpander?: EventCalendarRecurrenceExpander<TItemFields>;
 
 	get enabledViews(): readonly EventCalendarView[] {
 		return getEnabledViews(this.views, this.validateResourceCollection() > 0);
+	}
+
+	get resourceModel(): EventCalendarResourceModel<TResourceFields> {
+		return this.resourceIndex.get(this.resources);
 	}
 
 	get dateProfile(): EventCalendarDateProfile {
@@ -270,7 +276,7 @@ export class EventCalendarState<
 	}
 
 	validateCandidateItems(items: EventCalendarItem<TItemFields>[]): void {
-		validateItems(items, this.resources);
+		validateItems(items);
 		void this.getCandidateOccurrences(items);
 	}
 
@@ -595,24 +601,18 @@ export class EventCalendarState<
 	}
 
 	private validateResourceCollection(): number {
-		if (this.validatedResources === this.resources) return this.validatedResourceLeafCount;
-		const resourceLeafCount = validateResources(this.resources);
-		this.validatedResources = this.resources;
-		this.validatedResourceLeafCount = resourceLeafCount;
-		return resourceLeafCount;
+		return this.resourceModel.structure.leaves.length;
 	}
 
 	private validateCollections(): number {
 		const resourceLeafCount = this.validateResourceCollection();
 		if (
 			this.validatedItems !== this.items ||
-			this.validatedItemResources !== this.resources ||
 			this.validatedRecurrenceExpander !== this.expandRecurrence
 		) {
-			validateItems(this.items, this.resources);
+			validateItems(this.items);
 			void this.itemIndex;
 			this.validatedItems = this.items;
-			this.validatedItemResources = this.resources;
 			this.validatedRecurrenceExpander = this.expandRecurrence;
 		}
 		return resourceLeafCount;
@@ -765,14 +765,12 @@ function getEnabledViews(
 	return enabled;
 }
 
-function validateItems<TItemFields extends object, TResourceFields extends object>(
-	items: readonly EventCalendarItem<TItemFields>[],
-	resources: readonly EventCalendarResource<TResourceFields>[]
+function validateItems<TItemFields extends object>(
+	items: readonly EventCalendarItem<TItemFields>[]
 ): void {
 	if (!Array.isArray(items)) {
 		throw new EventCalendarError('invalid-item', 'items must be an array.');
 	}
-	const resourcesById = new Set(resources.map((resource) => resource.id));
 	const itemsById = new Map<string, EventCalendarRuntimeItem>();
 	for (const item of items) {
 		if (!item || typeof item !== 'object') {
@@ -790,16 +788,6 @@ function validateItems<TItemFields extends object, TResourceFields extends objec
 			throw new EventCalendarError('invalid-item', `Item ${item.id} must have a string title.`, {
 				id: item.id
 			});
-		}
-		if (item.resourceId !== undefined && !resourcesById.has(item.resourceId)) {
-			throw new EventCalendarError(
-				'invalid-item',
-				`Item ${item.id} references an unknown resource.`,
-				{
-					id: item.id,
-					resourceId: item.resourceId
-				}
-			);
 		}
 		validateItemPlacement(item);
 		itemsById.set(item.id, item);
@@ -1019,67 +1007,6 @@ function validateExceptionOrigin(
 		`Exception item ${itemId} has an origin representation that does not match its source.`,
 		{ id: itemId, recurringItemId: source.id }
 	);
-}
-
-function validateResources<TResourceFields extends object>(
-	resources: readonly EventCalendarResource<TResourceFields>[]
-): number {
-	if (!Array.isArray(resources)) {
-		throw new EventCalendarError('invalid-resource', 'resources must be an array.');
-	}
-	const resourcesById = new Map<string, EventCalendarResource<TResourceFields>>();
-	const parentIds = new Set<string>();
-	for (const resource of resources) {
-		if (!resource || typeof resource !== 'object') {
-			throw new EventCalendarError('invalid-resource', 'Every resource must be an object.');
-		}
-		if (typeof resource.id !== 'string' || resource.id.length === 0) {
-			throw new EventCalendarError('invalid-resource', 'Every resource needs a non-empty id.');
-		}
-		if (resourcesById.has(resource.id)) {
-			throw new EventCalendarError('invalid-resource', `Duplicate resource id: ${resource.id}.`, {
-				id: resource.id
-			});
-		}
-		if (typeof resource.title !== 'string') {
-			throw new EventCalendarError('invalid-resource', `Resource ${resource.id} needs a title.`, {
-				id: resource.id
-			});
-		}
-		resourcesById.set(resource.id, resource);
-	}
-	for (const resource of resources) {
-		if (resource.parentId === undefined) continue;
-		if (resource.parentId === resource.id || !resourcesById.has(resource.parentId)) {
-			throw new EventCalendarError(
-				'invalid-resource',
-				`Resource ${resource.id} has an invalid parent.`,
-				{ id: resource.id, parentId: resource.parentId }
-			);
-		}
-		parentIds.add(resource.parentId);
-	}
-
-	const states = new Map<string, 'visiting' | 'visited'>();
-	for (const resource of resources) {
-		if (states.get(resource.id) === 'visited') continue;
-		const path: string[] = [];
-		let current: EventCalendarResource<TResourceFields> | undefined = resource;
-		while (current && states.get(current.id) !== 'visited') {
-			if (states.get(current.id) === 'visiting') {
-				throw new EventCalendarError('invalid-resource', 'Resource hierarchy contains a cycle.', {
-					id: resource.id,
-					parentId: current.id
-				});
-			}
-			states.set(current.id, 'visiting');
-			path.push(current.id);
-			current = current.parentId ? resourcesById.get(current.parentId) : undefined;
-		}
-		for (const resourceId of path) states.set(resourceId, 'visited');
-	}
-
-	return resources.length - parentIds.size;
 }
 
 function validateSelection(selection: EventCalendarSelection): void {

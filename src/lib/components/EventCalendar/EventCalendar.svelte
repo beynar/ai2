@@ -329,8 +329,32 @@
 		if (calendar.interaction.proposal?.occurrence?.isRecurring) {
 			labels.unshift(messages.eventCalendarRecurringEvent);
 		}
+		if (calendar.view === 'resource' && gesture.kind === 'move' && calendar.interaction.proposal) {
+			labels.push(getResourceMoveAnnouncement(calendar.interaction.proposal.item.resourceId));
+		}
 		return labels.join('. ');
 	});
+	let announcedResourceTarget = '';
+	$effect(() => {
+		const gesture = calendar.interaction.gesture;
+		const proposal = calendar.interaction.proposal;
+		if (calendar.view !== 'resource' || !gesture || gesture.kind !== 'move' || !proposal) {
+			announcedResourceTarget = '';
+			return;
+		}
+		const resourceTarget =
+			calendar.resourceModel.resolveLeafId(proposal.item.resourceId) ?? 'unassigned';
+		if (resourceTarget === announcedResourceTarget) return;
+		announcedResourceTarget = resourceTarget;
+		a11y.announce(getResourceMoveAnnouncement(proposal.item.resourceId));
+	});
+
+	function getResourceMoveAnnouncement(resourceId?: string): string {
+		const resource = calendar.resourceModel.resolveLeaf(resourceId);
+		return messages.eventCalendarResourceMoveAnnouncement(
+			resource?.title ?? messages.eventCalendarUnassignedResource
+		);
+	}
 
 	export function next(): void {
 		calendar.next();
@@ -507,13 +531,6 @@
 			document.removeEventListener('visibilitychange', handleVisibilityChange);
 		};
 	});
-
-	function consumeFuturePhaseProps(): void {
-		void scrollbars;
-		void resourceHeader;
-	}
-
-	consumeFuturePhaseProps();
 </script>
 
 <div
@@ -583,6 +600,7 @@
 		{nowIndicatorContent}
 		{agendaItem}
 		{agendaDetails}
+		{resourceHeader}
 		{item}
 		{itemTooltip}
 		{overflow}

@@ -10,6 +10,7 @@
 	import type { Snippet } from 'svelte';
 	import EventCalendarAgendaView from './EventCalendarAgendaView.svelte';
 	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
+	import EventCalendarResourceView from './EventCalendarResourceView.svelte';
 	import EventCalendarTimeGrid from './EventCalendarTimeGrid.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
@@ -23,6 +24,7 @@
 		EventCalendarMonthCellPayload,
 		EventCalendarOverflowContentPayload,
 		EventCalendarOverflowPayload,
+		EventCalendarResourceHeaderPayload,
 		EventCalendarSnapshot,
 		EventCalendarViewPayload,
 		EventCalendarTimeGutterPayload,
@@ -62,6 +64,7 @@
 		nowIndicatorContent,
 		agendaItem,
 		agendaDetails,
+		resourceHeader,
 		item,
 		itemTooltip,
 		overflow,
@@ -97,6 +100,7 @@
 		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
 		agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
 		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
+		resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
@@ -244,6 +248,33 @@
 					{agendaDetails}
 					{onItemClick}
 					{onItemDoubleClick}
+				/>
+			{:else if snapshot.view === 'resource'}
+				<EventCalendarResourceView
+					bind:this={timeGrid}
+					{calendar}
+					{snapshot}
+					{a11y}
+					{messages}
+					{direction}
+					{density}
+					{color}
+					{classes}
+					{disabled}
+					{offDays}
+					{scrollMode}
+					{scrollbars}
+					{nowIndicator}
+					{showItemTooltip}
+					{timeGutter}
+					{allDay}
+					{resourceHeader}
+					{nowIndicatorContent}
+					{item}
+					{itemTooltip}
+					{onItemClick}
+					{onItemDoubleClick}
+					{onSlotClick}
 				/>
 			{/if}
 		</div>
