@@ -869,6 +869,7 @@
 					style:top={`${indicatorRect.top}px`}
 					style:width={`${indicatorRect.width}px`}
 					style:height={`${indicatorRect.height}px`}
+					style:clip-path={indicatorRect.clipPath}
 				></div>
 			{/if}
 		{/if}

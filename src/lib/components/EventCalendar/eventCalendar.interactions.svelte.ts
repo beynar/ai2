@@ -173,6 +173,7 @@ export type EventCalendarDropIndicatorRect = Readonly<{
 	top: number;
 	width: number;
 	height: number;
+	clipPath?: string;
 }>;
 
 export type EventCalendarMonthInsertion = Readonly<{
@@ -2614,7 +2615,7 @@ export class EventCalendarInteractionsController<
 	private clipDropIndicatorRect(
 		rect: EventCalendarDropIndicatorRect,
 		targetElement: HTMLElement
-	): EventCalendarDropIndicatorRect | null {
+	): EventCalendarDropIndicatorRect {
 		const root = targetElement.closest<HTMLElement>('[data-event-calendar-part="root"]');
 		if (!root) return rect;
 		const rootRect = root.getBoundingClientRect();
@@ -2641,12 +2642,14 @@ export class EventCalendarInteractionsController<
 				clipBottom = Math.min(clipBottom, viewportRect.bottom);
 			}
 		}
-		const left = Math.max(rect.left, clipLeft);
-		const top = Math.max(rect.top, clipTop);
-		const right = Math.min(rect.left + rect.width, clipRight);
-		const bottom = Math.min(rect.top + rect.height, clipBottom);
-		if (right <= left || bottom <= top) return null;
-		return { left, top, width: right - left, height: bottom - top };
+		const topInset = Math.max(0, clipTop - rect.top);
+		const rightInset = Math.max(0, rect.left + rect.width - clipRight);
+		const bottomInset = Math.max(0, rect.top + rect.height - clipBottom);
+		const leftInset = Math.max(0, clipLeft - rect.left);
+		return {
+			...rect,
+			clipPath: `inset(${topInset}px ${rightInset}px ${bottomInset}px ${leftInset}px)`
+		};
 	}
 
 	private findAllDayTargetElement(
