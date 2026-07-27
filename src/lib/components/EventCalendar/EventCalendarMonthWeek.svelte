@@ -9,6 +9,11 @@
 		if (first === last) return first;
 		return { ...first, end: last.end, isEnd: last.isEnd, continuesAfter: last.continuesAfter };
 	}
+
+	function getMonthBarWidth(startIndex: number, endIndex: number): string {
+		const span = endIndex - startIndex;
+		return `calc(${span} * (100% + 1px) - 1px)`;
+	}
 </script>
 
 <script
@@ -371,9 +376,9 @@
 								: 'var(--color)'}
 						<div
 							aria-hidden="true"
-							class="pointer-events-none absolute inset-inline-start-0 z-20 h-[var(--event-calendar-item-min-height)] px-0.5 transition-[top] duration-150 motion-reduce:transition-none"
+							class="pointer-events-none absolute inset-inline-start-0 z-20 h-[var(--event-calendar-item-min-height)] px-1 transition-[top] duration-150 motion-reduce:transition-none"
 							style:top={`calc(1.75rem + ${insertion.lane} * var(--event-calendar-item-min-height))`}
-							style:width={`calc(${insertion.endIndex - insertion.startIndex} * 100%)`}
+							style:width={getMonthBarWidth(insertion.startIndex, insertion.endIndex)}
 						>
 							<div
 								data-event-calendar-part="drop-indicator"
@@ -394,11 +399,11 @@
 				{#each layout.placements.filter((placement) => placement.startIndex === gridDayIndex && placement.lane < visibleLaneCount) as placement (`${weekIndex}:${placement.key}`)}
 					{@const segment = getPlacementSegment(placement.segments)}
 					<div
-						class="pointer-events-auto absolute inset-inline-start-0 z-10 h-[var(--event-calendar-item-min-height)] px-0.5 transition-[top,opacity] duration-150 motion-reduce:transition-none"
+						class="pointer-events-auto absolute inset-inline-start-0 z-10 h-[var(--event-calendar-item-min-height)] px-1 transition-[top,opacity] duration-150 motion-reduce:transition-none"
 						class:pointer-events-none={placement.occurrence.key === draggingOccurrenceKey}
 						class:opacity-0={placement.occurrence.key === draggingOccurrenceKey}
 						style:top={`calc(1.75rem + ${placement.lane} * var(--event-calendar-item-min-height))`}
-						style:width={`calc(${placement.endIndex - placement.startIndex} * 100%)`}
+						style:width={getMonthBarWidth(placement.startIndex, placement.endIndex)}
 					>
 						<EventCalendarItem
 							{segment}

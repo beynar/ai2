@@ -142,10 +142,10 @@ const weekNumber = createEventCalendarPart('grid place-items-center text-center 
 	large: 'text-sm'
 });
 const monthCell = createEventCalendarPart(
-	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted/70 p-1 outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/50'
+	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted/70 outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/50'
 );
 const dayNumber = createEventCalendarPart(
-	'inline-flex min-h-6 min-w-6 items-center justify-center rounded-full text-xs font-medium text-neutral/65 tabular-nums'
+	'm-1 inline-flex min-h-6 min-w-6 items-center justify-center rounded-full text-xs font-medium text-neutral/65 tabular-nums'
 );
 const barLayer = createEventCalendarPart('pointer-events-none absolute inset-0 min-w-0');
 
