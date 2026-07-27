@@ -196,7 +196,7 @@ const slotSelection = createEventCalendarPart(
 	'pointer-events-none z-20 border border-color bg-color/15'
 );
 const resizeHandle = createEventCalendarPart(
-	'absolute z-30 touch-none text-neutral/45 outline-none focus-visible:ring-2 focus-visible:ring-color'
+	'absolute z-30 touch-none text-neutral/45 opacity-0 outline-none transition-opacity duration-100 group-hover/item:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
 );
 const agenda = createEventCalendarPart('relative min-w-0');
 const agendaDay = createEventCalendarPart('border-b border-neutral-muted');
