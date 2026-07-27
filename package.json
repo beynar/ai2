@@ -304,6 +304,11 @@
 			"svelte": "./dist/components/EventCalendar/index.js",
 			"default": "./dist/components/EventCalendar/index.js"
 		},
+		"./gantt-chart": {
+			"types": "./dist/components/GanttChart/index.d.ts",
+			"svelte": "./dist/components/GanttChart/index.js",
+			"default": "./dist/components/GanttChart/index.js"
+		},
 		"./calendar-primitive": {
 			"types": "./dist/components/Form/Calendar/index.d.ts",
 			"svelte": "./dist/components/Form/Calendar/index.js",
@@ -873,6 +878,9 @@
 			],
 			"./event-calendar": [
 				"./dist/components/EventCalendar/index.d.ts"
+			],
+			"./gantt-chart": [
+				"./dist/components/GanttChart/index.d.ts"
 			],
 			"./date-selector": [
 				"./dist/components/Form/DateSelector/index.d.ts"

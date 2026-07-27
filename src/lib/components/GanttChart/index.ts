@@ -1,4 +1,6 @@
+export { default as GanttChart } from './GanttChart.svelte';
 export { GanttChartError, type GanttChartErrorCode } from './ganttChart.error.js';
+export { ganttChartDescription } from './ganttChart.mcp.js';
 export type {
 	GanttAssignment,
 	GanttAssignmentMutationKind,

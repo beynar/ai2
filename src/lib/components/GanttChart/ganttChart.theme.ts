@@ -49,6 +49,11 @@ const root = createGanttChartPart(
 const header = createGanttChartPart(
 	'flex min-w-0 shrink-0 flex-wrap items-center gap-2 border-b border-neutral-muted bg-surface-raised px-3 py-2'
 );
+const navigation = createGanttChartPart('flex min-w-0 items-center gap-2');
+const title = createGanttChartPart(
+	'min-w-0 flex-1 truncate text-sm font-semibold tracking-tight text-neutral'
+);
+const zoomControl = createGanttChartPart('flex min-w-0 items-center gap-1');
 const actions = createGanttChartPart('ms-auto flex min-w-0 items-center gap-1.5');
 const content = createGanttChartPart('relative min-h-0 min-w-0 flex-1');
 const splitShell = createGanttChartPart('flex h-full min-h-0 min-w-0');
@@ -171,6 +176,9 @@ const liveRegion = createGanttChartPart('sr-only');
 export const ganttChartTheme = {
 	root,
 	header,
+	navigation,
+	title,
+	zoomControl,
 	actions,
 	content,
 	splitShell,

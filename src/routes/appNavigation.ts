@@ -120,6 +120,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/avatar-group', text: 'Avatar group' },
 			{ href: '/components/chip', text: 'Chip' },
 			{ href: '/components/event-calendar', text: 'Event calendar' },
+			{ href: '/components/gantt-chart', text: 'Gantt chart' },
 			{ href: '/components/kanban', text: 'Kanban' },
 			{ href: '/components/kbd', text: 'Kbd' },
 			{ href: '/components/metadata-list', text: 'Metadata list' },
