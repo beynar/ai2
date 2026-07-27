@@ -182,7 +182,9 @@ const overflowPopover = createEventCalendarPart('min-w-56 max-w-80 p-2');
 const dragPreview = createEventCalendarPart(
 	'pointer-events-none z-50 -translate-x-1/2 translate-y-3 rounded bg-color px-2 py-1 text-sm text-color-contrast shadow-lg'
 );
-const dropIndicator = createEventCalendarPart('pointer-events-none z-40 bg-color');
+const dropIndicator = createEventCalendarPart(
+	'pointer-events-none z-40 rounded border-2 border-dashed border-[var(--event-calendar-item-color)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_14%,transparent)] shadow-sm backdrop-blur-[1px]'
+);
 const slotSelection = createEventCalendarPart(
 	'pointer-events-none z-20 border border-color bg-color/15'
 );

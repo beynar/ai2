@@ -118,6 +118,9 @@ type EventCalendarItemGesture<TItemFields extends object> = {
 	grabOffsetDays: number;
 	pointerX: number;
 	pointerY: number;
+	sourceWidth?: number;
+	sourceHeight?: number;
+	sourceMinHeight?: number;
 };
 
 type EventCalendarSlotGesture = {
@@ -142,7 +145,17 @@ type DragSource = {
 	operation: EventCalendarItemOperation;
 	grabOffsetMs: number;
 	grabOffsetDays: number;
+	sourceWidth: number;
+	sourceHeight: number;
+	sourceMinHeight: number;
 };
+
+export type EventCalendarDropIndicatorRect = Readonly<{
+	left: number;
+	top: number;
+	width: number;
+	height: number;
+}>;
 
 const SOURCE_MARK = 'svelai-event-calendar';
 const EDGE_SCROLL_DISTANCE = 56;
@@ -577,6 +590,27 @@ export class EventCalendarInteractionsController<
 		return Boolean(this.gesture && !this.gesture.isValid && this.gesture.targetKey === key);
 	}
 
+	getDropIndicatorRect(): EventCalendarDropIndicatorRect | null {
+		const gesture = this.gesture;
+		if (
+			typeof document === 'undefined' ||
+			!gesture ||
+			gesture.kind === 'slot-create' ||
+			gesture.inputMode !== 'pointer' ||
+			!gesture.proposal ||
+			!gesture.targetKey
+		) {
+			return null;
+		}
+		const targetElement = this.targetElements.get(gesture.targetKey);
+		if (!targetElement?.isConnected) return null;
+		const target = this.readElementTarget(targetElement);
+		if (!target) return null;
+		return target.allDay
+			? this.getAllDayDropIndicatorRect(gesture, target, targetElement)
+			: this.getTimedDropIndicatorRect(gesture, target, targetElement);
+	}
+
 	isSlotDraftTarget(target: EventCalendarDropTarget): boolean {
 		const slot = this.slot;
 		if (!slot || slot.allDay !== target.allDay) return false;
@@ -647,7 +681,10 @@ export class EventCalendarInteractionsController<
 												Math.floor(logicalRatio * segmentDayCount)
 											)
 										)
-									: 0
+									: 0,
+							sourceWidth: rect.width,
+							sourceHeight: rect.height,
+							sourceMinHeight: Number.parseFloat(getComputedStyle(element).minHeight) || 0
 						};
 					}
 				})
@@ -843,7 +880,10 @@ export class EventCalendarInteractionsController<
 			grabOffsetMs: source.grabOffsetMs,
 			grabOffsetDays: source.grabOffsetDays,
 			pointerX: payload.location.current.input.clientX,
-			pointerY: payload.location.current.input.clientY
+			pointerY: payload.location.current.input.clientY,
+			sourceWidth: source.sourceWidth,
+			sourceHeight: source.sourceHeight,
+			sourceMinHeight: source.sourceMinHeight
 		};
 		this.updateItemGesture(payload);
 	}
@@ -2010,7 +2050,10 @@ export class EventCalendarInteractionsController<
 			occurrenceKey: data.occurrenceKey,
 			operation: data.operation,
 			grabOffsetMs: typeof data.grabOffsetMs === 'number' ? data.grabOffsetMs : 0,
-			grabOffsetDays: typeof data.grabOffsetDays === 'number' ? data.grabOffsetDays : 0
+			grabOffsetDays: typeof data.grabOffsetDays === 'number' ? data.grabOffsetDays : 0,
+			sourceWidth: readPositiveNumber(data.sourceWidth, 1),
+			sourceHeight: readPositiveNumber(data.sourceHeight, 1),
+			sourceMinHeight: readPositiveNumber(data.sourceMinHeight, 0)
 		};
 	}
 
@@ -2026,6 +2069,100 @@ export class EventCalendarInteractionsController<
 		return null;
 	}
 
+	private getTimedDropIndicatorRect(
+		gesture: EventCalendarItemGesture<TItemFields>,
+		target: Extract<EventCalendarDropTarget, { allDay: false }>,
+		element: HTMLElement
+	): EventCalendarDropIndicatorRect | null {
+		const item = gesture.proposal?.item;
+		if (!item || item.allDay === true) return null;
+		const rect = element.getBoundingClientRect();
+		const slotDuration = target.end.getTime() - target.start.getTime();
+		const proposalDuration = item.end.getTime() - item.start.getTime();
+		if (slotDuration <= 0 || proposalDuration <= 0 || rect.height <= 0 || rect.width <= 0) {
+			return null;
+		}
+		const pixelsPerMillisecond = rect.height / slotDuration;
+		const top = rect.top + (item.start.getTime() - target.start.getTime()) * pixelsPerMillisecond;
+		const height = Math.max(
+			gesture.sourceMinHeight ?? 0,
+			proposalDuration * pixelsPerMillisecond,
+			2
+		);
+		const width = Math.max(2, Math.min(gesture.sourceWidth ?? rect.width - 4, rect.width - 4));
+		return {
+			left: rect.left + (rect.width - width) / 2,
+			top,
+			width,
+			height
+		};
+	}
+
+	private getAllDayDropIndicatorRect(
+		gesture: EventCalendarItemGesture<TItemFields>,
+		target: Extract<EventCalendarDropTarget, { allDay: true }>,
+		fallbackElement: HTMLElement
+	): EventCalendarDropIndicatorRect | null {
+		const item = gesture.proposal?.item;
+		if (!item || item.allDay !== true) return null;
+		const anchorElement = this.findAllDayTargetElement(target.view, item.start, item.resourceId);
+		const element = anchorElement ?? fallbackElement;
+		const rect = element.getBoundingClientRect();
+		if (rect.height <= 0 || rect.width <= 0) return null;
+		const parentRect = element.parentElement?.getBoundingClientRect() ?? rect;
+		const dayCount = Math.max(1, civilDayDifference(item.start, item.end));
+		const proposedWidth = Math.max(2, dayCount * rect.width - 4);
+		const sourceWidth = gesture.sourceWidth ?? proposedWidth;
+		const shouldPreserveSourceWidth = gesture.kind === 'move' && gesture.occurrence.allDay;
+		const availableWidth = Math.max(2, parentRect.width - 4);
+		const width = Math.min(shouldPreserveSourceWidth ? sourceWidth : proposedWidth, availableWidth);
+		const height = Math.min(
+			Math.max(2, gesture.sourceHeight ?? gesture.sourceMinHeight ?? 24),
+			Math.max(2, rect.height - 4)
+		);
+		const logicalStart = this.calendar.direction === 'rtl' ? rect.right - width - 2 : rect.left + 2;
+		const minimumLeft = parentRect.left + 2;
+		const maximumLeft = Math.max(minimumLeft, parentRect.right - width - 2);
+		const topOffset =
+			target.view === 'month' ? Math.min(28, Math.max(2, rect.height - height - 2)) : 2;
+		return {
+			left: Math.min(maximumLeft, Math.max(minimumLeft, logicalStart)),
+			top: rect.top + topOffset,
+			width,
+			height
+		};
+	}
+
+	private findAllDayTargetElement(
+		view: EventCalendarView,
+		day: EventCalendarDateOnly,
+		resourceId?: string
+	): HTMLElement | null {
+		for (const element of this.targetElements.values()) {
+			if (!element.isConnected) continue;
+			const target = this.readElementTarget(element);
+			if (
+				target?.allDay &&
+				target.view === view &&
+				target.day === day &&
+				target.resourceId === resourceId
+			) {
+				return element;
+			}
+		}
+		return null;
+	}
+
+	private readElementTarget(element: HTMLElement): EventCalendarDropTarget | null {
+		const encoded = element.dataset.eventCalendarTarget;
+		if (!encoded) return null;
+		try {
+			return deserializeTarget(JSON.parse(encoded));
+		} catch {
+			return null;
+		}
+	}
+
 	private getTargetAt(x: number, y: number): EventCalendarDropTarget | null {
 		for (const hit of document.elementsFromPoint(x, y)) {
 			if (!(hit instanceof HTMLElement) || !hit.matches('[data-event-calendar-target]')) continue;
@@ -2033,15 +2170,7 @@ export class EventCalendarInteractionsController<
 			if (element.dataset.calendarInstanceId !== this.instanceId) continue;
 			const rect = element.getBoundingClientRect();
 			if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) continue;
-			const encoded = element.dataset.eventCalendarTarget;
-			if (!encoded) continue;
-			let decoded: unknown;
-			try {
-				decoded = JSON.parse(encoded);
-			} catch {
-				continue;
-			}
-			const target = deserializeTarget(decoded);
+			const target = this.readElementTarget(element);
 			if (target) return target;
 		}
 		return null;
@@ -2204,6 +2333,10 @@ export function serializeEventCalendarTarget(target: EventCalendarDropTarget): s
 		...target,
 		...(target.allDay ? {} : { start: target.start.toISOString(), end: target.end.toISOString() })
 	});
+}
+
+function readPositiveNumber(value: unknown, fallback: number): number {
+	return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
 function deserializeTarget(value: unknown): EventCalendarDropTarget | null {

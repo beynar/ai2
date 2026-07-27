@@ -8,6 +8,7 @@
 	import EventCalendarContent from './EventCalendarContent.svelte';
 	import EventCalendarHeader from './EventCalendarHeader.svelte';
 	import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
+	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import type { EventCalendarInteractionStatus } from './eventCalendar.interactions.svelte.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
 	import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
@@ -753,20 +754,36 @@
 		</div>
 	{/if}
 	{#if calendar.interaction.gesture?.inputMode === 'pointer'}
-		<div
-			aria-hidden="true"
-			data-event-calendar-part="drop-indicator"
-			data-invalid={calendar.interaction.isValid === false || undefined}
-			class={classes.dropIndicator({
-				density,
-				color,
-				view: calendar.view,
-				invalid: calendar.interaction.isValid === false,
-				class: 'fixed h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full'
-			})}
-			style:left={`${calendar.interaction.gesture.pointerX}px`}
-			style:top={`${calendar.interaction.gesture.pointerY}px`}
-		></div>
+		{#if calendar.interaction.proposal}
+			{@const proposal = calendar.interaction.proposal}
+			{@const indicatorRect = calendar.interaction.getDropIndicatorRect()}
+			{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
+				? proposal.item.color
+				: color}
+			{@const indicatorItemColor =
+				proposal.item.color && !isEventCalendarSemanticColor(proposal.item.color)
+					? proposal.item.color
+					: 'var(--color)'}
+			{#if indicatorRect}
+				<div
+					aria-hidden="true"
+					data-event-calendar-part="drop-indicator"
+					data-invalid={calendar.interaction.isValid === false || undefined}
+					class={classes.dropIndicator({
+						density,
+						color: indicatorColor,
+						view: calendar.view,
+						invalid: calendar.interaction.isValid === false,
+						class: 'fixed'
+					})}
+					style:--event-calendar-item-color={indicatorItemColor}
+					style:left={`${indicatorRect.left}px`}
+					style:top={`${indicatorRect.top}px`}
+					style:width={`${indicatorRect.width}px`}
+					style:height={`${indicatorRect.height}px`}
+				></div>
+			{/if}
+		{/if}
 		{#if calendar.interaction.gesture.kind === 'slot-create'}
 			<div
 				aria-hidden="true"
