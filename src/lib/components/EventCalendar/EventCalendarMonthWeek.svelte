@@ -318,7 +318,6 @@
 				density,
 				color,
 				view: 'month',
-				selected: isSlotSelected,
 				disabled: isDisabled,
 				today: isToday,
 				outside: isOutside,

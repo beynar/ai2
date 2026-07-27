@@ -219,7 +219,6 @@
 				density,
 				color,
 				view,
-				selected: isSelected,
 				disabled,
 				invalid: calendar.interaction.isInvalidTarget(dropTarget.key)
 			})}
