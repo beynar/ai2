@@ -38,6 +38,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 			recurrenceTimeZone: 'Europe/Paris',
 			resourceId: 'boardroom',
 			color: 'success',
+			draggable: false,
 			owner: 'Noah',
 			attendees: 5
 		},

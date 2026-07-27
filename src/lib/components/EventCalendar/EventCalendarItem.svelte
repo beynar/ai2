@@ -2,6 +2,7 @@
 	lang="ts"
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
+	import { repeatIcon } from '$lib/components/Icons/repeat.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
@@ -108,7 +109,7 @@
 			occurrence.start.getTime() === inclusiveEnd.getTime()
 				? formatter.format(occurrence.start)
 				: formatter.formatRange(occurrence.start, inclusiveEnd);
-		return `${occurrence.item.title}, ${rangeLabel}`;
+		return `${occurrence.item.title}, ${rangeLabel}${occurrence.isRecurring ? ', recurring' : ''}`;
 	});
 	const itemPayload = $derived<EventCalendarItemPayload<TItemFields>>({
 		occurrence,
@@ -167,6 +168,7 @@
 	data-display="auto"
 	data-selected={isSelected || undefined}
 	data-dragging={isDragging || undefined}
+	data-recurring={occurrence.isRecurring || undefined}
 	data-event-calendar-compact-content={compactContent || undefined}
 	data-start={segment.isStart || undefined}
 	data-end={segment.isEnd || undefined}
@@ -227,7 +229,8 @@
 			view,
 			selected: isSelected,
 			dragging: isDragging,
-			disabled
+			disabled,
+			recurring: occurrence.isRecurring
 		})}
 		onclick={(event) => {
 			event.stopPropagation();
@@ -287,7 +290,17 @@
 		})}
 	>
 		{#if isTimedGridItem}
-			<span class={classes.itemTitle({ density, color: semanticColor, view })}>
+			{#if occurrence.isRecurring}
+				{@render recurrenceIcon('absolute end-1 top-1')}
+			{/if}
+			<span
+				class={classes.itemTitle({
+					density,
+					color: semanticColor,
+					view,
+					class: occurrence.isRecurring ? 'pe-4' : undefined
+				})}
+			>
 				{occurrence.item.title}
 			</span>
 			<span
@@ -300,6 +313,9 @@
 				})}>{timeRangeLabel}</span
 			>
 		{:else}
+			{#if occurrence.isRecurring}
+				{@render recurrenceIcon('shrink-0')}
+			{/if}
 			{#if view === 'month'}
 				<span
 					aria-hidden="true"
@@ -313,6 +329,16 @@
 				<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
 			{/if}
 		{/if}
+	</span>
+{/snippet}
+
+{#snippet recurrenceIcon(className: string)}
+	<span
+		aria-hidden="true"
+		data-event-calendar-part="recurrence-icon"
+		class={['size-3 text-neutral/45', className]}
+	>
+		<Slot render={repeatIcon} payload={{ size: '100%' }} />
 	</span>
 {/snippet}
 
