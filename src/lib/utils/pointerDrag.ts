@@ -1,5 +1,6 @@
 import type { Attachment } from 'svelte/attachments';
 import { on } from 'svelte/events';
+import { untrack } from 'svelte';
 
 export type PointerDragPayload<Node extends HTMLElement = HTMLElement> = {
 	event: PointerEvent;
@@ -128,88 +129,89 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 		cancel(event, currentSession);
 	};
 
-	return (node) => {
-		const start = (event: PointerEvent) => {
-			if (session || event.button !== 0 || options.disabled?.()) return;
+	return (node) =>
+		untrack(() => {
+			const start = (event: PointerEvent) => {
+				if (session || event.button !== 0 || options.disabled?.()) return;
 
-			const nextSession: PointerDragSession<Node> = {
-				node,
-				pointerId: event.pointerId,
-				startX: event.clientX,
-				startY: event.clientY,
-				startTarget: event.target,
-				lastEvent: event,
-				hasMoved: false,
-				isActive: false,
-				usesActivation: false,
-				activationTimer: null
-			};
-			node.setPointerCapture(event.pointerId);
-			session = nextSession;
-			const activation = options.activation?.();
-			if (!activation) {
-				if (!activate(event, nextSession)) cancel(event, nextSession);
-				return;
-			}
-			nextSession.usesActivation = true;
-			if (event.pointerType !== 'touch') return;
-			nextSession.activationTimer = window.setTimeout(() => {
-				if (session !== nextSession) return;
-				if (!activate(nextSession.lastEvent, nextSession)) {
-					cancel(nextSession.lastEvent, nextSession);
+				const nextSession: PointerDragSession<Node> = {
+					node,
+					pointerId: event.pointerId,
+					startX: event.clientX,
+					startY: event.clientY,
+					startTarget: event.target,
+					lastEvent: event,
+					hasMoved: false,
+					isActive: false,
+					usesActivation: false,
+					activationTimer: null
+				};
+				node.setPointerCapture(event.pointerId);
+				session = nextSession;
+				const activation = options.activation?.();
+				if (!activation) {
+					if (!activate(event, nextSession)) cancel(event, nextSession);
 					return;
 				}
-				options.onMove?.(getPayload(nextSession.lastEvent, nextSession));
-			}, activation.touchDelayMs);
-		};
+				nextSession.usesActivation = true;
+				if (event.pointerType !== 'touch') return;
+				nextSession.activationTimer = window.setTimeout(() => {
+					if (session !== nextSession) return;
+					if (!activate(nextSession.lastEvent, nextSession)) {
+						cancel(nextSession.lastEvent, nextSession);
+						return;
+					}
+					options.onMove?.(getPayload(nextSession.lastEvent, nextSession));
+				}, activation.touchDelayMs);
+			};
 
-		const move = (event: PointerEvent) => {
-			if (!session || event.pointerId !== session.pointerId) return;
+			const move = (event: PointerEvent) => {
+				if (!session || event.pointerId !== session.pointerId) return;
 
-			const currentSession = session;
-			const activation = options.activation?.();
-			const payload = getPayload(event, currentSession);
-			if (!activation || currentSession.isActive) {
-				event.preventDefault();
-				options.onMove?.(payload);
-				return;
-			}
-			const distance = Math.hypot(payload.deltaX, payload.deltaY);
-			if (event.pointerType === 'touch') {
-				if (distance > activation.touchTolerancePx) cancel(event, currentSession);
-				return;
-			}
-			if (distance < activation.distancePx) return;
-			if (!activate(event, currentSession)) {
-				cancel(event, currentSession);
-				return;
-			}
-			options.onMove?.(getPayload(event, currentSession));
-		};
+				const currentSession = session;
+				const activation = options.activation?.();
+				const payload = getPayload(event, currentSession);
+				if (!activation || currentSession.isActive) {
+					event.preventDefault();
+					options.onMove?.(payload);
+					return;
+				}
+				const distance = Math.hypot(payload.deltaX, payload.deltaY);
+				if (event.pointerType === 'touch') {
+					if (distance > activation.touchTolerancePx) cancel(event, currentSession);
+					return;
+				}
+				if (distance < activation.distancePx) return;
+				if (!activate(event, currentSession)) {
+					cancel(event, currentSession);
+					return;
+				}
+				options.onMove?.(getPayload(event, currentSession));
+			};
 
-		const cleanup = () => {
-			if (!session || session.node !== node) return;
-			const currentSession = session;
-			if (currentSession.isActive && !currentSession.usesActivation && !options.onCancel) {
-				end(currentSession.lastEvent);
-				return;
-			}
-			cancel(currentSession.lastEvent, currentSession);
-		};
+			const cleanup = () => {
+				if (!session || session.node !== node) return;
+				const currentSession = session;
+				if (currentSession.isActive && !currentSession.usesActivation && !options.onCancel) {
+					end(currentSession.lastEvent);
+					return;
+				}
+				cancel(currentSession.lastEvent, currentSession);
+			};
 
-		const offPointerDown = on(node, 'pointerdown', start);
-		const offPointerMove = on(node, 'pointermove', move);
-		const offPointerUp = on(node, 'pointerup', end);
-		const offPointerCancel = on(node, 'pointercancel', abort);
-		const offLostPointerCapture = on(node, 'lostpointercapture', abort);
+			const offPointerDown = on(node, 'pointerdown', start);
+			const offPointerMove = on(node, 'pointermove', move);
+			const offPointerUp = on(node, 'pointerup', end);
+			const offPointerCancel = on(node, 'pointercancel', abort);
+			const offLostPointerCapture = on(node, 'lostpointercapture', abort);
 
-		return () => {
-			cleanup();
-			offPointerDown();
-			offPointerMove();
-			offPointerUp();
-			offPointerCancel();
-			offLostPointerCapture();
-		};
-	};
+			return () => {
+				cleanup();
+				offPointerDown();
+				offPointerMove();
+				offPointerUp();
+				offPointerCancel();
+				offLostPointerCapture();
+			};
+		});
 };

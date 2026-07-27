@@ -164,6 +164,7 @@ export type EventCalendarStateOptions<
 	onDateChange?: (date: Date) => void;
 	onDayCountChange?: (dayCount: number) => void;
 	onSelectionChange?: (selection: EventCalendarSelection) => void;
+	onMissingSelection?: (occurrenceKey: string) => void;
 };
 
 export interface EventCalendarState<
@@ -182,6 +183,8 @@ export class EventCalendarState<
 	nowInstant = $state<Date | null>(null);
 	private pendingViewChange: EventCalendarView | null = null;
 	private pendingDateChange: Date | null = null;
+	private pendingSelectionChange: EventCalendarSelection | null = null;
+	private pendingMissingSelectionKey: string | null = null;
 	private lastRangeSignature: string | null = null;
 	private readonly resourceIndex = new EventCalendarResourceIndex<TResourceFields>();
 	private validatedItems: readonly EventCalendarItem<TItemFields>[] | null = null;
@@ -288,14 +291,20 @@ export class EventCalendarState<
 		if (this.isMounted) return;
 		const pendingViewChange = this.pendingViewChange;
 		const pendingDateChange = this.pendingDateChange;
+		const pendingSelectionChange = this.pendingSelectionChange;
+		const pendingMissingSelectionKey = this.pendingMissingSelectionKey;
 		this.pendingViewChange = null;
 		this.pendingDateChange = null;
+		this.pendingSelectionChange = null;
+		this.pendingMissingSelectionKey = null;
 		this.todayInstant = new Date(now);
 		this.nowInstant = new Date(now);
 		this.isMounted = true;
 
 		if (pendingViewChange) this.onViewChange?.(pendingViewChange);
 		if (pendingDateChange) this.onDateChange?.(new Date(pendingDateChange));
+		if (pendingSelectionChange) this.onSelectionChange?.(pendingSelectionChange);
+		if (pendingMissingSelectionKey) this.onMissingSelection?.(pendingMissingSelectionKey);
 		this.publishRange(this.dateProfile);
 	}
 
@@ -610,6 +619,9 @@ export class EventCalendarState<
 	}
 
 	private synchronize(notify: boolean): void {
+		const didItemCollectionChange =
+			this.validatedItems !== this.items ||
+			this.validatedRecurrenceExpander !== this.expandRecurrence;
 		validateConfiguration(this);
 		const resourceLeafCount = this.validateCollections();
 		validateSelection(this.selection);
@@ -619,17 +631,40 @@ export class EventCalendarState<
 		this.createProfile(nextView, nextDate, this.dayCount);
 		const didViewChange = nextView !== this.view;
 		const didDateChange = nextDate.getTime() !== this.date.getTime();
-		if (!didViewChange && !didDateChange) return;
+		const didSelectionChange =
+			didItemCollectionChange &&
+			this.selection.kind === 'item' &&
+			!this.hasItemSelection(this.items, this.selection.itemKey);
+		if (!didViewChange && !didDateChange && !didSelectionChange) return;
+		const missingSelectionKey = didSelectionChange ? this.selection.itemKey : null;
 
 		if (didViewChange) this.view = nextView;
 		if (didDateChange) this.date = new Date(nextDate);
+		if (didSelectionChange) this.selection = EMPTY_EVENT_CALENDAR_SELECTION;
 		if (notify) {
 			if (didViewChange) this.onViewChange?.(nextView);
 			if (didDateChange) this.onDateChange?.(new Date(nextDate));
+			if (didSelectionChange) this.onSelectionChange?.(EMPTY_EVENT_CALENDAR_SELECTION);
+			if (missingSelectionKey) this.onMissingSelection?.(missingSelectionKey);
 			return;
 		}
 		if (didViewChange) this.pendingViewChange = nextView;
 		if (didDateChange) this.pendingDateChange = new Date(nextDate);
+		if (didSelectionChange) this.pendingSelectionChange = EMPTY_EVENT_CALENDAR_SELECTION;
+		if (missingSelectionKey) this.pendingMissingSelectionKey = missingSelectionKey;
+	}
+
+	private hasItemSelection(items: EventCalendarItem<TItemFields>[], key: string): boolean {
+		if (
+			items.some(
+				(item) =>
+					item.id === key && item.recurrence === undefined && item.recurringItemId === undefined
+			)
+		) {
+			return true;
+		}
+		const recurring = decodeRecurringOccurrenceKey(key);
+		return recurring ? this.hasRecurringOccurrence(items, key, recurring.seriesId) : false;
 	}
 
 	private validateResourceCollection(): number {

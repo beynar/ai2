@@ -178,6 +178,7 @@
 	}
 
 	function handleItemActivate(segment: EventCalendarSegment<TItemFields>, event: MouseEvent): void {
+		calendar.interaction.resetSinglePointerSlot();
 		onItemClick?.(segment.occurrence, event);
 		if (event.defaultPrevented) return;
 		calendar.select({ kind: 'item', itemKey: segment.occurrence.key, slot: null });
@@ -203,7 +204,11 @@
 			end: addCivilDays(day, 1)
 		};
 		onSlotClick?.(slot, event);
-		if (event.defaultPrevented) return;
+		if (event.defaultPrevented) {
+			calendar.interaction.resetSinglePointerSlot();
+			return;
+		}
+		if (calendar.interaction.selectSinglePointerSlot(slot)) return;
 		calendar.select({ kind: 'slot', itemKey: null, slot });
 	}
 

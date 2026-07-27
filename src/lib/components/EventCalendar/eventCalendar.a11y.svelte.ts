@@ -27,6 +27,7 @@ export type EventCalendarTimeTarget = Readonly<{
 	row: number;
 	verticalOrder: number;
 	kind: 'day-header' | 'all-day' | 'time-slot' | 'item';
+	dropTarget?: EventCalendarDropTarget;
 }>;
 
 type TimeGridConfiguration = {
@@ -221,6 +222,17 @@ export class EventCalendarA11y<
 		return this.focusedOccurrenceKey;
 	}
 
+	restoreFocusAfterOccurrenceRemoval(occurrenceKey: string): void {
+		if (this.focusedOccurrenceKey !== occurrenceKey) return;
+		this.focusedOccurrenceKey = null;
+		this.pendingOccurrenceKey = null;
+		const version = this.lifecycleVersion;
+		queueMicrotask(() => {
+			if (version !== this.lifecycleVersion) return;
+			this.restoreNearestCalendarFocus();
+		});
+	}
+
 	configureMonth(configuration: MonthGridConfiguration): void {
 		this.days = configuration.days;
 		this.enabledDays = configuration.enabledDays;
@@ -274,7 +286,9 @@ export class EventCalendarA11y<
 	}
 
 	handleTimeTargetFocus(targetKey: string): void {
-		if (!this.timeTargetByKey.has(targetKey)) return;
+		const target = this.timeTargetByKey.get(targetKey);
+		if (!target) return;
+		if (target.kind !== 'item') this.clearOccurrenceFocus();
 		this.focusedTimeTarget = targetKey;
 		this.pendingTimeTarget = null;
 	}
@@ -283,6 +297,14 @@ export class EventCalendarA11y<
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		const current = this.timeTargetByKey.get(targetKey);
 		if (!current) return false;
+		if (this.mutationController?.isKeyboardSlotActive && event.key === 'Enter') {
+			event.preventDefault();
+			return this.mutationController.commitKeyboardSlot();
+		}
+		if (event.key === ' ' && current.dropTarget) {
+			event.preventDefault();
+			return this.mutationController?.beginKeyboardSlot(current.dropTarget) ?? false;
+		}
 
 		let target: EventCalendarTimeTarget | undefined;
 		if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
@@ -305,7 +327,12 @@ export class EventCalendarA11y<
 		}
 
 		event.preventDefault();
-		if (target) this.focusTimeTarget(target);
+		if (target) {
+			this.focusTimeTarget(target);
+			if (this.mutationController?.isKeyboardSlotActive && target.dropTarget) {
+				this.mutationController.updateKeyboardSlot(target.dropTarget);
+			}
+		}
 		return true;
 	}
 
@@ -328,6 +355,7 @@ export class EventCalendarA11y<
 
 	handleDayFocus(day: EventCalendarDateOnly): void {
 		if (!this.enabledDays.has(day)) return;
+		this.clearOccurrenceFocus();
 		this.focusedDay = day;
 		this.pendingDay = null;
 	}
@@ -336,6 +364,21 @@ export class EventCalendarA11y<
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		const dayIndex = this.days.indexOf(day);
 		if (dayIndex < 0) return false;
+		if (this.mutationController?.isKeyboardSlotActive && event.key === 'Enter') {
+			event.preventDefault();
+			return this.mutationController.commitKeyboardSlot();
+		}
+		if (event.key === ' ') {
+			event.preventDefault();
+			return (
+				this.mutationController?.beginKeyboardSlot({
+					key: `month:${day}`,
+					view: 'month',
+					allDay: true,
+					day
+				}) ?? false
+			);
+		}
 
 		let target: EventCalendarDateOnly | null;
 		if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
@@ -372,6 +415,14 @@ export class EventCalendarA11y<
 		if (!target) return true;
 		event.preventDefault();
 		this.focusDay(target);
+		if (this.mutationController?.isKeyboardSlotActive) {
+			this.mutationController.updateKeyboardSlot({
+				key: `month:${target}`,
+				view: 'month',
+				allDay: true,
+				day: target
+			});
+		}
 		return true;
 	}
 
@@ -436,6 +487,12 @@ export class EventCalendarA11y<
 		this.mutationOperation = null;
 	}
 
+	private clearOccurrenceFocus(): void {
+		this.occurrenceRestoreVersion += 1;
+		this.focusedOccurrenceKey = null;
+		this.pendingOccurrenceKey = null;
+	}
+
 	private scheduleOccurrenceRestore(occurrenceKey: string): void {
 		const version = ++this.occurrenceRestoreVersion;
 		queueMicrotask(() => {
@@ -447,6 +504,28 @@ export class EventCalendarA11y<
 			this.pendingOccurrenceKey = null;
 			element.focus();
 		});
+	}
+
+	private restoreNearestCalendarFocus(): void {
+		const day = this.resolveEnabledDay(this.focusedDay ?? this.days[0] ?? null);
+		if (day) {
+			this.focusDay(day);
+			return;
+		}
+		const previous = this.focusedTimeTarget
+			? this.timeTargetByKey.get(this.focusedTimeTarget)
+			: undefined;
+		const availableTargets = this.timeTargets.filter((target) => this.timeElements.has(target.key));
+		const target = previous
+			? availableTargets.reduce<EventCalendarTimeTarget | undefined>((closest, candidate) => {
+					if (!closest) return candidate;
+					return getTimeTargetDistance(candidate, previous) <
+						getTimeTargetDistance(closest, previous)
+						? candidate
+						: closest;
+				}, undefined)
+			: availableTargets[0];
+		if (target) this.focusTimeTarget(target);
 	}
 
 	private focusTimeTarget(target: EventCalendarTimeTarget): void {
@@ -610,6 +689,17 @@ function getTimeTargetKindRank(
 	if (kind === 'time-slot') return 1;
 	if (kind === 'item') return 2;
 	return 3;
+}
+
+function getTimeTargetDistance(
+	candidate: EventCalendarTimeTarget,
+	reference: EventCalendarTimeTarget
+): number {
+	return (
+		Math.abs(candidate.column - reference.column) * 10_000 +
+		Math.abs(candidate.row - reference.row) * 100 +
+		getTimeTargetKindRank(candidate.kind, 'time-slot')
+	);
 }
 
 function compareDays(left: EventCalendarDateOnly, right: EventCalendarDateOnly): number {

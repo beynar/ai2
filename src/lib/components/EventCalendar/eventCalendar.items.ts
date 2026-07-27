@@ -1,6 +1,7 @@
 import {
 	addCivilDays,
 	assertDateOnly,
+	assertRenderableDateOnly,
 	assertValidInstant,
 	assertValidRange,
 	assertValidTimeZone,
@@ -289,7 +290,7 @@ function validateItemPlacement<TItemFields extends object>(
 ): void {
 	if (item.allDay === true) {
 		try {
-			assertDateOnly(item.start, 'item.start');
+			assertRenderableDateOnly(item.start, 'item.start');
 			assertDateOnly(item.end, 'item.end');
 		} catch (error) {
 			if (!(error instanceof EventCalendarError)) throw error;
@@ -405,7 +406,7 @@ function validateExceptionIdentity<TItemFields extends object>(
 	if (source.allDay === true) {
 		if (typeof item.originalStart !== 'string') throwOriginRepresentationError(item.id, source.id);
 		try {
-			assertDateOnly(item.originalStart, 'originalStart');
+			assertRenderableDateOnly(item.originalStart, 'originalStart');
 		} catch (error) {
 			if (!(error instanceof EventCalendarError)) throw error;
 			throwOriginRepresentationError(item.id, source.id);

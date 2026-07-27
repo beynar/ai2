@@ -165,6 +165,24 @@ export function assertDateOnly(
 	parseDateOnly(value, name);
 }
 
+export function assertRenderableDateOnly(
+	value: unknown,
+	name = 'date'
+): asserts value is EventCalendarDateOnly {
+	assertDateOnly(value, name);
+	if (value <= MAX_EVENT_CALENDAR_DAY) return;
+	throw new EventCalendarError(
+		'invalid-prop',
+		`${name} must not exceed the last selectable EventCalendar day.`,
+		{
+			name,
+			value,
+			maximumDay: MAX_EVENT_CALENDAR_DAY,
+			maximumExclusiveBoundary: MAX_EVENT_CALENDAR_BOUNDARY
+		}
+	);
+}
+
 export function isDateOnly(value: unknown): value is EventCalendarDateOnly {
 	if (typeof value !== 'string') return false;
 	try {
@@ -630,6 +648,17 @@ export function reconcileAnchorDay(
 	validRange?: EventCalendarRange
 ): EventCalendarDateOnly {
 	parseDateOnly(day);
+	if (day > MAX_EVENT_CALENDAR_DAY) {
+		throw new EventCalendarError(
+			'invalid-prop',
+			'The calendar anchor exceeds the last selectable civil day.',
+			{
+				day,
+				maximumDay: MAX_EVENT_CALENDAR_DAY,
+				maximumExclusiveBoundary: MAX_EVENT_CALENDAR_BOUNDARY
+			}
+		);
+	}
 	assertValidTimeZone(timeZone);
 	assertSomeWeekdayVisible(hiddenWeekdays);
 	if (validRange) assertValidRange(validRange, 'validRange');
@@ -919,6 +948,7 @@ function getNextReconciliationDay(
 	timeZone: string,
 	validRange?: EventCalendarRange
 ): EventCalendarDateOnly | null {
+	if (day >= MAX_EVENT_CALENDAR_DAY) return null;
 	if (!validRange) return addCivilDays(day, 1);
 	const dayStart = startOfZonedDay(day, timeZone).getTime();
 	const dayEnd = endOfZonedDay(day, timeZone).getTime();
@@ -1069,6 +1099,7 @@ function isSelectableDay(
 	hiddenWeekdays: ReadonlySet<EventCalendarWeekday>,
 	validRange?: EventCalendarRange
 ): boolean {
+	if (day > MAX_EVENT_CALENDAR_DAY) return false;
 	if (hiddenWeekdays.has(getCivilWeekday(day))) return false;
 	if (!validRange) return true;
 	return rangesIntersect(

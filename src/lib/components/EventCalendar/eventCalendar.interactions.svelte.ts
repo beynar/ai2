@@ -15,6 +15,7 @@ import type { Attachment } from 'svelte/attachments';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import {
 	addCivilDays,
+	assertRenderableDateOnly,
 	civilDayDifference,
 	getCivilWeekday,
 	getZonedDay,
@@ -121,7 +122,8 @@ type EventCalendarItemGesture<TItemFields extends object> = {
 
 type EventCalendarSlotGesture = {
 	kind: 'slot-create';
-	inputMode: 'pointer';
+	source: 'drag-create' | 'keyboard';
+	inputMode: 'pointer' | 'assisted';
 	anchor: EventCalendarSlot;
 	slot: EventCalendarSlot;
 	targetKey: string | null;
@@ -162,6 +164,8 @@ export class EventCalendarInteractionsController<
 	private slotScrollFrame: number | null = null;
 	private suppressedClickKey: string | null = null;
 	private isSlotClickSuppressed = false;
+	private singlePointerAnchor: EventCalendarSlot | null = null;
+	private singlePointerBoundary: readonly unknown[] | null = null;
 	private targetElements = new Map<string, HTMLElement>();
 	private gestureBoundary: readonly unknown[] | null = null;
 	private itemDragFrame: number | null = null;
@@ -185,6 +189,12 @@ export class EventCalendarInteractionsController<
 					this.hasBoundaryChanged(this.gestureBoundary, nextBoundary)
 				)
 					this.cancel('stale');
+				if (
+					this.singlePointerBoundary &&
+					this.hasBoundaryChanged(this.singlePointerBoundary, nextBoundary)
+				) {
+					this.resetSinglePointerSlot();
+				}
 			});
 		});
 	}
@@ -206,6 +216,14 @@ export class EventCalendarInteractionsController<
 		return this.gesture.isValid ? `${this.gesture.kind}:valid` : `${this.gesture.kind}:invalid`;
 	}
 
+	get isKeyboardSlotActive(): boolean {
+		return (
+			this.gesture?.kind === 'slot-create' &&
+			this.gesture.source === 'keyboard' &&
+			this.gesture.inputMode === 'assisted'
+		);
+	}
+
 	mount(): void {
 		if (this.monitorCleanup) return;
 		this.monitorCleanup = monitorForElements({
@@ -217,9 +235,10 @@ export class EventCalendarInteractionsController<
 			onDrop: (payload) => this.handleItemDrop(payload)
 		});
 		const handleKeydown = (event: KeyboardEvent) => {
-			if (event.key !== 'Escape' || !this.gesture) return;
+			if (event.key !== 'Escape' || (!this.gesture && !this.singlePointerAnchor)) return;
 			event.preventDefault();
-			this.cancel();
+			if (this.gesture) this.cancel();
+			this.resetSinglePointerSlot();
 		};
 		document.addEventListener('keydown', handleKeydown);
 		this.escapeCleanup = () => document.removeEventListener('keydown', handleKeydown);
@@ -232,6 +251,7 @@ export class EventCalendarInteractionsController<
 
 	destroy(): void {
 		this.cancel();
+		this.resetSinglePointerSlot();
 		this.cancelItemDragFrame();
 		this.monitorCleanup?.();
 		this.monitorCleanup = null;
@@ -254,17 +274,128 @@ export class EventCalendarInteractionsController<
 		if (!reason) {
 			this.calendar.onInteractionStatus?.({
 				type: 'cancel',
-				source: active.kind === 'slot-create' ? 'drag-create' : active.source,
+				source: active.source,
 				item: active.kind === 'slot-create' ? undefined : active.occurrence.item
 			});
 			return;
 		}
 		this.reportBlocked({
 			reason,
-			source: active.kind === 'slot-create' ? 'drag-create' : active.source,
+			source: active.source,
 			proposal: active.kind === 'slot-create' ? undefined : (active.proposal ?? undefined),
 			slot: active.kind === 'slot-create' ? active.slot : undefined
 		});
+	}
+
+	beginKeyboardSlot(target: EventCalendarDropTarget): boolean {
+		if (
+			this.calendar.disabled ||
+			this.calendar.loading ||
+			!this.calendar.interactions.selectSlot ||
+			!this.calendar.interactions.keyboard
+		) {
+			return false;
+		}
+		this.resetSinglePointerSlot();
+		if (this.gesture) this.cancel();
+		const anchor = this.slotFromDropTarget(target);
+		const reason = this.validateSlot(anchor);
+		if (reason) {
+			this.reportBlocked({ reason, source: 'keyboard', slot: anchor });
+			return false;
+		}
+		this.gestureBoundary = this.getBoundary();
+		this.gesture = {
+			kind: 'slot-create',
+			source: 'keyboard',
+			inputMode: 'assisted',
+			anchor,
+			slot: anchor,
+			targetKey: target.key,
+			isValid: true,
+			reason: null,
+			pointerX: 0,
+			pointerY: 0
+		};
+		return true;
+	}
+
+	updateKeyboardSlot(target: EventCalendarDropTarget): boolean {
+		const active = this.gesture;
+		if (
+			!active ||
+			active.kind !== 'slot-create' ||
+			active.source !== 'keyboard' ||
+			target.allDay !== active.anchor.allDay
+		) {
+			return false;
+		}
+		const slot = mergeSlots(active.anchor, this.slotFromDropTarget(target));
+		const reason = this.validateSlot(slot);
+		this.gesture = {
+			...active,
+			slot,
+			targetKey: target.key,
+			isValid: reason === null,
+			reason
+		};
+		return true;
+	}
+
+	commitKeyboardSlot(): boolean {
+		const active = this.gesture;
+		if (!active || active.kind !== 'slot-create' || active.source !== 'keyboard') return false;
+		if (this.isGestureStale()) {
+			this.cancel('stale');
+			return true;
+		}
+		this.gesture = null;
+		this.gestureBoundary = null;
+		if (!active.isValid) {
+			this.reportBlocked({
+				reason: active.reason ?? 'invalid-target',
+				source: 'keyboard',
+				slot: active.slot
+			});
+			return true;
+		}
+		this.calendar.select({ kind: 'slot', itemKey: null, slot: active.slot });
+		this.calendar.onSlotSelect?.(active.slot);
+		this.calendar.onInteractionStatus?.({ type: 'commit', source: 'keyboard' });
+		return true;
+	}
+
+	selectSinglePointerSlot(slot: EventCalendarSlot): boolean {
+		if (!this.calendar.interactions.singlePointer || !this.calendar.interactions.selectSlot) {
+			this.resetSinglePointerSlot();
+			return false;
+		}
+		const anchor = this.singlePointerAnchor;
+		if (!anchor || !areCompatibleSlots(anchor, slot)) {
+			this.singlePointerAnchor = slot;
+			this.singlePointerBoundary = this.getBoundary();
+			return false;
+		}
+		const boundary = this.singlePointerBoundary;
+		this.resetSinglePointerSlot();
+		if (boundary && this.hasBoundaryChanged(boundary)) {
+			this.reportBlocked({ reason: 'stale', source: 'single-pointer', slot });
+			return true;
+		}
+		const range = mergeSlots(anchor, slot);
+		const reason = this.validateSlot(range);
+		if (reason) {
+			this.reportBlocked({ reason, source: 'single-pointer', slot: range });
+			return true;
+		}
+		this.calendar.select({ kind: 'slot', itemKey: null, slot: range });
+		this.calendar.onSlotSelect?.(range);
+		return true;
+	}
+
+	resetSinglePointerSlot(): void {
+		this.singlePointerAnchor = null;
+		this.singlePointerBoundary = null;
 	}
 
 	shouldSuppressClick(occurrenceKey: string): boolean {
@@ -305,6 +436,7 @@ export class EventCalendarInteractionsController<
 		source: 'keyboard' | 'single-pointer'
 	): boolean {
 		if (!this.canBeginAssistedItem(occurrence, operation, source)) return false;
+		this.resetSinglePointerSlot();
 		if (this.gesture) this.cancel();
 		this.lastPublishedProposalKey = null;
 		this.gestureBoundary = this.getBoundary();
@@ -457,81 +589,88 @@ export class EventCalendarInteractionsController<
 	): Attachment<HTMLElement> {
 		const occurrence = segment.occurrence;
 		return (element) =>
-			draggable({
-				element,
-				canDrag: () => this.canBeginItemGesture(occurrence, operation),
-				onGenerateDragPreview: ({ nativeSetDragImage }) =>
-					disableNativeDragPreview({ nativeSetDragImage }),
-				getInitialData: ({ input }) => {
-					const rect = element.getBoundingClientRect();
-					const segmentDuration = segment.end.getTime() - segment.start.getTime();
-					const segmentDayCount = occurrence.allDay
-						? civilDayDifference(
-								getZonedDay(segment.start, this.calendar.timeZone),
-								getZonedDay(segment.end, this.calendar.timeZone)
-							)
-						: 0;
-					const inlineRatio = Math.min(
-						1,
-						Math.max(0, (input.clientX - rect.left) / Math.max(1, rect.width))
-					);
-					const logicalRatio = this.calendar.direction === 'rtl' ? 1 - inlineRatio : inlineRatio;
-					const segmentDayOffset = occurrence.allDay
-						? civilDayDifference(getZonedDay(occurrence.start, this.calendar.timeZone), segment.day)
-						: 0;
-					return {
-						mark: SOURCE_MARK,
-						calendarInstanceId: this.instanceId,
-						occurrenceKey: occurrence.key,
-						operation,
-						grabOffsetMs:
-							operation === 'move' && !occurrence.allDay
-								? segment.start.getTime() -
-									occurrence.start.getTime() +
-									Math.max(
-										0,
-										Math.min(
-											segmentDuration,
-											((input.clientY - rect.top) / Math.max(1, rect.height)) * segmentDuration
+			untrack(() =>
+				draggable({
+					element,
+					canDrag: () => this.canBeginItemGesture(occurrence, operation),
+					onGenerateDragPreview: ({ nativeSetDragImage }) =>
+						disableNativeDragPreview({ nativeSetDragImage }),
+					getInitialData: ({ input }) => {
+						const rect = element.getBoundingClientRect();
+						const segmentDuration = segment.end.getTime() - segment.start.getTime();
+						const segmentDayCount = occurrence.allDay
+							? civilDayDifference(
+									getZonedDay(segment.start, this.calendar.timeZone),
+									getZonedDay(segment.end, this.calendar.timeZone)
+								)
+							: 0;
+						const inlineRatio = Math.min(
+							1,
+							Math.max(0, (input.clientX - rect.left) / Math.max(1, rect.width))
+						);
+						const logicalRatio = this.calendar.direction === 'rtl' ? 1 - inlineRatio : inlineRatio;
+						const segmentDayOffset = occurrence.allDay
+							? civilDayDifference(
+									getZonedDay(occurrence.start, this.calendar.timeZone),
+									segment.day
+								)
+							: 0;
+						return {
+							mark: SOURCE_MARK,
+							calendarInstanceId: this.instanceId,
+							occurrenceKey: occurrence.key,
+							operation,
+							grabOffsetMs:
+								operation === 'move' && !occurrence.allDay
+									? segment.start.getTime() -
+										occurrence.start.getTime() +
+										Math.max(
+											0,
+											Math.min(
+												segmentDuration,
+												((input.clientY - rect.top) / Math.max(1, rect.height)) * segmentDuration
+											)
 										)
-									)
-								: 0,
-						grabOffsetDays:
-							operation === 'move'
-								? segmentDayOffset +
-									Math.max(
-										0,
-										Math.min(
-											Math.max(0, segmentDayCount - 1),
-											Math.floor(logicalRatio * segmentDayCount)
+									: 0,
+							grabOffsetDays:
+								operation === 'move'
+									? segmentDayOffset +
+										Math.max(
+											0,
+											Math.min(
+												Math.max(0, segmentDayCount - 1),
+												Math.floor(logicalRatio * segmentDayCount)
+											)
 										)
-									)
-								: 0
-					};
-				}
-			});
+									: 0
+						};
+					}
+				})
+			);
 	}
 
 	dropTarget(target: EventCalendarDropTarget): Attachment<HTMLElement> {
-		return (element) => {
-			this.targetElements.set(target.key, element);
-			const cleanup = dropTargetForElements({
-				element,
-				canDrop: ({ source }) =>
-					this.readSource(source.data)?.calendarInstanceId === this.instanceId &&
-					!this.calendar.disabled &&
-					!this.calendar.loading,
-				getData: () => ({
-					mark: SOURCE_MARK,
-					calendarInstanceId: this.instanceId,
-					target
-				})
+		return (element) =>
+			untrack(() => {
+				this.targetElements.set(target.key, element);
+				const cleanup = dropTargetForElements({
+					element,
+					canDrop: ({ source }) =>
+						this.readSource(source.data)?.calendarInstanceId === this.instanceId &&
+						!this.calendar.disabled &&
+						!this.calendar.loading,
+					getData: () => ({
+						mark: SOURCE_MARK,
+						calendarInstanceId: this.instanceId,
+						target
+					})
+				});
+				return () => {
+					cleanup();
+					if (this.targetElements.get(target.key) === element)
+						this.targetElements.delete(target.key);
+				};
 			});
-			return () => {
-				cleanup();
-				if (this.targetElements.get(target.key) === element) this.targetElements.delete(target.key);
-			};
-		};
 	}
 
 	slotDrag(target: EventCalendarDropTarget): Attachment<HTMLElement> {
@@ -553,38 +692,41 @@ export class EventCalendarInteractionsController<
 				if (this.gesture?.kind === 'slot-create') this.cancel();
 			}
 		});
-		return (element) => {
-			this.targetElements.set(target.key, element);
-			const cleanup = pointerDrag(element);
-			return () => {
-				cleanup?.();
-				if (this.targetElements.get(target.key) === element) this.targetElements.delete(target.key);
-			};
-		};
+		return (element) =>
+			untrack(() => {
+				this.targetElements.set(target.key, element);
+				const cleanup = pointerDrag(element);
+				return () => {
+					cleanup?.();
+					if (this.targetElements.get(target.key) === element)
+						this.targetElements.delete(target.key);
+				};
+			});
 	}
 
 	autoScroll(mode: 'contained' | 'page'): Attachment<HTMLElement> {
-		return (element) => {
-			this.slotScrollElement = element;
-			this.slotScrollMode = mode;
-			const cleanup =
-				mode === 'contained'
-					? autoScrollForElements({
-							element,
-							canScroll: ({ source }) =>
-								this.readSource(source.data)?.calendarInstanceId === this.instanceId
-						})
-					: autoScrollWindowForElements({
-							canScroll: ({ source }) =>
-								this.readSource(source.data)?.calendarInstanceId === this.instanceId
-						});
-			this.autoScrollCleanups.add(cleanup);
-			return () => {
-				cleanup();
-				this.autoScrollCleanups.delete(cleanup);
-				if (this.slotScrollElement === element) this.slotScrollElement = null;
-			};
-		};
+		return (element) =>
+			untrack(() => {
+				this.slotScrollElement = element;
+				this.slotScrollMode = mode;
+				const cleanup =
+					mode === 'contained'
+						? autoScrollForElements({
+								element,
+								canScroll: ({ source }) =>
+									this.readSource(source.data)?.calendarInstanceId === this.instanceId
+							})
+						: autoScrollWindowForElements({
+								canScroll: ({ source }) =>
+									this.readSource(source.data)?.calendarInstanceId === this.instanceId
+							});
+				this.autoScrollCleanups.add(cleanup);
+				return () => {
+					cleanup();
+					this.autoScrollCleanups.delete(cleanup);
+					if (this.slotScrollElement === element) this.slotScrollElement = null;
+				};
+			});
 	}
 
 	addItem(item: EventCalendarItem<TItemFields>): void {
@@ -680,6 +822,7 @@ export class EventCalendarInteractionsController<
 		if (!source) return;
 		const occurrence = this.calendar.getOccurrence(source.occurrenceKey);
 		if (!occurrence || !this.canBeginItemGesture(occurrence, source.operation)) return;
+		this.resetSinglePointerSlot();
 		this.didNativeCancel = false;
 		this.lastPublishedProposalKey = null;
 		this.gestureBoundary = this.getBoundary();
@@ -998,10 +1141,12 @@ export class EventCalendarInteractionsController<
 	}
 
 	private beginSlotGesture(target: EventCalendarDropTarget, payload: PointerDragPayload): boolean {
+		this.resetSinglePointerSlot();
 		this.gestureBoundary = this.getBoundary();
 		const anchor = this.slotFromTarget(target, payload.y);
 		this.gesture = {
 			kind: 'slot-create',
+			source: 'drag-create',
 			inputMode: 'pointer',
 			anchor,
 			slot: anchor,
@@ -1069,13 +1214,31 @@ export class EventCalendarInteractionsController<
 		if (!active.isValid) {
 			this.reportBlocked({
 				reason: active.reason ?? 'invalid-target',
-				source: 'drag-create',
+				source: active.source,
 				slot: active.slot
 			});
 			return;
 		}
 		this.calendar.select({ kind: 'slot', itemKey: null, slot: active.slot });
 		this.calendar.onSlotSelect?.(active.slot);
+	}
+
+	private slotFromDropTarget(target: EventCalendarDropTarget): EventCalendarSlot {
+		return target.allDay
+			? {
+					view: target.view,
+					allDay: true,
+					start: target.day,
+					end: addCivilDays(target.day, 1),
+					resourceId: target.resourceId
+				}
+			: {
+					view: target.view,
+					allDay: false,
+					start: new Date(target.start),
+					end: new Date(target.end),
+					resourceId: target.resourceId
+				};
 	}
 
 	private slotFromTarget(target: EventCalendarDropTarget, pointerY: number): EventCalendarSlot {
@@ -1821,9 +1984,8 @@ export class EventCalendarInteractionsController<
 		for (const record of dropTargets) {
 			if (record.data.mark !== SOURCE_MARK || record.data.calendarInstanceId !== this.instanceId)
 				continue;
-			const target = record.data.target;
-			if (target && typeof target === 'object' && 'key' in target)
-				return target as EventCalendarDropTarget;
+			const target = deserializeTarget(record.data.target);
+			if (target) return target;
 		}
 		return null;
 	}
@@ -1837,7 +1999,13 @@ export class EventCalendarInteractionsController<
 			if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) continue;
 			const encoded = element.dataset.eventCalendarTarget;
 			if (!encoded) continue;
-			const target = deserializeTarget(JSON.parse(encoded) as SerializedTarget);
+			let decoded: unknown;
+			try {
+				decoded = JSON.parse(encoded);
+			} catch {
+				continue;
+			}
+			const target = deserializeTarget(decoded);
 			if (target) return target;
 		}
 		return null;
@@ -2002,22 +2170,59 @@ export function serializeEventCalendarTarget(target: EventCalendarDropTarget): s
 	});
 }
 
-type SerializedTarget = Omit<EventCalendarDropTarget, 'start' | 'end'> & {
-	start?: string;
-	end?: string;
-};
-
-function deserializeTarget(target: SerializedTarget): EventCalendarDropTarget | null {
-	if (target.allDay && 'day' in target) return target as EventCalendarDropTarget;
-	if (!target.allDay && target.start && target.end) {
+function deserializeTarget(value: unknown): EventCalendarDropTarget | null {
+	if (!isRecord(value)) return null;
+	if (typeof value.key !== 'string' || !isEventCalendarView(value.view)) return null;
+	if (value.resourceId !== undefined && typeof value.resourceId !== 'string') return null;
+	const resourceId = typeof value.resourceId === 'string' ? value.resourceId : undefined;
+	if (value.allDay === true) {
+		try {
+			assertRenderableDateOnly(value.day, 'dropTarget.day');
+		} catch (error) {
+			if (error instanceof EventCalendarError) return null;
+			throw error;
+		}
 		return {
-			...target,
-			allDay: false,
-			start: new Date(target.start),
-			end: new Date(target.end)
-		} as EventCalendarDropTarget;
+			key: value.key,
+			view: value.view,
+			allDay: true,
+			day: value.day,
+			...(resourceId === undefined ? {} : { resourceId })
+		};
 	}
-	return null;
+	if (value.allDay !== false) return null;
+	const start = toValidTargetInstant(value.start);
+	const end = toValidTargetInstant(value.end);
+	if (!start || !end || end <= start) return null;
+	return {
+		key: value.key,
+		view: value.view,
+		allDay: false,
+		start,
+		end,
+		...(resourceId === undefined ? {} : { resourceId })
+	};
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isEventCalendarView(value: unknown): value is EventCalendarView {
+	return (
+		value === 'month' ||
+		value === 'week' ||
+		value === 'day' ||
+		value === 'days' ||
+		value === 'agenda' ||
+		value === 'resource'
+	);
+}
+
+function toValidTargetInstant(value: unknown): Date | null {
+	const instant =
+		value instanceof Date ? new Date(value) : typeof value === 'string' ? new Date(value) : null;
+	return instant && Number.isFinite(instant.getTime()) ? instant : null;
 }
 
 function replaceSchedule<TItemFields extends object>(
@@ -2150,6 +2355,14 @@ function mergeSlots(anchor: EventCalendarSlot, point: EventCalendarSlot): EventC
 		};
 	}
 	return anchor;
+}
+
+function areCompatibleSlots(anchor: EventCalendarSlot, point: EventCalendarSlot): boolean {
+	return (
+		anchor.view === point.view &&
+		anchor.allDay === point.allDay &&
+		anchor.resourceId === point.resourceId
+	);
 }
 
 function isRangeInsideBusinessHours<TItemFields extends object, TResourceFields extends object>(

@@ -7,6 +7,7 @@
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { tick, type Snippet } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import EventCalendarResourceHeader from './EventCalendarResourceHeader.svelte';
 	import EventCalendarTimeGridAllDay from './EventCalendarTimeGridAllDay.svelte';
 	import EventCalendarTimeGridDayColumn from './EventCalendarTimeGridDayColumn.svelte';
@@ -226,6 +227,24 @@
 	const maximumMinuteCount = $derived(
 		Math.max(...dayGeometries.map((geometry) => geometry.minuteCount), 0)
 	);
+	const gutterGeometry = $derived(
+		dayGeometries.reduce<(typeof dayGeometries)[number] | undefined>(
+			(longest, geometry) =>
+				!longest || geometry.minuteCount > longest.minuteCount ? geometry : longest,
+			undefined
+		)
+	);
+	const gutterLabels = $derived.by(() => {
+		const instants = gutterGeometry?.intervalInstants ?? [];
+		const wallLabels = instants.map((instant) => timeFormatter.format(instant));
+		const counts = new SvelteMap<string, number>();
+		for (const label of wallLabels) counts.set(label, (counts.get(label) ?? 0) + 1);
+		return instants.map((instant, index) =>
+			counts.get(wallLabels[index]) === 1
+				? wallLabels[index]
+				: accessibleTimeFormatter.format(instant)
+		);
+	});
 	const allDaySegments = $derived(
 		columnBuckets.flatMap(({ bucket }) =>
 			(bucket?.allDay ?? []).filter((segment) => segment.occurrence.item.display !== 'background')
@@ -287,7 +306,14 @@
 				day: geometry.day,
 				column: geometry.column,
 				row: 1,
-				kind: 'all-day'
+				kind: 'all-day',
+				dropTarget: {
+					key: `${view}:all-day:${view === 'resource' ? `resource:${geometry.resourceId ?? 'unassigned'}` : geometry.day}`,
+					view,
+					allDay: true,
+					day: geometry.day,
+					...(geometry.resourceId === undefined ? {} : { resourceId: geometry.resourceId })
+				}
 			});
 			for (const placement of allDayLayout.placements
 				.filter((candidate) => candidate.startIndex === geometry.column)
@@ -306,7 +332,15 @@
 					day: geometry.day,
 					column: geometry.column,
 					row: slot.row,
-					kind: 'time-slot' as const
+					kind: 'time-slot' as const,
+					dropTarget: {
+						key: `${view}:timed:${slot.key}`,
+						view,
+						allDay: false as const,
+						start: slot.start,
+						end: slot.end,
+						...(geometry.resourceId === undefined ? {} : { resourceId: geometry.resourceId })
+					}
 				})),
 				...geometry.timedPlacements.map((placement) => ({
 					key: `time-item:${placement.segment.key}`,
@@ -497,7 +531,11 @@
 			...(resourceId === undefined ? {} : { resourceId })
 		};
 		onSlotClick?.(slot, event);
-		if (event.defaultPrevented) return;
+		if (event.defaultPrevented) {
+			calendar.interaction.resetSinglePointerSlot();
+			return;
+		}
+		if (calendar.interaction.selectSinglePointerSlot(slot)) return;
 		calendar.select({ kind: 'slot', itemKey: null, slot });
 	}
 
@@ -528,11 +566,16 @@
 			...(resourceId === undefined ? {} : { resourceId })
 		};
 		onSlotClick?.(selectionSlot, event);
-		if (event.defaultPrevented) return;
+		if (event.defaultPrevented) {
+			calendar.interaction.resetSinglePointerSlot();
+			return;
+		}
+		if (calendar.interaction.selectSinglePointerSlot(selectionSlot)) return;
 		calendar.select({ kind: 'slot', itemKey: null, slot: selectionSlot });
 	}
 
 	function handleItemActivate(segment: EventCalendarSegment<TItemFields>, event: MouseEvent): void {
+		calendar.interaction.resetSinglePointerSlot();
 		onItemClick?.(segment.occurrence, event);
 		if (event.defaultPrevented) return;
 		calendar.select({ kind: 'item', itemKey: segment.occurrence.key, slot: null });
@@ -678,8 +721,8 @@
 				data-event-calendar-part="time-gutter"
 				class={classes.timeGutter({ density, color, view })}
 			>
-				{#each dayGeometries[0]?.intervalInstants ?? [] as instant (instant.getTime())}
-					{@const defaultLabel = timeFormatter.format(instant)}
+				{#each gutterGeometry?.intervalInstants ?? [] as instant, index (instant.getTime())}
+					{@const defaultLabel = gutterLabels[index] ?? timeFormatter.format(instant)}
 					{@const gutterPayload = {
 						instant,
 						defaultLabel

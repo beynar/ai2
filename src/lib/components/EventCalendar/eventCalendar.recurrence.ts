@@ -1,6 +1,7 @@
 import {
 	addCivilDays,
 	assertDateOnly,
+	assertRenderableDateOnly,
 	assertValidInstant,
 	assertValidRange,
 	assertValidTimeZone,
@@ -842,9 +843,9 @@ function assertExpandedAllDay(
 	index: number
 ): void {
 	try {
-		assertDateOnly(occurrence.start, 'expanded.start');
+		assertRenderableDateOnly(occurrence.start, 'expanded.start');
 		assertDateOnly(occurrence.end, 'expanded.end');
-		assertDateOnly(occurrence.originalStart, 'expanded.originalStart');
+		assertRenderableDateOnly(occurrence.originalStart, 'expanded.originalStart');
 	} catch (error) {
 		if (!(error instanceof EventCalendarError)) throw error;
 		throwInvalidRecurrence(`Expanded all-day occurrence ${index} for ${itemId} is invalid.`, {
@@ -916,13 +917,19 @@ function parseRawUntil(
 	if (isAllDay) {
 		const match = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
 		if (!match) throwInvalidRecurrence('All-day RRULE UNTIL must use YYYYMMDD.');
-		const date = `${match[1]}-${match[2]}-${match[3]}` as EventCalendarDateOnly;
 		try {
-			assertDateOnly(date, 'UNTIL');
+			const date = toDateOnly({
+				year: Number(match[1]),
+				month: Number(match[2]),
+				day: Number(match[3])
+			});
+			assertRenderableDateOnly(date, 'UNTIL');
 			return date;
 		} catch (error) {
 			if (!(error instanceof EventCalendarError)) throw error;
-			throwInvalidRecurrence('All-day RRULE UNTIL is not a real Gregorian date.', { value });
+			throwInvalidRecurrence('All-day RRULE UNTIL must be a selectable Gregorian calendar day.', {
+				value
+			});
 		}
 	}
 	const match = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/.exec(value);
@@ -1049,7 +1056,7 @@ function normalizeDateList(
 function assertRecurrenceValue(value: unknown, isAllDay: boolean, name: string): void {
 	if (isAllDay) {
 		try {
-			assertDateOnly(value, name);
+			assertRenderableDateOnly(value, name);
 			return;
 		} catch (error) {
 			if (!(error instanceof EventCalendarError)) throw error;

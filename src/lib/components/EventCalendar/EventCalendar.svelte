@@ -313,6 +313,9 @@
 		},
 		get onSelectionChange() {
 			return onSelectionChange;
+		},
+		onMissingSelection(occurrenceKey) {
+			a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
 		}
 	});
 	$effect(() => {
