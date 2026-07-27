@@ -32,7 +32,7 @@
 	}: {
 		resourceModel: EventCalendarResourceModel<TResourceFields>;
 		dayGeometries: readonly EventCalendarTimeGridDayGeometry<TItemFields>[];
-		a11y: EventCalendarA11y;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		timeZone: string;
 		longDayFormatter: Intl.DateTimeFormat;
 		density: Density;

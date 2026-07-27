@@ -193,5 +193,23 @@ export const es: Messages = {
 	eventCalendarResizeEndGesture: 'Cambiar el final del evento',
 	eventCalendarSelectRangeGesture: 'Seleccionar intervalo del calendario',
 	eventCalendarValidTarget: 'Destino válido',
-	eventCalendarInvalidTarget: 'Destino no válido'
+	eventCalendarInvalidTarget: 'Destino no válido',
+	eventCalendarItemActions: (title: string | number) => `Acciones para ${title}`,
+	eventCalendarMoveAction: 'Mover',
+	eventCalendarResizeStartAction: 'Cambiar inicio',
+	eventCalendarResizeEndAction: 'Cambiar final',
+	eventCalendarCancelAction: 'Cancelar interacción',
+	eventCalendarKeyboardInstructions:
+		'Pulsa M para mover, S para cambiar el inicio o E para cambiar el final. Usa las flechas para ajustar, Intro para confirmar y Escape para cancelar.',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`Modo ${operation} para ${title}. Usa las flechas para ajustar, Intro para confirmar y Escape para cancelar.`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`Modo ${operation} para ${title}. Elige un destino del calendario o cancela.`,
+	eventCalendarProposedPlacement: (placement: string | number) =>
+		`Ubicación propuesta: ${placement}`,
+	eventCalendarMutationInvalid: () => 'Destino no válido',
+	eventCalendarMutationCommitted: (title: string | number) => `Cambios confirmados para ${title}`,
+	eventCalendarMutationCancelled: (title: string | number) => `Cambios cancelados para ${title}`,
+	eventCalendarMutationReverted: (title: string | number) => `Cambios revertidos para ${title}`,
+	eventCalendarFocusRestored: (title: string | number) => `Foco restaurado en ${title}`
 };

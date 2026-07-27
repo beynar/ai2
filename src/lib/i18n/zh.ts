@@ -188,5 +188,22 @@ export const zh: Messages = {
 	eventCalendarResizeEndGesture: '调整事件结束时间',
 	eventCalendarSelectRangeGesture: '选择日历时段',
 	eventCalendarValidTarget: '有效目标',
-	eventCalendarInvalidTarget: '无效目标'
+	eventCalendarInvalidTarget: '无效目标',
+	eventCalendarItemActions: (title: string | number) => `${title}的操作`,
+	eventCalendarMoveAction: '移动',
+	eventCalendarResizeStartAction: '调整开始时间',
+	eventCalendarResizeEndAction: '调整结束时间',
+	eventCalendarCancelAction: '取消操作',
+	eventCalendarKeyboardInstructions:
+		'按 M 移动，按 S 调整开始时间，或按 E 调整结束时间。使用方向键调整，按 Enter 提交，按 Escape 取消。',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`${title}的${operation}模式。使用方向键调整，按 Enter 提交，按 Escape 取消。`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`${title}的${operation}模式。请选择日历目标或取消。`,
+	eventCalendarProposedPlacement: (placement: string | number) => `建议位置：${placement}`,
+	eventCalendarMutationInvalid: () => '无效目标',
+	eventCalendarMutationCommitted: (title: string | number) => `已提交${title}的更改`,
+	eventCalendarMutationCancelled: (title: string | number) => `已取消${title}的更改`,
+	eventCalendarMutationReverted: (title: string | number) => `已还原${title}的更改`,
+	eventCalendarFocusRestored: (title: string | number) => `焦点已恢复到${title}`
 };

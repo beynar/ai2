@@ -85,7 +85,7 @@
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		days: readonly EventCalendarDateOnly[];
 		layout: EventCalendarLaneLayout<TItemFields>;
@@ -191,6 +191,8 @@
 	}
 
 	function handleDayClick(day: EventCalendarDateOnly, event: MouseEvent): void {
+		if (a11y.activateMutationTarget({ key: `month:${day}`, view: 'month', allDay: true, day }))
+			return;
 		if (calendar.interaction.shouldSuppressSlotClick()) return;
 		if (!enabledDays.has(day)) return;
 		(event.currentTarget as HTMLElement).focus();
@@ -353,6 +355,8 @@
 					>
 						<EventCalendarItem
 							{segment}
+							{a11y}
+							{messages}
 							view="month"
 							locale={calendar.locale}
 							timeZone={calendar.timeZone}
@@ -376,6 +380,7 @@
 					<div class="absolute inset-x-1 bottom-1 z-20">
 						<EventCalendarMonthOverflow
 							{day}
+							{a11y}
 							dayLabel={getDayLabel(day)}
 							{hiddenSegments}
 							{messages}

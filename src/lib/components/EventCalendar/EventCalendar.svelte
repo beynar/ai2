@@ -8,6 +8,8 @@
 	import EventCalendarContent from './EventCalendarContent.svelte';
 	import EventCalendarHeader from './EventCalendarHeader.svelte';
 	import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
+	import type { EventCalendarInteractionStatus } from './eventCalendar.interactions.svelte.js';
+	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
 	import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
 	import type { EventCalendarProps, EventCalendarSnapshot } from './eventCalendar.props.js';
 	import {
@@ -133,7 +135,7 @@
 
 	const messages = $derived(useI18n(i18n));
 	const componentId = $props.id();
-	const a11y = new EventCalendarA11y(`${componentId}-status`);
+	const a11y = new EventCalendarA11y<TItemFields, TResourceFields>(`${componentId}-status`);
 	const resolvedLocale = $derived(locale ?? messages.locale);
 	const resolvedWeekStartsOn = $derived(weekStartsOn ?? getLocaleWeekStartsOn(resolvedLocale));
 	const resolvedCreateActivation = $derived({
@@ -287,6 +289,7 @@
 			return expandRecurrence;
 		},
 		onOccurrenceKeysRemap: (remap) => a11y.remapOccurrenceKeys(remap),
+		onInteractionStatus: (status) => handleInteractionStatus(status),
 		get onItemsChange() {
 			return onItemsChange;
 		},
@@ -312,6 +315,92 @@
 			return onSelectionChange;
 		}
 	});
+	$effect(() => {
+		a11y.configureMutations({
+			controller: calendar.interaction,
+			view: calendar.view,
+			direction: resolvedDirection,
+			snapDuration: calendar.snapDuration
+		});
+	});
+	let previousFocusContext = '';
+	$effect(() => {
+		const focusContext = `${calendar.view}:${calendar.date.getTime()}:${calendar.dayCount}`;
+		if (previousFocusContext && previousFocusContext !== focusContext) {
+			const occurrenceKey = a11y.getFocusedOccurrenceKey();
+			const occurrence = occurrenceKey ? calendar.getOccurrence(occurrenceKey) : null;
+			if (occurrence) {
+				a11y.restoreOccurrenceFocus(occurrence.key);
+				a11y.announce(messages.eventCalendarFocusRestored(occurrence.item.title));
+			}
+		}
+		previousFocusContext = focusContext;
+	});
+	const statusDateFormatter = $derived(
+		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+			timeZoneName: 'shortOffset'
+		})
+	);
+
+	function handleInteractionStatus(status: EventCalendarInteractionStatus<TItemFields>): void {
+		if (status.type === 'mode') {
+			const operation = getOperationLabel(status.operation);
+			a11y.announce(
+				status.source === 'keyboard'
+					? messages.eventCalendarKeyboardMode(operation, status.occurrence.item.title)
+					: messages.eventCalendarPointerMode(operation, status.occurrence.item.title)
+			);
+			return;
+		}
+		if (status.type === 'proposal') {
+			a11y.announce(
+				messages.eventCalendarProposedPlacement(getPlacementLabel(status.proposal.item))
+			);
+			return;
+		}
+		if (status.type === 'invalid') {
+			a11y.announce(messages.eventCalendarMutationInvalid());
+			return;
+		}
+		const title = status.item?.title ?? messages.eventCalendarLabel;
+		if (status.type === 'commit') {
+			a11y.finishItemMutation();
+			a11y.announce(messages.eventCalendarMutationCommitted(title));
+			return;
+		}
+		if (status.type === 'revert') {
+			a11y.announce(messages.eventCalendarMutationReverted(title));
+			return;
+		}
+		a11y.finishItemMutation();
+		a11y.announce(messages.eventCalendarMutationCancelled(title));
+	}
+
+	function getOperationLabel(operation: 'move' | 'resize-start' | 'resize-end'): string {
+		if (operation === 'move') return messages.eventCalendarMoveAction;
+		if (operation === 'resize-start') return messages.eventCalendarResizeStartAction;
+		return messages.eventCalendarResizeEndAction;
+	}
+
+	function getPlacementLabel(item: EventCalendarItem<TItemFields>): string {
+		let placement: string;
+		if (item.allDay === true) {
+			placement = `${item.start} – ${item.end}`;
+		} else {
+			placement = statusDateFormatter.formatRange(item.start, item.end);
+		}
+		const resource = calendar.resourceModel.resolveLeaf(item.resourceId);
+		if (resource) return `${placement}, ${resource.title}`;
+		return calendar.view === 'resource'
+			? `${placement}, ${messages.eventCalendarUnassignedResource}`
+			: placement;
+	}
 	const localizedInteractionStatus = $derived.by(() => {
 		const gesture = calendar.interaction.gesture;
 		if (!gesture) return '';
@@ -329,7 +418,12 @@
 		if (calendar.interaction.proposal?.occurrence?.isRecurring) {
 			labels.unshift(messages.eventCalendarRecurringEvent);
 		}
-		if (calendar.view === 'resource' && gesture.kind === 'move' && calendar.interaction.proposal) {
+		if (
+			calendar.view === 'resource' &&
+			gesture.kind === 'move' &&
+			gesture.isValid &&
+			calendar.interaction.proposal
+		) {
 			labels.push(getResourceMoveAnnouncement(calendar.interaction.proposal.item.resourceId));
 		}
 		return labels.join('. ');
@@ -338,7 +432,13 @@
 	$effect(() => {
 		const gesture = calendar.interaction.gesture;
 		const proposal = calendar.interaction.proposal;
-		if (calendar.view !== 'resource' || !gesture || gesture.kind !== 'move' || !proposal) {
+		if (
+			calendar.view !== 'resource' ||
+			!gesture ||
+			gesture.kind !== 'move' ||
+			!gesture.isValid ||
+			!proposal
+		) {
 			announcedResourceTarget = '';
 			return;
 		}
@@ -495,8 +595,8 @@
 
 		return () => {
 			observer.disconnect();
-			a11y.destroy();
 			calendar.unmount();
+			a11y.destroy();
 		};
 	});
 
@@ -612,7 +712,7 @@
 		{onSlotClick}
 		{onMoreClick}
 	/>
-	{#if calendar.interaction.proposal}
+	{#if calendar.interaction.proposal && calendar.interaction.gesture?.inputMode === 'pointer'}
 		{@const proposal = calendar.interaction.proposal}
 		{@const previewPayload = {
 			proposal,
@@ -636,7 +736,7 @@
 			<Slot render={dragPreview ?? defaultDragPreview} payload={previewPayload} />
 		</div>
 	{/if}
-	{#if calendar.interaction.gesture}
+	{#if calendar.interaction.gesture?.inputMode === 'pointer'}
 		<div
 			aria-hidden="true"
 			data-event-calendar-part="drop-indicator"
@@ -670,6 +770,9 @@
 	{/if}
 	<span id={a11y.liveRegionId} class="sr-only" role="status" aria-live="polite" aria-atomic="true">
 		{a11y.announcement}
+	</span>
+	<span id={`${a11y.liveRegionId}-instructions`} class="sr-only">
+		{messages.eventCalendarKeyboardInstructions}
 	</span>
 	<span class="sr-only" data-event-calendar-interaction-status>{localizedInteractionStatus}</span>
 </div>

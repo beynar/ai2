@@ -78,7 +78,7 @@
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;

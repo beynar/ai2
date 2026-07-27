@@ -73,17 +73,17 @@ function createEventCalendarPart(base: string, density: DensityClasses = density
 }
 
 const root = createEventCalendarPart(
-	'relative isolate flex min-w-0 flex-col rounded-lg border border-neutral-muted bg-surface text-neutral [container-type:inline-size] [--event-calendar-slot-height:3rem] [--event-calendar-time-gutter-width:4rem] [--event-calendar-day-min-width:8rem] [--event-calendar-resource-min-width:10rem] [--event-calendar-item-min-height:1.5rem] [--event-calendar-sticky-offset:0px] [--event-calendar-item-color:var(--color)]',
+	'relative isolate flex min-w-0 flex-col rounded-lg border border-neutral-muted bg-surface text-neutral motion-reduce:scroll-auto motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [container-type:inline-size] [--event-calendar-slot-height:3rem] [--event-calendar-time-gutter-width:4rem] [--event-calendar-day-min-width:8rem] [--event-calendar-month-day-min-width:4.5rem] [--event-calendar-resource-min-width:10rem] [--event-calendar-item-min-height:1.5rem] [--event-calendar-sticky-offset:0px] [--event-calendar-item-color:var(--color)]',
 	{
 		small:
-			'[--event-calendar-slot-height:2.5rem] [--event-calendar-time-gutter-width:3.5rem] [--event-calendar-item-min-height:1.25rem]',
+			'[--event-calendar-slot-height:2.5rem] [--event-calendar-time-gutter-width:3.5rem] [--event-calendar-item-min-height:1.5rem]',
 		normal: '',
 		large:
 			'[--event-calendar-slot-height:3.5rem] [--event-calendar-time-gutter-width:4.5rem] [--event-calendar-item-min-height:1.75rem]'
 	}
 );
 const header = createEventCalendarPart(
-	'flex min-w-0 flex-wrap items-center border-b border-neutral-muted bg-surface-raised',
+	'flex min-w-0 flex-wrap items-center border-b border-neutral-muted bg-surface-raised @max-[32rem]:items-start',
 	{
 		small: 'gap-1.5 p-2',
 		normal: 'gap-2 p-3',
@@ -95,11 +95,14 @@ const navigation = createEventCalendarPart('flex shrink-0 items-center', {
 	normal: 'gap-1.5',
 	large: 'gap-2'
 });
-const title = createEventCalendarPart('min-w-0 flex-1 truncate font-semibold', {
-	small: 'text-sm',
-	normal: 'text-base',
-	large: 'text-lg'
-});
+const title = createEventCalendarPart(
+	'min-w-0 flex-1 truncate font-semibold @max-[32rem]:order-3 @max-[32rem]:w-full @max-[32rem]:basis-full',
+	{
+		small: 'text-sm',
+		normal: 'text-base',
+		large: 'text-lg'
+	}
+);
 const viewSwitcher = createEventCalendarPart('ms-auto shrink-0');
 const actions = createEventCalendarPart('flex shrink-0 items-center', {
 	small: 'gap-1',
@@ -117,7 +120,7 @@ const empty = createEventCalendarPart('text-center text-neutral/70', {
 	large: 'p-4 text-base'
 });
 
-const month = createEventCalendarPart('relative flex h-full min-w-0 flex-col');
+const month = createEventCalendarPart('relative flex h-full min-w-0 flex-col overflow-x-auto');
 const monthHeader = createEventCalendarPart('grid shrink-0 border-b border-neutral-muted');
 const dayHeader = createEventCalendarPart('min-w-0 truncate px-1 py-1.5 text-center font-medium', {
 	small: 'text-xs',
@@ -162,10 +165,10 @@ const timeSlot = createEventCalendarPart(
 const nowIndicator = createEventCalendarPart('pointer-events-none absolute z-30 h-px bg-danger');
 
 const item = createEventCalendarPart(
-	'relative min-h-[var(--event-calendar-item-min-height)] min-w-0'
+	'group/item relative min-h-[var(--event-calendar-item-min-height)] min-w-0'
 );
 const itemControl = createEventCalendarPart(
-	'state-layer h-full w-full min-w-0 rounded bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] px-1.5 py-0.5 text-start text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'state-layer h-full min-h-6 w-full min-w-0 rounded bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] py-0.5 ps-1.5 pe-7 text-start text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
 );
 const itemContent = createEventCalendarPart('flex min-w-0 items-baseline gap-1 overflow-hidden');
 const itemTitle = createEventCalendarPart('truncate font-medium');
@@ -186,7 +189,9 @@ const slotSelection = createEventCalendarPart(
 const resizeHandle = createEventCalendarPart(
 	'absolute z-30 touch-none outline-none focus-visible:ring-2 focus-visible:ring-color'
 );
-const actionTrigger = createEventCalendarPart('shrink-0');
+const actionTrigger = createEventCalendarPart(
+	'absolute end-0 top-0 z-40 grid min-h-6 min-w-6 place-items-center opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100'
+);
 
 const agenda = createEventCalendarPart('relative min-w-0');
 const agendaDay = createEventCalendarPart('border-b border-neutral-muted');

@@ -85,7 +85,7 @@
 		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;
@@ -345,6 +345,19 @@
 		if (view === 'days') return messages.eventCalendarDaysView;
 		return messages.eventCalendarResourceView;
 	});
+	const columnLabels = $derived(
+		new Map(
+			dayGeometries.map((geometry) => {
+				const dayLabel = longDayFormatter.format(startOfZonedDay(geometry.day, calendar.timeZone));
+				if (view !== 'resource' || !resourceModel) return [geometry.key, dayLabel] as const;
+				const resourceLabel =
+					resourceModel.resolveLeaf(geometry.resourceId)?.title ??
+					unassignedResourceLabel ??
+					messages.eventCalendarUnassignedResource;
+				return [geometry.key, `${resourceLabel}, ${dayLabel}`] as const;
+			})
+		)
+	);
 
 	$effect(() => {
 		a11y.configureTimeGrid({
@@ -463,6 +476,16 @@
 		event: MouseEvent,
 		resourceId?: string
 	): void {
+		if (
+			a11y.activateMutationTarget({
+				key: `${view}:all-day:${view === 'resource' ? `resource:${resourceId ?? 'unassigned'}` : day}`,
+				view,
+				allDay: true,
+				day,
+				...(resourceId === undefined ? {} : { resourceId })
+			})
+		)
+			return;
 		if (calendar.interaction.shouldSuppressSlotClick()) return;
 		if (disabled) return;
 		(event.currentTarget as HTMLElement).focus();
@@ -483,6 +506,17 @@
 		event: MouseEvent,
 		resourceId?: string
 	): void {
+		if (
+			a11y.activateMutationTarget({
+				key: `${view}:timed:${slot.key}`,
+				view,
+				allDay: false,
+				start: slot.start,
+				end: slot.end,
+				...(resourceId === undefined ? {} : { resourceId })
+			})
+		)
+			return;
 		if (calendar.interaction.shouldSuppressSlotClick()) return;
 		if (disabled) return;
 		(event.currentTarget as HTMLElement).focus();
@@ -614,8 +648,9 @@
 				{gridTemplateColumns}
 				{allDayPayload}
 				{offDaysByDay}
-				messagesAllDay={messages.eventCalendarAllDay}
+				{messages}
 				{longDayFormatter}
+				{columnLabels}
 				{density}
 				{color}
 				{classes}
@@ -670,7 +705,9 @@
 					{calendar}
 					{snapshot}
 					{a11y}
+					{messages}
 					{geometry}
+					columnLabel={columnLabels.get(geometry.key) ?? geometry.day}
 					{density}
 					{color}
 					{classes}

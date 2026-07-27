@@ -8,6 +8,7 @@
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
+	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload,
@@ -27,6 +28,7 @@
 		dayLabel,
 		hiddenSegments,
 		messages,
+		a11y,
 		locale,
 		timeZone,
 		density,
@@ -48,6 +50,7 @@
 		dayLabel: string;
 		hiddenSegments: readonly EventCalendarSegment<TItemFields>[];
 		messages: Messages;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		locale: string;
 		timeZone: string;
 		density: Density;
@@ -122,6 +125,8 @@
 				{#each hiddenSegments as segment (segment.occurrence.key)}
 					<EventCalendarItem
 						{segment}
+						{a11y}
+						{messages}
 						view="month"
 						{locale}
 						{timeZone}

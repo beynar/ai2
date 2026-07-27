@@ -190,5 +190,22 @@ export const ar: Messages = {
 	eventCalendarResizeEndGesture: 'تغيير نهاية الحدث',
 	eventCalendarSelectRangeGesture: 'تحديد نطاق في التقويم',
 	eventCalendarValidTarget: 'هدف صالح',
-	eventCalendarInvalidTarget: 'هدف غير صالح'
+	eventCalendarInvalidTarget: 'هدف غير صالح',
+	eventCalendarItemActions: (title: string | number) => `إجراءات ${title}`,
+	eventCalendarMoveAction: 'نقل',
+	eventCalendarResizeStartAction: 'تغيير البداية',
+	eventCalendarResizeEndAction: 'تغيير النهاية',
+	eventCalendarCancelAction: 'إلغاء التفاعل',
+	eventCalendarKeyboardInstructions:
+		'اضغط M للنقل أو S لتغيير البداية أو E لتغيير النهاية. استخدم الأسهم للتعديل وEnter للتأكيد وEscape للإلغاء.',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`وضع ${operation} لـ ${title}. استخدم الأسهم للتعديل وEnter للتأكيد وEscape للإلغاء.`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`وضع ${operation} لـ ${title}. اختر وجهة في التقويم أو ألغِ.`,
+	eventCalendarProposedPlacement: (placement: string | number) => `الموضع المقترح: ${placement}`,
+	eventCalendarMutationInvalid: () => 'هدف غير صالح',
+	eventCalendarMutationCommitted: (title: string | number) => `تم تأكيد تغييرات ${title}`,
+	eventCalendarMutationCancelled: (title: string | number) => `تم إلغاء تغييرات ${title}`,
+	eventCalendarMutationReverted: (title: string | number) => `تم التراجع عن تغييرات ${title}`,
+	eventCalendarFocusRestored: (title: string | number) => `تمت إعادة التركيز إلى ${title}`
 };

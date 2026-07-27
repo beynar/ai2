@@ -198,7 +198,25 @@ export const en = {
 	eventCalendarResizeEndGesture: 'Resize event end',
 	eventCalendarSelectRangeGesture: 'Select calendar range',
 	eventCalendarValidTarget: 'Valid target',
-	eventCalendarInvalidTarget: 'Invalid target'
+	eventCalendarInvalidTarget: 'Invalid target',
+	eventCalendarItemActions: (title: string | number) => `Actions for ${title}`,
+	eventCalendarMoveAction: 'Move',
+	eventCalendarResizeStartAction: 'Resize start',
+	eventCalendarResizeEndAction: 'Resize end',
+	eventCalendarCancelAction: 'Cancel interaction',
+	eventCalendarKeyboardInstructions:
+		'Press M to move, S to resize the start, or E to resize the end. Use arrows to adjust, Enter to commit, and Escape to cancel.',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`${operation} mode for ${title}. Use arrow keys to adjust, Enter to commit, and Escape to cancel.`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`${operation} mode for ${title}. Choose a calendar destination or cancel.`,
+	eventCalendarProposedPlacement: (placement: string | number) =>
+		`Proposed placement: ${placement}`,
+	eventCalendarMutationInvalid: () => 'Invalid target',
+	eventCalendarMutationCommitted: (title: string | number) => `Changes committed for ${title}`,
+	eventCalendarMutationCancelled: (title: string | number) => `Changes cancelled for ${title}`,
+	eventCalendarMutationReverted: (title: string | number) => `Changes reverted for ${title}`,
+	eventCalendarFocusRestored: (title: string | number) => `Focus restored to ${title}`
 };
 
 export type Messages = typeof en;

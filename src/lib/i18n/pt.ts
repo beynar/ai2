@@ -193,5 +193,24 @@ export const pt: Messages = {
 	eventCalendarResizeEndGesture: 'Alterar fim do evento',
 	eventCalendarSelectRangeGesture: 'Selecionar período do calendário',
 	eventCalendarValidTarget: 'Destino válido',
-	eventCalendarInvalidTarget: 'Destino inválido'
+	eventCalendarInvalidTarget: 'Destino inválido',
+	eventCalendarItemActions: (title: string | number) => `Ações para ${title}`,
+	eventCalendarMoveAction: 'Mover',
+	eventCalendarResizeStartAction: 'Alterar início',
+	eventCalendarResizeEndAction: 'Alterar fim',
+	eventCalendarCancelAction: 'Cancelar interação',
+	eventCalendarKeyboardInstructions:
+		'Pressione M para mover, S para alterar o início ou E para alterar o fim. Use as setas para ajustar, Enter para confirmar e Escape para cancelar.',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`Modo ${operation} para ${title}. Use as setas para ajustar, Enter para confirmar e Escape para cancelar.`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`Modo ${operation} para ${title}. Escolha um destino no calendário ou cancele.`,
+	eventCalendarProposedPlacement: (placement: string | number) =>
+		`Posicionamento proposto: ${placement}`,
+	eventCalendarMutationInvalid: () => 'Destino inválido',
+	eventCalendarMutationCommitted: (title: string | number) =>
+		`Alterações confirmadas para ${title}`,
+	eventCalendarMutationCancelled: (title: string | number) => `Alterações canceladas para ${title}`,
+	eventCalendarMutationReverted: (title: string | number) => `Alterações revertidas para ${title}`,
+	eventCalendarFocusRestored: (title: string | number) => `Foco restaurado em ${title}`
 };

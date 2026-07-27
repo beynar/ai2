@@ -189,5 +189,22 @@ export const ja: Messages = {
 	eventCalendarResizeEndGesture: '予定の終了を変更',
 	eventCalendarSelectRangeGesture: 'カレンダーの範囲を選択',
 	eventCalendarValidTarget: '有効な移動先',
-	eventCalendarInvalidTarget: '無効な移動先'
+	eventCalendarInvalidTarget: '無効な移動先',
+	eventCalendarItemActions: (title: string | number) => `${title}の操作`,
+	eventCalendarMoveAction: '移動',
+	eventCalendarResizeStartAction: '開始を変更',
+	eventCalendarResizeEndAction: '終了を変更',
+	eventCalendarCancelAction: '操作をキャンセル',
+	eventCalendarKeyboardInstructions:
+		'Mで移動、Sで開始変更、Eで終了変更。矢印キーで調整し、Enterで確定、Escapeでキャンセルします。',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`${title}の${operation}モード。矢印キーで調整し、Enterで確定、Escapeでキャンセルします。`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`${title}の${operation}モード。カレンダーの移動先を選ぶかキャンセルしてください。`,
+	eventCalendarProposedPlacement: (placement: string | number) => `提案された配置: ${placement}`,
+	eventCalendarMutationInvalid: () => '無効な移動先',
+	eventCalendarMutationCommitted: (title: string | number) => `${title}の変更を確定しました`,
+	eventCalendarMutationCancelled: (title: string | number) => `${title}の変更をキャンセルしました`,
+	eventCalendarMutationReverted: (title: string | number) => `${title}の変更を元に戻しました`,
+	eventCalendarFocusRestored: (title: string | number) => `${title}にフォーカスを戻しました`
 };

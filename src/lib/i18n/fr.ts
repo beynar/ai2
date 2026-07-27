@@ -192,5 +192,26 @@ export const fr: Messages = {
 	eventCalendarResizeEndGesture: 'Redimensionner la fin de l’événement',
 	eventCalendarSelectRangeGesture: 'Sélectionner une période du calendrier',
 	eventCalendarValidTarget: 'Cible valide',
-	eventCalendarInvalidTarget: 'Cible non valide'
+	eventCalendarInvalidTarget: 'Cible non valide',
+	eventCalendarItemActions: (title: string | number) => `Actions pour ${title}`,
+	eventCalendarMoveAction: 'Déplacer',
+	eventCalendarResizeStartAction: 'Redimensionner le début',
+	eventCalendarResizeEndAction: 'Redimensionner la fin',
+	eventCalendarCancelAction: 'Annuler l’interaction',
+	eventCalendarKeyboardInstructions:
+		'Appuyez sur M pour déplacer, S pour redimensionner le début ou E pour redimensionner la fin. Utilisez les flèches pour ajuster, Entrée pour valider et Échap pour annuler.',
+	eventCalendarKeyboardMode: (operation: string | number, title: string | number) =>
+		`Mode ${operation} pour ${title}. Utilisez les flèches pour ajuster, Entrée pour valider et Échap pour annuler.`,
+	eventCalendarPointerMode: (operation: string | number, title: string | number) =>
+		`Mode ${operation} pour ${title}. Choisissez une destination dans le calendrier ou annulez.`,
+	eventCalendarProposedPlacement: (placement: string | number) =>
+		`Emplacement proposé : ${placement}`,
+	eventCalendarMutationInvalid: () => 'Cible non valide',
+	eventCalendarMutationCommitted: (title: string | number) =>
+		`Modifications validées pour ${title}`,
+	eventCalendarMutationCancelled: (title: string | number) =>
+		`Modifications annulées pour ${title}`,
+	eventCalendarMutationReverted: (title: string | number) =>
+		`Modifications rétablies pour ${title}`,
+	eventCalendarFocusRestored: (title: string | number) => `Focus rétabli sur ${title}`
 };

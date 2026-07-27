@@ -110,6 +110,7 @@ const exactIndexCache = new WeakMap<
 const sharedScheduleCache = new Map<string, CachedSchedule>();
 const functionIdentities = new WeakMap<object, number>();
 let nextFunctionIdentity = 1;
+const MAX_EXACT_INDEX_CACHE_ENTRIES_PER_COLLECTION = 8;
 const MAX_SHARED_SCHEDULE_CACHE_ENTRIES = 32;
 
 /**
@@ -123,7 +124,11 @@ export function createEventCalendarItemIndex<TItemFields extends object>(
 	const exactKey = getQueryKey(options);
 	const collectionCache = exactIndexCache.get(options.items as readonly object[]);
 	const exact = collectionCache?.get(exactKey);
-	if (exact) return exact as EventCalendarItemIndex<TItemFields>;
+	if (exact) {
+		collectionCache?.delete(exactKey);
+		collectionCache?.set(exactKey, exact);
+		return exact as EventCalendarItemIndex<TItemFields>;
+	}
 
 	const itemsById = validateItems(options.items, options.expandRecurrence !== undefined);
 	const scheduleSignature = getScheduleSignature(options);
@@ -139,6 +144,11 @@ export function createEventCalendarItemIndex<TItemFields extends object>(
 	const index = hydrateIndex(schedule, itemsById, options.visibleDays);
 	const nextCollectionCache = collectionCache ?? new Map<string, EventCalendarItemIndex<object>>();
 	nextCollectionCache.set(exactKey, index as EventCalendarItemIndex<object>);
+	while (nextCollectionCache.size > MAX_EXACT_INDEX_CACHE_ENTRIES_PER_COLLECTION) {
+		const oldestKey = nextCollectionCache.keys().next().value;
+		if (oldestKey === undefined) break;
+		nextCollectionCache.delete(oldestKey);
+	}
 	if (!collectionCache)
 		exactIndexCache.set(options.items as readonly object[], nextCollectionCache);
 	return index;

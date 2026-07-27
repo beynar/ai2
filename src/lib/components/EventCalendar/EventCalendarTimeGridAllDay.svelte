@@ -17,6 +17,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Messages } from '$lib/i18n/en.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -51,8 +52,9 @@
 		gridTemplateColumns,
 		allDayPayload,
 		offDaysByDay,
-		messagesAllDay,
+		messages,
 		longDayFormatter,
+		columnLabels,
 		density,
 		color,
 		classes,
@@ -71,7 +73,7 @@
 		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		dayGeometries: readonly EventCalendarTimeGridDayGeometry<TItemFields>[];
 		allDayBackgroundSegments: ReadonlyMap<string, readonly EventCalendarSegment<TItemFields>[]>;
 		allDayLayout: EventCalendarLaneLayout<TItemFields>;
@@ -79,8 +81,9 @@
 		gridTemplateColumns: string;
 		allDayPayload: EventCalendarAllDayPayload<TItemFields>;
 		offDaysByDay: ReadonlyMap<EventCalendarDateOnly, boolean>;
-		messagesAllDay: string;
+		messages: Messages;
 		longDayFormatter: Intl.DateTimeFormat;
+		columnLabels: ReadonlyMap<string, string>;
 		density: Density;
 		color: Colors;
 		classes: EventCalendarClasses;
@@ -125,6 +128,8 @@
 			resourceId: geometry.resourceId
 		}}
 		<div
+			role="group"
+			aria-label={columnLabels.get(geometry.key)}
 			data-event-calendar-part="all-day-cell"
 			data-day={geometry.day}
 			data-resource-id={geometry.resourceId}
@@ -148,7 +153,7 @@
 			<button
 				type="button"
 				tabindex={disabled ? -1 : a11y.getTimeTargetTabIndex(targetKey)}
-				aria-label={`${messagesAllDay}, ${longDayFormatter.format(startOfZonedDay(geometry.day, calendar.timeZone))}`}
+				aria-label={`${messages.eventCalendarAllDay}, ${longDayFormatter.format(startOfZonedDay(geometry.day, calendar.timeZone))}`}
 				aria-pressed={isSelected}
 				{disabled}
 				data-event-calendar-all-day-hit-area
@@ -197,6 +202,8 @@
 				>
 					<EventCalendarItem
 						{segment}
+						{a11y}
+						{messages}
 						{view}
 						locale={calendar.locale}
 						timeZone={calendar.timeZone}

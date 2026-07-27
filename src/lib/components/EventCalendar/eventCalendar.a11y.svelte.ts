@@ -1,6 +1,15 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- DOM registries and immutable configuration snapshots are not reactive state. */
 import { addCivilMonths, isSupportedDateDomainError, parseDateOnly } from './eventCalendar.date.js';
-import type { EventCalendarDateOnly } from './eventCalendar.types.js';
+import type {
+	EventCalendarDateOnly,
+	EventCalendarOccurrence,
+	EventCalendarView
+} from './eventCalendar.types.js';
+import type {
+	EventCalendarDropTarget,
+	EventCalendarInteractionsController,
+	EventCalendarItemOperation
+} from './eventCalendar.interactions.svelte.js';
 
 type MonthGridConfiguration = {
 	days: readonly EventCalendarDateOnly[];
@@ -26,10 +35,22 @@ type TimeGridConfiguration = {
 	onPage: (direction: -1 | 1) => boolean;
 };
 
+type MutationConfiguration<TItemFields extends object, TResourceFields extends object> = {
+	controller: EventCalendarInteractionsController<TItemFields, TResourceFields>;
+	view: EventCalendarView;
+	direction: 'ltr' | 'rtl';
+	snapDuration: number;
+};
+
 /** Calendar-owned roving focus and live announcements. Later views extend this same owner. */
-export class EventCalendarA11y {
+export class EventCalendarA11y<
+	TItemFields extends object = Record<never, never>,
+	TResourceFields extends object = Record<never, never>
+> {
 	announcement = $state('');
 	focusedDay = $state<EventCalendarDateOnly | null>(null);
+	mutationOccurrenceKey = $state<string | null>(null);
+	mutationOperation = $state<EventCalendarItemOperation | null>(null);
 	readonly liveRegionId: string;
 	private dayElements = new Map<EventCalendarDateOnly, HTMLElement>();
 	private days: readonly EventCalendarDateOnly[] = [];
@@ -46,10 +67,158 @@ export class EventCalendarA11y {
 	private pendingTimeTarget: Pick<EventCalendarTimeTarget, 'column' | 'row' | 'kind'> | null = null;
 	private onTimePage: (direction: -1 | 1) => boolean = () => false;
 	private restoreVersion = 0;
+	private occurrenceRestoreVersion = 0;
 	private lifecycleVersion = 0;
+	private occurrenceElements = new Map<string, Set<HTMLElement>>();
+	private focusedOccurrenceKey: string | null = null;
+	private pendingOccurrenceKey: string | null = null;
+	private mutationController: EventCalendarInteractionsController<
+		TItemFields,
+		TResourceFields
+	> | null = null;
+	private mutationView: EventCalendarView = 'month';
+	private mutationSnapDuration = 15;
 
 	constructor(liveRegionId: string) {
 		this.liveRegionId = liveRegionId;
+	}
+
+	configureMutations(configuration: MutationConfiguration<TItemFields, TResourceFields>): void {
+		this.mutationController = configuration.controller;
+		this.mutationView = configuration.view;
+		this.direction = configuration.direction;
+		this.mutationSnapDuration = configuration.snapDuration;
+	}
+
+	canStartItemMutation(
+		occurrence: EventCalendarOccurrence<TItemFields>,
+		operation: EventCalendarItemOperation,
+		source: 'keyboard' | 'single-pointer'
+	): boolean {
+		return this.mutationController?.canBeginAssistedItem(occurrence, operation, source) ?? false;
+	}
+
+	startItemMutation(
+		occurrence: EventCalendarOccurrence<TItemFields>,
+		operation: EventCalendarItemOperation,
+		source: 'keyboard' | 'single-pointer'
+	): boolean {
+		if (!this.mutationController?.beginAssistedItem(occurrence, operation, source)) return false;
+		this.mutationOccurrenceKey = occurrence.key;
+		this.mutationOperation = operation;
+		this.focusedOccurrenceKey = occurrence.key;
+		return true;
+	}
+
+	cancelItemMutation(): boolean {
+		if (!this.mutationOccurrenceKey || !this.mutationController) return false;
+		const occurrenceKey = this.mutationOccurrenceKey;
+		this.mutationController.cancel();
+		this.clearMutation();
+		this.restoreOccurrenceFocus(occurrenceKey);
+		return true;
+	}
+
+	activateMutationTarget(target: EventCalendarDropTarget): boolean {
+		if (!this.mutationController?.activateAssistedTarget(target)) return false;
+		if (!this.mutationController.gesture) {
+			const occurrenceKey = this.mutationOccurrenceKey;
+			this.clearMutation();
+			if (occurrenceKey) this.restoreOccurrenceFocus(occurrenceKey);
+		}
+		return true;
+	}
+
+	handleItemKeydown(
+		event: KeyboardEvent,
+		occurrence: EventCalendarOccurrence<TItemFields>
+	): boolean {
+		if (event.altKey || event.ctrlKey || event.metaKey) return false;
+		if (!this.mutationOccurrenceKey) {
+			const operation = getMutationShortcut(event.key);
+			if (!operation || !this.startItemMutation(occurrence, operation, 'keyboard')) return false;
+			event.preventDefault();
+			return true;
+		}
+		if (this.mutationOccurrenceKey !== occurrence.key || !this.mutationController) return false;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			this.cancelItemMutation();
+			return true;
+		}
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			const occurrenceKey = this.mutationOccurrenceKey;
+			this.mutationController.commitAssistedItem();
+			if (!this.mutationController.gesture) {
+				this.clearMutation();
+				this.restoreOccurrenceFocus(occurrenceKey);
+			}
+			return true;
+		}
+		if (!event.key.startsWith('Arrow')) return false;
+		const proposal = this.mutationController.proposal;
+		event.preventDefault();
+		const isAllDay = proposal ? proposal.item.allDay === true : occurrence.allDay;
+		if (
+			this.mutationView === 'resource' &&
+			this.mutationOperation === 'move' &&
+			(event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+		) {
+			this.mutationController.stepAssistedItem({
+				resourceDirection: getArrowDirection(event.key, this.direction)
+			});
+			return true;
+		}
+		if (isAllDay) {
+			this.mutationController.stepAssistedItem({
+				dayDelta: getArrowDirection(event.key, this.direction)
+			});
+			return true;
+		}
+		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+			this.mutationController.stepAssistedItem({
+				minuteDelta:
+					event.key === 'ArrowDown' ? this.mutationSnapDuration : -this.mutationSnapDuration
+			});
+			return true;
+		}
+		const direction = getArrowDirection(event.key, this.direction);
+		this.mutationController.stepAssistedItem({ dayDelta: direction });
+		return true;
+	}
+
+	registerOccurrenceControl(occurrenceKey: string, node: HTMLElement): () => void {
+		const elements = this.occurrenceElements.get(occurrenceKey) ?? new Set<HTMLElement>();
+		elements.add(node);
+		this.occurrenceElements.set(occurrenceKey, elements);
+		if (this.pendingOccurrenceKey === occurrenceKey) this.scheduleOccurrenceRestore(occurrenceKey);
+		return () => {
+			elements.delete(node);
+			if (elements.size === 0) this.occurrenceElements.delete(occurrenceKey);
+			if (this.focusedOccurrenceKey === occurrenceKey) this.pendingOccurrenceKey = occurrenceKey;
+		};
+	}
+
+	handleOccurrenceFocus(occurrenceKey: string): void {
+		this.focusedOccurrenceKey = occurrenceKey;
+		this.pendingOccurrenceKey = null;
+	}
+
+	restoreOccurrenceFocus(occurrenceKey = this.focusedOccurrenceKey): void {
+		if (!occurrenceKey) return;
+		this.pendingOccurrenceKey = occurrenceKey;
+		this.scheduleOccurrenceRestore(occurrenceKey);
+	}
+
+	finishItemMutation(): void {
+		const occurrenceKey = this.mutationOccurrenceKey;
+		this.clearMutation();
+		if (occurrenceKey) this.restoreOccurrenceFocus(occurrenceKey);
+	}
+
+	getFocusedOccurrenceKey(): string | null {
+		return this.focusedOccurrenceKey;
 	}
 
 	configureMonth(configuration: MonthGridConfiguration): void {
@@ -216,6 +385,9 @@ export class EventCalendarA11y {
 	}
 
 	remapOccurrenceKeys(remap: (key: string) => string): void {
+		if (this.focusedOccurrenceKey) this.focusedOccurrenceKey = remap(this.focusedOccurrenceKey);
+		if (this.pendingOccurrenceKey) this.pendingOccurrenceKey = remap(this.pendingOccurrenceKey);
+		if (this.mutationOccurrenceKey) this.mutationOccurrenceKey = remap(this.mutationOccurrenceKey);
 		if (typeof document === 'undefined') return;
 		const root = document
 			.getElementById(this.liveRegionId)
@@ -242,6 +414,7 @@ export class EventCalendarA11y {
 	destroy(): void {
 		this.lifecycleVersion += 1;
 		this.restoreVersion += 1;
+		this.occurrenceRestoreVersion += 1;
 		this.dayElements.clear();
 		this.days = [];
 		this.enabledDays = new Set();
@@ -251,6 +424,29 @@ export class EventCalendarA11y {
 		this.timeTargetByKey.clear();
 		this.focusedTimeTarget = null;
 		this.pendingTimeTarget = null;
+		this.occurrenceElements.clear();
+		this.focusedOccurrenceKey = null;
+		this.pendingOccurrenceKey = null;
+		this.mutationController = null;
+		this.clearMutation();
+	}
+
+	private clearMutation(): void {
+		this.mutationOccurrenceKey = null;
+		this.mutationOperation = null;
+	}
+
+	private scheduleOccurrenceRestore(occurrenceKey: string): void {
+		const version = ++this.occurrenceRestoreVersion;
+		queueMicrotask(() => {
+			if (version !== this.occurrenceRestoreVersion || this.pendingOccurrenceKey !== occurrenceKey)
+				return;
+			const element = this.occurrenceElements.get(occurrenceKey)?.values().next().value;
+			if (!element) return;
+			this.focusedOccurrenceKey = occurrenceKey;
+			this.pendingOccurrenceKey = null;
+			element.focus();
+		});
 	}
 
 	private focusTimeTarget(target: EventCalendarTimeTarget): void {
@@ -425,4 +621,18 @@ function compareDays(left: EventCalendarDateOnly, right: EventCalendarDateOnly):
 		leftDate.day -
 		rightDate.day
 	);
+}
+
+function getMutationShortcut(key: string): EventCalendarItemOperation | null {
+	if (key.toLowerCase() === 'm') return 'move';
+	if (key.toLowerCase() === 's') return 'resize-start';
+	if (key.toLowerCase() === 'e') return 'resize-end';
+	return null;
+}
+
+function getArrowDirection(key: string, direction: 'ltr' | 'rtl'): -1 | 1 {
+	if (key === 'ArrowUp') return -1;
+	if (key === 'ArrowDown') return 1;
+	const physicalDirection: -1 | 1 = key === 'ArrowRight' ? 1 : -1;
+	return direction === 'rtl' ? (physicalDirection === 1 ? -1 : 1) : physicalDirection;
 }

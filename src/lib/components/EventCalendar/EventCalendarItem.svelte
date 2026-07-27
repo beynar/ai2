@@ -4,11 +4,14 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
+	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
 	import type { Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
+	import EventCalendarItemActions from './EventCalendarItemActions.svelte';
+	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload
@@ -25,6 +28,8 @@
 		density,
 		color,
 		classes,
+		a11y,
+		messages,
 		interaction,
 		isSelected,
 		isDragging = false,
@@ -51,6 +56,8 @@
 		density: Density;
 		color: Colors;
 		classes: EventCalendarClasses;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
+		messages: Messages;
 		interaction?: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 		isSelected: boolean;
 		isDragging?: boolean;
@@ -141,6 +148,23 @@
 	});
 	const canMove = $derived(Boolean(interaction?.canMove(occurrence)) && !disabled);
 	const canResize = $derived(Boolean(interaction?.canResize(occurrence)) && !disabled);
+	const hasKeyboardActions = $derived(
+		Boolean(
+			interaction &&
+			(['move', 'resize-start', 'resize-end'] as const).some((operation) =>
+				interaction.canBeginAssistedItem(occurrence, operation, 'keyboard')
+			)
+		)
+	);
+
+	function registerItemControl(node: HTMLElement): () => void {
+		const unregisterOccurrence = a11y.registerOccurrenceControl(occurrence.key, node);
+		const unregisterTarget = registerControl?.(node);
+		return () => {
+			unregisterOccurrence();
+			unregisterTarget?.();
+		};
+	}
 </script>
 
 <div
@@ -181,8 +205,8 @@
 			data-edge="start"
 			class={classes.resizeHandle({
 				class: occurrence.allDay
-					? 'inset-y-0 start-0 w-3 cursor-ew-resize'
-					: 'inset-x-0 top-0 h-3 cursor-ns-resize'
+					? 'inset-y-0 start-0 w-6 cursor-ew-resize'
+					: 'inset-x-0 top-0 h-6 -translate-y-1/2 cursor-ns-resize'
 			})}
 			{@attach interaction.draggableItem(segment, 'resize-start')}
 		>
@@ -192,6 +216,7 @@
 	<button
 		type="button"
 		aria-label={defaultAccessibleLabel}
+		aria-describedby={hasKeyboardActions ? `${a11y.liveRegionId}-instructions` : undefined}
 		aria-pressed={isSelected}
 		{disabled}
 		{tabindex}
@@ -205,6 +230,7 @@
 		})}
 		onclick={(event) => {
 			event.stopPropagation();
+			if (interaction?.activateAssistedPoint(event.clientX, event.clientY)) return;
 			if (interaction?.shouldSuppressClick(occurrence.key)) return;
 			onActivate(event);
 		}}
@@ -212,9 +238,15 @@
 			event.stopPropagation();
 			onDoubleClick?.(event);
 		}}
-		onfocus={onControlFocus}
-		onkeydown={onControlKeydown}
-		{@attach registerControl ?? null}
+		onfocus={() => {
+			a11y.handleOccurrenceFocus(occurrence.key);
+			onControlFocus?.();
+		}}
+		onkeydown={(event) => {
+			if (a11y.handleItemKeydown(event, occurrence)) return;
+			onControlKeydown?.(event);
+		}}
+		{@attach registerItemControl}
 		{@attach showItemTooltip ? itemTooltipAttachment : null}
 	>
 		<Slot render={item ?? defaultContent} payload={itemPayload} />
@@ -226,17 +258,29 @@
 			data-edge="end"
 			class={classes.resizeHandle({
 				class: occurrence.allDay
-					? 'inset-y-0 end-0 w-3 cursor-ew-resize'
-					: 'inset-x-0 bottom-0 h-3 cursor-ns-resize'
+					? 'inset-y-0 end-0 w-6 cursor-ew-resize'
+					: 'inset-x-0 bottom-0 h-6 translate-y-1/2 cursor-ns-resize'
 			})}
 			{@attach interaction.draggableItem(segment, 'resize-end')}
 		>
 			{#if resizeEnd}<Slot render={resizeEnd} />{/if}
 		</div>
 	{/if}
-	{#if actionTrigger}
+	{#if actionTrigger || interaction}
 		<div data-event-calendar-part="action-trigger" class={classes.actionTrigger()}>
-			<Slot render={actionTrigger} />
+			{#if actionTrigger}
+				<Slot render={actionTrigger} />
+			{:else if interaction}
+				<EventCalendarItemActions
+					{occurrence}
+					{a11y}
+					{interaction}
+					{messages}
+					{density}
+					{color}
+					{disabled}
+				/>
+			{/if}
 		</div>
 	{/if}
 </div>

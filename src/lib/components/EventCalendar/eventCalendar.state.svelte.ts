@@ -22,7 +22,10 @@ import {
 	startOfZonedDay
 } from './eventCalendar.date.js';
 import { EventCalendarError } from './eventCalendar.error.js';
-import { EventCalendarInteractionsController } from './eventCalendar.interactions.svelte.js';
+import {
+	EventCalendarInteractionsController,
+	type EventCalendarInteractionStatus
+} from './eventCalendar.interactions.svelte.js';
 import {
 	createEventCalendarItemIndex,
 	createRecurringOccurrenceKey,
@@ -149,6 +152,7 @@ export type EventCalendarStateOptions<
 	) => string;
 	expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
 	onOccurrenceKeysRemap?: (remap: (key: string) => string) => void;
+	onInteractionStatus?: (status: EventCalendarInteractionStatus<TItemFields>) => void;
 	onItemsChange?: (
 		items: EventCalendarItem<TItemFields>[],
 		change: EventCalendarChange<TItemFields>
@@ -182,6 +186,8 @@ export class EventCalendarState<
 	private readonly resourceIndex = new EventCalendarResourceIndex<TResourceFields>();
 	private validatedItems: readonly EventCalendarItem<TItemFields>[] | null = null;
 	private validatedRecurrenceExpander?: EventCalendarRecurrenceExpander<TItemFields>;
+	private cachedDateProfile: EventCalendarDateProfile | null = null;
+	private cachedDateProfileInputs: readonly unknown[] | null = null;
 
 	get enabledViews(): readonly EventCalendarView[] {
 		return getEnabledViews(this.views, this.validateResourceCollection() > 0);
@@ -192,7 +198,33 @@ export class EventCalendarState<
 	}
 
 	get dateProfile(): EventCalendarDateProfile {
-		return this.createProfile(this.view, this.date, this.dayCount);
+		const inputs = this.getDateProfileInputs();
+		if (
+			this.cachedDateProfile &&
+			this.cachedDateProfileInputs?.every((value, index) => value === inputs[index])
+		) {
+			return this.cachedDateProfile;
+		}
+		this.cachedDateProfile = this.createProfile(this.view, this.date, this.dayCount);
+		this.cachedDateProfileInputs = inputs;
+		return this.cachedDateProfile;
+	}
+
+	private getDateProfileInputs(): readonly unknown[] {
+		return [
+			this.view,
+			this.date,
+			this.dayCount,
+			this.timeZone,
+			this.locale,
+			this.weekStartsOn,
+			this.fixedWeeks,
+			this.showOutsideDays,
+			this.showWeekends,
+			this.weekendDays,
+			this.agendaDayCount,
+			this.validRange
+		];
 	}
 
 	get itemIndex(): EventCalendarItemIndex<TItemFields> {

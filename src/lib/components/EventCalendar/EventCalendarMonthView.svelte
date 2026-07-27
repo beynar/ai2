@@ -134,7 +134,7 @@
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;
@@ -261,6 +261,9 @@
 			? `minmax(2.5rem, auto) repeat(${columnCount}, minmax(0, 1fr))`
 			: `repeat(${columnCount}, minmax(0, 1fr))`
 	);
+	const gridMinimumWidth = $derived(
+		`calc(${columnCount} * var(--event-calendar-month-day-min-width) + ${showWeekNumbers ? '2.5rem' : '0rem'})`
+	);
 
 	$effect(() => {
 		a11y.configureMonth({
@@ -302,6 +305,7 @@
 		data-event-calendar-part="month-header"
 		class={classes.monthHeader({ density, color, view: 'month', disabled })}
 		style:grid-template-columns={gridTemplateColumns}
+		style:min-width={gridMinimumWidth}
 	>
 		{#if showWeekNumbers}
 			<div role="columnheader" aria-hidden="true" class={classes.weekNumber()}></div>
@@ -336,6 +340,7 @@
 		role="rowgroup"
 		data-event-calendar-part="month-grid"
 		class={classes.monthGrid({ density, color, view: 'month', disabled })}
+		style:min-width={gridMinimumWidth}
 	>
 		{#each weekLayouts as weekLayout, weekIndex (`${weekLayout.days[0]}:${weekLayout.days.at(-1)}`)}
 			<EventCalendarMonthWeek

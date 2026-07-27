@@ -214,7 +214,7 @@
 		data-event-calendar-part="view-switcher"
 		class={classes.viewSwitcher({ density, color, view: calendar.view, disabled })}
 	>
-		<div class="hidden @2xl:block">
+		<div class="hidden @[40rem]:block">
 			<SegmentedControl
 				items={viewItems}
 				value={calendar.view}
@@ -224,7 +224,7 @@
 				onChange={(nextView) => calendar.setView(nextView)}
 			/>
 		</div>
-		<div class="@2xl:hidden">
+		<div class="@[40rem]:hidden">
 			<PopupMenu position="bottom-end" menu={{ items: viewMenuItems, density: 'small' }}>
 				{#snippet trigger(popover)}
 					<Button
