@@ -1,7 +1,7 @@
 export const eventCalendarDescription = `
 # EventCalendar
 
-A typed scheduling calendar for Svelte 5. It renders month, week, day, configurable N-day, agenda, and resource-day views from one occurrence model. The consumer owns loading and persistence; EventCalendar owns range derivation, recurrence expansion, layout, selection, accessible interaction, validation, and immutable mutation transactions.
+A typed scheduling calendar for Svelte 5. It renders month, week, day, configurable N-day, agenda, resource-day, and virtualized horizontal resource-timeline views from one occurrence model. The consumer owns loading and persistence; EventCalendar owns range derivation, recurrence expansion, layout, selection, accessible interaction, validation, clipboard operations, bounded history, and immutable mutation transactions.
 
 ## Import
 
@@ -26,15 +26,16 @@ A typed scheduling calendar for Svelte 5. It renders month, week, day, configura
 - 'items' and 'resources' are immutable controlled collections: allocate a fresh outer array for every consumer update and replace changed definitions. EventCalendar never mutates consumer objects.
 - EventCalendarItem<TItemFields> and EventCalendarResource<TResourceFields> preserve custom fields through props, snippets, callbacks, and API methods. Custom fields cannot redeclare calendar-owned keys.
 - Foreground items can be timed, all-day, multi-day, or recurring. 'display: background' items are display-only and never interactive.
+- Assign one leaf with 'resourceId' or several leaves with an ordered unique 'resourceIds' array. The two fields are mutually exclusive.
 - Timed recurrence requires an explicit 'recurrenceTimeZone'. All-day recurrence remains floating civil dates.
 
 ## State and view props
 
 - 'items': EventCalendarItem<TItemFields>[] = [] (bindable)
-- 'view': 'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource' = 'month' (bindable)
-- 'views': ordered, unique enabled-view list = all six views. Resource is available only with at least one leaf resource.
+- 'view': 'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource' | 'timeline' = 'month' (bindable)
+- 'views': ordered, unique enabled-view list = all seven views. Resource and timeline are available only with at least one leaf resource.
 - 'date': Date (required, bindable anchor instant)
-- 'dayCount': positive integer = 3 (bindable; used by 'days')
+- 'dayCount': positive integer = 3 (bindable; used by 'days' and 'timeline')
 - 'selection': EventCalendarSelection = empty (bindable)
 - 'resources': EventCalendarResource<TResourceFields>[] = []
 - 'loading': boolean = false. Marks content busy and blocks content interaction, not navigation.
@@ -60,6 +61,7 @@ The component never changes 'view' because its container becomes narrow. Previou
 - Time grids: 'dayStartHour=0', 'dayEndHour=24', 'interval=60', 'slotDuration=30', 'snapDuration=15', 'scrollToHour=7'.
 - Conversion: 'defaultTimedItemDuration=60' minutes and 'defaultAllDayItemDuration=1' civil day.
 - Agenda: 'agendaDayCount=30'.
+- Timeline: 'timelineRowHeight=48', 'timelineSlotWidth=48', and 'timelineOverscan=6'. Resource rows are virtualized.
 - Current time: 'nowIndicator=true', 'nowIndicatorInterval=30000'.
 - Work time: 'offDays=false', 'businessHours=[]', 'constrainToBusinessHours=false'.
 - Scrolling/chrome: 'scrollMode="contained"', 'scrollbars="custom"', 'stickyHeader=false', 'showHeader=true', 'showDatePicker=false', 'showItemTooltip=false'.
@@ -80,6 +82,8 @@ Move, resize-start, resize-end, API updates, and keyboard mode share one proposa
 
 'onItemsChange(nextItems, change)' runs after one accepted immutable reassignment. Persist 'nextItems' at the application boundary. On failure, call 'change.revert()' and then surface the original error. Revert is guarded and one-shot: it throws 'stale-transaction' rather than overwrite a newer calendar or consumer update.
 
+'clipboard=true' enables internal occurrence copy/paste through the API and Mod+C/Mod+V. Paste creates a standalone item, targets a selected compatible slot when present, and never mutates the copied recurrence series. 'historyLimit=50' bounds immutable undo entries; 0 disables history. Mod+Z undoes, Mod+Shift+Z and Mod+Y redo. History refuses stale controlled collections instead of overwriting consumer state.
+
 Item callbacks are 'onItemClick', 'onItemDoubleClick', 'onMoreClick', and 'onInteractionBlocked'. Slot callbacks are 'onSlotClick' and 'onSlotSelect'. Bound-state callbacks are 'onViewChange', 'onDateChange', 'onDayCountChange', and 'onSelectionChange'.
 
 ## Recurrence
@@ -90,7 +94,7 @@ Structured recurrence supports daily, weekly, monthly, and yearly rules with int
 
 ## Resources
 
-'resources' is a typed flat collection. 'parentId' creates groups; only leaves become resource-day columns and accept assignment. Unknown parents, cycles, and duplicate IDs throw. Foreground/background occurrences without a resolvable leaf appear in the localized Unassigned column. Resource moves use the same mutation pipeline. Parent and leaf input order is preserved.
+'resources' is a typed flat collection. 'parentId' creates groups; only leaves become resource-day columns or timeline rows and accept assignment. Unknown parents, cycles, and duplicate IDs throw. A leaf can define local 'businessHours' and 'readOnly'; those constraints feed the same proposal validator used by every view. Foreground/background occurrences without a resolvable leaf appear in the localized Unassigned projection. Multi-assigned events render once for every resolved leaf. Resource moves replace only the dragged projection's assignment. Parent and leaf input order is preserved.
 
 ## Snippet composition
 
@@ -119,13 +123,14 @@ EventCalendar does not own create/edit dialogs. Compose 'onSlotClick'/'onSlotSel
 - scrolling/ranges: scrollToTime, getVisibleRange, getActiveRange, getVisibleDays
 - queries: getOccurrence, getOccurrences, getOccurrencesForDay
 - immutable mutations: addItem, updateItem, updateOccurrence, removeItem
+- clipboard/history: copySelection, paste, undo, redo, canUndo, canRedo
 - selection/interaction: select, clearSelection, cancelInteraction
 
 Unknown IDs/keys and invalid operations throw EventCalendarError. API mutations use the same validation and transaction callbacks as pointer and keyboard input.
 
 ## Theme and accessibility
 
-'density' defaults to 'normal'; 'color' defaults to 'primary'; 'theme' accepts EventCalendarThemeProps. Import 'eventCalendarTheme', 'setEventCalendarTheme', and 'useEventCalendarTheme' from 'svelai/event-calendar'. Stable parts cover chrome, month, time grid, items/interactions, agenda, and resources. CSS metrics include --event-calendar-slot-height, --event-calendar-time-gutter-width, --event-calendar-day-min-width, --event-calendar-resource-min-width, --event-calendar-item-min-height, and --event-calendar-sticky-offset.
+'density' defaults to 'normal'; 'color' defaults to 'primary'; 'theme' accepts EventCalendarThemeProps. Import 'eventCalendarTheme', 'setEventCalendarTheme', and 'useEventCalendarTheme' from 'svelai/event-calendar'. Stable parts cover chrome, month, time grid, items/interactions, agenda, resources, and timeline rows/slots. CSS metrics include --event-calendar-slot-height, --event-calendar-time-gutter-width, --event-calendar-day-min-width, --event-calendar-resource-min-width, --event-calendar-item-min-height, and --event-calendar-sticky-offset.
 
 The active view exposes grids/groups/buttons/disclosures, roving focus, keyboard move/resize, Escape cancellation, two-click range selection, 24px interaction targets, polite announcements, reduced-motion behavior, narrow-container wrapping/scrolling, and RTL-aware physical movement. Keyboard mutation starts from a focused item, uses arrows to propose, Enter to commit, and Escape to cancel.
 `;

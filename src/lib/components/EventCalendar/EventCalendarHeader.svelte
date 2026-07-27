@@ -92,7 +92,8 @@
 		day: messages.eventCalendarDayView,
 		days: messages.eventCalendarDaysView,
 		agenda: messages.eventCalendarAgendaView,
-		resource: messages.eventCalendarResourceView
+		resource: messages.eventCalendarResourceView,
+		timeline: messages.eventCalendarTimelineView
 	});
 	const viewItems = $derived(
 		calendar.enabledViews.map((enabledView) => ({

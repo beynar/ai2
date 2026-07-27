@@ -9,7 +9,15 @@
 
 	let items = $state(createDemoItems().filter((item) => item.display !== 'background'));
 	let date = $state(new Date('2026-07-15T10:00:00.000Z'));
-	let lastChange = $state<EventCalendarChange<MeetingFields> | null>(null);
+	let lastChange = $state.raw<EventCalendarChange<MeetingFields> | null>(null);
+	let calendar = $state<{
+		copySelection(): boolean;
+		paste(): boolean;
+		undo(): boolean;
+		redo(): boolean;
+		canUndo(): boolean;
+		canRedo(): boolean;
+	} | null>(null);
 	let status = $state('Focus an item and press M, S, or E to move or resize it.');
 
 	function handleItemsChange(
@@ -42,11 +50,32 @@
 <div class="grid w-full gap-3">
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<p class="text-neutral/70 text-sm" aria-live="polite">{status}</p>
-		<Button size="small" variant="outline" disabled={!lastChange} onClick={revertLastChange}>
-			Revert last change
-		</Button>
+		<div class="flex flex-wrap gap-2">
+			<Button size="small" variant="outline" onClick={() => calendar?.copySelection()}>Copy</Button>
+			<Button size="small" variant="outline" onClick={() => calendar?.paste()}>Paste</Button>
+			<Button
+				size="small"
+				variant="outline"
+				disabled={!calendar?.canUndo()}
+				onClick={() => calendar?.undo()}
+			>
+				Undo
+			</Button>
+			<Button
+				size="small"
+				variant="outline"
+				disabled={!calendar?.canRedo()}
+				onClick={() => calendar?.redo()}
+			>
+				Redo
+			</Button>
+			<Button size="small" variant="outline" disabled={!lastChange} onClick={revertLastChange}>
+				Revert last change
+			</Button>
+		</div>
 	</div>
 	<EventCalendar
+		bind:this={calendar}
 		bind:items
 		bind:date
 		view="week"

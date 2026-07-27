@@ -6,6 +6,12 @@ eight most recently used profiles for each immutable item collection. The shared
 cache retains 32 entries. Pointer movement is sampled through `requestAnimationFrame`; it
 does not rebuild the item index per frame.
 
+The timeline virtualizes resource rows with `@tanstack/svelte-virtual`. Only the visible
+rows plus `timelineOverscan` are mounted; horizontal snap slots remain deterministic DOM
+targets so drag, resize, and range hit-testing share the same geometry as the other views.
+Tune `timelineRowHeight`, `timelineSlotWidth`, and `timelineOverscan` against the consumer's
+row snippets and visible `dayCount`.
+
 ## Measured data point
 
 This is a practical measurement, not a supported maximum or a cross-device benchmark.

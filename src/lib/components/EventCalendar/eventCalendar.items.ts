@@ -56,6 +56,7 @@ export type CreateEventCalendarItemIndexOptions<TItemFields extends object> = {
 type ItemSchedule = {
 	id: string;
 	resourceId?: string;
+	resourceIds?: readonly string[];
 	allDay: boolean;
 	start: Date | EventCalendarDateOnly;
 	end: Date | EventCalendarDateOnly;
@@ -282,6 +283,38 @@ function validateItemDisplayFields<TItemFields extends object>(
 		throw new EventCalendarError('invalid-item', `Item ${item.id} priority must be finite.`, {
 			id: item.id
 		});
+	}
+	if (item.resourceId !== undefined && item.resourceIds !== undefined) {
+		throw new EventCalendarError(
+			'invalid-item',
+			`Item ${item.id} cannot define both resourceId and resourceIds.`,
+			{ id: item.id }
+		);
+	}
+	if (item.resourceId !== undefined && item.resourceId.length === 0) {
+		throw new EventCalendarError('invalid-item', `Item ${item.id} has an empty resourceId.`, {
+			id: item.id
+		});
+	}
+	if (item.resourceIds !== undefined) {
+		if (!Array.isArray(item.resourceIds) || item.resourceIds.length === 0) {
+			throw new EventCalendarError(
+				'invalid-item',
+				`Item ${item.id} resourceIds must be a non-empty array.`,
+				{ id: item.id }
+			);
+		}
+		const ids = new Set<string>();
+		for (const resourceId of item.resourceIds) {
+			if (typeof resourceId !== 'string' || resourceId.length === 0 || ids.has(resourceId)) {
+				throw new EventCalendarError(
+					'invalid-item',
+					`Item ${item.id} resourceIds must contain unique non-empty strings.`,
+					{ id: item.id }
+				);
+			}
+			ids.add(resourceId);
+		}
 	}
 }
 
@@ -842,6 +875,7 @@ function getItemSchedule<TItemFields extends object>(
 	return {
 		id: item.id,
 		resourceId: item.resourceId,
+		resourceIds: item.resourceIds,
 		allDay: item.allDay === true,
 		start: cloneOrigin(item.start),
 		end: cloneOrigin(item.end),

@@ -31,6 +31,7 @@
 		isSelected,
 		isDragging = false,
 		allowResize = true,
+		projectionResourceId,
 		disabled = false,
 		showItemTooltip = false,
 		item,
@@ -58,6 +59,7 @@
 		isSelected: boolean;
 		isDragging?: boolean;
 		allowResize?: boolean;
+		projectionResourceId?: string;
 		disabled?: boolean;
 		showItemTooltip?: boolean;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
@@ -98,7 +100,9 @@
 		getCachedDateTimeFormatter(locale, timeZone, { month: 'short', day: 'numeric' })
 	);
 	const timeLabel = $derived(timeFormatter.format(segment.start));
-	const isTimedGridItem = $derived(!occurrence.allDay && view !== 'month' && view !== 'agenda');
+	const isTimedGridItem = $derived(
+		!occurrence.allDay && view !== 'month' && view !== 'agenda' && view !== 'timeline'
+	);
 	const timeRangeLabel = $derived(timeFormatter.formatRange(segment.start, segment.end));
 	const defaultAccessibleLabel = $derived.by(() => {
 		const formatter = occurrence.allDay ? dateFormatter : dateTimeFormatter;
@@ -137,7 +141,7 @@
 	const canResize = $derived(
 		isResizeAllowed && Boolean(interaction?.canResize(occurrence)) && !disabled
 	);
-	const isHorizontalResize = $derived(view === 'month' || occurrence.allDay);
+	const isHorizontalResize = $derived(view === 'month' || view === 'timeline' || occurrence.allDay);
 	const hasKeyboardActions = $derived(
 		Boolean(
 			interaction &&
@@ -190,7 +194,9 @@
 		continuesAfter: segment.continuesAfter,
 		class: className
 	})}
-	{@attach canMove && interaction ? interaction.draggableItem(segment, 'move') : null}
+	{@attach canMove && interaction
+		? interaction.draggableItem(segment, 'move', view, projectionResourceId)
+		: null}
 >
 	{#if canResize && interaction && segment.isStart}
 		<div
@@ -202,7 +208,7 @@
 					? 'inset-y-0 start-0 grid w-1.5 cursor-ew-resize place-items-center'
 					: 'inset-x-0 top-0 grid h-1.5 -translate-y-1/2 cursor-ns-resize place-items-center'
 			})}
-			{@attach interaction.draggableItem(segment, 'resize-start')}
+			{@attach interaction.draggableItem(segment, 'resize-start', view, projectionResourceId)}
 		>
 			{#if resizeStart}
 				<Slot render={resizeStart} />
@@ -247,7 +253,7 @@
 			onControlFocus?.();
 		}}
 		onkeydown={(event) => {
-			if (a11y.handleItemKeydown(event, occurrence, isResizeAllowed)) return;
+			if (a11y.handleItemKeydown(event, occurrence, isResizeAllowed, projectionResourceId)) return;
 			onControlKeydown?.(event);
 		}}
 		{@attach registerItemControl}
@@ -265,7 +271,7 @@
 					? 'inset-y-0 end-0 grid w-1.5 cursor-ew-resize place-items-center'
 					: 'inset-x-0 bottom-0 grid h-1.5 translate-y-1/2 cursor-ns-resize place-items-center'
 			})}
-			{@attach interaction.draggableItem(segment, 'resize-end')}
+			{@attach interaction.draggableItem(segment, 'resize-end', view, projectionResourceId)}
 		>
 			{#if resizeEnd}
 				<Slot render={resizeEnd} />

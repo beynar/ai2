@@ -737,8 +737,9 @@ export function getMaximumDateProfileAnchor(options: {
 	}
 	if (options.view === 'day' || options.view === 'resource') return MAX_EVENT_CALENDAR_DAY;
 
-	const count = options.view === 'days' ? options.dayCount : options.agendaDayCount;
-	assertPositiveInteger(count, options.view === 'days' ? 'dayCount' : 'agendaDayCount');
+	const usesDayCount = options.view === 'days' || options.view === 'timeline';
+	const count = usesDayCount ? options.dayCount : options.agendaDayCount;
+	assertPositiveInteger(count, usesDayCount ? 'dayCount' : 'agendaDayCount');
 	let lastVisibleDay = MAX_EVENT_CALENDAR_DAY;
 	while (hiddenWeekdays.has(getCivilWeekday(lastVisibleDay))) {
 		lastVisibleDay = addCivilDays(lastVisibleDay, -1);
@@ -807,7 +808,7 @@ function getProfileDays(
 	}
 
 	const count =
-		options.view === 'days'
+		options.view === 'days' || options.view === 'timeline'
 			? options.dayCount
 			: options.view === 'agenda'
 				? options.agendaDayCount
@@ -914,7 +915,9 @@ function getNavigationIncrement(
 ): EventCalendarNavigationIncrement {
 	if (options.view === 'month') return { unit: 'month', amount: 1 };
 	if (options.view === 'week') return { unit: 'civil-day', amount: 7 };
-	if (options.view === 'days') return { unit: 'visible-day', amount: options.dayCount };
+	if (options.view === 'days' || options.view === 'timeline') {
+		return { unit: 'visible-day', amount: options.dayCount };
+	}
 	if (options.view === 'agenda') {
 		return { unit: 'visible-day', amount: options.agendaDayCount };
 	}

@@ -172,8 +172,7 @@ function createExceptionItem<TItemFields extends object>(
 	item.end = cloneScheduleValue(targetItem.end);
 	if (targetItem.allDay === true) item.allDay = true;
 	else delete item.allDay;
-	if (targetItem.resourceId === undefined) delete item.resourceId;
-	else item.resourceId = targetItem.resourceId;
+	copyResourceAssignment(item, targetItem);
 	item.recurringItemId = seriesItem.id;
 	item.originalStart = cloneScheduleValue(originalStart);
 	return item as EventCalendarItem<TItemFields>;
@@ -233,11 +232,7 @@ function createSeriesMutation<TItemFields extends object>(
 		operation === 'convert' && (interactedReference.allDay === true) === transform.targetIsAllDay
 			? shiftTargetKindPlacement(interactedReference, transform)
 			: transformPlacement(interactedReference, transform, options);
-	const interactedItem = applyPlacement(
-		interactedReference,
-		interactedPlacement,
-		targetItem.resourceId
-	);
+	const interactedItem = applyPlacement(interactedReference, interactedPlacement, targetItem);
 	const exceptionItems = previousExceptionItems.map((exception) =>
 		transformException(exception, previousSeriesItem, transform, options)
 	);
@@ -332,15 +327,14 @@ function assertConvertedOriginsUnique<TItemFields extends object>(
 function applyPlacement<TItemFields extends object>(
 	item: EventCalendarItem<TItemFields>,
 	placement: { allDay: boolean; start: ScheduleValue; end: ScheduleValue },
-	resourceId: string | undefined
+	resourceSource: EventCalendarItem<TItemFields>
 ): EventCalendarItem<TItemFields> {
 	const next = { ...item } as Record<string, unknown>;
 	next.start = placement.start;
 	next.end = placement.end;
 	if (placement.allDay) next.allDay = true;
 	else delete next.allDay;
-	if (resourceId === undefined) delete next.resourceId;
-	else next.resourceId = resourceId;
+	copyResourceAssignment(next, resourceSource);
 	return next as EventCalendarItem<TItemFields>;
 }
 
@@ -416,14 +410,23 @@ function transformSeriesSource<TItemFields extends object>(
 	next.end = placement.end;
 	if (placement.allDay) next.allDay = true;
 	else delete next.allDay;
-	if (targetItem.resourceId === undefined) delete next.resourceId;
-	else next.resourceId = targetItem.resourceId;
+	copyResourceAssignment(next, targetItem);
 	if (seriesItem.recurrence && typeof seriesItem.recurrence !== 'string') {
 		next.recurrence = transformRule(seriesItem.recurrence, transform);
 	}
 	if (placement.allDay) delete next.recurrenceTimeZone;
 	else next.recurrenceTimeZone = transform.newTimeZone;
 	return next as EventCalendarItem<TItemFields>;
+}
+
+function copyResourceAssignment(
+	target: Record<string, unknown>,
+	source: { resourceId?: string; resourceIds?: readonly string[] }
+): void {
+	delete target.resourceId;
+	delete target.resourceIds;
+	if (source.resourceIds !== undefined) target.resourceIds = [...source.resourceIds];
+	else if (source.resourceId !== undefined) target.resourceId = source.resourceId;
 }
 
 function transformException<TItemFields extends object>(

@@ -175,6 +175,7 @@ export const es: Messages = {
 	eventCalendarDaysView: 'Días',
 	eventCalendarAgendaView: 'Agenda',
 	eventCalendarResourceView: 'Recursos',
+	eventCalendarTimelineView: 'Cronología',
 	eventCalendarUnassignedResource: 'Sin asignar',
 	eventCalendarResourceMoveAnnouncement: (resource: string | number) =>
 		`Mover evento a ${resource}`,

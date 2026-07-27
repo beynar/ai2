@@ -3,7 +3,8 @@ import type { Colors } from '$lib/types/theme.js';
 export type EventCalendarColor = Colors | (string & {});
 export type EventCalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type EventCalendarDateOnly = `${number}-${number}-${number}`;
-export type EventCalendarView = 'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource';
+export type EventCalendarView =
+	'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource' | 'timeline';
 
 export type EventCalendarRange = {
 	start: Date;
@@ -69,7 +70,10 @@ type EventCalendarItemBase = {
 	draggable?: boolean;
 	resizable?: boolean;
 	priority?: number;
+	/** Legacy single-resource assignment. Mutually exclusive with `resourceIds`. */
 	resourceId?: string;
+	/** Ordered, unique leaf-resource assignments. */
+	resourceIds?: string[];
 };
 
 type EventCalendarResourceBase = {
@@ -77,6 +81,10 @@ type EventCalendarResourceBase = {
 	title: string;
 	parentId?: string;
 	color?: EventCalendarColor;
+	/** Resource-local availability used when business-hour constraints are enabled. */
+	businessHours?: EventCalendarBusinessHours[];
+	/** Blocks item and slot mutations targeting this resource. */
+	readOnly?: boolean;
 };
 
 type EventCalendarOwnedItemKey =
@@ -184,7 +192,14 @@ export type EventCalendarSelection =
 	| { kind: 'slot'; itemKey: null; slot: EventCalendarSlot };
 
 export type EventCalendarMutationSource =
-	'drag' | 'resize-start' | 'resize-end' | 'keyboard' | 'single-pointer' | 'api';
+	| 'drag'
+	| 'resize-start'
+	| 'resize-end'
+	| 'keyboard'
+	| 'single-pointer'
+	| 'clipboard'
+	| 'history'
+	| 'api';
 
 export type EventCalendarProposedUpdate<TItemFields extends object = Record<never, never>> = {
 	kind: 'move' | 'resize-start' | 'resize-end' | 'update';
@@ -298,9 +313,16 @@ export type EventCalendarChange<TItemFields extends object = Record<never, never
 			seriesItem: EventCalendarItem<TItemFields>;
 			item: EventCalendarItem<TItemFields>;
 			previousItem: EventCalendarItem<TItemFields>;
+	  })
+	| (EventCalendarChangeBase & {
+			kind: 'history';
+			direction: 'undo' | 'redo';
 	  });
 
-type EventCalendarResourceAdjustment = { resourceId?: string | null };
+type EventCalendarResourceAdjustment = {
+	resourceId?: string | null;
+	resourceIds?: string[] | null;
+};
 
 export type EventCalendarUpdateAdjustment = EventCalendarResourceAdjustment &
 	(
@@ -341,6 +363,12 @@ export type EventCalendarApi<TItemFields extends object = Record<never, never>> 
 		options?: { scope?: 'occurrence' | 'series' }
 	): void;
 	removeItem(id: string): void;
+	copySelection(): boolean;
+	paste(): boolean;
+	undo(): boolean;
+	redo(): boolean;
+	canUndo(): boolean;
+	canRedo(): boolean;
 	select(selection: EventCalendarSelection): void;
 	clearSelection(): void;
 	cancelInteraction(): void;

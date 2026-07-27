@@ -35,7 +35,15 @@
 		EventCalendarView
 	} from './eventCalendar.types.js';
 
-	const DEFAULT_VIEWS: EventCalendarView[] = ['month', 'week', 'day', 'days', 'agenda', 'resource'];
+	const DEFAULT_VIEWS: EventCalendarView[] = [
+		'month',
+		'week',
+		'day',
+		'days',
+		'agenda',
+		'resource',
+		'timeline'
+	];
 	const DEFAULT_CREATE_ACTIVATION: EventCalendarCreateActivation = {
 		distancePx: 5,
 		touchDelayMs: 300,
@@ -86,6 +94,9 @@
 		defaultAllDayItemDuration = 1,
 		scrollToHour = 7,
 		agendaDayCount = 30,
+		timelineRowHeight = 48,
+		timelineSlotWidth = 48,
+		timelineOverscan = 6,
 		nowIndicator = true,
 		nowIndicatorInterval = 30000,
 		offDays = false,
@@ -104,6 +115,8 @@
 		onItemUpdate,
 		canSelectSlot,
 		recurrenceEditScope = 'occurrence',
+		clipboard = true,
+		historyLimit = 50,
 		getOccurrenceExceptionId,
 		expandRecurrence,
 		header,
@@ -135,6 +148,7 @@
 		onSlotSelect,
 		onMoreClick,
 		onInteractionBlocked,
+		onkeydown: onRootKeydown,
 		...rootAttributes
 	}: EventCalendarProps<TItemFields, TResourceFields> = $props();
 
@@ -215,6 +229,15 @@
 		get agendaDayCount() {
 			return agendaDayCount;
 		},
+		get timelineRowHeight() {
+			return timelineRowHeight;
+		},
+		get timelineSlotWidth() {
+			return timelineSlotWidth;
+		},
+		get timelineOverscan() {
+			return timelineOverscan;
+		},
 		get validRange() {
 			return validRange;
 		},
@@ -286,6 +309,12 @@
 		},
 		get recurrenceEditScope() {
 			return recurrenceEditScope;
+		},
+		get clipboard() {
+			return clipboard;
+		},
+		get historyLimit() {
+			return historyLimit;
 		},
 		get getOccurrenceExceptionId() {
 			return getOccurrenceExceptionId;
@@ -432,9 +461,12 @@
 		} else {
 			placement = statusDateFormatter.formatRange(item.start, item.end);
 		}
-		const resource = calendar.resourceModel.resolveLeaf(item.resourceId);
-		if (resource) return `${placement}, ${resource.title}`;
-		return calendar.view === 'resource'
+		const resourceTitles = calendar.resourceModel
+			.resolveItemLeafIds(item)
+			.map((resourceId) => calendar.resourceModel.resolveLeaf(resourceId)?.title)
+			.filter((title): title is string => Boolean(title));
+		if (resourceTitles.length > 0) return `${placement}, ${resourceTitles.join(', ')}`;
+		return calendar.view === 'resource' || calendar.view === 'timeline'
 			? `${placement}, ${messages.eventCalendarUnassignedResource}`
 			: placement;
 	}
@@ -456,12 +488,12 @@
 			labels.unshift(messages.eventCalendarRecurringEvent);
 		}
 		if (
-			calendar.view === 'resource' &&
+			(calendar.view === 'resource' || calendar.view === 'timeline') &&
 			gesture.kind === 'move' &&
 			gesture.isValid &&
 			calendar.interaction.proposal
 		) {
-			labels.push(getResourceMoveAnnouncement(calendar.interaction.proposal.item.resourceId));
+			labels.push(getResourceMoveAnnouncement(calendar.interaction.proposal.item));
 		}
 		return labels.join('. ');
 	});
@@ -470,7 +502,7 @@
 		const gesture = calendar.interaction.gesture;
 		const proposal = calendar.interaction.proposal;
 		if (
-			calendar.view !== 'resource' ||
+			(calendar.view !== 'resource' && calendar.view !== 'timeline') ||
 			!gesture ||
 			gesture.kind !== 'move' ||
 			!gesture.isValid ||
@@ -480,16 +512,19 @@
 			return;
 		}
 		const resourceTarget =
-			calendar.resourceModel.resolveLeafId(proposal.item.resourceId) ?? 'unassigned';
+			calendar.resourceModel.resolveItemLeafIds(proposal.item).join(',') || 'unassigned';
 		if (resourceTarget === announcedResourceTarget) return;
 		announcedResourceTarget = resourceTarget;
-		a11y.announce(getResourceMoveAnnouncement(proposal.item.resourceId));
+		a11y.announce(getResourceMoveAnnouncement(proposal.item));
 	});
 
-	function getResourceMoveAnnouncement(resourceId?: string): string {
-		const resource = calendar.resourceModel.resolveLeaf(resourceId);
+	function getResourceMoveAnnouncement(item: EventCalendarItem<TItemFields>): string {
+		const resources = calendar.resourceModel
+			.resolveItemLeafIds(item)
+			.map((resourceId) => calendar.resourceModel.resolveLeaf(resourceId)?.title)
+			.filter((title): title is string => Boolean(title));
 		return messages.eventCalendarResourceMoveAnnouncement(
-			resource?.title ?? messages.eventCalendarUnassignedResource
+			resources.join(', ') || messages.eventCalendarUnassignedResource
 		);
 	}
 
@@ -574,6 +609,30 @@
 		calendar.removeItem(id);
 	}
 
+	export function copySelection(): boolean {
+		return calendar.copySelection();
+	}
+
+	export function paste(): boolean {
+		return calendar.paste();
+	}
+
+	export function undo(): boolean {
+		return calendar.undo();
+	}
+
+	export function redo(): boolean {
+		return calendar.redo();
+	}
+
+	export function canUndo(): boolean {
+		return calendar.canUndo();
+	}
+
+	export function canRedo(): boolean {
+		return calendar.canRedo();
+	}
+
 	export function cancelInteraction(): void {
 		calendar.interaction.cancel();
 	}
@@ -595,10 +654,39 @@
 		updateItem,
 		updateOccurrence,
 		removeItem,
+		copySelection,
+		paste,
+		undo,
+		redo,
+		canUndo,
+		canRedo,
 		select,
 		clearSelection,
 		cancelInteraction
 	};
+
+	function handleRootKeydown(
+		event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }
+	): void {
+		onRootKeydown?.(event);
+		if (event.defaultPrevented || (!event.metaKey && !event.ctrlKey) || event.altKey) return;
+		const target = event.target;
+		if (
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLTextAreaElement ||
+			(target instanceof HTMLElement && target.isContentEditable)
+		) {
+			return;
+		}
+		const key = event.key.toLowerCase();
+		let handled = false;
+		if (key === 'c' && !event.shiftKey) handled = copySelection();
+		else if (key === 'v' && !event.shiftKey) handled = paste();
+		else if (key === 'z' && event.shiftKey) handled = redo();
+		else if (key === 'z' && !event.shiftKey) handled = undo();
+		else if (key === 'y' && !event.shiftKey) handled = redo();
+		if (handled) event.preventDefault();
+	}
 
 	const snapshot = $derived<EventCalendarSnapshot<TItemFields, TResourceFields>>({
 		items,
@@ -672,6 +760,7 @@
 
 <div
 	{...rootAttributes}
+	onkeydowncapture={handleRootKeydown}
 	bind:this={ref}
 	{dir}
 	role="region"
@@ -728,6 +817,9 @@
 		{nowIndicator}
 		{showWeekNumbers}
 		{maxItemsPerCell}
+		{timelineRowHeight}
+		{timelineSlotWidth}
+		{timelineOverscan}
 		{offDays}
 		{showItemTooltip}
 		{monthCell}

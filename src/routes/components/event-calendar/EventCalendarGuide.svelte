@@ -6,11 +6,11 @@
 		},
 		{
 			title: 'Views and display settings',
-			body: 'Month supports fixed or natural rows, outside days, hidden weekends, week numbers, overflow, and multi-day bars. Week, day, and N-day share timed packing, all-day lanes, background ranges, now indication, and scrolling. Agenda groups the same occurrences across agendaDayCount. Resource is one day with a shared axis and one column per leaf. Use the documented hour, interval, snap, off-day, business-hour, chrome, and scroll props; invalid values throw instead of clamping.'
+			body: 'Month supports fixed or natural rows, outside days, hidden weekends, week numbers, overflow, and multi-day bars. Week, day, and N-day share timed packing, all-day lanes, background ranges, now indication, and scrolling. Agenda groups the same occurrences across agendaDayCount. Resource is one day with a shared vertical axis and one column per leaf. Timeline uses dayCount across a horizontal time axis and virtualizes leaf rows. Use the documented hour, interval, snap, timeline, off-day, business-hour, chrome, and scroll props; invalid values throw instead of clamping.'
 		},
 		{
 			title: 'Mutations, validation, and dialogs',
-			body: 'Drag, keyboard mode, both resize edges, and API updates share one proposal pipeline. Focus an empty slot and press Space, extend with arrows, then press Enter to create a keyboard range; pointer users can click its two endpoints. Structural/range checks run before business hours, overlap, and custom policy. onItemUpdate may reject or adjust, and adjustments are revalidated. onItemsChange receives one immutable transaction with guarded revert. Empty-slot creation ends at onSlotSelect: compose a Svelai Dialog and Form with DateInput, TimeInput, Select, and Switch, then add the validated domain item yourself.'
+			body: 'Drag, keyboard mode, both resize edges, API updates, paste, and history share one immutable mutation boundary. Focus an empty slot and press Space, extend with arrows, then press Enter to create a keyboard range; pointer users can click its two endpoints. Structural/range checks run before resource hours, overlap, and custom policy. onItemUpdate may reject or adjust, and adjustments are revalidated. onItemsChange receives one guarded transaction. Mod+C/Mod+V copies a selected occurrence as a standalone item; Mod+Z and Mod+Shift+Z undo and redo up to historyLimit. Empty-slot creation ends at onSlotSelect: compose a Svelai Dialog and Form, then add the validated domain item yourself.'
 		},
 		{
 			title: 'Snippets and theme',
@@ -22,7 +22,7 @@
 		},
 		{
 			title: 'Resources, RTL, and accessibility',
-			body: 'Resources are a typed flat tree: parents group and leaves accept assignment; unresolved items remain visible in Unassigned. Custom resource fields reach resourceHeader. dir mirrors physical horizontal movement while previous/next remain chronological. Grids, groups, buttons, disclosures, roving focus, keyboard move/resize/range creation, Enter commit, Escape cancel, two-click range selection, live status, reduced motion, 24px targets, 200% reflow, and horizontal overflow are built in.'
+			body: 'Resources are a typed flat tree: parents group and leaves accept one or many assignments; unresolved items remain visible in Unassigned. Leaves may own businessHours and readOnly policy, while custom fields reach resourceHeader. Multi-assigned events render in every resolved resource projection, and dragging replaces only the grabbed projection. dir mirrors physical horizontal movement while previous/next remain chronological. Grids, buttons, disclosures, keyboard mutation/range creation, live status, reduced motion, reflow, and horizontal overflow are built in.'
 		}
 	];
 </script>

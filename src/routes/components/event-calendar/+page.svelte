@@ -21,18 +21,19 @@
 	subtitle="A complete scheduling surface with typed recurrence, resources, immutable transactions, and accessible pointer or keyboard interaction."
 	component="EventCalendar"
 	features={[
-		'Month, week, day, N-day, agenda, and resource views',
+		'Month, week, day, N-day, agenda, resource-day, and virtualized timeline views',
 		'Timed, all-day, multi-day, background, and recurring items',
 		'Move, resize, range creation, keyboard, touch, and two-click selection',
 		'Explicit IANA time zones with DST-safe civil-day math',
 		'Typed snippets, resources, callbacks, and imperative API',
+		'Multi-resource assignment, per-resource constraints, copy/paste, and undo/redo',
 		'Consumer-owned loading and persistence with guarded revert'
 	]}
 >
 	<EventCalendarGuide />
 
 	<ComponentCard
-		title="One model, six views"
+		title="One model, seven views"
 		description="Use the built-in switcher to inspect the same timed, all-day, background, multi-day, recurring, and resource-assigned definitions in every view."
 		code={viewsCode}
 		class="min-h-0 items-stretch p-3 md:p-5"
@@ -43,7 +44,7 @@
 	{#snippet examples()}
 		<ComponentCard
 			title="Validation and reversible mutations"
-			description="Drag an item or focus it and press M, S, or E. Arrows propose a snapped target, Enter commits, and Escape cancels. Drag across empty slots to select a create range."
+			description="Drag an item or focus it and press M, S, or E. Use Mod+C/Mod+V to duplicate the selected occurrence and Mod+Z/Mod+Shift+Z for bounded history. Drag across empty slots to select a create range."
 			code={interactionCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>
@@ -60,8 +61,8 @@
 		</ComponentCard>
 
 		<ComponentCard
-			title="Typed resource day"
-			description="Flat parent/leaf resources become grouped columns. Custom floor and capacity fields remain typed in resourceHeader, while unresolved items use the Unassigned column."
+			title="Virtual resource timeline"
+			description="Virtual leaf rows share a horizontal time axis. Multi-assigned events project into every row; local hours and read-only resources reuse the same mutation validator. Switch to resource-day to compare the vertical projection."
 			code={resourcesCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

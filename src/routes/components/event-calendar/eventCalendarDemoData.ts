@@ -20,7 +20,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 			title: 'Product planning',
 			start: new Date('2026-07-13T07:00:00.000Z'),
 			end: new Date('2026-07-13T08:30:00.000Z'),
-			resourceId: 'studio',
+			resourceIds: ['studio', 'boardroom'],
 			color: 'primary',
 			owner: 'Maya',
 			attendees: 7
@@ -78,6 +78,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 			title: 'Vendor call',
 			start: new Date('2026-07-15T12:00:00.000Z'),
 			end: new Date('2026-07-15T13:00:00.000Z'),
+			resourceIds: ['studio', 'boardroom'],
 			color: 'neutral',
 			owner: 'Sam',
 			attendees: 4
@@ -88,8 +89,22 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 export function createDemoResources(): EventCalendarResource<RoomFields>[] {
 	return [
 		{ id: 'hq', title: 'Headquarters', floor: 'Paris' },
-		{ id: 'studio', title: 'Studio', parentId: 'hq', floor: '2', capacity: 10 },
-		{ id: 'boardroom', title: 'Boardroom', parentId: 'hq', floor: '3', capacity: 16 },
-		{ id: 'lab', title: 'Lab', parentId: 'hq', floor: '1', capacity: 6 }
+		{
+			id: 'studio',
+			title: 'Studio',
+			parentId: 'hq',
+			floor: '2',
+			capacity: 10,
+			businessHours: [{ daysOfWeek: [1, 2, 3, 4, 5], start: '08:00', end: '18:00' }]
+		},
+		{
+			id: 'boardroom',
+			title: 'Boardroom',
+			parentId: 'hq',
+			floor: '3',
+			capacity: 16,
+			businessHours: [{ daysOfWeek: [1, 2, 3, 4, 5], start: '09:00', end: '17:00' }]
+		},
+		{ id: 'lab', title: 'Lab', parentId: 'hq', floor: '1', capacity: 6, readOnly: true }
 	];
 }

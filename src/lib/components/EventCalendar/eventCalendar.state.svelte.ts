@@ -66,7 +66,8 @@ const EVENT_CALENDAR_VIEWS: readonly EventCalendarView[] = [
 	'day',
 	'days',
 	'agenda',
-	'resource'
+	'resource',
+	'timeline'
 ];
 const VIEW_SET = new Set<EventCalendarView>(EVENT_CALENDAR_VIEWS);
 
@@ -74,6 +75,7 @@ type EventCalendarRuntimeItem = {
 	id: string;
 	title: string;
 	resourceId?: string;
+	resourceIds?: unknown;
 	start: unknown;
 	end: unknown;
 	allDay?: unknown;
@@ -122,6 +124,9 @@ export type EventCalendarStateOptions<
 	showWeekends: boolean;
 	weekendDays: EventCalendarWeekday[];
 	agendaDayCount: number;
+	timelineRowHeight: number;
+	timelineSlotWidth: number;
+	timelineOverscan: number;
 	validRange?: EventCalendarRange;
 	dayStartHour: number;
 	dayEndHour: number;
@@ -146,6 +151,8 @@ export type EventCalendarStateOptions<
 	onItemUpdate?: (proposal: EventCalendarProposedUpdate<TItemFields>) => EventCalendarUpdateResult;
 	canSelectSlot?: (slot: EventCalendarSlot) => boolean;
 	recurrenceEditScope: 'occurrence' | 'series' | 'disabled';
+	clipboard: boolean;
+	historyLimit: number;
 	getOccurrenceExceptionId?: (
 		seriesItem: EventCalendarItem<TItemFields>,
 		occurrence: EventCalendarOccurrence<TItemFields>
@@ -408,6 +415,30 @@ export class EventCalendarState<
 		this.interaction.removeItem(id);
 	}
 
+	copySelection(): boolean {
+		return this.interaction.copySelection();
+	}
+
+	paste(): boolean {
+		return this.interaction.paste();
+	}
+
+	undo(): boolean {
+		return this.interaction.undo();
+	}
+
+	redo(): boolean {
+		return this.interaction.redo();
+	}
+
+	canUndo(): boolean {
+		return this.interaction.canUndo();
+	}
+
+	canRedo(): boolean {
+		return this.interaction.canRedo();
+	}
+
 	refreshNow(now = new Date()): void {
 		assertValidInstant(now, 'now');
 		if (!this.isMounted) return;
@@ -443,10 +474,10 @@ export class EventCalendarState<
 		if (!this.enabledViews.includes(view)) {
 			throw new EventCalendarError('invalid-view', `View is not enabled: ${view}.`, { view });
 		}
-		if (options?.dayCount !== undefined && view !== 'days') {
+		if (options?.dayCount !== undefined && view !== 'days' && view !== 'timeline') {
 			throw new EventCalendarError(
 				'invalid-view',
-				'The setView dayCount option is valid only for the days view.',
+				'The setView dayCount option is valid only for the days and timeline views.',
 				{ view }
 			);
 		}
@@ -481,6 +512,10 @@ export class EventCalendarState<
 		if (selectionsEqual(this.selection, selection)) return;
 		this.selection = selection;
 		this.onSelectionChange?.(selection);
+	}
+
+	hasSelection(selection: EventCalendarSelection): boolean {
+		return selectionsEqual(this.selection, selection);
 	}
 
 	clearSelection(): void {
@@ -535,7 +570,7 @@ export class EventCalendarState<
 		} | null,
 		remap?: (key: string) => string
 	): void {
-		if (selectionTransaction && this.selection !== selectionTransaction.committedSelection) {
+		if (selectionTransaction && !this.hasSelection(selectionTransaction.committedSelection)) {
 			throw new EventCalendarError(
 				'stale-transaction',
 				'The EventCalendar selection changed after its recurrence transaction.'
@@ -688,7 +723,11 @@ export class EventCalendarState<
 	private reconcileDateFor(date: Date, view: EventCalendarView): Date {
 		assertValidInstant(date);
 		const shouldReconcileHiddenDay =
-			view === 'day' || view === 'days' || view === 'agenda' || view === 'resource';
+			view === 'day' ||
+			view === 'days' ||
+			view === 'agenda' ||
+			view === 'resource' ||
+			view === 'timeline';
 		if (!shouldReconcileHiddenDay && !this.validRange) return new Date(date);
 
 		const hiddenWeekdays = shouldReconcileHiddenDay
@@ -734,6 +773,9 @@ export class EventCalendarState<
 		void this.showWeekends;
 		void this.weekendDays;
 		void this.agendaDayCount;
+		void this.timelineRowHeight;
+		void this.timelineSlotWidth;
+		void this.timelineOverscan;
 		void this.validRange;
 		void this.dayStartHour;
 		void this.dayEndHour;
@@ -755,6 +797,8 @@ export class EventCalendarState<
 		void this.onItemUpdate;
 		void this.canSelectSlot;
 		void this.recurrenceEditScope;
+		void this.clipboard;
+		void this.historyLimit;
 		void this.getOccurrenceExceptionId;
 		void this.businessHours;
 		void this.offDays;
@@ -782,12 +826,16 @@ function validateConfiguration<TItemFields extends object, TResourceFields exten
 	validateWeekdays(state.weekendDays, 'weekendDays');
 	assertPositiveInteger(state.dayCount, 'dayCount');
 	assertPositiveInteger(state.agendaDayCount, 'agendaDayCount');
+	assertPositiveInteger(state.timelineRowHeight, 'timelineRowHeight');
+	assertPositiveInteger(state.timelineSlotWidth, 'timelineSlotWidth');
+	assertNonNegativeInteger(state.timelineOverscan, 'timelineOverscan');
 	assertPositiveInteger(state.interval, 'interval');
 	assertPositiveInteger(state.slotDuration, 'slotDuration');
 	assertPositiveInteger(state.snapDuration, 'snapDuration');
 	assertPositiveInteger(state.defaultTimedItemDuration, 'defaultTimedItemDuration');
 	assertPositiveInteger(state.defaultAllDayItemDuration, 'defaultAllDayItemDuration');
 	assertPositiveInteger(state.nowIndicatorInterval, 'nowIndicatorInterval');
+	assertNonNegativeInteger(state.historyLimit, 'historyLimit');
 	validateHourRange(state.dayStartHour, state.dayEndHour, state.scrollToHour);
 	if (state.maxItemsPerCell !== 'auto') {
 		assertNonNegativeInteger(state.maxItemsPerCell, 'maxItemsPerCell');
@@ -822,11 +870,13 @@ function getEnabledViews(
 	hasResourceLeaf: boolean
 ): readonly EventCalendarView[] {
 	validateViews(views);
-	const enabled = views.filter((view) => view !== 'resource' || hasResourceLeaf);
+	const enabled = views.filter(
+		(view) => (view !== 'resource' && view !== 'timeline') || hasResourceLeaf
+	);
 	if (enabled.length === 0) {
 		throw new EventCalendarError(
 			'invalid-view',
-			'No configured view is currently enabled. Resource view requires a resource leaf.'
+			'No configured view is currently enabled. Resource and timeline views require a resource leaf.'
 		);
 	}
 	return enabled;

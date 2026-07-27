@@ -210,6 +210,7 @@
 						{color}
 						{classes}
 						interaction={calendar.interaction}
+						projectionResourceId={geometry.resourceId}
 						isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 						isSelected={selectionKey === placement.occurrence.key}
 						{disabled}

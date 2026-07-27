@@ -181,6 +181,7 @@ export const en = {
 	eventCalendarDaysView: 'Days',
 	eventCalendarAgendaView: 'Agenda',
 	eventCalendarResourceView: 'Resources',
+	eventCalendarTimelineView: 'Timeline',
 	eventCalendarUnassignedResource: 'Unassigned',
 	eventCalendarResourceMoveAnnouncement: (resource: string | number) => `Move event to ${resource}`,
 	eventCalendarMore: (count: string | number) => `+${count} more`,

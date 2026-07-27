@@ -1,6 +1,10 @@
 import { EventCalendarError } from './eventCalendar.error.js';
 import type { EventCalendarDayBucket } from './eventCalendar.items.js';
-import type { EventCalendarResource } from './eventCalendar.types.js';
+import type {
+	EventCalendarBusinessHours,
+	EventCalendarItem,
+	EventCalendarResource
+} from './eventCalendar.types.js';
 
 export type EventCalendarResourceStructureNode = Readonly<{
 	id: string;
@@ -45,6 +49,9 @@ export type EventCalendarResourceModel<TResourceFields extends object> = Readonl
 	leafIds: ReadonlySet<string>;
 	resolveLeaf(resourceId?: string): EventCalendarResource<TResourceFields> | null;
 	resolveLeafId(resourceId?: string): string | undefined;
+	resolveItemLeafIds(item: Pick<EventCalendarItem<object>, 'resourceId' | 'resourceIds'>): string[];
+	getBusinessHours(resourceId?: string): readonly EventCalendarBusinessHours[] | null;
+	isReadOnly(resourceId?: string): boolean;
 }>;
 
 /**
@@ -120,7 +127,17 @@ export class EventCalendarResourceIndex<TResourceFields extends object> {
 			resolveLeaf: (resourceId) =>
 				resourceId && leafIds.has(resourceId) ? (resourcesById.get(resourceId) ?? null) : null,
 			resolveLeafId: (resourceId) =>
-				resourceId && leafIds.has(resourceId) ? resourceId : undefined
+				resourceId && leafIds.has(resourceId) ? resourceId : undefined,
+			resolveItemLeafIds: (item) =>
+				getEventCalendarResourceIds(item).flatMap((resourceId) =>
+					leafIds.has(resourceId) ? [resourceId] : []
+				),
+			getBusinessHours: (resourceId) =>
+				resourceId && leafIds.has(resourceId)
+					? (resourcesById.get(resourceId)?.businessHours ?? null)
+					: null,
+			isReadOnly: (resourceId) =>
+				Boolean(resourceId && leafIds.has(resourceId) && resourcesById.get(resourceId)?.readOnly)
 		};
 		return this.model;
 	}
@@ -132,19 +149,49 @@ export function filterEventCalendarBucketByResource<TItemFields extends object>(
 	resourceId?: string
 ): EventCalendarDayBucket<TItemFields> | undefined {
 	if (!bucket) return undefined;
-	const belongsToColumn = (candidateResourceId?: string): boolean =>
-		model.resolveLeafId(candidateResourceId) === resourceId;
-	return {
-		all: bucket.all.filter((segment) => belongsToColumn(segment.occurrence.item.resourceId)),
-		foreground: bucket.foreground.filter((segment) =>
-			belongsToColumn(segment.occurrence.item.resourceId)
-		),
-		background: bucket.background.filter((segment) =>
-			belongsToColumn(segment.occurrence.item.resourceId)
-		),
-		allDay: bucket.allDay.filter((segment) => belongsToColumn(segment.occurrence.item.resourceId)),
-		timed: bucket.timed.filter((segment) => belongsToColumn(segment.occurrence.item.resourceId))
+	const belongsToColumn = (item: EventCalendarItem<TItemFields>): boolean => {
+		const resourceIds = model.resolveItemLeafIds(item);
+		return resourceId === undefined ? resourceIds.length === 0 : resourceIds.includes(resourceId);
 	};
+	return {
+		all: bucket.all.filter((segment) => belongsToColumn(segment.occurrence.item)),
+		foreground: bucket.foreground.filter((segment) => belongsToColumn(segment.occurrence.item)),
+		background: bucket.background.filter((segment) => belongsToColumn(segment.occurrence.item)),
+		allDay: bucket.allDay.filter((segment) => belongsToColumn(segment.occurrence.item)),
+		timed: bucket.timed.filter((segment) => belongsToColumn(segment.occurrence.item))
+	};
+}
+
+export function getEventCalendarResourceIds(item: {
+	resourceId?: string;
+	resourceIds?: readonly string[];
+}): string[] {
+	if (item.resourceIds !== undefined) return [...item.resourceIds];
+	return item.resourceId === undefined ? [] : [item.resourceId];
+}
+
+export function setEventCalendarResourceIds<TItemFields extends object>(
+	item: EventCalendarItem<TItemFields>,
+	resourceIds: readonly string[]
+): EventCalendarItem<TItemFields> {
+	const next = { ...item };
+	delete next.resourceId;
+	delete next.resourceIds;
+	if (resourceIds.length === 1) next.resourceId = resourceIds[0];
+	else if (resourceIds.length > 1) next.resourceIds = [...resourceIds];
+	return next;
+}
+
+export function replaceEventCalendarResourceAssignment<TItemFields extends object>(
+	item: EventCalendarItem<TItemFields>,
+	sourceResourceId: string | undefined,
+	targetResourceId: string | undefined
+): EventCalendarItem<TItemFields> {
+	const current = getEventCalendarResourceIds(item);
+	const next = current.filter((resourceId) => resourceId !== sourceResourceId);
+	if (targetResourceId !== undefined && !next.includes(targetResourceId))
+		next.push(targetResourceId);
+	return setEventCalendarResourceIds(item, next);
 }
 
 function validateResourceDefinitions<TResourceFields extends object>(
@@ -171,6 +218,32 @@ function validateResourceDefinitions<TResourceFields extends object>(
 				id: resource.id
 			});
 		}
+		if (resource.businessHours !== undefined && !Array.isArray(resource.businessHours)) {
+			throw new EventCalendarError(
+				'invalid-resource',
+				`Resource ${resource.id} businessHours must be an array.`,
+				{ id: resource.id }
+			);
+		}
+		for (const window of resource.businessHours ?? []) {
+			if (
+				!window ||
+				typeof window !== 'object' ||
+				!isValidClock(window.start) ||
+				!isValidClock(window.end) ||
+				clockMinutes(window.start) >= clockMinutes(window.end) ||
+				(window.daysOfWeek !== undefined &&
+					(!Array.isArray(window.daysOfWeek) ||
+						new Set(window.daysOfWeek).size !== window.daysOfWeek.length ||
+						window.daysOfWeek.some((day: number) => !Number.isInteger(day) || day < 0 || day > 6)))
+			) {
+				throw new EventCalendarError(
+					'invalid-resource',
+					`Resource ${resource.id} has invalid businessHours.`,
+					{ id: resource.id }
+				);
+			}
+		}
 		resourcesById.set(resource.id, resource);
 	}
 	for (const resource of resources) {
@@ -184,6 +257,15 @@ function validateResourceDefinitions<TResourceFields extends object>(
 		}
 	}
 	return resourcesById;
+}
+
+function isValidClock(value: string): boolean {
+	return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+function clockMinutes(value: string): number {
+	const [hours, minutes] = value.split(':').map(Number);
+	return hours * 60 + minutes;
 }
 
 function buildResourceStructure<TResourceFields extends object>(

@@ -1,9 +1,25 @@
 <script lang="ts">
-	import { EventCalendar } from '$lib/components/EventCalendar/index.js';
-	import { createDemoItems, createDemoResources } from './eventCalendarDemoData.js';
+	import {
+		EventCalendar,
+		type EventCalendarResource
+	} from '$lib/components/EventCalendar/index.js';
+	import {
+		createDemoItems,
+		createDemoResources,
+		type RoomFields
+	} from './eventCalendarDemoData.js';
 
 	let items = $state(createDemoItems());
-	let resources = $state(createDemoResources());
+	let resources = $state<EventCalendarResource<RoomFields>[]>([
+		...createDemoResources(),
+		...Array.from({ length: 40 }, (_, index) => ({
+			id: `desk-${index + 1}`,
+			title: `Desk ${String(index + 1).padStart(2, '0')}`,
+			parentId: 'hq',
+			floor: String(4 + Math.floor(index / 10)),
+			capacity: 1
+		}))
+	]);
 	let date = $state(new Date('2026-07-15T10:00:00.000Z'));
 </script>
 
@@ -11,13 +27,15 @@
 	bind:items
 	{resources}
 	bind:date
-	view="resource"
-	views={['resource', 'day']}
+	view="timeline"
+	views={['timeline', 'resource', 'day']}
+	dayCount={3}
 	timeZone="Europe/Paris"
 	dayStartHour={7}
 	dayEndHour={19}
 	scrollToHour={8}
 	showItemTooltip
+	constrainToBusinessHours
 	class="h-[34rem] w-full"
 >
 	{#snippet resourceHeader({ resource, isUnassigned, defaultContent })}

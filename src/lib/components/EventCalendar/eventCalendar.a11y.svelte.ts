@@ -127,9 +127,13 @@ export class EventCalendarA11y<
 	startItemMutation(
 		occurrence: EventCalendarOccurrence<TItemFields>,
 		operation: EventCalendarItemOperation,
-		source: 'keyboard' | 'single-pointer'
+		source: 'keyboard' | 'single-pointer',
+		sourceResourceId?: string
 	): boolean {
-		if (!this.mutationController?.beginAssistedItem(occurrence, operation, source)) return false;
+		if (
+			!this.mutationController?.beginAssistedItem(occurrence, operation, source, sourceResourceId)
+		)
+			return false;
 		this.mutationOccurrenceKey = occurrence.key;
 		this.mutationOperation = operation;
 		this.focusedOccurrenceKey = occurrence.key;
@@ -158,13 +162,18 @@ export class EventCalendarA11y<
 	handleItemKeydown(
 		event: KeyboardEvent,
 		occurrence: EventCalendarOccurrence<TItemFields>,
-		allowResize = true
+		allowResize = true,
+		sourceResourceId?: string
 	): boolean {
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		if (!this.mutationOccurrenceKey) {
 			const operation = getMutationShortcut(event.key);
 			if (!allowResize && operation !== 'move') return false;
-			if (!operation || !this.startItemMutation(occurrence, operation, 'keyboard')) return false;
+			if (
+				!operation ||
+				!this.startItemMutation(occurrence, operation, 'keyboard', sourceResourceId)
+			)
+				return false;
 			event.preventDefault();
 			return true;
 		}
@@ -188,6 +197,25 @@ export class EventCalendarA11y<
 		const proposal = this.mutationController.proposal;
 		event.preventDefault();
 		const isAllDay = proposal ? proposal.item.allDay === true : occurrence.allDay;
+		if (this.mutationView === 'timeline' && !isAllDay) {
+			if (
+				this.mutationOperation === 'move' &&
+				(event.key === 'ArrowUp' || event.key === 'ArrowDown')
+			) {
+				this.mutationController.stepAssistedItem({
+					resourceDirection: event.key === 'ArrowDown' ? 1 : -1
+				});
+				return true;
+			}
+			if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+				this.mutationController.stepAssistedItem({
+					minuteDelta:
+						event.key === 'ArrowRight' ? this.mutationSnapDuration : -this.mutationSnapDuration
+				});
+				return true;
+			}
+			return true;
+		}
 		if (
 			this.mutationView === 'resource' &&
 			this.mutationOperation === 'move' &&

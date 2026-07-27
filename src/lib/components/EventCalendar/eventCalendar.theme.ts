@@ -30,7 +30,8 @@ const eventCalendarVariants = {
 		day: '',
 		days: '',
 		agenda: '',
-		resource: ''
+		resource: '',
+		timeline: ''
 	},
 	selected: { true: 'ring-2 ring-color/60', false: '' },
 	dragging: { true: 'cursor-grabbing opacity-70', false: '' },
@@ -207,6 +208,24 @@ const agendaDetails = createEventCalendarPart('min-w-0 text-neutral/70');
 const resourceHeader = createEventCalendarPart(
 	'min-w-[var(--event-calendar-resource-min-width)] truncate font-medium'
 );
+const timeline = createEventCalendarPart(
+	'relative h-full min-h-0 min-w-0 overflow-auto bg-surface'
+);
+const timelineHeader = createEventCalendarPart(
+	'sticky top-0 z-30 flex min-w-max border-b border-neutral-muted bg-surface-raised/95 backdrop-blur-sm'
+);
+const timelineResourceColumn = createEventCalendarPart(
+	'sticky start-0 z-20 w-[var(--event-calendar-timeline-resource-width)] shrink-0 border-e border-neutral-muted bg-surface-raised'
+);
+const timelineRow = createEventCalendarPart(
+	'absolute flex min-w-max border-b border-neutral-muted/70 bg-surface'
+);
+const timelineSlot = createEventCalendarPart(
+	'relative shrink-0 border-e border-neutral-muted/50 outline-none focus-visible:z-20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+);
+const timelineEventLayer = createEventCalendarPart(
+	'pointer-events-none absolute inset-y-0 start-0'
+);
 
 export const eventCalendarTheme = {
 	root,
@@ -252,7 +271,13 @@ export const eventCalendarTheme = {
 	agendaDay,
 	agendaItem,
 	agendaDetails,
-	resourceHeader
+	resourceHeader,
+	timeline,
+	timelineHeader,
+	timelineResourceColumn,
+	timelineRow,
+	timelineSlot,
+	timelineEventLayer
 };
 
 export type EventCalendarTheme = typeof eventCalendarTheme;
