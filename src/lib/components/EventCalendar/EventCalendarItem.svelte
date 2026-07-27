@@ -98,17 +98,7 @@
 	);
 	const timeLabel = $derived(timeFormatter.format(segment.start));
 	const isTimedGridItem = $derived(!occurrence.allDay && view !== 'month' && view !== 'agenda');
-	const timeRangeLabel = $derived.by(() => {
-		const proposal = interaction?.proposal;
-		if (
-			proposal?.occurrence?.key === occurrence.key &&
-			(proposal.kind === 'resize-start' || proposal.kind === 'resize-end') &&
-			proposal.item.allDay !== true
-		) {
-			return timeFormatter.formatRange(proposal.item.start, proposal.item.end);
-		}
-		return timeFormatter.formatRange(segment.start, segment.end);
-	});
+	const timeRangeLabel = $derived(timeFormatter.formatRange(segment.start, segment.end));
 	const defaultAccessibleLabel = $derived.by(() => {
 		const formatter = occurrence.allDay ? dateFormatter : dateTimeFormatter;
 		const inclusiveEnd = occurrence.allDay

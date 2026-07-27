@@ -364,6 +364,12 @@
 			timeZoneName: 'shortOffset'
 		})
 	);
+	const resizeIndicatorTimeFormatter = $derived(
+		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
+			hour: 'numeric',
+			minute: '2-digit'
+		})
+	);
 
 	function handleInteractionStatus(status: EventCalendarInteractionStatus<TItemFields>): void {
 		if (status.type === 'mode') {
@@ -757,17 +763,21 @@
 		{#if calendar.interaction.proposal}
 			{@const proposal = calendar.interaction.proposal}
 			{@const indicatorRect = calendar.interaction.getDropIndicatorRect()}
-			{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
-				? proposal.item.color
-				: color}
+			{@const isTimedResize =
+				(proposal.kind === 'resize-start' || proposal.kind === 'resize-end') &&
+				proposal.item.allDay !== true}
+			{@const eventColor =
+				calendar.interaction.gesture.kind !== 'slot-create'
+					? (calendar.interaction.gesture.occurrence.item.color ?? proposal.item.color)
+					: proposal.item.color}
+			{@const indicatorColor = isEventCalendarSemanticColor(eventColor) ? eventColor : color}
 			{@const indicatorItemColor =
-				proposal.item.color && !isEventCalendarSemanticColor(proposal.item.color)
-					? proposal.item.color
-					: 'var(--color)'}
+				eventColor && !isEventCalendarSemanticColor(eventColor) ? eventColor : 'var(--color)'}
 			{#if indicatorRect}
 				<div
 					aria-hidden="true"
 					data-event-calendar-part="drop-indicator"
+					data-color={indicatorColor}
 					data-invalid={calendar.interaction.isValid === false || undefined}
 					class={classes.dropIndicator({
 						density,
@@ -781,7 +791,16 @@
 					style:top={`${indicatorRect.top}px`}
 					style:width={`${indicatorRect.width}px`}
 					style:height={`${indicatorRect.height}px`}
-				></div>
+				>
+					{#if isTimedResize}
+						<span
+							data-event-calendar-part="drop-indicator-time"
+							class="block truncate px-2 py-1 text-[0.6875rem] font-medium leading-4 text-[var(--event-calendar-item-color)] tabular-nums"
+						>
+							{resizeIndicatorTimeFormatter.formatRange(proposal.item.start, proposal.item.end)}
+						</span>
+					{/if}
+				</div>
 			{/if}
 		{/if}
 		{#if calendar.interaction.gesture.kind === 'slot-create'}

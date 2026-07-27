@@ -382,6 +382,7 @@
 						>
 							<div
 								data-event-calendar-part="drop-indicator"
+								data-color={indicatorColor}
 								data-invalid={calendar.interaction.isValid === false || undefined}
 								class={classes.dropIndicator({
 									density,
