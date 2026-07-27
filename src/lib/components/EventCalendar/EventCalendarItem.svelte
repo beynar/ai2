@@ -316,7 +316,7 @@
 			{#if occurrence.isRecurring}
 				{@render recurrenceIcon('shrink-0')}
 			{/if}
-			{#if view === 'month'}
+			{#if view === 'month' && !occurrence.isRecurring}
 				<span
 					aria-hidden="true"
 					class="size-1.5 shrink-0 rounded-full bg-[var(--event-calendar-item-color)]"
@@ -336,7 +336,7 @@
 	<span
 		aria-hidden="true"
 		data-event-calendar-part="recurrence-icon"
-		class={['size-3 text-neutral/45', className]}
+		class={['size-3 text-[var(--event-calendar-item-color)]', className]}
 	>
 		<Slot render={repeatIcon} payload={{ size: '100%' }} />
 	</span>
