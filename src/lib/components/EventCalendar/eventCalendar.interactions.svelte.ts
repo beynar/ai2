@@ -463,6 +463,29 @@ export class EventCalendarInteractionsController<
 		this.singlePointerBoundary = null;
 	}
 
+	syncFocusedSlotSelection(target: EventCalendarDropTarget): void {
+		this.syncFocusedSelection({
+			kind: 'slot',
+			itemKey: null,
+			slot: this.slotFromDropTarget(target)
+		});
+	}
+
+	syncFocusedItemSelection(itemKey: string): void {
+		this.syncFocusedSelection({ kind: 'item', itemKey, slot: null });
+	}
+
+	clearFocusedSelection(): void {
+		this.resetSinglePointerSlot();
+		this.calendar.clearSelection();
+	}
+
+	private syncFocusedSelection(selection: EventCalendarSelection): void {
+		if (this.calendar.selection.kind === null) return;
+		this.resetSinglePointerSlot();
+		this.calendar.select(selection);
+	}
+
 	shouldSuppressClick(occurrenceKey: string): boolean {
 		return this.suppressedClickKey === occurrenceKey;
 	}

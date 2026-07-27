@@ -351,7 +351,8 @@
 					day: geometry.day,
 					column: geometry.column,
 					row: 1,
-					kind: 'item'
+					kind: 'item',
+					itemKey: placement.occurrence.key
 				});
 			}
 			const timedTargets: Omit<EventCalendarTimeTarget, 'verticalOrder'>[] = [
@@ -378,7 +379,8 @@
 						2 +
 						getEventCalendarElapsedMinutes(geometry.windowStart, placement.visualStart) /
 							calendar.slotDuration,
-					kind: 'item' as const
+					kind: 'item' as const,
+					itemKey: placement.segment.occurrence.key
 				}))
 			].sort((left, right) => {
 				if (left.row !== right.row) return left.row - right.row;

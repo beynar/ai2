@@ -29,6 +29,7 @@ export type EventCalendarTimeTarget = Readonly<{
 	verticalOrder: number;
 	kind: 'day-header' | 'all-day' | 'time-slot' | 'item';
 	dropTarget?: EventCalendarDropTarget;
+	itemKey?: string;
 }>;
 
 type TimeGridConfiguration = {
@@ -344,6 +345,12 @@ export class EventCalendarA11y<
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		const current = this.timeTargetByKey.get(targetKey);
 		if (!current) return false;
+		if (event.key === 'Escape' && !this.mutationController?.isKeyboardSlotActive) {
+			event.preventDefault();
+			this.mutationController?.clearFocusedSelection();
+			this.timeElements.get(targetKey)?.blur();
+			return true;
+		}
 		if (this.mutationController?.isKeyboardSlotActive && event.key === 'Enter') {
 			event.preventDefault();
 			return this.mutationController.commitKeyboardSlot();
@@ -378,6 +385,12 @@ export class EventCalendarA11y<
 			this.focusTimeTarget(target);
 			if (this.mutationController?.isKeyboardSlotActive && target.dropTarget) {
 				this.mutationController.updateKeyboardSlot(target.dropTarget);
+			} else if (target.dropTarget) {
+				this.mutationController?.syncFocusedSlotSelection(target.dropTarget);
+			} else if (target.itemKey) {
+				this.mutationController?.syncFocusedItemSelection(target.itemKey);
+			} else {
+				this.mutationController?.clearFocusedSelection();
 			}
 		}
 		return true;
@@ -411,6 +424,12 @@ export class EventCalendarA11y<
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		const dayIndex = this.days.indexOf(day);
 		if (dayIndex < 0) return false;
+		if (event.key === 'Escape' && !this.mutationController?.isKeyboardSlotActive) {
+			event.preventDefault();
+			this.mutationController?.clearFocusedSelection();
+			this.dayElements.get(day)?.blur();
+			return true;
+		}
 		if (this.mutationController?.isKeyboardSlotActive && event.key === 'Enter') {
 			event.preventDefault();
 			return this.mutationController.commitKeyboardSlot();
@@ -464,6 +483,13 @@ export class EventCalendarA11y<
 		this.focusDay(target);
 		if (this.mutationController?.isKeyboardSlotActive) {
 			this.mutationController.updateKeyboardSlot({
+				key: `month:${target}`,
+				view: 'month',
+				allDay: true,
+				day: target
+			});
+		} else {
+			this.mutationController?.syncFocusedSlotSelection({
 				key: `month:${target}`,
 				view: 'month',
 				allDay: true,
