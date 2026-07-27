@@ -144,7 +144,7 @@ const weekNumber = createEventCalendarPart('grid place-items-center text-center 
 	large: 'text-sm'
 });
 const monthCell = createEventCalendarPart(
-	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted/70 outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/50'
+	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted/70 outline-none'
 );
 const dayNumber = createEventCalendarPart(
 	'm-1 inline-flex min-h-6 min-w-6 items-center justify-center rounded-full text-xs font-medium text-neutral/65 tabular-nums'
@@ -161,13 +161,13 @@ const timeLabel = createEventCalendarPart(
 );
 const allDayRow = createEventCalendarPart('relative grid border-b border-neutral-muted bg-surface');
 const allDayCell = createEventCalendarPart(
-	'relative min-w-0 border-e border-neutral-muted outline-none focus-visible:z-20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+	'relative min-w-0 border-e border-neutral-muted outline-none'
 );
 const dayColumn = createEventCalendarPart(
 	'relative min-w-[var(--event-calendar-day-min-width)] border-e border-neutral-muted'
 );
 const timeSlot = createEventCalendarPart(
-	'h-[var(--event-calendar-slot-height)] w-full bg-transparent outline-none focus-visible:z-20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+	'h-[var(--event-calendar-slot-height)] w-full bg-transparent outline-none'
 );
 const nowIndicator = createEventCalendarPart('pointer-events-none absolute z-30 h-px bg-danger');
 

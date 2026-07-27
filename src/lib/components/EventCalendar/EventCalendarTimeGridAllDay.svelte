@@ -160,7 +160,7 @@
 				data-drop-view={view}
 				data-drop-all-day="true"
 				data-drop-disabled={disabled || undefined}
-				class="absolute inset-0 z-0 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60"
+				class="absolute inset-0 z-0 bg-transparent outline-none"
 				onfocus={() => a11y.handleTimeTargetFocus(targetKey)}
 				onclick={(event) => handleAllDayClick(geometry.day, event, geometry.resourceId)}
 				onkeydown={(event) => handleTargetKeydown(event, targetKey, true)}
