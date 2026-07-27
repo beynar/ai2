@@ -163,11 +163,13 @@ export class EventCalendarA11y<
 		event: KeyboardEvent,
 		occurrence: EventCalendarOccurrence<TItemFields>,
 		allowResize = true,
-		sourceResourceId?: string
+		sourceResourceId?: string,
+		allowMove = true
 	): boolean {
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		if (!this.mutationOccurrenceKey) {
 			const operation = getMutationShortcut(event.key);
+			if (!allowMove && operation === 'move') return false;
 			if (!allowResize && operation !== 'move') return false;
 			if (
 				!operation ||

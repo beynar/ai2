@@ -136,7 +136,10 @@
 		position: 'top',
 		delay: 350
 	});
-	const canMove = $derived(Boolean(interaction?.canMove(occurrence)) && !disabled);
+	const isMoveAllowed = $derived(
+		!(view === 'month' && (occurrence.isRecurring || occurrence.item.recurringItemId !== undefined))
+	);
+	const canMove = $derived(isMoveAllowed && Boolean(interaction?.canMove(occurrence)) && !disabled);
 	const isResizeAllowed = $derived(allowResize && !(view === 'day' && occurrence.allDay));
 	const canResize = $derived(
 		isResizeAllowed && Boolean(interaction?.canResize(occurrence)) && !disabled
@@ -147,7 +150,7 @@
 			interaction &&
 			(['move', 'resize-start', 'resize-end'] as const).some(
 				(operation) =>
-					(operation === 'move' || isResizeAllowed) &&
+					(operation === 'move' ? isMoveAllowed : isResizeAllowed) &&
 					interaction.canBeginAssistedItem(occurrence, operation, 'keyboard')
 			)
 		)
@@ -253,7 +256,16 @@
 			onControlFocus?.();
 		}}
 		onkeydown={(event) => {
-			if (a11y.handleItemKeydown(event, occurrence, isResizeAllowed, projectionResourceId)) return;
+			if (
+				a11y.handleItemKeydown(
+					event,
+					occurrence,
+					isResizeAllowed,
+					projectionResourceId,
+					isMoveAllowed
+				)
+			)
+				return;
 			onControlKeydown?.(event);
 		}}
 		{@attach registerItemControl}
