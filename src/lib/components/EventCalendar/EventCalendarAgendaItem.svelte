@@ -135,7 +135,7 @@
 				selected: false,
 				disabled,
 				class:
-					'min-h-11 flex-1 rounded-none border-0 bg-transparent pe-4 ps-6 py-0 focus-visible:ring-inset'
+					'min-h-11 flex-1 rounded-none border-0 bg-transparent pe-4 ps-6 py-0 [--state-hover-opacity:0.06] focus-visible:ring-inset'
 			})}
 			onclick={(event) => onActivate(occurrence, event)}
 			ondblclick={(event) => onDoubleClick?.(occurrence, event)}

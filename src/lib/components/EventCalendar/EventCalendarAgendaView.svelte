@@ -159,7 +159,7 @@
 						aria-disabled={disabled}
 						tabindex={disabled ? -1 : 0}
 						data-event-calendar-agenda-date-gutter
-						class="state-layer sticky top-[var(--event-calendar-sticky-offset)] z-20 flex min-h-10 cursor-pointer list-none items-center justify-between gap-4 bg-surface-raised/45 px-4 py-2 text-xs outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
+						class="state-layer sticky top-[var(--event-calendar-sticky-offset)] z-20 flex min-h-10 cursor-pointer list-none items-center justify-between gap-4 bg-surface-raised/45 px-4 py-2 text-xs outline-none marker:content-none [--state-hover-opacity:0] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
 						onclick={preventDisabledDisclosure}
 						onkeydown={preventDisabledDisclosure}
 						{@attach registerAgendaDay(group.day)}
@@ -174,7 +174,7 @@
 						</time>
 					</summary>
 
-					<ol class="divide-y divide-neutral-muted/70">
+					<ol>
 						{#each group.entries as entry (`${group.day}:${entry.occurrence.key}`)}
 							<EventCalendarAgendaItem
 								{entry}
