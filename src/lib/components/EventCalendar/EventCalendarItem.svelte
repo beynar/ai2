@@ -5,7 +5,6 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
-	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
 	import { untrack, type Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
@@ -73,18 +72,6 @@
 		onActivate: (event: MouseEvent) => void;
 		onDoubleClick?: (event: MouseEvent) => void;
 	} = $props();
-
-	let isCompact = $state(false);
-	const contentResizeObserver = useResizeObserver({
-		isActive: () => compactContent,
-		callback: (entry) => {
-			const nextCompact = entry.contentRect.height < 44;
-			if (isCompact !== nextCompact) isCompact = nextCompact;
-		}
-	});
-	$effect(() => {
-		if (!compactContent) isCompact = false;
-	});
 
 	const occurrence = $derived(segment.occurrence);
 	const semanticColor = $derived(
@@ -189,7 +176,7 @@
 	data-display="auto"
 	data-selected={isSelected || undefined}
 	data-dragging={isDragging || undefined}
-	data-compact={isCompact || undefined}
+	data-event-calendar-compact-content={compactContent || undefined}
 	data-start={segment.isStart || undefined}
 	data-end={segment.isEnd || undefined}
 	data-continues-before={segment.continuesBefore || undefined}
@@ -211,7 +198,6 @@
 		class: className
 	})}
 	{@attach canMove && interaction ? interaction.draggableItem(segment, 'move') : null}
-	{@attach compactContent ? contentResizeObserver.reference : null}
 >
 	{#if canResize && interaction && segment.isStart}
 		<div
@@ -243,14 +229,14 @@
 		aria-pressed={isSelected}
 		{disabled}
 		{tabindex}
+		data-event-calendar-timed-control={isTimedGridItem || undefined}
 		class={classes.itemControl({
 			density,
 			color: semanticColor,
 			view,
 			selected: isSelected,
 			dragging: isDragging,
-			disabled,
-			class: isTimedGridItem ? (isCompact ? 'px-1.5 py-0' : 'px-2 py-1.5') : undefined
+			disabled
 		})}
 		onclick={(event) => {
 			event.stopPropagation();
@@ -313,16 +299,15 @@
 			<span class={classes.itemTitle({ density, color: semanticColor, view })}>
 				{occurrence.item.title}
 			</span>
-			{#if !isCompact}
-				<span
-					class={classes.itemTime({
-						density,
-						color: semanticColor,
-						view,
-						class: 'ms-0'
-					})}>{timeRangeLabel}</span
-				>
-			{/if}
+			<span
+				data-event-calendar-timed-time
+				class={classes.itemTime({
+					density,
+					color: semanticColor,
+					view,
+					class: 'ms-0'
+				})}>{timeRangeLabel}</span
+			>
 		{:else}
 			{#if view === 'month'}
 				<span
@@ -333,7 +318,7 @@
 			<span class={classes.itemTitle({ density, color: semanticColor, view })}>
 				{occurrence.item.title}
 			</span>
-			{#if view === 'month' && !isCompact && !occurrence.allDay && segment.isStart}
+			{#if view === 'month' && !occurrence.allDay && segment.isStart}
 				<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
 			{/if}
 		{/if}
@@ -347,3 +332,23 @@
 {#snippet resolvedTooltip()}
 	<Slot render={itemTooltip ?? defaultTooltip} payload={tooltipPayload} />
 {/snippet}
+
+<style>
+	[data-event-calendar-compact-content] {
+		container: event-calendar-timed-item / size;
+	}
+
+	[data-event-calendar-timed-control] {
+		padding: 0.375rem 0.5rem;
+	}
+
+	@container event-calendar-timed-item (max-height: 43px) {
+		[data-event-calendar-timed-control] {
+			padding: 0 0.375rem;
+		}
+
+		[data-event-calendar-timed-time] {
+			display: none;
+		}
+	}
+</style>
