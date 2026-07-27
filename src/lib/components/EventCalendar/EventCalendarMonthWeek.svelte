@@ -176,8 +176,8 @@
 		return layout.placements
 			.filter(
 				(placement) =>
-					placement.occurrence.key !== draggingOccurrenceKey &&
-					placement.lane >= visibleLaneCount &&
+					(placement.lane >= visibleLaneCount ||
+						calendar.interaction.isDraggingFromOverflow(placement.occurrence.key)) &&
 					placement.startIndex <= gridDayIndex &&
 					placement.endIndex > gridDayIndex
 			)

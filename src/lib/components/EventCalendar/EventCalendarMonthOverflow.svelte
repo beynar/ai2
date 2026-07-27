@@ -100,6 +100,7 @@
 			{disabled}
 			data-event-calendar-part="overflow"
 			class={classes.overflow({ density, color, view: 'month', disabled })}
+			onpointerdown={(event) => event.stopPropagation()}
 			onclick={(event) => {
 				event.stopPropagation();
 				if (onMoreClick?.(day, hiddenOccurrences, event) === false) return;
@@ -120,7 +121,7 @@
 		{#if overflowContent}
 			<Slot render={overflowContent} payload={contentPayload} />
 		{:else}
-			<div class="grid gap-1" aria-label={dayLabel}>
+			<div data-event-calendar-overflow-content class="grid gap-1" aria-label={dayLabel}>
 				<div class="mb-1 font-medium">{dayLabel}</div>
 				{#each hiddenSegments as segment (segment.occurrence.key)}
 					<EventCalendarItem

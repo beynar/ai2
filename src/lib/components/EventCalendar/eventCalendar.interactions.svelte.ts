@@ -121,6 +121,7 @@ type EventCalendarItemGesture<TItemFields extends object> = {
 	sourceWidth?: number;
 	sourceHeight?: number;
 	sourceMinHeight?: number;
+	isOverflowSource?: boolean;
 };
 
 type EventCalendarSlotGesture = {
@@ -148,6 +149,7 @@ type DragSource = {
 	sourceWidth: number;
 	sourceHeight: number;
 	sourceMinHeight: number;
+	isOverflowSource: boolean;
 };
 
 export type EventCalendarDropIndicatorRect = Readonly<{
@@ -435,6 +437,10 @@ export class EventCalendarInteractionsController<
 
 	isDragging(occurrenceKey: string): boolean {
 		return this.gesture?.kind !== 'slot-create' && this.gesture?.occurrence.key === occurrenceKey;
+	}
+
+	isDraggingFromOverflow(occurrenceKey: string): boolean {
+		return this.isDragging(occurrenceKey) && this.gesture?.isOverflowSource === true;
 	}
 
 	canMove(occurrence: EventCalendarOccurrence<TItemFields>): boolean {
@@ -743,7 +749,8 @@ export class EventCalendarInteractionsController<
 									: 0,
 							sourceWidth: rect.width,
 							sourceHeight: rect.height,
-							sourceMinHeight: Number.parseFloat(getComputedStyle(element).minHeight) || 0
+							sourceMinHeight: Number.parseFloat(getComputedStyle(element).minHeight) || 0,
+							isOverflowSource: Boolean(element.closest('[data-event-calendar-overflow-content]'))
 						};
 					}
 				})
@@ -942,7 +949,8 @@ export class EventCalendarInteractionsController<
 			pointerY: payload.location.current.input.clientY,
 			sourceWidth: source.sourceWidth,
 			sourceHeight: source.sourceHeight,
-			sourceMinHeight: source.sourceMinHeight
+			sourceMinHeight: source.sourceMinHeight,
+			isOverflowSource: source.isOverflowSource
 		};
 		this.updateItemGesture(payload);
 	}
@@ -2112,7 +2120,8 @@ export class EventCalendarInteractionsController<
 			grabOffsetDays: typeof data.grabOffsetDays === 'number' ? data.grabOffsetDays : 0,
 			sourceWidth: readPositiveNumber(data.sourceWidth, 1),
 			sourceHeight: readPositiveNumber(data.sourceHeight, 1),
-			sourceMinHeight: readPositiveNumber(data.sourceMinHeight, 0)
+			sourceMinHeight: readPositiveNumber(data.sourceMinHeight, 0),
+			isOverflowSource: data.isOverflowSource === true
 		};
 	}
 
