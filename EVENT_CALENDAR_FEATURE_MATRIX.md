@@ -1,0 +1,285 @@
+# EventCalendar Feature-Completeness Matrix
+
+**Assessment date:** 2026-07-27
+
+**Svelai baseline:** repository implementation through `e11df35c`
+
+**Compared products:** FullCalendar, React Big Calendar, Mobiscroll Event Calendar, Syncfusion Scheduler, and Bryntum Calendar
+
+## Verdict
+
+Svelai EventCalendar is already a **feature-complete core event calendar**, not yet a **full enterprise scheduler suite**.
+
+It covers the difficult calendar foundation: month/week/day/N-day/agenda/resource-day views, timed and all-day layout, background and multi-day events, recurrence expansion and exception mutation, named time zones, DST-safe civil-day math, drag/resize/range selection, touch, keyboard editing, RTL, accessible semantics, immutable controlled state, guarded rollback, and Svelte-native composition. The implemented contract is documented in the [component description](src/lib/components/EventCalendar/eventCalendar.mcp.ts) and [public props](src/lib/components/EventCalendar/eventCalendar.props.ts).
+
+The material gaps are concentrated in five areas:
+
+1. Horizontal resource timeline and large-resource virtualization.
+2. Year and multi-month planning views.
+3. External and cross-calendar drag-and-drop.
+4. Multiple resource assignment and resource-specific availability.
+5. Product adjacencies: built-in editors, print/export, ICS/provider connectors, copy/paste, and history.
+
+That puts Svelai roughly at:
+
+- **Core scheduling:** strong parity with FullCalendar Standard and materially ahead of React Big Calendar in recurrence integrity, time-zone explicitness, keyboard mutation, and transaction safety.
+- **Resource scheduling:** credible first version, but below FullCalendar Premium, Mobiscroll, Syncfusion, and Bryntum.
+- **Enterprise breadth:** intentionally incomplete.
+
+## Method
+
+The matrix compares observable component capabilities, not marketing category names. A feature is counted only when it is present in the shipped Svelai implementation or documented by the vendor.
+
+| Mark | Meaning                                                               |
+| ---- | --------------------------------------------------------------------- |
+| ✅   | Native, first-class capability                                        |
+| ◐    | Partial, narrower, or intentionally consumer-owned                    |
+| ⊕    | Available through a premium plugin, add-on, or sibling product/module |
+| —    | Absent or not documented as a supported capability                    |
+
+Vendor columns link to official documentation. Specialist claims use additional inline links.
+
+## 1. Views and rendering
+
+| Capability                                | Svelai                | [FullCalendar][fc-docs]                        | [React Big Calendar][rbc-core] | [Mobiscroll][mb-overview]             | [Syncfusion][sf-views]                                     | [Bryntum][br-features]                          |
+| ----------------------------------------- | --------------------- | ---------------------------------------------- | ------------------------------ | ------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
+| Month grid                                | ✅                    | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Week and day time grids                   | ✅                    | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Configurable N-day/custom-duration view   | ✅                    | ✅                                             | ◐ custom view                  | ✅                                    | ✅ view interval                                           | ✅ dual-day/configurable time                   |
+| Agenda/list view                          | ✅                    | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+| Year or multi-month planning              | —                     | ✅ day-grid year and multi-month               | —                              | ✅                                    | ✅ Year and Timeline Year                                  | ✅                                              |
+| Vertical resource day/time-grid           | ✅ leaf-resource day  | ⊕ Premium resource views [plugins][fc-plugins] | ✅ basic resource columns      | ✅ scheduler                          | ✅ multi-level resource grouping [resources][sf-resources] | ✅ resource view                                |
+| Horizontal resource timeline              | —                     | ⊕ Premium [plugins][fc-plugins]                | —                              | ✅                                    | ✅                                                         | ⊕ use Bryntum Scheduler for timeline scheduling |
+| Arbitrary whole-view extension            | — deliberate non-goal | ✅ custom-view API                             | ✅ custom views                | ◐ configurable/composable stock views | ◐ view-specific configuration                              | ◐ class/API extension                           |
+| Background events and availability ranges | ✅                    | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅ time ranges                                  |
+| Month overflow and `+N more` disclosure   | ✅                    | ✅                                             | ✅                             | ✅                                    | ✅                                                         | ✅                                              |
+
+### Assessment
+
+Svelai's ordinary calendar view surface is mature. The missing view work is not another week/day variant; it is **planning scale**: year/multi-month and horizontal timelines.
+
+## 2. Interaction and mutation
+
+| Capability                                      | Svelai                                     | [FullCalendar][fc-dnd]                   | [React Big Calendar][rbc-dnd]                   | [Mobiscroll][mb-dnd]                                            | [Syncfusion][sf-events]        | [Bryntum][br-features]       |
+| ----------------------------------------------- | ------------------------------------------ | ---------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------ | ---------------------------- |
+| Event drag-to-move                              | ✅                                         | ✅                                       | ⊕ drag-and-drop add-on                          | ✅                                                              | ✅                             | ✅                           |
+| Resize from start and end edges                 | ✅                                         | ✅                                       | ✅ add-on                                       | ✅                                                              | ✅                             | ✅                           |
+| Empty-range drag selection                      | ✅                                         | ✅ selection callback                    | ✅ slot selection                               | ✅                                                              | ✅ cell selection              | ✅                           |
+| Direct event creation gesture                   | ◐ emits typed range; consumer creates item | ◐ selection/external-drop callback       | ◐ consumer callback                             | ✅ drag/click creation                                          | ✅ editor/cell workflow        | ✅ double-click creation     |
+| External DOM drag into calendar                 | —                                          | ✅ [external dragging][fc-external]      | ✅ inbound callback [add-on docs][rbc-external] | ✅                                                              | ✅ external drag integration   | ✅ feature/example support   |
+| Drag between calendar instances                 | —                                          | ✅                                       | ◐ consumer-managed outside drop                 | ✅                                                              | ◐ integration code required    | ◐ integration code required  |
+| Touch/long-press interaction                    | ✅                                         | ✅ [touch support][fc-a11y]              | ◐ backend/browser dependent                     | ✅ mouse/touch                                                  | ✅ tap-and-hold                | ✅                           |
+| Keyboard event move and resize                  | ✅                                         | — no documented keyboard mutation        | —                                               | ◐ keyboard navigation; no equivalent mutation contract verified | ◐ keyboard CRUD/navigation     | ◐ keyboard navigation/editor |
+| Non-drag pointer alternative                    | ✅ two-click and single-pointer modes      | ◐ date click/select                      | ◐ click/select                                  | ✅ click creation/editor                                        | ✅ quick editor                | ✅ editor                    |
+| Live overlap/range/business policy              | ✅ one proposal pipeline                   | ✅ overlap, constraint, and `eventAllow` | ◐ consumer callbacks                            | ✅ event/resource policies                                      | ✅ action hooks and work hours | ✅ programmatic validation   |
+| Auto-scroll during manipulation                 | ✅                                         | ✅                                       | ◐ add-on behavior                               | ✅                                                              | ✅ drag scroll controls        | ✅                           |
+| Reversible accepted mutation                    | ✅ guarded one-shot `revert()`             | ✅ callback `revert()`                   | ◐ consumer-owned                                | ◐ consumer-owned callbacks                                      | ◐ cancellation/action hooks    | ✅ undo/redo                 |
+| Stale-state protection during async persistence | ✅ identity-guarded revert                 | ◐ unguarded callback revert              | —                                               | —                                                               | —                              | ◐ store/history model        |
+
+### Assessment
+
+Svelai is unusually strong here. Its main interaction deficit is **ecosystem drag-and-drop**. Keyboard move/resize, a unified validation pipeline, immutable transactions, and stale-revert protection are differentiators rather than catch-up work.
+
+## 3. Recurrence, dates, and time zones
+
+| Capability                                              | Svelai                                        | [FullCalendar][fc-rrule]                                | [React Big Calendar][rbc-core] | [Mobiscroll][mb-timezones]            | [Syncfusion][sf-recurrence]     | [Bryntum][br-core]              |
+| ------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------- | ------------------------------ | ------------------------------------- | ------------------------------- | ------------------------------- |
+| Daily/weekly/monthly/yearly recurrence                  | ✅                                            | ⊕ built-in simple recurrence plus RRule plugin          | —                              | ✅                                    | ✅                              | ✅                              |
+| RRULE-style advanced rules                              | ✅ structured rules plus restricted raw RRULE | ⊕ RRule plugin                                          | —                              | ✅ rule strings/objects               | ✅ iCalendar recurrence rules   | ◐ product recurrence model      |
+| Exclusions, additions, and persisted exceptions         | ✅                                            | ✅ through RRule/event data; persistence consumer-owned | —                              | ✅ recurrence exceptions              | ✅ recurrence exception model   | ✅                              |
+| Edit one occurrence                                     | ✅ immutable exception transaction            | ◐ application must model the changed occurrence         | —                              | ✅                                    | ✅                              | ✅                              |
+| Edit whole series                                       | ✅ atomic series transform                    | ◐ application-managed                                   | —                              | ✅                                    | ✅                              | ✅                              |
+| Built-in recurrence editor UI                           | —                                             | —                                                       | —                              | ✅                                    | ✅ integrated recurrence editor | ✅ event editor                 |
+| Explicit named IANA display zone                        | ✅ required                                   | ✅                                                      | ◐ localizer/application-owned  | ✅ display/data zones                 | ✅ scheduler timezone           | ✅ configurable date/time zones |
+| Per-series scheduling zone                              | ✅ required for timed recurrence              | ◐ calendar/event-source oriented                        | —                              | ✅ per-event timezone                 | ✅ start/end timezone fields    | ◐                               |
+| DST-safe civil-day handling                             | ✅ explicit invariant                         | ✅                                                      | ◐ delegated to localizer       | ✅ documented recurring-zone behavior | ✅                              | ✅                              |
+| Exclusive-end range model                               | ✅ universal contract                         | ✅                                                      | ◐ conventional event end       | ✅ automatic with time zones          | ✅ appointment end              | ✅                              |
+| Bounded expansion with explicit unsupported-rule errors | ✅                                            | ◐ RRule library behavior                                | —                              | ◐                                     | ◐                               | ◐                               |
+
+### Assessment
+
+Recurrence and time-zone correctness are Svelai strengths. The missing feature is the **authoring UI**, not the recurrence engine. React Big Calendar has no comparable built-in recurrence model; FullCalendar delegates advanced rules to its RRule connector and leaves persistence semantics to the application.
+
+## 4. Resources, data, and scale
+
+| Capability                              | Svelai                         | [FullCalendar][fc-plugins]                                           | [React Big Calendar][rbc-core] | [Mobiscroll][mb-resources]               | [Syncfusion][sf-resources]                                                        | [Bryntum][br-product]                                             |
+| --------------------------------------- | ------------------------------ | -------------------------------------------------------------------- | ------------------------------ | ---------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Resource hierarchy/grouping             | ✅ parent/leaf tree            | ⊕ Premium hierarchy/grouping                                         | — flat columns                 | ✅ grouping/resource controls            | ✅ multi-level hierarchy                                                          | ◐ resource view/grouping                                          |
+| Multiple resources on one event         | — single `resourceId`          | ⊕ Premium resource arrays                                            | —                              | ✅ resource arrays                       | ✅ multiple selection                                                             | ◐ documented resource assignment, exact multiplicity not verified |
+| Resource-specific hours and edit policy | ◐ consumer validation          | ⊕ Premium resource business hours                                    | ◐ consumer-owned               | ✅ per-resource controls                 | ✅ per-resource hours/workdays                                                    | ◐                                                                 |
+| Move between resources                  | ✅                             | ⊕ Premium                                                            | ✅                             | ✅                                       | ✅                                                                                | ✅                                                                |
+| Virtualized large-resource rendering    | —                              | — no general virtualization documented                               | —                              | ◐ optimized timeline/scheduler scrolling | ✅ virtual scrolling and lazy resource/event loading [virtualization][sf-virtual] | ◐ vendor claims massive-data performance                          |
+| Exact visible/fetch range callback      | ✅                             | ✅ event-source range fetching                                       | ◐ consumer derives range       | ✅ data loading lifecycle                | ✅ remote data/DataManager                                                        | ✅ Store/CrudManager                                              |
+| Immutable controlled collection         | ✅ explicit contract           | ◐ internal mutable Event API plus callbacks                          | ✅ controlled events           | ◐ component data APIs                    | ◐ DataManager/store model                                                         | ◐ Store model                                                     |
+| Built-in remote/provider adapters       | — deliberate consumer boundary | ⊕ JSON, Google Calendar, and iCalendar sources [plugins][fc-plugins] | —                              | ✅ calendar integrations                 | ✅ remote DataManager and ICS import/export                                       | ◐ JSON Store/CrudManager                                          |
+
+### Assessment
+
+Resource-day is enough for rooms, people, and small teams. It is not enough for dispatching, workforce planning, equipment booking, or hundreds of resources. That market requires **timeline + multi-assignment + per-resource availability + virtualization** as one coherent phase, not four unrelated checkboxes.
+
+## 5. Accessibility, composition, and product features
+
+| Capability                                    | Svelai                                      | [FullCalendar][fc-a11y]                                      | [React Big Calendar][rbc-core]                    | [Mobiscroll][mb-templates]                                  | [Syncfusion][sf-overview]                                       | [Bryntum][br-core]                       |
+| --------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------- |
+| Event/cell/header/resource render composition | ✅ Svelte snippets inside owned semantics   | ✅ content/class/mount hooks                                 | ✅ component/getter overrides                     | ✅ templates                                                | ✅ templates                                                    | ✅ renderers/class overrides             |
+| Per-instance and global theme contract        | ✅ CVA theme parts/tokens                   | ✅ theme and render hooks                                    | ◐ CSS/SASS customization                          | ✅ themes/templates                                         | ✅ theme packages/templates                                     | ✅ SASS/CSS themes                       |
+| Locale and RTL                                | ✅                                          | ✅                                                           | ✅ localizers/RTL                                 | ✅                                                          | ✅                                                              | ✅ localization                          |
+| Keyboard and screen-reader structure          | ✅ including keyboard mutation/live regions | ✅ WAI-ARIA and focusability                                 | ◐ no equivalent documented accessibility contract | ✅ accessibility support                                    | ✅ keyboard/accessibility support                               | ✅ keyboard navigation                   |
+| Reduced motion and 200% reflow contract       | ✅                                          | ◐                                                            | —                                                 | ◐ responsive                                                | ◐ responsive/adaptive                                           | ✅ responsive                            |
+| Svelte-native and SSR-safe package            | ✅                                          | — framework-agnostic core plus React/Vue/Angular connectors  | — React only                                      | — JS/jQuery/React/Vue/Angular                               | — JS/React/Vue/Angular wrappers                                 | — JS/React/Vue/Angular wrappers          |
+| Built-in event editor                         | — deliberate composition boundary           | —                                                            | —                                                 | ✅                                                          | ✅                                                              | ✅                                       |
+| Built-in recurrence editor                    | —                                           | —                                                            | —                                                 | ✅                                                          | ✅                                                              | ✅                                       |
+| Print-optimized rendering                     | —                                           | ⊕ Premium adaptive print                                     | —                                                 | ✅                                                          | ✅                                                              | ✅                                       |
+| ICS import/export                             | —                                           | ⊕ iCalendar event-source import; no first-class export       | —                                                 | ◐ integrations, not verified as symmetric ICS import/export | ✅                                                              | ✅ export                                |
+| Excel/CSV export                              | —                                           | —                                                            | —                                                 | —                                                           | ✅ including recurrence occurrences [export options][sf-export] | ✅                                       |
+| Google/Outlook connectors                     | —                                           | ⊕ Google Calendar/iCalendar feeds [Google source][fc-google] | —                                                 | ✅                                                          | — generic remote data                                           | — generic server integration             |
+| Copy/paste and undo/redo history              | — one-transaction revert only               | —                                                            | —                                                 | ◐                                                           | ◐ clipboard/action support                                      | ✅                                       |
+| Capacity/workload visualization               | ◐ overlap predicate only                    | ◐ constraints only                                           | —                                                 | ◐ resource controls                                         | ◐ resource grouping/work hours                                  | ◐ stronger in sibling Scheduler products |
+
+### Assessment
+
+Svelai's accessibility and composition architecture is competitive. The absent rows are mostly **application/product conveniences**. They should not all move into the calendar core.
+
+## Completeness by market
+
+| Target market                                            | Svelai readiness              | Reason                                                                                                                   |
+| -------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Product calendar, meeting planner, booking UI            | **High**                      | Core views, recurrence, time zones, resource day, interactions, accessibility, and composition are present.              |
+| Team calendar similar to Google Calendar basics          | **High with companion forms** | Needs an application-owned event/recurrence editor and persistence, which are deliberate boundaries.                     |
+| Room or small-resource booking                           | **Medium-high**               | Resource day works; multi-resource assignment and per-resource availability remain limited.                              |
+| Dispatch, workforce, equipment, or operations scheduling | **Medium-low**                | Horizontal timeline, virtualization, capacity, and bulk operations are missing.                                          |
+| Enterprise calendaring suite                             | **Low-medium**                | Editors, exports, provider integrations, print, history, and administration workflows are outside the current component. |
+
+## Prioritized gap backlog
+
+### Priority 1 — coherent scheduling expansion
+
+1. **Resource timeline with virtualization**
+
+   Treat the horizontal time axis, virtual resource rows, sticky resource columns, grouped hierarchy, and drag hit-testing as one architecture. This is the largest capability gap and the easiest place to damage the existing clean model if implemented piecemeal.
+
+2. **Multiple resource assignment**
+
+   Replace the single `resourceId` representation only after defining occurrence identity, collision rules, drag semantics, and whether one assignment renders one shared occurrence or several linked projections.
+
+3. **Per-resource availability and constraints**
+
+   Extend the existing validation owner; do not create a second resource-only mutation pipeline.
+
+### Priority 2 — broad calendar parity
+
+4. **Year and multi-month views**
+
+   Reuse the occurrence index and month segmentation. This is much smaller than timeline work and closes the most visible FullCalendar/Mobiscroll/Syncfusion/Bryntum view gap.
+
+5. **External and cross-calendar drag-and-drop**
+
+   Extend the existing Pragmatic DnD protocol with typed external payloads, source ownership, acceptance policy, copy-versus-move semantics, and guarded rollback.
+
+6. **Multi-select, copy/paste, and undo history**
+
+   Build on immutable transactions; do not weaken the current one-shot stale-revert guarantee.
+
+### Priority 3 — companion product surface
+
+7. **Svelai event and recurrence editor recipe/component**
+
+   Compose `Dialog`, `Form`, `DateInput`, `TimeInput`, `Select`, and recurrence controls. Keep domain persistence outside EventCalendar.
+
+8. **ICS import/export and print adapter**
+
+   Implement as separate packages or utilities over the public item model. Avoid coupling file/network I/O to rendering.
+
+9. **Google/Outlook adapters**
+
+   Keep authentication, caching, sync tokens, retries, and provider errors outside the component.
+
+### Defer
+
+- Arbitrary whole-view plugins: current snippets cover real customization needs; add a view API only for a proven second consumer.
+- Capacity/workload engines: this changes the product from calendar to workforce scheduler and needs its own domain model.
+- Calendar-owned persistence: this would weaken current error ownership and transaction clarity.
+
+## Recommended next milestone
+
+Choose based on intended market:
+
+- **General-purpose calendar:** ship year/multi-month plus external drag-and-drop.
+- **Serious scheduler:** skip cosmetic breadth and build resource timeline, virtualization, multi-assignment, and per-resource availability as one milestone.
+- **Application completeness:** build the companion event/recurrence editor before adding more rendering views.
+
+The strongest strategic path is the second one. Svelai already has enough ordinary calendar views; its next defensible capability is a resource scheduler that preserves the existing recurrence, time-zone, accessibility, and transaction guarantees.
+
+## Sources
+
+### Svelai
+
+- [EventCalendar implementation contract](src/lib/components/EventCalendar/eventCalendar.mcp.ts)
+- [EventCalendar public props](src/lib/components/EventCalendar/eventCalendar.props.ts)
+- [Original implementation scope and explicit non-goals](EVENT_CALENDAR_IMPLEMENTATION_PLAN.md)
+
+### FullCalendar
+
+- [Documentation index][fc-docs]
+- [Plugin index][fc-plugins]
+- [Event dragging and resizing][fc-dnd]
+- [External event dragging][fc-external]
+- [RRule plugin][fc-rrule]
+- [Accessibility][fc-a11y]
+- [Google Calendar event source][fc-google]
+
+### React Big Calendar
+
+- [Official repository and localization contract][rbc-core]
+- [Drag-and-drop add-on][rbc-dnd]
+- [External drop callback][rbc-external]
+
+### Mobiscroll
+
+- [Event Calendar overview][mb-overview]
+- [Drag-and-drop][mb-dnd]
+- [Time zones][mb-timezones]
+- [Resources][mb-resources]
+- [Templating][mb-templates]
+
+### Syncfusion
+
+- [Scheduler overview][sf-overview]
+- [Views][sf-views]
+- [Appointments and drag/drop][sf-events]
+- [Resources][sf-resources]
+- [Virtual scrolling][sf-virtual]
+- [Recurrence editor][sf-recurrence]
+- [Excel/CSV export options][sf-export]
+
+### Bryntum
+
+- [Calendar product overview][br-product]
+- [Feature list][br-features]
+- [Built-in Calendar features][br-core]
+
+[fc-docs]: https://fullcalendar.io/docs
+[fc-plugins]: https://fullcalendar.io/docs/plugin-index
+[fc-dnd]: https://fullcalendar.io/docs/event-dragging-resizing
+[fc-external]: https://fullcalendar.io/docs/external-dragging
+[fc-rrule]: https://fullcalendar.io/docs/rrule-plugin
+[fc-a11y]: https://fullcalendar.io/docs/accessibility
+[fc-google]: https://fullcalendar.io/docs/google-calendar
+[rbc-core]: https://github.com/jquense/react-big-calendar
+[rbc-dnd]: https://github.com/bigcalendar/react-big-calendar/tree/master/src/addons/dragAndDrop
+[rbc-external]: https://github.com/bigcalendar/react-big-calendar/blob/master/src/addons/dragAndDrop/README.md
+[mb-overview]: https://demo.mobiscroll.com/javascript/eventcalendar
+[mb-dnd]: https://mobiscroll.com/docs/javascript/eventcalendar/drag-and-drop
+[mb-timezones]: https://mobiscroll.com/docs/javascript/eventcalendar/timezones
+[mb-resources]: https://mobiscroll.com/docs/react/eventcalendar/resources
+[mb-templates]: https://mobiscroll.com/docs/javascript/eventcalendar/templating
+[sf-overview]: https://ej2.syncfusion.com/documentation/schedule
+[sf-views]: https://ej2.syncfusion.com/javascript/documentation/schedule/views
+[sf-events]: https://ej2.syncfusion.com/documentation/schedule/appointments
+[sf-resources]: https://ej2.syncfusion.com/documentation/schedule/resources
+[sf-virtual]: https://ej2.syncfusion.com/javascript/documentation/schedule/virtual-scrolling
+[sf-recurrence]: https://ej2.syncfusion.com/documentation/schedule/recurrence-editor
+[sf-export]: https://ej2.syncfusion.com/documentation/api/schedule/exportoptions
+[br-product]: https://bryntum.com/products/calendar/
+[br-features]: https://bryntum.com/products/calendar/features/
+[br-core]: https://bryntum.com/products/calendar/docs/guide/Calendar/basics/features
