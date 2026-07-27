@@ -121,7 +121,7 @@
 		disabled
 	})}
 >
-	<div class="flex min-w-0 items-start gap-1 p-1.5">
+	<div class="flex min-w-0 items-stretch">
 		<button
 			type="button"
 			aria-label={accessibleLabel}
@@ -132,9 +132,10 @@
 				density,
 				color: semanticColor,
 				view: 'agenda',
-				selected: isSelected,
+				selected: false,
 				disabled,
-				class: 'min-h-10 flex-1 px-2 py-1.5'
+				class:
+					'min-h-11 flex-1 rounded-none border-0 bg-transparent px-4 py-0 focus-visible:ring-inset'
 			})}
 			onclick={(event) => onActivate(occurrence, event)}
 			ondblclick={(event) => onDoubleClick?.(occurrence, event)}
@@ -145,12 +146,15 @@
 		</button>
 
 		{#if agendaDetails}
-			<details class="w-10 shrink-0 open:w-[min(20rem,70%)]" data-event-calendar-agenda-disclosure>
+			<details
+				class="w-10 shrink-0 self-center open:w-[min(20rem,70%)]"
+				data-event-calendar-agenda-disclosure
+			>
 				<summary
 					aria-label={messages.eventCalendarDetails(occurrence.item.title)}
 					aria-disabled={disabled}
 					tabindex={disabled ? -1 : 0}
-					class="state-layer grid size-10 cursor-pointer list-none place-items-center rounded outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
+					class="state-layer grid size-9 cursor-pointer list-none place-items-center rounded outline-none marker:content-none text-neutral/55 focus-visible:ring-2 focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
 					onclick={preventDisabledDisclosure}
 					onkeydown={preventDisabledDisclosure}
 				>
@@ -177,13 +181,19 @@
 </li>
 
 {#snippet defaultContent()}
-	<span class="flex min-w-0 items-baseline gap-2">
+	<span
+		class="grid min-w-0 grid-cols-[8rem_0.5rem_minmax(0,1fr)] items-center gap-x-3 @max-[28rem]:grid-cols-[5.5rem_0.5rem_minmax(0,1fr)]"
+	>
 		<time
 			datetime={entry.segment.start.toISOString()}
-			class="w-28 shrink-0 text-xs text-neutral/75 tabular-nums"
+			class="truncate text-xs text-neutral/60 tabular-nums"
 		>
 			{timeLabel}
 		</time>
-		<span class="min-w-0 truncate font-medium">{occurrence.item.title}</span>
+		<span aria-hidden="true" class="size-2 rounded-full bg-[var(--event-calendar-item-color)]"
+		></span>
+		<span class="min-w-0 truncate text-sm font-normal text-neutral/90">
+			{occurrence.item.title}
+		</span>
 	</span>
 {/snippet}

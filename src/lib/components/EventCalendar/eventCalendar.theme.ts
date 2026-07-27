@@ -198,9 +198,9 @@ const slotSelection = createEventCalendarPart(
 const resizeHandle = createEventCalendarPart(
 	'absolute z-30 touch-none text-neutral/45 opacity-0 outline-none transition-opacity duration-100 group-hover/item:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
 );
-const agenda = createEventCalendarPart('relative min-w-0');
-const agendaDay = createEventCalendarPart('border-b border-neutral-muted');
-const agendaItem = createEventCalendarPart('min-w-0');
+const agenda = createEventCalendarPart('relative min-w-0 bg-surface');
+const agendaDay = createEventCalendarPart('border-b border-neutral-muted/70 last:border-b-0');
+const agendaItem = createEventCalendarPart('min-w-0 bg-surface');
 const agendaDetails = createEventCalendarPart('min-w-0 text-neutral/70');
 const resourceHeader = createEventCalendarPart(
 	'min-w-[var(--event-calendar-resource-min-width)] truncate font-medium'

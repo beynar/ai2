@@ -8,11 +8,7 @@
 	import { untrack, type Snippet } from 'svelte';
 	import EventCalendarAgendaItem from './EventCalendarAgendaItem.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
-	import {
-		createEventCalendarAgendaGroups,
-		type EventCalendarAgendaEntry
-	} from './eventCalendar.agenda.js';
-	import { getEventCalendarItemColor } from './eventCalendar.color.js';
+	import { createEventCalendarAgendaGroups } from './eventCalendar.agenda.js';
 	import { getCachedDateTimeFormatter, startOfZonedDay } from './eventCalendar.date.js';
 	import type {
 		EventCalendarAgendaDetailsPayload,
@@ -63,9 +59,19 @@
 	const selectedItemKey = $derived(
 		snapshot.selection.kind === 'item' ? snapshot.selection.itemKey : null
 	);
-	const dayFormatter = $derived(
+	const dayLabelFormatter = $derived(
 		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
 			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		})
+	);
+	const weekdayFormatter = $derived(
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, { weekday: 'long' })
+	);
+	const dateFormatter = $derived(
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
 			year: 'numeric',
 			month: 'long',
 			day: 'numeric'
@@ -123,14 +129,6 @@
 		event.preventDefault();
 	}
 
-	function getSummaryColors(
-		entries: readonly EventCalendarAgendaEntry<TItemFields>[]
-	): readonly string[] {
-		return [
-			...new Set(entries.map((entry) => getEventCalendarItemColor(entry.occurrence, color)))
-		].slice(0, 5);
-	}
-
 	function registerAgendaDay(day: EventCalendarDateOnly) {
 		return (node: HTMLElement) => untrack(() => a11y.registerDay(day, node));
 	}
@@ -146,8 +144,8 @@
 		class={classes.agenda({ density, color, view: 'agenda', disabled })}
 	>
 		{#each groups as group (group.day)}
-			{@const dayLabel = dayFormatter.format(startOfZonedDay(group.day, calendar.timeZone))}
-			{@const summaryColors = getSummaryColors(group.entries)}
+			{@const dayStart = startOfZonedDay(group.day, calendar.timeZone)}
+			{@const dayLabel = dayLabelFormatter.format(dayStart)}
 			<div role="listitem">
 				<details
 					open
@@ -157,34 +155,26 @@
 					class={classes.agendaDay({ density, color, view: 'agenda', disabled })}
 				>
 					<summary
+						aria-label={`${dayLabel}, ${messages.eventCalendarEventCount(group.entries.length)}`}
 						aria-disabled={disabled}
 						tabindex={disabled ? -1 : 0}
 						data-event-calendar-agenda-date-gutter
-						class="state-layer sticky top-[var(--event-calendar-sticky-offset)] z-20 flex min-h-11 cursor-pointer list-none items-center gap-3 bg-surface-raised px-3 py-2 outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
+						class="state-layer sticky top-[var(--event-calendar-sticky-offset)] z-20 flex min-h-10 cursor-pointer list-none items-center justify-between gap-4 bg-surface-raised/45 px-4 py-2 text-xs outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
 						onclick={preventDisabledDisclosure}
 						onkeydown={preventDisabledDisclosure}
 						{@attach registerAgendaDay(group.day)}
 					>
-						<time datetime={group.day} class="min-w-0 flex-1 truncate font-semibold"
-							>{dayLabel}</time
-						>
-						<span class="flex shrink-0 items-center -space-x-1" aria-hidden="true">
-							{#each summaryColors as summaryColor (summaryColor)}
-								<span
-									class="size-2.5 rounded-full border border-surface-raised"
-									style:background={summaryColor}
-								></span>
-							{/each}
-						</span>
-						<span
-							class="shrink-0 rounded-full bg-neutral-muted px-2 py-0.5 text-xs font-medium tabular-nums"
-						>
-							<span aria-hidden="true">{group.entries.length}</span>
-							<span class="sr-only">{messages.eventCalendarEventCount(group.entries.length)}</span>
-						</span>
+						<time datetime={group.day} class="contents" aria-hidden="true">
+							<span class="min-w-0 truncate font-semibold text-neutral/90">
+								{weekdayFormatter.format(dayStart)}
+							</span>
+							<span class="shrink-0 text-neutral/55 tabular-nums">
+								{dateFormatter.format(dayStart)}
+							</span>
+						</time>
 					</summary>
 
-					<ol class="divide-y divide-neutral-muted">
+					<ol class="divide-y divide-neutral-muted/70">
 						{#each group.entries as entry (`${group.day}:${entry.occurrence.key}`)}
 							<EventCalendarAgendaItem
 								{entry}
