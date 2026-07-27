@@ -6,7 +6,7 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
-	import { tick, type Snippet } from 'svelte';
+	import { tick, untrack, type Snippet } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import EventCalendarResourceHeader from './EventCalendarResourceHeader.svelte';
 	import EventCalendarTimeGridAllDay from './EventCalendarTimeGridAllDay.svelte';
@@ -17,6 +17,7 @@
 		assertValidInstant,
 		getCachedDateTimeFormatter,
 		getZonedDay,
+		getZonedParts,
 		isEventCalendarOffDay,
 		resolveZonedMinutesOnDay,
 		startOfZonedDay
@@ -227,23 +228,50 @@
 	const maximumMinuteCount = $derived(
 		Math.max(...dayGeometries.map((geometry) => geometry.minuteCount), 0)
 	);
-	const gutterGeometry = $derived(
-		dayGeometries.reduce<(typeof dayGeometries)[number] | undefined>(
-			(longest, geometry) =>
-				!longest || geometry.minuteCount > longest.minuteCount ? geometry : longest,
-			undefined
-		)
+	const timeLabelProfiles = $derived.by(() =>
+		dayGeometries.map((geometry) => {
+			const wallLabels = geometry.intervalInstants.map((instant) => timeFormatter.format(instant));
+			const counts = new SvelteMap<string, number>();
+			for (const label of wallLabels) counts.set(label, (counts.get(label) ?? 0) + 1);
+			return {
+				geometry,
+				signature: `${geometry.minuteCount}:${geometry.intervalInstants
+					.map((instant) => {
+						const parts = getZonedParts(instant, calendar.timeZone);
+						return `${parts.hour}:${parts.minute}`;
+					})
+					.join(',')}`,
+				labels: geometry.intervalInstants.map((instant, index) => ({
+					instant,
+					defaultLabel:
+						counts.get(wallLabels[index]) === 1
+							? wallLabels[index]
+							: accessibleTimeFormatter.format(instant)
+				}))
+			};
+		})
 	);
-	const gutterLabels = $derived.by(() => {
-		const instants = gutterGeometry?.intervalInstants ?? [];
-		const wallLabels = instants.map((instant) => timeFormatter.format(instant));
-		const counts = new SvelteMap<string, number>();
-		for (const label of wallLabels) counts.set(label, (counts.get(label) ?? 0) + 1);
-		return instants.map((instant, index) =>
-			counts.get(wallLabels[index]) === 1
-				? wallLabels[index]
-				: accessibleTimeFormatter.format(instant)
+	const gutterProfile = $derived.by(() => {
+		const profileCounts = new SvelteMap<string, number>();
+		for (const profile of timeLabelProfiles) {
+			profileCounts.set(profile.signature, (profileCounts.get(profile.signature) ?? 0) + 1);
+		}
+		return timeLabelProfiles.reduce<(typeof timeLabelProfiles)[number] | undefined>(
+			(selected, profile) =>
+				!selected ||
+				(profileCounts.get(profile.signature) ?? 0) > (profileCounts.get(selected.signature) ?? 0)
+					? profile
+					: selected,
+			undefined
 		);
+	});
+	const localTimeLabelsByKey = $derived.by(() => {
+		const labelsByKey = new SvelteMap<string, (typeof timeLabelProfiles)[number]['labels']>();
+		for (const profile of timeLabelProfiles) {
+			if (profile.signature === gutterProfile?.signature) continue;
+			labelsByKey.set(profile.geometry.key, profile.labels);
+		}
+		return labelsByKey;
 	});
 	const allDaySegments = $derived(
 		columnBuckets.flatMap(({ bucket }) =>
@@ -495,7 +523,7 @@
 	}
 
 	function registerTimeTarget(targetKey: string) {
-		return (node: HTMLElement) => a11y.registerTimeTarget(targetKey, node);
+		return (node: HTMLElement) => untrack(() => a11y.registerTimeTarget(targetKey, node));
 	}
 
 	function handleTargetKeydown(event: KeyboardEvent, targetKey: string, activate = false): void {
@@ -721,14 +749,9 @@
 				data-event-calendar-part="time-gutter"
 				class={classes.timeGutter({ density, color, view })}
 			>
-				{#each gutterGeometry?.intervalInstants ?? [] as instant, index (instant.getTime())}
-					{@const defaultLabel = gutterLabels[index] ?? timeFormatter.format(instant)}
-					{@const gutterPayload = {
-						instant,
-						defaultLabel
-					} satisfies EventCalendarTimeGutterPayload}
+				{#each gutterProfile?.labels ?? [] as gutterPayload (gutterPayload.instant.getTime())}
 					<time
-						datetime={instant.toISOString()}
+						datetime={gutterPayload.instant.toISOString()}
 						data-event-calendar-part="time-label"
 						class={classes.timeLabel({ density, color, view })}
 						style:height="var(--event-calendar-slot-height)"
@@ -737,7 +760,7 @@
 					</time>
 
 					{#snippet defaultTimeGutter()}
-						{defaultLabel}
+						{gutterPayload.defaultLabel}
 					{/snippet}
 				{/each}
 			</div>
@@ -760,6 +783,8 @@
 					{selectionKey}
 					{longDayFormatter}
 					{accessibleTimeFormatter}
+					localTimeLabels={localTimeLabelsByKey.get(geometry.key)}
+					{timeGutter}
 					{nowPayload}
 					{nowIndicatorContent}
 					{item}

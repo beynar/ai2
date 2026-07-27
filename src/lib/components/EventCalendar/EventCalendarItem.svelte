@@ -7,7 +7,7 @@
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
 	import EventCalendarItemActions from './EventCalendarItemActions.svelte';
@@ -158,12 +158,14 @@
 	);
 
 	function registerItemControl(node: HTMLElement): () => void {
-		const unregisterOccurrence = a11y.registerOccurrenceControl(occurrence.key, node);
-		const unregisterTarget = registerControl?.(node);
-		return () => {
-			unregisterOccurrence();
-			unregisterTarget?.();
-		};
+		return untrack(() => {
+			const unregisterOccurrence = a11y.registerOccurrenceControl(occurrence.key, node);
+			const unregisterTarget = registerControl?.(node);
+			return () => {
+				unregisterOccurrence();
+				unregisterTarget?.();
+			};
+		});
 	}
 </script>
 
@@ -239,7 +241,7 @@
 			onDoubleClick?.(event);
 		}}
 		onfocus={() => {
-			a11y.handleOccurrenceFocus(occurrence.key);
+			a11y.handleOccurrenceFocus(occurrence.key, segment.day);
 			onControlFocus?.();
 		}}
 		onkeydown={(event) => {

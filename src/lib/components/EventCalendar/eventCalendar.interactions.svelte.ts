@@ -330,7 +330,12 @@ export class EventCalendarInteractionsController<
 		) {
 			return false;
 		}
-		const slot = mergeSlots(active.anchor, this.slotFromDropTarget(target));
+		const point = this.slotFromDropTarget(target);
+		if (point.resourceId !== active.anchor.resourceId) {
+			this.cancel();
+			return true;
+		}
+		const slot = mergeSlots(active.anchor, point);
 		const reason = this.validateSlot(slot);
 		this.gesture = {
 			...active,
@@ -1061,7 +1066,7 @@ export class EventCalendarInteractionsController<
 							)
 						)
 					: this.calendar.interactions.maintainDurationOnAllDayChange
-						? touchedCivilDayCount(occurrence, this.calendar.timeZone)
+						? touchedCivilDayCount(occurrence, this.getConversionDurationTimeZone(occurrence))
 						: this.calendar.defaultAllDayItemDuration;
 		return replaceSchedule(item, { allDay: true, start, end: addCivilDays(start, durationDays) });
 	}
@@ -1084,14 +1089,15 @@ export class EventCalendarInteractionsController<
 		else if (!this.calendar.interactions.maintainDurationOnAllDayChange) {
 			durationMs = this.calendar.defaultTimedItemDuration * MINUTE_MS;
 		} else {
+			const conversionTimeZone = this.getConversionDurationTimeZone(occurrence);
 			const days = Math.max(
 				1,
 				civilDayDifference(item.start as EventCalendarDateOnly, item.end as EventCalendarDateOnly)
 			);
-			const endDay = addCivilDays(getZonedDay(start, this.calendar.timeZone), days);
-			const parts = getWallMinutes(start, this.calendar.timeZone);
+			const endDay = addCivilDays(getZonedDay(start, conversionTimeZone), days);
+			const parts = getWallMinutes(start, conversionTimeZone);
 			durationMs =
-				resolveZonedMinutesOnDay(endDay, parts, this.calendar.timeZone).getTime() - start.getTime();
+				resolveZonedMinutesOnDay(endDay, parts, conversionTimeZone).getTime() - start.getTime();
 		}
 		return replaceSchedule(item, {
 			allDay: false,
@@ -1175,7 +1181,11 @@ export class EventCalendarInteractionsController<
 		const active = this.gesture;
 		if (!active || active.kind !== 'slot-create') return;
 		const target = this.getTargetAt(pointerX, pointerY);
-		if (!target || target.allDay !== active.anchor.allDay) {
+		if (
+			!target ||
+			target.allDay !== active.anchor.allDay ||
+			target.resourceId !== active.anchor.resourceId
+		) {
 			this.gesture = {
 				...active,
 				targetKey: null,
@@ -1642,6 +1652,32 @@ export class EventCalendarInteractionsController<
 				? getZonedDay(occurrence.end, this.calendar.timeZone)
 				: new Date(occurrence.end)
 		});
+	}
+
+	private getConversionDurationTimeZone(occurrence: EventCalendarOccurrence<TItemFields>): string {
+		const seriesId = getOccurrenceSeriesId(occurrence);
+		if (!seriesId) return this.calendar.timeZone;
+		const seriesItem = this.calendar.items.find((item) => item.id === seriesId);
+		if (
+			!seriesItem ||
+			seriesItem.recurrence === undefined ||
+			seriesItem.recurringItemId !== undefined
+		) {
+			throw new EventCalendarError(
+				'invalid-recurrence',
+				'The occurrence has no bound recurring source.',
+				{ key: occurrence.key, seriesId }
+			);
+		}
+		if (seriesItem.allDay === true) return this.calendar.timeZone;
+		if (typeof seriesItem.recurrenceTimeZone !== 'string') {
+			throw new EventCalendarError(
+				'invalid-recurrence',
+				'A timed recurring source requires recurrenceTimeZone.',
+				{ key: occurrence.key, seriesId }
+			);
+		}
+		return seriesItem.recurrenceTimeZone;
 	}
 
 	private validateAssistedProposal(

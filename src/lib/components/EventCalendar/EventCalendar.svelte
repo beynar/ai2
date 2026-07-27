@@ -318,6 +318,9 @@
 			a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
 		}
 	});
+	$effect.pre(() => {
+		a11y.configureView(calendar.view);
+	});
 	$effect(() => {
 		a11y.configureMutations({
 			controller: calendar.interaction,
@@ -335,9 +338,19 @@
 			if (occurrence) {
 				a11y.restoreOccurrenceFocus(occurrence.key);
 				a11y.announce(messages.eventCalendarFocusRestored(occurrence.item.title));
+			} else if (occurrenceKey) {
+				a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
 			}
 		}
 		previousFocusContext = focusContext;
+	});
+	$effect(() => {
+		const hasItems = items.length > 0;
+		const occurrenceKey = a11y.getFocusedOccurrenceKey();
+		if (!occurrenceKey) return;
+		if (!hasItems || !calendar.getOccurrence(occurrenceKey)) {
+			a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
+		}
 	});
 	const statusDateFormatter = $derived(
 		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {

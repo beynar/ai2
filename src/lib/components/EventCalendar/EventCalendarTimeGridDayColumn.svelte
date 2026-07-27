@@ -15,7 +15,8 @@
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload,
 		EventCalendarNowIndicatorPayload,
-		EventCalendarSnapshot
+		EventCalendarSnapshot,
+		EventCalendarTimeGutterPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
@@ -43,6 +44,8 @@
 		selectionKey,
 		longDayFormatter,
 		accessibleTimeFormatter,
+		localTimeLabels,
+		timeGutter,
 		nowPayload,
 		nowIndicatorContent,
 		item,
@@ -69,6 +72,8 @@
 		selectionKey: string | null;
 		longDayFormatter: Intl.DateTimeFormat;
 		accessibleTimeFormatter: Intl.DateTimeFormat;
+		localTimeLabels?: readonly EventCalendarTimeGutterPayload[];
+		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
 		nowPayload: EventCalendarNowIndicatorPayload | null;
 		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
@@ -139,6 +144,29 @@
 	data-event-calendar-target-key={columnDropTarget.key}
 	{@attach disabled ? null : calendar.interaction.dropTarget(columnDropTarget)}
 >
+	{#each localTimeLabels ?? [] as localTimeLabel (localTimeLabel.instant.getTime())}
+		<time
+			datetime={localTimeLabel.instant.toISOString()}
+			data-event-calendar-part="time-label"
+			data-event-calendar-local-time-label
+			class={classes.timeLabel({
+				density,
+				color,
+				view,
+				class:
+					'pointer-events-none absolute inset-inline-start-0 z-[2] w-[var(--event-calendar-time-gutter-width)] bg-surface/90'
+			})}
+			style:top={`calc(${getEventCalendarElapsedMinutes(geometry.windowStart, localTimeLabel.instant) / calendar.interval} * var(--event-calendar-slot-height))`}
+			style:height="var(--event-calendar-slot-height)"
+		>
+			<Slot render={timeGutter ?? defaultLocalTimeGutter} payload={localTimeLabel} />
+		</time>
+
+		{#snippet defaultLocalTimeGutter()}
+			{localTimeLabel.defaultLabel}
+		{/snippet}
+	{/each}
+
 	{#each geometry.businessWindows as businessWindow (businessWindow.key)}
 		<div
 			aria-hidden="true"

@@ -5,8 +5,9 @@
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import EventCalendarAgendaItem from './EventCalendarAgendaItem.svelte';
+	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import {
 		createEventCalendarAgendaGroups,
 		type EventCalendarAgendaEntry
@@ -20,11 +21,12 @@
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type { EventCalendarOccurrence } from './eventCalendar.types.js';
+	import type { EventCalendarDateOnly, EventCalendarOccurrence } from './eventCalendar.types.js';
 
 	let {
 		calendar,
 		snapshot,
+		a11y,
 		messages,
 		density,
 		color,
@@ -39,6 +41,7 @@
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		density: Density;
 		color: Colors;
@@ -99,6 +102,11 @@
 		})
 	);
 
+	$effect(() => {
+		const days = groups.map((group) => group.day);
+		untrack(() => a11y.configureAgenda({ days }));
+	});
+
 	function handleItemActivate(
 		occurrence: EventCalendarOccurrence<TItemFields>,
 		event: MouseEvent
@@ -121,6 +129,10 @@
 		return [
 			...new Set(entries.map((entry) => getEventCalendarItemColor(entry.occurrence, color)))
 		].slice(0, 5);
+	}
+
+	function registerAgendaDay(day: EventCalendarDateOnly) {
+		return (node: HTMLElement) => untrack(() => a11y.registerDay(day, node));
 	}
 </script>
 
@@ -151,6 +163,7 @@
 						class="state-layer sticky top-[var(--event-calendar-sticky-offset)] z-20 flex min-h-11 cursor-pointer list-none items-center gap-3 bg-surface-raised px-3 py-2 outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60 [&::-webkit-details-marker]:hidden"
 						onclick={preventDisabledDisclosure}
 						onkeydown={preventDisabledDisclosure}
+						{@attach registerAgendaDay(group.day)}
 					>
 						<time datetime={group.day} class="min-w-0 flex-1 truncate font-semibold"
 							>{dayLabel}</time
@@ -175,6 +188,7 @@
 						{#each group.entries as entry (`${group.day}:${entry.occurrence.key}`)}
 							<EventCalendarAgendaItem
 								{entry}
+								{a11y}
 								{messages}
 								{timeFormatter}
 								{accessibleDateTimeFormatter}

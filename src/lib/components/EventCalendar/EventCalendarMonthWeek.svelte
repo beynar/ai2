@@ -18,7 +18,7 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import EventCalendarMonthOverflow from './EventCalendarMonthOverflow.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -213,7 +213,7 @@
 	}
 
 	function registerDay(day: EventCalendarDateOnly) {
-		return (node: HTMLElement) => a11y.registerDay(day, node);
+		return (node: HTMLElement) => untrack(() => a11y.registerDay(day, node));
 	}
 </script>
 

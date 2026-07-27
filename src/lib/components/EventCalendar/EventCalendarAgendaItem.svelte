@@ -1,9 +1,13 @@
-<script lang="ts" generics="TItemFields extends object = Record<never, never>">
+<script
+	lang="ts"
+	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
+>
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import type { EventCalendarAgendaEntry } from './eventCalendar.agenda.js';
+	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import {
 		getEventCalendarItemColor,
 		isEventCalendarSemanticColor
@@ -17,6 +21,7 @@
 
 	let {
 		entry,
+		a11y,
 		messages,
 		timeFormatter,
 		accessibleDateTimeFormatter,
@@ -33,6 +38,7 @@
 		onDoubleClick
 	}: {
 		entry: EventCalendarAgendaEntry<TItemFields>;
+		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		timeFormatter: Intl.DateTimeFormat;
 		accessibleDateTimeFormatter: Intl.DateTimeFormat;
@@ -94,6 +100,10 @@
 			formatter.formatToParts(instant).find((part) => part.type === 'timeZoneName')?.value ?? ''
 		);
 	}
+
+	function registerItemControl(node: HTMLElement): () => void {
+		return untrack(() => a11y.registerOccurrenceControl(occurrence.key, node));
+	}
 </script>
 
 <li
@@ -128,6 +138,8 @@
 			})}
 			onclick={(event) => onActivate(occurrence, event)}
 			ondblclick={(event) => onDoubleClick?.(occurrence, event)}
+			onfocus={() => a11y.handleOccurrenceFocus(occurrence.key, entry.segment.day)}
+			{@attach registerItemControl}
 		>
 			<Slot render={agendaItem ?? defaultContent} payload={itemPayload} />
 		</button>

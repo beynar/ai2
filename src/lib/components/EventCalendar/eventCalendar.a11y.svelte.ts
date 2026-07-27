@@ -1,4 +1,5 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- DOM registries and immutable configuration snapshots are not reactive state. */
+import { tick } from 'svelte';
 import { addCivilMonths, isSupportedDateDomainError, parseDateOnly } from './eventCalendar.date.js';
 import type {
 	EventCalendarDateOnly,
@@ -36,6 +37,10 @@ type TimeGridConfiguration = {
 	onPage: (direction: -1 | 1) => boolean;
 };
 
+type AgendaConfiguration = {
+	days: readonly EventCalendarDateOnly[];
+};
+
 type MutationConfiguration<TItemFields extends object, TResourceFields extends object> = {
 	controller: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 	view: EventCalendarView;
@@ -65,6 +70,7 @@ export class EventCalendarA11y<
 	private timeTargets: readonly EventCalendarTimeTarget[] = [];
 	private timeTargetByKey = new Map<string, EventCalendarTimeTarget>();
 	private focusedTimeTarget = $state<string | null>(null);
+	private focusedTimeAnchor: EventCalendarTimeTarget | null = null;
 	private pendingTimeTarget: Pick<EventCalendarTimeTarget, 'column' | 'row' | 'kind'> | null = null;
 	private onTimePage: (direction: -1 | 1) => boolean = () => false;
 	private restoreVersion = 0;
@@ -73,6 +79,7 @@ export class EventCalendarA11y<
 	private occurrenceElements = new Map<string, Set<HTMLElement>>();
 	private focusedOccurrenceKey: string | null = null;
 	private pendingOccurrenceKey: string | null = null;
+	private activeView: EventCalendarView | null = null;
 	private mutationController: EventCalendarInteractionsController<
 		TItemFields,
 		TResourceFields
@@ -82,6 +89,24 @@ export class EventCalendarA11y<
 
 	constructor(liveRegionId: string) {
 		this.liveRegionId = liveRegionId;
+	}
+
+	configureView(view: EventCalendarView): void {
+		if (this.activeView === view) return;
+		this.activeView = view;
+		this.restoreVersion += 1;
+		this.occurrenceRestoreVersion += 1;
+		this.dayElements.clear();
+		this.days = [];
+		this.enabledDays = new Set();
+		this.pendingDay = null;
+		this.timeElements.clear();
+		this.timeTargets = [];
+		this.timeTargetByKey.clear();
+		this.focusedTimeTarget = null;
+		this.pendingTimeTarget = null;
+		this.occurrenceElements.clear();
+		this.pendingOccurrenceKey = this.focusedOccurrenceKey;
 	}
 
 	configureMutations(configuration: MutationConfiguration<TItemFields, TResourceFields>): void {
@@ -201,9 +226,10 @@ export class EventCalendarA11y<
 		};
 	}
 
-	handleOccurrenceFocus(occurrenceKey: string): void {
+	handleOccurrenceFocus(occurrenceKey: string, day: EventCalendarDateOnly): void {
 		this.focusedOccurrenceKey = occurrenceKey;
 		this.pendingOccurrenceKey = null;
+		this.focusedDay = day;
 	}
 
 	restoreOccurrenceFocus(occurrenceKey = this.focusedOccurrenceKey): void {
@@ -224,13 +250,12 @@ export class EventCalendarA11y<
 
 	restoreFocusAfterOccurrenceRemoval(occurrenceKey: string): void {
 		if (this.focusedOccurrenceKey !== occurrenceKey) return;
+		const day = this.focusedDay;
+		const timeTarget = this.focusedTimeAnchor ?? undefined;
 		this.focusedOccurrenceKey = null;
 		this.pendingOccurrenceKey = null;
 		const version = this.lifecycleVersion;
-		queueMicrotask(() => {
-			if (version !== this.lifecycleVersion) return;
-			this.restoreNearestCalendarFocus();
-		});
+		void this.restoreNearestCalendarFocusAfterRender(version, day, timeTarget);
 	}
 
 	configureMonth(configuration: MonthGridConfiguration): void {
@@ -267,6 +292,13 @@ export class EventCalendarA11y<
 		if (this.pendingTimeTarget && nextTarget) this.scheduleTimeRestore(nextTarget.key);
 	}
 
+	configureAgenda(configuration: AgendaConfiguration): void {
+		this.days = configuration.days;
+		this.enabledDays = new Set(configuration.days);
+		const nextDay = this.resolveEnabledDay(this.focusedDay);
+		if (nextDay) this.focusedDay = nextDay;
+	}
+
 	registerTimeTarget(targetKey: string, node: HTMLElement): () => void {
 		this.timeElements.set(targetKey, node);
 		if (this.focusedTimeTarget === targetKey && this.pendingTimeTarget) {
@@ -289,7 +321,9 @@ export class EventCalendarA11y<
 		const target = this.timeTargetByKey.get(targetKey);
 		if (!target) return;
 		if (target.kind !== 'item') this.clearOccurrenceFocus();
+		this.focusedDay = target.day;
 		this.focusedTimeTarget = targetKey;
+		this.focusedTimeAnchor = target;
 		this.pendingTimeTarget = null;
 	}
 
@@ -474,10 +508,12 @@ export class EventCalendarA11y<
 		this.timeTargets = [];
 		this.timeTargetByKey.clear();
 		this.focusedTimeTarget = null;
+		this.focusedTimeAnchor = null;
 		this.pendingTimeTarget = null;
 		this.occurrenceElements.clear();
 		this.focusedOccurrenceKey = null;
 		this.pendingOccurrenceKey = null;
+		this.activeView = null;
 		this.mutationController = null;
 		this.clearMutation();
 	}
@@ -506,26 +542,69 @@ export class EventCalendarA11y<
 		});
 	}
 
-	private restoreNearestCalendarFocus(): void {
-		const day = this.resolveEnabledDay(this.focusedDay ?? this.days[0] ?? null);
-		if (day) {
-			this.focusDay(day);
-			return;
+	private restoreNearestCalendarFocus(
+		dayAnchor: EventCalendarDateOnly | null,
+		timeAnchor?: EventCalendarTimeTarget
+	): void {
+		if (this.activeView === 'month' || this.activeView === 'agenda') {
+			const day =
+				this.activeView === 'agenda'
+					? this.resolveAvailableDay(dayAnchor)
+					: this.resolveEnabledDay(dayAnchor ?? this.days[0] ?? null);
+			if (day) {
+				this.focusDay(day);
+				return;
+			}
 		}
-		const previous = this.focusedTimeTarget
-			? this.timeTargetByKey.get(this.focusedTimeTarget)
-			: undefined;
+
 		const availableTargets = this.timeTargets.filter((target) => this.timeElements.has(target.key));
-		const target = previous
+		const target = timeAnchor
 			? availableTargets.reduce<EventCalendarTimeTarget | undefined>((closest, candidate) => {
 					if (!closest) return candidate;
-					return getTimeTargetDistance(candidate, previous) <
-						getTimeTargetDistance(closest, previous)
+					return getTimeTargetDistance(candidate, timeAnchor) <
+						getTimeTargetDistance(closest, timeAnchor)
 						? candidate
 						: closest;
 				}, undefined)
 			: availableTargets[0];
-		if (target) this.focusTimeTarget(target);
+		if (target) {
+			this.focusTimeTarget(target);
+			return;
+		}
+		this.focusCalendarRoot();
+	}
+
+	private async restoreNearestCalendarFocusAfterRender(
+		version: number,
+		dayAnchor: EventCalendarDateOnly | null,
+		timeAnchor?: EventCalendarTimeTarget
+	): Promise<void> {
+		await tick();
+		if (version !== this.lifecycleVersion) return;
+		this.restoreNearestCalendarFocus(dayAnchor, timeAnchor);
+	}
+
+	private resolveAvailableDay(day: EventCalendarDateOnly | null): EventCalendarDateOnly | null {
+		const availableDays = this.days.filter(
+			(candidate) => this.enabledDays.has(candidate) && this.dayElements.has(candidate)
+		);
+		if (availableDays.length === 0) return null;
+		if (!day) return availableDays[0];
+		return availableDays.reduce((closest, candidate) => {
+			const candidateDistance = Math.abs(compareDays(candidate, day));
+			const closestDistance = Math.abs(compareDays(closest, day));
+			return candidateDistance < closestDistance ? candidate : closest;
+		});
+	}
+
+	private focusCalendarRoot(): void {
+		if (typeof document === 'undefined') return;
+		const root = document
+			.getElementById(this.liveRegionId)
+			?.closest<HTMLElement>('[data-event-calendar-part="root"]');
+		if (!root) return;
+		if (!root.hasAttribute('tabindex')) root.tabIndex = -1;
+		root.focus();
 	}
 
 	private focusTimeTarget(target: EventCalendarTimeTarget): void {

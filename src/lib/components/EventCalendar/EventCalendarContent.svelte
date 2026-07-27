@@ -237,6 +237,7 @@
 				<EventCalendarAgendaView
 					{calendar}
 					{snapshot}
+					{a11y}
 					{messages}
 					{density}
 					{color}
