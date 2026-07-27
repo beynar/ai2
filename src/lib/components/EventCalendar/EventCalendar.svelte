@@ -763,9 +763,6 @@
 		{#if calendar.interaction.proposal}
 			{@const proposal = calendar.interaction.proposal}
 			{@const indicatorRect = calendar.interaction.getDropIndicatorRect()}
-			{@const isTimedResize =
-				(proposal.kind === 'resize-start' || proposal.kind === 'resize-end') &&
-				proposal.item.allDay !== true}
 			{@const eventColor =
 				calendar.interaction.gesture.kind !== 'slot-create'
 					? (calendar.interaction.gesture.occurrence.item.color ?? proposal.item.color)
@@ -791,16 +788,7 @@
 					style:top={`${indicatorRect.top}px`}
 					style:width={`${indicatorRect.width}px`}
 					style:height={`${indicatorRect.height}px`}
-				>
-					{#if isTimedResize}
-						<span
-							data-event-calendar-part="drop-indicator-time"
-							class="block truncate px-2 py-1 text-[0.6875rem] font-medium leading-4 text-[var(--event-calendar-item-color)] tabular-nums"
-						>
-							{resizeIndicatorTimeFormatter.formatRange(proposal.item.start, proposal.item.end)}
-						</span>
-					{/if}
-				</div>
+				></div>
 			{/if}
 		{/if}
 		{#if calendar.interaction.gesture.kind === 'slot-create'}
@@ -830,5 +818,16 @@
 </div>
 
 {#snippet defaultDragPreview()}
-	{calendar.interaction.proposal?.item.title ?? ''}
+	{@const proposal = calendar.interaction.proposal}
+	{#if proposal}
+		<span class="block max-w-64 truncate font-medium">{proposal.item.title}</span>
+		{#if (proposal.kind === 'resize-start' || proposal.kind === 'resize-end') && !proposal.item.allDay}
+			<span
+				data-event-calendar-part="drag-preview-time"
+				class="block whitespace-nowrap text-[0.6875rem] leading-4 text-neutral/60 tabular-nums"
+			>
+				{resizeIndicatorTimeFormatter.formatRange(proposal.item.start, proposal.item.end)}
+			</span>
+		{/if}
+	{/if}
 {/snippet}
