@@ -22,7 +22,10 @@
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import EventCalendarMonthOverflow from './EventCalendarMonthOverflow.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
-	import { getEventCalendarItemColor } from './eventCalendar.color.js';
+	import {
+		getEventCalendarItemColor,
+		isEventCalendarSemanticColor
+	} from './eventCalendar.color.js';
 	import {
 		addCivilDays,
 		getCachedDateTimeFormatter,
@@ -57,6 +60,8 @@
 		days,
 		layout,
 		visibleLaneCount,
+		insertion,
+		draggingOccurrenceKey,
 		leadingEmptyCells,
 		trailingEmptyCells,
 		weekIndex,
@@ -90,6 +95,8 @@
 		days: readonly EventCalendarDateOnly[];
 		layout: EventCalendarLaneLayout<TItemFields>;
 		visibleLaneCount: number;
+		insertion: { startIndex: number; endIndex: number; lane: number } | null;
+		draggingOccurrenceKey: string | null;
 		leadingEmptyCells: number;
 		trailingEmptyCells: number;
 		weekIndex: number;
@@ -169,6 +176,7 @@
 		return layout.placements
 			.filter(
 				(placement) =>
+					placement.occurrence.key !== draggingOccurrenceKey &&
 					placement.lane >= visibleLaneCount &&
 					placement.startIndex <= gridDayIndex &&
 					placement.endIndex > gridDayIndex
@@ -351,10 +359,44 @@
 					></div>
 				{/each}
 
+				{#if insertion?.startIndex === gridDayIndex && insertion.lane < visibleLaneCount}
+					{@const proposal = calendar.interaction.proposal}
+					{#if proposal}
+						{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
+							? proposal.item.color
+							: color}
+						{@const indicatorItemColor =
+							proposal.item.color && !isEventCalendarSemanticColor(proposal.item.color)
+								? proposal.item.color
+								: 'var(--color)'}
+						<div
+							aria-hidden="true"
+							class="pointer-events-none absolute inset-inline-start-0 z-20 h-[var(--event-calendar-item-min-height)] px-0.5 transition-[top] duration-150 motion-reduce:transition-none"
+							style:top={`calc(1.75rem + ${insertion.lane} * var(--event-calendar-item-min-height))`}
+							style:width={`calc(${insertion.endIndex - insertion.startIndex} * 100%)`}
+						>
+							<div
+								data-event-calendar-part="drop-indicator"
+								data-invalid={calendar.interaction.isValid === false || undefined}
+								class={classes.dropIndicator({
+									density,
+									color: indicatorColor,
+									view: 'month',
+									invalid: calendar.interaction.isValid === false,
+									class: 'h-full w-full'
+								})}
+								style:--event-calendar-item-color={indicatorItemColor}
+							></div>
+						</div>
+					{/if}
+				{/if}
+
 				{#each layout.placements.filter((placement) => placement.startIndex === gridDayIndex && placement.lane < visibleLaneCount) as placement (`${weekIndex}:${placement.key}`)}
 					{@const segment = getPlacementSegment(placement.segments)}
 					<div
-						class="pointer-events-auto absolute inset-inline-start-0 z-10 px-0.5"
+						class="pointer-events-auto absolute inset-inline-start-0 z-10 h-[var(--event-calendar-item-min-height)] px-0.5 transition-[top,opacity] duration-150 motion-reduce:transition-none"
+						class:pointer-events-none={placement.occurrence.key === draggingOccurrenceKey}
+						class:opacity-0={placement.occurrence.key === draggingOccurrenceKey}
 						style:top={`calc(1.75rem + ${placement.lane} * var(--event-calendar-item-min-height))`}
 						style:width={`calc(${placement.endIndex - placement.startIndex} * 100%)`}
 					>
@@ -374,6 +416,7 @@
 							{showItemTooltip}
 							{item}
 							{itemTooltip}
+							class="h-full min-h-0"
 							onActivate={(event) => handleItemActivate(segment, event)}
 							onDoubleClick={(event) => handleItemDoubleClick(segment, event)}
 						/>

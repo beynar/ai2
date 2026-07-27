@@ -199,7 +199,7 @@ export function compareEventCalendarOccurrences<TItemFields extends object>(
 	left: EventCalendarOccurrence<TItemFields>,
 	right: EventCalendarOccurrence<TItemFields>
 ): number {
-	return compareOccurrenceValues(
+	return compareEventCalendarScheduleValues(
 		left.start.getTime(),
 		left.end.getTime(),
 		left.item.priority ?? 0,
@@ -893,7 +893,7 @@ function occurrenceIntersects(start: number, end: number, range: EventCalendarRa
 }
 
 function compareOccurrenceSchedules(left: OccurrenceSchedule, right: OccurrenceSchedule): number {
-	return compareOccurrenceValues(
+	return compareEventCalendarScheduleValues(
 		left.start,
 		left.end,
 		left.priority,
@@ -905,7 +905,7 @@ function compareOccurrenceSchedules(left: OccurrenceSchedule, right: OccurrenceS
 	);
 }
 
-function compareOccurrenceValues(
+export function compareEventCalendarScheduleValues(
 	leftStart: number,
 	leftEnd: number,
 	leftPriority: number,

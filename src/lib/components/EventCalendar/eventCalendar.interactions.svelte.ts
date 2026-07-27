@@ -157,6 +157,15 @@ export type EventCalendarDropIndicatorRect = Readonly<{
 	height: number;
 }>;
 
+export type EventCalendarMonthInsertion = Readonly<{
+	occurrenceKey: string;
+	start: EventCalendarDateOnly;
+	end: EventCalendarDateOnly;
+	sortStart: number;
+	sortEnd: number;
+	priority: number;
+}>;
+
 const SOURCE_MARK = 'svelai-event-calendar';
 const EDGE_SCROLL_DISTANCE = 56;
 const EDGE_SCROLL_MAX_PX = 18;
@@ -606,9 +615,59 @@ export class EventCalendarInteractionsController<
 		if (!targetElement?.isConnected) return null;
 		const target = this.readElementTarget(targetElement);
 		if (!target) return null;
+		if (target.view === 'month' && gesture.kind === 'move' && gesture.inputMode === 'pointer') {
+			return null;
+		}
 		return target.allDay
 			? this.getAllDayDropIndicatorRect(gesture, target, targetElement)
 			: this.getTimedDropIndicatorRect(gesture, target, targetElement);
+	}
+
+	getMonthInsertion(): EventCalendarMonthInsertion | null {
+		const gesture = this.gesture;
+		if (
+			typeof document === 'undefined' ||
+			!gesture ||
+			gesture.kind !== 'move' ||
+			gesture.inputMode !== 'pointer' ||
+			!gesture.proposal ||
+			!gesture.targetKey
+		) {
+			return null;
+		}
+		const targetElement = this.targetElements.get(gesture.targetKey);
+		if (!targetElement?.isConnected) return null;
+		const target = this.readElementTarget(targetElement);
+		if (!target?.allDay || target.view !== 'month') return null;
+		const item = gesture.proposal.item;
+		const start =
+			item.allDay === true ? item.start : getZonedDay(item.start, this.calendar.timeZone);
+		const end =
+			item.allDay === true
+				? item.end
+				: addCivilDays(
+						getZonedDay(
+							new Date(Math.max(item.start.getTime(), item.end.getTime() - 1)),
+							this.calendar.timeZone
+						),
+						1
+					);
+		const sortStart =
+			item.allDay === true
+				? startOfZonedDay(item.start, this.calendar.timeZone).getTime()
+				: item.start.getTime();
+		const sortEnd =
+			item.allDay === true
+				? startOfZonedDay(item.end, this.calendar.timeZone).getTime()
+				: item.end.getTime();
+		return {
+			occurrenceKey: gesture.occurrence.key,
+			start,
+			end,
+			sortStart,
+			sortEnd,
+			priority: item.priority ?? 0
+		};
 	}
 
 	isSlotDraftTarget(target: EventCalendarDropTarget): boolean {

@@ -73,7 +73,7 @@ function createEventCalendarPart(base: string, density: DensityClasses = density
 }
 
 const root = createEventCalendarPart(
-	'relative isolate flex min-w-0 flex-col rounded-lg border border-neutral-muted bg-surface text-neutral motion-reduce:scroll-auto motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [container-type:inline-size] [--event-calendar-slot-height:3rem] [--event-calendar-time-gutter-width:4rem] [--event-calendar-day-min-width:8rem] [--event-calendar-month-day-min-width:4.5rem] [--event-calendar-resource-min-width:10rem] [--event-calendar-item-min-height:1.5rem] [--event-calendar-sticky-offset:0px] [--event-calendar-item-color:var(--color)]',
+	'relative isolate flex min-w-0 flex-col rounded-lg border border-neutral-muted/80 bg-surface text-neutral motion-reduce:scroll-auto motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [container-type:inline-size] [--event-calendar-slot-height:3rem] [--event-calendar-time-gutter-width:4rem] [--event-calendar-day-min-width:8rem] [--event-calendar-month-day-min-width:4.5rem] [--event-calendar-resource-min-width:10rem] [--event-calendar-item-min-height:1.5rem] [--event-calendar-sticky-offset:0px] [--event-calendar-item-color:var(--color)]',
 	{
 		small:
 			'[--event-calendar-slot-height:2.5rem] [--event-calendar-time-gutter-width:3.5rem] [--event-calendar-item-min-height:1.5rem]',
@@ -121,12 +121,17 @@ const empty = createEventCalendarPart('text-center text-neutral/70', {
 });
 
 const month = createEventCalendarPart('relative flex h-full min-w-0 flex-col overflow-x-auto');
-const monthHeader = createEventCalendarPart('grid shrink-0 border-b border-neutral-muted');
-const dayHeader = createEventCalendarPart('min-w-0 truncate px-1 py-1.5 text-center font-medium', {
-	small: 'text-xs',
-	normal: 'text-sm',
-	large: 'py-2 text-base'
-});
+const monthHeader = createEventCalendarPart(
+	'grid shrink-0 border-b border-neutral-muted/70 bg-surface/95'
+);
+const dayHeader = createEventCalendarPart(
+	'min-w-0 truncate px-1 py-1.5 text-center font-medium text-neutral/60',
+	{
+		small: 'text-[0.6875rem]',
+		normal: 'text-xs',
+		large: 'py-2 text-sm'
+	}
+);
 const monthGrid = createEventCalendarPart(
 	'grid min-h-0 min-w-0 flex-1 auto-rows-[minmax(6rem,1fr)]'
 );
@@ -137,10 +142,10 @@ const weekNumber = createEventCalendarPart('grid place-items-center text-center 
 	large: 'text-sm'
 });
 const monthCell = createEventCalendarPart(
-	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted p-1 outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+	'relative min-w-0 cursor-default overflow-visible border-e border-b border-neutral-muted/70 p-1 outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/50'
 );
 const dayNumber = createEventCalendarPart(
-	'inline-flex min-h-6 min-w-6 items-center justify-center rounded-full'
+	'inline-flex min-h-6 min-w-6 items-center justify-center rounded-full text-xs font-medium text-neutral/65 tabular-nums'
 );
 const barLayer = createEventCalendarPart('pointer-events-none absolute inset-0 min-w-0');
 
@@ -168,22 +173,24 @@ const item = createEventCalendarPart(
 	'group/item relative min-h-[var(--event-calendar-item-min-height)] min-w-0'
 );
 const itemControl = createEventCalendarPart(
-	'state-layer h-full min-h-6 w-full min-w-0 rounded bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] px-1.5 py-0.5 text-start text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'state-layer h-full min-h-6 w-full min-w-0 rounded-md border border-[color-mix(in_oklab,var(--event-calendar-item-color)_24%,transparent)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_10%,var(--color-surface))] px-1.5 py-0 text-start text-neutral/90 outline-none focus-visible:ring-2 focus-visible:ring-color/50'
 );
-const itemContent = createEventCalendarPart('flex min-w-0 items-baseline gap-1 overflow-hidden');
-const itemTitle = createEventCalendarPart('truncate font-medium');
+const itemContent = createEventCalendarPart(
+	'flex h-full min-w-0 items-center gap-1 overflow-hidden'
+);
+const itemTitle = createEventCalendarPart('min-w-0 truncate text-xs font-medium leading-4');
 const itemTime = createEventCalendarPart(
-	'truncate bg-[color-mix(in_oklab,var(--event-calendar-item-color)_18%,var(--color-surface))] text-xs text-neutral tabular-nums'
+	'ms-auto shrink-0 truncate text-[0.6875rem] leading-4 text-neutral/55 tabular-nums'
 );
 const overflow = createEventCalendarPart(
 	'state-layer min-h-6 w-full truncate rounded px-1 text-start text-xs font-medium text-neutral outline-none focus-visible:ring-2 focus-visible:ring-color/60'
 );
 const overflowPopover = createEventCalendarPart('min-w-56 max-w-80 p-2');
 const dragPreview = createEventCalendarPart(
-	'pointer-events-none z-50 -translate-x-1/2 translate-y-3 rounded bg-color px-2 py-1 text-sm text-color-contrast shadow-lg'
+	'pointer-events-none z-50 -translate-x-1/2 translate-y-3 rounded-md border border-neutral-muted bg-surface-floating px-2 py-1 text-xs text-neutral/85 shadow-md opacity-90'
 );
 const dropIndicator = createEventCalendarPart(
-	'pointer-events-none z-40 rounded border-2 border-dashed border-[var(--event-calendar-item-color)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_14%,transparent)] shadow-sm backdrop-blur-[1px]'
+	'pointer-events-none z-40 rounded-md border border-dashed border-[color-mix(in_oklab,var(--event-calendar-item-color)_55%,transparent)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_8%,transparent)]'
 );
 const slotSelection = createEventCalendarPart(
 	'pointer-events-none z-20 border border-color bg-color/15'

@@ -267,12 +267,21 @@
 
 {#snippet defaultContent()}
 	<span class={classes.itemContent({ density, color: semanticColor, view })}>
-		{#if !isCompact && !occurrence.allDay && segment.isStart}
+		{#if view === 'month'}
+			<span
+				aria-hidden="true"
+				class="size-1.5 shrink-0 rounded-full bg-[var(--event-calendar-item-color)]"
+			></span>
+		{/if}
+		{#if view !== 'month' && !isCompact && !occurrence.allDay && segment.isStart}
 			<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
 		{/if}
 		<span class={classes.itemTitle({ density, color: semanticColor, view })}>
 			{occurrence.item.title}
 		</span>
+		{#if view === 'month' && !isCompact && !occurrence.allDay && segment.isStart}
+			<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
+		{/if}
 	</span>
 {/snippet}
 

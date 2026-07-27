@@ -90,6 +90,10 @@
 		startOfZonedDay
 	} from './eventCalendar.date.js';
 	import { packEventCalendarLanes } from './eventCalendar.layout.js';
+	import {
+		createEventCalendarMonthInsertionLayout,
+		getEventCalendarMonthRowInsertion
+	} from './eventCalendar.monthInsertion.js';
 	import type {
 		EventCalendarDayHeaderPayload,
 		EventCalendarItemPayload,
@@ -229,19 +233,60 @@
 		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, { weekday: 'narrow' })
 	);
 	const autoLaneSlots = $derived(getAutoLaneSlots(monthHeight, weekRows.length, density));
+	const monthInsertion = $derived(calendar.interaction.getMonthInsertion());
 	const weekLayouts = $derived(
 		weekRows.map((row) => {
 			const { days } = row;
 			const foregroundSegments = days.flatMap(
 				(day) => itemIndex.segmentsByDay.get(day)?.foreground ?? []
 			);
-			const layout = packEventCalendarLanes(foregroundSegments, days);
-			const visibleLaneCount =
+			const sourceLayout = packEventCalendarLanes(foregroundSegments, days);
+			const sourcePlacement = monthInsertion
+				? sourceLayout.placements.find(
+						(placement) => placement.occurrence.key === monthInsertion.occurrenceKey
+					)
+				: undefined;
+			const baseLayout = monthInsertion
+				? packEventCalendarLanes(
+						foregroundSegments.filter(
+							(segment) => segment.occurrence.key !== monthInsertion.occurrenceKey
+						),
+						days
+					)
+				: sourceLayout;
+			const rowInsertion = getEventCalendarMonthRowInsertion(days, monthInsertion);
+			const preview = rowInsertion
+				? createEventCalendarMonthInsertionLayout(baseLayout, rowInsertion)
+				: { layout: baseLayout, insertion: null };
+			const layout = sourcePlacement
+				? {
+						...preview.layout,
+						placements: [...preview.layout.placements, sourcePlacement]
+					}
+				: preview.layout;
+			const baseVisibleLaneCount =
 				maxItemsPerCell === 'auto'
 					? layout.laneCount > autoLaneSlots
 						? Math.max(0, autoLaneSlots - 1)
 						: autoLaneSlots
 					: maxItemsPerCell;
+			const previewInsertion = preview.insertion;
+			const insertionLaneRequirement = previewInsertion
+				? Math.max(
+						previewInsertion.lane,
+						...preview.layout.placements
+							.filter(
+								(placement) =>
+									placement.startIndex < previewInsertion.endIndex &&
+									previewInsertion.startIndex < placement.endIndex
+							)
+							.map((placement) => placement.lane)
+					) + 1
+				: 0;
+			const visibleLaneCount = Math.max(
+				baseVisibleLaneCount,
+				Math.min(baseVisibleLaneCount + 1, insertionLaneRequirement)
+			);
 			const shiftedLayout =
 				row.leadingEmptyCells === 0
 					? layout
@@ -253,7 +298,20 @@
 								endIndex: placement.endIndex + row.leadingEmptyCells
 							}))
 						};
-			return { ...row, layout: shiftedLayout, visibleLaneCount };
+			const shiftedInsertion = preview.insertion
+				? {
+						...preview.insertion,
+						startIndex: preview.insertion.startIndex + row.leadingEmptyCells,
+						endIndex: preview.insertion.endIndex + row.leadingEmptyCells
+					}
+				: null;
+			return {
+				...row,
+				layout: shiftedLayout,
+				visibleLaneCount,
+				insertion: shiftedInsertion,
+				draggingOccurrenceKey: monthInsertion?.occurrenceKey ?? null
+			};
 		})
 	);
 	const gridTemplateColumns = $derived(
@@ -351,6 +409,8 @@
 				days={weekLayout.days}
 				layout={weekLayout.layout}
 				visibleLaneCount={weekLayout.visibleLaneCount}
+				insertion={weekLayout.insertion}
+				draggingOccurrenceKey={weekLayout.draggingOccurrenceKey}
 				leadingEmptyCells={weekLayout.leadingEmptyCells}
 				trailingEmptyCells={weekLayout.trailingEmptyCells}
 				{weekIndex}
