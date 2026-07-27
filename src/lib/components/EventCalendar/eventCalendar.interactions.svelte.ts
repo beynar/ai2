@@ -1246,10 +1246,10 @@ export class EventCalendarInteractionsController<
 		item: EventCalendarItem<TItemFields>;
 	} {
 		if (item.allDay !== true) return { operation: initialKind, item };
-		const anchor = initialKind === 'resize-start' ? item.end : item.start;
-		const operation = targetDay < anchor ? 'resize-start' : 'resize-end';
-		const start = operation === 'resize-start' ? targetDay : anchor;
-		const end = operation === 'resize-end' ? addCivilDays(targetDay, 1) : anchor;
+		const crossingBoundary = initialKind === 'resize-start' ? item.end : item.start;
+		const operation = targetDay < crossingBoundary ? 'resize-start' : 'resize-end';
+		const start = operation === 'resize-start' ? targetDay : item.start;
+		const end = operation === 'resize-end' ? addCivilDays(targetDay, 1) : item.end;
 		return { operation, item: replaceSchedule(item, { allDay: true, start, end }) };
 	}
 
@@ -1262,21 +1262,21 @@ export class EventCalendarInteractionsController<
 		item: EventCalendarItem<TItemFields>;
 	} {
 		if (item.allDay === true) return { operation: initialKind, item };
-		const anchor = initialKind === 'resize-start' ? item.end : item.start;
+		const crossingBoundary = initialKind === 'resize-start' ? item.end : item.start;
 		const endpointTime = endpoint.getTime();
-		const anchorTime = anchor.getTime();
+		const crossingTime = crossingBoundary.getTime();
 		const operation =
-			endpointTime < anchorTime
+			endpointTime < crossingTime
 				? 'resize-start'
-				: endpointTime > anchorTime
+				: endpointTime > crossingTime
 					? 'resize-end'
 					: initialKind;
 		return {
 			operation,
 			item: replaceSchedule(item, {
 				allDay: false,
-				start: operation === 'resize-start' ? endpoint : anchor,
-				end: operation === 'resize-end' ? endpoint : anchor
+				start: operation === 'resize-start' ? endpoint : item.start,
+				end: operation === 'resize-end' ? endpoint : item.end
 			})
 		};
 	}
