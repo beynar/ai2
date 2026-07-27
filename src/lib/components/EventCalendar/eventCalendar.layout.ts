@@ -1,5 +1,5 @@
+import { packSchedulingLanes, packSchedulingOverlaps } from '$lib/utils/scheduling/index.js';
 import { EventCalendarError } from './eventCalendar.error.js';
-import { compareEventCalendarOccurrences } from './eventCalendar.items.js';
 import { assertDateOnly, assertValidInstant } from './eventCalendar.date.js';
 import type {
 	EventCalendarDateOnly,
@@ -215,181 +215,68 @@ function buildLaneLayout<TItemFields extends object>(
 		if (current) current.push(segment);
 		else byOccurrence.set(segment.occurrence.key, [segment]);
 	}
-	const bars = [...byOccurrence.values()]
-		.map((occurrenceSegments) => {
-			occurrenceSegments.sort(
-				(left, right) =>
-					(dayIndexes.get(left.day) as number) - (dayIndexes.get(right.day) as number)
-			);
-			return {
-				occurrence: occurrenceSegments[0].occurrence,
-				segments: occurrenceSegments,
-				startIndex: dayIndexes.get(occurrenceSegments[0].day) as number,
-				endIndex:
-					(dayIndexes.get(occurrenceSegments.at(-1)?.day as EventCalendarDateOnly) as number) + 1
-			};
-		})
-		.sort((left, right) => {
-			if (left.startIndex !== right.startIndex) return left.startIndex - right.startIndex;
-			if (left.endIndex !== right.endIndex) return right.endIndex - left.endIndex;
-			return compareEventCalendarOccurrences(left.occurrence, right.occurrence);
-		});
-	const laneEnds: number[] = [];
-	const placements: LaneSchedule[] = [];
-	for (const bar of bars) {
-		let lane = laneEnds.findIndex((endIndex) => endIndex <= bar.startIndex);
-		if (lane < 0) {
-			lane = laneEnds.length;
-			laneEnds.push(bar.endIndex);
-		} else {
-			laneEnds[lane] = bar.endIndex;
-		}
-		placements.push({
+	const bars = [...byOccurrence.values()].map((occurrenceSegments) => {
+		occurrenceSegments.sort(
+			(left, right) => (dayIndexes.get(left.day) as number) - (dayIndexes.get(right.day) as number)
+		);
+		return {
+			occurrence: occurrenceSegments[0].occurrence,
+			segments: occurrenceSegments,
+			startIndex: dayIndexes.get(occurrenceSegments[0].day) as number,
+			endIndex:
+				(dayIndexes.get(occurrenceSegments.at(-1)?.day as EventCalendarDateOnly) as number) + 1
+		};
+	});
+	const layout = packSchedulingLanes(
+		bars.map((bar) => ({
 			key: bar.occurrence.key,
-			segmentKeys: bar.segments.map((segment) => segment.key),
+			start: bar.occurrence.start.getTime(),
+			end: bar.occurrence.end.getTime(),
+			priority: bar.occurrence.item.priority ?? 0,
 			startIndex: bar.startIndex,
-			endIndex: bar.endIndex,
-			lane
-		});
-	}
-	return { identity: {}, placements, laneCount: laneEnds.length };
+			endIndex: bar.endIndex
+		}))
+	);
+	const barsByKey = new Map(bars.map((bar) => [bar.occurrence.key, bar]));
+	const placements = layout.placements.map((placement): LaneSchedule => {
+		const bar = barsByKey.get(placement.key);
+		if (!bar) throwMissingLayoutSegment(placement.key);
+		return {
+			...placement,
+			segmentKeys: bar.segments.map((segment) => segment.key)
+		};
+	});
+	return { identity: {}, placements, laneCount: layout.laneCount };
 }
 
 function buildTimedLayout<TItemFields extends object>(
 	segments: readonly EventCalendarSegment<TItemFields>[],
 	visualMinimumMilliseconds: number
 ): CachedTimedLayout {
-	const intervals = segments
-		.map((segment) => {
-			const start = segment.start.getTime();
-			const end = segment.end.getTime();
-			const visualEnd = end === start ? start + visualMinimumMilliseconds : end;
-			if (!Number.isFinite(visualEnd) || Math.abs(visualEnd) > MAX_DATE_MILLISECONDS) {
-				throw new EventCalendarError(
-					'invalid-prop',
-					`The visual minimum for zero-duration segment ${segment.key} exceeds the Date domain.`,
-					{ key: segment.key, visualMinimumMilliseconds }
-				);
-			}
-			return {
-				key: segment.key,
-				start,
-				end,
-				visualEnd,
-				occurrence: segment.occurrence
-			};
-		})
-		.sort((left, right) => {
-			if (left.start !== right.start) return left.start - right.start;
-			if (left.visualEnd !== right.visualEnd) return right.visualEnd - left.visualEnd;
-			return compareEventCalendarOccurrences(left.occurrence, right.occurrence);
-		});
-	const schedules: Array<TimedSchedule & { cluster: number }> = [];
-	const clusters: Array<{ start: number; end: number; columns: number[][] }> = [];
-	let active: Array<{ end: number; column: number }> = [];
-	let freeColumns: number[] = [];
-	let cluster = -1;
-
-	for (const interval of intervals) {
-		active = active.filter((entry) => {
-			if (entry.end > interval.start) return true;
-			insertSorted(freeColumns, entry.column);
-			return false;
-		});
-		if (active.length === 0) {
-			cluster += 1;
-			freeColumns = [];
-			clusters.push({ start: schedules.length, end: schedules.length, columns: [] });
+	const intervals = segments.map((segment) => {
+		const start = segment.start.getTime();
+		const end = segment.end.getTime();
+		const visualEnd = end === start ? start + visualMinimumMilliseconds : end;
+		if (!Number.isFinite(visualEnd) || Math.abs(visualEnd) > MAX_DATE_MILLISECONDS) {
+			throw new EventCalendarError(
+				'invalid-prop',
+				`The visual minimum for zero-duration segment ${segment.key} exceeds the Date domain.`,
+				{ key: segment.key, visualMinimumMilliseconds }
+			);
 		}
-		const column = freeColumns.shift() ?? active.length;
-		active.push({ end: interval.visualEnd, column });
-		active.sort((left, right) => left.end - right.end || left.column - right.column);
-		const clusterRecord = clusters[cluster];
-		const columnIntervals = clusterRecord.columns[column] ?? [];
-		columnIntervals.push(schedules.length);
-		clusterRecord.columns[column] = columnIntervals;
-		clusterRecord.end = schedules.length + 1;
-		schedules.push({
-			key: interval.key,
-			column,
-			columnCount: 0,
-			span: 1,
-			visualStart: interval.start,
-			visualEnd: interval.visualEnd,
-			isZeroDuration: interval.start === interval.end,
-			cluster
-		});
-	}
-
-	for (let clusterIndex = 0; clusterIndex < clusters.length; clusterIndex += 1) {
-		const clusterRecord = clusters[clusterIndex];
-		const columnCount = clusterRecord.columns.length;
-		const columnMaximumEnds = clusterRecord.columns.map((indexes) =>
-			getColumnMaximumEnds(schedules, indexes)
-		);
-		for (let index = clusterRecord.start; index < clusterRecord.end; index += 1) {
-			const schedule = schedules[index];
-			schedule.columnCount = columnCount;
-			for (let column = schedule.column + 1; column < columnCount; column += 1) {
-				if (
-					columnHasOverlap(
-						schedules,
-						clusterRecord.columns[column],
-						columnMaximumEnds[column],
-						schedule
-					)
-				)
-					break;
-				schedule.span += 1;
-			}
-		}
-	}
-	const columnCount = clusters.reduce(
-		(maximum, clusterRecord) => Math.max(maximum, clusterRecord.columns.length),
-		0
-	);
+		return {
+			key: segment.key,
+			start,
+			end,
+			priority: segment.occurrence.item.priority ?? 0
+		};
+	});
+	const layout = packSchedulingOverlaps(intervals, visualMinimumMilliseconds);
 	return {
 		identity: {},
-		placements: schedules.map((schedule) => ({
-			key: schedule.key,
-			column: schedule.column,
-			columnCount: schedule.columnCount,
-			span: schedule.span,
-			visualStart: schedule.visualStart,
-			visualEnd: schedule.visualEnd,
-			isZeroDuration: schedule.isZeroDuration
-		})),
-		columnCount
+		placements: layout.placements,
+		columnCount: layout.columnCount
 	};
-}
-
-function columnHasOverlap(
-	schedules: readonly (TimedSchedule & { cluster: number })[],
-	indexes: readonly number[],
-	maximumEnds: readonly number[],
-	target: TimedSchedule
-): boolean {
-	let low = 0;
-	let high = indexes.length;
-	while (low < high) {
-		const middle = Math.floor((low + high) / 2);
-		if (schedules[indexes[middle]].visualStart < target.visualEnd) low = middle + 1;
-		else high = middle;
-	}
-	return low > 0 && maximumEnds[low - 1] > target.visualStart;
-}
-
-function getColumnMaximumEnds(
-	schedules: readonly (TimedSchedule & { cluster: number })[],
-	indexes: readonly number[]
-): readonly number[] {
-	const maximumEnds: number[] = [];
-	let maximum = Number.NEGATIVE_INFINITY;
-	for (const index of indexes) {
-		maximum = Math.max(maximum, schedules[index].visualEnd);
-		maximumEnds.push(maximum);
-	}
-	return maximumEnds;
 }
 
 function getLaneScheduleKey<TItemFields extends object>(
@@ -430,12 +317,6 @@ function setBoundedCache<T>(cache: Map<string, T>, key: string, value: T): void 
 		if (oldest === undefined) return;
 		cache.delete(oldest);
 	}
-}
-
-function insertSorted(values: number[], value: number): void {
-	let index = 0;
-	while (index < values.length && values[index] < value) index += 1;
-	values.splice(index, 0, value);
 }
 
 function throwMissingLayoutSegment(key: string): never {
