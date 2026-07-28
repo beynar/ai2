@@ -14,6 +14,7 @@ import type {
 	GanttColumnDefinition,
 	GanttConstraintViolation,
 	GanttDependency,
+	GanttDependencyCreationRequest,
 	GanttDependencyGeometry,
 	GanttDependencyProposal,
 	GanttDependencyUpdateResult,
@@ -428,6 +429,10 @@ type GanttOwnProps<
 		>[];
 		/** Fine-grained interaction policy. */
 		interactions?: Partial<GanttInteractions>;
+		/** Materializes pointer-created dependency IDs and required consumer fields. */
+		createDependency?: (
+			request: GanttDependencyCreationRequest
+		) => GanttDependency<TDependencyFields>;
 		/** Pointer/touch activation thresholds. */
 		touchActivation?: Partial<GanttTouchActivation>;
 		/** Forward-schedules successors after accepted changes. Defaults to false. */

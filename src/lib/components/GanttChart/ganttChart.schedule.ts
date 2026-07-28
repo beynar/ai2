@@ -6,6 +6,7 @@ import { calculateGanttWorkload } from './ganttChart.workload.js';
 import type {
 	GanttAssignment,
 	GanttCalendar,
+	GanttConstraintViolation,
 	GanttDependency,
 	GanttResolvedTaskNode,
 	GanttResource,
@@ -29,6 +30,7 @@ export type ResolveGanttScheduleOptions<
 	timeZone: string;
 	expandedTaskIds?: readonly string[];
 	autoSchedule?: boolean;
+	schedulingViolations?: readonly GanttConstraintViolation[];
 }>;
 
 export type ResolvedGanttSchedule<
@@ -59,6 +61,7 @@ export function resolveGanttSchedule<
 		TAssignmentFields
 	>
 ): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
+	const { schedulingViolations: initialSchedulingViolations = [], ...modelOptions } = options;
 	const dependencies = options.dependencies ?? [];
 	const resources = options.resources ?? [];
 	const assignments = options.assignments ?? [];
@@ -67,7 +70,7 @@ export function resolveGanttSchedule<
 		options.expandedTaskIds ??
 		options.tasks.flatMap((task) => (task.type === 'summary' ? [task.id] : []));
 	let model = validateGanttModel({
-		...options,
+		...modelOptions,
 		dependencies,
 		resources,
 		assignments,
@@ -75,15 +78,15 @@ export function resolveGanttSchedule<
 	});
 	let resolvedTasks = resolveGanttHierarchy({ model, expandedTaskIds });
 	let autoScheduledTaskIds: readonly string[] = [];
-	let schedulingViolations = [] as ReturnType<typeof autoScheduleGanttTasks>['violations'];
+	let schedulingViolations = initialSchedulingViolations;
 
 	if (options.autoSchedule) {
 		const scheduled = autoScheduleGanttTasks(model, resolvedTasks);
 		autoScheduledTaskIds = scheduled.changedTaskIds;
-		schedulingViolations = scheduled.violations;
+		schedulingViolations = [...schedulingViolations, ...scheduled.violations];
 		if (scheduled.changedTaskIds.length > 0) {
 			model = validateGanttModel({
-				...options,
+				...modelOptions,
 				tasks: scheduled.tasks,
 				dependencies,
 				resources,

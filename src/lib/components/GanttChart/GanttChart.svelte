@@ -122,6 +122,7 @@
 		maxGridWidth = 640,
 		columns,
 		interactions = defaultInteractions,
+		createDependency,
 		autoSchedule = false,
 		moveDependencies = false,
 		display = defaultDisplay,
@@ -280,6 +281,9 @@
 		},
 		get interactions() {
 			return resolvedInteractions;
+		},
+		get createDependency() {
+			return createDependency;
 		},
 		get snapDuration() {
 			return snapDuration;

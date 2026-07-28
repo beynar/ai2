@@ -123,6 +123,10 @@ The frozen props include:
 - Immutable change callbacks carrying guarded one-shot revert functions. Persistence failures are never swallowed.
 - Callbacks for selection, expansion, zoom, visible range, clicks, double-click, empty-range selection, blocked interactions, and schedule violations.
 - A consumer ID hook for structurally valid subtree paste and internal-dependency remapping.
+- A synchronous `createDependency(request)` materialization hook for pointer-created links. This
+  approved Phase 6 amendment is required because a generic dependency can contain required consumer
+  fields that GanttChart cannot fabricate. The hook supplies the ID and custom fields; GanttChart
+  preserves the gesture-owned endpoints and type, then runs the normal validation and mutation pipeline.
 - Cohesive display and resource-view configuration for critical-path/baseline/deadline/non-working/workload toggles, resource filtering, and resource grouping.
 
 `allowOverlap` does not exist.

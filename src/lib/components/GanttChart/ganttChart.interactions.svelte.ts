@@ -16,6 +16,11 @@ import {
 	getTaskCalendar,
 	type GanttCalendarRuntime
 } from './ganttChart.calendar.js';
+import {
+	GanttDependencyInteraction,
+	type GanttDependencyInteractionStatus,
+	type GanttTimelineInteractionContext
+} from './ganttChart.dependencyInteraction.svelte.js';
 import { GanttChartError } from './ganttChart.error.js';
 import type { GanttChartMutations } from './ganttChart.mutations.js';
 import { getGanttScaleInstantAtPixel, type GanttTimeScale } from './ganttChart.scale.js';
@@ -46,12 +51,6 @@ const POINTER_MAX_SCROLL = 18;
 let nextInteractionId = 0;
 
 type PointerCoordinates = Readonly<{ clientX: number; clientY: number }>;
-
-type GanttTimelineInteractionContext = Readonly<{
-	scale: GanttTimeScale;
-	viewport: HTMLElement;
-	rowHeight: number;
-}>;
 
 type GestureBoundary<
 	TTaskFields extends object,
@@ -194,6 +193,12 @@ export class GanttChartInteractions<
 		TResourceFields,
 		TAssignmentFields
 	>;
+	readonly dependency: GanttDependencyInteraction<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>;
 	#gesture = $state.raw<Gesture<
 		TTaskFields,
 		TDependencyFields,
@@ -233,6 +238,12 @@ export class GanttChartInteractions<
 		this.#options = options;
 		this.#mutations = mutations;
 		this.#getSchedule = getSchedule;
+		this.dependency = new GanttDependencyInteraction(
+			options,
+			mutations,
+			getSchedule,
+			() => this.#gesture === null
+		);
 	}
 
 	get status(): GanttChartInteractionStatus<TTaskFields> | null {
@@ -264,11 +275,15 @@ export class GanttChartInteractions<
 	}
 
 	get isActive(): boolean {
-		return this.#gesture !== null;
+		return this.#gesture !== null || this.dependency.isActive;
 	}
 
 	get isInvalid(): boolean {
-		return this.#gesture !== null && !this.#gesture.isValid;
+		return (this.#gesture !== null && !this.#gesture.isValid) || this.dependency.isInvalid;
+	}
+
+	get dependencyStatus(): GanttDependencyInteractionStatus | null {
+		return this.dependency.status;
 	}
 
 	isTaskActive(taskId: string): boolean {
@@ -277,6 +292,7 @@ export class GanttChartInteractions<
 
 	connectTimeline(context: GanttTimelineInteractionContext): () => void {
 		this.#timeline = context;
+		const dependencyCleanup = this.dependency.connectTimeline(context);
 		const dropTargetCleanup = dropTargetForElements({
 			element: context.viewport,
 			canDrop: ({ source }) =>
@@ -285,11 +301,12 @@ export class GanttChartInteractions<
 		});
 		const horizontalAutoScrollCleanup = autoScrollForElements({
 			element: context.viewport,
-			canScroll: ({ source }) => this.readTaskDragSource(source.data) !== null,
+			canScroll: ({ source }) =>
+				this.readTaskDragSource(source.data) !== null || this.dependency.isDragSource(source.data),
 			getAllowedAxis: () => 'horizontal'
 		});
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key !== 'Escape' || !this.#gesture) return;
+			if (event.key !== 'Escape' || !this.isActive) return;
 			event.preventDefault();
 			this.cancel();
 		};
@@ -299,6 +316,7 @@ export class GanttChartInteractions<
 		};
 		window.addEventListener('dragend', handleDragEnd, true);
 		return () => {
+			dependencyCleanup();
 			dropTargetCleanup();
 			horizontalAutoScrollCleanup();
 			window.removeEventListener('keydown', handleKeyDown, true);
@@ -313,13 +331,16 @@ export class GanttChartInteractions<
 	connectVerticalScrollOwner(element: HTMLElement, mode: 'contained' | 'page'): () => void {
 		if (mode === 'page' && element === document.documentElement) {
 			return autoScrollWindowForElements({
-				canScroll: ({ source }) => this.readTaskDragSource(source.data) !== null,
+				canScroll: ({ source }) =>
+					this.readTaskDragSource(source.data) !== null ||
+					this.dependency.isDragSource(source.data),
 				getAllowedAxis: () => 'vertical'
 			});
 		}
 		return autoScrollForElements({
 			element,
-			canScroll: ({ source }) => this.readTaskDragSource(source.data) !== null,
+			canScroll: ({ source }) =>
+				this.readTaskDragSource(source.data) !== null || this.dependency.isDragSource(source.data),
 			getAllowedAxis: () => 'vertical'
 		});
 	}
@@ -417,6 +438,7 @@ export class GanttChartInteractions<
 	}
 
 	reconcileControlledState(): void {
+		this.dependency.reconcileControlledState();
 		if (!this.#gesture || this.isBoundaryCurrent(this.#gesture.boundary)) return;
 		this.reportBlocked({
 			reason: 'stale',
@@ -428,6 +450,7 @@ export class GanttChartInteractions<
 	}
 
 	reconcileScale(scale: GanttTimeScale): void {
+		this.dependency.reconcileScale(scale);
 		if (!this.#gesture || isSameInteractionScale(this.#gesture.scale, scale)) return;
 		this.reportBlocked({
 			reason: 'stale',
@@ -439,7 +462,8 @@ export class GanttChartInteractions<
 	}
 
 	cancel(): boolean {
-		if (!this.#gesture) return false;
+		const didCancelDependency = this.dependency.cancel();
+		if (!this.#gesture) return didCancelDependency;
 		this.#gesture = null;
 		this.cancelPointerFrames();
 		return true;
@@ -531,7 +555,7 @@ export class GanttChartInteractions<
 			!timeline ||
 			(startTarget instanceof Element &&
 				startTarget.closest(
-					'[data-gantt-chart-part="task"], [data-gantt-chart-part="summary-task"], [data-gantt-chart-part="milestone"], [data-gantt-chart-part="connector-control"], [data-gantt-chart-part="resize-handle"], [data-gantt-chart-part="progress-handle"]'
+					'[data-gantt-chart-part="task"], [data-gantt-chart-part="summary-task"], [data-gantt-chart-part="milestone"], [data-gantt-chart-part="connector-control"], [data-gantt-chart-part="resize-handle"], [data-gantt-chart-part="progress-handle"], [data-gantt-chart-part="dependency-handle"]'
 				))
 		) {
 			return false;
@@ -799,7 +823,7 @@ export class GanttChartInteractions<
 	}
 
 	private canBeginTaskGesture(taskId: string, operation: GanttTaskPointerOperation): boolean {
-		if (this.#options.disabled || this.#options.loading || this.#gesture) return false;
+		if (this.#options.disabled || this.#options.loading || this.isActive) return false;
 		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
 		if (!task || task.readOnly || !task.start || !task.end) return false;
 		if (operation === 'move') {
@@ -812,7 +836,7 @@ export class GanttChartInteractions<
 	}
 
 	private canBeginProgressGesture(taskId: string): boolean {
-		if (this.#options.disabled || this.#options.loading || this.#gesture) return false;
+		if (this.#options.disabled || this.#options.loading || this.isActive) return false;
 		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
 		return Boolean(
 			task &&

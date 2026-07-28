@@ -2,8 +2,11 @@
 	import {
 		GanttChart,
 		type GanttDependency,
+		type GanttDependencyCreationRequest,
 		type GanttTask
 	} from '$lib/components/GanttChart/index.js';
+
+	let nextDependencyId = 0;
 
 	let tasks = $state<GanttTask[]>([
 		{ id: 'discovery', title: 'Discovery', type: 'summary', progress: 0.75 },
@@ -56,11 +59,22 @@
 			type: 'finish-start'
 		}
 	]);
+
+	function createDependency(request: GanttDependencyCreationRequest): GanttDependency {
+		nextDependencyId += 1;
+		return {
+			id: `dependency-${nextDependencyId}`,
+			fromTaskId: request.fromTaskId,
+			toTaskId: request.toTaskId,
+			type: request.type
+		};
+	}
 </script>
 
 <GanttChart
 	bind:tasks
 	bind:dependencies
+	{createDependency}
 	timeZone="Europe/Paris"
 	initialScrollDate={new Date('2026-08-05T10:00:00.000Z')}
 	class="h-[34rem] w-full"

@@ -23,6 +23,12 @@ export type GanttAutoScheduleResult<TTaskFields extends object> = Readonly<{
 	violations: readonly GanttConstraintViolation[];
 }>;
 
+export type GanttDependentMoveResult<TTaskFields extends object> = Readonly<{
+	tasks: readonly GanttTask<TTaskFields>[];
+	changedTaskIds: readonly string[];
+	violations: readonly GanttConstraintViolation[];
+}>;
+
 export function autoScheduleGanttTasks<
 	TTaskFields extends object,
 	TDependencyFields extends object,
@@ -105,6 +111,79 @@ export function autoScheduleGanttTasks<
 		violations.push(...getTaskConstraintViolations(currentTask));
 	}
 
+	return {
+		tasks: model.tasks.map((task) => getRequiredTask(tasksById, task.id)),
+		changedTaskIds,
+		violations
+	};
+}
+
+export function moveGanttDependentTasks<
+	TTaskFields extends object,
+	TDependencyFields extends object,
+	TResourceFields extends object,
+	TAssignmentFields extends object
+>(
+	model: ValidatedGanttModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
+	sourceTaskId: string,
+	deltaMilliseconds: number
+): GanttDependentMoveResult<TTaskFields> {
+	if (!Number.isFinite(deltaMilliseconds)) {
+		throw new GanttChartError(
+			'invalid-operation',
+			'Dependent task movement requires a finite delta.',
+			{
+				sourceTaskId,
+				deltaMilliseconds
+			}
+		);
+	}
+	if (deltaMilliseconds === 0) {
+		return { tasks: model.tasks, changedTaskIds: [], violations: [] };
+	}
+	const dependentTaskIds = collectDependentTaskIds(model, sourceTaskId);
+	const tasksById = new Map(model.tasks.map((task) => [task.id, task]));
+	const changedTaskIds: string[] = [];
+	const violations: GanttConstraintViolation[] = [];
+	for (const taskId of model.topologicalTaskIds) {
+		if (!dependentTaskIds.has(taskId)) continue;
+		const task = getRequiredTask(tasksById, taskId);
+		if (task.type === 'summary') continue;
+		if (!task.start || !task.end) {
+			violations.push({
+				taskId,
+				code: 'dependency-conflict',
+				message: `Unscheduled dependent task ${taskId} cannot move with ${sourceTaskId}.`
+			});
+			continue;
+		}
+		const requiredStart = new Date(task.start.getTime() + deltaMilliseconds);
+		if (task.progress === 1) {
+			violations.push({
+				taskId,
+				constraint: task.constraint,
+				code: 'completed-task-blocked',
+				message: `Completed task ${taskId} remains at its actual dates.`,
+				requiredDate: requiredStart,
+				actualDate: new Date(task.start)
+			});
+			continue;
+		}
+		if (task.readOnly) {
+			violations.push({
+				taskId,
+				constraint: task.constraint,
+				code: 'dependency-conflict',
+				message: `Read-only task ${taskId} cannot move with ${sourceTaskId}.`,
+				requiredDate: requiredStart,
+				actualDate: new Date(task.start)
+			});
+			continue;
+		}
+		const movedTask = moveTaskToStart(task, requiredStart, getTaskCalendar(model, task));
+		tasksById.set(taskId, movedTask);
+		changedTaskIds.push(taskId);
+	}
 	return {
 		tasks: model.tasks.map((task) => getRequiredTask(tasksById, task.id)),
 		changedTaskIds,
@@ -287,6 +366,34 @@ function getRequiredSchedule(
 	const schedule = scheduleById.get(taskId);
 	if (schedule) return schedule;
 	throw new GanttChartError('invalid-operation', `Schedule index lost ${taskId}.`, { taskId });
+}
+
+function collectDependentTaskIds<
+	TTaskFields extends object,
+	TDependencyFields extends object,
+	TResourceFields extends object,
+	TAssignmentFields extends object
+>(
+	model: ValidatedGanttModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
+	sourceTaskId: string
+): ReadonlySet<string> {
+	if (!model.tasksById.has(sourceTaskId)) {
+		throw new GanttChartError('invalid-operation', `Unknown dependency source ${sourceTaskId}.`, {
+			sourceTaskId
+		});
+	}
+	const dependentTaskIds = new Set<string>();
+	const pendingTaskIds = [sourceTaskId];
+	while (pendingTaskIds.length > 0) {
+		const taskId = pendingTaskIds.pop();
+		if (!taskId) continue;
+		for (const dependency of model.outgoingDependencies.get(taskId) ?? []) {
+			if (dependentTaskIds.has(dependency.toTaskId)) continue;
+			dependentTaskIds.add(dependency.toTaskId);
+			pendingTaskIds.push(dependency.toTaskId);
+		}
+	}
+	return dependentTaskIds;
 }
 
 function cloneDate(date: Date | null): Date | null {

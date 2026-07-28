@@ -26,6 +26,8 @@
 		classes,
 		dependencyTooltip,
 		onSelect,
+		onDelete,
+		onUpdate,
 		onDependencyClick
 	}: {
 		dependencies: readonly GanttResolvedDependency<TTaskFields, TDependencyFields>[];
@@ -44,6 +46,10 @@
 		classes: GanttChartClasses;
 		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
 		onSelect: (dependencyId: string) => void;
+		onDelete: (dependencyId: string) => void;
+		onUpdate: (
+			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>['dependency']
+		) => boolean;
 		onDependencyClick?: (
 			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
 			event: MouseEvent
@@ -149,6 +155,8 @@
 				selection.dependencyId === positioned.dependency.dependency.id}
 			{dependencyTooltip}
 			onActivate={(event) => activate(positioned.dependency, event)}
+			onDelete={() => onDelete(positioned.dependency.dependency.id)}
+			{onUpdate}
 		/>
 	{/each}
 </div>

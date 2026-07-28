@@ -17,6 +17,7 @@ import type {
 	GanttColumnDefinition,
 	GanttConstraintViolation,
 	GanttDependency,
+	GanttDependencyCreationRequest,
 	GanttDependencyProposal,
 	GanttDependencyUpdateResult,
 	GanttDependenciesChange,
@@ -100,6 +101,8 @@ export type GanttChartStateOptions<
 	readonly autoSchedule: boolean;
 	readonly moveDependencies: boolean;
 	readonly interactions: GanttInteractions;
+	readonly createDependency:
+		((request: GanttDependencyCreationRequest) => GanttDependency<TDependencyFields>) | undefined;
 	readonly snapDuration: GanttDuration;
 	readonly touchActivation: GanttTouchActivation;
 	readonly canUpdateTask: ((proposal: GanttTaskProposal<TTaskFields>) => boolean) | undefined;
@@ -525,6 +528,17 @@ export class GanttChartState<
 			this.#mutations.removeDependency(dependencyId, 'api'),
 			'removeDependency'
 		);
+	}
+
+	removeDependencyFromKeyboard(dependencyId: string): boolean {
+		if (!this.#options.interactions.keyboard) return false;
+		const accepted = this.#mutations.removeDependency(dependencyId, 'keyboard');
+		if (accepted && this.#options.selection.kind === 'dependency') this.clearSelection();
+		return accepted;
+	}
+
+	updateDependencyFromInline(dependency: GanttDependency<TDependencyFields>): boolean {
+		return this.#mutations.updateDependency(dependency, 'inline-edit');
 	}
 
 	addAssignment(assignment: GanttAssignment<TAssignmentFields>): void {

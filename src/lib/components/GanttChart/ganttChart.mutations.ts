@@ -1,4 +1,5 @@
 import { GanttChartError } from './ganttChart.error.js';
+import { moveGanttDependentTasks } from './ganttChart.dependencies.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
 import type {
@@ -9,6 +10,7 @@ import type {
 	GanttDependencyMutationKind,
 	GanttDependencyProposal,
 	GanttMutationSource,
+	GanttSelection,
 	GanttTask,
 	GanttTaskMutationKind,
 	GanttTaskProposal
@@ -42,6 +44,7 @@ type MutationBoundary<
 	>['calendars'];
 	timeZone: string;
 	projectCalendarId: string | undefined;
+	selection: GanttSelection;
 }>;
 
 export class GanttChartMutations<
@@ -176,7 +179,8 @@ export class GanttChartMutations<
 
 	addDependency(
 		dependency: GanttDependency<TDependencyFields>,
-		source: GanttMutationSource
+		source: GanttMutationSource,
+		select = false
 	): boolean {
 		this.assertMutationEnabled();
 		const nextDependency = cloneDependency(dependency);
@@ -185,7 +189,8 @@ export class GanttChartMutations<
 			source,
 			previousDependency: null,
 			dependency: nextDependency,
-			candidateDependencies: [...this.options.dependencies, nextDependency]
+			candidateDependencies: [...this.options.dependencies, nextDependency],
+			select
 		});
 	}
 
@@ -277,7 +282,7 @@ export class GanttChartMutations<
 		const boundary = this.getBoundary();
 		if (input.expectedTasks) this.assertExpectedTasks(input.expectedTasks);
 		let candidateTasks = input.candidateTasks;
-		let schedule = this.resolveSchedule(candidateTasks, boundary.dependencies);
+		let schedule = this.resolveTaskMutationSchedule(input, candidateTasks, boundary.dependencies);
 		const proposal = this.createTaskProposal(input, schedule);
 		if (this.options.canUpdateTask?.(proposal) === false) return false;
 		this.assertBoundary(boundary);
@@ -293,7 +298,11 @@ export class GanttChartMutations<
 			}
 			const adjustedTask = cloneTask(decision);
 			candidateTasks = replaceById(candidateTasks, adjustedTask);
-			schedule = this.resolveAdjustedSchedule(candidateTasks, boundary.dependencies);
+			schedule = this.resolveAdjustedTaskMutationSchedule(
+				{ ...input, task: adjustedTask },
+				candidateTasks,
+				boundary.dependencies
+			);
 			const adjustedProposal = this.createTaskProposal({ ...input, task: adjustedTask }, schedule);
 			if (this.options.canUpdateTask?.(adjustedProposal) === false) {
 				throw new GanttChartError(
@@ -339,6 +348,7 @@ export class GanttChartMutations<
 		previousDependency: GanttDependency<TDependencyFields> | null;
 		dependency: GanttDependency<TDependencyFields> | null;
 		candidateDependencies: GanttDependency<TDependencyFields>[];
+		select?: boolean;
 	}): boolean {
 		const boundary = this.getBoundary();
 		let candidateDependencies = input.candidateDependencies;
@@ -371,10 +381,21 @@ export class GanttChartMutations<
 		this.assertBoundary(boundary);
 		const previousTasks = boundary.tasks;
 		const previousDependencies = boundary.dependencies;
+		const previousSelection = boundary.selection;
 		const publishedTasks = [...schedule.tasks];
 		const publishedDependencies = [...candidateDependencies];
 		this.options.tasks = publishedTasks;
 		this.options.dependencies = publishedDependencies;
+		const committedSelection =
+			input.select && proposal.dependency
+				? {
+						kind: 'dependency' as const,
+						taskId: null,
+						dependencyId: proposal.dependency.id,
+						cell: null
+					}
+				: null;
+		if (committedSelection) this.options.selection = committedSelection;
 		const committedTasks = this.options.tasks;
 		const committedDependencies = this.options.dependencies;
 		const revert = createGuardedRevert(
@@ -384,8 +405,17 @@ export class GanttChartMutations<
 			() => {
 				this.options.tasks = previousTasks;
 				this.options.dependencies = previousDependencies;
+				if (
+					committedSelection &&
+					this.options.selection.kind === 'dependency' &&
+					this.options.selection.dependencyId === committedSelection.dependencyId
+				) {
+					this.options.selection = previousSelection;
+					this.options.onSelectionChange?.(previousSelection);
+				}
 			}
 		);
+		if (committedSelection) this.options.onSelectionChange?.(committedSelection);
 		if (schedule.autoScheduledTaskIds.length > 0) {
 			this.options.onTasksChange?.(committedTasks, {
 				kind: 'schedule',
@@ -518,7 +548,14 @@ export class GanttChartMutations<
 	private resolveSchedule(
 		tasks: readonly GanttTask<TTaskFields>[],
 		dependencies: readonly GanttDependency<TDependencyFields>[],
-		assignments: readonly GanttAssignment<TAssignmentFields>[] = this.options.assignments
+		assignments: readonly GanttAssignment<TAssignmentFields>[] = this.options.assignments,
+		autoSchedule = this.options.autoSchedule,
+		schedulingViolations: ResolvedGanttSchedule<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>['analysis']['violations'] = []
 	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
 		return resolveGanttSchedule({
 			tasks,
@@ -531,16 +568,74 @@ export class GanttChartMutations<
 			expandedTaskIds: this.options.expandedTaskIds.filter((taskId) =>
 				tasks.some((task) => task.id === taskId && task.type === 'summary')
 			),
-			autoSchedule: this.options.autoSchedule
+			autoSchedule,
+			schedulingViolations
 		});
 	}
 
-	private resolveAdjustedSchedule(
+	private resolveTaskMutationSchedule(
+		input: Readonly<{
+			kind: GanttTaskMutationKind;
+			previousTask: GanttTask<TTaskFields> | null;
+			task: GanttTask<TTaskFields> | null;
+		}>,
+		tasks: readonly GanttTask<TTaskFields>[],
+		dependencies: readonly GanttDependency<TDependencyFields>[]
+	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
+		if (this.options.autoSchedule)
+			return this.resolveSchedule(tasks, dependencies, undefined, true);
+		if (
+			!this.options.moveDependencies ||
+			input.kind !== 'move' ||
+			!input.previousTask?.start ||
+			!input.task?.start
+		) {
+			return this.resolveSchedule(tasks, dependencies, undefined, false);
+		}
+		const schedule = this.resolveSchedule(tasks, dependencies, undefined, false);
+		const moved = moveGanttDependentTasks(
+			schedule.model,
+			input.task.id,
+			input.task.start.getTime() - input.previousTask.start.getTime()
+		);
+		const resolved = this.resolveSchedule(
+			moved.tasks,
+			dependencies,
+			undefined,
+			false,
+			moved.violations
+		);
+		return { ...resolved, autoScheduledTaskIds: moved.changedTaskIds };
+	}
+
+	private resolveAdjustedTaskMutationSchedule(
+		input: Readonly<{
+			kind: GanttTaskMutationKind;
+			previousTask: GanttTask<TTaskFields> | null;
+			task: GanttTask<TTaskFields> | null;
+		}>,
 		tasks: readonly GanttTask<TTaskFields>[],
 		dependencies: readonly GanttDependency<TDependencyFields>[]
 	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
 		try {
-			return this.resolveSchedule(tasks, dependencies);
+			return this.resolveTaskMutationSchedule(input, tasks, dependencies);
+		} catch (error) {
+			if (!(error instanceof GanttChartError)) throw error;
+			throw new GanttChartError(
+				'invalid-adjustment',
+				'Consumer adjustment produced an invalid Gantt model.',
+				{ causeCode: error.code, cause: error.message }
+			);
+		}
+	}
+
+	private resolveAdjustedSchedule(
+		tasks: readonly GanttTask<TTaskFields>[],
+		dependencies: readonly GanttDependency<TDependencyFields>[],
+		autoSchedule = this.options.autoSchedule
+	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
+		try {
+			return this.resolveSchedule(tasks, dependencies, undefined, autoSchedule);
 		} catch (error) {
 			if (!(error instanceof GanttChartError)) throw error;
 			throw new GanttChartError(
@@ -571,7 +666,8 @@ export class GanttChartMutations<
 			assignments: this.options.assignments,
 			calendars: this.options.calendars,
 			timeZone: this.options.timeZone,
-			projectCalendarId: this.options.projectCalendarId
+			projectCalendarId: this.options.projectCalendarId,
+			selection: this.options.selection
 		};
 	}
 

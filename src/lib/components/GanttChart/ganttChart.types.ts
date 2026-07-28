@@ -113,6 +113,17 @@ type GanttDependencyBase = {
 export type GanttDependency<TDependencyFields extends object = Record<never, never>> =
 	GanttCustomFields<TDependencyFields, keyof GanttDependencyBase> & GanttDependencyBase;
 
+export type GanttDependencyEndpoint = 'start' | 'end';
+
+/** Owned pointer intent passed to the consumer materialization boundary. */
+export type GanttDependencyCreationRequest = Readonly<{
+	fromTaskId: string;
+	fromEndpoint: GanttDependencyEndpoint;
+	toTaskId: string;
+	toEndpoint: GanttDependencyEndpoint;
+	type: GanttDependencyBase['type'];
+}>;
+
 type GanttResourceBase = {
 	id: string;
 	title: string;

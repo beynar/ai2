@@ -7,6 +7,7 @@
 	import type { Snippet } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import GanttDependencyLayer from './GanttDependencyLayer.svelte';
+	import GanttDependencyPreview from './GanttDependencyPreview.svelte';
 	import GanttDragPreview from './GanttDragPreview.svelte';
 	import GanttTaskBar from './GanttTaskBar.svelte';
 	import GanttTimeShadeLayer from './GanttTimeShadeLayer.svelte';
@@ -301,6 +302,18 @@
 		/>
 	{/if}
 
+	{#if chart.interaction.dependencyStatus}
+		<GanttDependencyPreview
+			status={chart.interaction.dependencyStatus}
+			{totalHeight}
+			totalWidth={scale.totalWidth}
+			{density}
+			{color}
+			{disabled}
+			{classes}
+		/>
+	{/if}
+
 	<GanttDependencyLayer
 		dependencies={resolvedDependencies}
 		{rowIndexByTaskId}
@@ -319,6 +332,8 @@
 		dependencyTooltip={snippets.dependencyTooltip}
 		onSelect={(dependencyId) =>
 			chart.select({ kind: 'dependency', taskId: null, dependencyId, cell: null })}
+		onDelete={(dependencyId) => chart.removeDependencyFromKeyboard(dependencyId)}
+		onUpdate={(dependency) => chart.updateDependencyFromInline(dependency)}
 		{onDependencyClick}
 	/>
 </div>

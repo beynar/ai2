@@ -120,7 +120,7 @@ const resizeHandle = createGanttChartPart(
 	'pointer-events-auto absolute z-30 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none place-items-center rounded outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
 );
 const dependencyHandle = createGanttChartPart(
-	'absolute top-1/2 z-20 grid size-6 -translate-y-1/2 place-items-center rounded-full outline-none opacity-0 group-hover/task:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
+	'pointer-events-auto absolute z-30 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair place-items-center rounded-full outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color data-[target]:opacity-100 data-[target]:ring-2 data-[target]:ring-color'
 );
 const taskLabel = createGanttChartPart(
 	'pointer-events-none absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-neutral/85'

@@ -101,6 +101,9 @@
 	const endHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -10 : 10));
 	const handleTop = $derived(positioned.geometry.top + positioned.geometry.height / 2);
 	const progressHandleLeft = $derived(getProgressHandleLeft(positioned, progressValue, direction));
+	const canCreateDependency = $derived(
+		chart.interaction.dependency.canCreateForTask(node.taskId) && !disabled
+	);
 	const dateFormatter = $derived(
 		getDateTimeFormatter(locale, timeZone, {
 			year: 'numeric',
@@ -370,6 +373,45 @@
 			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
 		>
 			<span class="size-2 rounded-full border border-surface bg-[var(--gantt-task-color)]"></span>
+		</span>
+	{/if}
+
+	{#if canCreateDependency}
+		<span
+			role="button"
+			aria-label={`${messages.ganttChartDependencyAction}: ${node.task.title}, start`}
+			tabindex="-1"
+			data-gantt-chart-part="dependency-handle"
+			data-endpoint="start"
+			data-task-id={node.taskId}
+			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'start') || undefined}
+			class={classes.dependencyHandle({ density, color: semanticColor, disabled })}
+			style:left={`${startHandleLeft}px`}
+			style:top={`${handleTop}px`}
+			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'start', {
+				x: startHandleLeft,
+				y: handleTop
+			})}
+		>
+			<span class="size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface"></span>
+		</span>
+		<span
+			role="button"
+			aria-label={`${messages.ganttChartDependencyAction}: ${node.task.title}, end`}
+			tabindex="-1"
+			data-gantt-chart-part="dependency-handle"
+			data-endpoint="end"
+			data-task-id={node.taskId}
+			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'end') || undefined}
+			class={classes.dependencyHandle({ density, color: semanticColor, disabled })}
+			style:left={`${endHandleLeft}px`}
+			style:top={`${handleTop}px`}
+			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'end', {
+				x: endHandleLeft,
+				y: handleTop
+			})}
+		>
+			<span class="size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface"></span>
 		</span>
 	{/if}
 

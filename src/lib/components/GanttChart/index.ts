@@ -21,6 +21,8 @@ export type {
 	GanttConstraintViolation,
 	GanttDateOnly,
 	GanttDependency,
+	GanttDependencyCreationRequest,
+	GanttDependencyEndpoint,
 	GanttDependencyGeometry,
 	GanttDependencyMutationKind,
 	GanttDependencyProposal,

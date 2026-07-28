@@ -352,7 +352,7 @@
 		}));
 	});
 	const totalRowsHeight = $derived(
-		get(rowVirtualizerStore).getTotalSize() || rowModel.rows.length * rowHeight
+		$rowVirtualizerStore.getTotalSize() || rowModel.rows.length * rowHeight
 	);
 	const contentHeight = $derived(Math.max(totalRowsHeight, rowHeight * 6));
 	const emptyPayload = $derived<GanttEmptyPayload>({
