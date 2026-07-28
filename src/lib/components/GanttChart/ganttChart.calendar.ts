@@ -19,6 +19,7 @@ import type {
 } from './ganttChart.types.js';
 
 const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
 
 type WorkingMinuteRange = Readonly<{ start: number; end: number }>;
 
@@ -29,9 +30,17 @@ export type GanttCalendarRuntime = Readonly<{
 	exceptions: ReadonlyMap<CivilDateOnly, readonly WorkingMinuteRange[] | null>;
 	standardDayMinutes: number;
 	standardWeekMinutes: number;
+	isContinuous: boolean;
 }>;
 
 const runtimeCache = new WeakMap<GanttCalendar, GanttCalendarRuntime>();
+const workingPrefixCache = new WeakMap<GanttCalendarRuntime, WorkingPrefixCache>();
+
+type WorkingPrefixCache = {
+	minimumDayIndex: number;
+	maximumDayIndex: number;
+	prefixByDayIndex: Map<number, number>;
+};
 
 export function getCalendarRuntime(calendar: GanttCalendar): GanttCalendarRuntime {
 	const cached = runtimeCache.get(calendar);
@@ -54,7 +63,14 @@ export function getCalendarRuntime(calendar: GanttCalendar): GanttCalendarRuntim
 		workingIntervals,
 		exceptions,
 		standardDayMinutes,
-		standardWeekMinutes: standardDayMinutes * calendar.workingWeekdays.length
+		standardWeekMinutes: standardDayMinutes * calendar.workingWeekdays.length,
+		isContinuous:
+			calendar.workingWeekdays.length === 7 &&
+			new Set(calendar.workingWeekdays).size === 7 &&
+			workingIntervals.length === 1 &&
+			workingIntervals[0].start === 0 &&
+			workingIntervals[0].end === 1440 &&
+			exceptions.size === 0
 	};
 	runtimeCache.set(calendar, runtime);
 	return runtime;
@@ -130,20 +146,32 @@ export function getWorkingMinutesBetween(
 	}
 	if (startTime === endTime) return 0;
 	if (startTime > endTime) return -getWorkingMinutesBetween(end, start, calendar);
+	if (calendar.isContinuous) return (endTime - startTime) / MINUTE_MS;
 
-	let total = 0;
-	let day = getCalendarCivilDay(start, calendar);
+	const startDay = getCalendarCivilDay(start, calendar);
 	const finalDay = getCalendarCivilDay(end, calendar);
-	while (day <= finalDay) {
-		for (const interval of resolveDayIntervals(day, calendar)) {
-			const overlapStart = Math.max(startTime, interval.start.getTime());
-			const overlapEnd = Math.min(endTime, interval.end.getTime());
-			if (overlapStart < overlapEnd) total += (overlapEnd - overlapStart) / MINUTE_MS;
-		}
-		if (day === finalDay) break;
-		day = addDay(day, 1);
+	if (startDay === finalDay) {
+		return getWorkingMinutesWithinDay(startDay, startTime, endTime, calendar);
 	}
-	return total;
+	const startDayIndex = getCivilDayIndex(startDay);
+	const finalDayIndex = getCivilDayIndex(finalDay);
+	const firstDayMinutes = getWorkingMinutesWithinDay(
+		startDay,
+		startTime,
+		Number.POSITIVE_INFINITY,
+		calendar
+	);
+	const finalDayMinutes = getWorkingMinutesWithinDay(
+		finalDay,
+		Number.NEGATIVE_INFINITY,
+		endTime,
+		calendar
+	);
+	const completeDayMinutes =
+		finalDayIndex > startDayIndex + 1
+			? getWorkingPrefix(finalDayIndex, calendar) - getWorkingPrefix(startDayIndex + 1, calendar)
+			: 0;
+	return firstDayMinutes + completeDayMinutes + finalDayMinutes;
 }
 
 export function getCalendarWorkingIntervals(
@@ -333,6 +361,78 @@ function resolveDayIntervals(
 		start: resolveZonedMinuteOnDay(day, interval.start, calendar.calendar.timeZone),
 		end: resolveZonedMinuteOnDay(day, interval.end, calendar.calendar.timeZone)
 	}));
+}
+
+function getWorkingMinutesWithinDay(
+	day: CivilDateOnly,
+	startTime: number,
+	endTime: number,
+	calendar: GanttCalendarRuntime
+): number {
+	let total = 0;
+	for (const interval of resolveDayIntervals(day, calendar)) {
+		const overlapStart = Math.max(startTime, interval.start.getTime());
+		const overlapEnd = Math.min(endTime, interval.end.getTime());
+		if (overlapStart < overlapEnd) total += (overlapEnd - overlapStart) / MINUTE_MS;
+	}
+	return total;
+}
+
+function getWorkingPrefix(dayIndex: number, calendar: GanttCalendarRuntime): number {
+	let cache = workingPrefixCache.get(calendar);
+	if (!cache) {
+		cache = {
+			minimumDayIndex: dayIndex,
+			maximumDayIndex: dayIndex,
+			prefixByDayIndex: new Map([[dayIndex, 0]])
+		};
+		workingPrefixCache.set(calendar, cache);
+		return 0;
+	}
+	if (dayIndex > cache.maximumDayIndex) {
+		let prefix = getRequiredPrefix(cache, cache.maximumDayIndex);
+		for (let index = cache.maximumDayIndex; index < dayIndex; index += 1) {
+			prefix += getFullDayWorkingMinutes(index, calendar);
+			cache.prefixByDayIndex.set(index + 1, prefix);
+		}
+		cache.maximumDayIndex = dayIndex;
+	} else if (dayIndex < cache.minimumDayIndex) {
+		let prefix = getRequiredPrefix(cache, cache.minimumDayIndex);
+		for (let index = cache.minimumDayIndex - 1; index >= dayIndex; index -= 1) {
+			prefix -= getFullDayWorkingMinutes(index, calendar);
+			cache.prefixByDayIndex.set(index, prefix);
+		}
+		cache.minimumDayIndex = dayIndex;
+	}
+	return getRequiredPrefix(cache, dayIndex);
+}
+
+function getFullDayWorkingMinutes(dayIndex: number, calendar: GanttCalendarRuntime): number {
+	const day = getCivilDayFromIndex(dayIndex);
+	return resolveDayIntervals(day, calendar).reduce(
+		(total, interval) => total + (interval.end.getTime() - interval.start.getTime()) / MINUTE_MS,
+		0
+	);
+}
+
+function getRequiredPrefix(cache: WorkingPrefixCache, dayIndex: number): number {
+	const prefix = cache.prefixByDayIndex.get(dayIndex);
+	if (prefix !== undefined) return prefix;
+	throw new Error(`Working-time prefix ${dayIndex} disappeared.`);
+}
+
+function getCivilDayIndex(day: CivilDateOnly): number {
+	const civil = parseCivilDate(day);
+	return Math.trunc(Date.UTC(civil.year, civil.month - 1, civil.day) / DAY_MS);
+}
+
+function getCivilDayFromIndex(dayIndex: number): CivilDateOnly {
+	const date = new Date(dayIndex * DAY_MS);
+	return formatCivilDate({
+		year: date.getUTCFullYear(),
+		month: date.getUTCMonth() + 1,
+		day: date.getUTCDate()
+	});
 }
 
 export function getCalendarCivilDay(instant: Date, calendar: GanttCalendarRuntime): CivilDateOnly {

@@ -1,19 +1,35 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- Dates, Sets, and ranges here are immutable schedule snapshots, not reactive collection owners. */
 import { assertScheduleInstant, assertScheduleRange } from '$lib/scheduling/scheduleRange.js';
+import { applyGanttColumnEdit } from './ganttChart.columns.js';
 import { calculateGanttWorkload } from './ganttChart.workload.js';
 import { GanttChartError } from './ganttChart.error.js';
+import { GanttChartMutations } from './ganttChart.mutations.js';
+import { createGanttColumnContext } from './ganttChart.rows.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type {
 	GanttAssignment,
+	GanttAssignmentProposal,
+	GanttAssignmentUpdateResult,
+	GanttAssignmentsChange,
 	GanttCalendar,
 	GanttChartApi,
+	GanttColumnDefinition,
+	GanttConstraintViolation,
 	GanttDependency,
+	GanttDependencyProposal,
+	GanttDependencyUpdateResult,
+	GanttDependenciesChange,
+	GanttInteractionBlockedInfo,
+	GanttInteractions,
 	GanttRange,
 	GanttResolvedTaskNode,
 	GanttResource,
 	GanttScheduleAnalysis,
 	GanttSelection,
 	GanttTask,
+	GanttTaskProposal,
+	GanttTasksChange,
+	GanttTaskUpdateResult,
 	GanttWorkloadBucket,
 	GanttZoomLevel
 } from './ganttChart.types.js';
@@ -34,11 +50,27 @@ export const DEFAULT_GANTT_ZOOM_LEVELS: readonly GanttZoomLevel[] = Object.freez
 	'year'
 ]);
 
+export const DEFAULT_GANTT_INTERACTIONS: GanttInteractions = Object.freeze({
+	moveTask: true,
+	resizeStart: true,
+	resizeEnd: true,
+	resizeProgress: true,
+	createDependency: true,
+	reorderRows: true,
+	indent: true,
+	outdent: true,
+	createRange: true,
+	keyboard: true,
+	touch: true,
+	clipboard: true,
+	history: true
+});
+
 const BUILT_IN_ZOOM_LEVELS = new Set(DEFAULT_GANTT_ZOOM_LEVELS);
 const EMPTY_RANGE_ANCHOR = new Date(0);
 const DEFAULT_RANGE_SPAN_MS = 14 * 24 * 60 * 60 * 1000;
 
-type GanttChartStateOptions<
+export type GanttChartStateOptions<
 	TTaskFields extends object,
 	TDependencyFields extends object,
 	TResourceFields extends object,
@@ -60,6 +92,47 @@ type GanttChartStateOptions<
 	readonly customScaleIds: ReadonlySet<GanttZoomLevel>;
 	readonly loading: boolean;
 	readonly disabled: boolean;
+	readonly autoSchedule: boolean;
+	readonly moveDependencies: boolean;
+	readonly interactions: GanttInteractions;
+	readonly canUpdateTask: ((proposal: GanttTaskProposal<TTaskFields>) => boolean) | undefined;
+	readonly onTaskUpdate:
+		((proposal: GanttTaskProposal<TTaskFields>) => GanttTaskUpdateResult<TTaskFields>) | undefined;
+	readonly canUpdateDependency:
+		((proposal: GanttDependencyProposal<TDependencyFields>) => boolean) | undefined;
+	readonly onDependencyUpdate:
+		| ((
+				proposal: GanttDependencyProposal<TDependencyFields>
+		  ) => GanttDependencyUpdateResult<TDependencyFields>)
+		| undefined;
+	readonly canUpdateAssignment:
+		((proposal: GanttAssignmentProposal<TAssignmentFields>) => boolean) | undefined;
+	readonly onAssignmentUpdate:
+		| ((
+				proposal: GanttAssignmentProposal<TAssignmentFields>
+		  ) => GanttAssignmentUpdateResult<TAssignmentFields>)
+		| undefined;
+	readonly onTasksChange:
+		((tasks: GanttTask<TTaskFields>[], change: GanttTasksChange<TTaskFields>) => void) | undefined;
+	readonly onDependenciesChange:
+		| ((
+				dependencies: GanttDependency<TDependencyFields>[],
+				change: GanttDependenciesChange<TDependencyFields>
+		  ) => void)
+		| undefined;
+	readonly onAssignmentsChange:
+		| ((
+				assignments: GanttAssignment<TAssignmentFields>[],
+				change: GanttAssignmentsChange<TAssignmentFields>
+		  ) => void)
+		| undefined;
+	readonly onInteractionBlocked: ((info: GanttInteractionBlockedInfo) => void) | undefined;
+	readonly onScheduleViolations:
+		| ((
+				violations: readonly GanttConstraintViolation[],
+				source: 'validation' | 'task-change' | 'dependency-change' | 'calendar-change'
+		  ) => void)
+		| undefined;
 	readonly onExpansionChange: ((expandedTaskIds: string[]) => void) | undefined;
 	readonly onSelectionChange: ((selection: GanttSelection) => void) | undefined;
 	readonly onZoomChange: ((zoom: GanttZoomLevel) => void) | undefined;
@@ -105,6 +178,12 @@ export class GanttChartState<
 	#scheduleCache:
 		ScheduleCache<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> | undefined;
 	#visibleRange = $state<GanttRange | null>(null);
+	#mutations: GanttChartMutations<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>;
 
 	constructor(
 		options: GanttChartStateOptions<
@@ -115,6 +194,7 @@ export class GanttChartState<
 		>
 	) {
 		this.#options = options;
+		this.#mutations = new GanttChartMutations(options);
 	}
 
 	get schedule(): ResolvedGanttSchedule<
@@ -369,40 +449,85 @@ export class GanttChartState<
 		this.select(EMPTY_GANTT_SELECTION);
 	}
 
-	addTask(task: GanttTask<TTaskFields>): never {
-		return this.#unavailableMutation('addTask', { taskId: task.id });
+	addTask(task: GanttTask<TTaskFields>): void {
+		this.#requireAccepted(this.#mutations.addTask(task, 'api'), 'addTask');
 	}
 
-	updateTask(task: GanttTask<TTaskFields>): never {
-		return this.#unavailableMutation('updateTask', { taskId: task.id });
+	updateTask(task: GanttTask<TTaskFields>): void {
+		this.#requireAccepted(this.#mutations.updateTask(task, 'api'), 'updateTask');
 	}
 
-	removeTask(taskId: string): never {
-		return this.#unavailableMutation('removeTask', { taskId });
+	removeTask(taskId: string): void {
+		this.#requireAccepted(this.#mutations.removeTask(taskId, 'api'), 'removeTask');
 	}
 
-	addDependency(dependency: GanttDependency<TDependencyFields>): never {
-		return this.#unavailableMutation('addDependency', { dependencyId: dependency.id });
+	addDependency(dependency: GanttDependency<TDependencyFields>): void {
+		this.#requireAccepted(this.#mutations.addDependency(dependency, 'api'), 'addDependency');
 	}
 
-	updateDependency(dependency: GanttDependency<TDependencyFields>): never {
-		return this.#unavailableMutation('updateDependency', { dependencyId: dependency.id });
+	updateDependency(dependency: GanttDependency<TDependencyFields>): void {
+		this.#requireAccepted(this.#mutations.updateDependency(dependency, 'api'), 'updateDependency');
 	}
 
-	removeDependency(dependencyId: string): never {
-		return this.#unavailableMutation('removeDependency', { dependencyId });
+	removeDependency(dependencyId: string): void {
+		this.#requireAccepted(
+			this.#mutations.removeDependency(dependencyId, 'api'),
+			'removeDependency'
+		);
 	}
 
-	addAssignment(assignment: GanttAssignment<TAssignmentFields>): never {
-		return this.#unavailableMutation('addAssignment', { assignmentId: assignment.id });
+	addAssignment(assignment: GanttAssignment<TAssignmentFields>): void {
+		this.#requireAccepted(this.#mutations.addAssignment(assignment, 'api'), 'addAssignment');
 	}
 
-	updateAssignment(assignment: GanttAssignment<TAssignmentFields>): never {
-		return this.#unavailableMutation('updateAssignment', { assignmentId: assignment.id });
+	updateAssignment(assignment: GanttAssignment<TAssignmentFields>): void {
+		this.#requireAccepted(this.#mutations.updateAssignment(assignment, 'api'), 'updateAssignment');
 	}
 
-	removeAssignment(assignmentId: string): never {
-		return this.#unavailableMutation('removeAssignment', { assignmentId });
+	removeAssignment(assignmentId: string): void {
+		this.#requireAccepted(
+			this.#mutations.removeAssignment(assignmentId, 'api'),
+			'removeAssignment'
+		);
+	}
+
+	updateTaskFromColumn(
+		node: GanttResolvedTaskNode<TTaskFields>,
+		column: GanttColumnDefinition<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>,
+		value: unknown
+	): boolean {
+		const context = createGanttColumnContext(
+			node,
+			this.#options.dependencies,
+			this.#options.resources,
+			this.#options.assignments
+		);
+		const task = applyGanttColumnEdit(column, context, value);
+		return this.#mutations.updateTask(task, 'inline-edit');
+	}
+
+	reorderTask(taskId: string, targetTaskId: string, position: 'before' | 'after'): boolean {
+		if (!this.#options.interactions.reorderRows) return false;
+		return this.#mutations.reorderTask(taskId, targetTaskId, position);
+	}
+
+	indentTask(taskId: string, previousTaskId: string | null): boolean {
+		if (!this.#options.interactions.indent || !previousTaskId) return false;
+		return this.#mutations.indentTask(taskId, previousTaskId);
+	}
+
+	outdentTask(taskId: string): boolean {
+		if (!this.#options.interactions.outdent) return false;
+		return this.#mutations.outdentTask(taskId);
+	}
+
+	blockInteraction(info: GanttInteractionBlockedInfo): void {
+		this.#options.onInteractionBlocked?.(info);
 	}
 
 	copySelection(): never {
@@ -524,6 +649,13 @@ export class GanttChartState<
 			`${method} is not available until the controlled mutation pipeline is mounted.`,
 			{ method, ...details }
 		);
+	}
+
+	#requireAccepted(isAccepted: boolean, method: string): void {
+		if (isAccepted) return;
+		throw new GanttChartError('rejected', `${method} was rejected by the consumer policy.`, {
+			method
+		});
 	}
 }
 

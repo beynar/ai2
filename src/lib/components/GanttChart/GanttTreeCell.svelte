@@ -1,0 +1,214 @@
+<script lang="ts" module>
+	function focusEditor(element: HTMLInputElement): void {
+		queueMicrotask(() => {
+			element.focus();
+			element.select();
+		});
+	}
+</script>
+
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
+	import { caretDownIcon } from '$lib/components/Icons/caretDown.js';
+	import { caretRightIcon } from '$lib/components/Icons/caretRight.js';
+	import { dotsSixVerticalIcon } from '$lib/components/Icons/dotsSixVertical.js';
+	import Slot from '$lib/components/Slot/Slot.svelte';
+	import type { Messages } from '$lib/i18n/en.js';
+	import type { Colors, Density } from '$lib/types/theme.js';
+	import {
+		formatGanttColumnValue,
+		getGanttColumnLabel,
+		getGanttColumnValue
+	} from './ganttChart.columns.js';
+	import type { GanttTreeCellPayload } from './ganttChart.props.js';
+	import { createGanttColumnContext } from './ganttChart.rows.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
+	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type {
+		GanttAssignment,
+		GanttColumnDefinition,
+		GanttDependency,
+		GanttResolvedTaskNode,
+		GanttResource
+	} from './ganttChart.types.js';
+	import type { Snippet } from 'svelte';
+
+	let {
+		chart,
+		node,
+		column,
+		rowIndex,
+		columnIndex,
+		dependencies,
+		resources,
+		assignments,
+		messages,
+		locale,
+		timeZone,
+		density,
+		color,
+		disabled,
+		loading,
+		isSelected,
+		isFocused,
+		showDragHandle,
+		classes,
+		treeCell,
+		onFocus,
+		onNavigate
+	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+		node: GanttResolvedTaskNode<TTaskFields>;
+		column: GanttColumnDefinition<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
+		rowIndex: number;
+		columnIndex: number;
+		dependencies: readonly GanttDependency<TDependencyFields>[];
+		resources: readonly GanttResource<TResourceFields>[];
+		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		messages: Messages;
+		locale: string;
+		timeZone: string;
+		density: Density;
+		color: Colors;
+		disabled: boolean;
+		loading: boolean;
+		isSelected: boolean;
+		isFocused: boolean;
+		showDragHandle: boolean;
+		classes: GanttChartClasses;
+		treeCell?: Snippet<
+			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
+		>;
+		onFocus: () => void;
+		onNavigate: (event: KeyboardEvent) => void;
+	} = $props();
+
+	let isEditing = $state(false);
+	let editValue = $state('');
+	const context = $derived(createGanttColumnContext(node, dependencies, resources, assignments));
+	const value = $derived(getGanttColumnValue(column, context));
+	const formattedValue = $derived(
+		formatGanttColumnValue(column.id, value, locale, timeZone, messages)
+	);
+	const isEditable = $derived(
+		column.editable === true && !disabled && !loading && !node.task.readOnly
+	);
+	const label = $derived(column.title ?? getGanttColumnLabel(column.id, messages));
+	const payload = $derived<
+		GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
+	>({ node, column, value, isSelected, isFocused, isEditing, defaultContent });
+
+	function beginEdit(): void {
+		if (!isEditable) return;
+		editValue = value instanceof Date ? value.toISOString() : String(value ?? '');
+		isEditing = true;
+	}
+
+	function commitEdit(): void {
+		if (!isEditing) return;
+		if (chart.updateTaskFromColumn(node, column, editValue)) isEditing = false;
+	}
+
+	function handleKeydown(event: KeyboardEvent): void {
+		if (isEditing) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				commitEdit();
+			} else if (event.key === 'Escape') {
+				event.preventDefault();
+				isEditing = false;
+			}
+			return;
+		}
+		if ((event.key === 'Enter' || event.key === 'F2') && isEditable) {
+			event.preventDefault();
+			beginEdit();
+			return;
+		}
+		onNavigate(event);
+	}
+</script>
+
+<div
+	data-gantt-chart-part="tree-cell"
+	data-column-id={column.id}
+	data-grid-row={rowIndex}
+	data-grid-column={columnIndex}
+	class={classes.treeCell({ density, color, disabled })}
+	class:justify-center={column.align === 'center'}
+	class:justify-end={column.align === 'end'}
+	style:width={`${column.width}px`}
+	style:min-width={`${column.minWidth}px`}
+	style:max-width={`${column.maxWidth}px`}
+	style:padding-inline-start={column.id === 'title' ? `${8 + node.depth * 16}px` : undefined}
+	role="gridcell"
+	aria-colindex={columnIndex + 1}
+	aria-selected={isSelected}
+	aria-label={`${label}: ${formattedValue}`}
+	tabindex={isFocused && !disabled ? 0 : -1}
+	onfocus={onFocus}
+	ondblclick={beginEdit}
+	onkeydown={handleKeydown}
+>
+	{#if column.id === 'title'}
+		{#if showDragHandle}
+			<button
+				type="button"
+				data-dnd-handle
+				class="grid size-6 shrink-0 cursor-grab place-items-center rounded text-neutral/45 outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60 active:cursor-grabbing"
+				aria-label={messages.ganttChartReorderAction}
+				tabindex="-1"
+				onclick={(event) => event.stopPropagation()}
+			>
+				{@render dotsSixVerticalIcon({ size: 12 })}
+			</button>
+		{/if}
+		{#if node.type === 'summary'}
+			<button
+				type="button"
+				class={classes.expander({ density, color, disabled })}
+				aria-label={node.isExpanded
+					? messages.ganttChartCollapseTask(node.task.title)
+					: messages.ganttChartExpandTask(node.task.title)}
+				aria-expanded={node.isExpanded}
+				{disabled}
+				tabindex="-1"
+				onclick={(event) => {
+					event.stopPropagation();
+					chart.toggleTask(node.taskId);
+				}}
+			>
+				{@render (node.isExpanded ? caretDownIcon : caretRightIcon)({ size: 12 })}
+			</button>
+		{:else}
+			<span class="size-6 shrink-0" aria-hidden="true"></span>
+		{/if}
+	{/if}
+
+	{#if isEditing}
+		<input
+			bind:value={editValue}
+			class="h-7 min-w-0 flex-1 rounded border border-color/45 bg-surface px-1 text-sm outline-none focus:ring-2 focus:ring-color/35"
+			aria-label={`${label}: ${formattedValue}`}
+			onblur={commitEdit}
+			onkeydown={(event) => {
+				event.stopPropagation();
+				handleKeydown(event);
+			}}
+			use:focusEditor
+		/>
+	{:else}
+		<Slot render={treeCell ?? defaultContent} {payload} />
+	{/if}
+</div>
+
+{#snippet defaultContent()}
+	<span class="min-w-0 flex-1 truncate">{formattedValue}</span>
+{/snippet}

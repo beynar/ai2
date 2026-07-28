@@ -3,22 +3,25 @@
 		gridWidth: number,
 		minGridWidth: number,
 		maxGridWidth: number,
-		rowHeight: number
+		rowHeight: number,
+		overscan: number
 	): void {
 		if (
 			Number.isFinite(gridWidth) &&
 			Number.isFinite(minGridWidth) &&
 			Number.isFinite(maxGridWidth) &&
 			Number.isFinite(rowHeight) &&
+			Number.isInteger(overscan) &&
 			minGridWidth > 0 &&
 			gridWidth >= minGridWidth &&
 			maxGridWidth >= gridWidth &&
-			rowHeight >= 24
+			rowHeight >= 24 &&
+			overscan >= 0
 		) {
 			return;
 		}
 		throw new RangeError(
-			'gridWidth must be within positive minGridWidth/maxGridWidth bounds and rowHeight must be at least 24.'
+			'gridWidth must be within positive minGridWidth/maxGridWidth bounds, rowHeight must be at least 24, and overscan must be a non-negative integer.'
 		);
 	}
 
@@ -50,25 +53,46 @@
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import Empty from '$lib/components/Empty/Empty.svelte';
-	import { caretDownIcon } from '$lib/components/Icons/caretDown.js';
-	import { caretRightIcon } from '$lib/components/Icons/caretRight.js';
 	import Resizable from '$lib/components/Resizable/Resizable.svelte';
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import Spinner from '$lib/components/Spinner/Spinner.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
+	import { createVirtualizer } from '@tanstack/svelte-virtual';
+	import { get } from 'svelte/store';
+	import GanttTreeGrid from './GanttTreeGrid.svelte';
+	import { resolveGanttColumns } from './ganttChart.columns.js';
 	import type {
+		GanttColumnHeaderPayload,
 		GanttEmptyPayload,
+		GanttGridHeaderPayload,
 		GanttLoadingPayload,
-		GanttSnapshot
+		GanttSnapshot,
+		GanttTaskRowPayload,
+		GanttTreeCellPayload
 	} from './ganttChart.props.js';
+	import { resolveGanttRows, type GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type { GanttResolvedTaskNode, GanttSelection } from './ganttChart.types.js';
+	import type {
+		GanttColumnDefinition,
+		GanttInteractions,
+		GanttSortDirection
+	} from './ganttChart.types.js';
 	import type { Snippet } from 'svelte';
 
 	type ShellSnippets = {
+		gridHeader?: Snippet<
+			[GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
+		>;
+		columnHeader?: Snippet<
+			[GanttColumnHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
+		>;
+		treeCell?: Snippet<
+			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
+		>;
+		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
 		empty?: Snippet<[GanttEmptyPayload]>;
 		loadingContent?: Snippet<[GanttLoadingPayload]>;
 	};
@@ -77,6 +101,8 @@
 		chart,
 		snapshot,
 		messages,
+		locale,
+		timeZone,
 		density,
 		color,
 		direction,
@@ -87,14 +113,19 @@
 		minGridWidth,
 		maxGridWidth,
 		rowHeight,
+		overscan,
 		scrollMode,
 		scrollbars,
+		columns,
+		interactions,
 		classes,
 		snippets
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		snapshot: GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		messages: Messages;
+		locale: string;
+		timeZone: string;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -105,8 +136,18 @@
 		minGridWidth: number;
 		maxGridWidth: number;
 		rowHeight: number;
+		overscan: number;
 		scrollMode: 'contained' | 'page';
 		scrollbars: 'custom' | 'native';
+		columns:
+			| readonly GanttColumnDefinition<
+					TTaskFields,
+					TDependencyFields,
+					TResourceFields,
+					TAssignmentFields
+			  >[]
+			| undefined;
+		interactions: GanttInteractions;
 		classes: GanttChartClasses;
 		snippets: ShellSnippets;
 	} = $props();
@@ -114,8 +155,67 @@
 	let containerWidth = $state(0);
 	let panelSizes = $state([38, 62]);
 	let lastPublishedGridWidth = $state(gridWidth);
-	const visibleTasks = $derived(snapshot.resolvedTasks.filter((node) => node.isVisible));
-	const contentHeight = $derived(Math.max(rowHeight * visibleTasks.length, rowHeight * 6));
+	let viewportRef = $state<HTMLDivElement | null>(null);
+	let sortOverrides = $state<Record<string, GanttSortDirection | null>>({});
+	const baseColumns = $derived(resolveGanttColumns(columns));
+	const resolvedColumns = $derived(
+		baseColumns.map((column) =>
+			Object.prototype.hasOwnProperty.call(sortOverrides, column.id)
+				? { ...column, sortDirection: sortOverrides[column.id] }
+				: column
+		)
+	);
+	const rowModel = $derived(
+		resolveGanttRows({
+			nodes: snapshot.resolvedTasks,
+			columns: resolvedColumns,
+			dependencies: snapshot.dependencies,
+			resources: snapshot.resources,
+			assignments: snapshot.assignments
+		})
+	);
+	const rowVirtualizerStore = createVirtualizer<HTMLDivElement, HTMLElement>({
+		count: 0,
+		getScrollElement: () => null,
+		estimateSize: () => 36,
+		overscan: 6
+	});
+
+	$effect(() => {
+		const rows = rowModel.rows;
+		const scrollElement = viewportRef;
+		const estimate = rowHeight;
+		const extra = overscan;
+		get(rowVirtualizerStore).setOptions({
+			count: rows.length,
+			getScrollElement: () => scrollElement,
+			estimateSize: () => estimate,
+			overscan: extra,
+			getItemKey: (index) => rows[index]?.taskId ?? index
+		});
+	});
+
+	const virtualRows = $derived($rowVirtualizerStore.getVirtualItems());
+	const fallbackRowCount = $derived(
+		Math.min(
+			rowModel.rows.length,
+			Math.ceil((viewportRef?.clientHeight ?? rowHeight * 10) / rowHeight) + overscan
+		)
+	);
+	const renderedRows = $derived.by((): readonly GanttVirtualRow[] => {
+		if (virtualRows.length > 0) return virtualRows;
+		return Array.from({ length: fallbackRowCount }, (_, index) => ({
+			index,
+			key: rowModel.rows[index]?.taskId ?? index,
+			start: index * rowHeight,
+			end: (index + 1) * rowHeight,
+			size: rowHeight
+		}));
+	});
+	const totalRowsHeight = $derived(
+		get(rowVirtualizerStore).getTotalSize() || rowModel.rows.length * rowHeight
+	);
+	const contentHeight = $derived(Math.max(totalRowsHeight, rowHeight * 6));
 	const emptyPayload = $derived<GanttEmptyPayload>({
 		visibleRange: snapshot.visibleRange,
 		zoom: snapshot.zoom,
@@ -128,9 +228,16 @@
 	});
 
 	$effect.pre(() => {
-		validateGridMetrics(gridWidth, minGridWidth, maxGridWidth, rowHeight);
+		validateGridMetrics(gridWidth, minGridWidth, maxGridWidth, rowHeight, overscan);
 		if (containerWidth <= 0 || gridWidth === lastPublishedGridWidth) return;
 		panelSizes = resolvePanelSizes(gridWidth, minGridWidth, maxGridWidth, containerWidth);
+	});
+
+	$effect(() => {
+		const validIds = new Set(baseColumns.map((column) => column.id));
+		const entries = Object.entries(sortOverrides).filter(([columnId]) => validIds.has(columnId));
+		if (entries.length === Object.keys(sortOverrides).length) return;
+		sortOverrides = Object.fromEntries(entries);
 	});
 
 	function publishGridWidth(sizes: number[]): void {
@@ -141,15 +248,25 @@
 		gridWidth = nextWidth;
 	}
 
-	function selectTask(taskId: string): void {
-		if (disabled || loading) return;
-		chart.select({ kind: 'task', taskId, dependencyId: null, cell: null });
+	function toggleSort(columnId: string, additive: boolean): void {
+		const column = resolvedColumns.find((candidate) => candidate.id === columnId);
+		if (!column?.sortable || disabled) return;
+		const current = column.sortDirection ?? null;
+		const next = current === null ? 'ascending' : current === 'ascending' ? 'descending' : null;
+		sortOverrides = {
+			...(additive ? sortOverrides : {}),
+			[columnId]: next
+		};
 	}
 
-	function isTaskSelected(selection: GanttSelection, taskId: string): boolean {
+	function scrollToRow(rowIndex: number): void {
+		get(rowVirtualizerStore).scrollToIndex(rowIndex, { align: 'auto' });
+	}
+
+	function isTaskSelected(taskId: string): boolean {
 		return (
-			(selection.kind === 'task' && selection.taskId === taskId) ||
-			(selection.kind === 'cell' && selection.taskId === taskId)
+			(snapshot.selection.kind === 'task' && snapshot.selection.taskId === taskId) ||
+			(snapshot.selection.kind === 'cell' && snapshot.selection.taskId === taskId)
 		);
 	}
 </script>
@@ -159,18 +276,24 @@
 	data-gantt-chart-part="content"
 	data-scroll-mode={scrollMode}
 	data-scrollbars={scrollbars}
-	data-empty={visibleTasks.length === 0 || undefined}
+	data-empty={rowModel.rows.length === 0 || undefined}
 	data-loading={loading || undefined}
 	aria-busy={loading}
 	class={classes.content({ density, color, disabled })}
 	style:--gantt-row-height={`${rowHeight}px`}
 >
 	{#if scrollMode === 'contained' && scrollbars === 'custom'}
-		<ScrollArea class="h-full" ariaLabel={messages.ganttChartScrollableContent} type="hover">
+		<ScrollArea
+			bind:viewportRef
+			class="h-full"
+			ariaLabel={messages.ganttChartScrollableContent}
+			type="hover"
+		>
 			{@render splitContent()}
 		</ScrollArea>
 	{:else}
 		<div
+			bind:this={viewportRef}
 			class={scrollMode === 'contained'
 				? 'relative h-full min-h-0 overflow-y-auto overflow-x-hidden'
 				: 'relative min-h-0 overflow-visible'}
@@ -181,7 +304,7 @@
 		</div>
 	{/if}
 
-	{#if visibleTasks.length === 0}
+	{#if rowModel.rows.length === 0}
 		<div
 			data-gantt-chart-part="empty"
 			class={classes.empty({ density, color, disabled })}
@@ -197,7 +320,7 @@
 	{#if loading}
 		<div
 			data-gantt-chart-part="loading"
-			class={classes.loading({ density, color, disabled })}
+			class={classes.loading({ density, color, disabled, class: 'pointer-events-none' })}
 			role="status"
 			aria-live="polite"
 		>
@@ -207,7 +330,7 @@
 </div>
 
 {#snippet splitContent()}
-	<div class="relative min-h-full min-w-0" inert={loading ? true : undefined}>
+	<div class="relative min-h-full min-w-0" style:min-height={`${contentHeight + 56}px`}>
 		{#if showGrid}
 			<Resizable
 				bind:sizes={panelSizes}
@@ -239,88 +362,26 @@
 {/snippet}
 
 {#snippet gridPane()}
-	<div
-		data-gantt-chart-part="grid-pane"
-		class={classes.gridPane({ density, color, disabled })}
-		role="treegrid"
-		aria-label={messages.ganttChartGrid}
-		aria-rowcount={visibleTasks.length}
-		aria-colcount="2"
-	>
-		<div
-			data-gantt-chart-part="grid-header"
-			class={classes.gridHeader({ density, color, disabled })}
-			role="row"
-		>
-			<div class="w-16 shrink-0 px-2" role="columnheader">{messages.ganttChartColumnWbs}</div>
-			<div class="min-w-0 flex-1 px-2" role="columnheader">
-				{messages.ganttChartColumnTitle}
-			</div>
-		</div>
-		<div
-			data-gantt-chart-part="rows"
-			class={classes.rows({ density, color, disabled })}
-			style:height={`${contentHeight}px`}
-		>
-			{#each visibleTasks as node, rowIndex (node.taskId)}
-				<div
-					data-gantt-chart-part="row"
-					data-task-id={node.taskId}
-					class={classes.row({
-						density,
-						color,
-						disabled,
-						selected: isTaskSelected(snapshot.selection, node.taskId)
-					})}
-					style:top={`${rowIndex * rowHeight}px`}
-					role="row"
-					aria-rowindex={rowIndex + 1}
-				>
-					<div
-						class={classes.treeCell({ density, color, disabled })}
-						role="gridcell"
-						aria-colindex="1"
-						style:width="4rem"
-					>
-						{node.wbs}
-					</div>
-					<div
-						class={classes.treeCell({ density, color, disabled })}
-						role="gridcell"
-						aria-colindex="2"
-						aria-selected={isTaskSelected(snapshot.selection, node.taskId)}
-						style:padding-inline-start={`${8 + node.depth * 16}px`}
-					>
-						{#if node.type === 'summary'}
-							<button
-								type="button"
-								class={classes.expander({ density, color, disabled })}
-								aria-label={node.isExpanded
-									? messages.ganttChartCollapseTask(node.task.title)
-									: messages.ganttChartExpandTask(node.task.title)}
-								aria-expanded={node.isExpanded}
-								{disabled}
-								onclick={() => chart.toggleTask(node.taskId)}
-							>
-								{@render (node.isExpanded ? caretDownIcon : caretRightIcon)({ size: 12 })}
-							</button>
-						{:else}
-							<span class="size-6 shrink-0" aria-hidden="true"></span>
-						{/if}
-						<button
-							type="button"
-							class="min-w-0 flex-1 truncate text-start outline-none focus-visible:underline"
-							aria-label={messages.ganttChartTaskLabel(node.task.title, node.wbs)}
-							{disabled}
-							onclick={() => selectTask(node.taskId)}
-						>
-							{node.task.title}
-						</button>
-					</div>
-				</div>
-			{/each}
-		</div>
-	</div>
+	<GanttTreeGrid
+		{chart}
+		{rowModel}
+		{renderedRows}
+		totalHeight={contentHeight}
+		selection={snapshot.selection}
+		{messages}
+		{locale}
+		{timeZone}
+		{density}
+		{color}
+		{direction}
+		{disabled}
+		{loading}
+		{interactions}
+		{classes}
+		{snippets}
+		onToggleSort={toggleSort}
+		{scrollToRow}
+	/>
 {/snippet}
 
 {#snippet timelinePane()}
@@ -338,36 +399,33 @@
 				{messages.ganttChartTimeline}
 			</div>
 		</div>
-		<div
-			class="relative min-w-full overflow-x-auto overflow-y-hidden"
-			style:height={`${contentHeight}px`}
-		>
+		<div class="relative min-w-full overflow-x-auto overflow-y-visible">
 			<div
 				data-gantt-chart-part="timeline-rows"
 				class={classes.timelineRows({ density, color, disabled })}
 				style:height={`${contentHeight}px`}
 			>
-				{#each visibleTasks as node, rowIndex (node.taskId)}
-					{@render timelineRow(node, rowIndex)}
+				{#each renderedRows as virtualRow (virtualRow.key)}
+					{@const node = rowModel.rows[virtualRow.index]}
+					{#if node}
+						<div
+							data-gantt-chart-part="timeline-row"
+							data-task-id={node.taskId}
+							data-index={virtualRow.index}
+							class={classes.timelineRow({
+								density,
+								color,
+								disabled,
+								selected: isTaskSelected(node.taskId)
+							})}
+							style:top={`${virtualRow.start}px`}
+							aria-hidden="true"
+						></div>
+					{/if}
 				{/each}
 			</div>
 		</div>
 	</div>
-{/snippet}
-
-{#snippet timelineRow(node: GanttResolvedTaskNode<TTaskFields>, rowIndex: number)}
-	<div
-		data-gantt-chart-part="timeline-row"
-		data-task-id={node.taskId}
-		class={classes.timelineRow({
-			density,
-			color,
-			disabled,
-			selected: isTaskSelected(snapshot.selection, node.taskId)
-		})}
-		style:top={`${rowIndex * rowHeight}px`}
-		aria-hidden="true"
-	></div>
 {/snippet}
 
 {#snippet defaultEmpty()}

@@ -4,27 +4,12 @@
 		'showWeekends',
 		'holidays',
 		'snapDuration',
-		'overscan',
-		'columns',
-		'interactions',
 		'touchActivation',
-		'autoSchedule',
-		'moveDependencies',
 		'display',
 		'resourceView',
-		'canUpdateTask',
-		'onTaskUpdate',
-		'canUpdateDependency',
-		'onDependencyUpdate',
-		'canUpdateAssignment',
-		'onAssignmentUpdate',
 		'canCreateRange',
 		'historyLimit',
 		'getPasteId',
-		'gridHeader',
-		'columnHeader',
-		'treeCell',
-		'taskRow',
 		'timeHeaderUpper',
 		'timeHeaderLower',
 		'task',
@@ -40,15 +25,10 @@
 		'resourceAssignments',
 		'workloadCell',
 		'dragPreview',
-		'onTasksChange',
-		'onDependenciesChange',
-		'onAssignmentsChange',
 		'onTaskClick',
 		'onTaskDoubleClick',
 		'onDependencyClick',
-		'onEmptyRangeSelect',
-		'onInteractionBlocked',
-		'onScheduleViolations'
+		'onEmptyRangeSelect'
 	]);
 
 	function filterGanttChartAttributes(
@@ -71,6 +51,7 @@
 	import type { GanttChartProps, GanttSnapshot } from './ganttChart.props.js';
 	import {
 		DEFAULT_GANTT_ZOOM_LEVELS,
+		DEFAULT_GANTT_INTERACTIONS,
 		EMPTY_GANTT_SELECTION,
 		GanttChartState
 	} from './ganttChart.state.svelte.js';
@@ -115,6 +96,7 @@
 		scales = [],
 		initialScrollDate,
 		rowHeight = 36,
+		overscan = 6,
 		scrollMode = 'contained',
 		scrollbars = 'custom',
 		stickyHeader = false,
@@ -123,20 +105,40 @@
 		gridWidth = $bindable(352),
 		minGridWidth = 240,
 		maxGridWidth = 640,
+		columns,
+		interactions = {},
+		autoSchedule = false,
+		moveDependencies = false,
 		header,
 		actions,
+		gridHeader,
+		columnHeader,
+		treeCell,
+		taskRow,
 		empty,
 		loadingContent,
+		canUpdateTask,
+		onTaskUpdate,
+		canUpdateDependency,
+		onDependencyUpdate,
+		canUpdateAssignment,
+		onAssignmentUpdate,
+		onTasksChange,
+		onDependenciesChange,
+		onAssignmentsChange,
 		onSelectionChange,
 		onExpansionChange,
 		onZoomChange,
 		onVisibleRangeChange,
+		onInteractionBlocked,
+		onScheduleViolations,
 		...remainingProps
 	}: GanttChartProps<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> = $props();
 
 	const messages = $derived(useI18n(i18n));
 	const resolvedLocale = $derived(locale ?? messages.locale);
 	const customScaleIds = $derived(new Set(scales.map((scale) => scale.id)));
+	const resolvedInteractions = $derived({ ...DEFAULT_GANTT_INTERACTIONS, ...interactions });
 	const classes = $derived(useGanttChartTheme(theme));
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
 	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
@@ -218,6 +220,48 @@
 		},
 		get disabled() {
 			return disabled;
+		},
+		get autoSchedule() {
+			return autoSchedule;
+		},
+		get moveDependencies() {
+			return moveDependencies;
+		},
+		get interactions() {
+			return resolvedInteractions;
+		},
+		get canUpdateTask() {
+			return canUpdateTask;
+		},
+		get onTaskUpdate() {
+			return onTaskUpdate;
+		},
+		get canUpdateDependency() {
+			return canUpdateDependency;
+		},
+		get onDependencyUpdate() {
+			return onDependencyUpdate;
+		},
+		get canUpdateAssignment() {
+			return canUpdateAssignment;
+		},
+		get onAssignmentUpdate() {
+			return onAssignmentUpdate;
+		},
+		get onTasksChange() {
+			return onTasksChange;
+		},
+		get onDependenciesChange() {
+			return onDependenciesChange;
+		},
+		get onAssignmentsChange() {
+			return onAssignmentsChange;
+		},
+		get onInteractionBlocked() {
+			return onInteractionBlocked;
+		},
+		get onScheduleViolations() {
+			return onScheduleViolations;
 		},
 		get onExpansionChange() {
 			return onExpansionChange;
@@ -477,10 +521,15 @@
 		{minGridWidth}
 		{maxGridWidth}
 		{rowHeight}
+		{overscan}
 		{scrollMode}
 		{scrollbars}
+		{columns}
+		interactions={resolvedInteractions}
+		locale={resolvedLocale}
+		{timeZone}
 		{classes}
-		snippets={{ empty, loadingContent }}
+		snippets={{ gridHeader, columnHeader, treeCell, taskRow, empty, loadingContent }}
 	/>
 	<div
 		data-gantt-chart-part="live-region"
