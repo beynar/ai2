@@ -50,6 +50,7 @@
 	import GanttChartHeader from './GanttChartHeader.svelte';
 	import GanttChartShell from './GanttChartShell.svelte';
 	import type { GanttChartProps, GanttSnapshot } from './ganttChart.props.js';
+	import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
 	import {
 		DEFAULT_GANTT_ZOOM_LEVELS,
 		DEFAULT_GANTT_INTERACTIONS,
@@ -74,7 +75,6 @@
 	const defaultZoomLevels = [...DEFAULT_GANTT_ZOOM_LEVELS];
 	const defaultScales: never[] = [];
 	const defaultHolidays: never[] = [];
-	const defaultSnapDuration = { value: 1, unit: 'day' } as const;
 	const defaultTouchActivation = {};
 	const defaultInteractions = {};
 	const defaultDisplay = {};
@@ -110,7 +110,7 @@
 		showTodayIndicator = true,
 		showWeekends = true,
 		holidays = defaultHolidays,
-		snapDuration = defaultSnapDuration,
+		snapDuration,
 		touchActivation = defaultTouchActivation,
 		rowHeight = 36,
 		overscan = 6,
@@ -182,6 +182,9 @@
 	const resolvedResources = $derived(resources.length === 0 ? defaultResources : resources);
 	const resolvedCalendars = $derived(calendars.length === 0 ? defaultCalendars : calendars);
 	const customScaleIds = $derived(new Set(scales.map((scale) => scale.id)));
+	const resolvedSnapDuration = $derived(
+		snapDuration ?? resolveGanttScaleSnapDuration(zoom, scales)
+	);
 	const resolvedInteractions = $derived({ ...DEFAULT_GANTT_INTERACTIONS, ...interactions });
 	const resolvedTouchActivation = $derived({
 		distancePx: 5,
@@ -303,7 +306,7 @@
 			return createDependency;
 		},
 		get snapDuration() {
-			return snapDuration;
+			return resolvedSnapDuration;
 		},
 		get touchActivation() {
 			return resolvedTouchActivation;

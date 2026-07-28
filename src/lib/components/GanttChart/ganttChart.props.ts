@@ -398,7 +398,11 @@ type GanttOwnProps<
 		showWeekends?: boolean;
 		/** Project holidays rendered independently of calendar exceptions. */
 		holidays?: GanttHoliday[];
-		/** Move, resize, and range granularity. Defaults to one day. */
+		/**
+		 * Fixed move, resize, and range granularity. When omitted, granularity follows the active
+		 * built-in or custom zoom scale. Built-in steps are 15 minutes at hour, 1 hour at day,
+		 * 1 day at week/month, 1 week at quarter, and 4 weeks at year.
+		 */
 		snapDuration?: GanttDuration;
 		/** Shared logical row height in pixels. */
 		rowHeight?: number;

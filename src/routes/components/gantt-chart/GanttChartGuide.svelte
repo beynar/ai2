@@ -10,7 +10,7 @@
 		},
 		{
 			title: 'One mutation boundary',
-			body: 'Pointer and touch gestures, keyboard modes, built-in or custom column editors, clipboard, history, and API calls produce the same typed proposals. Structural checks run before canUpdate hooks; adjusted records are revalidated before fresh arrays and changed objects publish. Change callbacks carry one guarded revert and never swallow persistence failures.'
+			body: 'Pointer and touch gestures, keyboard modes, built-in or custom column editors, clipboard, history, and API calls produce the same typed proposals. Move, resize, and range snapping follows the active zoom scale unless snapDuration fixes a consumer-defined step. Structural checks run before canUpdate hooks; adjusted records are revalidated before fresh arrays and changed objects publish. Change callbacks carry one guarded revert and never swallow persistence failures.'
 		},
 		{
 			title: 'Scheduling and completed tasks',

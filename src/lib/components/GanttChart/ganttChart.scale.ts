@@ -17,6 +17,7 @@ import {
 import { GanttChartError } from './ganttChart.error.js';
 import type {
 	GanttBuiltInZoomLevel,
+	GanttDuration,
 	GanttRange,
 	GanttScaleCell,
 	GanttScaleDefinition,
@@ -48,6 +49,15 @@ const BUILT_IN_SCALES: Record<GanttBuiltInZoomLevel, BuiltInScaleConfig> = {
 	quarter: { unit: 'month', step: 1, minColumnWidth: 88, upperUnit: 'quarter', upperStep: 1 },
 	year: { unit: 'quarter', step: 1, minColumnWidth: 104, upperUnit: 'year', upperStep: 1 }
 };
+
+const BUILT_IN_SNAP_DURATIONS = {
+	hour: { value: 15, unit: 'minute' },
+	day: { value: 1, unit: 'hour' },
+	week: { value: 1, unit: 'day' },
+	month: { value: 1, unit: 'day' },
+	quarter: { value: 1, unit: 'week' },
+	year: { value: 4, unit: 'week' }
+} as const satisfies Record<GanttBuiltInZoomLevel, GanttDuration>;
 
 export type GanttResolvedScaleDefinition = Readonly<{
 	definition: GanttScaleDefinition;
@@ -207,6 +217,21 @@ export function resolveGanttScaleDefinition(
 		upperUnit: config.upperUnit,
 		upperStep: config.upperStep
 	};
+}
+
+export function resolveGanttScaleSnapDuration(
+	zoom: GanttZoomLevel,
+	scales: readonly GanttScaleDefinition[]
+): GanttDuration {
+	validateCustomScales(scales);
+	const custom = scales.find((scale) => scale.id === zoom);
+	if (custom) return getCustomScaleSnapDuration(custom.unit, custom.step);
+	if (!isBuiltInZoom(zoom)) {
+		throw new GanttChartError('invalid-zoom-level', `Unknown Gantt zoom level: ${zoom}.`, {
+			zoom
+		});
+	}
+	return BUILT_IN_SNAP_DURATIONS[zoom];
 }
 
 export function getGanttScaleCells(
@@ -425,6 +450,16 @@ function getNextScaleUnit(unit: GanttScaleUnit): GanttScaleUnit {
 	if (unit === 'month') return 'quarter';
 	if (unit === 'quarter') return 'year';
 	return 'year';
+}
+
+function getCustomScaleSnapDuration(unit: GanttScaleUnit, step: number): GanttDuration {
+	if (unit === 'minute') return { value: step, unit: 'minute' };
+	if (unit === 'hour') return { value: step, unit: 'hour' };
+	if (unit === 'day') return { value: step, unit: 'day' };
+	if (unit === 'week') return { value: step, unit: 'day' };
+	if (unit === 'month') return { value: step, unit: 'week' };
+	if (unit === 'quarter') return { value: step * 4, unit: 'week' };
+	return { value: step * 13, unit: 'week' };
 }
 
 function getNominalScaleDuration(unit: GanttScaleUnit, step: number): number {

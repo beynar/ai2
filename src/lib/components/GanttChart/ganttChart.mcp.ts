@@ -71,7 +71,7 @@ Use display to toggle criticalPath, baselines, deadlines, constraints, nonWorkin
 ## Layout and presentation
 
 - Built-in zoom levels are hour, day, week, month, quarter, and year. zoomLevels orders enabled ids; scales adds typed custom unit/step/minimum-width/header formatters.
-- initialScrollDate, validRange, snapDuration, showTodayIndicator, showWeekends, holidays, rowHeight, overscan, scrollMode, scrollbars, stickyHeader, showHeader, showGrid, gridWidth, minGridWidth, and maxGridWidth configure the split shell without changing the domain model.
+- initialScrollDate, validRange, showTodayIndicator, showWeekends, holidays, rowHeight, overscan, scrollMode, scrollbars, stickyHeader, showHeader, showGrid, gridWidth, minGridWidth, and maxGridWidth configure the split shell without changing the domain model. Move, resize, and range snapping defaults to 15 minutes at hour, 1 hour at day, 1 day at week/month, 1 week at quarter, and 4 weeks at year; custom scales derive a step from their lower unit, while snapDuration supplies a fixed consumer override.
 - The default WBS, title, start, end, duration, progress, and resources columns accept typed visibility, size, alignment, sort, filter, value, compare, and edit behavior. Custom editable columns provide applyEdit.
 - Tasks render leaf/summary/milestone shapes, progress and expected progress, segments, baseline, deadline, labels, continuations, tooltips, non-working shade, project/today lines, constraints, critical state, and SVG dependency connectors.
 - resourceView filters or groups rows by resource and sets the compact workload height. resourceAssignments and workloadCell snippets receive typed custom fields and over-allocation state.
