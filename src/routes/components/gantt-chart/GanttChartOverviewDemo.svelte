@@ -10,14 +10,15 @@
 	let nextDependencyId = 0;
 
 	let tasks = $state<GanttTask[]>([
-		{ id: 'discovery', title: 'Discovery', type: 'summary' },
+		{ id: 'discovery', title: 'Discovery', type: 'summary', color: 'info' },
 		{
 			id: 'research',
 			parentId: 'discovery',
 			title: 'User research',
 			start: new Date('2026-07-27T07:00:00.000Z'),
 			end: new Date('2026-07-30T15:00:00.000Z'),
-			progress: 1
+			progress: 1,
+			color: 'success'
 		},
 		{
 			id: 'brief',
@@ -25,16 +26,18 @@
 			title: 'Product brief',
 			start: new Date('2026-07-31T07:00:00.000Z'),
 			end: new Date('2026-08-04T15:00:00.000Z'),
-			progress: 0.5
+			progress: 0.5,
+			color: 'info'
 		},
-		{ id: 'delivery', title: 'Delivery', type: 'summary' },
+		{ id: 'delivery', title: 'Delivery', type: 'summary', color: 'secondary' },
 		{
 			id: 'implementation',
 			parentId: 'delivery',
 			title: 'Implementation',
 			start: new Date('2026-08-05T07:00:00.000Z'),
 			end: new Date('2026-08-18T15:00:00.000Z'),
-			progress: 0.2
+			progress: 0.2,
+			color: 'secondary'
 		},
 		{
 			id: 'launch',
@@ -42,7 +45,8 @@
 			title: 'Launch',
 			type: 'milestone',
 			start: new Date('2026-08-19T09:00:00.000Z'),
-			end: new Date('2026-08-19T09:00:00.000Z')
+			end: new Date('2026-08-19T09:00:00.000Z'),
+			color: 'warning'
 		}
 	]);
 

@@ -448,6 +448,8 @@
 	aria-busy={loading}
 	class={classes.content({ density, color, disabled })}
 	style:--gantt-row-height={`${rowHeight}px`}
+	style:--gantt-min-grid-width={`${minGridWidth}px`}
+	style:--gantt-max-grid-width={`${maxGridWidth}px`}
 >
 	{#if scrollMode === 'contained' && scrollbars === 'custom'}
 		<ScrollArea
@@ -501,13 +503,13 @@
 		class="relative min-h-full min-w-0"
 		style:width={containerWidth > 0 ? `${containerWidth}px` : '100%'}
 		style:height={`${Math.max(containerHeight, contentHeight + scheduleHeaderHeight + workloadPanelHeight)}px`}
+		style:contain="inline-size"
 	>
 		{#if showGrid}
 			<Resizable
 				bind:sizes={panelSizes}
 				orientation="horizontal"
 				dir={direction}
-				withHandle
 				showLines
 				panels={[
 					{
@@ -602,3 +604,19 @@
 {#snippet defaultLoading()}
 	<Spinner text={messages.ganttChartLoading} />
 {/snippet}
+
+<style>
+	:global(
+		[data-gantt-chart-part='content']
+			> [data-scroll-area]
+			> [data-scroll-area-viewport]
+			> [data-scroll-area-content]
+	) {
+		height: 100%;
+	}
+
+	:global([data-gantt-chart-part='content'] [data-panel='gantt-grid']) {
+		min-width: min(var(--gantt-min-grid-width), 85%);
+		max-width: min(var(--gantt-max-grid-width), 85%);
+	}
+</style>

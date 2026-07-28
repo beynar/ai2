@@ -216,8 +216,10 @@
 					density,
 					color,
 					disabled,
-					selected: isTaskFocused(node.taskId),
-					class: isResourceGroupStart ? 'border-t border-t-neutral/25' : undefined
+					class: [
+						isTaskFocused(node.taskId) ? 'bg-color/4' : undefined,
+						isResourceGroupStart ? 'border-t border-t-neutral/20' : undefined
+					]
 				})}
 				style:top={`${virtualRow.start}px`}
 				aria-hidden="true"

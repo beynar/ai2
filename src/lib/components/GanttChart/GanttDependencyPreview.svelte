@@ -22,6 +22,7 @@
 	} = $props();
 
 	const middleX = $derived((status.fromX + status.toX) / 2);
+	const markerId = $props.id();
 	const path = $derived(
 		`M ${status.fromX} ${status.fromY} C ${middleX} ${status.fromY}, ${middleX} ${status.toY}, ${status.toX} ${status.toY}`
 	);
@@ -37,18 +38,36 @@
 	viewBox={`0 0 ${totalWidth} ${totalHeight}`}
 	aria-hidden="true"
 >
+	<defs>
+		<marker
+			id={markerId}
+			viewBox="0 0 8 8"
+			refX="7"
+			refY="4"
+			markerWidth="6"
+			markerHeight="6"
+			orient="auto-start-reverse"
+		>
+			<path d="M 0 0 L 8 4 L 0 8 z" class="fill-[var(--color)]"></path>
+		</marker>
+	</defs>
 	<path
 		d={path}
 		class={classes.connector({
 			density,
 			color,
 			disabled,
-			selected: status.isValid,
-			class: 'stroke-color/70 stroke-2 [stroke-dasharray:5_4]'
+			class:
+				'stroke-[color-mix(in_oklab,var(--color)_70%,transparent)] stroke-2 [stroke-dasharray:5_4]'
 		})}
+		marker-end={`url(#${markerId})`}
 	></path>
 	{#if status.isValid && status.targetTaskId}
-		<circle cx={status.toX} cy={status.toY} r="5" class="fill-color stroke-surface stroke-2"
+		<circle
+			cx={status.toX}
+			cy={status.toY}
+			r="5"
+			class="fill-[var(--color)] stroke-surface stroke-2"
 		></circle>
 	{/if}
 </svg>

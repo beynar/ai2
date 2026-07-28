@@ -3,9 +3,9 @@
 	import Button from '$lib/components/Button/Button.svelte';
 	import NumberInput from '$lib/components/Form/NumberInput/NumberInput.svelte';
 	import Select from '$lib/components/Form/Select/Select.svelte';
+	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
 	import Popover from '$lib/components/Popover/Popover.svelte';
 	import type { PopoverState } from '$lib/components/Popover/popover.state.svelte.js';
-	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Snippet } from 'svelte';
 	import type { GanttDependencyTooltipPayload } from './ganttChart.props.js';
@@ -70,13 +70,6 @@
 		geometry,
 		defaultAccessibleLabel,
 		defaultContent: defaultTooltip
-	});
-	const tooltipAttachment = tooltip({
-		get content() {
-			return resolvedTooltip;
-		},
-		position: 'top',
-		delay: 350
 	});
 	const focusLeft = $derived((geometry.fromX + geometry.toX) / 2 - 12);
 	const focusTop = $derived((geometry.fromY + geometry.toY) / 2 - 12);
@@ -151,71 +144,87 @@
 	}
 </script>
 
-<Popover position="bottom" lockScroll={false} openOnClick={false} class="w-72 p-3">
-	{#snippet trigger(popover)}
-		<button
-			type="button"
-			aria-label={defaultAccessibleLabel}
-			aria-pressed={isSelected}
-			aria-describedby={instructionsId}
-			aria-keyshortcuts="Enter Delete Backspace"
-			aria-haspopup={dependency.dependency.readOnly ? undefined : 'dialog'}
-			aria-expanded={dependency.dependency.readOnly ? undefined : popover.isOpen}
-			{disabled}
-			tabindex={isTabStop && !disabled ? 0 : -1}
-			data-gantt-chart-part="connector-control"
-			data-dependency-id={dependency.dependency.id}
-			class="pointer-events-none absolute z-20 size-6 rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color/60"
-			style:left={`${focusLeft}px`}
-			style:top={`${focusTop}px`}
-			onclick={onActivate}
-			onfocus={onFocus}
-			ondblclick={(event) => {
-				event.stopPropagation();
-				if (!dependency.dependency.readOnly) openEditor(popover);
-			}}
-			onkeydown={(event) => handleKeydown(event, popover)}
-			{@attach popover.reference}
-			{@attach tooltipAttachment}
-		></button>
-	{/snippet}
+<div
+	class="pointer-events-auto absolute z-20 size-6"
+	style:left={`${focusLeft}px`}
+	style:top={`${focusTop}px`}
+>
+	<HoverCard
+		position="top"
+		offset={10}
+		delay={250}
+		closeDelay={120}
+		openOnFocus
+		triggerClass="size-full"
+	>
+		{#snippet trigger()}
+			<Popover position="bottom" lockScroll={false} openOnClick={false} class="w-72 p-3">
+				{#snippet trigger(popover)}
+					<button
+						type="button"
+						aria-label={defaultAccessibleLabel}
+						aria-pressed={isSelected}
+						aria-describedby={instructionsId}
+						aria-keyshortcuts="Enter Delete Backspace"
+						aria-haspopup={dependency.dependency.readOnly ? undefined : 'dialog'}
+						aria-expanded={dependency.dependency.readOnly ? undefined : popover.isOpen}
+						{disabled}
+						tabindex={isTabStop && !disabled ? 0 : -1}
+						data-gantt-chart-part="connector-control"
+						data-dependency-id={dependency.dependency.id}
+						class="relative size-full rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color/60"
+						onclick={onActivate}
+						onfocus={onFocus}
+						ondblclick={(event) => {
+							event.stopPropagation();
+							if (!dependency.dependency.readOnly) openEditor(popover);
+						}}
+						onkeydown={(event) => handleKeydown(event, popover)}
+						{@attach popover.reference}
+					></button>
+				{/snippet}
 
-	{#snippet children(popover)}
-		<div class="grid gap-3" data-gantt-chart-part="dependency-editor">
-			<Select
-				size="small"
-				label={messages.ganttChartDependencyType}
-				items={dependencyTypes}
-				value={draftType}
-				onChange={updateDraftType}
-			/>
-			<div class="grid grid-cols-2 gap-2">
-				<NumberInput
-					size="small"
-					label={messages.ganttChartDependencyLag}
-					value={draftLagValue}
-					showControls={false}
-					onChange={(value) => (draftLagValue = value)}
-				/>
-				<Select
-					size="small"
-					label={messages.ganttChartDependencyLagUnit}
-					items={lagUnits}
-					value={draftLagUnit}
-					onChange={updateDraftLagUnit}
-				/>
-			</div>
-			<div class="flex justify-end gap-2">
-				<Button size="small" variant="ghost" onClick={() => popover.close()}>
-					{messages.ganttChartCancel}
-				</Button>
-				<Button size="small" onClick={() => commitEditor(popover)}>
-					{messages.ganttChartApply}
-				</Button>
-			</div>
-		</div>
-	{/snippet}
-</Popover>
+				{#snippet children(popover)}
+					<div class="grid gap-3" data-gantt-chart-part="dependency-editor">
+						<Select
+							size="small"
+							label={messages.ganttChartDependencyType}
+							items={dependencyTypes}
+							value={draftType}
+							onChange={updateDraftType}
+						/>
+						<div class="grid grid-cols-2 gap-2">
+							<NumberInput
+								size="small"
+								label={messages.ganttChartDependencyLag}
+								value={draftLagValue}
+								showControls={false}
+								onChange={(value) => (draftLagValue = value)}
+							/>
+							<Select
+								size="small"
+								label={messages.ganttChartDependencyLagUnit}
+								items={lagUnits}
+								value={draftLagUnit}
+								onChange={updateDraftLagUnit}
+							/>
+						</div>
+						<div class="flex justify-end gap-2">
+							<Button size="small" variant="ghost" onClick={() => popover.close()}>
+								{messages.ganttChartCancel}
+							</Button>
+							<Button size="small" onClick={() => commitEditor(popover)}>
+								{messages.ganttChartApply}
+							</Button>
+						</div>
+					</div>
+				{/snippet}
+			</Popover>
+		{/snippet}
+
+		<Slot render={dependencyTooltip ?? defaultTooltip} payload={tooltipPayload} />
+	</HoverCard>
+</div>
 
 {#snippet defaultTooltip()}
 	<div class="grid gap-0.5">
@@ -223,8 +232,4 @@
 		{#if dependency.isCritical}<span>{messages.ganttChartCritical}</span>{/if}
 		{#if lagLabel}<span>{lagLabel}</span>{/if}
 	</div>
-{/snippet}
-
-{#snippet resolvedTooltip()}
-	<Slot render={dependencyTooltip ?? defaultTooltip} payload={tooltipPayload} />
 {/snippet}

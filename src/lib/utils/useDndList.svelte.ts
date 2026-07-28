@@ -210,6 +210,10 @@ const ensureIndicator = (): HTMLElement => {
 };
 
 const THICKNESS = 2;
+const clippingAncestorsCache = new WeakMap<
+	Element,
+	{ horizontal: readonly Element[]; vertical: readonly Element[] }
+>();
 
 /** Where a gap-centered line goes: its cross-axis `center` plus the union
  * extent of the two rows flanking the gap, so hovering either side of the
@@ -234,6 +238,60 @@ const showIndicator = (rect: DOMRect, edge: DndEdge, gap?: GapLine) => {
 		el.style.width = `${THICKNESS}px`;
 		el.style.left = `${(gap?.center ?? (edge === 'left' ? rect.left : rect.right)) - THICKNESS / 2}px`;
 	}
+};
+
+const getClippedIndicatorLine = (
+	element: Element,
+	edge: DndEdge,
+	elementRect: DOMRect,
+	gap?: GapLine
+): GapLine | null => {
+	const isHorizontalLine = edge === 'top' || edge === 'bottom';
+	const line =
+		gap ??
+		(isHorizontalLine
+			? {
+					center: edge === 'top' ? elementRect.top : elementRect.bottom,
+					start: elementRect.left,
+					extent: elementRect.width
+				}
+			: {
+					center: edge === 'left' ? elementRect.left : elementRect.right,
+					start: elementRect.top,
+					extent: elementRect.height
+				});
+	let start = line.start;
+	let end = line.start + line.extent;
+
+	let clippingAncestors = clippingAncestorsCache.get(element);
+	if (!clippingAncestors) {
+		const horizontal: Element[] = [];
+		const vertical: Element[] = [];
+		for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+			const style = getComputedStyle(ancestor);
+			if (/auto|clip|hidden|scroll|overlay/.test(style.overflowX)) horizontal.push(ancestor);
+			if (/auto|clip|hidden|scroll|overlay/.test(style.overflowY)) vertical.push(ancestor);
+		}
+		clippingAncestors = { horizontal, vertical };
+		clippingAncestorsCache.set(element, clippingAncestors);
+	}
+
+	for (const ancestor of isHorizontalLine
+		? clippingAncestors.horizontal
+		: clippingAncestors.vertical) {
+		const rect = ancestor.getBoundingClientRect();
+		const clipStart = isHorizontalLine ? rect.left : rect.top;
+		const clipEnd = isHorizontalLine ? rect.right : rect.bottom;
+		start = Math.max(start, clipStart);
+		end = Math.min(end, clipEnd);
+	}
+
+	if (end <= start) return null;
+	return {
+		center: line.center,
+		start,
+		extent: end - start
+	};
 };
 
 const hideIndicator = () => {
@@ -273,6 +331,8 @@ const lockNativeScrollAxis = (listEl: Element, allowedAxis: DndAutoScrollAxis): 
 	};
 };
 
+// Module-owned registry state is intentionally non-reactive; entries never drive rendering.
+// eslint-disable-next-line svelte/prefer-svelte-reactivity
 const autoScrollRegistry = new Map<Element, { refs: number; cleanup: () => void }>();
 
 const registerAutoScroll = (listEl: Element): (() => void) => {
@@ -501,7 +561,11 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 			const rows = ownRows();
 			const last = rows[rows.length - 1];
 			if (last) {
-				showIndicator(last.getBoundingClientRect(), terminalEdge());
+				const edge = terminalEdge();
+				const rect = last.getBoundingClientRect();
+				const line = getClippedIndicatorLine(last, edge, rect);
+				if (line) showIndicator(rect, edge, line);
+				else hideIndicator();
 			} else {
 				// Empty list: there is no index to point at, so no line — the
 				// container itself signals via [data-dnd-over] (default tint from
@@ -610,6 +674,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	 * unused — indices are resolved fresh at event time, so the attachment
 	 * identity never depends on a position that shifts mid-drag (re-running
 	 * attachments during a drag is supported but wasteful). */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- keeps the documented call signature
 	const item = (itemData: T, _index?: number): Attachment => {
 		return (element) => {
 			const id = getId(itemData);
@@ -683,7 +748,11 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 					}
 				}
 				if (drawEnabled) {
-					showIndicator(element.getBoundingClientRect(), data.physicalEdge, gapCenter(data.edge));
+					const gap = gapCenter(data.edge);
+					const rect = element.getBoundingClientRect();
+					const line = getClippedIndicatorLine(element, data.physicalEdge, rect, gap);
+					if (line) showIndicator(rect, data.physicalEdge, line);
+					else hideIndicator();
 				}
 			};
 
@@ -771,9 +840,18 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 							getOffset: pointerOutsideOfPreview({ x: '12px', y: '8px' }),
 							render: ({ container }) => {
 								const clone = element.cloneNode(true) as HTMLElement;
-								clone.style.width = `${Math.min(rect.width, 280)}px`;
-								clone.style.boxSizing = 'border-box';
-								clone.style.margin = '0';
+								Object.assign(clone.style, {
+									position: 'relative',
+									inset: 'auto',
+									transform: 'none',
+									width: `${Math.min(rect.width, 280)}px`,
+									height: `${rect.height}px`,
+									boxSizing: 'border-box',
+									margin: '0',
+									overflow: 'hidden',
+									pointerEvents: 'none'
+								});
+								delete clone.dataset.ganttReorderEdge;
 								container.appendChild(clone);
 							}
 						});
@@ -782,6 +860,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 						draggingId = id;
 						unlockNativeScroll();
 						nativeScrollUnlock = lockNativeScrollAxis(element, autoScrollAxis());
+						clippingAncestorsCache.delete(element);
 						// Seed the hover state at the item's own position so a live
 						// preview renders unchanged in the same flush (no flash of
 						// the row collapsing before the placeholder appears).
@@ -813,7 +892,10 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 					},
 					// onDrag is rAF-throttled; onDragEnter dispatches synchronously at
 					// target change — drawing in both keeps the indicator immediate.
-					onDragEnter: (args) => drawItemIndicator(args),
+					onDragEnter: (args) => {
+						clippingAncestorsCache.delete(element);
+						drawItemIndicator(args);
+					},
 					onDrag: (args) => drawItemIndicator(args),
 					onDragLeave: () => {
 						hideIndicator();
@@ -824,6 +906,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 			return () => {
 				cleanup();
 				if (draggingId === id) unlockNativeScroll();
+				clippingAncestorsCache.delete(element);
 				element.removeAttribute('data-dnd-item');
 				element.removeAttribute('data-dnd-dragging');
 			};

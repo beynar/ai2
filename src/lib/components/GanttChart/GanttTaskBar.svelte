@@ -3,7 +3,7 @@
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
+	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
@@ -126,6 +126,14 @@
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
 	const isFocusTarget = $derived(chart.a11y.isTaskTabStop(node.taskId));
+	const canMoveTask = $derived(
+		node.type !== 'summary' && !node.task.readOnly && node.task.draggable !== false && !disabled
+	);
+	const taskCursorClass = $derived.by(() => {
+		if (disabled) return undefined;
+		if (canMoveTask) return 'cursor-grab active:cursor-grabbing';
+		return 'cursor-default';
+	});
 	const resizeStartHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 12 : -12));
 	const resizeEndHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -12 : 12));
 	const dependencyStartHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 36 : -36));
@@ -230,13 +238,6 @@
 		defaultAccessibleLabel,
 		defaultContent: defaultTooltip
 	});
-	const taskTooltipAttachment = tooltip({
-		get content() {
-			return resolvedTooltip;
-		},
-		position: 'top',
-		delay: 350
-	});
 	const visualSnippet = $derived(
 		node.type === 'summary'
 			? snippets.summaryTask
@@ -294,7 +295,11 @@
 	}
 </script>
 
-<div class="group/gantt-task contents" data-gantt-task-group={node.taskId}>
+<div
+	class="group/gantt-task relative h-0 w-full"
+	data-gantt-task-group={node.taskId}
+	style:--gantt-task-color={taskColor}
+>
 	{#if showBaseline && positioned.baselineGeometry && node.task.baseline}
 		{@const baselinePayload = {
 			node,
@@ -355,65 +360,77 @@
 		></div>
 	{/if}
 
-	<button
-		type="button"
-		aria-label={defaultAccessibleLabel}
-		aria-pressed={isSelected}
-		aria-current={isFocusTarget ? 'true' : undefined}
-		aria-describedby={chart.a11y.instructionsId}
-		aria-keyshortcuts="M S E P D Shift+D R Delete Backspace"
-		aria-grabbed={chart.a11y.isTaskGrabbed(node.taskId)}
-		{disabled}
-		tabindex={isFocusTarget && !disabled ? 0 : -1}
-		data-gantt-chart-part={node.type === 'summary'
-			? 'summary-task'
-			: node.type === 'milestone'
-				? 'milestone'
-				: 'task'}
-		data-task-id={node.taskId}
-		data-task-type={node.type}
-		data-selected={isSelected || undefined}
-		data-critical={isCritical || undefined}
-		data-violated={node.violations.length > 0 || undefined}
-		data-violation-count={node.violations.length || undefined}
-		data-over-allocated={isOverAllocated || undefined}
-		data-dragging={isDragging || undefined}
-		data-continues-before={positioned.geometry.continuesBefore || undefined}
-		data-continues-after={positioned.geometry.continuesAfter || undefined}
-		data-color={semanticColor}
-		style:--gantt-task-color={taskColor}
+	<div
+		class="pointer-events-none absolute"
 		style:left={`${positioned.geometry.left}px`}
 		style:top={`${positioned.geometry.top}px`}
 		style:width={`${positioned.geometry.width}px`}
 		style:height={`${positioned.geometry.height}px`}
-		class={visualClass({
-			density,
-			color: semanticColor,
-			disabled,
-			selected: isSelected,
-			critical: isCritical,
-			overAllocated: isOverAllocated,
-			readOnly: node.task.readOnly ?? false,
-			class: [
-				node.type === 'task' && positioned.segments.length > 0
-					? 'border-0 bg-transparent shadow-none'
-					: undefined,
-				isDragging ? 'opacity-35' : undefined
-			]
-		})}
-		onclick={activate}
-		ondblclick={handleDoubleClick}
-		onfocus={() => chart.a11y.setTaskTarget(node.taskId)}
-		{@attach node.type === 'summary' ||
-		node.task.readOnly ||
-		node.task.draggable === false ||
-		disabled
-			? null
-			: chart.interaction.taskDrag(node.taskId, 'move', rowTop)}
-		{@attach taskTooltipAttachment}
 	>
-		<Slot render={visualSnippet ?? defaultContent} payload={taskPayload} />
-	</button>
+		<HoverCard
+			position="top"
+			offset={10}
+			delay={250}
+			closeDelay={120}
+			openOnFocus
+			triggerClass="pointer-events-auto size-full"
+		>
+			{#snippet trigger()}
+				<button
+					type="button"
+					aria-label={defaultAccessibleLabel}
+					aria-pressed={isSelected}
+					aria-current={isFocusTarget ? 'true' : undefined}
+					aria-describedby={chart.a11y.instructionsId}
+					aria-keyshortcuts="M S E P D Shift+D R Delete Backspace"
+					aria-grabbed={chart.a11y.isTaskGrabbed(node.taskId)}
+					{disabled}
+					tabindex={isFocusTarget && !disabled ? 0 : -1}
+					data-gantt-chart-part={node.type === 'summary'
+						? 'summary-task'
+						: node.type === 'milestone'
+							? 'milestone'
+							: 'task'}
+					data-task-id={node.taskId}
+					data-task-type={node.type}
+					data-selected={isSelected || undefined}
+					data-critical={isCritical || undefined}
+					data-violated={node.violations.length > 0 || undefined}
+					data-violation-count={node.violations.length || undefined}
+					data-over-allocated={isOverAllocated || undefined}
+					data-dragging={isDragging || undefined}
+					data-continues-before={positioned.geometry.continuesBefore || undefined}
+					data-continues-after={positioned.geometry.continuesAfter || undefined}
+					data-color={semanticColor}
+					class={visualClass({
+						density,
+						color: semanticColor,
+						disabled,
+						selected: isSelected,
+						critical: isCritical,
+						overAllocated: isOverAllocated,
+						readOnly: node.task.readOnly ?? false,
+						class: [
+							'relative inset-0 h-full w-full',
+							taskCursorClass,
+							node.type === 'task' && positioned.segments.length > 0
+								? 'border-0 bg-transparent shadow-none'
+								: undefined,
+							isDragging ? 'opacity-35' : undefined
+						]
+					})}
+					onclick={activate}
+					ondblclick={handleDoubleClick}
+					onfocus={() => chart.a11y.setTaskTarget(node.taskId)}
+					{@attach canMoveTask ? chart.interaction.taskDrag(node.taskId, 'move', rowTop) : null}
+				>
+					<Slot render={visualSnippet ?? defaultContent} payload={taskPayload} />
+				</button>
+			{/snippet}
+
+			<Slot render={snippets.taskTooltip ?? defaultTooltip} payload={tooltipPayload} />
+		</HoverCard>
+	</div>
 
 	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled}
 		<span
@@ -467,7 +484,9 @@
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
 		>
-			<span class="size-2 rounded-full border border-surface bg-[var(--gantt-task-color)]"></span>
+			<span
+				class="size-3 rounded-full border-2 border-surface bg-[var(--gantt-task-color)] shadow-sm"
+			></span>
 		</span>
 	{/if}
 
@@ -619,8 +638,4 @@
 		{/if}
 		{#if overAllocationLabel}<span class="text-danger">{overAllocationLabel}</span>{/if}
 	</div>
-{/snippet}
-
-{#snippet resolvedTooltip()}
-	<Slot render={snippets.taskTooltip ?? defaultTooltip} payload={tooltipPayload} />
 {/snippet}

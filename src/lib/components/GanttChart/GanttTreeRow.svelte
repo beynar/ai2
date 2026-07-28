@@ -118,7 +118,12 @@
 	data-grid-row={rowIndex}
 	data-resource-group={resourceGroup?.id}
 	data-resource-group-start={showResourceGroupLabel || undefined}
-	class={classes.row({ density, color, disabled, selected: isSelected })}
+	class={classes.row({
+		density,
+		color,
+		disabled,
+		class: isSelected ? 'bg-color/6' : undefined
+	})}
 	style:top={`${start}px`}
 	role="row"
 	aria-rowindex={rowIndex + 2}
