@@ -49,9 +49,9 @@
 	{/snippet}
 
 	{#snippet overflowContent({ day, defaultContent })}
-		<section data-event-calendar-demo-overflow={day} class="rounded border border-primary/25 p-1">
+		<div data-event-calendar-demo-overflow={day}>
 			{@render defaultContent()}
-		</section>
+		</div>
 	{/snippet}
 
 	{#snippet dayHeader({ isToday, defaultContent })}

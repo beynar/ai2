@@ -50,9 +50,9 @@ export const compositionCode = [
 	'  {/snippet}',
 	'',
 	'  {#snippet overflowContent({ day, defaultContent })}',
-	'    <section data-day={day} class="rounded border p-2">',
+	'    <div data-day={day}>',
 	'      {@render defaultContent()}',
-	'    </section>',
+	'    </div>',
 	'  {/snippet}',
 	'</EventCalendar>'
 ].join('\n');
