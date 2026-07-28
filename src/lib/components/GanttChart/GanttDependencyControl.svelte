@@ -42,12 +42,22 @@
 	let draftLagValue = $state<number | null>(null);
 	let draftLagUnit = $state<GanttLagUnit>('day');
 
-	const defaultAccessibleLabel = $derived(
+	const dependencyDescription = $derived(
 		messages.ganttChartDependencyDescription(
 			dependency.fromTask.task.title,
 			dependency.toTask.task.title,
 			dependency.dependency.type
 		)
+	);
+	const lagLabel = $derived(
+		dependency.dependency.lag
+			? `${messages.ganttChartDependencyLag}: ${dependency.dependency.lag.value} ${dependency.dependency.lag.unit}`
+			: null
+	);
+	const defaultAccessibleLabel = $derived(
+		[dependencyDescription, dependency.isCritical ? messages.ganttChartCritical : null, lagLabel]
+			.filter(Boolean)
+			.join(', ')
 	);
 	const tooltipPayload = $derived<GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>>({
 		dependency,
@@ -201,7 +211,11 @@
 </Popover>
 
 {#snippet defaultTooltip()}
-	{defaultAccessibleLabel}
+	<div class="grid gap-0.5">
+		<strong>{dependencyDescription}</strong>
+		{#if dependency.isCritical}<span>{messages.ganttChartCritical}</span>{/if}
+		{#if lagLabel}<span>{lagLabel}</span>{/if}
+	</div>
 {/snippet}
 
 {#snippet resolvedTooltip()}

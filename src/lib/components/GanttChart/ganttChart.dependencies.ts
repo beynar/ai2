@@ -53,28 +53,12 @@ export function autoScheduleGanttTasks<
 		if (task.type === 'summary') continue;
 		const incoming = model.incomingDependencies.get(taskId) ?? [];
 		const scheduled = task.start !== undefined && task.end !== undefined;
-		if (!scheduled) {
-			if (incoming.length > 0) {
-				violations.push({
-					taskId,
-					code: 'dependency-conflict',
-					message: `Unscheduled task ${taskId} cannot be propagated without consumer dates.`
-				});
-			}
-			continue;
-		}
+		if (!scheduled) continue;
 		const calendar = getTaskCalendar(model, task);
 		let requiredStart = new Date(task.start);
 		for (const dependency of incoming) {
 			const predecessor = getRequiredSchedule(scheduleById, dependency.fromTaskId);
-			if (!predecessor.start || !predecessor.end) {
-				violations.push({
-					taskId,
-					code: 'dependency-conflict',
-					message: `Dependency ${dependency.id} has an unscheduled predecessor.`
-				});
-				continue;
-			}
+			if (!predecessor.start || !predecessor.end) continue;
 			const dependencyStart = getRequiredSuccessorStart(task, dependency, predecessor, calendar);
 			if (dependencyStart.getTime() > requiredStart.getTime()) requiredStart = dependencyStart;
 		}
@@ -192,19 +176,23 @@ export function moveGanttDependentTasks<
 }
 
 export function getTaskConstraintViolations<TTaskFields extends object>(
-	task: GanttTask<TTaskFields>
+	task: GanttTask<TTaskFields>,
+	schedule: ScheduleState = {
+		start: task.start ? new Date(task.start) : null,
+		end: task.end ? new Date(task.end) : null
+	}
 ): readonly GanttConstraintViolation[] {
 	if (
 		!task.constraint ||
 		task.constraint.type === 'as-soon-as-possible' ||
-		!task.start ||
-		!task.end
+		!schedule.start ||
+		!schedule.end
 	) {
 		return [];
 	}
 	const expected = task.constraint.date.getTime();
-	const start = task.start.getTime();
-	const end = task.end.getTime();
+	const start = schedule.start.getTime();
+	const end = schedule.end.getTime();
 	const violation = (
 		code: GanttConstraintViolation['code'],
 		message: string,
@@ -223,37 +211,109 @@ export function getTaskConstraintViolations<TTaskFields extends object>(
 		return violation(
 			'start-too-early',
 			`Task ${task.id} starts before its constraint.`,
-			task.start
+			schedule.start
 		);
 	}
 	if (task.constraint.type === 'start-no-later-than' && start > expected) {
-		return violation('start-too-late', `Task ${task.id} starts after its constraint.`, task.start);
+		return violation(
+			'start-too-late',
+			`Task ${task.id} starts after its constraint.`,
+			schedule.start
+		);
 	}
 	if (task.constraint.type === 'finish-no-earlier-than' && end < expected) {
 		return violation(
 			'finish-too-early',
 			`Task ${task.id} finishes before its constraint.`,
-			task.end
+			schedule.end
 		);
 	}
 	if (task.constraint.type === 'finish-no-later-than' && end > expected) {
-		return violation('finish-too-late', `Task ${task.id} finishes after its constraint.`, task.end);
+		return violation(
+			'finish-too-late',
+			`Task ${task.id} finishes after its constraint.`,
+			schedule.end
+		);
 	}
 	if (task.constraint.type === 'must-start-on' && start !== expected) {
 		return violation(
 			'must-start-mismatch',
 			`Task ${task.id} does not start on its constraint.`,
-			task.start
+			schedule.start
 		);
 	}
 	if (task.constraint.type === 'must-finish-on' && end !== expected) {
 		return violation(
 			'must-finish-mismatch',
 			`Task ${task.id} does not finish on its constraint.`,
-			task.end
+			schedule.end
 		);
 	}
 	return [];
+}
+
+export function getGanttDependencyViolations<
+	TTaskFields extends object,
+	TDependencyFields extends object,
+	TResourceFields extends object,
+	TAssignmentFields extends object
+>(
+	model: ValidatedGanttModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
+	resolvedTasks: readonly GanttResolvedTaskNode<TTaskFields>[]
+): readonly GanttConstraintViolation[] {
+	const resolvedById = new Map(resolvedTasks.map((node) => [node.taskId, node]));
+	const violations: GanttConstraintViolation[] = [];
+	for (const dependency of model.dependencies) {
+		const predecessor = resolvedById.get(dependency.fromTaskId);
+		const successor = resolvedById.get(dependency.toTaskId);
+		if (!predecessor || !successor) {
+			throw new GanttChartError(
+				'invalid-operation',
+				`Dependency analysis lost an endpoint for ${dependency.id}.`,
+				{ dependencyId: dependency.id }
+			);
+		}
+		const predecessorBoundary =
+			dependency.type === 'finish-start' || dependency.type === 'finish-finish'
+				? predecessor.resolvedEnd
+				: predecessor.resolvedStart;
+		const successorBoundary =
+			dependency.type === 'finish-start' || dependency.type === 'start-start'
+				? successor.resolvedStart
+				: successor.resolvedEnd;
+		if (!predecessorBoundary || !successorBoundary) {
+			violations.push({
+				taskId: dependency.toTaskId,
+				code: 'dependency-conflict',
+				message: `Dependency ${dependency.id} cannot be evaluated because an endpoint is unscheduled.`
+			});
+			continue;
+		}
+		const successorTask = model.tasksById.get(dependency.toTaskId);
+		if (!successorTask) {
+			throw new GanttChartError(
+				'invalid-operation',
+				`Dependency analysis lost successor ${dependency.toTaskId}.`,
+				{ dependencyId: dependency.id, taskId: dependency.toTaskId }
+			);
+		}
+		const requiredDate = getDependencyBoundary(
+			predecessorBoundary,
+			dependency,
+			getTaskCalendar(model, successorTask)
+		);
+		if (successorBoundary.getTime() >= requiredDate.getTime()) continue;
+		const boundaryName =
+			dependency.type === 'finish-start' || dependency.type === 'start-start' ? 'start' : 'finish';
+		violations.push({
+			taskId: dependency.toTaskId,
+			code: 'dependency-conflict',
+			message: `Dependency ${dependency.id} requires task ${dependency.toTaskId} to ${boundaryName} no earlier than ${requiredDate.toISOString()}.`,
+			requiredDate,
+			actualDate: new Date(successorBoundary)
+		});
+	}
+	return violations;
 }
 
 function getRequiredSuccessorStart<TTaskFields extends object>(

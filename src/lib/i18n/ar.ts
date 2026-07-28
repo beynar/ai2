@@ -238,6 +238,8 @@ export const ar: Messages = {
 	ganttChartSummary: 'مهمة موجزة',
 	ganttChartMilestone: 'مرحلة رئيسية',
 	ganttChartCritical: 'حرجة',
+	ganttChartConstraint: 'قيد',
+	ganttChartScheduleViolation: 'مخالفة الجدول',
 	ganttChartTotalSlack: (minutes: string | number) => `السماح الكلي: ${minutes} دقيقة`,
 	ganttChartFreeSlack: (minutes: string | number) => `السماح الحر: ${minutes} دقيقة`,
 	ganttChartOverAllocated: (resource: string | number) => `تم تحميل ${resource} فوق طاقته`,

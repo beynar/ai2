@@ -6,7 +6,10 @@ import {
 	subtractWorkingMinutes,
 	type GanttCalendarRuntime
 } from './ganttChart.calendar.js';
-import { getTaskConstraintViolations } from './ganttChart.dependencies.js';
+import {
+	getGanttDependencyViolations,
+	getTaskConstraintViolations
+} from './ganttChart.dependencies.js';
 import { GanttChartError } from './ganttChart.error.js';
 import type { ValidatedGanttModel } from './ganttChart.validation.js';
 import type {
@@ -60,7 +63,13 @@ export function calculateGanttCriticalPath<
 	const metrics = calculateMetrics(model, resolvedById, projectRange);
 	const violationsByTaskId = indexViolations([
 		...existingViolations,
-		...model.tasks.flatMap((task) => getTaskConstraintViolations(task))
+		...getGanttDependencyViolations(model, resolvedTasks),
+		...resolvedTasks.flatMap((node) =>
+			getTaskConstraintViolations(node.task, {
+				start: node.resolvedStart,
+				end: node.resolvedEnd
+			})
+		)
 	]);
 	const analyzedTasks = applyMetricsToTasks(model, resolvedTasks, metrics, violationsByTaskId);
 	const analyzedById = new Map(analyzedTasks.map((node) => [node.taskId, node]));
@@ -184,7 +193,13 @@ function calculateMetrics<
 			calendar
 		));
 		const totalSlackMinutes = getWorkingMinutesBetween(metric.earliestStart, latestStart, calendar);
-		const freeSlackMinutes = getFreeSlack(model, taskId, metric, metrics, calendar);
+		const freeSlackMinutes = getFreeSlack(
+			model,
+			taskId,
+			{ ...metric, totalSlackMinutes },
+			metrics,
+			calendar
+		);
 		metrics.set(taskId, {
 			...metric,
 			latestStart,

@@ -247,6 +247,8 @@ export const en = {
 	ganttChartSummary: 'Summary task',
 	ganttChartMilestone: 'Milestone',
 	ganttChartCritical: 'Critical',
+	ganttChartConstraint: 'Constraint',
+	ganttChartScheduleViolation: 'Schedule violation',
 	ganttChartTotalSlack: (minutes: string | number) => `Total slack: ${minutes} minutes`,
 	ganttChartFreeSlack: (minutes: string | number) => `Free slack: ${minutes} minutes`,
 	ganttChartOverAllocated: (resource: string | number) => `${resource} is over allocated`,

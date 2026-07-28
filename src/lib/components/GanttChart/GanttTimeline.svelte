@@ -417,6 +417,7 @@
 				showCritical={display.criticalPath}
 				showBaselines={display.baselines}
 				showDeadlines={display.deadlines}
+				showConstraints={display.constraints}
 				{messages}
 				{locale}
 				{timeZone}

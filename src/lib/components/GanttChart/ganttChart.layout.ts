@@ -39,6 +39,7 @@ export type GanttPositionedTask<TTaskFields extends object> = Readonly<{
 	segments: readonly GanttPositionedSegment[];
 	baselineGeometry: GanttTaskGeometry | null;
 	deadlineLeft: number | null;
+	constraintLeft: number | null;
 	startX: number;
 	endX: number;
 }>;
@@ -107,6 +108,10 @@ export function positionGanttTask<TTaskFields extends object>(input: {
 		segments,
 		baselineGeometry,
 		deadlineLeft: node.task.deadline ? getGanttScalePixel(input.scale, node.task.deadline) : null,
+		constraintLeft:
+			node.task.constraint && node.task.constraint.type !== 'as-soon-as-possible'
+				? getGanttScalePixel(input.scale, node.task.constraint.date)
+				: null,
 		startX,
 		endX
 	};

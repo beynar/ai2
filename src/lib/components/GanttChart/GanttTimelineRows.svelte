@@ -76,6 +76,7 @@
 		showCritical,
 		showBaselines,
 		showDeadlines,
+		showConstraints,
 		messages,
 		locale,
 		timeZone,
@@ -109,6 +110,7 @@
 		showCritical: boolean;
 		showBaselines: boolean;
 		showDeadlines: boolean;
+		showConstraints: boolean;
 		messages: Messages;
 		locale: string;
 		timeZone: string;
@@ -272,6 +274,7 @@
 					{disabled}
 					showBaseline={showBaselines}
 					showDeadline={showDeadlines}
+					showConstraint={showConstraints}
 					{showCritical}
 					isSelected={isTaskSelected(positioned.node.taskId)}
 					isFocused={isTaskFocused(positioned.node.taskId)}

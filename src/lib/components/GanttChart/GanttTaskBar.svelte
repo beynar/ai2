@@ -50,6 +50,7 @@
 		disabled,
 		showBaseline,
 		showDeadline,
+		showConstraint,
 		showCritical,
 		isSelected,
 		isFocused,
@@ -72,6 +73,7 @@
 		disabled: boolean;
 		showBaseline: boolean;
 		showDeadline: boolean;
+		showConstraint: boolean;
 		showCritical: boolean;
 		isSelected: boolean;
 		isFocused: boolean;
@@ -113,6 +115,33 @@
 			minute: '2-digit'
 		})
 	);
+	const numberFormatter = $derived(new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }));
+	const totalSlackLabel = $derived(
+		node.totalSlackMinutes === null
+			? null
+			: messages.ganttChartTotalSlack(numberFormatter.format(node.totalSlackMinutes))
+	);
+	const freeSlackLabel = $derived(
+		node.freeSlackMinutes === null
+			? null
+			: messages.ganttChartFreeSlack(numberFormatter.format(node.freeSlackMinutes))
+	);
+	const constraintLabel = $derived.by(() => {
+		const constraint = node.task.constraint;
+		if (!constraint) return null;
+		if (constraint.type === 'as-soon-as-possible') {
+			return `${messages.ganttChartConstraint}: ${constraint.type}`;
+		}
+		return `${messages.ganttChartConstraint}: ${constraint.type}, ${dateFormatter.format(constraint.date)}`;
+	});
+	const violationLabels = $derived(
+		node.violations.map(
+			(violation) => `${messages.ganttChartScheduleViolation}: ${violation.message}`
+		)
+	);
+	const hasConstraintViolation = $derived(
+		node.violations.some((violation) => violation.constraint !== undefined)
+	);
 	const rangeLabel = $derived(
 		node.resolvedStart && node.resolvedEnd
 			? node.resolvedStart.getTime() === node.resolvedEnd.getTime()
@@ -130,7 +159,11 @@
 					: null,
 			rangeLabel,
 			`${Math.round(progressValue * 100)}%`,
-			isCritical ? messages.ganttChartCritical : null
+			isCritical ? messages.ganttChartCritical : null,
+			totalSlackLabel,
+			freeSlackLabel,
+			constraintLabel,
+			...violationLabels
 		]
 			.filter(Boolean)
 			.join(', ')
@@ -272,6 +305,25 @@
 		</div>
 	{/if}
 
+	{#if showConstraint && positioned.constraintLeft !== null && node.task.constraint && node.task.constraint.type !== 'as-soon-as-possible'}
+		<div
+			data-gantt-chart-part="constraint"
+			data-task-id={node.taskId}
+			data-constraint-type={node.task.constraint.type}
+			data-violated={hasConstraintViolation || undefined}
+			class={classes.constraint({
+				density,
+				color: semanticColor,
+				disabled,
+				invalid: hasConstraintViolation
+			})}
+			style:left={`${positioned.constraintLeft}px`}
+			style:top={`${positioned.geometry.top + positioned.geometry.height / 2 - 6}px`}
+			title={constraintLabel ?? undefined}
+			aria-hidden="true"
+		></div>
+	{/if}
+
 	<button
 		type="button"
 		aria-label={defaultAccessibleLabel}
@@ -288,6 +340,8 @@
 		data-task-type={node.type}
 		data-selected={isSelected || undefined}
 		data-critical={isCritical || undefined}
+		data-violated={node.violations.length > 0 || undefined}
+		data-violation-count={node.violations.length || undefined}
 		data-dragging={isDragging || undefined}
 		data-continues-before={positioned.geometry.continuesBefore || undefined}
 		data-continues-after={positioned.geometry.continuesAfter || undefined}
@@ -495,6 +549,13 @@
 		<strong>{node.task.title}</strong>
 		<span>{rangeLabel}</span>
 		<span>{Math.round(progressValue * 100)}%</span>
+		{#if isCritical}<span>{messages.ganttChartCritical}</span>{/if}
+		{#if totalSlackLabel}<span>{totalSlackLabel}</span>{/if}
+		{#if freeSlackLabel}<span>{freeSlackLabel}</span>{/if}
+		{#if constraintLabel}<span>{constraintLabel}</span>{/if}
+		{#each violationLabels as violationLabel, index (`${violationLabel}-${index}`)}
+			<span class="text-danger">{violationLabel}</span>
+		{/each}
 		{#if assignedResources.length > 0}
 			<span>{assignedResources.map((resource) => resource.title).join(', ')}</span>
 		{/if}

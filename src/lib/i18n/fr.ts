@@ -244,6 +244,8 @@ export const fr: Messages = {
 	ganttChartSummary: 'Tâche récapitulative',
 	ganttChartMilestone: 'Jalon',
 	ganttChartCritical: 'Critique',
+	ganttChartConstraint: 'Contrainte',
+	ganttChartScheduleViolation: 'Violation de planification',
 	ganttChartTotalSlack: (minutes: string | number) => `Marge totale : ${minutes} minutes`,
 	ganttChartFreeSlack: (minutes: string | number) => `Marge libre : ${minutes} minutes`,
 	ganttChartOverAllocated: (resource: string | number) => `${resource} est surallouée`,

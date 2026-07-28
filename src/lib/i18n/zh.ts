@@ -236,6 +236,8 @@ export const zh: Messages = {
 	ganttChartSummary: '摘要任务',
 	ganttChartMilestone: '里程碑',
 	ganttChartCritical: '关键',
+	ganttChartConstraint: '约束条件',
+	ganttChartScheduleViolation: '计划冲突',
 	ganttChartTotalSlack: (minutes: string | number) => `总时差：${minutes} 分钟`,
 	ganttChartFreeSlack: (minutes: string | number) => `自由时差：${minutes} 分钟`,
 	ganttChartOverAllocated: (resource: string | number) => `${resource}分配过量`,

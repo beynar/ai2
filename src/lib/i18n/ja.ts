@@ -237,6 +237,8 @@ export const ja: Messages = {
 	ganttChartSummary: 'サマリータスク',
 	ganttChartMilestone: 'マイルストーン',
 	ganttChartCritical: 'クリティカル',
+	ganttChartConstraint: '制約',
+	ganttChartScheduleViolation: 'スケジュール違反',
 	ganttChartTotalSlack: (minutes: string | number) => `総余裕時間: ${minutes}分`,
 	ganttChartFreeSlack: (minutes: string | number) => `自由余裕時間: ${minutes}分`,
 	ganttChartOverAllocated: (resource: string | number) => `${resource}は過剰割り当てです`,
