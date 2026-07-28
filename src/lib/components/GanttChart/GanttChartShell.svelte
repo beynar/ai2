@@ -46,6 +46,30 @@
 		if (containerWidth <= 0) return 85;
 		return Math.max(15, Math.min(85, (maxGridWidth / containerWidth) * 100));
 	}
+
+	function findPageScrollElement(element: HTMLElement): HTMLElement {
+		for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+			const overflowY = getComputedStyle(ancestor).overflowY;
+			if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') {
+				return ancestor;
+			}
+		}
+		const scrollingElement = document.scrollingElement;
+		if (scrollingElement instanceof HTMLElement) return scrollingElement;
+		return document.documentElement;
+	}
+
+	function getPageScrollMargin(viewport: HTMLElement, scrollElement: HTMLElement): number {
+		const scheduleHeader = viewport.querySelector<HTMLElement>(
+			'[data-gantt-chart-part="grid-header"], [data-gantt-chart-part="time-header"]'
+		);
+		return (
+			viewport.getBoundingClientRect().top -
+			scrollElement.getBoundingClientRect().top +
+			scrollElement.scrollTop +
+			(scheduleHeader?.getBoundingClientRect().height ?? 56)
+		);
+	}
 </script>
 
 <script
@@ -61,6 +85,7 @@
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
 	import { get } from 'svelte/store';
+	import GanttTimeline from './GanttTimeline.svelte';
 	import GanttTreeGrid from './GanttTreeGrid.svelte';
 	import { resolveGanttColumns } from './ganttChart.columns.js';
 	import type {
@@ -68,8 +93,18 @@
 		GanttEmptyPayload,
 		GanttGridHeaderPayload,
 		GanttLoadingPayload,
+		GanttBaselinePayload,
+		GanttDeadlinePayload,
+		GanttDependencyTooltipPayload,
+		GanttDisplayOptions,
+		GanttNonWorkingTimePayload,
+		GanttProgressPayload,
 		GanttSnapshot,
+		GanttTaskLabelPayload,
+		GanttTaskPayload,
+		GanttTaskTooltipPayload,
 		GanttTaskRowPayload,
+		GanttTimeHeaderPayload,
 		GanttTreeCellPayload
 	} from './ganttChart.props.js';
 	import { resolveGanttRows, type GanttVirtualRow } from './ganttChart.rows.js';
@@ -77,7 +112,11 @@
 	import type { GanttChartClasses } from './ganttChart.theme.js';
 	import type {
 		GanttColumnDefinition,
+		GanttHoliday,
 		GanttInteractions,
+		GanttRange,
+		GanttResolvedDependency,
+		GanttScaleDefinition,
 		GanttSortDirection
 	} from './ganttChart.types.js';
 	import type { Snippet } from 'svelte';
@@ -93,6 +132,20 @@
 			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
 		>;
 		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
+		timeHeaderUpper?: Snippet<[GanttTimeHeaderPayload]>;
+		timeHeaderLower?: Snippet<[GanttTimeHeaderPayload]>;
+		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
+		summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
+		milestone?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
+		taskLabel?: Snippet<[GanttTaskLabelPayload<TTaskFields>]>;
+		taskTooltip?: Snippet<
+			[GanttTaskTooltipPayload<TTaskFields, TResourceFields, TAssignmentFields>]
+		>;
+		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
+		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
+		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
+		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
+		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
 		empty?: Snippet<[GanttEmptyPayload]>;
 		loadingContent?: Snippet<[GanttLoadingPayload]>;
 	};
@@ -118,8 +171,18 @@
 		scrollbars,
 		columns,
 		interactions,
+		scales,
+		validRange,
+		initialScrollDate,
+		holidays,
+		showTodayIndicator,
+		showWeekends,
+		display,
 		classes,
-		snippets
+		snippets,
+		onTaskClick,
+		onTaskDoubleClick,
+		onDependencyClick
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		snapshot: GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
@@ -148,14 +211,31 @@
 			  >[]
 			| undefined;
 		interactions: GanttInteractions;
+		scales: readonly GanttScaleDefinition[];
+		validRange: GanttRange | undefined;
+		initialScrollDate: Date | undefined;
+		holidays: readonly GanttHoliday[];
+		showTodayIndicator: boolean;
+		showWeekends: boolean;
+		display: GanttDisplayOptions;
 		classes: GanttChartClasses;
 		snippets: ShellSnippets;
+		onTaskClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
+		onTaskDoubleClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
+		onDependencyClick?: (
+			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
+			event: MouseEvent
+		) => void;
 	} = $props();
 
 	let containerWidth = $state(0);
+	let containerHeight = $state(0);
 	let panelSizes = $state([38, 62]);
 	let lastPublishedGridWidth = $state(gridWidth);
 	let viewportRef = $state<HTMLDivElement | null>(null);
+	let pageScrollElement = $state<HTMLElement | null>(null);
+	let pageScrollMargin = $state(0);
+	let scheduleHeaderHeight = $state(56);
 	let sortOverrides = $state<Record<string, GanttSortDirection | null>>({});
 	const baseColumns = $derived(resolveGanttColumns(columns));
 	const resolvedColumns = $derived(
@@ -174,7 +254,7 @@
 			assignments: snapshot.assignments
 		})
 	);
-	const rowVirtualizerStore = createVirtualizer<HTMLDivElement, HTMLElement>({
+	const rowVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
 		count: 0,
 		getScrollElement: () => null,
 		estimateSize: () => 36,
@@ -183,27 +263,77 @@
 
 	$effect(() => {
 		const rows = rowModel.rows;
-		const scrollElement = viewportRef;
+		const viewport = viewportRef;
+		const mode = scrollMode;
+		const layoutWidth = containerWidth;
+		const layoutHeight = containerHeight;
+		const headerHeight = scheduleHeaderHeight;
 		const estimate = rowHeight;
 		const extra = overscan;
+		void layoutWidth;
+		void layoutHeight;
+		void headerHeight;
+		const scrollElement = mode === 'page' && viewport ? findPageScrollElement(viewport) : viewport;
+		const scrollMargin =
+			mode === 'page' && viewport && scrollElement
+				? getPageScrollMargin(viewport, scrollElement)
+				: 0;
+		pageScrollElement = mode === 'page' ? scrollElement : null;
+		pageScrollMargin = scrollMargin;
 		get(rowVirtualizerStore).setOptions({
 			count: rows.length,
 			getScrollElement: () => scrollElement,
 			estimateSize: () => estimate,
 			overscan: extra,
+			scrollMargin,
 			getItemKey: (index) => rows[index]?.taskId ?? index
 		});
+	});
+
+	$effect(() => {
+		const rows = rowModel.rows;
+		return chart.connectRowNavigation({
+			scrollToTask(taskId, options) {
+				const rowIndex = rows.findIndex((row) => row.taskId === taskId);
+				if (rowIndex < 0) return false;
+				get(rowVirtualizerStore).scrollToIndex(rowIndex, {
+					align: options?.align ?? 'auto'
+				});
+				return true;
+			}
+		});
+	});
+
+	$effect(() => {
+		const viewport = viewportRef;
+		const layoutWidth = containerWidth;
+		void layoutWidth;
+		const header = viewport?.querySelector<HTMLElement>(
+			'[data-gantt-chart-part="grid-header"], [data-gantt-chart-part="time-header"]'
+		);
+		const height = header?.getBoundingClientRect().height;
+		if (height && height !== scheduleHeaderHeight) scheduleHeaderHeight = height;
 	});
 
 	const virtualRows = $derived($rowVirtualizerStore.getVirtualItems());
 	const fallbackRowCount = $derived(
 		Math.min(
 			rowModel.rows.length,
-			Math.ceil((viewportRef?.clientHeight ?? rowHeight * 10) / rowHeight) + overscan
+			Math.ceil(
+				((scrollMode === 'page' ? pageScrollElement?.clientHeight : viewportRef?.clientHeight) ??
+					rowHeight * 10) / rowHeight
+			) + overscan
 		)
 	);
 	const renderedRows = $derived.by((): readonly GanttVirtualRow[] => {
-		if (virtualRows.length > 0) return virtualRows;
+		if (virtualRows.length > 0) {
+			const offset = scrollMode === 'page' ? pageScrollMargin : 0;
+			return virtualRows.map((row) => ({
+				...row,
+				start: row.start - offset,
+				end: row.end - offset
+			}));
+		}
 		return Array.from({ length: fallbackRowCount }, (_, index) => ({
 			index,
 			key: rowModel.rows[index]?.taskId ?? index,
@@ -262,17 +392,11 @@
 	function scrollToRow(rowIndex: number): void {
 		get(rowVirtualizerStore).scrollToIndex(rowIndex, { align: 'auto' });
 	}
-
-	function isTaskSelected(taskId: string): boolean {
-		return (
-			(snapshot.selection.kind === 'task' && snapshot.selection.taskId === taskId) ||
-			(snapshot.selection.kind === 'cell' && snapshot.selection.taskId === taskId)
-		);
-	}
 </script>
 
 <div
 	bind:clientWidth={containerWidth}
+	bind:clientHeight={containerHeight}
 	data-gantt-chart-part="content"
 	data-scroll-mode={scrollMode}
 	data-scrollbars={scrollbars}
@@ -330,7 +454,11 @@
 </div>
 
 {#snippet splitContent()}
-	<div class="relative min-h-full min-w-0" style:min-height={`${contentHeight + 56}px`}>
+	<div
+		class="relative min-h-full min-w-0"
+		style:width={containerWidth > 0 ? `${containerWidth}px` : '100%'}
+		style:height={`${Math.max(containerHeight, contentHeight + scheduleHeaderHeight)}px`}
+	>
 		{#if showGrid}
 			<Resizable
 				bind:sizes={panelSizes}
@@ -342,13 +470,20 @@
 					{
 						id: 'gantt-grid',
 						content: gridPane,
+						class: 'overflow-visible',
 						defaultSize: panelSizes[0],
 						minSize: resolveMinimumPercent(minGridWidth, containerWidth),
 						maxSize: resolveMaximumPercent(maxGridWidth, containerWidth)
 					},
-					{ id: 'gantt-timeline', content: timelinePane, defaultSize: panelSizes[1], minSize: 15 }
+					{
+						id: 'gantt-timeline',
+						content: timelinePane,
+						class: 'overflow-visible',
+						defaultSize: panelSizes[1],
+						minSize: 15
+					}
 				]}
-				class="min-h-full"
+				class="min-h-full overflow-visible"
 				theme={{ handle: { base: classes.splitter({ density, color, disabled }) } }}
 				getHandleAriaLabel={() => messages.ganttChartResizePanels}
 				onLayoutChanged={(sizes, meta) => {
@@ -385,47 +520,34 @@
 {/snippet}
 
 {#snippet timelinePane()}
-	<div
-		data-gantt-chart-part="timeline-pane"
-		class={classes.timelinePane({ density, color, disabled })}
-		role="group"
-		aria-label={messages.ganttChartTimeline}
-	>
-		<div
-			data-gantt-chart-part="time-header"
-			class={classes.timeHeader({ density, color, disabled })}
-		>
-			<div class="grid h-full place-items-center text-xs font-semibold text-neutral/70">
-				{messages.ganttChartTimeline}
-			</div>
-		</div>
-		<div class="relative min-w-full overflow-x-auto overflow-y-visible">
-			<div
-				data-gantt-chart-part="timeline-rows"
-				class={classes.timelineRows({ density, color, disabled })}
-				style:height={`${contentHeight}px`}
-			>
-				{#each renderedRows as virtualRow (virtualRow.key)}
-					{@const node = rowModel.rows[virtualRow.index]}
-					{#if node}
-						<div
-							data-gantt-chart-part="timeline-row"
-							data-task-id={node.taskId}
-							data-index={virtualRow.index}
-							class={classes.timelineRow({
-								density,
-								color,
-								disabled,
-								selected: isTaskSelected(node.taskId)
-							})}
-							style:top={`${virtualRow.start}px`}
-							aria-hidden="true"
-						></div>
-					{/if}
-				{/each}
-			</div>
-		</div>
-	</div>
+	<GanttTimeline
+		{chart}
+		{snapshot}
+		{rowModel}
+		{renderedRows}
+		totalHeight={contentHeight}
+		{rowHeight}
+		{scales}
+		{validRange}
+		{initialScrollDate}
+		{holidays}
+		{showTodayIndicator}
+		{showWeekends}
+		{display}
+		{messages}
+		{locale}
+		{timeZone}
+		{density}
+		{color}
+		{direction}
+		{disabled}
+		{scrollbars}
+		{classes}
+		{snippets}
+		{onTaskClick}
+		{onTaskDoubleClick}
+		{onDependencyClick}
+	/>
 {/snippet}
 
 {#snippet defaultEmpty()}

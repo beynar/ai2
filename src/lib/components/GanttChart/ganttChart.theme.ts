@@ -44,7 +44,7 @@ function createGanttChartPart(base: string) {
 }
 
 const root = createGanttChartPart(
-	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/80 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none'
+	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/80 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none forced-colors:border-[CanvasText]'
 );
 const header = createGanttChartPart(
 	'flex min-w-0 shrink-0 flex-wrap items-center gap-2 border-b border-neutral-muted bg-surface-raised px-3 py-2'
@@ -57,16 +57,18 @@ const zoomControl = createGanttChartPart('flex min-w-0 items-center gap-1');
 const actions = createGanttChartPart('ms-auto flex min-w-0 items-center gap-1.5');
 const content = createGanttChartPart('relative min-h-0 min-w-0 flex-1');
 const splitShell = createGanttChartPart('flex h-full min-h-0 min-w-0');
-const gridPane = createGanttChartPart('relative min-h-0 min-w-0 overflow-hidden bg-surface');
+const gridPane = createGanttChartPart(
+	'relative min-h-0 min-w-0 overflow-x-clip overflow-y-visible bg-surface'
+);
 const splitter = createGanttChartPart(
 	'bg-neutral-muted/80 outline-none focus-visible:ring-2 focus-visible:ring-color/60'
 );
 const timelinePane = createGanttChartPart(
-	'relative min-h-0 min-w-0 flex-1 overflow-hidden bg-surface'
+	'relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-visible bg-surface'
 );
 const viewport = createGanttChartPart('relative h-full min-h-0 min-w-0 overflow-auto');
 const gridHeader = createGanttChartPart(
-	'sticky top-0 z-30 flex h-[var(--gantt-header-height)] border-b border-neutral-muted bg-surface-raised/95 backdrop-blur'
+	'relative flex h-[var(--gantt-header-height)] border-b border-neutral-muted bg-surface-raised/95 backdrop-blur'
 );
 const columnHeader = createGanttChartPart(
 	'flex min-w-0 items-center border-e border-neutral-muted/70 px-2 text-xs font-semibold text-neutral/75 outline-none'
@@ -82,7 +84,7 @@ const expander = createGanttChartPart(
 	'grid size-6 shrink-0 place-items-center rounded outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60'
 );
 const timeHeader = createGanttChartPart(
-	'sticky top-0 z-30 h-[var(--gantt-header-height)] border-b border-neutral-muted bg-surface-raised/95 backdrop-blur'
+	'relative h-[var(--gantt-header-height)] border-b border-neutral-muted bg-surface-raised/95 backdrop-blur'
 );
 const timeHeaderUpper = createGanttChartPart(
 	'absolute top-0 flex h-1/2 items-center justify-center truncate border-e border-b border-neutral-muted/70 px-1 text-xs font-semibold text-neutral/75'
@@ -90,7 +92,7 @@ const timeHeaderUpper = createGanttChartPart(
 const timeHeaderLower = createGanttChartPart(
 	'absolute bottom-0 flex h-1/2 items-center justify-center truncate border-e border-neutral-muted/70 px-1 text-[0.6875rem] text-neutral/65'
 );
-const timelineRows = createGanttChartPart('relative min-w-full');
+const timelineRows = createGanttChartPart('relative min-w-full overflow-x-clip');
 const timelineRow = createGanttChartPart(
 	'absolute inset-x-0 h-[var(--gantt-row-height)] border-b border-neutral-muted/55'
 );
@@ -99,13 +101,13 @@ const gridLine = createGanttChartPart(
 );
 const taskLayer = createGanttChartPart('pointer-events-none absolute inset-0');
 const task = createGanttChartPart(
-	'group/task pointer-events-auto absolute flex h-[var(--gantt-task-height)] min-w-0 items-center rounded border border-[color-mix(in_oklab,var(--gantt-task-color)_40%,transparent)] bg-[color-mix(in_oklab,var(--gantt-task-color)_18%,var(--color-surface))] text-neutral shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'group/task pointer-events-auto absolute flex h-[var(--gantt-task-height)] min-w-0 items-center rounded border border-[color-mix(in_oklab,var(--gantt-task-color)_40%,transparent)] bg-[color-mix(in_oklab,var(--gantt-task-color)_18%,var(--color-surface))] text-neutral shadow-sm outline-none data-[continues-before]:rounded-s-none data-[continues-after]:rounded-e-none focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText] forced-colors:focus-visible:outline-2'
 );
 const summaryTask = createGanttChartPart(
-	'group/task pointer-events-auto absolute h-2 border-t-2 border-[var(--gantt-task-color)] before:absolute before:start-0 before:top-0 before:h-2 before:border-s-2 before:border-[var(--gantt-task-color)] after:absolute after:end-0 after:top-0 after:h-2 after:border-e-2 after:border-[var(--gantt-task-color)] outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'group/task pointer-events-auto absolute h-2 border-t-2 border-[var(--gantt-task-color)] before:absolute before:start-0 before:top-0 before:h-2 before:border-s-2 before:border-[var(--gantt-task-color)] after:absolute after:end-0 after:top-0 after:h-2 after:border-e-2 after:border-[var(--gantt-task-color)] outline-none focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText]'
 );
 const milestone = createGanttChartPart(
-	'group/task pointer-events-auto absolute size-4 rotate-45 border border-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)] bg-[var(--gantt-task-color)] outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'group/task pointer-events-auto absolute size-4 rotate-45 border border-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)] bg-[var(--gantt-task-color)] outline-none focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[CanvasText]'
 );
 const segment = createGanttChartPart('absolute inset-y-0 rounded bg-inherit');
 const progress = createGanttChartPart(
@@ -138,18 +140,20 @@ const constraint = createGanttChartPart(
 const connectorLayer = createGanttChartPart(
 	'pointer-events-none absolute inset-0 overflow-visible'
 );
-const connector = createGanttChartPart('fill-none stroke-neutral/45 stroke-[1.5]');
+const connector = createGanttChartPart(
+	'fill-none stroke-neutral/45 stroke-[1.5] forced-colors:stroke-[CanvasText]'
+);
 const connectorHitTarget = createGanttChartPart(
-	'pointer-events-stroke fill-none stroke-transparent stroke-[12] outline-none focus-visible:stroke-color/20'
+	'fill-none stroke-transparent stroke-[12] outline-none focus-visible:stroke-color/20'
 );
 const todayIndicator = createGanttChartPart(
-	'pointer-events-none absolute top-0 z-20 w-px bg-danger'
+	'pointer-events-none absolute top-0 z-20 w-px bg-danger forced-colors:bg-[Highlight]'
 );
 const projectLine = createGanttChartPart(
 	'pointer-events-none absolute top-0 z-10 w-px border-s border-dashed border-neutral/45'
 );
 const nonWorkingTime = createGanttChartPart(
-	'pointer-events-none absolute top-0 bg-surface-recessed/65'
+	'pointer-events-none absolute top-0 bg-surface-recessed/65 forced-colors:bg-[CanvasText] forced-colors:opacity-10'
 );
 const holiday = createGanttChartPart('pointer-events-none absolute top-0 bg-warning/8');
 const dragPreview = createGanttChartPart(

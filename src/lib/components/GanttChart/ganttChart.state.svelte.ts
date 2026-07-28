@@ -163,6 +163,16 @@ type ScheduleCache<
 	value: ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 };
 
+export type GanttTimelineNavigation = Readonly<{
+	fitProject: () => boolean;
+	prepareZoom: (anchorDate: Date) => void;
+	scrollToDate: (date: Date, options?: { align?: 'start' | 'center' | 'end' }) => boolean;
+}>;
+
+export type GanttRowNavigation = Readonly<{
+	scrollToTask: (taskId: string, options?: { align?: 'start' | 'center' | 'end' }) => boolean;
+}>;
+
 export class GanttChartState<
 	TTaskFields extends object,
 	TDependencyFields extends object,
@@ -178,6 +188,8 @@ export class GanttChartState<
 	#scheduleCache:
 		ScheduleCache<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> | undefined;
 	#visibleRange = $state<GanttRange | null>(null);
+	#timelineNavigation: GanttTimelineNavigation | null = null;
+	#rowNavigation: GanttRowNavigation | null = null;
 	#mutations: GanttChartMutations<
 		TTaskFields,
 		TDependencyFields,
@@ -296,6 +308,7 @@ export class GanttChartState<
 
 	fitProject(): boolean {
 		this.#assertNavigationEnabled();
+		if (this.#timelineNavigation) return this.#timelineNavigation.fitProject();
 		const projectRange = this.schedule.analysis.projectRange;
 		if (!projectRange) return false;
 		this.setVisibleRange(projectRange);
@@ -304,12 +317,12 @@ export class GanttChartState<
 
 	zoomIn(anchorDate?: Date): boolean {
 		if (anchorDate) assertInstant(anchorDate, 'anchorDate');
-		return this.#stepZoom(-1);
+		return this.#stepZoom(-1, anchorDate);
 	}
 
 	zoomOut(anchorDate?: Date): boolean {
 		if (anchorDate) assertInstant(anchorDate, 'anchorDate');
-		return this.#stepZoom(1);
+		return this.#stepZoom(1, anchorDate);
 	}
 
 	setZoom(zoom: GanttZoomLevel, anchorDate?: Date): void {
@@ -321,6 +334,10 @@ export class GanttChartState<
 			});
 		}
 		if (zoom === this.#options.zoom) return;
+		const currentRange = this.visibleRange;
+		this.#timelineNavigation?.prepareZoom(
+			anchorDate ?? new Date((currentRange.start.getTime() + currentRange.end.getTime()) / 2)
+		);
 		this.#options.zoom = zoom;
 		this.#options.onZoomChange?.(zoom);
 	}
@@ -328,6 +345,7 @@ export class GanttChartState<
 	scrollToDate(date: Date, options?: { align?: 'start' | 'center' | 'end' }): boolean {
 		this.#assertNavigationEnabled();
 		assertInstant(date, 'date');
+		if (this.#timelineNavigation) return this.#timelineNavigation.scrollToDate(date, options);
 		const range = this.visibleRange;
 		const duration = range.end.getTime() - range.start.getTime();
 		const align = options?.align ?? 'center';
@@ -342,8 +360,11 @@ export class GanttChartState<
 	}
 
 	scrollToTask(taskId: string, options?: { align?: 'start' | 'center' | 'end' }): boolean {
+		this.#assertNavigationEnabled();
 		const task = this.getResolvedTask(taskId);
-		if (!task?.resolvedStart || !task.resolvedEnd) return false;
+		if (!task) return false;
+		const didScrollRow = this.#rowNavigation?.scrollToTask(taskId, options) ?? false;
+		if (!task.resolvedStart || !task.resolvedEnd) return didScrollRow;
 		const align = options?.align ?? 'center';
 		const date =
 			align === 'start'
@@ -351,7 +372,7 @@ export class GanttChartState<
 				: align === 'end'
 					? task.resolvedEnd
 					: new Date((task.resolvedStart.getTime() + task.resolvedEnd.getTime()) / 2);
-		return this.scrollToDate(date, { align });
+		return this.scrollToDate(date, { align }) || didScrollRow;
 	}
 
 	getVisibleRange(): GanttRange {
@@ -375,6 +396,20 @@ export class GanttChartState<
 			zoom: this.#options.zoom,
 			timeZone: this.#options.timeZone
 		});
+	}
+
+	connectTimelineNavigation(navigation: GanttTimelineNavigation): () => void {
+		this.#timelineNavigation = navigation;
+		return () => {
+			if (this.#timelineNavigation === navigation) this.#timelineNavigation = null;
+		};
+	}
+
+	connectRowNavigation(navigation: GanttRowNavigation): () => void {
+		this.#rowNavigation = navigation;
+		return () => {
+			if (this.#rowNavigation === navigation) this.#rowNavigation = null;
+		};
 	}
 
 	getTask(taskId: string): GanttTask<TTaskFields> | null {
@@ -558,13 +593,13 @@ export class GanttChartState<
 		return this.#unavailableMutation('cancelInteraction');
 	}
 
-	#stepZoom(direction: -1 | 1): boolean {
+	#stepZoom(direction: -1 | 1, anchorDate?: Date): boolean {
 		this.#assertNavigationEnabled();
 		const zoomLevels = this.enabledZoomLevels;
 		const index = zoomLevels.indexOf(this.#options.zoom);
 		const nextIndex = index + direction;
 		if (nextIndex < 0 || nextIndex >= zoomLevels.length) return false;
-		this.setZoom(zoomLevels[nextIndex]);
+		this.setZoom(zoomLevels[nextIndex], anchorDate);
 		return true;
 	}
 

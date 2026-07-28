@@ -95,6 +95,9 @@
 		zoomLevels = [...DEFAULT_GANTT_ZOOM_LEVELS],
 		scales = [],
 		initialScrollDate,
+		showTodayIndicator = true,
+		showWeekends = true,
+		holidays = [],
 		rowHeight = 36,
 		overscan = 6,
 		scrollMode = 'contained',
@@ -109,12 +112,25 @@
 		interactions = {},
 		autoSchedule = false,
 		moveDependencies = false,
+		display = {},
 		header,
 		actions,
 		gridHeader,
 		columnHeader,
 		treeCell,
 		taskRow,
+		timeHeaderUpper,
+		timeHeaderLower,
+		task,
+		summaryTask,
+		milestone,
+		taskLabel,
+		taskTooltip,
+		dependencyTooltip,
+		progress,
+		baseline,
+		deadline,
+		nonWorkingTime,
 		empty,
 		loadingContent,
 		canUpdateTask,
@@ -130,6 +146,9 @@
 		onExpansionChange,
 		onZoomChange,
 		onVisibleRangeChange,
+		onTaskClick,
+		onTaskDoubleClick,
+		onDependencyClick,
 		onInteractionBlocked,
 		onScheduleViolations,
 		...remainingProps
@@ -139,6 +158,15 @@
 	const resolvedLocale = $derived(locale ?? messages.locale);
 	const customScaleIds = $derived(new Set(scales.map((scale) => scale.id)));
 	const resolvedInteractions = $derived({ ...DEFAULT_GANTT_INTERACTIONS, ...interactions });
+	const resolvedDisplay = $derived({
+		criticalPath: false,
+		baselines: true,
+		deadlines: true,
+		constraints: true,
+		nonWorkingTime: true,
+		workload: false,
+		...display
+	});
 	const classes = $derived(useGanttChartTheme(theme));
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
 	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
@@ -526,10 +554,39 @@
 		{scrollbars}
 		{columns}
 		interactions={resolvedInteractions}
+		{scales}
+		{validRange}
+		{initialScrollDate}
+		{holidays}
+		{showTodayIndicator}
+		{showWeekends}
+		display={resolvedDisplay}
 		locale={resolvedLocale}
 		{timeZone}
 		{classes}
-		snippets={{ gridHeader, columnHeader, treeCell, taskRow, empty, loadingContent }}
+		snippets={{
+			gridHeader,
+			columnHeader,
+			treeCell,
+			taskRow,
+			timeHeaderUpper,
+			timeHeaderLower,
+			task,
+			summaryTask,
+			milestone,
+			taskLabel,
+			taskTooltip,
+			dependencyTooltip,
+			progress,
+			baseline,
+			deadline,
+			nonWorkingTime,
+			empty,
+			loadingContent
+		}}
+		{onTaskClick}
+		{onTaskDoubleClick}
+		{onDependencyClick}
 	/>
 	<div
 		data-gantt-chart-part="live-region"

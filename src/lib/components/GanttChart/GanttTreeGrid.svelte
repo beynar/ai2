@@ -74,6 +74,8 @@
 	} = $props();
 
 	let rootElement = $state<HTMLElement | null>(null);
+	let horizontalViewport = $state<HTMLDivElement | null>(null);
+	let horizontalScrollLeft = $state(0);
 	let activeTaskId = $state('');
 	let activeColumnId = $state('');
 	const gridId = $props.id();
@@ -220,6 +222,11 @@
 			message: 'Hierarchy operations require a compatible sibling summary target.'
 		});
 	}
+
+	function handleHorizontalScroll(): void {
+		if (!horizontalViewport) return;
+		horizontalScrollLeft = horizontalViewport.scrollLeft;
+	}
 </script>
 
 <div
@@ -231,8 +238,15 @@
 	aria-rowcount={rowModel.rows.length}
 	aria-colcount={rowModel.visibleColumns.length}
 >
-	<div class="min-h-full min-w-0 overflow-x-auto overflow-y-visible">
-		<div style:width={`${gridWidth}px`} style:min-width="100%">
+	<div
+		class="sticky top-0 z-30 h-[var(--gantt-header-height)] overflow-x-clip bg-surface-raised/95 backdrop-blur"
+		dir={direction}
+	>
+		<div
+			style:width={`${gridWidth}px`}
+			style:min-width="100%"
+			style:transform={`translate3d(${-horizontalScrollLeft}px, 0, 0)`}
+		>
 			<div
 				data-gantt-chart-part="grid-header"
 				class={classes.gridHeader({ density, color, disabled })}
@@ -257,6 +271,17 @@
 					/>
 				{/each}
 			</div>
+		</div>
+	</div>
+	<div
+		bind:this={horizontalViewport}
+		dir="ltr"
+		data-gantt-chart-part="grid-viewport"
+		class="min-w-0 overflow-x-auto overflow-y-clip"
+		style:height={`${totalHeight}px`}
+		onscroll={handleHorizontalScroll}
+	>
+		<div style:width={`${gridWidth}px`} style:min-width="100%" dir={direction}>
 			<div
 				data-gantt-chart-part="rows"
 				class={classes.rows({ density, color, disabled })}
