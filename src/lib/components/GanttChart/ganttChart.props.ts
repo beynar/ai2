@@ -400,8 +400,8 @@ type GanttOwnProps<
 		holidays?: GanttHoliday[];
 		/**
 		 * Fixed move, resize, and range granularity. When omitted, granularity follows the active
-		 * built-in or custom zoom scale. Built-in steps are 15 minutes at hour, 1 hour at day,
-		 * 1 day at week/month, 1 week at quarter, and 4 weeks at year.
+		 * built-in or custom zoom scale. Built-in steps are 1 minute at hour, 15 minutes at day,
+		 * 1 hour at week, 4 hours at month, 1 day at quarter, and 3 days at year.
 		 */
 		snapDuration?: GanttDuration;
 		/** Shared logical row height in pixels. */

@@ -51,12 +51,12 @@ const BUILT_IN_SCALES: Record<GanttBuiltInZoomLevel, BuiltInScaleConfig> = {
 };
 
 const BUILT_IN_SNAP_DURATIONS = {
-	hour: { value: 15, unit: 'minute' },
-	day: { value: 1, unit: 'hour' },
-	week: { value: 1, unit: 'day' },
-	month: { value: 1, unit: 'day' },
-	quarter: { value: 1, unit: 'week' },
-	year: { value: 4, unit: 'week' }
+	hour: { value: 1, unit: 'minute' },
+	day: { value: 15, unit: 'minute' },
+	week: { value: 1, unit: 'hour' },
+	month: { value: 4, unit: 'hour' },
+	quarter: { value: 1, unit: 'day' },
+	year: { value: 3, unit: 'day' }
 } as const satisfies Record<GanttBuiltInZoomLevel, GanttDuration>;
 
 export type GanttResolvedScaleDefinition = Readonly<{
