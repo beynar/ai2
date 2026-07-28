@@ -139,6 +139,9 @@
 	let lastViewportWidth = $state(0);
 	let lastPublishedRange = $state<GanttRange | null>(null);
 	let visibleRangeFrame: number | null = null;
+	let pinchZoomIdleTimer: ReturnType<typeof setTimeout> | null = null;
+	let isPinchZoomLocked = false;
+	const PINCH_ZOOM_IDLE_MS = 180;
 	const fallbackViewportWidth = 960;
 	const effectiveViewportWidth = $derived(viewportWidth || fallbackViewportWidth);
 	const projectRange = $derived(chart.schedule.analysis.projectRange);
@@ -258,6 +261,7 @@
 			disconnectNavigation();
 			disconnectInteractions();
 			if (visibleRangeFrame !== null) cancelAnimationFrame(visibleRangeFrame);
+			resetPinchZoomGesture();
 		};
 	});
 
@@ -272,6 +276,10 @@
 		if (chart.interaction.isActive) return;
 		if (event.ctrlKey || event.metaKey) {
 			event.preventDefault();
+			if (event.deltaY === 0) return;
+			holdPinchZoomGesture();
+			if (isPinchZoomLocked) return;
+			isPinchZoomLocked = true;
 			const bounds = horizontalViewport.getBoundingClientRect();
 			const offset = Math.max(0, Math.min(bounds.width, event.clientX - bounds.left));
 			const anchor = getGanttScaleInstantAtPixel(scale, scrollLeft + offset);
@@ -283,6 +291,17 @@
 		if (!event.shiftKey || event.deltaX !== 0 || event.deltaY === 0) return;
 		event.preventDefault();
 		horizontalViewport.scrollLeft += event.deltaY;
+	}
+
+	function holdPinchZoomGesture(): void {
+		if (pinchZoomIdleTimer !== null) clearTimeout(pinchZoomIdleTimer);
+		pinchZoomIdleTimer = setTimeout(resetPinchZoomGesture, PINCH_ZOOM_IDLE_MS);
+	}
+
+	function resetPinchZoomGesture(): void {
+		if (pinchZoomIdleTimer !== null) clearTimeout(pinchZoomIdleTimer);
+		pinchZoomIdleTimer = null;
+		isPinchZoomLocked = false;
 	}
 
 	function queueVisibleRangePublish(): void {
