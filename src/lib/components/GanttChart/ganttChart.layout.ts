@@ -183,8 +183,10 @@ export function resolveGanttTimeShades(input: {
 		holiday: GanttHoliday | null;
 		kind: GanttTimeShade['kind'];
 	}> = [];
+	const showsWorkingHours =
+		input.scale.definition.unit === 'minute' || input.scale.definition.unit === 'hour';
 
-	if (input.showNonWorkingTime) {
+	if (input.showNonWorkingTime && showsWorkingHours) {
 		const working = getCalendarWorkingIntervals(range, input.projectCalendar);
 		for (const nonWorkingRange of invertRanges(range, working)) {
 			candidates.push({
@@ -202,15 +204,21 @@ export function resolveGanttTimeShades(input: {
 	let scannedDays = 0;
 	while (formatCivilDate(day) <= formatCivilDate(finalDay)) {
 		const date = formatCivilDate(day);
-		const dayRange = intersectScheduleRanges(
-			{
-				start: startOfZonedCivilDay(date, input.scale.timeZone),
-				end: startOfZonedCivilDay(formatCivilDate(addCivilDateDays(day, 1)), input.scale.timeZone)
-			},
-			range
-		);
+		const civilDayRange = {
+			start: startOfZonedCivilDay(date, input.scale.timeZone),
+			end: startOfZonedCivilDay(formatCivilDate(addCivilDateDays(day, 1)), input.scale.timeZone)
+		};
+		const dayRange = intersectScheduleRanges(civilDayRange, range);
 		const isWeekend = getCivilDateWeekday(day) === 0 || getCivilDateWeekday(day) === 6;
 		const holiday = holidaysByDate.get(date) ?? null;
+		if (
+			input.showNonWorkingTime &&
+			!showsWorkingHours &&
+			dayRange.start.getTime() < dayRange.end.getTime() &&
+			getCalendarWorkingIntervals(civilDayRange, input.projectCalendar).length === 0
+		) {
+			candidates.push({ range: dayRange, isWeekend, holiday: null, kind: 'calendar' });
+		}
 		if (input.showWeekends && isWeekend && dayRange.start.getTime() < dayRange.end.getTime()) {
 			candidates.push({ range: dayRange, isWeekend: true, holiday, kind: 'weekend' });
 		}
