@@ -6,6 +6,7 @@ import {
 	draggable,
 	dropTargetForElements,
 	monitorForElements,
+	preventUnhandled,
 	type ElementEventPayloadMap
 } from '$lib/utils/pragmaticDragAndDrop.js';
 import { untrack } from 'svelte';
@@ -196,7 +197,6 @@ export class EventCalendarInteractionsController<
 	private monitorCleanup: (() => void) | null = null;
 	private escapeCleanup: (() => void) | null = null;
 	private nativeCancelCleanup: (() => void) | null = null;
-	private nativeCursorCleanup: (() => void) | null = null;
 	private didNativeCancel = false;
 	private autoScrollCleanups = new Set<() => void>();
 	private slotScrollElement: HTMLElement | null = null;
@@ -291,19 +291,6 @@ export class EventCalendarInteractionsController<
 		};
 		window.addEventListener('dragend', handleDragEnd, true);
 		this.nativeCancelCleanup = () => window.removeEventListener('dragend', handleDragEnd, true);
-		const handleDragOver = (event: DragEvent) => {
-			if (
-				!this.gesture ||
-				this.gesture.kind === 'slot-create' ||
-				this.gesture.inputMode !== 'pointer' ||
-				this.gesture.isValid ||
-				!event.dataTransfer
-			)
-				return;
-			event.dataTransfer.dropEffect = 'none';
-		};
-		window.addEventListener('dragover', handleDragOver);
-		this.nativeCursorCleanup = () => window.removeEventListener('dragover', handleDragOver);
 	}
 
 	destroy(): void {
@@ -316,8 +303,6 @@ export class EventCalendarInteractionsController<
 		this.escapeCleanup = null;
 		this.nativeCancelCleanup?.();
 		this.nativeCancelCleanup = null;
-		this.nativeCursorCleanup?.();
-		this.nativeCursorCleanup = null;
 		for (const cleanup of this.autoScrollCleanups) cleanup();
 		this.autoScrollCleanups.clear();
 	}
@@ -1193,6 +1178,8 @@ export class EventCalendarInteractionsController<
 			isOverflowSource: source.isOverflowSource,
 			sourceResourceId: source.sourceResourceId
 		};
+		// Avoid the native snap-back delay when a release is rejected or outside a calendar target.
+		preventUnhandled.start();
 		this.updateItemGesture(payload);
 	}
 
@@ -1217,6 +1204,7 @@ export class EventCalendarInteractionsController<
 
 	private handleItemDrop(payload: ElementEventPayloadMap['onDrop']): void {
 		this.cancelItemDragFrame();
+		preventUnhandled.stop();
 		const active = this.gesture;
 		if (!active || active.kind === 'slot-create') return;
 		if (this.didNativeCancel) {
