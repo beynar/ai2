@@ -112,13 +112,14 @@
 		canDrag: (node) => !node.task.readOnly,
 		autoScrollAxis: 'vertical',
 		onReorder: (_rows, detail) => {
-			const target = rowModel.rows[detail.to];
+			const target = detail.targetItemId
+				? rowModel.rows.find((row) => row.taskId === detail.targetItemId)
+				: rowModel.rows[detail.to];
 			if (!target) return;
-			const accepted = chart.reorderTask(
-				detail.item.taskId,
-				target.taskId,
-				detail.to > detail.from ? 'after' : 'before'
-			);
+			let position: 'before' | 'after' = detail.to > detail.from ? 'after' : 'before';
+			if (detail.targetEdge === 'top') position = 'before';
+			if (detail.targetEdge === 'bottom') position = 'after';
+			const accepted = chart.reorderTask(detail.item.taskId, target.taskId, position);
 			if (!accepted) blockHierarchyOperation(detail.item.taskId);
 		}
 	});
@@ -231,8 +232,9 @@
 		if (event.altKey && event.shiftKey && event.key === 'ArrowRight') {
 			event.preventDefault();
 			const logicalIndent = hierarchyDirection === 1;
+			const indentTargetIndex = findIndentTargetRowIndex(rowIndex);
 			const accepted = logicalIndent
-				? chart.indentTask(node.taskId, rowModel.rows[rowIndex - 1]?.taskId ?? null)
+				? chart.indentTask(node.taskId, rowModel.rows[indentTargetIndex]?.taskId ?? null)
 				: chart.outdentTask(node.taskId);
 			if (!accepted) blockHierarchyOperation(node.taskId);
 			return;
@@ -240,8 +242,9 @@
 		if (event.altKey && event.shiftKey && event.key === 'ArrowLeft') {
 			event.preventDefault();
 			const logicalIndent = hierarchyDirection === -1;
+			const indentTargetIndex = findIndentTargetRowIndex(rowIndex);
 			const accepted = logicalIndent
-				? chart.indentTask(node.taskId, rowModel.rows[rowIndex - 1]?.taskId ?? null)
+				? chart.indentTask(node.taskId, rowModel.rows[indentTargetIndex]?.taskId ?? null)
 				: chart.outdentTask(node.taskId);
 			if (!accepted) blockHierarchyOperation(node.taskId);
 			return;
@@ -327,7 +330,7 @@
 	function canIndentRow(rowIndex: number): boolean {
 		if (!canChangeHierarchy || !interactions.indent) return false;
 		const node = rowModel.rows[rowIndex];
-		const previousNode = rowModel.rows[rowIndex - 1];
+		const previousNode = rowModel.rows[findIndentTargetRowIndex(rowIndex)];
 		return Boolean(
 			node &&
 			previousNode &&
@@ -346,7 +349,7 @@
 
 	function indentRow(rowIndex: number): void {
 		const node = rowModel.rows[rowIndex];
-		const previousNode = rowModel.rows[rowIndex - 1];
+		const previousNode = rowModel.rows[findIndentTargetRowIndex(rowIndex)];
 		if (
 			!node ||
 			!previousNode ||
@@ -355,6 +358,11 @@
 		) {
 			if (node) blockHierarchyOperation(node.taskId, 'pointer');
 		}
+	}
+
+	function findIndentTargetRowIndex(rowIndex: number): number {
+		const node = rowModel.rows[rowIndex];
+		return node ? findSiblingRowIndex(rowIndex, -1, node.parentId) : -1;
 	}
 
 	function outdentRow(rowIndex: number): void {

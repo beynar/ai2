@@ -41,10 +41,20 @@ export type UseDndListOptions<T> = {
 	itemId?: (item: T) => string;
 	/**
 	 * Called after a same-list drag with the reordered array — assign it to
-	 * your state. `detail` carries the moved item and both indices (resolved
-	 * at drop time, so mid-drag list changes stay consistent).
+	 * your state. `detail` carries the moved item, both indices, and the exact
+	 * hovered item edge (resolved at drop time, so mid-drag list changes stay
+	 * consistent).
 	 */
-	onReorder?: (items: T[], detail: { item: T; from: number; to: number }) => void;
+	onReorder?: (
+		items: T[],
+		detail: {
+			item: T;
+			from: number;
+			to: number;
+			targetItemId: string | null;
+			targetEdge: DndEdge | null;
+		}
+	) => void;
 	/**
 	 * Accept (or reject) items dragged from OTHER lists, based on the source
 	 * list id and/or the item. Rejected drags show no indicator and cannot
@@ -515,7 +525,13 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 				}
 				if (finish === null || finish === from) return;
 				const next = reorder({ list: [...items], startIndex: from, finishIndex: finish });
-				options.onReorder?.(next, { item: items[from], from, to: finish });
+				options.onReorder?.(next, {
+					item: items[from],
+					from,
+					to: finish,
+					targetItemId: 'container' in targetData ? null : targetData.itemId,
+					targetEdge: 'container' in targetData ? null : targetData.edge
+				});
 			} else {
 				let to: number;
 				if (overAtDrop) {

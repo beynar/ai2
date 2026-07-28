@@ -139,7 +139,6 @@ export class GanttTouchRowReorder {
 			!target ||
 			!targetElement ||
 			target.taskId === source.taskId ||
-			target.parentId !== source.parentId ||
 			!session.sourceElement.parentElement?.contains(targetElement)
 		) {
 			this.clearTarget();

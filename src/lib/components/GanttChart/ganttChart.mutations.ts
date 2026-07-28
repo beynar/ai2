@@ -150,10 +150,14 @@ export class GanttChartMutations<
 		const previousTask = this.requireTask(taskId);
 		const targetTask = this.requireTask(targetTaskId);
 		this.assertTaskWritable(previousTask);
-		if ((previousTask.parentId ?? null) !== (targetTask.parentId ?? null)) {
-			return false;
-		}
-		const task = cloneGanttTask(previousTask);
+		const movedTaskIds = getGanttTaskSubtreeIds(taskId, this.options.tasks);
+		if (movedTaskIds.has(targetTaskId)) return false;
+		const parentId =
+			(targetTask.type ?? 'task') === 'summary' && position === 'after'
+				? targetTask.id
+				: targetTask.parentId;
+		if (parentId && this.requireTask(parentId).readOnly) return false;
+		const task = cloneTaskWithParent(previousTask, parentId);
 		const withoutTask = this.options.tasks.filter((candidate) => candidate.id !== taskId);
 		const targetIndex = withoutTask.findIndex((candidate) => candidate.id === targetTaskId);
 		const insertIndex = targetIndex + (position === 'after' ? 1 : 0);
