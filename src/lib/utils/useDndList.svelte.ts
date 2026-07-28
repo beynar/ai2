@@ -14,6 +14,7 @@ import type { Attachment } from 'svelte/attachments';
 export type DndAxis = 'vertical' | 'horizontal';
 export type DndAutoScrollAxis = DndAxis | 'all';
 export type DndEdge = 'top' | 'bottom' | 'left' | 'right';
+export type DndIndicatorMode = boolean | 'custom';
 
 /** What a drag carries — enough for any list to decide and act on a drop. */
 export type DndSource<T = unknown> = {
@@ -105,11 +106,12 @@ export type UseDndListOptions<T> = {
 	/**
 	 * Draw the shared drop-indicator line while a drag hovers this list.
 	 * Set false for live-preview UIs that render the prospective order from
-	 * `over` instead (the gap IS the indicator there). A getter makes the
-	 * feedback mode reactive.
+	 * `over` instead (the gap IS the indicator there). Set `custom` to keep
+	 * indicator-style ordering semantics while rendering feedback from `over`
+	 * yourself. A getter makes the feedback mode reactive.
 	 * @default true
 	 */
-	indicator?: boolean | (() => boolean);
+	indicator?: DndIndicatorMode | (() => DndIndicatorMode);
 };
 
 /** Live hover state of a list: where the dragged item would land if dropped
@@ -118,6 +120,8 @@ export type UseDndListOptions<T> = {
 export type DndOver = {
 	index: number;
 	source: DndSource;
+	targetItemId: string | null;
+	targetEdge: DndEdge | null;
 };
 
 // Marks data as belonging to this utility. Symbol.for keeps the mark stable
@@ -420,14 +424,29 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	// indicator. Drop resolution reads it too, so a preview built from `over`
 	// can never disagree with where the item actually lands.
 	let over = $state<DndOver | null>(null);
-	const isIndicatorEnabled = () =>
-		typeof options.indicator === 'function' ? options.indicator() : options.indicator !== false;
+	const getIndicatorMode = (): DndIndicatorMode =>
+		typeof options.indicator === 'function' ? options.indicator() : (options.indicator ?? true);
+	const usesIndicatorFeedback = () => getIndicatorMode() !== false;
+	const drawsSharedIndicator = () => getIndicatorMode() === true;
 	// Identity-stable: dragover fires continuously — reassigning `over` per
 	// event (even with the same index) would recompute every preview derived
 	// from it and reconcile the DOM every frame.
-	const setOver = (index: number, source: DragData) => {
-		if (over && over.index === index && over.source.itemId === source.itemId) return;
-		over = { index, source };
+	const setOver = (
+		index: number,
+		source: DragData,
+		targetItemId: string | null = null,
+		targetEdge: DndEdge | null = null
+	) => {
+		if (
+			over &&
+			over.index === index &&
+			over.source.itemId === source.itemId &&
+			over.targetItemId === targetItemId &&
+			over.targetEdge === targetEdge
+		) {
+			return;
+		}
+		over = { index, source, targetItemId, targetEdge };
 	};
 
 	// The monitor is registered once per instance regardless of how many times
@@ -598,7 +617,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 			// is the innermost target (sticky ones included), the item owns the
 			// indicator.
 			if (location.current.dropTargets[0]?.element !== element) return;
-			const drawEnabled = isIndicatorEnabled();
+			const drawEnabled = drawsSharedIndicator();
 			if (!drawEnabled) hideIndicator();
 			const src = source.data as DragData;
 			const items = options.items();
@@ -718,7 +737,8 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 				// Only the innermost target draws — nested accepted lists would
 				// otherwise overdraw the inner indicator with the outer row's.
 				if (location.current.dropTargets[0]?.element !== element) return;
-				const drawEnabled = isIndicatorEnabled();
+				const drawEnabled = drawsSharedIndicator();
+				const indicatorFeedback = usesIndicatorFeedback();
 				if (!drawEnabled) hideIndicator();
 				const src = source.data as DragData;
 				const data = self.data as TargetData;
@@ -731,9 +751,9 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 				// dropping on your own row is a no-op, and a stale `over` from
 				// an earlier hover must not silently reorder.
 				if (src.instance === token && src.itemId === id) {
-					if (drawEnabled || !over) {
+					if (indicatorFeedback || !over) {
 						const from = freshIndex(items, src.itemId);
-						if (from !== -1) setOver(from, src);
+						if (from !== -1) setOver(from, src, id, data.edge);
 					}
 					if (drawEnabled) hideIndicator();
 					return;
@@ -746,11 +766,11 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 					// A drop that would put the item right back where it is:
 					// preview shows it at its own position, no indicator.
 					if (finish === null) {
-						setOver(from, src);
+						setOver(from, src, id, data.edge);
 						if (drawEnabled) hideIndicator();
 						return;
 					}
-					setOver(finish, src);
+					setOver(finish, src, id, data.edge);
 				} else {
 					const targetIndex = freshIndex(items, id);
 					if (targetIndex !== -1) {
@@ -759,7 +779,9 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 								targetIndex + (data.edge === 'bottom' || data.edge === 'right' ? 1 : 0),
 								items.length
 							),
-							src
+							src,
+							id,
+							data.edge
 						);
 					}
 				}
@@ -867,7 +889,6 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 									overflow: 'hidden',
 									pointerEvents: 'none'
 								});
-								delete clone.dataset.ganttReorderEdge;
 								container.appendChild(clone);
 							}
 						});

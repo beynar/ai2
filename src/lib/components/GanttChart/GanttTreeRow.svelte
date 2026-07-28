@@ -39,6 +39,7 @@
 		disabled,
 		loading,
 		isSelected,
+		isDropParent,
 		showDragHandle,
 		canIndent,
 		canOutdent,
@@ -76,6 +77,7 @@
 		disabled: boolean;
 		loading: boolean;
 		isSelected: boolean;
+		isDropParent: boolean;
 		showDragHandle: boolean;
 		canIndent: boolean;
 		canOutdent: boolean;
@@ -118,6 +120,7 @@
 	data-grid-row={rowIndex}
 	data-resource-group={resourceGroup?.id}
 	data-resource-group-start={showResourceGroupLabel || undefined}
+	data-gantt-reorder-parent={isDropParent || undefined}
 	class={classes.row({
 		density,
 		color,

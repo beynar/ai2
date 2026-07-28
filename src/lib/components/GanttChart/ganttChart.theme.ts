@@ -75,7 +75,10 @@ const columnHeader = createGanttChartPart(
 );
 const rows = createGanttChartPart('relative min-w-full');
 const row = createGanttChartPart(
-	'absolute inset-x-0 flex h-[var(--gantt-row-height)] outline-none transition-colors before:pointer-events-none before:absolute before:inset-x-0 before:z-40 before:hidden before:h-0.5 before:bg-color hover:bg-neutral/3 data-[gantt-reorder-edge=before]:before:top-0 data-[gantt-reorder-edge=before]:before:block data-[gantt-reorder-edge=after]:before:bottom-0 data-[gantt-reorder-edge=after]:before:block data-[gantt-touch-reordering]:opacity-45'
+	'absolute inset-x-0 flex h-[var(--gantt-row-height)] outline-none transition-colors hover:bg-neutral/3 data-[gantt-reorder-parent]:bg-color/6 data-[gantt-reorder-parent]:ring-1 data-[gantt-reorder-parent]:ring-inset data-[gantt-reorder-parent]:ring-color/25 data-[gantt-touch-reordering]:opacity-45'
+);
+const rowDropIndicator = createGanttChartPart(
+	'pointer-events-none absolute inset-e-0 z-50 h-0.5 -translate-y-1/2 rounded-full bg-color shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-surface)_65%,transparent)]'
 );
 const treeCell = createGanttChartPart(
 	'flex min-w-0 items-center px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
@@ -199,6 +202,7 @@ export const ganttChartTheme = {
 	columnHeader,
 	rows,
 	row,
+	rowDropIndicator,
 	treeCell,
 	expander,
 	timeHeader,

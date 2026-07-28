@@ -17,6 +17,13 @@ type TouchRowReorderOptions = Readonly<{
 	disabled: () => boolean;
 	activation: () => GanttTouchActivation;
 	scrollToRow: (rowIndex: number) => void;
+	onTargetChange: (
+		target: Readonly<{
+			taskId: string;
+			targetTaskId: string;
+			position: 'before' | 'after';
+		}> | null
+	) => void;
 	onReorder: (taskId: string, targetTaskId: string, position: 'before' | 'after') => boolean;
 	onBlocked: (taskId: string, reason: 'invalid-target' | 'stale') => void;
 }>;
@@ -37,7 +44,6 @@ const AUTO_SCROLL_INTERVAL_MS = 90;
 
 export class GanttTouchRowReorder {
 	#session: TouchReorderSession | null = null;
-	#targetElement: HTMLElement | null = null;
 	#autoScrollFrame: number | null = null;
 	#attachments = new Map<string, Attachment<HTMLElement>>();
 
@@ -141,18 +147,23 @@ export class GanttTouchRowReorder {
 			target.taskId === source.taskId ||
 			!session.sourceElement.parentElement?.contains(targetElement)
 		) {
-			this.clearTarget();
+			if (session.targetTaskId) this.options.onTargetChange(null);
 			session.targetTaskId = null;
 			session.position = null;
 			return;
 		}
 		const bounds = targetElement.getBoundingClientRect();
 		const position = pointerY < bounds.top + bounds.height / 2 ? 'before' : 'after';
-		if (this.#targetElement !== targetElement) this.clearTarget();
-		this.#targetElement = targetElement;
-		targetElement.dataset.ganttReorderEdge = position;
+		const hasChanged = session.targetTaskId !== target.taskId || session.position !== position;
 		session.targetTaskId = target.taskId;
 		session.position = position;
+		if (hasChanged) {
+			this.options.onTargetChange({
+				taskId: session.taskId,
+				targetTaskId: target.taskId,
+				position
+			});
+		}
 	}
 
 	private startAutoScroll(): void {
@@ -189,15 +200,12 @@ export class GanttTouchRowReorder {
 
 	private cancel(): void {
 		const session = this.#session;
-		if (session) delete session.sourceElement.dataset.ganttTouchReordering;
+		if (session) {
+			delete session.sourceElement.dataset.ganttTouchReordering;
+			if (session.targetTaskId) this.options.onTargetChange(null);
+		}
 		this.#session = null;
-		this.clearTarget();
 		if (this.#autoScrollFrame !== null) cancelAnimationFrame(this.#autoScrollFrame);
 		this.#autoScrollFrame = null;
-	}
-
-	private clearTarget(): void {
-		if (this.#targetElement) delete this.#targetElement.dataset.ganttReorderEdge;
-		this.#targetElement = null;
 	}
 }

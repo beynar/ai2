@@ -14,6 +14,11 @@
 		GanttTaskRowPayload,
 		GanttTreeCellPayload
 	} from './ganttChart.props.js';
+	import {
+		resolveGanttRowDrop,
+		type GanttRowDropResolution,
+		type GanttRowDropTarget
+	} from './ganttChart.rowDrop.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
@@ -37,6 +42,13 @@
 		>;
 		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
 	};
+
+	type RowDropPreview = Readonly<{
+		parentId: string | null;
+		intent: GanttRowDropResolution['intent'];
+		top: number;
+		inlineStart: number;
+	}>;
 
 	let {
 		chart,
@@ -84,7 +96,13 @@
 	let horizontalScrollLeft = $state(0);
 	let activeTaskId = $state('');
 	let activeColumnId = $state('');
+	let touchDropTarget = $state<GanttRowDropTarget | null>(null);
 	const gridId = $props.id();
+	const nodesByTaskId = $derived(new Map(rowModel.rows.map((node) => [node.taskId, node])));
+	const rowIndexByTaskId = $derived(
+		new Map(rowModel.rows.map((node, index) => [node.taskId, index]))
+	);
+	const virtualRowByIndex = $derived(new Map(renderedRows.map((row) => [row.index, row])));
 	const gridWidth = $derived(
 		rowModel.visibleColumns.reduce((total, column) => total + (column.width ?? 160), 0)
 	);
@@ -108,6 +126,7 @@
 		items: () => [...rowModel.rows],
 		itemId: (node) => node.taskId,
 		handle: true,
+		indicator: 'custom',
 		disabled: () => !canReorder,
 		canDrag: (node) => !node.task.readOnly,
 		autoScrollAxis: 'vertical',
@@ -128,6 +147,7 @@
 		disabled: () => !canReorder || !interactions.touch,
 		activation: () => touchActivation,
 		scrollToRow: (rowIndex) => scrollToRow(rowIndex),
+		onTargetChange: (target) => (touchDropTarget = target),
 		onReorder: (taskId, targetTaskId, position) =>
 			chart.reorderTask(taskId, targetTaskId, position, 'pointer'),
 		onBlocked: (taskId, reason) => {
@@ -142,6 +162,17 @@
 			});
 		}
 	});
+	const nativeDropTarget = $derived.by((): GanttRowDropTarget | null => {
+		const over = dnd.over;
+		if (!over || !dnd.dragging) return null;
+		const targetTaskId = over.targetItemId ?? rowModel.rows[over.index]?.taskId;
+		if (!targetTaskId || targetTaskId === over.source.itemId) return null;
+		let position: 'before' | 'after' = over.index > over.source.index ? 'after' : 'before';
+		if (over.targetEdge === 'top') position = 'before';
+		if (over.targetEdge === 'bottom') position = 'after';
+		return { taskId: over.source.itemId, targetTaskId, position };
+	});
+	const rowDropPreview = $derived(resolveRowDropPreview(touchDropTarget ?? nativeDropTarget));
 
 	$effect(() => {
 		const rows = rowModel.rows;
@@ -384,6 +415,30 @@
 		});
 	}
 
+	function resolveRowDropPreview(target: GanttRowDropTarget | null): RowDropPreview | null {
+		const resolution = resolveGanttRowDrop(target, nodesByTaskId);
+		const targetRowIndex = target ? rowIndexByTaskId.get(target.targetTaskId) : undefined;
+		const virtualRow =
+			targetRowIndex === undefined ? undefined : virtualRowByIndex.get(targetRowIndex);
+		if (!resolution || !target || !virtualRow) return null;
+		const titleOffset = getTitleColumnOffset();
+		return {
+			parentId: resolution.parentId,
+			intent: resolution.intent,
+			top: target.position === 'before' ? virtualRow.start : virtualRow.end,
+			inlineStart: titleOffset + 8 + resolution.depth * 16
+		};
+	}
+
+	function getTitleColumnOffset(): number {
+		let offset = 0;
+		for (const column of rowModel.visibleColumns) {
+			if (column.id === 'title') return offset;
+			offset += column.width ?? 160;
+		}
+		return 0;
+	}
+
 	function handleHorizontalScroll(): void {
 		if (!horizontalViewport) return;
 		horizontalScrollLeft = horizontalViewport.scrollLeft;
@@ -472,6 +527,8 @@
 							{disabled}
 							{loading}
 							isSelected={isTaskSelected(node.taskId)}
+							isDropParent={rowDropPreview?.parentId === node.taskId &&
+								rowDropPreview.intent !== 'reorder'}
 							showDragHandle={canReorder}
 							canIndent={canIndentRow(virtualRow.index)}
 							canOutdent={canOutdentRow(virtualRow.index)}
@@ -488,6 +545,23 @@
 						/>
 					{/if}
 				{/each}
+				{#if rowDropPreview}
+					<div
+						data-gantt-row-drop-indicator
+						data-gantt-reorder-intent={rowDropPreview.intent}
+						class={classes.rowDropIndicator({ density, color, disabled })}
+						style:top={`${rowDropPreview.top}px`}
+						style:inset-inline-start={`${rowDropPreview.inlineStart}px`}
+						aria-hidden="true"
+					>
+						<span
+							class="absolute -start-1.5 top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-color bg-surface"
+						></span>
+						{#if rowDropPreview.intent === 'nest' || rowDropPreview.intent === 'reparent'}
+							<span class="absolute bottom-0 start-0 h-3 w-0.5 bg-color"></span>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

@@ -5,6 +5,7 @@ import type {
 	GanttModelCommit,
 	GanttModelSnapshot
 } from './ganttChart.history.svelte.js';
+import { resolveGanttDropParentId } from './ganttChart.hierarchy.js';
 import type { GanttPasteRecords } from './ganttChart.clipboard.js';
 import {
 	cloneGanttAssignment,
@@ -152,12 +153,9 @@ export class GanttChartMutations<
 		this.assertTaskWritable(previousTask);
 		const movedTaskIds = getGanttTaskSubtreeIds(taskId, this.options.tasks);
 		if (movedTaskIds.has(targetTaskId)) return false;
-		const parentId =
-			(targetTask.type ?? 'task') === 'summary' && position === 'after'
-				? targetTask.id
-				: targetTask.parentId;
+		const parentId = resolveGanttDropParentId(targetTask, position);
 		if (parentId && this.requireTask(parentId).readOnly) return false;
-		const task = cloneTaskWithParent(previousTask, parentId);
+		const task = cloneTaskWithParent(previousTask, parentId ?? undefined);
 		const withoutTask = this.options.tasks.filter((candidate) => candidate.id !== taskId);
 		const targetIndex = withoutTask.findIndex((candidate) => candidate.id === targetTaskId);
 		const insertIndex = targetIndex + (position === 'after' ? 1 : 0);
