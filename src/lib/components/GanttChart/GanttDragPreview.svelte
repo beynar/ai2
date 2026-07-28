@@ -26,6 +26,7 @@
 		scale,
 		visibleRange,
 		visiblePixels,
+		totalHeight,
 		rowHeight,
 		locale,
 		timeZone,
@@ -40,6 +41,7 @@
 		scale: GanttTimeScale;
 		visibleRange: GanttRange;
 		visiblePixels: Readonly<{ start: number; end: number }>;
+		totalHeight: number;
 		rowHeight: number;
 		locale: string;
 		timeZone: string;
@@ -49,6 +51,8 @@
 		classes: GanttChartClasses;
 		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	} = $props();
+	let labelWidth = $state(0);
+	let labelHeight = $state(0);
 
 	const taskProposal = $derived(status.type === 'task' ? status.proposal : null);
 	const proposedTask = $derived(taskProposal?.task ?? null);
@@ -109,7 +113,13 @@
 		`${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
 	);
 	const labelLeft = $derived(
-		Math.max(visiblePixels.start + 8, Math.min(visiblePixels.end - 8, status.pointerCanvasX + 12))
+		Math.max(
+			visiblePixels.start + 8,
+			Math.min(visiblePixels.end - labelWidth - 8, status.pointerCanvasX + 12)
+		)
+	);
+	const labelTop = $derived(
+		Math.max(4, Math.min(totalHeight - labelHeight - 4, status.rowTop - 4))
 	);
 	const payload = $derived(
 		status.proposal && geometry
@@ -181,10 +191,12 @@
 		<Slot render={dragPreview ?? defaultContent} {payload} />
 	</div>
 	<div
+		bind:clientWidth={labelWidth}
+		bind:clientHeight={labelHeight}
 		data-gantt-chart-part="drag-preview-label"
 		class="pointer-events-none absolute z-50 grid max-w-72 gap-0.5 rounded-md border border-neutral-muted bg-surface-raised/95 px-2 py-1 text-xs text-neutral shadow-lg backdrop-blur"
 		style:left={`${labelLeft}px`}
-		style:top={`${Math.max(4, status.rowTop - 4)}px`}
+		style:top={`${labelTop}px`}
 		aria-hidden="true"
 	>
 		{#if proposedTask}<strong class="truncate">{proposedTask.title}</strong>{/if}

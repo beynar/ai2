@@ -312,6 +312,7 @@
 			{scale}
 			{visibleRange}
 			{visiblePixels}
+			{totalHeight}
 			{rowHeight}
 			{locale}
 			{timeZone}
