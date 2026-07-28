@@ -53,7 +53,7 @@
 
 		<ComponentCard
 			title="Owned semantics, custom content"
-			description="Header and cell snippets compose ready-made defaults; the single item snippet receives the active view, including agenda, while content stays inside the calendar-owned activation button."
+			description="The shared item snippet can reuse its complete, marker, title, and time renderers in every view; overflow and state snippets can wrap their built-in content without recreating calendar behavior."
 			code={compositionCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

@@ -119,13 +119,17 @@
 		view,
 		isSelected,
 		isDragging,
-		defaultContent
+		defaultContent,
+		markerContent,
+		titleContent,
+		timeContent
 	});
 	const tooltipPayload = $derived<EventCalendarItemTooltipPayload<TItemFields>>({
 		occurrence,
 		segment,
 		view,
-		defaultAccessibleLabel
+		defaultAccessibleLabel,
+		defaultContent: defaultTooltip
 	});
 	const itemTooltipAttachment = tooltip({
 		get content() {
@@ -304,47 +308,50 @@
 			class: isTimedGridItem ? 'flex-col items-start justify-start gap-0.5' : undefined
 		})}
 	>
-		{#if isTimedGridItem}
-			{#if occurrence.isRecurring}
-				{@render recurrenceIcon('absolute end-1 top-1')}
-			{/if}
-			<span
-				class={classes.itemTitle({
-					density,
-					color: semanticColor,
-					view,
-					class: occurrence.isRecurring ? 'pe-4' : undefined
-				})}
-			>
-				{occurrence.item.title}
-			</span>
-			<span
-				data-event-calendar-timed-time
-				class={classes.itemTime({
-					density,
-					color: semanticColor,
-					view,
-					class: 'ms-0'
-				})}>{timeRangeLabel}</span
-			>
-		{:else}
-			{#if occurrence.isRecurring}
-				{@render recurrenceIcon('shrink-0')}
-			{/if}
-			{#if view === 'month' && !occurrence.isRecurring}
-				<span
-					aria-hidden="true"
-					class="size-1.5 shrink-0 rounded-full bg-[var(--event-calendar-item-color)]"
-				></span>
-			{/if}
-			<span class={classes.itemTitle({ density, color: semanticColor, view })}>
-				{occurrence.item.title}
-			</span>
-			{#if view === 'month' && !occurrence.allDay && segment.isStart}
-				<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
-			{/if}
-		{/if}
+		{@render markerContent()}
+		{@render titleContent()}
+		{@render timeContent()}
 	</span>
+{/snippet}
+
+{#snippet markerContent()}
+	{#if occurrence.isRecurring}
+		{@render recurrenceIcon(isTimedGridItem ? 'absolute end-1 top-1' : 'shrink-0')}
+	{:else if view === 'month'}
+		<span
+			aria-hidden="true"
+			class="size-1.5 shrink-0 rounded-full bg-[var(--event-calendar-item-color)]"
+		></span>
+	{/if}
+{/snippet}
+
+{#snippet titleContent()}
+	<span
+		class={classes.itemTitle({
+			density,
+			color: semanticColor,
+			view,
+			class: isTimedGridItem && occurrence.isRecurring ? 'pe-4' : undefined
+		})}
+	>
+		{occurrence.item.title}
+	</span>
+{/snippet}
+
+{#snippet timeContent()}
+	{#if isTimedGridItem}
+		<span
+			data-event-calendar-timed-time
+			class={classes.itemTime({
+				density,
+				color: semanticColor,
+				view,
+				class: 'ms-0'
+			})}>{timeRangeLabel}</span
+		>
+	{:else if view === 'month' && !occurrence.allDay && segment.isStart}
+		<span class={classes.itemTime({ density, color: semanticColor, view })}>{timeLabel}</span>
+	{/if}
 {/snippet}
 
 {#snippet recurrenceIcon(className: string)}
@@ -362,7 +369,7 @@
 {/snippet}
 
 {#snippet resolvedTooltip()}
-	<Slot render={itemTooltip ?? defaultTooltip} payload={tooltipPayload} />
+	<Slot render={itemTooltip ?? tooltipPayload.defaultContent} payload={tooltipPayload} />
 {/snippet}
 
 <style>

@@ -90,7 +90,10 @@
 		view: 'agenda',
 		isSelected,
 		isDragging: false,
-		defaultContent
+		defaultContent,
+		markerContent,
+		titleContent,
+		timeContent
 	});
 
 	function preventDisabledDisclosure(event: Event): void {
@@ -188,16 +191,27 @@
 	<span
 		class="grid min-w-0 grid-cols-[8rem_0.5rem_minmax(0,1fr)] items-center gap-x-3 @max-[28rem]:grid-cols-[5.5rem_0.5rem_minmax(0,1fr)]"
 	>
-		<time
-			datetime={entry.segment.start.toISOString()}
-			class="truncate text-xs text-neutral/60 tabular-nums"
-		>
-			{timeLabel}
-		</time>
-		<span aria-hidden="true" class="size-2 rounded-full bg-[var(--event-calendar-item-color)]"
-		></span>
-		<span class="min-w-0 truncate text-sm font-normal text-neutral/90">
-			{occurrence.item.title}
-		</span>
+		{@render timeContent()}
+		{@render markerContent()}
+		{@render titleContent()}
 	</span>
+{/snippet}
+
+{#snippet markerContent()}
+	<span aria-hidden="true" class="size-2 rounded-full bg-[var(--event-calendar-item-color)]"></span>
+{/snippet}
+
+{#snippet titleContent()}
+	<span class="min-w-0 truncate text-sm font-normal text-neutral/90">
+		{occurrence.item.title}
+	</span>
+{/snippet}
+
+{#snippet timeContent()}
+	<time
+		datetime={entry.segment.start.toISOString()}
+		class="truncate text-xs text-neutral/60 tabular-nums"
+	>
+		{timeLabel}
+	</time>
 {/snippet}

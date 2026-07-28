@@ -68,6 +68,9 @@ export type EventCalendarItemPayload<TItemFields extends object> = Readonly<{
 	isSelected: boolean;
 	isDragging: boolean;
 	defaultContent: Snippet;
+	markerContent: Snippet;
+	titleContent: Snippet;
+	timeContent: Snippet;
 }>;
 
 export type EventCalendarItemTooltipPayload<TItemFields extends object> = Readonly<{
@@ -75,6 +78,7 @@ export type EventCalendarItemTooltipPayload<TItemFields extends object> = Readon
 	segment: EventCalendarSegment<TItemFields>;
 	view: EventCalendarView;
 	defaultAccessibleLabel: string;
+	defaultContent: Snippet;
 }>;
 
 export type EventCalendarMonthCellPayload<TItemFields extends object> = Readonly<{
@@ -99,6 +103,7 @@ export type EventCalendarDayHeaderPayload = Readonly<{
 export type EventCalendarTimeGutterPayload = Readonly<{
 	instant: Date;
 	defaultLabel: string;
+	defaultContent: Snippet;
 }>;
 
 export type EventCalendarAllDayPayload<TItemFields extends object> = Readonly<{
@@ -118,6 +123,7 @@ export type EventCalendarOverflowContentPayload<TItemFields extends object> = Re
 	day: EventCalendarDateOnly;
 	hiddenOccurrences: readonly EventCalendarOccurrence<TItemFields>[];
 	close: () => void;
+	defaultContent: Snippet;
 }>;
 
 export type EventCalendarAgendaDetailsPayload<TItemFields extends object> = Readonly<{
@@ -151,6 +157,13 @@ export type EventCalendarViewPayload = Readonly<{
 export type EventCalendarEmptyPayload = Readonly<
 	EventCalendarViewPayload & {
 		mode: 'grid-status' | 'agenda-replacement';
+		defaultContent: Snippet;
+	}
+>;
+
+export type EventCalendarLoadingPayload = Readonly<
+	EventCalendarViewPayload & {
+		defaultContent: Snippet;
 	}
 >;
 
@@ -173,7 +186,7 @@ export type EventCalendarSnippetProps<
 	nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
 	dragPreview?: Snippet<[EventCalendarDragPreviewPayload<TItemFields>]>;
 	empty?: Snippet<[EventCalendarEmptyPayload]>;
-	loadingContent?: Snippet<[EventCalendarViewPayload]>;
+	loadingContent?: Snippet<[EventCalendarLoadingPayload]>;
 };
 
 export type EventCalendarCallbackProps<TItemFields extends object = Record<never, never>> = {

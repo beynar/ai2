@@ -20,6 +20,7 @@
 		EventCalendarEmptyPayload,
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload,
+		EventCalendarLoadingPayload,
 		EventCalendarMonthCellPayload,
 		EventCalendarOverflowContentPayload,
 		EventCalendarOverflowPayload,
@@ -103,7 +104,7 @@
 		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
 		overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
 		empty?: Snippet<[EventCalendarEmptyPayload]>;
-		loadingContent?: Snippet<[EventCalendarViewPayload]>;
+		loadingContent?: Snippet<[EventCalendarLoadingPayload]>;
 		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 		onItemDoubleClick?: (
 			occurrence: EventCalendarOccurrence<TItemFields>,
@@ -137,7 +138,12 @@
 	const emptyMode = $derived(snapshot.view === 'agenda' ? 'agenda-replacement' : 'grid-status');
 	const emptyPayload = $derived<EventCalendarEmptyPayload>({
 		...viewPayload,
-		mode: emptyMode
+		mode: emptyMode,
+		defaultContent: defaultEmpty
+	});
+	const loadingPayload = $derived<EventCalendarLoadingPayload>({
+		...viewPayload,
+		defaultContent: defaultLoading
 	});
 </script>
 
@@ -166,7 +172,7 @@
 			class={classes.empty({ density, color, view: snapshot.view, disabled })}
 		>
 			<Empty>
-				<Slot render={empty ?? defaultEmpty} payload={emptyPayload} />
+				<Slot render={empty ?? emptyPayload.defaultContent} payload={emptyPayload} />
 			</Empty>
 		</div>
 	{:else}
@@ -286,7 +292,7 @@
 				inert={loading ? true : undefined}
 				class={classes.empty({ density, color, view: snapshot.view, disabled })}
 			>
-				<Slot render={empty ?? defaultEmpty} payload={emptyPayload} />
+				<Slot render={empty ?? emptyPayload.defaultContent} payload={emptyPayload} />
 			</div>
 		{/if}
 	{/if}
@@ -296,7 +302,7 @@
 			data-event-calendar-part="loading"
 			class={classes.loading({ density, color, view: snapshot.view })}
 		>
-			<Slot render={loadingContent ?? defaultLoading} payload={viewPayload} />
+			<Slot render={loadingContent ?? loadingPayload.defaultContent} payload={loadingPayload} />
 		</div>
 	{/if}
 </div>

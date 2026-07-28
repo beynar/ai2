@@ -26,6 +26,8 @@
 	} from './eventCalendar.timeGrid.js';
 	import type { EventCalendarOccurrence, EventCalendarSegment } from './eventCalendar.types.js';
 
+	type EventCalendarTimeGutterLabel = Omit<EventCalendarTimeGutterPayload, 'defaultContent'>;
+
 	let {
 		view,
 		calendar,
@@ -69,7 +71,7 @@
 		selectionKey: string | null;
 		longDayFormatter: Intl.DateTimeFormat;
 		accessibleTimeFormatter: Intl.DateTimeFormat;
-		localTimeLabels?: readonly EventCalendarTimeGutterPayload[];
+		localTimeLabels?: readonly EventCalendarTimeGutterLabel[];
 		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
 		nowPayload: EventCalendarNowIndicatorPayload | null;
 		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
@@ -142,6 +144,10 @@
 	{@attach disabled ? null : calendar.interaction.dropTarget(columnDropTarget)}
 >
 	{#each localTimeLabels ?? [] as localTimeLabel (localTimeLabel.instant.getTime())}
+		{@const timeGutterPayload = {
+			...localTimeLabel,
+			defaultContent: defaultLocalTimeGutter
+		} satisfies EventCalendarTimeGutterPayload}
 		<time
 			datetime={localTimeLabel.instant.toISOString()}
 			data-event-calendar-part="time-label"
@@ -156,7 +162,7 @@
 			style:top={`calc(${getEventCalendarElapsedMinutes(geometry.windowStart, localTimeLabel.instant) / calendar.interval} * var(--event-calendar-slot-height))`}
 			style:height="var(--event-calendar-slot-height)"
 		>
-			<Slot render={timeGutter ?? defaultLocalTimeGutter} payload={localTimeLabel} />
+			<Slot render={timeGutter ?? timeGutterPayload.defaultContent} payload={timeGutterPayload} />
 		</time>
 
 		{#snippet defaultLocalTimeGutter()}

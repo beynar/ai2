@@ -10,6 +10,7 @@ export type {
 	EventCalendarHeaderPayload,
 	EventCalendarItemPayload,
 	EventCalendarItemTooltipPayload,
+	EventCalendarLoadingPayload,
 	EventCalendarMonthCellPayload,
 	EventCalendarNowIndicatorPayload,
 	EventCalendarOverflowContentPayload,

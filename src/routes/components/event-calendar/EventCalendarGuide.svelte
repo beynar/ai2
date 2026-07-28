@@ -14,7 +14,7 @@
 		},
 		{
 			title: 'Snippets and theme',
-			body: 'header exposes ready-made navigation, title, view, date-picker, and action snippets. item customizes event content in every view, including agenda, and receives the active view plus defaultContent. dayHeader, monthCell, timeGutter, allDay, overflow, agendaDetails, resourceHeader, nowIndicatorContent, dragPreview, empty, and loadingContent customize their owned regions. Render defaultContent when wrapping defaults. Semantic wrappers, focus, disclosures, drag wiring, and announcements remain calendar-owned. Override theme per instance or use setEventCalendarTheme globally; CSS metric variables tune geometry.'
+			body: 'header exposes ready-made navigation, title, view, date-picker, and action snippets. item customizes event content in every view, including agenda, and receives defaultContent plus markerContent, titleContent, and timeContent. overflowContent can wrap defaultContent without rebuilding the draggable, accessible hidden-item list. itemTooltip, timeGutter, empty, and loadingContent also expose defaultContent. dayHeader, monthCell, allDay, overflow, agendaDetails, resourceHeader, nowIndicatorContent, and dragPreview retain their focused contracts. Semantic wrappers, focus, disclosures, drag wiring, and announcements remain calendar-owned; actions and agendaDetails stay additive. Override theme per instance or use setEventCalendarTheme globally; CSS metric variables tune geometry.'
 		},
 		{
 			title: 'Recurrence and time zones',

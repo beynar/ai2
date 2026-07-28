@@ -12,7 +12,7 @@
 	view="month"
 	views={['month', 'week', 'agenda']}
 	timeZone="Europe/Paris"
-	maxItemsPerCell={3}
+	maxItemsPerCell={2}
 	data-event-calendar-demo="composition"
 	class="h-[36rem] w-full"
 >
@@ -30,12 +30,28 @@
 		</div>
 	{/snippet}
 
-	{#snippet item({ occurrence, view, defaultContent })}
-		<div data-event-calendar-demo-item-view={view} class="flex min-w-0 items-center gap-1">
-			<span class="size-1.5 shrink-0 rounded-full bg-current"></span>
-			<div class="min-w-0">{@render defaultContent()}</div>
+	{#snippet item({ occurrence, view, defaultContent, markerContent, titleContent, timeContent })}
+		<div data-event-calendar-demo-item-view={view} class="min-w-0">
+			{#if occurrence.item.owner === 'Iris'}
+				<div
+					data-event-calendar-demo-custom-item
+					class="flex min-w-0 items-center gap-1 rounded bg-primary/10 px-1 text-primary"
+				>
+					{@render markerContent()}
+					{@render titleContent()}
+					{@render timeContent()}
+				</div>
+			{:else}
+				{@render defaultContent()}
+			{/if}
 			<span class="sr-only">Owned by {occurrence.item.owner}</span>
 		</div>
+	{/snippet}
+
+	{#snippet overflowContent({ day, defaultContent })}
+		<section data-event-calendar-demo-overflow={day} class="rounded border border-primary/25 p-1">
+			{@render defaultContent()}
+		</section>
 	{/snippet}
 
 	{#snippet dayHeader({ isToday, defaultContent })}

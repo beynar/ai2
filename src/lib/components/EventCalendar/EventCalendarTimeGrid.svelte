@@ -751,18 +751,22 @@
 				data-event-calendar-part="time-gutter"
 				class={classes.timeGutter({ density, color, view })}
 			>
-				{#each gutterProfile?.labels ?? [] as gutterPayload (gutterPayload.instant.getTime())}
+				{#each gutterProfile?.labels ?? [] as gutterLabel (gutterLabel.instant.getTime())}
+					{@const gutterPayload = {
+						...gutterLabel,
+						defaultContent: defaultTimeGutter
+					} satisfies EventCalendarTimeGutterPayload}
 					<time
-						datetime={gutterPayload.instant.toISOString()}
+						datetime={gutterLabel.instant.toISOString()}
 						data-event-calendar-part="time-label"
 						class={classes.timeLabel({ density, color, view })}
 						style:height="var(--event-calendar-slot-height)"
 					>
-						<Slot render={timeGutter ?? defaultTimeGutter} payload={gutterPayload} />
+						<Slot render={timeGutter ?? gutterPayload.defaultContent} payload={gutterPayload} />
 					</time>
 
 					{#snippet defaultTimeGutter()}
-						{gutterPayload.defaultLabel}
+						{gutterLabel.defaultLabel}
 					{/snippet}
 				{/each}
 			</div>

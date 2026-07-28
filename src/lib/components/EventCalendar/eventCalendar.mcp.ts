@@ -101,14 +101,14 @@ Snippets replace content inside component-owned semantic and interactive wrapper
 
 - 'header': snapshot plus ready-made previous, today, next, title, viewSwitcher, datePicker, and actions snippets
 - 'actions': calendar snapshot and API
-- 'item': occurrence, segment, active view (including agenda), states, and defaultContent
-- 'itemTooltip': occurrence, segment, view, and defaultAccessibleLabel
+- 'item': occurrence, segment, active view (including agenda), states, defaultContent, markerContent, titleContent, and timeContent
+- 'itemTooltip': occurrence, segment, view, defaultAccessibleLabel, and defaultContent
 - 'monthCell': day/state/segments/overflow and defaultContent
-- 'dayHeader', 'timeGutter', 'allDay'
-- 'overflow' and 'overflowContent'
+- 'dayHeader', 'timeGutter' with defaultContent, and 'allDay'
+- 'overflow' and 'overflowContent'; both expose defaultContent, and the latter preserves the built-in interactive item list when rendered
 - 'agendaDetails'
 - 'resourceHeader'
-- 'nowIndicatorContent', 'dragPreview', 'empty', and 'loadingContent'
+- 'nowIndicatorContent', 'dragPreview', 'empty', and 'loadingContent'; replacement state snippets expose defaultContent
 
 Render 'defaultContent' or the ready-made header snippets when wrapping the built-ins. Snippet content cannot remove item focusability, labels, selection state, drag/resize wiring, disclosures, or live announcements.
 

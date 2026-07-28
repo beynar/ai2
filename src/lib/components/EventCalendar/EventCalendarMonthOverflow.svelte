@@ -116,40 +116,41 @@
 		{@const contentPayload = {
 			day,
 			hiddenOccurrences,
-			close: () => popoverState.close()
+			close: () => popoverState.close(),
+			defaultContent: defaultPopoverContent
 		} satisfies EventCalendarOverflowContentPayload<TItemFields>}
-		{#if overflowContent}
-			<Slot render={overflowContent} payload={contentPayload} />
-		{:else}
-			<div data-event-calendar-overflow-content class="grid gap-1" aria-label={dayLabel}>
-				<div class="mb-1 font-medium">{dayLabel}</div>
-				{#each hiddenSegments as segment (segment.occurrence.key)}
-					<EventCalendarItem
-						{segment}
-						{a11y}
-						view="month"
-						{locale}
-						{timeZone}
-						{density}
-						{color}
-						{classes}
-						{interaction}
-						isDragging={interaction.isDragging(segment.occurrence.key)}
-						allowResize={false}
-						isSelected={selectionKey === segment.occurrence.key}
-						{disabled}
-						{showItemTooltip}
-						{item}
-						{itemTooltip}
-						onActivate={(event) => onItemActivate(segment, event)}
-						onDoubleClick={(event) => onItemDoubleClick(segment, event)}
-					/>
-				{/each}
-			</div>
-		{/if}
+		<Slot render={overflowContent ?? contentPayload.defaultContent} payload={contentPayload} />
 	{/snippet}
 </Popover>
 
 {#snippet defaultContent()}
 	{messages.eventCalendarMore(hiddenOccurrences.length)}
+{/snippet}
+
+{#snippet defaultPopoverContent()}
+	<div data-event-calendar-overflow-content class="grid gap-1" aria-label={dayLabel}>
+		<div class="mb-1 font-medium">{dayLabel}</div>
+		{#each hiddenSegments as segment (segment.occurrence.key)}
+			<EventCalendarItem
+				{segment}
+				{a11y}
+				view="month"
+				{locale}
+				{timeZone}
+				{density}
+				{color}
+				{classes}
+				{interaction}
+				isDragging={interaction.isDragging(segment.occurrence.key)}
+				allowResize={false}
+				isSelected={selectionKey === segment.occurrence.key}
+				{disabled}
+				{showItemTooltip}
+				{item}
+				{itemTooltip}
+				onActivate={(event) => onItemActivate(segment, event)}
+				onDoubleClick={(event) => onItemDoubleClick(segment, event)}
+			/>
+		{/each}
+	</div>
 {/snippet}
