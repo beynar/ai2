@@ -23,7 +23,7 @@ export const interactionCode = [
 	'    change.revert();',
 	'    throw error;',
 	'  })}',
-	'  onSlotSelect={(slot) => openCreateDialog(slot)}',
+	'  onSlotSelect={(slot, { source }) => openCreateDialog(slot, source)}',
 	'  class="h-[42rem]"',
 	'/>'
 ].join('\n');

@@ -24,6 +24,7 @@ import type {
 	EventCalendarSegment,
 	EventCalendarSelection,
 	EventCalendarSlot,
+	EventCalendarSlotSelectInfo,
 	EventCalendarUpdateResult,
 	EventCalendarView,
 	EventCalendarWeekday
@@ -202,7 +203,7 @@ export type EventCalendarCallbackProps<TItemFields extends object = Record<never
 	onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 	onItemDoubleClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 	onSlotClick?: (slot: EventCalendarSlot, event: MouseEvent) => void;
-	onSlotSelect?: (slot: EventCalendarSlot) => void;
+	onSlotSelect?: (slot: EventCalendarSlot, info: EventCalendarSlotSelectInfo) => void;
 	onMoreClick?: (
 		day: EventCalendarDateOnly,
 		occurrences: readonly EventCalendarOccurrence<TItemFields>[],

@@ -52,6 +52,7 @@ import type {
 	EventCalendarResource,
 	EventCalendarSelection,
 	EventCalendarSlot,
+	EventCalendarSlotSelectInfo,
 	EventCalendarProposedUpdate,
 	EventCalendarUpdateAdjustment,
 	EventCalendarUpdateResult,
@@ -160,7 +161,7 @@ export type EventCalendarStateOptions<
 		items: EventCalendarItem<TItemFields>[],
 		change: EventCalendarChange<TItemFields>
 	) => void;
-	onSlotSelect?: (slot: EventCalendarSlot) => void;
+	onSlotSelect?: (slot: EventCalendarSlot, info: EventCalendarSlotSelectInfo) => void;
 	onInteractionBlocked?: (info: EventCalendarInteractionBlockedInfo<TItemFields>) => void;
 	onRangeChange?: (info: EventCalendarRangeChangeInfo) => void;
 	onViewChange?: (view: EventCalendarView) => void;

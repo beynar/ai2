@@ -3,7 +3,8 @@
 	import {
 		EventCalendar,
 		type EventCalendarChange,
-		type EventCalendarSlot
+		type EventCalendarSlot,
+		type EventCalendarSlotSelectInfo
 	} from '$lib/components/EventCalendar/index.js';
 	import { createDemoItems, type MeetingFields } from './eventCalendarDemoData.js';
 
@@ -28,11 +29,11 @@
 		status = `${change.kind} committed from ${change.source}; the bound array was replaced.`;
 	}
 
-	function handleSlotSelect(slot: EventCalendarSlot): void {
+	function handleSlotSelect(slot: EventCalendarSlot, info: EventCalendarSlotSelectInfo): void {
 		status =
 			slot.allDay === true
-				? `Selected ${slot.start} through ${slot.end} (exclusive).`
-				: `Selected ${slot.start.toISOString()} through ${slot.end.toISOString()}.`;
+				? `Selected ${slot.start} through ${slot.end} (exclusive) with ${info.source}.`
+				: `Selected ${slot.start.toISOString()} through ${slot.end.toISOString()} with ${info.source}.`;
 	}
 
 	function revertLastChange(): void {

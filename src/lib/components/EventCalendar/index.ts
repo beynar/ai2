@@ -46,6 +46,7 @@ export type {
 	EventCalendarSegment,
 	EventCalendarSelection,
 	EventCalendarSlot,
+	EventCalendarSlotSelectInfo,
 	EventCalendarUpdateAdjustment,
 	EventCalendarUpdateResult,
 	EventCalendarView,

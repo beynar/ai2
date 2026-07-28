@@ -23,6 +23,10 @@ export type EventCalendarSlot =
 			end: EventCalendarDateOnly;
 	  });
 
+export type EventCalendarSlotSelectInfo = Readonly<{
+	source: 'drag-create' | 'keyboard' | 'single-pointer';
+}>;
+
 export type EventCalendarBusinessHours = {
 	daysOfWeek?: EventCalendarWeekday[];
 	start: string;

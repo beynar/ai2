@@ -83,7 +83,7 @@ Move, resize-start, resize-end, API updates, and keyboard mode share one proposa
 
 'clipboard=true' enables internal occurrence copy/paste through the API and Mod+C/Mod+V. Paste creates a standalone item, targets a selected compatible slot when present, and never mutates the copied recurrence series. 'historyLimit=50' bounds immutable undo entries; 0 disables history. Mod+Z undoes, Mod+Shift+Z and Mod+Y redo. History refuses stale controlled collections instead of overwriting consumer state.
 
-Item callbacks are 'onItemClick', 'onItemDoubleClick', 'onMoreClick', and 'onInteractionBlocked'. Slot callbacks are 'onSlotClick' and 'onSlotSelect'. Bound-state callbacks are 'onViewChange', 'onDateChange', 'onDayCountChange', and 'onSelectionChange'.
+Item callbacks are 'onItemClick', 'onItemDoubleClick', 'onMoreClick', and 'onInteractionBlocked'. Slot callbacks are 'onSlotClick' and 'onSlotSelect(slot, { source })'; source is 'drag-create', 'keyboard', or 'single-pointer'. Bound-state callbacks are 'onViewChange', 'onDateChange', 'onDayCountChange', and 'onSelectionChange'.
 
 ## Recurrence
 

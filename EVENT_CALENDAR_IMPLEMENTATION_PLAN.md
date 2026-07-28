@@ -140,6 +140,10 @@ export type EventCalendarSlot =
 			end: EventCalendarDateOnly;
 	  });
 
+export type EventCalendarSlotSelectInfo = Readonly<{
+	source: 'drag-create' | 'keyboard' | 'single-pointer';
+}>;
+
 export type EventCalendarBusinessHours = {
 	daysOfWeek?: EventCalendarWeekday[];
 	start: string; // HH:mm wall time in the display zone
@@ -538,7 +542,7 @@ export type EventCalendarCallbackProps<TItemFields extends object = Record<never
 	onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 	onItemDoubleClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 	onSlotClick?: (slot: EventCalendarSlot, event: MouseEvent) => void;
-	onSlotSelect?: (slot: EventCalendarSlot) => void;
+	onSlotSelect?: (slot: EventCalendarSlot, info: EventCalendarSlotSelectInfo) => void;
 	onMoreClick?: (
 		day: EventCalendarDateOnly,
 		occurrences: readonly EventCalendarOccurrence<TItemFields>[],
@@ -558,7 +562,7 @@ export type EventCalendarCallbackProps<TItemFields extends object = Record<never
 | `onItemClick(occurrence, event)`       | Event-chip click before built-in selection; `event.preventDefault()` suppresses that selection.                             |
 | `onItemDoubleClick(occurrence, event)` | Event-chip double click.                                                                                                    |
 | `onSlotClick(slot, event)`             | Empty point click before built-in slot selection; `event.preventDefault()` suppresses that selection.                       |
-| `onSlotSelect(slot)`                   | Completed drag-create, keyboard-create, or single-pointer range.                                                            |
+| `onSlotSelect(slot, info)`             | Completed range; `info.source` identifies drag-create, keyboard, or single-pointer input.                                   |
 | `onMoreClick(day, occurrences, event)` | Month overflow trigger; returning `false` suppresses the built-in popover.                                                  |
 | `onInteractionBlocked(info)`           | Receives `EventCalendarInteractionBlockedInfo<TItemFields>` once per rejected attempted gesture.                            |
 
