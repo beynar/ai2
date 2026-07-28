@@ -1,9 +1,47 @@
+<script lang="ts" module>
+	function clampHandleCenter(
+		preferred: number,
+		bounds: Readonly<{ start: number; end: number }>,
+		halfSize: number
+	): number {
+		const minimum = bounds.start + halfSize;
+		const maximum = bounds.end - halfSize;
+		if (minimum > maximum) return (bounds.start + bounds.end) / 2;
+		return Math.max(minimum, Math.min(maximum, preferred));
+	}
+
+	function isPixelVisible(
+		pixel: number,
+		visiblePixels: Readonly<{ start: number; end: number }>
+	): boolean {
+		return pixel >= visiblePixels.start && pixel <= visiblePixels.end;
+	}
+
+	function placeDetachedHandle(
+		edge: number,
+		preferred: number,
+		bounds: Readonly<{ start: number; end: number }>,
+		halfSize: number
+	): number {
+		if (preferred - halfSize >= bounds.start && preferred + halfSize <= bounds.end) {
+			return preferred;
+		}
+		return clampHandleCenter(edge - (preferred - edge), bounds, halfSize);
+	}
+
+	function getMarkerOffset(edge: number, handleCenter: number): number {
+		const distance = edge - handleCenter;
+		return Math.sign(distance) * Math.min(12, Math.abs(distance));
+	}
+</script>
+
 <script
 	lang="ts"
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
+	import type { PopoverThemeProps } from '$lib/components/Popover/index.js';
 	import type { Messages } from '$lib/i18n/en.js';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
@@ -24,6 +62,10 @@
 	import type { GanttChartClasses } from './ganttChart.theme.js';
 	import type { GanttAssignment, GanttResource } from './ganttChart.types.js';
 
+	const TASK_TOOLTIP_POPOVER_THEME = {
+		root: { base: 'pointer-events-none' }
+	} satisfies PopoverThemeProps;
+
 	type TaskSnippets = {
 		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
 		summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
@@ -42,6 +84,7 @@
 
 	let {
 		positioned,
+		visiblePixels,
 		rowTop,
 		chart,
 		resources,
@@ -65,6 +108,7 @@
 		onTaskDoubleClick
 	}: {
 		positioned: GanttPositionedTask<TTaskFields>;
+		visiblePixels: Readonly<{ start: number; end: number }>;
 		rowTop: number;
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		resources: readonly GanttResource<TResourceFields>[];
@@ -134,12 +178,67 @@
 		if (canMoveTask) return 'cursor-grab active:cursor-grabbing';
 		return 'cursor-default';
 	});
-	const resizeStartHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 12 : -12));
-	const resizeEndHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -12 : 12));
-	const dependencyStartHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 36 : -36));
-	const dependencyEndHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -36 : 36));
+	const resizeStartHandleLeft = $derived(
+		clampHandleCenter(positioned.startX + (direction === 'rtl' ? 12 : -12), visiblePixels, 12)
+	);
+	const resizeEndHandleLeft = $derived(
+		clampHandleCenter(positioned.endX + (direction === 'rtl' ? -12 : 12), visiblePixels, 12)
+	);
+	const resizeStartVisualOffset = $derived(positioned.startX - resizeStartHandleLeft);
+	const resizeEndVisualOffset = $derived(positioned.endX - resizeEndHandleLeft);
+	const isStartEdgeVisible = $derived(isPixelVisible(positioned.startX, visiblePixels));
+	const isEndEdgeVisible = $derived(isPixelVisible(positioned.endX, visiblePixels));
+	const dependencyStartHandleLeft = $derived(
+		placeDetachedHandle(
+			positioned.startX,
+			positioned.startX + (direction === 'rtl' ? 36 : -36),
+			visiblePixels,
+			12
+		)
+	);
+	const dependencyEndHandleLeft = $derived(
+		placeDetachedHandle(
+			positioned.endX,
+			positioned.endX + (direction === 'rtl' ? -36 : 36),
+			visiblePixels,
+			12
+		)
+	);
+	const dependencyStartVisualOffset = $derived(
+		getMarkerOffset(positioned.startX, dependencyStartHandleLeft)
+	);
+	const dependencyEndVisualOffset = $derived(
+		getMarkerOffset(positioned.endX, dependencyEndHandleLeft)
+	);
 	const handleTop = $derived(positioned.geometry.top + positioned.geometry.height / 2);
-	const progressHandleLeft = $derived(getProgressHandleLeft(positioned, progressValue, direction));
+	const progressMarkerLeft = $derived(getProgressHandleLeft(positioned, progressValue, direction));
+	const taskVisibleStart = $derived(
+		Math.max(Math.min(positioned.startX, positioned.endX), visiblePixels.start)
+	);
+	const taskVisibleEnd = $derived(
+		Math.min(Math.max(positioned.startX, positioned.endX), visiblePixels.end)
+	);
+	const isCompactTask = $derived(taskVisibleEnd - taskVisibleStart < 48);
+	const progressHandleLeft = $derived.by(() => {
+		if (!isCompactTask) {
+			return clampHandleCenter(
+				progressMarkerLeft,
+				{ start: taskVisibleStart, end: taskVisibleEnd },
+				14
+			);
+		}
+		const startSpace = taskVisibleStart - visiblePixels.start;
+		const endSpace = visiblePixels.end - taskVisibleEnd;
+		const preferred = endSpace >= startSpace ? taskVisibleEnd + 62 : taskVisibleStart - 62;
+		return clampHandleCenter(preferred, visiblePixels, 14);
+	});
+	const progressVisualOffset = $derived(progressMarkerLeft - progressHandleLeft);
+	const progressMarkerOffset = $derived(14 + progressVisualOffset);
+	const progressStemLeft = $derived(Math.min(14, progressMarkerOffset));
+	const progressStemWidth = $derived(Math.abs(progressMarkerOffset - 14));
+	const showProgressHandle = $derived(
+		taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels)
+	);
 	const canCreateDependency = $derived(
 		chart.interaction.dependency.canCreateForTask(node.taskId) && !disabled
 	);
@@ -260,6 +359,10 @@
 
 	function activate(event: MouseEvent): void {
 		event.stopPropagation();
+		if (chart.interaction.shouldSuppressTaskActivation(node.taskId)) {
+			event.preventDefault();
+			return;
+		}
 		if (disabled) return;
 		chart.a11y.setTaskTarget(node.taskId);
 		onTaskClick?.(node, event);
@@ -267,6 +370,10 @@
 
 	function handleDoubleClick(event: MouseEvent): void {
 		event.stopPropagation();
+		if (chart.interaction.shouldSuppressTaskActivation(node.taskId)) {
+			event.preventDefault();
+			return;
+		}
 		if (disabled) return;
 		onTaskDoubleClick?.(node, event);
 	}
@@ -361,7 +468,7 @@
 	{/if}
 
 	<div
-		class="pointer-events-none absolute"
+		class="pointer-events-none absolute z-30"
 		style:left={`${positioned.geometry.left}px`}
 		style:top={`${positioned.geometry.top}px`}
 		style:width={`${positioned.geometry.width}px`}
@@ -374,6 +481,8 @@
 			closeDelay={120}
 			openOnFocus
 			triggerClass="pointer-events-auto size-full"
+			popoverClass="pointer-events-none"
+			popoverTheme={TASK_TOOLTIP_POPOVER_THEME}
 		>
 			{#snippet trigger()}
 				<button
@@ -432,12 +541,9 @@
 		</HoverCard>
 	</div>
 
-	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled}
+	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled && isStartEdgeVisible}
 		<span
-			role="button"
-			aria-label={messages.ganttChartResizeStartAction}
-			aria-disabled={disabled}
-			tabindex="-1"
+			aria-hidden="true"
 			data-gantt-chart-part="resize-handle"
 			data-edge="start"
 			data-task-id={node.taskId}
@@ -447,14 +553,14 @@
 			{@attach chart.interaction.taskDrag(node.taskId, 'resize-start', rowTop)}
 		>
 			<span
-				class={`h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)] ${direction === 'rtl' ? '-translate-x-3' : 'translate-x-3'}`}
+				class="h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)]"
+				style:transform={`translateX(${resizeStartVisualOffset}px)`}
 			></span>
 		</span>
+	{/if}
+	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled && isEndEdgeVisible}
 		<span
-			role="button"
-			aria-label={messages.ganttChartResizeEndAction}
-			aria-disabled={disabled}
-			tabindex="-1"
+			aria-hidden="true"
 			data-gantt-chart-part="resize-handle"
 			data-edge="end"
 			data-task-id={node.taskId}
@@ -464,37 +570,44 @@
 			{@attach chart.interaction.taskDrag(node.taskId, 'resize-end', rowTop)}
 		>
 			<span
-				class={`h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)] ${direction === 'rtl' ? 'translate-x-3' : '-translate-x-3'}`}
+				class="h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)]"
+				style:transform={`translateX(${resizeEndVisualOffset}px)`}
 			></span>
 		</span>
 	{/if}
 
-	{#if node.type === 'task' && !node.task.readOnly && node.task.progressEditable !== false && !disabled}
+	{#if node.type === 'task' && !node.task.readOnly && node.task.progressEditable !== false && !disabled && showProgressHandle}
 		<span
-			role="slider"
-			aria-label={messages.ganttChartProgressAction}
-			aria-valuemin="0"
-			aria-valuemax="100"
-			aria-valuenow={Math.round(progressValue * 100)}
-			tabindex="-1"
+			aria-hidden="true"
 			data-gantt-chart-part="progress-handle"
 			data-task-id={node.taskId}
-			class={classes.progressHandle({ density, color: semanticColor, disabled })}
+			class={classes.progressHandle({
+				density,
+				color: semanticColor,
+				disabled,
+				class: '!z-[35]'
+			})}
 			style:left={`${progressHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
 		>
+			{#if progressStemWidth > 0}
+				<span
+					aria-hidden="true"
+					class="pointer-events-none absolute top-1/2 h-px -translate-y-1/2 bg-[var(--gantt-task-color)]/70"
+					style:left={`${progressStemLeft}px`}
+					style:width={`${progressStemWidth}px`}
+				></span>
+			{/if}
 			<span
-				class="size-3 rounded-full border-2 border-surface bg-[var(--gantt-task-color)] shadow-sm"
+				class="pointer-events-none size-3 rounded-full border-2 border-surface bg-[var(--gantt-task-color)] shadow-sm"
 			></span>
 		</span>
 	{/if}
 
-	{#if canCreateDependency}
+	{#if canCreateDependency && isStartEdgeVisible}
 		<span
-			role="button"
-			aria-label={`${messages.ganttChartDependencyAction}: ${node.task.title}, start`}
-			tabindex="-1"
+			aria-hidden="true"
 			data-gantt-chart-part="dependency-handle"
 			data-endpoint="start"
 			data-task-id={node.taskId}
@@ -508,13 +621,14 @@
 			})}
 		>
 			<span
-				class={`size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface ${direction === 'rtl' ? '-translate-x-3' : 'translate-x-3'}`}
+				class="size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface"
+				style:transform={`translateX(${dependencyStartVisualOffset}px)`}
 			></span>
 		</span>
+	{/if}
+	{#if canCreateDependency && isEndEdgeVisible}
 		<span
-			role="button"
-			aria-label={`${messages.ganttChartDependencyAction}: ${node.task.title}, end`}
-			tabindex="-1"
+			aria-hidden="true"
 			data-gantt-chart-part="dependency-handle"
 			data-endpoint="end"
 			data-task-id={node.taskId}
@@ -528,7 +642,8 @@
 			})}
 		>
 			<span
-				class={`size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface ${direction === 'rtl' ? 'translate-x-3' : '-translate-x-3'}`}
+				class="size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface"
+				style:transform={`translateX(${dependencyEndVisualOffset}px)`}
 			></span>
 		</span>
 	{/if}

@@ -187,7 +187,7 @@
 	);
 	const resolvedInteractions = $derived({ ...DEFAULT_GANTT_INTERACTIONS, ...interactions });
 	const resolvedTouchActivation = $derived({
-		distancePx: 5,
+		distancePx: 4,
 		touchDelayMs: 300,
 		touchTolerancePx: 8,
 		...touchActivation

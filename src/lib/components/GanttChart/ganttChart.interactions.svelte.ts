@@ -1,10 +1,6 @@
 import {
 	autoScrollForElements,
-	autoScrollWindowForElements,
-	disableNativeDragPreview,
-	draggable,
-	dropTargetForElements,
-	type ElementEventPayloadMap
+	autoScrollWindowForElements
 } from '$lib/utils/pragmaticDragAndDrop.js';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import { untrack } from 'svelte';
@@ -49,10 +45,10 @@ import type { ResolvedGanttSchedule } from './ganttChart.schedule.js';
 
 /* eslint-disable svelte/prefer-svelte-reactivity -- attachment registries must not invalidate component rendering */
 
-const SOURCE_MARK = 'svelai-gantt-chart-task';
 const POINTER_EDGE_SIZE = 48;
 const POINTER_MAX_SCROLL = 18;
-let nextInteractionId = 0;
+const MIN_PROGRESS_DRAG_SPAN = 120;
+const TASK_ACTIVATION_SUPPRESSION_MS = 700;
 
 type PointerCoordinates = Readonly<{ clientX: number; clientY: number }>;
 
@@ -173,19 +169,12 @@ export type GanttChartInteractionStatus<TTaskFields extends object> =
 			invalidReason: string | null;
 	  }>;
 
-type GanttTaskDragSource = Readonly<{
-	taskId: string;
-	operation: GanttTaskPointerOperation;
-	rowTop: number;
-}>;
-
 export class GanttChartInteractions<
 	TTaskFields extends object,
 	TDependencyFields extends object,
 	TResourceFields extends object,
 	TAssignmentFields extends object
 > {
-	readonly #instanceId = `gantt-chart-interaction-${++nextInteractionId}`;
 	readonly #options: GanttChartStateOptions<
 		TTaskFields,
 		TDependencyFields,
@@ -220,7 +209,10 @@ export class GanttChartInteractions<
 	#pendingPointer: PointerCoordinates | null = null;
 	#pointerFrame: number | null = null;
 	#pointerAutoScrollFrame: number | null = null;
-	#didNativeCancel = false;
+	#pointerCapture: Readonly<{ node: HTMLElement; pointerId: number }> | null = null;
+	#suppressedTaskClickId: string | null = null;
+	#suppressedTaskClickTimer: ReturnType<typeof setTimeout> | null = null;
+	#suppressedTaskClickPointerCleanup: (() => void) | null = null;
 	#taskRowTops = new Map<string, number>();
 	#taskDragAttachments = new Map<string, Attachment<HTMLElement>>();
 	#progressDragAttachments = new Map<string, Attachment<HTMLElement>>();
@@ -303,19 +295,16 @@ export class GanttChartInteractions<
 		return this.#gesture?.type === 'task' && this.#gesture.task.id === taskId;
 	}
 
+	shouldSuppressTaskActivation(taskId: string): boolean {
+		return this.#suppressedTaskClickId === taskId;
+	}
+
 	connectTimeline(context: GanttTimelineInteractionContext): () => void {
 		this.#timeline = context;
 		const dependencyCleanup = this.dependency.connectTimeline(context);
-		const dropTargetCleanup = dropTargetForElements({
-			element: context.viewport,
-			canDrop: ({ source }) =>
-				this.readTaskDragSource(source.data) !== null && this.#gesture?.isValid === true,
-			getDropEffect: () => 'move'
-		});
 		const horizontalAutoScrollCleanup = autoScrollForElements({
 			element: context.viewport,
-			canScroll: ({ source }) =>
-				this.readTaskDragSource(source.data) !== null || this.dependency.isDragSource(source.data),
+			canScroll: ({ source }) => this.dependency.isDragSource(source.data),
 			getAllowedAxis: () => 'horizontal'
 		});
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -324,18 +313,13 @@ export class GanttChartInteractions<
 			this.cancel();
 		};
 		window.addEventListener('keydown', handleKeyDown, true);
-		const handleDragEnd = (event: DragEvent) => {
-			if (event.dataTransfer?.dropEffect === 'none') this.#didNativeCancel = true;
-		};
-		window.addEventListener('dragend', handleDragEnd, true);
 		return () => {
 			dependencyCleanup();
-			dropTargetCleanup();
 			horizontalAutoScrollCleanup();
 			window.removeEventListener('keydown', handleKeyDown, true);
-			window.removeEventListener('dragend', handleDragEnd, true);
 			if (this.#timeline === context) {
 				this.cancel();
+				this.clearTaskClickSuppression();
 				this.#timeline = null;
 			}
 		};
@@ -344,16 +328,13 @@ export class GanttChartInteractions<
 	connectVerticalScrollOwner(element: HTMLElement, mode: 'contained' | 'page'): () => void {
 		if (mode === 'page' && element === document.documentElement) {
 			return autoScrollWindowForElements({
-				canScroll: ({ source }) =>
-					this.readTaskDragSource(source.data) !== null ||
-					this.dependency.isDragSource(source.data),
+				canScroll: ({ source }) => this.dependency.isDragSource(source.data),
 				getAllowedAxis: () => 'vertical'
 			});
 		}
 		return autoScrollForElements({
 			element,
-			canScroll: ({ source }) =>
-				this.readTaskDragSource(source.data) !== null || this.dependency.isDragSource(source.data),
+			canScroll: ({ source }) => this.dependency.isDragSource(source.data),
 			getAllowedAxis: () => 'vertical'
 		});
 	}
@@ -538,48 +519,32 @@ export class GanttChartInteractions<
 		const key = `${taskId}:${operation}`;
 		const current = this.#taskDragAttachments.get(key);
 		if (current) return current;
+		const pointerDrag = createPointerDrag({
+			canStart: (event) =>
+				(event.pointerType !== 'touch' || this.#options.interactions.touch) &&
+				(operation !== 'move' || isTaskBodyPointerTarget(event.target)),
+			disabled: () => !this.canBeginTaskGesture(taskId, operation),
+			activation: () => this.#options.touchActivation,
+			stopPropagation: true,
+			onStart: (payload) => {
+				const didBegin = this.beginTaskPointerGesture(
+					taskId,
+					operation,
+					this.#taskRowTops.get(taskId) ?? rowTop,
+					payload
+				);
+				if (didBegin) this.startPointerAutoScroll();
+				return didBegin;
+			},
+			onMove: (payload) => this.queuePointerUpdate(payload),
+			onEnd: (payload) => this.finishPointerGesture(payload),
+			onCancel: () => this.cancel()
+		});
 		const attachment: Attachment<HTMLElement> = (element) =>
 			untrack(() => {
-				const touchDrag = createPointerDrag({
-					canStart: (event) =>
-						event.pointerType === 'touch' &&
-						this.#options.interactions.touch &&
-						(operation !== 'move' || isTaskBodyPointerTarget(event.target)),
-					disabled: () => !this.canBeginTaskGesture(taskId, operation),
-					activation: () => this.#options.touchActivation,
-					stopPropagation: true,
-					onStart: (payload) =>
-						this.beginTaskPointerGesture(
-							taskId,
-							operation,
-							this.#taskRowTops.get(taskId) ?? rowTop,
-							payload
-						),
-					onMove: (payload) => this.queuePointerUpdate(payload),
-					onEnd: (payload) => this.finishPointerGesture(payload),
-					onCancel: () => this.cancel()
-				});
-				const touchCleanup = touchDrag(element);
-				const cleanup = draggable({
-					element,
-					canDrag: () => this.canBeginTaskGesture(taskId, operation),
-					onGenerateDragPreview: ({ nativeSetDragImage }) => {
-						disableNativeDragPreview({ nativeSetDragImage });
-					},
-					getInitialData: () => ({
-						mark: SOURCE_MARK,
-						instanceId: this.#instanceId,
-						taskId,
-						operation,
-						rowTop: this.#taskRowTops.get(taskId) ?? rowTop
-					}),
-					onDragStart: (payload) => this.handleTaskDragStart(payload),
-					onDrag: (payload) => this.handleTaskDrag(payload),
-					onDrop: (payload) => this.handleTaskDrop(payload)
-				});
+				const cleanup = pointerDrag(element);
 				return () => {
-					touchCleanup?.();
-					cleanup();
+					cleanup?.();
 					if (this.#taskDragAttachments.get(key) === attachment) {
 						this.#taskDragAttachments.delete(key);
 					}
@@ -670,43 +635,21 @@ export class GanttChartInteractions<
 
 	cancel(): boolean {
 		const didCancelDependency = this.dependency.cancel();
-		if (!this.#gesture) return didCancelDependency;
+		const gesture = this.#gesture;
+		const pointerCapture = this.#pointerCapture;
+		const hasPointerCapture = Boolean(
+			pointerCapture?.node.hasPointerCapture(pointerCapture.pointerId)
+		);
+		if (gesture?.type === 'task' && gesture.inputMode === 'pointer' && pointerCapture) {
+			this.armTaskClickSuppression(gesture.task.id, pointerCapture.pointerId, hasPointerCapture);
+		}
 		this.#gesture = null;
+		this.#pointerCapture = null;
 		this.cancelPointerFrames();
-		return true;
-	}
-
-	private handleTaskDragStart(payload: ElementEventPayloadMap['onDragStart']): void {
-		const source = this.readTaskDragSource(payload.source.data);
-		const timeline = this.#timeline;
-		if (!source || !timeline || !this.canBeginTaskGesture(source.taskId, source.operation)) return;
-		const task = this.#options.tasks.find((candidate) => candidate.id === source.taskId);
-		if (!task) return;
-		this.#didNativeCancel = false;
-		const pointer = payload.location.current.input;
-		const originPointer = payload.location.initial.input;
-		const schedule = this.#getSchedule();
-		this.#gesture = {
-			type: 'task',
-			inputMode: 'pointer',
-			initialOperation: source.operation,
-			operation: source.operation,
-			task,
-			calendar: getTaskCalendar(schedule.model, task),
-			scale: timeline.scale,
-			boundary: this.getBoundary(),
-			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
-			rowTop: source.rowTop,
-			pointer,
-			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
-			proposal: null,
-			isValid: false,
-			invalidReason: 'invalid-target',
-			invalidMessage: 'The task has no valid pointer proposal.',
-			workingDurationMinutes: 0,
-			keyboardStepCount: 0
-		};
-		this.updatePointerGesture(pointer);
+		if (hasPointerCapture && pointerCapture) {
+			pointerCapture.node.releasePointerCapture(pointerCapture.pointerId);
+		}
+		return gesture !== null || didCancelDependency;
 	}
 
 	private beginTaskPointerGesture(
@@ -720,6 +663,7 @@ export class GanttChartInteractions<
 		if (!timeline || !task || !this.canBeginTaskGesture(taskId, operation)) return false;
 		const pointer = { clientX: payload.x, clientY: payload.y };
 		const originPointer = { clientX: payload.startX, clientY: payload.startY };
+		this.#pointerCapture = { node: payload.node, pointerId: payload.pointerId };
 		this.#gesture = {
 			type: 'task',
 			inputMode: 'pointer',
@@ -744,23 +688,6 @@ export class GanttChartInteractions<
 		return true;
 	}
 
-	private handleTaskDrag(payload: ElementEventPayloadMap['onDrag']): void {
-		if (!this.#gesture || this.#gesture.type !== 'task') return;
-		this.queuePointerUpdate(payload.location.current.input);
-	}
-
-	private handleTaskDrop(payload: ElementEventPayloadMap['onDrop']): void {
-		if (!this.#gesture || this.#gesture.type !== 'task') return;
-		if (this.#didNativeCancel) {
-			this.#didNativeCancel = false;
-			if (!this.#gesture.isValid) this.reportGestureBlocked(this.#gesture);
-			this.cancel();
-			return;
-		}
-		this.flushPointerUpdate(payload.location.current.input);
-		this.commitTaskGesture();
-	}
-
 	private beginProgressGesture(
 		taskId: string,
 		rowTop: number,
@@ -770,6 +697,8 @@ export class GanttChartInteractions<
 		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
 		if (!timeline || !task || !this.canBeginProgressGesture(taskId)) return false;
 		const pointer = toPointerCoordinates(payload);
+		const originPointer = { clientX: payload.startX, clientY: payload.startY };
+		this.#pointerCapture = { node: payload.node, pointerId: payload.pointerId };
 		this.#gesture = {
 			type: 'task',
 			inputMode: 'pointer',
@@ -779,7 +708,7 @@ export class GanttChartInteractions<
 			calendar: getTaskCalendar(this.#getSchedule().model, task),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
-			originInstant: this.getPointerInstant(pointer, timeline.scale, timeline.viewport),
+			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
 			rowTop,
 			pointer,
 			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
@@ -813,6 +742,7 @@ export class GanttChartInteractions<
 		const rowTop =
 			Math.max(0, Math.floor((originPointer.clientY - canvasBounds.top) / timeline.rowHeight)) *
 			timeline.rowHeight;
+		this.#pointerCapture = { node: payload.node, pointerId: payload.pointerId };
 		this.#gesture = {
 			type: 'range',
 			inputMode: 'pointer',
@@ -910,7 +840,7 @@ export class GanttChartInteractions<
 				gesture.initialOperation === 'progress'
 					? deriveGanttProgressChange({
 							task: gesture.task,
-							pointerInstant,
+							progressDelta: this.getProgressPointerDelta(gesture, pointerCanvasX),
 							calendar: gesture.calendar
 						})
 					: deriveGanttTaskPointerChange({
@@ -957,6 +887,37 @@ export class GanttChartInteractions<
 				invalidReason === null ? null : 'The consumer task policy rejected this proposal.',
 			workingDurationMinutes: change.workingDurationMinutes
 		};
+	}
+
+	private getProgressPointerDelta(
+		gesture: TaskGesture<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
+		pointerCanvasX: number
+	): number {
+		const { task, scale } = gesture;
+		if (!task.start || !task.end) {
+			throw new GanttChartError(
+				'invalid-operation',
+				`Task ${task.id} has no progress-editable schedule.`,
+				{ taskId: task.id }
+			);
+		}
+		const taskPixelWidth =
+			task.segments && task.segments.length > 0
+				? task.segments.reduce(
+						(width, segment) =>
+							width +
+							Math.abs(
+								getGanttScalePixel(scale, segment.end) - getGanttScalePixel(scale, segment.start)
+							),
+						0
+					)
+				: Math.abs(getGanttScalePixel(scale, task.end) - getGanttScalePixel(scale, task.start));
+		const originCanvasX = getGanttScalePixel(scale, gesture.originInstant);
+		const chronologicalDirection = scale.direction === 'rtl' ? -1 : 1;
+		return (
+			((pointerCanvasX - originCanvasX) * chronologicalDirection) /
+			Math.max(MIN_PROGRESS_DRAG_SPAN, taskPixelWidth)
+		);
 	}
 
 	private updateRangeProposal(
@@ -1155,11 +1116,7 @@ export class GanttChartInteractions<
 			this.#pointerAutoScrollFrame = null;
 			const gesture = this.#gesture;
 			const timeline = this.#timeline;
-			if (
-				!gesture ||
-				(gesture.type === 'task' && gesture.initialOperation !== 'progress') ||
-				!timeline
-			) {
+			if (!gesture || !timeline) {
 				return;
 			}
 			const bounds = timeline.viewport.getBoundingClientRect();
@@ -1189,6 +1146,46 @@ export class GanttChartInteractions<
 		this.#pendingPointer = null;
 	}
 
+	private armTaskClickSuppression(
+		taskId: string,
+		pointerId: number,
+		waitForPointerUp: boolean
+	): void {
+		this.clearTaskClickSuppression();
+		this.#suppressedTaskClickId = taskId;
+		const scheduleClear = () => {
+			this.#suppressedTaskClickPointerCleanup?.();
+			this.#suppressedTaskClickPointerCleanup = null;
+			this.#suppressedTaskClickTimer = setTimeout(() => {
+				this.#suppressedTaskClickTimer = null;
+				this.clearTaskClickSuppression();
+			}, TASK_ACTIVATION_SUPPRESSION_MS);
+		};
+		if (!waitForPointerUp) {
+			scheduleClear();
+			return;
+		}
+		const handlePointerFinish = (event: PointerEvent) => {
+			if (event.pointerId === pointerId) scheduleClear();
+		};
+		window.addEventListener('pointerup', handlePointerFinish, true);
+		window.addEventListener('pointercancel', handlePointerFinish, true);
+		this.#suppressedTaskClickPointerCleanup = () => {
+			window.removeEventListener('pointerup', handlePointerFinish, true);
+			window.removeEventListener('pointercancel', handlePointerFinish, true);
+		};
+	}
+
+	private clearTaskClickSuppression(): void {
+		if (this.#suppressedTaskClickTimer !== null) {
+			clearTimeout(this.#suppressedTaskClickTimer);
+			this.#suppressedTaskClickTimer = null;
+		}
+		this.#suppressedTaskClickPointerCleanup?.();
+		this.#suppressedTaskClickPointerCleanup = null;
+		this.#suppressedTaskClickId = null;
+	}
+
 	private reportGestureBlocked(
 		gesture: Gesture<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): void {
@@ -1202,22 +1199,6 @@ export class GanttChartInteractions<
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
 		this.#options.onInteractionBlocked?.(info);
-	}
-
-	private readTaskDragSource(data: Record<string, unknown>): GanttTaskDragSource | null {
-		if (
-			data.mark !== SOURCE_MARK ||
-			data.instanceId !== this.#instanceId ||
-			typeof data.taskId !== 'string' ||
-			(data.operation !== 'move' &&
-				data.operation !== 'resize-start' &&
-				data.operation !== 'resize-end') ||
-			typeof data.rowTop !== 'number' ||
-			!Number.isFinite(data.rowTop)
-		) {
-			return null;
-		}
-		return { taskId: data.taskId, operation: data.operation, rowTop: data.rowTop };
 	}
 }
 

@@ -117,13 +117,13 @@ const progress = createGanttChartPart(
 	'pointer-events-none absolute inset-y-0 start-0 rounded-s bg-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)]'
 );
 const progressHandle = createGanttChartPart(
-	'pointer-events-auto absolute z-30 grid size-7 -translate-x-1/2 -translate-y-1/2 touch-none cursor-ew-resize place-items-center rounded-full outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
+	'pointer-events-auto absolute z-30 grid size-7 -translate-x-1/2 -translate-y-1/2 touch-none cursor-ew-resize place-items-center rounded-full opacity-0 transition-opacity group-hover/gantt-task:opacity-100 group-focus-within/gantt-task:opacity-100 hover:opacity-100'
 );
 const resizeHandle = createGanttChartPart(
-	'pointer-events-auto absolute z-30 grid size-7 -translate-x-1/2 -translate-y-1/2 touch-none cursor-ew-resize place-items-center rounded outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
+	'pointer-events-auto absolute z-40 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none cursor-ew-resize place-items-center rounded opacity-0 transition-opacity group-hover/gantt-task:opacity-100 group-focus-within/gantt-task:opacity-100 hover:opacity-100'
 );
 const dependencyHandle = createGanttChartPart(
-	'pointer-events-auto absolute z-30 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair place-items-center rounded-full outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color data-[target]:opacity-100 data-[target]:ring-2 data-[target]:ring-color'
+	'pointer-events-auto absolute z-30 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair place-items-center rounded-full opacity-0 transition-opacity group-hover/gantt-task:opacity-100 group-focus-within/gantt-task:opacity-100 hover:opacity-100 data-[target]:opacity-100 data-[target]:ring-2 data-[target]:ring-color'
 );
 const taskLabel = createGanttChartPart(
 	'pointer-events-none absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-neutral/85'

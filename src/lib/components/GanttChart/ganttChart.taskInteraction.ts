@@ -85,18 +85,77 @@ export function deriveGanttTaskPointerChange<TTaskFields extends object>(input: 
 			{ taskId: task.id }
 		);
 	}
-	const workingDelta = getGanttPointerWorkingDelta(
+	// Pointer coordinates belong to the elapsed-time axis. Translating them through working
+	// minutes makes a one-pixel gesture jump across every hidden night or weekend it touches.
+	const elapsedDelta = getGanttPointerElapsedDelta(
+		input.operation === 'resize-end' ? task.end : task.start,
 		input.originInstant,
 		input.pointerInstant,
-		calendar,
-		input.snapDuration
+		input.snapDuration,
+		calendar.calendar.timeZone
 	);
-	return deriveGanttTaskWorkingChange({
+	return deriveGanttTaskElapsedChange({
 		task,
 		operation: input.operation,
 		calendar,
-		workingDelta
+		elapsedDelta
 	});
+}
+
+function deriveGanttTaskElapsedChange<TTaskFields extends object>(input: {
+	task: GanttTask<TTaskFields>;
+	operation: GanttTaskPointerOperation;
+	calendar: GanttCalendarRuntime;
+	elapsedDelta: number;
+}): GanttDerivedTaskChange<TTaskFields> {
+	const { task, calendar, elapsedDelta } = input;
+	if (!task.start || !task.end) {
+		throw new GanttChartError('invalid-operation', `Task ${task.id} has no editable schedule.`, {
+			taskId: task.id
+		});
+	}
+	if (elapsedDelta === 0) {
+		return {
+			kind: input.operation,
+			task,
+			workingDurationMinutes: getTaskWorkingMinutes(task, calendar) ?? 0
+		};
+	}
+	if (input.operation === 'move') {
+		const movedTask = shiftGanttTaskElapsed(task, elapsedDelta);
+		return {
+			kind: 'move',
+			task: movedTask,
+			workingDurationMinutes: getTaskWorkingMinutes(movedTask, calendar) ?? 0
+		};
+	}
+	if (task.type === 'milestone') {
+		throw new GanttChartError('invalid-operation', `Milestone ${task.id} cannot be resized.`, {
+			taskId: task.id
+		});
+	}
+	const sourceEdge = input.operation === 'resize-start' ? task.start : task.end;
+	const pointerEdge = new Date(sourceEdge.getTime() + elapsedDelta);
+	const isStartResize =
+		input.operation === 'resize-start'
+			? pointerEdge.getTime() < task.end.getTime()
+			: pointerEdge.getTime() < task.start.getTime();
+	const start = isStartResize
+		? pointerEdge
+		: input.operation === 'resize-start'
+			? task.end
+			: task.start;
+	const end = isStartResize
+		? input.operation === 'resize-start'
+			? task.end
+			: task.start
+		: pointerEdge;
+	const resizedTask = resizeGanttTaskElapsed(task, start, end);
+	return {
+		kind: isStartResize ? 'resize-start' : 'resize-end',
+		task: resizedTask,
+		workingDurationMinutes: getTaskWorkingMinutes(resizedTask, calendar) ?? 0
+	};
 }
 
 function deriveGanttTaskWorkingChange<TTaskFields extends object>(input: {
@@ -126,11 +185,12 @@ function deriveGanttTaskWorkingChange<TTaskFields extends object>(input: {
 		});
 	}
 	const sourceEdge = input.operation === 'resize-start' ? task.start : task.end;
-	const pointerEdge = addWorkingMinutes(sourceEdge, workingDelta, calendar);
+	const workingEdge = addWorkingMinutes(sourceEdge, workingDelta, calendar);
 	const isStartResize =
 		input.operation === 'resize-start'
-			? pointerEdge.getTime() < task.end.getTime()
-			: pointerEdge.getTime() < task.start.getTime();
+			? workingEdge.getTime() < task.end.getTime()
+			: workingEdge.getTime() < task.start.getTime();
+	const pointerEdge = isStartResize ? addWorkingMinutes(workingEdge, 0, calendar) : workingEdge;
 	const start = isStartResize
 		? pointerEdge
 		: input.operation === 'resize-start'
@@ -151,7 +211,7 @@ function deriveGanttTaskWorkingChange<TTaskFields extends object>(input: {
 
 export function deriveGanttProgressChange<TTaskFields extends object>(input: {
 	task: GanttTask<TTaskFields>;
-	pointerInstant: Date;
+	progressDelta: number;
 	calendar: GanttCalendarRuntime;
 }): GanttDerivedTaskChange<TTaskFields> {
 	const { task } = input;
@@ -162,11 +222,12 @@ export function deriveGanttProgressChange<TTaskFields extends object>(input: {
 			{ taskId: task.id }
 		);
 	}
-	const elapsedDuration = task.end.getTime() - task.start.getTime();
-	const progress = Math.max(
-		0,
-		Math.min(1, (input.pointerInstant.getTime() - task.start.getTime()) / elapsedDuration)
-	);
+	if (!Number.isFinite(input.progressDelta)) {
+		throw new GanttChartError('invalid-operation', 'Progress drag delta must be finite.', {
+			taskId: task.id
+		});
+	}
+	const progress = Math.max(0, Math.min(1, (task.progress ?? 0) + input.progressDelta));
 	const nextTask = Object.assign({}, task, { progress });
 	return {
 		kind: 'progress',
@@ -187,11 +248,13 @@ export function deriveGanttRangeProposal(input: {
 	const origin = addWorkingMinutes(input.originInstant, 0, input.calendar);
 	const rawDelta = input.pointerInstant.getTime() - input.originInstant.getTime();
 	const isForward = input.pointerInstant.getTime() >= input.originInstant.getTime();
-	const elapsedStep = getGanttSnapElapsedMilliseconds(
-		input.snapDuration,
-		input.originInstant,
-		isForward ? 1 : -1,
-		input.calendar.calendar.timeZone
+	const elapsedStep = Math.abs(
+		getGanttElapsedSnapDelta(
+			input.originInstant,
+			isForward ? 1 : -1,
+			input.snapDuration,
+			input.calendar.calendar.timeZone
+		)
 	);
 	const duration = Math.max(step, Math.ceil(Math.abs(rawDelta) / elapsedStep) * step);
 	const start = isForward ? origin : subtractWorkingMinutes(origin, duration, input.calendar);
@@ -278,64 +341,151 @@ export function validateGanttRangeProposal(
 	});
 }
 
-function getGanttPointerWorkingDelta(
+function getGanttPointerElapsedDelta(
+	sourceEdge: Date,
 	origin: Date,
 	pointer: Date,
-	calendar: GanttCalendarRuntime,
-	duration: GanttDuration
-): number {
-	const workingStep = getGanttSnapMinutes(duration, calendar);
-	const elapsedDelta = pointer.getTime() - origin.getTime();
-	const elapsedStep = getGanttSnapElapsedMilliseconds(
-		duration,
-		origin,
-		elapsedDelta < 0 ? -1 : 1,
-		calendar.calendar.timeZone
-	);
-	const elapsedSteps = elapsedDelta / elapsedStep;
-	const stepCount = Math.sign(elapsedSteps) * Math.floor(Math.abs(elapsedSteps));
-	return stepCount * workingStep;
-}
-
-function getGanttSnapElapsedMilliseconds(
 	duration: GanttDuration,
-	origin: Date,
-	direction: -1 | 1,
 	timeZone: string
 ): number {
+	const elapsedDelta = pointer.getTime() - origin.getTime();
+	if (elapsedDelta === 0) return 0;
+	assertGanttSnapDuration(duration);
+	const direction = elapsedDelta < 0 ? -1 : 1;
+	const stepMilliseconds = getGanttSnapNominalMilliseconds(duration);
+	const estimatedStepCount = Math.floor(Math.abs(elapsedDelta) / stepMilliseconds);
+	if (!Number.isSafeInteger(estimatedStepCount)) {
+		throw new GanttChartError(
+			'invalid-operation',
+			'snapDuration produces more pointer steps than can be represented safely.',
+			{ snapDuration: duration }
+		);
+	}
+	let stepCount = direction * estimatedStepCount;
+	const firstStepDelta = getGanttElapsedSnapDelta(sourceEdge, direction, duration, timeZone);
+	if (stepCount === 0 && Math.abs(elapsedDelta) >= Math.abs(firstStepDelta)) {
+		stepCount = direction;
+	}
+	let snappedDelta = getGanttElapsedSnapDelta(sourceEdge, stepCount, duration, timeZone);
+	let correctionCount = 0;
+	while (stepCount !== 0 && Math.abs(snappedDelta) > Math.abs(elapsedDelta)) {
+		stepCount = getNextGanttSnapStepCount(stepCount, -direction);
+		snappedDelta = getGanttElapsedSnapDelta(sourceEdge, stepCount, duration, timeZone);
+		correctionCount += 1;
+		assertGanttSnapCorrectionCount(correctionCount, duration);
+	}
+	let nextStepCount = getNextGanttSnapStepCount(stepCount, direction);
+	let nextDelta = getGanttElapsedSnapDelta(sourceEdge, nextStepCount, duration, timeZone);
+	while (Math.abs(nextDelta) <= Math.abs(elapsedDelta)) {
+		stepCount = nextStepCount;
+		snappedDelta = nextDelta;
+		correctionCount += 1;
+		assertGanttSnapCorrectionCount(correctionCount, duration);
+		nextStepCount = getNextGanttSnapStepCount(stepCount, direction);
+		nextDelta = getGanttElapsedSnapDelta(sourceEdge, nextStepCount, duration, timeZone);
+	}
+	return snappedDelta;
+}
+
+function getNextGanttSnapStepCount(stepCount: number, direction: number): number {
+	const nextStepCount = stepCount + direction;
+	if (Number.isSafeInteger(nextStepCount) && nextStepCount !== stepCount) return nextStepCount;
+	throw new GanttChartError(
+		'invalid-operation',
+		'snapDuration produces more pointer steps than can be represented safely.'
+	);
+}
+
+function assertGanttSnapCorrectionCount(correctionCount: number, duration: GanttDuration): void {
+	if (correctionCount <= 1_024) return;
+	throw new GanttChartError(
+		'invalid-operation',
+		'snapDuration could not be resolved within the pointer correction bound.',
+		{ snapDuration: duration }
+	);
+}
+
+function getGanttSnapNominalMilliseconds(duration: GanttDuration): number {
 	const minute = 60_000;
 	if (duration.unit === 'minute') return duration.value * minute;
 	if (duration.unit === 'hour') return duration.value * 60 * minute;
-	if (duration.unit === 'day' || duration.unit === 'week') {
-		const dayCount = duration.value * (duration.unit === 'week' ? 7 : 1);
+	if (duration.unit === 'day') return duration.value * 24 * 60 * minute;
+	return duration.value * 7 * 24 * 60 * minute;
+}
+
+function getGanttElapsedSnapDelta(
+	sourceEdge: Date,
+	stepCount: number,
+	duration: GanttDuration,
+	timeZone: string
+): number {
+	if (stepCount === 0) return 0;
+	const minute = 60_000;
+	if (duration.unit === 'minute') return stepCount * duration.value * minute;
+	if (duration.unit === 'hour') return stepCount * duration.value * 60 * minute;
+	try {
+		const dayCount = stepCount * duration.value * (duration.unit === 'week' ? 7 : 1);
 		const wholeDays = Math.trunc(dayCount);
 		const partialDayMilliseconds = (dayCount - wholeDays) * 24 * 60 * minute;
 		if (wholeDays === 0) return partialDayMilliseconds;
-		const originParts = getInstantZonedParts(origin, timeZone);
-		const targetDay = addCivilDateDays(originParts, direction * wholeDays);
+		const sourceParts = getInstantZonedParts(sourceEdge, timeZone);
+		const targetDay = addCivilDateDays(sourceParts, wholeDays);
 		const target = resolveZonedWallTime(
 			{
 				...targetDay,
-				hour: originParts.hour,
-				minute: originParts.minute,
-				second: originParts.second,
-				millisecond: originParts.millisecond
+				hour: sourceParts.hour,
+				minute: sourceParts.minute,
+				second: sourceParts.second,
+				millisecond: sourceParts.millisecond
 			},
 			timeZone
 		);
-		return Math.abs(target.getTime() - origin.getTime()) + partialDayMilliseconds;
+		return target.getTime() + partialDayMilliseconds - sourceEdge.getTime();
+	} catch (error) {
+		if (error instanceof GanttChartError) throw error;
+		throw new GanttChartError(
+			'invalid-operation',
+			'snapDuration moves the pointer outside the supported civil-date range.',
+			{
+				snapDuration: duration,
+				cause: error instanceof Error ? error.message : String(error)
+			}
+		);
 	}
-	throw new GanttChartError('invalid-operation', 'snapDuration has an unsupported unit.', {
-		snapDuration: duration
-	});
 }
 
-function getGanttSnapMinutes(duration: GanttDuration, calendar: GanttCalendarRuntime): number {
+function assertGanttSnapDuration(duration: GanttDuration): void {
 	if (!duration || !Number.isFinite(duration.value) || duration.value <= 0) {
 		throw new GanttChartError('invalid-operation', 'snapDuration must be positive and finite.', {
 			snapDuration: duration
 		});
 	}
+	if (
+		duration.unit !== 'minute' &&
+		duration.unit !== 'hour' &&
+		duration.unit !== 'day' &&
+		duration.unit !== 'week'
+	) {
+		throw new GanttChartError('invalid-operation', 'snapDuration has an unsupported unit.', {
+			snapDuration: duration
+		});
+	}
+	const nominalMilliseconds = getGanttSnapNominalMilliseconds(duration);
+	if (
+		!Number.isFinite(nominalMilliseconds) ||
+		nominalMilliseconds < 1 ||
+		nominalMilliseconds > 8_640_000_000_000_000
+	) {
+		throw new GanttChartError(
+			'invalid-operation',
+			'snapDuration must resolve within the JavaScript Date range and to at least one millisecond.',
+			{ snapDuration: duration }
+		);
+	}
+}
+
+function getGanttSnapMinutes(duration: GanttDuration, calendar: GanttCalendarRuntime): number {
+	assertGanttSnapDuration(duration);
 	let minutes: number;
 	switch (duration.unit) {
 		case 'minute':
@@ -361,6 +511,65 @@ function getGanttSnapMinutes(duration: GanttDuration, calendar: GanttCalendarRun
 		`Calendar ${calendar.calendar.id} cannot resolve snapDuration.`,
 		{ calendarId: calendar.calendar.id, snapDuration: duration }
 	);
+}
+
+function shiftGanttTaskElapsed<TTaskFields extends object>(
+	task: GanttTask<TTaskFields>,
+	elapsedDelta: number
+): GanttTask<TTaskFields> {
+	if (!task.start || !task.end) {
+		throw new GanttChartError('invalid-operation', `Task ${task.id} has no movable schedule.`, {
+			taskId: task.id
+		});
+	}
+	const shift = (instant: Date) => new Date(instant.getTime() + elapsedDelta);
+	const schedule = { start: shift(task.start), end: shift(task.end) };
+	if (task.type === 'milestone') return Object.assign({}, task, schedule);
+	const segments = task.segments?.map((segment) => ({
+		start: shift(segment.start),
+		end: shift(segment.end)
+	}));
+	return segments
+		? Object.assign({}, task, schedule, { segments })
+		: Object.assign({}, task, schedule);
+}
+
+function resizeGanttTaskElapsed<TTaskFields extends object>(
+	task: GanttTask<TTaskFields>,
+	start: Date,
+	end: Date
+): GanttTask<TTaskFields> {
+	if (!task.start || !task.end) {
+		throw new GanttChartError('invalid-operation', `Task ${task.id} has no resizable schedule.`, {
+			taskId: task.id
+		});
+	}
+	const sourceStart = task.start;
+	const sourceDuration = task.end.getTime() - sourceStart.getTime();
+	const nextDuration = end.getTime() - start.getTime();
+	if (sourceDuration <= 0 || nextDuration <= 0) {
+		throw new GanttChartError('invalid-range', `Task ${task.id} has no resizable elapsed span.`, {
+			taskId: task.id
+		});
+	}
+	const segments = task.segments?.map((segment) => ({
+		start: new Date(
+			Math.round(
+				start.getTime() +
+					((segment.start.getTime() - sourceStart.getTime()) / sourceDuration) * nextDuration
+			)
+		),
+		end: new Date(
+			Math.round(
+				start.getTime() +
+					((segment.end.getTime() - sourceStart.getTime()) / sourceDuration) * nextDuration
+			)
+		)
+	}));
+	const schedule = { start: new Date(start), end: new Date(end) };
+	return segments
+		? Object.assign({}, task, schedule, { segments })
+		: Object.assign({}, task, schedule);
 }
 
 function resizeGanttTask<TTaskFields extends object>(

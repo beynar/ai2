@@ -278,6 +278,7 @@
 			{#if positioned}
 				<GanttTaskBar
 					{positioned}
+					{visiblePixels}
 					rowTop={virtualRow.start}
 					{chart}
 					{resources}
