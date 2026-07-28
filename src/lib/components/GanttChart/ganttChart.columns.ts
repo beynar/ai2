@@ -211,7 +211,9 @@ export function formatGanttColumnValue(
 	}
 	if (columnId === 'duration') return formatDuration(value);
 	if (columnId === 'progress') {
-		if (typeof value !== 'number' || !Number.isFinite(value)) return messages.ganttChartUnscheduled;
+		if (typeof value !== 'number' || !Number.isFinite(value)) {
+			throw new GanttChartError('invalid-progress', 'progress column received an invalid number.');
+		}
 		return new Intl.NumberFormat(locale, {
 			style: 'percent',
 			maximumFractionDigits: 0
@@ -335,7 +337,12 @@ function resolveTaskResourceTitles<
 }
 
 function formatDuration(value: unknown): string {
-	if (typeof value !== 'number' || !Number.isFinite(value)) return String(value);
+	if (typeof value !== 'number' || !Number.isFinite(value)) {
+		throw new GanttChartError(
+			'invalid-task-schedule',
+			'duration column received an invalid number.'
+		);
+	}
 	const minutes = Math.max(0, Math.round(value));
 	const days = Math.floor(minutes / 1440);
 	const hours = Math.floor((minutes % 1440) / 60);
