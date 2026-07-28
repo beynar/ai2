@@ -100,14 +100,18 @@
 		GanttDragPreviewPayload,
 		GanttNonWorkingTimePayload,
 		GanttProgressPayload,
+		GanttResourceAssignmentsPayload,
+		GanttResourceView,
 		GanttSnapshot,
 		GanttTaskLabelPayload,
 		GanttTaskPayload,
 		GanttTaskTooltipPayload,
 		GanttTaskRowPayload,
 		GanttTimeHeaderPayload,
-		GanttTreeCellPayload
+		GanttTreeCellPayload,
+		GanttWorkloadCellPayload
 	} from './ganttChart.props.js';
+	import { resolveGanttResourceView } from './ganttChart.resourceView.js';
 	import { resolveGanttRows, type GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
@@ -147,6 +151,10 @@
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
 		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
+		resourceAssignments?: Snippet<
+			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
+		>;
+		workloadCell?: Snippet<[GanttWorkloadCellPayload<TResourceFields>]>;
 		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 		empty?: Snippet<[GanttEmptyPayload]>;
 		loadingContent?: Snippet<[GanttLoadingPayload]>;
@@ -180,6 +188,7 @@
 		showTodayIndicator,
 		showWeekends,
 		display,
+		resourceView,
 		classes,
 		snippets,
 		onTaskClick,
@@ -220,6 +229,7 @@
 		showTodayIndicator: boolean;
 		showWeekends: boolean;
 		display: GanttDisplayOptions;
+		resourceView: GanttResourceView | undefined;
 		classes: GanttChartClasses;
 		snippets: ShellSnippets;
 		onTaskClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
@@ -247,13 +257,21 @@
 				: column
 		)
 	);
+	const resolvedResourceView = $derived(
+		resolveGanttResourceView(
+			resourceView,
+			chart.schedule.model.resources,
+			chart.schedule.model.resourceHierarchy
+		)
+	);
 	const rowModel = $derived(
 		resolveGanttRows({
 			nodes: snapshot.resolvedTasks,
 			columns: resolvedColumns,
 			dependencies: snapshot.dependencies,
 			resources: snapshot.resources,
-			assignments: snapshot.assignments
+			assignments: snapshot.assignments,
+			resourceView: resolvedResourceView
 		})
 	);
 	const rowVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
@@ -355,6 +373,11 @@
 		$rowVirtualizerStore.getTotalSize() || rowModel.rows.length * rowHeight
 	);
 	const contentHeight = $derived(Math.max(totalRowsHeight, rowHeight * 6));
+	const workloadPanelHeight = $derived(
+		display.workload && resolvedResourceView.resources.length > 0
+			? resolvedResourceView.workloadHeight
+			: 0
+	);
 	const emptyPayload = $derived<GanttEmptyPayload>({
 		visibleRange: snapshot.visibleRange,
 		zoom: snapshot.zoom,
@@ -466,7 +489,7 @@
 	<div
 		class="relative min-h-full min-w-0"
 		style:width={containerWidth > 0 ? `${containerWidth}px` : '100%'}
-		style:height={`${Math.max(containerHeight, contentHeight + scheduleHeaderHeight)}px`}
+		style:height={`${Math.max(containerHeight, contentHeight + scheduleHeaderHeight + workloadPanelHeight)}px`}
 	>
 		{#if showGrid}
 			<Resizable
@@ -543,6 +566,7 @@
 		{showTodayIndicator}
 		{showWeekends}
 		{display}
+		resourceView={resolvedResourceView}
 		{messages}
 		{locale}
 		{timeZone}

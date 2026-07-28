@@ -8,12 +8,14 @@
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
+	import GanttResourceAssignments from './GanttResourceAssignments.svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
 	import type { GanttPositionedTask } from './ganttChart.layout.js';
 	import type {
 		GanttBaselinePayload,
 		GanttDeadlinePayload,
 		GanttProgressPayload,
+		GanttResourceAssignmentsPayload,
 		GanttTaskLabelPayload,
 		GanttTaskPayload,
 		GanttTaskTooltipPayload
@@ -33,6 +35,9 @@
 		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
+		resourceAssignments?: Snippet<
+			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
+		>;
 	};
 
 	let {
@@ -41,6 +46,7 @@
 		chart,
 		resources,
 		assignments,
+		overAllocatedResourceIds,
 		messages,
 		locale,
 		timeZone,
@@ -64,6 +70,7 @@
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		resources: readonly GanttResource<TResourceFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		overAllocatedResourceIds: ReadonlySet<string>;
 		messages: Messages;
 		locale: string;
 		timeZone: string;
@@ -88,10 +95,31 @@
 		assignments.filter((assignment) => assignment.taskId === node.taskId)
 	);
 	const assignedResourceIds = $derived(
-		new Set(taskAssignments.map((assignment) => assignment.resourceId))
+		new Set([
+			...(node.task.resourceIds ?? []),
+			...taskAssignments.map((assignment) => assignment.resourceId)
+		])
 	);
 	const assignedResources = $derived(
 		resources.filter((resource) => assignedResourceIds.has(resource.id))
+	);
+	const isOverAllocated = $derived(
+		assignedResources.some((resource) => overAllocatedResourceIds.has(resource.id))
+	);
+	const assignmentLabel = $derived(
+		assignedResources.length > 0
+			? `${messages.ganttChartColumnResources}: ${assignedResources.map((resource) => resource.title).join(', ')}`
+			: null
+	);
+	const overAllocationLabel = $derived(
+		isOverAllocated
+			? messages.ganttChartOverAllocated(
+					assignedResources
+						.filter((resource) => overAllocatedResourceIds.has(resource.id))
+						.map((resource) => resource.title)
+						.join(', ')
+				)
+			: null
 	);
 	const semanticColor = $derived(isGanttSemanticColor(node.task.color) ? node.task.color : color);
 	const taskColor = $derived(getGanttTaskColor(node.task.color, color));
@@ -163,6 +191,8 @@
 			totalSlackLabel,
 			freeSlackLabel,
 			constraintLabel,
+			assignmentLabel,
+			overAllocationLabel,
 			...violationLabels
 		]
 			.filter(Boolean)
@@ -342,6 +372,7 @@
 		data-critical={isCritical || undefined}
 		data-violated={node.violations.length > 0 || undefined}
 		data-violation-count={node.violations.length || undefined}
+		data-over-allocated={isOverAllocated || undefined}
 		data-dragging={isDragging || undefined}
 		data-continues-before={positioned.geometry.continuesBefore || undefined}
 		data-continues-after={positioned.geometry.continuesAfter || undefined}
@@ -357,6 +388,7 @@
 			disabled,
 			selected: isSelected,
 			critical: isCritical,
+			overAllocated: isOverAllocated,
 			readOnly: node.task.readOnly ?? false,
 			class: [
 				node.type === 'task' && positioned.segments.length > 0
@@ -479,6 +511,19 @@
 		aria-hidden="true"
 	>
 		<Slot render={snippets.taskLabel ?? defaultLabel} payload={labelPayload} />
+		<GanttResourceAssignments
+			{node}
+			resources={assignedResources}
+			assignments={taskAssignments}
+			{overAllocatedResourceIds}
+			{messages}
+			{locale}
+			{density}
+			{color}
+			{disabled}
+			{classes}
+			resourceAssignments={snippets.resourceAssignments}
+		/>
 	</div>
 </div>
 
@@ -559,6 +604,7 @@
 		{#if assignedResources.length > 0}
 			<span>{assignedResources.map((resource) => resource.title).join(', ')}</span>
 		{/if}
+		{#if overAllocationLabel}<span class="text-danger">{overAllocationLabel}</span>{/if}
 	</div>
 {/snippet}
 

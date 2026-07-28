@@ -7,6 +7,7 @@
 	import { onMount, tick, untrack, type Snippet } from 'svelte';
 	import GanttTimeHeader from './GanttTimeHeader.svelte';
 	import GanttTimelineRows from './GanttTimelineRows.svelte';
+	import GanttWorkloadPanel from './GanttWorkloadPanel.svelte';
 	import { getCalendarRuntime } from './ganttChart.calendar.js';
 	import { GanttChartError } from './ganttChart.error.js';
 	import { resolveGanttTimeShades } from './ganttChart.layout.js';
@@ -22,8 +23,11 @@
 		GanttProgressPayload,
 		GanttBaselinePayload,
 		GanttDeadlinePayload,
-		GanttNonWorkingTimePayload
+		GanttNonWorkingTimePayload,
+		GanttResourceAssignmentsPayload,
+		GanttWorkloadCellPayload
 	} from './ganttChart.props.js';
+	import type { GanttResolvedResourceView } from './ganttChart.resourceView.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import {
 		createGanttTimeScale,
@@ -55,6 +59,10 @@
 		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
+		resourceAssignments?: Snippet<
+			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
+		>;
+		workloadCell?: Snippet<[GanttWorkloadCellPayload<TResourceFields>]>;
 		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
 		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	};
@@ -73,6 +81,7 @@
 		showTodayIndicator,
 		showWeekends,
 		display,
+		resourceView,
 		messages,
 		locale,
 		timeZone,
@@ -100,6 +109,7 @@
 		showTodayIndicator: boolean;
 		showWeekends: boolean;
 		display: GanttDisplayOptions;
+		resourceView: GanttResolvedResourceView<TResourceFields>;
 		messages: Messages;
 		locale: string;
 		timeZone: string;
@@ -173,6 +183,9 @@
 	);
 	const scaleKey = $derived(
 		`${snapshot.zoom}:${scale.canvasRange.start.getTime()}:${scale.canvasRange.end.getTime()}:${scale.totalWidth}:${direction}`
+	);
+	const workloadPanelHeight = $derived(
+		display.workload && resourceView.resources.length > 0 ? resourceView.workloadHeight : 0
 	);
 
 	const navigation: GanttTimelineNavigation = {
@@ -386,14 +399,14 @@
 			invalid: chart.interaction.isInvalid,
 			class: 'h-auto overflow-x-auto overflow-y-clip overscroll-x-contain'
 		})}
-		style:height={`${totalHeight}px`}
+		style:height={`${totalHeight + workloadPanelHeight}px`}
 		onscroll={handleScroll}
 		onwheel={handleWheel}
 	>
 		<div
 			class="relative overflow-x-clip"
 			style:width={`${scale.totalWidth}px`}
-			style:height={`${totalHeight}px`}
+			style:height={`${totalHeight + workloadPanelHeight}px`}
 			dir={direction}
 		>
 			<GanttTimelineRows
@@ -403,6 +416,7 @@
 				{resolvedDependencies}
 				resources={snapshot.resources}
 				assignments={snapshot.assignments}
+				workload={chart.schedule.workload}
 				selection={snapshot.selection}
 				{scale}
 				{visibleRange}
@@ -431,6 +445,24 @@
 				{onTaskDoubleClick}
 				{onDependencyClick}
 			/>
+			{#if workloadPanelHeight > 0}
+				<GanttWorkloadPanel
+					{resourceView}
+					workload={chart.schedule.workload}
+					{scale}
+					{visiblePixels}
+					{viewportWidth}
+					height={workloadPanelHeight}
+					{messages}
+					{locale}
+					{density}
+					{color}
+					{direction}
+					{disabled}
+					{classes}
+					workloadCell={snippets.workloadCell}
+				/>
+			{/if}
 		</div>
 	</div>
 </div>

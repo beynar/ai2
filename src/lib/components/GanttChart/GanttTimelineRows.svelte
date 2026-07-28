@@ -12,6 +12,7 @@
 	import GanttTaskBar from './GanttTaskBar.svelte';
 	import GanttTimeShadeLayer from './GanttTimeShadeLayer.svelte';
 	import { positionGanttTask, type GanttTimeShade } from './ganttChart.layout.js';
+	import { indexGanttOverAllocations } from './ganttChart.resourceView.js';
 	import {
 		getGanttScaleCells,
 		getGanttScalePixel,
@@ -24,6 +25,7 @@
 		GanttDragPreviewPayload,
 		GanttNonWorkingTimePayload,
 		GanttProgressPayload,
+		GanttResourceAssignmentsPayload,
 		GanttTaskLabelPayload,
 		GanttTaskPayload,
 		GanttTaskTooltipPayload
@@ -36,7 +38,8 @@
 		GanttRange,
 		GanttResolvedDependency,
 		GanttResource,
-		GanttSelection
+		GanttSelection,
+		GanttWorkloadBucket
 	} from './ganttChart.types.js';
 
 	type TimelineSnippets = {
@@ -51,6 +54,9 @@
 		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
+		resourceAssignments?: Snippet<
+			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
+		>;
 		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
 		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	};
@@ -62,6 +68,7 @@
 		resolvedDependencies,
 		resources,
 		assignments,
+		workload,
 		selection,
 		scale,
 		visibleRange,
@@ -96,6 +103,7 @@
 		resolvedDependencies: readonly GanttResolvedDependency<TTaskFields, TDependencyFields>[];
 		resources: readonly GanttResource<TResourceFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		workload: readonly GanttWorkloadBucket[];
 		selection: GanttSelection;
 		scale: GanttTimeScale;
 		visibleRange: GanttRange;
@@ -145,6 +153,8 @@
 		projectRange ? getGanttScalePixel(scale, projectRange.end) : null
 	);
 	const todayLeft = $derived(now ? getGanttScalePixel(scale, now) : null);
+	const overAllocatedResourceIdsByTaskId = $derived(indexGanttOverAllocations(workload));
+	const emptyResourceIds = new Set<string>();
 	const rangeDrag: Attachment<HTMLElement> = (element) => chart.interaction.rangeDrag()(element);
 
 	function isTaskSelected(taskId: string): boolean {
@@ -194,15 +204,20 @@
 	{#each renderedRows as virtualRow (virtualRow.key)}
 		{@const node = rowModel.rows[virtualRow.index]}
 		{#if node}
+			{@const resourceGroup = rowModel.resourceGroupByTaskId.get(node.taskId)}
+			{@const isResourceGroupStart = rowModel.resourceGroupStartTaskIds.has(node.taskId)}
 			<div
 				data-gantt-chart-part="timeline-row"
 				data-task-id={node.taskId}
 				data-index={virtualRow.index}
+				data-resource-group={resourceGroup?.id}
+				data-resource-group-start={isResourceGroupStart || undefined}
 				class={classes.timelineRow({
 					density,
 					color,
 					disabled,
-					selected: isTaskFocused(node.taskId)
+					selected: isTaskFocused(node.taskId),
+					class: isResourceGroupStart ? 'border-t border-t-neutral/25' : undefined
 				})}
 				style:top={`${virtualRow.start}px`}
 				aria-hidden="true"
@@ -265,6 +280,8 @@
 					{chart}
 					{resources}
 					{assignments}
+					overAllocatedResourceIds={overAllocatedResourceIdsByTaskId.get(positioned.node.taskId) ??
+						emptyResourceIds}
 					{messages}
 					{locale}
 					{timeZone}

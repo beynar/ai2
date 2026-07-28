@@ -126,6 +126,7 @@
 		autoSchedule = false,
 		moveDependencies = false,
 		display = defaultDisplay,
+		resourceView,
 		header,
 		actions,
 		gridHeader,
@@ -144,6 +145,8 @@
 		baseline,
 		deadline,
 		nonWorkingTime,
+		resourceAssignments,
+		workloadCell,
 		dragPreview,
 		empty,
 		loadingContent,
@@ -609,6 +612,7 @@
 		{showTodayIndicator}
 		{showWeekends}
 		display={resolvedDisplay}
+		{resourceView}
 		locale={resolvedLocale}
 		{timeZone}
 		{classes}
@@ -629,6 +633,8 @@
 			baseline,
 			deadline,
 			nonWorkingTime,
+			resourceAssignments,
+			workloadCell,
 			dragPreview,
 			empty,
 			loadingContent

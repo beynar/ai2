@@ -4,6 +4,7 @@ import {
 	parseCivilDate,
 	type CivilDateOnly
 } from '$lib/scheduling/civilDate.js';
+import { assertScheduleRange, intersectScheduleRanges } from '$lib/scheduling/scheduleRange.js';
 import { resolveZonedMinuteOnDay } from '$lib/scheduling/zonedTime.js';
 import {
 	getCalendarCivilDay,
@@ -12,7 +13,12 @@ import {
 	getTaskCalendar
 } from './ganttChart.calendar.js';
 import type { ValidatedGanttModel } from './ganttChart.validation.js';
-import type { GanttRange, GanttResolvedTaskNode, GanttWorkloadBucket } from './ganttChart.types.js';
+import type {
+	GanttAssignment,
+	GanttRange,
+	GanttResolvedTaskNode,
+	GanttWorkloadBucket
+} from './ganttChart.types.js';
 
 type WorkloadEvent = Readonly<{
 	time: number;
@@ -20,6 +26,8 @@ type WorkloadEvent = Readonly<{
 	taskId: string;
 	kind: 'start' | 'end';
 }>;
+
+const CAPACITY_EPSILON = 1e-9;
 
 export function calculateGanttWorkload<
 	TTaskFields extends object,
@@ -31,14 +39,15 @@ export function calculateGanttWorkload<
 	resolvedTasks: readonly GanttResolvedTaskNode<TTaskFields>[],
 	range: GanttRange
 ): readonly GanttWorkloadBucket[] {
-	if (range.end.getTime() < range.start.getTime()) return [];
+	assertScheduleRange(range, 'workloadRange');
+	if (range.end.getTime() === range.start.getTime()) return [];
 	const resolvedById = new Map(resolvedTasks.map((node) => [node.taskId, node]));
-	const assignmentsByResource = new Map<string, typeof model.assignments>();
+	const assignmentsByResource = new Map<string, GanttAssignmentList<TAssignmentFields>>();
 	for (const resource of model.resources) {
-		assignmentsByResource.set(
-			resource.id,
-			model.assignments.filter((assignment) => assignment.resourceId === resource.id)
-		);
+		assignmentsByResource.set(resource.id, []);
+	}
+	for (const assignment of model.assignments) {
+		assignmentsByResource.get(assignment.resourceId)?.push(assignment);
 	}
 
 	const buckets: GanttWorkloadBucket[] = [];
@@ -50,7 +59,7 @@ export function calculateGanttWorkload<
 		while (day <= finalDay) {
 			const dayStart = resolveZonedMinuteOnDay(day, 0, resourceCalendar.calendar.timeZone);
 			const dayEnd = resolveZonedMinuteOnDay(day, 1440, resourceCalendar.calendar.timeZone);
-			const bucketRange = intersectRange(range, { start: dayStart, end: dayEnd });
+			const bucketRange = intersectScheduleRanges(range, { start: dayStart, end: dayEnd });
 			if (bucketRange.start.getTime() < bucketRange.end.getTime()) {
 				const events: WorkloadEvent[] = [];
 				const resourceIntervals = getCalendarWorkingIntervals(bucketRange, resourceCalendar);
@@ -62,10 +71,10 @@ export function calculateGanttWorkload<
 					const taskWorkingIntervals = getCalendarWorkingIntervals(bucketRange, taskCalendar);
 					for (const activeInterval of taskIntervals) {
 						for (const taskWorkingInterval of taskWorkingIntervals) {
-							const taskIntersection = intersectRange(activeInterval, taskWorkingInterval);
+							const taskIntersection = intersectScheduleRanges(activeInterval, taskWorkingInterval);
 							if (taskIntersection.start.getTime() >= taskIntersection.end.getTime()) continue;
 							for (const resourceInterval of resourceIntervals) {
-								const intersection = intersectRange(taskIntersection, resourceInterval);
+								const intersection = intersectScheduleRanges(taskIntersection, resourceInterval);
 								if (intersection.start.getTime() >= intersection.end.getTime()) continue;
 								events.push(
 									{
@@ -92,7 +101,7 @@ export function calculateGanttWorkload<
 					...bucketRange,
 					assignedUnits: workload.peakUnits,
 					capacity,
-					isOverAllocated: workload.peakUnits > capacity,
+					isOverAllocated: workload.peakUnits - capacity > CAPACITY_EPSILON,
 					taskIds: workload.taskIds
 				});
 			}
@@ -113,7 +122,7 @@ function getTaskActiveIntervals<TTaskFields extends object>(
 			? [{ start: node.resolvedStart, end: node.resolvedEnd }]
 			: []);
 	return definitions
-		.map((interval) => intersectRange(interval, boundary))
+		.map((interval) => intersectScheduleRanges(interval, boundary))
 		.filter((interval) => interval.start.getTime() < interval.end.getTime());
 }
 
@@ -137,13 +146,8 @@ function sweepWorkload(
 	return { peakUnits, taskIds: [...taskIds] };
 }
 
-function intersectRange(left: GanttRange, right: GanttRange): GanttRange {
-	const start = Math.max(left.start.getTime(), right.start.getTime());
-	const end = Math.min(left.end.getTime(), right.end.getTime());
-	if (start <= end) return { start: new Date(start), end: new Date(end) };
-	return { start: new Date(start), end: new Date(start) };
-}
-
 function addDay(day: CivilDateOnly, amount: number): CivilDateOnly {
 	return formatCivilDate(addCivilDateDays(parseCivilDate(day), amount));
 }
+
+type GanttAssignmentList<TAssignmentFields extends object> = GanttAssignment<TAssignmentFields>[];

@@ -28,6 +28,8 @@
 		dependencies,
 		resources,
 		assignments,
+		resourceGroup,
+		showResourceGroupLabel,
 		messages,
 		locale,
 		timeZone,
@@ -63,6 +65,8 @@
 		dependencies: readonly GanttDependency<TDependencyFields>[];
 		resources: readonly GanttResource<TResourceFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		resourceGroup: GanttResource<TResourceFields> | null;
+		showResourceGroupLabel: boolean;
 		messages: Messages;
 		locale: string;
 		timeZone: string;
@@ -102,6 +106,8 @@
 	data-task-id={node.taskId}
 	data-index={rowIndex}
 	data-grid-row={rowIndex}
+	data-resource-group={resourceGroup?.id}
+	data-resource-group-start={showResourceGroupLabel || undefined}
 	class={classes.row({ density, color, disabled, selected: isSelected })}
 	style:top={`${start}px`}
 	role="row"
@@ -125,6 +131,8 @@
 			{dependencies}
 			{resources}
 			{assignments}
+			{resourceGroup}
+			showResourceGroupLabel={showResourceGroupLabel && column.id === 'title'}
 			{messages}
 			{locale}
 			{timeZone}

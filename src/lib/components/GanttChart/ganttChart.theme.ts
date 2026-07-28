@@ -44,7 +44,7 @@ function createGanttChartPart(base: string) {
 }
 
 const root = createGanttChartPart(
-	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/80 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none forced-colors:border-[CanvasText]'
+	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/80 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] [--gantt-workload-row-height:2rem] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none forced-colors:border-[CanvasText]'
 );
 const header = createGanttChartPart(
 	'flex min-w-0 shrink-0 flex-wrap items-center gap-2 border-b border-neutral-muted bg-surface-raised px-3 py-2'
@@ -125,6 +125,9 @@ const dependencyHandle = createGanttChartPart(
 const taskLabel = createGanttChartPart(
 	'pointer-events-none absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-neutral/85'
 );
+const resourceAssignments = createGanttChartPart(
+	'ms-2 inline-flex max-w-64 items-center gap-1.5 rounded bg-surface/85 px-1.5 py-0.5 text-[0.6875rem] font-normal text-neutral/70 shadow-sm data-[over-allocated]:text-danger forced-colors:border forced-colors:border-[CanvasText]'
+);
 const expectedProgress = createGanttChartPart(
 	'pointer-events-none absolute inset-y-0 start-0 border-e border-dashed border-neutral/70 bg-neutral/8'
 );
@@ -166,9 +169,11 @@ const workloadPanel = createGanttChartPart(
 	'relative shrink-0 border-t border-neutral-muted bg-surface'
 );
 const workloadCell = createGanttChartPart(
-	'absolute border-e border-neutral-muted/55 text-[0.6875rem] tabular-nums'
+	'absolute border-e border-neutral-muted/55 text-[0.6875rem] tabular-nums data-[over-allocated]:bg-danger/12 data-[over-allocated]:font-semibold data-[over-allocated]:text-danger forced-colors:border-[CanvasText]'
 );
-const overAllocation = createGanttChartPart('bg-danger/12 text-danger');
+const overAllocation = createGanttChartPart(
+	'ms-0.5 inline-block size-1.5 shrink-0 rounded-full bg-danger text-danger forced-colors:border forced-colors:border-[CanvasText]'
+);
 const loading = createGanttChartPart(
 	'absolute inset-0 z-50 grid place-items-center bg-surface/75 backdrop-blur-[1px]'
 );
@@ -212,6 +217,7 @@ export const ganttChartTheme = {
 	resizeHandle,
 	dependencyHandle,
 	taskLabel,
+	resourceAssignments,
 	expectedProgress,
 	baseline,
 	deadline,

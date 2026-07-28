@@ -452,6 +452,8 @@ export class GanttChartMutations<
 		const boundary = this.getBoundary();
 		let candidateAssignments = input.candidateAssignments;
 		let proposal = createAssignmentProposal(input);
+		this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
+		this.assertAssignmentMutationWritable(proposal);
 		if (this.options.canUpdateAssignment?.(proposal) === false) return false;
 		this.assertBoundary(boundary);
 		const decision = this.options.onAssignmentUpdate?.(proposal);
@@ -467,6 +469,8 @@ export class GanttChartMutations<
 			const adjustedAssignment = cloneAssignment(decision);
 			candidateAssignments = replaceById(candidateAssignments, adjustedAssignment);
 			proposal = createAssignmentProposal({ ...input, assignment: adjustedAssignment });
+			this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
+			this.assertAssignmentMutationWritable(proposal);
 			if (this.options.canUpdateAssignment?.(proposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
@@ -476,7 +480,6 @@ export class GanttChartMutations<
 			}
 			this.assertBoundary(boundary);
 		}
-		this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
 		this.assertBoundary(boundary);
 		const previousAssignments = boundary.assignments;
 		this.options.assignments = [...candidateAssignments];
@@ -731,6 +734,31 @@ export class GanttChartMutations<
 		throw new GanttChartError('read-only', `Dependency ${dependency.id} is read-only.`, {
 			dependencyId: dependency.id
 		});
+	}
+
+	private assertAssignmentMutationWritable(
+		proposal: GanttAssignmentProposal<TAssignmentFields>
+	): void {
+		const assignments = [proposal.previousAssignment, proposal.assignment].filter(
+			(assignment): assignment is GanttAssignment<TAssignmentFields> => assignment !== null
+		);
+		for (const assignment of assignments) {
+			const resource = this.options.resources.find(
+				(candidate) => candidate.id === assignment.resourceId
+			);
+			if (resource?.readOnly) {
+				throw new GanttChartError('read-only', `Resource ${resource.id} is read-only.`, {
+					assignmentId: assignment.id,
+					resourceId: resource.id
+				});
+			}
+			const task = this.options.tasks.find((candidate) => candidate.id === assignment.taskId);
+			if (!task?.readOnly) continue;
+			throw new GanttChartError('read-only', `Task ${task.id} is read-only.`, {
+				assignmentId: assignment.id,
+				taskId: task.id
+			});
+		}
 	}
 }
 

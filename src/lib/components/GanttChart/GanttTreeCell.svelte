@@ -24,6 +24,7 @@
 		getGanttColumnLabel,
 		getGanttColumnValue
 	} from './ganttChart.columns.js';
+	import { getGanttTaskColor } from './ganttChart.color.js';
 	import type { GanttTreeCellPayload } from './ganttChart.props.js';
 	import { createGanttColumnContext } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
@@ -46,6 +47,8 @@
 		dependencies,
 		resources,
 		assignments,
+		resourceGroup,
+		showResourceGroupLabel,
 		messages,
 		locale,
 		timeZone,
@@ -79,6 +82,8 @@
 		dependencies: readonly GanttDependency<TDependencyFields>[];
 		resources: readonly GanttResource<TResourceFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		resourceGroup: GanttResource<TResourceFields> | null;
+		showResourceGroupLabel: boolean;
 		messages: Messages;
 		locale: string;
 		timeZone: string;
@@ -217,6 +222,20 @@
 			use:focusEditor
 		/>
 	{:else}
+		{#if showResourceGroupLabel && resourceGroup}
+			<span
+				data-gantt-chart-part="resource-group-label"
+				data-resource-id={resourceGroup.id}
+				class="inline-flex max-w-28 shrink-0 items-center gap-1 rounded bg-surface-recessed px-1.5 py-0.5 text-[0.6875rem] font-medium text-neutral/65"
+				title={resourceGroup.title}
+			>
+				<span
+					class="size-1.5 shrink-0 rounded-full"
+					style:background-color={getGanttTaskColor(resourceGroup.color, color)}
+				></span>
+				<span class="truncate">{resourceGroup.title}</span>
+			</span>
+		{/if}
 		<Slot render={treeCell ?? defaultContent} {payload} />
 		{#if column.id === 'title' && canOutdent}
 			<button

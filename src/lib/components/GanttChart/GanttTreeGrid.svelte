@@ -83,10 +83,15 @@
 		rowModel.visibleColumns.reduce((total, column) => total + (column.width ?? 160), 0)
 	);
 	const canReorder = $derived(
-		interactions.reorderRows && !disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted
+		interactions.reorderRows &&
+			!disabled &&
+			!loading &&
+			!rowModel.isFiltered &&
+			!rowModel.isSorted &&
+			!rowModel.isGrouped
 	);
 	const canChangeHierarchy = $derived(
-		!disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted
+		!disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted && !rowModel.isGrouped
 	);
 	const headerPayload = $derived<
 		GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
@@ -346,6 +351,8 @@
 							dependencies={chart.schedule.model.dependencies}
 							resources={chart.schedule.model.resources}
 							assignments={chart.schedule.model.assignments}
+							resourceGroup={rowModel.resourceGroupByTaskId.get(node.taskId) ?? null}
+							showResourceGroupLabel={rowModel.resourceGroupStartTaskIds.has(node.taskId)}
 							{messages}
 							{locale}
 							{timeZone}
