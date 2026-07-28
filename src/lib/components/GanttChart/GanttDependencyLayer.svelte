@@ -19,6 +19,7 @@
 		visibleRows,
 		selection,
 		messages,
+		instructionsId,
 		density,
 		color,
 		disabled,
@@ -26,6 +27,8 @@
 		classes,
 		dependencyTooltip,
 		onSelect,
+		isTabStop,
+		onFocus,
 		onDelete,
 		onUpdate,
 		onDependencyClick
@@ -39,6 +42,7 @@
 		visibleRows: Readonly<{ start: number; end: number }>;
 		selection: GanttSelection;
 		messages: Messages;
+		instructionsId: string;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -46,6 +50,8 @@
 		classes: GanttChartClasses;
 		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
 		onSelect: (dependencyId: string) => void;
+		isTabStop: (dependencyId: string) => boolean;
+		onFocus: (dependencyId: string) => void;
 		onDelete: (dependencyId: string) => void;
 		onUpdate: (
 			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>['dependency']
@@ -153,8 +159,11 @@
 			{disabled}
 			isSelected={selection.kind === 'dependency' &&
 				selection.dependencyId === positioned.dependency.dependency.id}
+			isTabStop={isTabStop(positioned.dependency.dependency.id)}
+			{instructionsId}
 			{dependencyTooltip}
 			onActivate={(event) => activate(positioned.dependency, event)}
+			onFocus={() => onFocus(positioned.dependency.dependency.id)}
 			onDelete={() => onDelete(positioned.dependency.dependency.id)}
 			{onUpdate}
 		/>

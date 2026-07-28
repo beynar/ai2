@@ -272,6 +272,10 @@ export const ja: Messages = {
 		progress: string | number
 	) => `${title}: ${start}から${end}、進捗${progress}`,
 	ganttChartMutationCommitted: (title: string | number) => `${title}の変更を確定しました`,
+	ganttChartCopiedTask: (title: string | number, omitted: string | number) =>
+		Number(omitted) > 0
+			? `${title}をコピーしました。外部依存関係${omitted}件は除外されました。`
+			: `${title}をコピーしました。`,
 	ganttChartMutationCancelled: (title: string | number) => `${title}の変更をキャンセルしました`,
 	ganttChartMutationReverted: (title: string | number) => `${title}の変更を元に戻しました`,
 	ganttChartFocusRestored: (title: string | number) => `${title}にフォーカスを戻しました`,

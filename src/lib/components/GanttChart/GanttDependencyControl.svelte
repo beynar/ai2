@@ -22,8 +22,11 @@
 		messages,
 		disabled,
 		isSelected,
+		isTabStop,
+		instructionsId,
 		dependencyTooltip,
 		onActivate,
+		onFocus,
 		onDelete,
 		onUpdate
 	}: {
@@ -32,8 +35,11 @@
 		messages: Messages;
 		disabled: boolean;
 		isSelected: boolean;
+		isTabStop: boolean;
+		instructionsId: string;
 		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
 		onActivate: (event: MouseEvent) => void;
+		onFocus: () => void;
 		onDelete: () => void;
 		onUpdate: (dependency: GanttDependency<TDependencyFields>) => boolean;
 	} = $props();
@@ -151,11 +157,12 @@
 			type="button"
 			aria-label={defaultAccessibleLabel}
 			aria-pressed={isSelected}
+			aria-describedby={instructionsId}
 			aria-keyshortcuts="Enter Delete Backspace"
 			aria-haspopup={dependency.dependency.readOnly ? undefined : 'dialog'}
 			aria-expanded={dependency.dependency.readOnly ? undefined : popover.isOpen}
 			{disabled}
-			tabindex={isSelected ? 0 : -1}
+			tabindex={isTabStop && !disabled ? 0 : -1}
 			data-gantt-chart-part="connector-control"
 			data-dependency-id={dependency.dependency.id}
 			class="pointer-events-auto absolute z-20 size-6 rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color/60"
@@ -163,6 +170,7 @@
 			style:top={`${focusTop}px`}
 			onpointerdown={(event) => event.stopPropagation()}
 			onclick={onActivate}
+			onfocus={onFocus}
 			ondblclick={(event) => {
 				event.stopPropagation();
 				if (!dependency.dependency.readOnly) openEditor(popover);

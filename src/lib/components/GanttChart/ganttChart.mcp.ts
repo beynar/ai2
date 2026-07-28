@@ -36,7 +36,9 @@ The timeZone prop is required and must be UTC or an explicit IANA zone. Containe
 
 ## Current package surface
 
-The package includes the pure hierarchy, calendar, dependency scheduling, constraint, critical-path, slack, and workload engine; controlled shell state; theme API; and SSR-safe split shell. Content snippets render inside component-owned semantic wrappers. Mutation, pointer, dependency editing, clipboard, and history methods surface typed invalid-operation errors until their corresponding interaction owner is present; they never return fake success.
+The package includes the pure hierarchy, calendar, dependency scheduling, constraint, critical-path, slack, and workload engine; virtual tree grid; windowed timeline; task, dependency, hierarchy, range, resource, clipboard, history, keyboard, pointer, and touch interactions; controlled state; theme API; and SSR-safe split shell. Content snippets render inside component-owned semantic wrappers.
+
+Task controls use a roving focus model. M, S, E, and P enter keyboard move, start-resize, end-resize, and progress modes; D or Shift+D starts dependency creation; R starts range creation; Enter commits and Escape cancels. Mod+C and Mod+V copy and paste one selected task subtree when getPasteId is provided. Internal dependencies and assignments are remapped, external dependency links are announced and omitted. Mod+Z, Mod+Shift+Z, and Mod+Y use bounded stale-safe history. Delete and Backspace remove a selected task subtree or dependency through the same immutable transaction pipeline.
 
 Use callbacks to compose an application-owned editor from Svelai Dialog and Form inputs. GanttChart does not own a task editor dialog, persistence, network requests, automatic resource leveling, or proprietary import/export.
 `;

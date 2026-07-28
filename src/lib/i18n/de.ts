@@ -279,6 +279,10 @@ export const de: Messages = {
 		progress: string | number
 	) => `${title}: ${start} bis ${end}, ${progress} Fortschritt`,
 	ganttChartMutationCommitted: (title: string | number) => `Änderungen für ${title} bestätigt`,
+	ganttChartCopiedTask: (title: string | number, omitted: string | number) =>
+		Number(omitted) > 0
+			? `${title} kopiert. ${omitted} externe Abhängigkeiten wurden ausgelassen.`
+			: `${title} kopiert.`,
 	ganttChartMutationCancelled: (title: string | number) => `Änderungen für ${title} abgebrochen`,
 	ganttChartMutationReverted: (title: string | number) => `Änderungen für ${title} zurückgesetzt`,
 	ganttChartFocusRestored: (title: string | number) => `Fokus auf ${title} wiederhergestellt`,

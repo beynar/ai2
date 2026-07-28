@@ -1,5 +1,19 @@
 import { GanttChartError } from './ganttChart.error.js';
 import { moveGanttDependentTasks } from './ganttChart.dependencies.js';
+import type {
+	GanttHistoryDirection,
+	GanttModelCommit,
+	GanttModelSnapshot
+} from './ganttChart.history.svelte.js';
+import type { GanttPasteRecords } from './ganttChart.clipboard.js';
+import {
+	cloneGanttAssignment,
+	cloneGanttDependency,
+	cloneGanttSelection,
+	cloneGanttTask
+} from './ganttChart.records.js';
+import { getGanttValueSignature } from './ganttChart.signature.js';
+import { getGanttTaskSubtreeIds } from './ganttChart.subtree.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
 import type {
@@ -59,12 +73,15 @@ export class GanttChartMutations<
 			TDependencyFields,
 			TResourceFields,
 			TAssignmentFields
-		>
+		>,
+		private readonly onCommit?: (
+			commit: GanttModelCommit<TTaskFields, TDependencyFields, TAssignmentFields>
+		) => (() => void) | undefined
 	) {}
 
 	addTask(task: GanttTask<TTaskFields>, source: GanttMutationSource): boolean {
 		this.assertMutationEnabled();
-		const nextTask = cloneTask(task);
+		const nextTask = cloneGanttTask(task);
 		return this.commitTaskMutation({
 			kind: 'add',
 			source,
@@ -88,7 +105,7 @@ export class GanttChartMutations<
 		this.assertExpectedTasks(expectedTasks);
 		const previousTask = this.requireTask(task.id);
 		this.assertTaskWritable(previousTask);
-		const nextTask = cloneTask(task);
+		const nextTask = cloneGanttTask(task);
 		return this.commitTaskMutation({
 			kind,
 			source,
@@ -103,16 +120,31 @@ export class GanttChartMutations<
 		this.assertMutationEnabled();
 		const previousTask = this.requireTask(taskId);
 		this.assertTaskWritable(previousTask);
-		return this.commitTaskMutation({
-			kind: 'remove',
+		const removedTaskIds = getGanttTaskSubtreeIds(taskId, this.options.tasks);
+		return this.commitModelMutation({
 			source,
-			previousTask,
-			task: null,
-			candidateTasks: this.options.tasks.filter((task) => task.id !== taskId)
+			tasks: this.options.tasks.filter((task) => !removedTaskIds.has(task.id)),
+			dependencies: this.options.dependencies.filter(
+				(dependency) =>
+					!removedTaskIds.has(dependency.fromTaskId) && !removedTaskIds.has(dependency.toTaskId)
+			),
+			assignments: this.options.assignments.filter(
+				(assignment) => !removedTaskIds.has(assignment.taskId)
+			),
+			selection: this.options.selection,
+			title: previousTask.title,
+			preferredTaskKind: 'remove',
+			preferredDependencyKind: 'remove',
+			preferredAssignmentKind: 'remove'
 		});
 	}
 
-	reorderTask(taskId: string, targetTaskId: string, position: 'before' | 'after'): boolean {
+	reorderTask(
+		taskId: string,
+		targetTaskId: string,
+		position: 'before' | 'after',
+		source: Extract<GanttMutationSource, 'pointer' | 'keyboard'> = 'pointer'
+	): boolean {
 		this.assertMutationEnabled();
 		if (taskId === targetTaskId) return true;
 		const previousTask = this.requireTask(taskId);
@@ -121,7 +153,7 @@ export class GanttChartMutations<
 		if ((previousTask.parentId ?? null) !== (targetTask.parentId ?? null)) {
 			return false;
 		}
-		const task = cloneTask(previousTask);
+		const task = cloneGanttTask(previousTask);
 		const withoutTask = this.options.tasks.filter((candidate) => candidate.id !== taskId);
 		const targetIndex = withoutTask.findIndex((candidate) => candidate.id === targetTaskId);
 		const insertIndex = targetIndex + (position === 'after' ? 1 : 0);
@@ -129,7 +161,7 @@ export class GanttChartMutations<
 		candidateTasks.splice(insertIndex, 0, task);
 		return this.commitTaskMutation({
 			kind: 'reorder',
-			source: 'pointer',
+			source,
 			previousTask,
 			task,
 			candidateTasks
@@ -183,7 +215,7 @@ export class GanttChartMutations<
 		select = false
 	): boolean {
 		this.assertMutationEnabled();
-		const nextDependency = cloneDependency(dependency);
+		const nextDependency = cloneGanttDependency(dependency);
 		return this.commitDependencyMutation({
 			kind: 'add',
 			source,
@@ -201,7 +233,7 @@ export class GanttChartMutations<
 		this.assertMutationEnabled();
 		const previousDependency = this.requireDependency(dependency.id);
 		this.assertDependencyWritable(previousDependency);
-		const nextDependency = cloneDependency(dependency);
+		const nextDependency = cloneGanttDependency(dependency);
 		return this.commitDependencyMutation({
 			kind: 'update',
 			source,
@@ -231,7 +263,7 @@ export class GanttChartMutations<
 		source: GanttMutationSource
 	): boolean {
 		this.assertMutationEnabled();
-		const nextAssignment = cloneAssignment(assignment);
+		const nextAssignment = cloneGanttAssignment(assignment);
 		return this.commitAssignmentMutation({
 			kind: 'add',
 			source,
@@ -247,7 +279,7 @@ export class GanttChartMutations<
 	): boolean {
 		this.assertMutationEnabled();
 		const previousAssignment = this.requireAssignment(assignment.id);
-		const nextAssignment = cloneAssignment(assignment);
+		const nextAssignment = cloneGanttAssignment(assignment);
 		return this.commitAssignmentMutation({
 			kind: 'update',
 			source,
@@ -269,6 +301,448 @@ export class GanttChartMutations<
 				(assignment) => assignment.id !== assignmentId
 			)
 		});
+	}
+
+	pasteSubtree(
+		records: GanttPasteRecords<TTaskFields, TDependencyFields, TAssignmentFields>
+	): boolean {
+		this.assertMutationEnabled();
+		const rootTask = records.tasks.find((task) => task.id === records.rootTaskId);
+		if (!rootTask) {
+			throw new GanttChartError('clipboard-invalid', 'The pasted subtree lost its root task.');
+		}
+		return this.commitModelMutation({
+			source: 'clipboard',
+			tasks: [...this.options.tasks, ...records.tasks],
+			dependencies: [...this.options.dependencies, ...records.dependencies],
+			assignments: [...this.options.assignments, ...records.assignments],
+			selection: {
+				kind: 'task',
+				taskId: records.rootTaskId,
+				dependencyId: null,
+				cell: null
+			},
+			title: rootTask.title,
+			preferredTaskKind: 'paste',
+			preferredDependencyKind: records.dependencies.length > 0 ? 'add' : undefined,
+			preferredAssignmentKind: records.assignments.length > 0 ? 'add' : undefined
+		});
+	}
+
+	restoreSnapshot(
+		target: GanttModelSnapshot<TTaskFields, TDependencyFields, TAssignmentFields>,
+		commit: GanttModelCommit<TTaskFields, TDependencyFields, TAssignmentFields>,
+		direction: GanttHistoryDirection
+	): boolean {
+		this.assertMutationEnabled();
+		return this.commitModelMutation({
+			source: 'history',
+			tasks: [...target.tasks],
+			dependencies: [...target.dependencies],
+			assignments: [...target.assignments],
+			selection: target.selection,
+			title: commit.title,
+			preferredTaskKind: direction === 'redo' && commit.taskKind === 'paste' ? 'paste' : undefined,
+			preferredDependencyKind: commit.dependencyKind,
+			preferredAssignmentKind: commit.assignmentKind,
+			historyDirection: direction
+		});
+	}
+
+	private commitModelMutation(input: {
+		source: GanttMutationSource;
+		tasks: readonly GanttTask<TTaskFields>[];
+		dependencies: readonly GanttDependency<TDependencyFields>[];
+		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		selection: GanttSelection;
+		title: string;
+		preferredTaskKind?: GanttTaskMutationKind;
+		preferredDependencyKind?: GanttDependencyMutationKind;
+		preferredAssignmentKind?: GanttAssignmentMutationKind;
+		historyDirection?: GanttHistoryDirection;
+	}): boolean {
+		const boundary = this.getBoundary();
+		let candidateTasks = input.tasks.map(cloneGanttTask);
+		let candidateDependencies = input.dependencies.map(cloneGanttDependency);
+		let candidateAssignments = input.assignments.map(cloneGanttAssignment);
+		const shouldAutoSchedule = input.source !== 'history' && this.options.autoSchedule;
+		const initialSchedule = this.resolveSchedule(
+			candidateTasks,
+			candidateDependencies,
+			candidateAssignments,
+			shouldAutoSchedule
+		);
+		candidateTasks = [...initialSchedule.tasks];
+
+		const taskPolicy = this.applyTaskPolicies({
+			before: boundary.tasks,
+			after: candidateTasks,
+			dependencies: candidateDependencies,
+			assignments: candidateAssignments,
+			source: input.source,
+			preferredKind: input.preferredTaskKind,
+			autoSchedule: shouldAutoSchedule,
+			boundary
+		});
+		if (!taskPolicy) return false;
+		candidateTasks = taskPolicy.tasks;
+
+		const dependencyPolicy = this.applyDependencyPolicies({
+			before: boundary.dependencies,
+			after: candidateDependencies,
+			tasks: candidateTasks,
+			assignments: candidateAssignments,
+			source: input.source,
+			autoSchedule: shouldAutoSchedule,
+			boundary
+		});
+		if (!dependencyPolicy) return false;
+		candidateDependencies = dependencyPolicy.dependencies;
+		candidateTasks = dependencyPolicy.schedule.tasks.map(cloneGanttTask);
+
+		const assignmentPolicy = this.applyAssignmentPolicies({
+			before: boundary.assignments,
+			after: candidateAssignments,
+			tasks: candidateTasks,
+			dependencies: candidateDependencies,
+			source: input.source,
+			autoSchedule: shouldAutoSchedule,
+			boundary
+		});
+		if (!assignmentPolicy) return false;
+		candidateAssignments = assignmentPolicy.assignments;
+		const schedule = assignmentPolicy.schedule;
+		candidateTasks = schedule.tasks.map(cloneGanttTask);
+
+		this.assertBoundary(boundary);
+		const taskIds = getChangedRecordIds(boundary.tasks, candidateTasks);
+		const dependencyIds = getChangedRecordIds(boundary.dependencies, candidateDependencies);
+		const assignmentIds = getChangedRecordIds(boundary.assignments, candidateAssignments);
+		const previousSelection = boundary.selection;
+		const nextSelection = normalizeModelSelection(
+			input.selection,
+			candidateTasks,
+			candidateDependencies
+		);
+		const committedTasks = candidateTasks.map(cloneGanttTask);
+		const committedDependencies = candidateDependencies.map(cloneGanttDependency);
+		const committedAssignments = candidateAssignments.map(cloneGanttAssignment);
+		this.options.tasks = committedTasks;
+		this.options.dependencies = committedDependencies;
+		this.options.assignments = committedAssignments;
+		this.options.selection = nextSelection;
+		let wasReverted = false;
+		const committedRevert: { run?: () => void } = {};
+		const revert = createGuardedRevert(
+			() =>
+				this.options.tasks === committedTasks &&
+				this.options.dependencies === committedDependencies &&
+				this.options.assignments === committedAssignments,
+			() => {
+				wasReverted = true;
+				this.options.tasks = boundary.tasks;
+				this.options.dependencies = boundary.dependencies;
+				this.options.assignments = boundary.assignments;
+				this.options.selection = previousSelection;
+				this.options.onSelectionChange?.(previousSelection);
+			},
+			() => committedRevert.run?.()
+		);
+		if (!sameSelection(previousSelection, nextSelection)) {
+			this.options.onSelectionChange?.(nextSelection);
+		}
+		const taskChangeKind = getAggregateTaskKind(
+			boundary.tasks,
+			candidateTasks,
+			input.preferredTaskKind
+		);
+		if (taskIds.length > 0 && taskChangeKind) {
+			this.options.onTasksChange?.(committedTasks, {
+				kind: taskChangeKind,
+				source: input.source,
+				previousTasks: boundary.tasks,
+				tasks: committedTasks,
+				affectedTaskIds: uniqueIds([...taskIds, ...schedule.autoScheduledTaskIds]),
+				violations: schedule.analysis.violations,
+				revert
+			});
+		}
+		if (wasReverted) return false;
+		const dependencyChangeKind = getAggregateRecordKind(
+			boundary.dependencies,
+			candidateDependencies,
+			input.preferredDependencyKind
+		);
+		if (dependencyIds.length > 0 && dependencyChangeKind) {
+			this.options.onDependenciesChange?.(committedDependencies, {
+				kind: dependencyChangeKind,
+				source: input.source,
+				previousDependencies: boundary.dependencies,
+				dependencies: committedDependencies,
+				affectedDependencyIds: dependencyIds,
+				revert
+			});
+		}
+		if (wasReverted) return false;
+		const assignmentChangeKind = getAggregateRecordKind(
+			boundary.assignments,
+			candidateAssignments,
+			input.preferredAssignmentKind
+		);
+		if (assignmentIds.length > 0 && assignmentChangeKind) {
+			this.options.onAssignmentsChange?.(committedAssignments, {
+				kind: assignmentChangeKind,
+				source: input.source,
+				previousAssignments: boundary.assignments,
+				assignments: committedAssignments,
+				affectedAssignmentIds: assignmentIds,
+				revert
+			});
+		}
+		if (wasReverted) return false;
+		if (taskIds.length > 0 || dependencyIds.length > 0) {
+			this.options.onScheduleViolations?.(
+				schedule.analysis.violations,
+				dependencyIds.length > 0 ? 'dependency-change' : 'task-change'
+			);
+		}
+		committedRevert.run = this.notifyCommit({
+			before: boundary,
+			after: this.getSnapshot(),
+			source: input.source,
+			title: input.title,
+			...(taskChangeKind ? { taskKind: taskChangeKind } : {}),
+			...(dependencyChangeKind ? { dependencyKind: dependencyChangeKind } : {}),
+			...(assignmentChangeKind ? { assignmentKind: assignmentChangeKind } : {}),
+			...(input.historyDirection ? { historyDirection: input.historyDirection } : {})
+		});
+		return true;
+	}
+
+	private applyTaskPolicies(input: {
+		before: readonly GanttTask<TTaskFields>[];
+		after: readonly GanttTask<TTaskFields>[];
+		dependencies: readonly GanttDependency<TDependencyFields>[];
+		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		source: GanttMutationSource;
+		preferredKind?: GanttTaskMutationKind;
+		autoSchedule: boolean;
+		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	}): Readonly<{
+		tasks: GanttTask<TTaskFields>[];
+		schedule: ResolvedGanttSchedule<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
+	}> | null {
+		let tasks = input.after.map(cloneGanttTask);
+		let schedule = this.resolveSchedule(
+			tasks,
+			input.dependencies,
+			input.assignments,
+			input.autoSchedule
+		);
+		tasks = schedule.tasks.map(cloneGanttTask);
+		for (const taskId of getChangedRecordIds(input.before, tasks)) {
+			const previousTask = input.before.find((task) => task.id === taskId) ?? null;
+			let task = tasks.find((candidate) => candidate.id === taskId) ?? null;
+			if (previousTask && input.source !== 'history') this.assertTaskWritable(previousTask);
+			const kind = resolveTaskProposalKind(previousTask, task, input.preferredKind);
+			let proposal = this.createTaskProposal(
+				{ kind, source: input.source, previousTask, task },
+				schedule
+			);
+			if (this.options.canUpdateTask?.(proposal) === false) return null;
+			this.assertBoundary(input.boundary);
+			const decision = this.options.onTaskUpdate?.(proposal);
+			this.assertBoundary(input.boundary);
+			if (decision === false) return null;
+			if (!decision || typeof decision !== 'object') continue;
+			if (!task || decision.id !== task.id) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'Task adjustments must preserve an existing proposed task id.'
+				);
+			}
+			task = cloneGanttTask(decision);
+			tasks = replaceById(tasks, task);
+			schedule = this.resolveModelAdjustment(
+				tasks,
+				input.dependencies,
+				input.assignments,
+				input.autoSchedule
+			);
+			tasks = schedule.tasks.map(cloneGanttTask);
+			const scheduledTask = tasks.find((candidate) => candidate.id === taskId) ?? task;
+			proposal = this.createTaskProposal(
+				{ kind, source: input.source, previousTask, task: scheduledTask },
+				schedule
+			);
+			if (this.options.canUpdateTask?.(proposal) === false) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'onTaskUpdate returned an adjustment rejected by canUpdateTask.',
+					{ taskId }
+				);
+			}
+			this.assertBoundary(input.boundary);
+		}
+		return { tasks, schedule };
+	}
+
+	private applyDependencyPolicies(input: {
+		before: readonly GanttDependency<TDependencyFields>[];
+		after: readonly GanttDependency<TDependencyFields>[];
+		tasks: readonly GanttTask<TTaskFields>[];
+		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		source: GanttMutationSource;
+		autoSchedule: boolean;
+		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	}): Readonly<{
+		dependencies: GanttDependency<TDependencyFields>[];
+		schedule: ResolvedGanttSchedule<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
+	}> | null {
+		let dependencies = input.after.map(cloneGanttDependency);
+		let schedule = this.resolveSchedule(
+			input.tasks,
+			dependencies,
+			input.assignments,
+			input.autoSchedule
+		);
+		let tasks = schedule.tasks.map(cloneGanttTask);
+		for (const dependencyId of getChangedRecordIds(input.before, dependencies)) {
+			const previousDependency =
+				input.before.find((dependency) => dependency.id === dependencyId) ?? null;
+			let dependency = dependencies.find((candidate) => candidate.id === dependencyId) ?? null;
+			if (previousDependency && input.source !== 'history') {
+				this.assertDependencyWritable(previousDependency);
+			}
+			const kind = resolveRecordProposalKind(previousDependency, dependency);
+			let proposal = createDependencyProposal({
+				kind,
+				source: input.source,
+				previousDependency,
+				dependency
+			});
+			if (this.options.canUpdateDependency?.(proposal) === false) return null;
+			this.assertBoundary(input.boundary);
+			const decision = this.options.onDependencyUpdate?.(proposal);
+			this.assertBoundary(input.boundary);
+			if (decision === false) return null;
+			if (!decision || typeof decision !== 'object') continue;
+			if (!dependency || decision.id !== dependency.id) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'Dependency adjustments must preserve an existing proposed dependency id.'
+				);
+			}
+			dependency = cloneGanttDependency(decision);
+			dependencies = replaceById(dependencies, dependency);
+			schedule = this.resolveModelAdjustment(
+				tasks,
+				dependencies,
+				input.assignments,
+				input.autoSchedule
+			);
+			tasks = schedule.tasks.map(cloneGanttTask);
+			proposal = createDependencyProposal({
+				kind,
+				source: input.source,
+				previousDependency,
+				dependency
+			});
+			if (this.options.canUpdateDependency?.(proposal) === false) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'onDependencyUpdate returned an adjustment rejected by canUpdateDependency.',
+					{ dependencyId }
+				);
+			}
+			this.assertBoundary(input.boundary);
+		}
+		return { dependencies, schedule };
+	}
+
+	private applyAssignmentPolicies(input: {
+		before: readonly GanttAssignment<TAssignmentFields>[];
+		after: readonly GanttAssignment<TAssignmentFields>[];
+		tasks: readonly GanttTask<TTaskFields>[];
+		dependencies: readonly GanttDependency<TDependencyFields>[];
+		source: GanttMutationSource;
+		autoSchedule: boolean;
+		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	}): Readonly<{
+		assignments: GanttAssignment<TAssignmentFields>[];
+		schedule: ResolvedGanttSchedule<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
+	}> | null {
+		let assignments = input.after.map(cloneGanttAssignment);
+		let schedule = this.resolveSchedule(
+			input.tasks,
+			input.dependencies,
+			assignments,
+			input.autoSchedule
+		);
+		for (const assignmentId of getChangedRecordIds(input.before, assignments)) {
+			const previousAssignment =
+				input.before.find((assignment) => assignment.id === assignmentId) ?? null;
+			let assignment = assignments.find((candidate) => candidate.id === assignmentId) ?? null;
+			const kind = resolveRecordProposalKind(previousAssignment, assignment);
+			let proposal = createAssignmentProposal({
+				kind,
+				source: input.source,
+				previousAssignment,
+				assignment
+			});
+			if (input.source !== 'history') this.assertAssignmentMutationWritable(proposal);
+			if (this.options.canUpdateAssignment?.(proposal) === false) return null;
+			this.assertBoundary(input.boundary);
+			const decision = this.options.onAssignmentUpdate?.(proposal);
+			this.assertBoundary(input.boundary);
+			if (decision === false) return null;
+			if (!decision || typeof decision !== 'object') continue;
+			if (!assignment || decision.id !== assignment.id) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'Assignment adjustments must preserve an existing proposed assignment id.'
+				);
+			}
+			assignment = cloneGanttAssignment(decision);
+			assignments = replaceById(assignments, assignment);
+			schedule = this.resolveModelAdjustment(
+				input.tasks,
+				input.dependencies,
+				assignments,
+				input.autoSchedule
+			);
+			proposal = createAssignmentProposal({
+				kind,
+				source: input.source,
+				previousAssignment,
+				assignment
+			});
+			if (input.source !== 'history') this.assertAssignmentMutationWritable(proposal);
+			if (this.options.canUpdateAssignment?.(proposal) === false) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'onAssignmentUpdate returned an adjustment rejected by canUpdateAssignment.',
+					{ assignmentId }
+				);
+			}
+			this.assertBoundary(input.boundary);
+		}
+		return { assignments, schedule };
 	}
 
 	private commitTaskMutation(input: {
@@ -296,7 +770,7 @@ export class GanttChartMutations<
 					'Task adjustments must preserve the proposed task id.'
 				);
 			}
-			const adjustedTask = cloneTask(decision);
+			const adjustedTask = cloneGanttTask(decision);
 			candidateTasks = replaceById(candidateTasks, adjustedTask);
 			schedule = this.resolveAdjustedTaskMutationSchedule(
 				{ ...input, task: adjustedTask },
@@ -318,11 +792,13 @@ export class GanttChartMutations<
 		const previousTasks = boundary.tasks;
 		this.options.tasks = publishedTasks;
 		const committedTasks = this.options.tasks;
+		let onCommittedRevert: (() => void) | undefined;
 		const revert = createGuardedRevert(
 			() => this.options.tasks === committedTasks,
 			() => {
 				this.options.tasks = previousTasks;
-			}
+			},
+			() => onCommittedRevert?.()
 		);
 		const affectedTaskIds = uniqueIds([
 			...(input.task ? [input.task.id] : []),
@@ -339,6 +815,15 @@ export class GanttChartMutations<
 			revert
 		});
 		this.options.onScheduleViolations?.(schedule.analysis.violations, 'task-change');
+		if (this.options.tasks === committedTasks) {
+			onCommittedRevert = this.notifyCommit({
+				before: boundary,
+				after: this.getSnapshot(),
+				source: input.source,
+				title: input.task?.title ?? input.previousTask?.title ?? 'task',
+				taskKind: input.kind
+			});
+		}
 		return true;
 	}
 
@@ -365,7 +850,7 @@ export class GanttChartMutations<
 					'Dependency adjustments must preserve the proposed dependency id.'
 				);
 			}
-			const adjustedDependency = cloneDependency(decision);
+			const adjustedDependency = cloneGanttDependency(decision);
 			candidateDependencies = replaceById(candidateDependencies, adjustedDependency);
 			proposal = createDependencyProposal({ ...input, dependency: adjustedDependency });
 			if (this.options.canUpdateDependency?.(proposal) === false) {
@@ -398,6 +883,7 @@ export class GanttChartMutations<
 		if (committedSelection) this.options.selection = committedSelection;
 		const committedTasks = this.options.tasks;
 		const committedDependencies = this.options.dependencies;
+		let onCommittedRevert: (() => void) | undefined;
 		const revert = createGuardedRevert(
 			() =>
 				this.options.tasks === committedTasks &&
@@ -413,7 +899,8 @@ export class GanttChartMutations<
 					this.options.selection = previousSelection;
 					this.options.onSelectionChange?.(previousSelection);
 				}
-			}
+			},
+			() => onCommittedRevert?.()
 		);
 		if (committedSelection) this.options.onSelectionChange?.(committedSelection);
 		if (schedule.autoScheduledTaskIds.length > 0) {
@@ -439,6 +926,19 @@ export class GanttChartMutations<
 			revert
 		});
 		this.options.onScheduleViolations?.(schedule.analysis.violations, 'dependency-change');
+		if (
+			this.options.tasks === committedTasks &&
+			this.options.dependencies === committedDependencies
+		) {
+			onCommittedRevert = this.notifyCommit({
+				before: boundary,
+				after: this.getSnapshot(),
+				source: input.source,
+				title: proposal.dependency?.id ?? proposal.previousDependency?.id ?? 'dependency',
+				taskKind: schedule.autoScheduledTaskIds.length > 0 ? 'schedule' : undefined,
+				dependencyKind: input.kind
+			});
+		}
 		return true;
 	}
 
@@ -466,7 +966,7 @@ export class GanttChartMutations<
 					'Assignment adjustments must preserve the proposed assignment id.'
 				);
 			}
-			const adjustedAssignment = cloneAssignment(decision);
+			const adjustedAssignment = cloneGanttAssignment(decision);
 			candidateAssignments = replaceById(candidateAssignments, adjustedAssignment);
 			proposal = createAssignmentProposal({ ...input, assignment: adjustedAssignment });
 			this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
@@ -484,11 +984,13 @@ export class GanttChartMutations<
 		const previousAssignments = boundary.assignments;
 		this.options.assignments = [...candidateAssignments];
 		const committedAssignments = this.options.assignments;
+		let onCommittedRevert: (() => void) | undefined;
 		const revert = createGuardedRevert(
 			() => this.options.assignments === committedAssignments,
 			() => {
 				this.options.assignments = previousAssignments;
-			}
+			},
+			() => onCommittedRevert?.()
 		);
 		this.options.onAssignmentsChange?.(committedAssignments, {
 			kind: input.kind,
@@ -501,6 +1003,15 @@ export class GanttChartMutations<
 			]),
 			revert
 		});
+		if (this.options.assignments === committedAssignments) {
+			onCommittedRevert = this.notifyCommit({
+				before: boundary,
+				after: this.getSnapshot(),
+				source: input.source,
+				title: proposal.assignment?.id ?? proposal.previousAssignment?.id ?? 'assignment',
+				assignmentKind: input.kind
+			});
+		}
 		return true;
 	}
 
@@ -649,6 +1160,24 @@ export class GanttChartMutations<
 		}
 	}
 
+	private resolveModelAdjustment(
+		tasks: readonly GanttTask<TTaskFields>[],
+		dependencies: readonly GanttDependency<TDependencyFields>[],
+		assignments: readonly GanttAssignment<TAssignmentFields>[],
+		autoSchedule: boolean
+	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
+		try {
+			return this.resolveSchedule(tasks, dependencies, assignments, autoSchedule);
+		} catch (error) {
+			if (!(error instanceof GanttChartError)) throw error;
+			throw new GanttChartError(
+				'invalid-adjustment',
+				'Consumer adjustment produced an invalid Gantt model.',
+				{ causeCode: error.code, cause: error.message }
+			);
+		}
+	}
+
 	private assertMutationEnabled(): void {
 		if (this.options.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
 		if (this.options.loading) {
@@ -760,6 +1289,21 @@ export class GanttChartMutations<
 			});
 		}
 	}
+
+	private getSnapshot(): GanttModelSnapshot<TTaskFields, TDependencyFields, TAssignmentFields> {
+		return {
+			tasks: this.options.tasks,
+			dependencies: this.options.dependencies,
+			assignments: this.options.assignments,
+			selection: cloneGanttSelection(this.options.selection)
+		};
+	}
+
+	private notifyCommit(
+		commit: GanttModelCommit<TTaskFields, TDependencyFields, TAssignmentFields>
+	): (() => void) | undefined {
+		return this.onCommit?.(commit);
+	}
 }
 
 function createDependencyProposal<TDependencyFields extends object>(input: {
@@ -790,7 +1334,118 @@ function createAssignmentProposal<TAssignmentFields extends object>(input: {
 	};
 }
 
-function createGuardedRevert(isCurrent: () => boolean, restore: () => void): () => void {
+function getChangedRecordIds<T extends { id: string }>(
+	before: readonly T[],
+	after: readonly T[]
+): string[] {
+	const beforeById = new Map(before.map((record) => [record.id, record]));
+	const afterById = new Map(after.map((record) => [record.id, record]));
+	const ids = [...after.map((record) => record.id)];
+	for (const record of before) {
+		if (!afterById.has(record.id)) ids.push(record.id);
+	}
+	return ids.filter((id) => {
+		const previous = beforeById.get(id);
+		const next = afterById.get(id);
+		if (!previous || !next) return true;
+		return getGanttValueSignature(previous) !== getGanttValueSignature(next);
+	});
+}
+
+function resolveTaskProposalKind<TTaskFields extends object>(
+	previousTask: GanttTask<TTaskFields> | null,
+	task: GanttTask<TTaskFields> | null,
+	preferredKind: GanttTaskMutationKind | undefined
+): GanttTaskMutationKind {
+	if (!previousTask && task) return preferredKind === 'paste' ? 'paste' : 'add';
+	if (previousTask && !task) return 'remove';
+	return 'update';
+}
+
+function resolveRecordProposalKind<T extends { id: string }>(
+	previousRecord: T | null,
+	record: T | null
+): 'add' | 'update' | 'remove' {
+	if (!previousRecord && record) return 'add';
+	if (previousRecord && !record) return 'remove';
+	return 'update';
+}
+
+function getAggregateTaskKind<TTaskFields extends object>(
+	before: readonly GanttTask<TTaskFields>[],
+	after: readonly GanttTask<TTaskFields>[],
+	preferredKind: GanttTaskMutationKind | undefined
+): GanttTaskMutationKind | null {
+	const changedIds = getChangedRecordIds(before, after);
+	if (changedIds.length === 0) return null;
+	const beforeIds = new Set(before.map((task) => task.id));
+	const afterIds = new Set(after.map((task) => task.id));
+	const isOnlyAdditions = changedIds.every((id) => !beforeIds.has(id) && afterIds.has(id));
+	if (isOnlyAdditions) return preferredKind === 'paste' ? 'paste' : 'add';
+	if (changedIds.every((id) => beforeIds.has(id) && !afterIds.has(id))) return 'remove';
+	return 'update';
+}
+
+function getAggregateRecordKind<T extends { id: string }>(
+	before: readonly T[],
+	after: readonly T[],
+	preferredKind: 'add' | 'update' | 'remove' | undefined
+): 'add' | 'update' | 'remove' | null {
+	const changedIds = getChangedRecordIds(before, after);
+	if (changedIds.length === 0) return null;
+	const beforeIds = new Set(before.map((record) => record.id));
+	const afterIds = new Set(after.map((record) => record.id));
+	if (changedIds.every((id) => !beforeIds.has(id) && afterIds.has(id))) {
+		return preferredKind === 'add' ? preferredKind : 'add';
+	}
+	if (changedIds.every((id) => beforeIds.has(id) && !afterIds.has(id))) return 'remove';
+	return 'update';
+}
+
+function normalizeModelSelection<TTaskFields extends object, TDependencyFields extends object>(
+	selection: GanttSelection,
+	tasks: readonly GanttTask<TTaskFields>[],
+	dependencies: readonly GanttDependency<TDependencyFields>[]
+): GanttSelection {
+	if (selection.kind === 'task' && tasks.some((task) => task.id === selection.taskId)) {
+		return cloneGanttSelection(selection);
+	}
+	if (
+		selection.kind === 'dependency' &&
+		dependencies.some((dependency) => dependency.id === selection.dependencyId)
+	) {
+		return cloneGanttSelection(selection);
+	}
+	if (
+		selection.kind === 'cell' &&
+		tasks.some((task) => task.id === selection.taskId) &&
+		selection.cell.taskId === selection.taskId
+	) {
+		return cloneGanttSelection(selection);
+	}
+	return { kind: null, taskId: null, dependencyId: null, cell: null };
+}
+
+function sameSelection(left: GanttSelection, right: GanttSelection): boolean {
+	if (left.kind !== right.kind) return false;
+	if (left.kind === null && right.kind === null) return true;
+	if (left.kind === 'task' && right.kind === 'task') return left.taskId === right.taskId;
+	if (left.kind === 'dependency' && right.kind === 'dependency') {
+		return left.dependencyId === right.dependencyId;
+	}
+	return (
+		left.kind === 'cell' &&
+		right.kind === 'cell' &&
+		left.taskId === right.taskId &&
+		left.cell.columnId === right.cell.columnId
+	);
+}
+
+function createGuardedRevert(
+	isCurrent: () => boolean,
+	restore: () => void,
+	onRevert?: () => void
+): () => void {
 	let isConsumed = false;
 	return () => {
 		if (isConsumed) {
@@ -804,6 +1459,7 @@ function createGuardedRevert(isCurrent: () => boolean, restore: () => void): () 
 		}
 		isConsumed = true;
 		restore();
+		onRevert?.();
 	};
 }
 
@@ -823,32 +1479,11 @@ function uniqueIds(ids: readonly string[]): readonly string[] {
 	return [...new Set(ids)];
 }
 
-function cloneTask<TTaskFields extends object>(
-	task: GanttTask<TTaskFields>
-): GanttTask<TTaskFields> {
-	return { ...task };
-}
-
 function cloneTaskWithParent<TTaskFields extends object>(
 	task: GanttTask<TTaskFields>,
 	parentId: string | undefined
 ): GanttTask<TTaskFields> {
-	const clonedTask = cloneTask(task);
+	const clonedTask = cloneGanttTask(task);
 	if (parentId) return { ...clonedTask, parentId };
 	return { ...clonedTask, parentId: undefined };
-}
-
-function cloneDependency<TDependencyFields extends object>(
-	dependency: GanttDependency<TDependencyFields>
-): GanttDependency<TDependencyFields> {
-	return {
-		...dependency,
-		lag: dependency.lag ? { ...dependency.lag } : undefined
-	};
-}
-
-function cloneAssignment<TAssignmentFields extends object>(
-	assignment: GanttAssignment<TAssignmentFields>
-): GanttAssignment<TAssignmentFields> {
-	return { ...assignment };
 }

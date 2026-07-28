@@ -169,6 +169,8 @@
 	aria-colindex={columnIndex + 1}
 	aria-selected={isSelected}
 	aria-label={`${label}: ${formattedValue}`}
+	aria-describedby={chart.a11y.instructionsId}
+	aria-keyshortcuts="Enter F2 Delete Backspace Alt+Shift+ArrowLeft Alt+Shift+ArrowRight Alt+Shift+ArrowUp Alt+Shift+ArrowDown"
 	tabindex={isFocused && !disabled ? 0 : -1}
 	onfocus={onFocus}
 	ondblclick={beginEdit}
@@ -179,7 +181,7 @@
 			<button
 				type="button"
 				data-dnd-handle
-				class="grid size-6 shrink-0 cursor-grab place-items-center rounded text-neutral/45 outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60 active:cursor-grabbing"
+				class="grid size-6 shrink-0 touch-none cursor-grab place-items-center rounded text-neutral/45 outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60 active:cursor-grabbing"
 				aria-label={messages.ganttChartReorderAction}
 				tabindex="-1"
 				onclick={(event) => event.stopPropagation()}

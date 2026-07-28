@@ -122,7 +122,8 @@
 		GanttRange,
 		GanttResolvedDependency,
 		GanttScaleDefinition,
-		GanttSortDirection
+		GanttSortDirection,
+		GanttTouchActivation
 	} from './ganttChart.types.js';
 	import type { Snippet } from 'svelte';
 
@@ -181,6 +182,7 @@
 		scrollbars,
 		columns,
 		interactions,
+		touchActivation,
 		scales,
 		validRange,
 		initialScrollDate,
@@ -222,6 +224,7 @@
 			  >[]
 			| undefined;
 		interactions: GanttInteractions;
+		touchActivation: GanttTouchActivation;
 		scales: readonly GanttScaleDefinition[];
 		validRange: GanttRange | undefined;
 		initialScrollDate: Date | undefined;
@@ -274,6 +277,14 @@
 			resourceView: resolvedResourceView
 		})
 	);
+	$effect(() => {
+		chart.a11y.setNavigationModel(
+			rowModel.rows.map((node) => node.taskId),
+			rowModel.visibleColumns.map((column) => column.id),
+			chart.schedule.analysis.dependencies.map((dependency) => dependency.dependency.id),
+			rowHeight
+		);
+	});
 	const rowVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
 		count: 0,
 		getScrollElement: () => null,
@@ -544,6 +555,7 @@
 		{disabled}
 		{loading}
 		{interactions}
+		{touchActivation}
 		{classes}
 		{snippets}
 		onToggleSort={toggleSort}

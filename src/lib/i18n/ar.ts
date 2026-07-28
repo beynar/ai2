@@ -273,6 +273,10 @@ export const ar: Messages = {
 		progress: string | number
 	) => `${title}: من ${start} إلى ${end}، التقدم ${progress}`,
 	ganttChartMutationCommitted: (title: string | number) => `تم تأكيد تغييرات ${title}`,
+	ganttChartCopiedTask: (title: string | number, omitted: string | number) =>
+		Number(omitted) > 0
+			? `تم نسخ ${title}. تم استبعاد ${omitted} تبعيات خارجية.`
+			: `تم نسخ ${title}.`,
 	ganttChartMutationCancelled: (title: string | number) => `تم إلغاء تغييرات ${title}`,
 	ganttChartMutationReverted: (title: string | number) => `تم التراجع عن تغييرات ${title}`,
 	ganttChartFocusRestored: (title: string | number) => `تمت إعادة التركيز إلى ${title}`,

@@ -18,6 +18,7 @@ export type PointerDragPayload<Node extends HTMLElement = HTMLElement> = {
 
 export type PointerDragOptions<Node extends HTMLElement = HTMLElement> = {
 	disabled?: () => boolean;
+	canStart?: (event: PointerEvent) => boolean;
 	moveTolerance?: number;
 	activation?: () => {
 		distancePx: number;
@@ -132,7 +133,14 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 	return (node) =>
 		untrack(() => {
 			const start = (event: PointerEvent) => {
-				if (session || event.button !== 0 || options.disabled?.()) return;
+				if (
+					session ||
+					event.button !== 0 ||
+					options.disabled?.() ||
+					options.canStart?.(event) === false
+				) {
+					return;
+				}
 
 				const nextSession: PointerDragSession<Node> = {
 					node,

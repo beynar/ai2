@@ -283,6 +283,10 @@ export const en = {
 		progress: string | number
 	) => `${title}: ${start} to ${end}, ${progress} progress`,
 	ganttChartMutationCommitted: (title: string | number) => `Changes committed for ${title}`,
+	ganttChartCopiedTask: (title: string | number, omitted: string | number) =>
+		Number(omitted) > 0
+			? `Copied ${title}. ${omitted} external dependencies were omitted.`
+			: `Copied ${title}.`,
 	ganttChartMutationCancelled: (title: string | number) => `Changes cancelled for ${title}`,
 	ganttChartMutationReverted: (title: string | number) => `Changes reverted for ${title}`,
 	ganttChartFocusRestored: (title: string | number) => `Focus restored to ${title}`,

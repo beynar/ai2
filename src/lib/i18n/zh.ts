@@ -271,6 +271,8 @@ export const zh: Messages = {
 		progress: string | number
 	) => `${title}：${start}至${end}，进度${progress}`,
 	ganttChartMutationCommitted: (title: string | number) => `已提交${title}的更改`,
+	ganttChartCopiedTask: (title: string | number, omitted: string | number) =>
+		Number(omitted) > 0 ? `已复制${title}，已省略${omitted}个外部依赖关系。` : `已复制${title}。`,
 	ganttChartMutationCancelled: (title: string | number) => `已取消${title}的更改`,
 	ganttChartMutationReverted: (title: string | number) => `已还原${title}的更改`,
 	ganttChartFocusRestored: (title: string | number) => `焦点已恢复到${title}`,

@@ -294,7 +294,6 @@
 					showConstraint={showConstraints}
 					{showCritical}
 					isSelected={isTaskSelected(positioned.node.taskId)}
-					isFocused={isTaskFocused(positioned.node.taskId)}
 					{classes}
 					{snippets}
 					{onTaskClick}
@@ -344,14 +343,16 @@
 		{visibleRows}
 		{selection}
 		{messages}
+		instructionsId={chart.a11y.instructionsId}
 		{density}
 		{color}
 		{disabled}
 		{showCritical}
 		{classes}
 		dependencyTooltip={snippets.dependencyTooltip}
-		onSelect={(dependencyId) =>
-			chart.select({ kind: 'dependency', taskId: null, dependencyId, cell: null })}
+		onSelect={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
+		isTabStop={(dependencyId) => chart.a11y.isDependencyTabStop(dependencyId)}
+		onFocus={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
 		onDelete={(dependencyId) => chart.removeDependencyFromKeyboard(dependencyId)}
 		onUpdate={(dependency) => chart.updateDependencyFromInline(dependency)}
 		{onDependencyClick}

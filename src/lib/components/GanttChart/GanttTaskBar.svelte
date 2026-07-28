@@ -59,7 +59,6 @@
 		showConstraint,
 		showCritical,
 		isSelected,
-		isFocused,
 		classes,
 		snippets,
 		onTaskClick,
@@ -83,7 +82,6 @@
 		showConstraint: boolean;
 		showCritical: boolean;
 		isSelected: boolean;
-		isFocused: boolean;
 		classes: GanttChartClasses;
 		snippets: TaskSnippets;
 		onTaskClick?: (task: typeof positioned.node, event: MouseEvent) => void;
@@ -127,6 +125,7 @@
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
+	const isFocusTarget = $derived(chart.a11y.isTaskTabStop(node.taskId));
 	const startHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 10 : -10));
 	const endHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -10 : 10));
 	const handleTop = $derived(positioned.geometry.top + positioned.geometry.height / 2);
@@ -203,7 +202,7 @@
 		geometry: positioned.geometry,
 		assignments: taskAssignments,
 		isSelected,
-		isFocused,
+		isFocused: isFocusTarget,
 		isDragging,
 		isCritical,
 		defaultContent
@@ -259,7 +258,7 @@
 	function activate(event: MouseEvent): void {
 		event.stopPropagation();
 		if (disabled) return;
-		chart.select({ kind: 'task', taskId: node.taskId, dependencyId: null, cell: null });
+		chart.a11y.setTaskTarget(node.taskId);
 		onTaskClick?.(node, event);
 	}
 
@@ -358,9 +357,12 @@
 		type="button"
 		aria-label={defaultAccessibleLabel}
 		aria-pressed={isSelected}
-		aria-current={isFocused ? 'true' : undefined}
+		aria-current={isFocusTarget ? 'true' : undefined}
+		aria-describedby={chart.a11y.instructionsId}
+		aria-keyshortcuts="M S E P D Shift+D R Delete Backspace"
+		aria-grabbed={chart.a11y.isTaskGrabbed(node.taskId)}
 		{disabled}
-		tabindex={isSelected || isFocused ? 0 : -1}
+		tabindex={isFocusTarget && !disabled ? 0 : -1}
 		data-gantt-chart-part={node.type === 'summary'
 			? 'summary-task'
 			: node.type === 'milestone'
@@ -399,6 +401,7 @@
 		})}
 		onclick={activate}
 		ondblclick={handleDoubleClick}
+		onfocus={() => chart.a11y.setTaskTarget(node.taskId)}
 		{@attach node.type === 'summary' ||
 		node.task.readOnly ||
 		node.task.draggable === false ||

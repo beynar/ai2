@@ -4,6 +4,7 @@ import {
 	type ElementEventPayloadMap
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview';
+import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import {
@@ -14,7 +15,7 @@ import {
 import { GanttChartError } from './ganttChart.error.js';
 import type { GanttChartMutations } from './ganttChart.mutations.js';
 import type { ResolvedGanttSchedule } from './ganttChart.schedule.js';
-import type { GanttTimeScale } from './ganttChart.scale.js';
+import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
 import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
 import type {
 	GanttDependencyCreationRequest,
@@ -81,6 +82,7 @@ type DependencyGesture<
 	TResourceFields extends object,
 	TAssignmentFields extends object
 > = Readonly<{
+	inputMode: 'pointer' | 'keyboard';
 	sourceTaskId: string;
 	sourceEndpoint: GanttDependencyEndpoint;
 	sourcePoint: Point;
@@ -97,6 +99,7 @@ type DependencyGesture<
 }>;
 
 export type GanttDependencyInteractionStatus = Readonly<{
+	source: 'pointer' | 'keyboard';
 	sourceTaskId: string;
 	sourceEndpoint: GanttDependencyEndpoint;
 	fromX: number;
@@ -193,6 +196,7 @@ export class GanttDependencyInteraction<
 		if (!gesture) return null;
 		const targetPoint = gesture.targetPoint ?? gesture.pointerPoint;
 		return {
+			source: gesture.inputMode,
 			sourceTaskId: gesture.sourceTaskId,
 			sourceEndpoint: gesture.sourceEndpoint,
 			fromX: gesture.sourcePoint.x,
@@ -235,6 +239,17 @@ export class GanttDependencyInteraction<
 		if (current) return current;
 		const attachment: Attachment<HTMLElement> = (element) =>
 			untrack(() => {
+				const touchDrag = createPointerDrag({
+					canStart: (event) => event.pointerType === 'touch' && this.#options.interactions.touch,
+					disabled: () => !this.canBegin(taskId),
+					activation: () => this.#options.touchActivation,
+					stopPropagation: true,
+					onStart: (payload) => this.beginTouch({ taskId, endpoint }, payload),
+					onMove: (payload) => this.updateTouch({ taskId, endpoint }, payload),
+					onEnd: (payload) => this.finishTouch({ taskId, endpoint }, payload),
+					onCancel: () => this.cancel()
+				});
+				const touchCleanup = touchDrag(element);
 				const draggableCleanup = draggable({
 					element,
 					canDrag: () => this.canBegin(taskId),
@@ -269,6 +284,7 @@ export class GanttDependencyInteraction<
 					getDropEffect: () => 'link'
 				});
 				return () => {
+					touchCleanup?.();
 					draggableCleanup();
 					dropTargetCleanup();
 					if (this.#handleAttachments.get(key) === attachment) {
@@ -303,11 +319,73 @@ export class GanttDependencyInteraction<
 		return this.readSource(data) !== null;
 	}
 
+	beginKeyboard(
+		taskId: string,
+		sourceEndpoint: GanttDependencyEndpoint,
+		orderedTaskIds: readonly string[]
+	): boolean {
+		const timeline = this.#timeline;
+		if (!timeline || !this.canBegin(taskId)) return false;
+		const sourcePoint = this.getKeyboardPoint(taskId, sourceEndpoint, orderedTaskIds);
+		if (!sourcePoint) return false;
+		this.#targetValidation.clear();
+		this.#gesture = {
+			inputMode: 'keyboard',
+			sourceTaskId: taskId,
+			sourceEndpoint,
+			sourcePoint,
+			pointerPoint: sourcePoint,
+			targetTaskId: null,
+			targetEndpoint: null,
+			targetPoint: null,
+			request: null,
+			isValid: false,
+			invalidReason: null,
+			invalidMessage: null,
+			scale: timeline.scale,
+			boundary: this.getBoundary()
+		};
+		return this.moveKeyboardTarget(1, orderedTaskIds);
+	}
+
+	moveKeyboardTarget(step: -1 | 1, orderedTaskIds: readonly string[]): boolean {
+		const gesture = this.#gesture;
+		if (!gesture || gesture.inputMode !== 'keyboard') return false;
+		const currentTaskId = gesture.targetTaskId ?? gesture.sourceTaskId;
+		let index = orderedTaskIds.indexOf(currentTaskId);
+		if (index < 0) index = orderedTaskIds.indexOf(gesture.sourceTaskId);
+		for (let candidateIndex = index + step; ; candidateIndex += step) {
+			const taskId = orderedTaskIds[candidateIndex];
+			if (!taskId) return false;
+			if (taskId === gesture.sourceTaskId) continue;
+			const endpoint = gesture.targetEndpoint ?? 'start';
+			const point = this.getKeyboardPoint(taskId, endpoint, orderedTaskIds);
+			if (!point) continue;
+			return this.setKeyboardTarget(taskId, endpoint, point);
+		}
+	}
+
+	setKeyboardTargetEndpoint(
+		endpoint: GanttDependencyEndpoint,
+		orderedTaskIds: readonly string[]
+	): boolean {
+		const gesture = this.#gesture;
+		if (!gesture || gesture.inputMode !== 'keyboard' || !gesture.targetTaskId) return false;
+		const point = this.getKeyboardPoint(gesture.targetTaskId, endpoint, orderedTaskIds);
+		if (!point) return false;
+		return this.setKeyboardTarget(gesture.targetTaskId, endpoint, point);
+	}
+
+	commitKeyboard(): boolean {
+		if (this.#gesture?.inputMode !== 'keyboard') return false;
+		return this.commitGesture();
+	}
+
 	reconcileControlledState(): void {
 		if (!this.#gesture || this.isBoundaryCurrent(this.#gesture.boundary)) return;
 		this.reportBlocked({
 			reason: 'stale',
-			source: 'pointer',
+			source: this.#gesture.inputMode,
 			taskId: this.#gesture.sourceTaskId,
 			message: 'The controlled Gantt collections changed during dependency creation.'
 		});
@@ -318,7 +396,7 @@ export class GanttDependencyInteraction<
 		if (!this.#gesture || isSameScale(this.#gesture.scale, scale)) return;
 		this.reportBlocked({
 			reason: 'stale',
-			source: 'pointer',
+			source: this.#gesture.inputMode,
 			taskId: this.#gesture.sourceTaskId,
 			message: 'The timeline scale changed during dependency creation.'
 		});
@@ -350,6 +428,7 @@ export class GanttDependencyInteraction<
 		if (!sourcePoint || !element.isConnected) return;
 		this.#targetValidation.clear();
 		this.#gesture = {
+			inputMode: 'pointer',
 			sourceTaskId: source.taskId,
 			sourceEndpoint: source.endpoint,
 			sourcePoint,
@@ -367,20 +446,60 @@ export class GanttDependencyInteraction<
 		this.update(payload);
 	}
 
+	private beginTouch(source: DependencySource, payload: PointerDragPayload): boolean {
+		const timeline = this.#timeline;
+		const sourcePoint = this.#handlePoints.get(getHandleKey(source.taskId, source.endpoint));
+		if (!timeline || !sourcePoint || !this.canBegin(source.taskId)) return false;
+		this.#targetValidation.clear();
+		this.#gesture = {
+			inputMode: 'pointer',
+			sourceTaskId: source.taskId,
+			sourceEndpoint: source.endpoint,
+			sourcePoint,
+			pointerPoint: this.getPointerPoint({ clientX: payload.x, clientY: payload.y }),
+			targetTaskId: null,
+			targetEndpoint: null,
+			targetPoint: null,
+			request: null,
+			isValid: false,
+			invalidReason: null,
+			invalidMessage: null,
+			scale: timeline.scale,
+			boundary: this.getBoundary()
+		};
+		this.updateFromPointer(source, { clientX: payload.x, clientY: payload.y }, []);
+		return true;
+	}
+
 	private update(
 		payload: ElementEventPayloadMap['onDrag'] | ElementEventPayloadMap['onDrop']
 	): void {
-		const gesture = this.#gesture;
 		const source = this.readSource(payload.source.data);
-		if (!gesture || !source) return;
+		if (!source) return;
+		this.updateFromPointer(
+			source,
+			payload.location.current.input,
+			payload.location.current.dropTargets
+		);
+	}
+
+	private updateTouch(source: DependencySource, payload: PointerDragPayload): void {
+		this.updateFromPointer(source, { clientX: payload.x, clientY: payload.y }, []);
+	}
+
+	private updateFromPointer(
+		source: DependencySource,
+		input: Readonly<{ clientX: number; clientY: number }>,
+		dropTargets: readonly { data: Record<string, unknown> }[]
+	): void {
+		const gesture = this.#gesture;
+		if (!gesture) return;
 		if (!this.isBoundaryCurrent(gesture.boundary)) {
 			this.reconcileControlledState();
 			return;
 		}
-		const target =
-			this.readPointerTarget(payload.location.current.input) ??
-			this.readCurrentTarget(payload.location.current.dropTargets);
-		const pointerPoint = this.getPointerPoint(payload.location.current.input);
+		const target = this.readPointerTarget(input) ?? this.readCurrentTarget(dropTargets);
+		const pointerPoint = this.getPointerPoint(input);
 		if (!target) {
 			this.#gesture = {
 				...gesture,
@@ -412,52 +531,103 @@ export class GanttDependencyInteraction<
 	private finish(payload: ElementEventPayloadMap['onDrop']): void {
 		if (!this.#gesture) return;
 		this.update(payload);
+		this.commitGesture();
+	}
+
+	private finishTouch(source: DependencySource, payload: PointerDragPayload): void {
+		if (!this.#gesture) return;
+		this.updateTouch(source, payload);
+		this.commitGesture();
+	}
+
+	private commitGesture(): boolean {
 		const gesture = this.#gesture;
-		if (!gesture) return;
+		if (!gesture) return false;
 		if (!gesture.request || !gesture.isValid) {
 			if (gesture.targetTaskId) {
 				this.reportBlocked({
 					reason: gesture.invalidReason ?? 'invalid-target',
-					source: 'pointer',
+					source: gesture.inputMode,
 					taskId: gesture.sourceTaskId,
 					message: gesture.invalidMessage ?? 'The dependency target is invalid.'
 				});
 			}
 			this.cancel();
-			return;
+			return false;
 		}
 		const request = gesture.request;
+		let didCommit = false;
 		try {
 			const createDependency = this.#options.createDependency;
 			if (!createDependency) {
 				throw new GanttChartError(
 					'invalid-operation',
-					'Pointer dependency creation requires createDependency.'
+					'Dependency creation requires createDependency.'
 				);
 			}
 			const dependency = createDependency(request);
 			assertCreatedGanttDependency(request, dependency);
-			const accepted = this.#mutations.addDependency(dependency, 'pointer', true);
+			const accepted = this.#mutations.addDependency(dependency, gesture.inputMode, true);
 			if (!accepted) {
 				this.reportBlocked({
 					reason: 'custom-policy',
-					source: 'pointer',
+					source: gesture.inputMode,
 					dependencyId: dependency.id,
 					message: 'The consumer dependency policy rejected this proposal.'
 				});
-				return;
-			}
+			} else didCommit = true;
 		} catch (error) {
-			if (!isExpectedPointerRejection(error)) throw error;
+			if (!isExpectedDependencyRejection(error)) throw error;
 			this.reportBlocked({
 				reason: getBlockedReason(error),
-				source: 'pointer',
+				source: gesture.inputMode,
 				taskId: gesture.sourceTaskId,
 				message: error.message
 			});
 		} finally {
 			this.cancel();
 		}
+		return didCommit;
+	}
+
+	private setKeyboardTarget(
+		taskId: string,
+		endpoint: GanttDependencyEndpoint,
+		point: Point
+	): boolean {
+		const gesture = this.#gesture;
+		if (!gesture || gesture.inputMode !== 'keyboard') return false;
+		const source = { taskId: gesture.sourceTaskId, endpoint: gesture.sourceEndpoint };
+		const validation = this.validateTarget(source, { taskId, endpoint });
+		this.#gesture = {
+			...gesture,
+			pointerPoint: point,
+			targetTaskId: taskId,
+			targetEndpoint: endpoint,
+			targetPoint: point,
+			request: validation.request,
+			isValid: validation.isValid,
+			invalidReason: validation.invalidReason,
+			invalidMessage: validation.invalidMessage
+		};
+		return true;
+	}
+
+	private getKeyboardPoint(
+		taskId: string,
+		endpoint: GanttDependencyEndpoint,
+		orderedTaskIds: readonly string[]
+	): Point | null {
+		const gestureScale = this.#gesture?.scale ?? this.#timeline?.scale;
+		const rowHeight = this.#timeline?.rowHeight;
+		const rowIndex = orderedTaskIds.indexOf(taskId);
+		const task = this.#getSchedule().resolvedTasks.find((node) => node.taskId === taskId);
+		const instant = endpoint === 'start' ? task?.resolvedStart : task?.resolvedEnd;
+		if (!gestureScale || !rowHeight || rowIndex < 0 || !instant) return null;
+		return {
+			x: getGanttScalePixel(gestureScale, instant),
+			y: rowIndex * rowHeight + rowHeight / 2
+		};
 	}
 
 	private validateTarget(source: DependencySource, target: DependencyTarget): TargetValidation {
@@ -606,7 +776,7 @@ function getBlockedReason(error: GanttChartError): GanttInteractionBlockedInfo['
 	return 'invalid-target';
 }
 
-function isExpectedPointerRejection(error: unknown): error is GanttChartError {
+function isExpectedDependencyRejection(error: unknown): error is GanttChartError {
 	return (
 		error instanceof GanttChartError &&
 		(error.code === 'dependency-cycle' ||

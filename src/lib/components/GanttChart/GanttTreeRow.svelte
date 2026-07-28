@@ -39,7 +39,6 @@
 		disabled,
 		loading,
 		isSelected,
-		activeColumnId,
 		showDragHandle,
 		canIndent,
 		canOutdent,
@@ -47,6 +46,7 @@
 		treeCell,
 		taskRow,
 		rowAttachment,
+		touchRowAttachment,
 		onCellFocus,
 		onIndent,
 		onOutdent,
@@ -76,7 +76,6 @@
 		disabled: boolean;
 		loading: boolean;
 		isSelected: boolean;
-		activeColumnId: string;
 		showDragHandle: boolean;
 		canIndent: boolean;
 		canOutdent: boolean;
@@ -86,19 +85,30 @@
 		>;
 		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
 		rowAttachment: Attachment<HTMLElement> | null;
+		touchRowAttachment: Attachment<HTMLElement> | null;
 		onCellFocus: (columnId: string) => void;
 		onIndent: () => void;
 		onOutdent: () => void;
 		onNavigate: (event: KeyboardEvent, columnIndex: number) => void;
 	} = $props();
 
-	const isFocused = $derived(columns.some((column) => column.id === activeColumnId));
+	const isFocused = $derived(
+		columns.some((column) => chart.a11y.isCellTabStop(node.taskId, column.id))
+	);
 	const rowPayload = $derived<GanttTaskRowPayload<TTaskFields>>({
 		node,
 		isSelected,
 		isFocused,
 		defaultContent: defaultRowContent
 	});
+	const combinedRowAttachment: Attachment<HTMLElement> = (element) => {
+		const rowCleanup = rowAttachment?.(element);
+		const touchCleanup = touchRowAttachment?.(element);
+		return () => {
+			touchCleanup?.();
+			rowCleanup?.();
+		};
+	};
 </script>
 
 <div
@@ -111,10 +121,10 @@
 	class={classes.row({ density, color, disabled, selected: isSelected })}
 	style:top={`${start}px`}
 	role="row"
-	aria-rowindex={rowIndex + 1}
+	aria-rowindex={rowIndex + 2}
 	aria-level={node.depth + 1}
 	aria-expanded={node.type === 'summary' ? node.isExpanded : undefined}
-	{@attach rowAttachment}
+	{@attach combinedRowAttachment}
 >
 	{#if taskRow}
 		<div class="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -142,7 +152,7 @@
 			{disabled}
 			{loading}
 			{isSelected}
-			isFocused={activeColumnId === column.id}
+			isFocused={chart.a11y.isCellTabStop(node.taskId, column.id)}
 			showDragHandle={showDragHandle && column.id === 'title'}
 			canIndent={canIndent && column.id === 'title'}
 			canOutdent={canOutdent && column.id === 'title'}

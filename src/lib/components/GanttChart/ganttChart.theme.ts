@@ -75,7 +75,7 @@ const columnHeader = createGanttChartPart(
 );
 const rows = createGanttChartPart('relative min-w-full');
 const row = createGanttChartPart(
-	'absolute inset-x-0 flex h-[var(--gantt-row-height)] border-b border-neutral-muted/55 outline-none'
+	'absolute inset-x-0 flex h-[var(--gantt-row-height)] border-b border-neutral-muted/55 outline-none before:pointer-events-none before:absolute before:inset-x-0 before:z-40 before:h-0.5 before:bg-color data-[gantt-reorder-edge=before]:before:top-0 data-[gantt-reorder-edge=after]:before:bottom-0 data-[gantt-touch-reordering]:opacity-45'
 );
 const treeCell = createGanttChartPart(
 	'flex min-w-0 items-center border-e border-neutral-muted/55 px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
@@ -101,13 +101,13 @@ const gridLine = createGanttChartPart(
 );
 const taskLayer = createGanttChartPart('pointer-events-none absolute inset-0 z-10');
 const task = createGanttChartPart(
-	'group/task pointer-events-auto absolute flex h-[var(--gantt-task-height)] min-w-0 items-center rounded border border-[color-mix(in_oklab,var(--gantt-task-color)_40%,transparent)] bg-[color-mix(in_oklab,var(--gantt-task-color)_18%,var(--color-surface))] text-neutral shadow-sm outline-none data-[continues-before]:rounded-s-none data-[continues-after]:rounded-e-none data-[critical]:border-danger data-[critical]:shadow-[inset_0_-2px_0_color-mix(in_oklab,var(--color-danger)_55%,transparent)] data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText] forced-colors:focus-visible:outline-2'
+	'group/task pointer-events-auto absolute flex h-[var(--gantt-task-height)] min-w-0 touch-pan-y items-center rounded border border-[color-mix(in_oklab,var(--gantt-task-color)_40%,transparent)] bg-[color-mix(in_oklab,var(--gantt-task-color)_18%,var(--color-surface))] text-neutral shadow-sm outline-none data-[continues-before]:rounded-s-none data-[continues-after]:rounded-e-none data-[critical]:border-danger data-[critical]:shadow-[inset_0_-2px_0_color-mix(in_oklab,var(--color-danger)_55%,transparent)] data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText] forced-colors:focus-visible:outline-2'
 );
 const summaryTask = createGanttChartPart(
-	'group/task pointer-events-auto absolute h-2 border-t-2 border-[var(--gantt-task-color)] before:absolute before:start-0 before:top-0 before:h-2 before:border-s-2 before:border-[var(--gantt-task-color)] after:absolute after:end-0 after:top-0 after:h-2 after:border-e-2 after:border-[var(--gantt-task-color)] outline-none data-[critical]:drop-shadow-[0_0_2px_var(--color-danger)] data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText]'
+	'group/task pointer-events-auto absolute h-2 touch-pan-y border-t-2 border-[var(--gantt-task-color)] before:absolute before:start-0 before:top-0 before:h-2 before:border-s-2 before:border-[var(--gantt-task-color)] after:absolute after:end-0 after:top-0 after:h-2 after:border-e-2 after:border-[var(--gantt-task-color)] outline-none data-[critical]:drop-shadow-[0_0_2px_var(--color-danger)] data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText]'
 );
 const milestone = createGanttChartPart(
-	'group/task pointer-events-auto absolute size-4 rotate-45 border border-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)] bg-[var(--gantt-task-color)] outline-none data-[critical]:ring-2 data-[critical]:ring-danger/55 data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[CanvasText]'
+	'group/task pointer-events-auto absolute size-4 touch-pan-y rotate-45 border border-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)] bg-[var(--gantt-task-color)] outline-none data-[critical]:ring-2 data-[critical]:ring-danger/55 data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[CanvasText]'
 );
 const segment = createGanttChartPart('absolute inset-y-0 rounded bg-inherit');
 const progress = createGanttChartPart(

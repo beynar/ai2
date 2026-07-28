@@ -17,7 +17,12 @@
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type { GanttInteractions, GanttSelection } from './ganttChart.types.js';
+	import { GanttTouchRowReorder } from './ganttChart.touchRowReorder.js';
+	import type {
+		GanttInteractions,
+		GanttSelection,
+		GanttTouchActivation
+	} from './ganttChart.types.js';
 	import type { Snippet } from 'svelte';
 
 	type GridSnippets = {
@@ -48,6 +53,7 @@
 		disabled,
 		loading,
 		interactions,
+		touchActivation,
 		classes,
 		snippets,
 		onToggleSort,
@@ -67,13 +73,13 @@
 		disabled: boolean;
 		loading: boolean;
 		interactions: GanttInteractions;
+		touchActivation: GanttTouchActivation;
 		classes: GanttChartClasses;
 		snippets: GridSnippets;
 		onToggleSort: (columnId: string, additive: boolean) => void;
 		scrollToRow: (rowIndex: number) => void;
 	} = $props();
 
-	let rootElement = $state<HTMLElement | null>(null);
 	let horizontalViewport = $state<HTMLDivElement | null>(null);
 	let horizontalScrollLeft = $state(0);
 	let activeTaskId = $state('');
@@ -116,6 +122,25 @@
 			if (!accepted) blockHierarchyOperation(detail.item.taskId);
 		}
 	});
+	const touchRowReorder = new GanttTouchRowReorder({
+		getRows: () => rowModel.rows,
+		disabled: () => !canReorder || !interactions.touch,
+		activation: () => touchActivation,
+		scrollToRow: (rowIndex) => scrollToRow(rowIndex),
+		onReorder: (taskId, targetTaskId, position) =>
+			chart.reorderTask(taskId, targetTaskId, position, 'pointer'),
+		onBlocked: (taskId, reason) => {
+			chart.blockInteraction({
+				reason,
+				source: 'pointer',
+				taskId,
+				message:
+					reason === 'stale'
+						? 'The controlled task rows changed during touch reordering.'
+						: 'Touch reordering requires a compatible sibling target.'
+			});
+		}
+	});
 
 	$effect(() => {
 		const rows = rowModel.rows;
@@ -144,6 +169,7 @@
 	function focusCell(taskId: string, columnId: string): void {
 		activeTaskId = taskId;
 		activeColumnId = columnId;
+		chart.a11y.setCellTarget(taskId, columnId);
 		chart.select({
 			kind: 'cell',
 			taskId,
@@ -155,11 +181,56 @@
 	function navigateCell(event: KeyboardEvent, rowIndex: number, columnIndex: number): void {
 		if (!interactions.keyboard) return;
 		const hierarchyDirection = direction === 'rtl' ? -1 : 1;
+		const node = rowModel.rows[rowIndex];
+		const column = rowModel.visibleColumns[columnIndex];
+		if (!node || !column) return;
+		const isHierarchyForward =
+			column.id === 'title' &&
+			!event.altKey &&
+			!event.shiftKey &&
+			event.key === (direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+		const isHierarchyBackward =
+			column.id === 'title' &&
+			!event.altKey &&
+			!event.shiftKey &&
+			event.key === (direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft');
+		if (isHierarchyForward && node.type === 'summary') {
+			event.preventDefault();
+			if (!node.isExpanded) {
+				chart.expandTask(node.taskId);
+				return;
+			}
+			const childIndex = rowModel.rows.findIndex(
+				(candidate, index) => index > rowIndex && candidate.parentId === node.taskId
+			);
+			const child = rowModel.rows[childIndex];
+			if (child) {
+				focusCell(child.taskId, column.id);
+				scrollAndFocusCell(childIndex, columnIndex);
+			}
+			return;
+		}
+		if (isHierarchyBackward) {
+			if (node.type === 'summary' && node.isExpanded) {
+				event.preventDefault();
+				chart.collapseTask(node.taskId);
+				return;
+			}
+			if (node.parentId) {
+				event.preventDefault();
+				const parentIndex = rowModel.rows.findIndex(
+					(candidate) => candidate.taskId === node.parentId
+				);
+				if (parentIndex >= 0) {
+					focusCell(node.parentId, column.id);
+					scrollAndFocusCell(parentIndex, columnIndex);
+				}
+				return;
+			}
+		}
 		if (event.altKey && event.shiftKey && event.key === 'ArrowRight') {
 			event.preventDefault();
 			const logicalIndent = hierarchyDirection === 1;
-			const node = rowModel.rows[rowIndex];
-			if (!node) return;
 			const accepted = logicalIndent
 				? chart.indentTask(node.taskId, rowModel.rows[rowIndex - 1]?.taskId ?? null)
 				: chart.outdentTask(node.taskId);
@@ -169,11 +240,29 @@
 		if (event.altKey && event.shiftKey && event.key === 'ArrowLeft') {
 			event.preventDefault();
 			const logicalIndent = hierarchyDirection === -1;
-			const node = rowModel.rows[rowIndex];
-			if (!node) return;
 			const accepted = logicalIndent
 				? chart.indentTask(node.taskId, rowModel.rows[rowIndex - 1]?.taskId ?? null)
 				: chart.outdentTask(node.taskId);
+			if (!accepted) blockHierarchyOperation(node.taskId);
+			return;
+		}
+		if (event.altKey && event.shiftKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+			event.preventDefault();
+			const siblingIndex = findSiblingRowIndex(
+				rowIndex,
+				event.key === 'ArrowUp' ? -1 : 1,
+				node.parentId
+			);
+			const target = rowModel.rows[siblingIndex];
+			const accepted = Boolean(
+				target &&
+				chart.reorderTask(
+					node.taskId,
+					target.taskId,
+					event.key === 'ArrowUp' ? 'before' : 'after',
+					'keyboard'
+				)
+			);
 			if (!accepted) blockHierarchyOperation(node.taskId);
 			return;
 		}
@@ -204,22 +293,35 @@
 				return;
 		}
 		event.preventDefault();
+		const inlineEndOverflow =
+			(event.key === 'ArrowRight' &&
+				direction === 'ltr' &&
+				nextColumn >= rowModel.visibleColumns.length) ||
+			(event.key === 'ArrowLeft' &&
+				direction === 'rtl' &&
+				nextColumn >= rowModel.visibleColumns.length);
+		if (inlineEndOverflow && chart.a11y.focusTask(node.taskId)) return;
 		nextRow = Math.max(0, Math.min(rowModel.rows.length - 1, nextRow));
 		nextColumn = Math.max(0, Math.min(rowModel.visibleColumns.length - 1, nextColumn));
 		const nextTask = rowModel.rows[nextRow];
 		const nextColumnDefinition = rowModel.visibleColumns[nextColumn];
 		if (!nextTask || !nextColumnDefinition) return;
 		focusCell(nextTask.taskId, nextColumnDefinition.id);
-		scrollToRow(nextRow);
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				rootElement
-					?.querySelector<HTMLElement>(
-						`[data-task-id="${CSS.escape(nextTask.taskId)}"] [data-column-id="${CSS.escape(nextColumnDefinition.id)}"]`
-					)
-					?.focus();
-			});
-		});
+		scrollAndFocusCell(nextRow, nextColumn);
+	}
+
+	function scrollAndFocusCell(rowIndex: number, columnIndex: number): void {
+		const task = rowModel.rows[rowIndex];
+		const column = rowModel.visibleColumns[columnIndex];
+		if (!task || !column) return;
+		chart.a11y.focusCell(task.taskId, column.id);
+	}
+
+	function findSiblingRowIndex(rowIndex: number, delta: -1 | 1, parentId: string | null): number {
+		for (let index = rowIndex + delta; index >= 0 && index < rowModel.rows.length; index += delta) {
+			if (rowModel.rows[index]?.parentId === parentId) return index;
+		}
+		return -1;
 	}
 
 	function canIndentRow(rowIndex: number): boolean {
@@ -281,12 +383,11 @@
 </script>
 
 <div
-	bind:this={rootElement}
 	data-gantt-chart-part="grid-pane"
 	class={classes.gridPane({ density, color, disabled })}
 	role="treegrid"
 	aria-label={messages.ganttChartGrid}
-	aria-rowcount={rowModel.rows.length}
+	aria-rowcount={rowModel.rows.length + 1}
 	aria-colcount={rowModel.visibleColumns.length}
 >
 	<div
@@ -302,6 +403,7 @@
 				data-gantt-chart-part="grid-header"
 				class={classes.gridHeader({ density, color, disabled })}
 				role="row"
+				aria-rowindex="1"
 			>
 				{#if snippets.gridHeader}
 					<div class="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -362,7 +464,6 @@
 							{disabled}
 							{loading}
 							isSelected={isTaskSelected(node.taskId)}
-							activeColumnId={activeTaskId === node.taskId ? activeColumnId : ''}
 							showDragHandle={canReorder}
 							canIndent={canIndentRow(virtualRow.index)}
 							canOutdent={canOutdentRow(virtualRow.index)}
@@ -370,6 +471,7 @@
 							treeCell={snippets.treeCell}
 							taskRow={snippets.taskRow}
 							rowAttachment={dnd.item(node, virtualRow.index)}
+							touchRowAttachment={touchRowReorder.item(node.taskId)}
 							onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
 							onIndent={() => indentRow(virtualRow.index)}
 							onOutdent={() => outdentRow(virtualRow.index)}

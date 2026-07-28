@@ -1,8 +1,12 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- Dates, Sets, and ranges here are immutable schedule snapshots, not reactive collection owners. */
 import { assertScheduleInstant, assertScheduleRange } from '$lib/scheduling/scheduleRange.js';
+import type { Messages } from '$lib/i18n/en.js';
 import { applyGanttColumnEdit } from './ganttChart.columns.js';
+import { GanttChartA11y } from './ganttChart.a11y.svelte.js';
 import { calculateGanttWorkload } from './ganttChart.workload.js';
+import { GanttChartClipboard } from './ganttChart.clipboard.js';
 import { GanttChartError } from './ganttChart.error.js';
+import { GanttChartHistory } from './ganttChart.history.svelte.js';
 import { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { GanttChartMutations } from './ganttChart.mutations.js';
 import { createGanttColumnContext } from './ganttChart.rows.js';
@@ -25,6 +29,7 @@ import type {
 	GanttInteractionBlockedInfo,
 	GanttInteractions,
 	GanttMutationSource,
+	GanttPasteIdRequest,
 	GanttRange,
 	GanttRangeProposal,
 	GanttResolvedTaskNode,
@@ -91,6 +96,10 @@ export type GanttChartStateOptions<
 	selection: GanttSelection;
 	zoom: GanttZoomLevel;
 	readonly timeZone: string;
+	readonly locale: string;
+	readonly direction: 'ltr' | 'rtl';
+	readonly messages: Messages;
+	readonly rootId: string;
 	readonly projectCalendarId: string | undefined;
 	readonly validRange: GanttRange | undefined;
 	readonly initialScrollDate: Date | undefined;
@@ -123,6 +132,8 @@ export type GanttChartStateOptions<
 		  ) => GanttAssignmentUpdateResult<TAssignmentFields>)
 		| undefined;
 	readonly canCreateRange: ((proposal: GanttRangeProposal) => boolean) | undefined;
+	readonly historyLimit: number;
+	readonly getPasteId: ((request: GanttPasteIdRequest) => string) | undefined;
 	readonly onTasksChange:
 		((tasks: GanttTask<TTaskFields>[], change: GanttTasksChange<TTaskFields>) => void) | undefined;
 	readonly onDependenciesChange:
@@ -208,12 +219,20 @@ export class GanttChartState<
 		TResourceFields,
 		TAssignmentFields
 	>;
+	#clipboard: GanttChartClipboard<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>;
+	#history: GanttChartHistory<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 	readonly interaction: GanttChartInteractions<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>;
+	readonly a11y: GanttChartA11y<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 
 	constructor(
 		options: GanttChartStateOptions<
@@ -224,8 +243,29 @@ export class GanttChartState<
 		>
 	) {
 		this.#options = options;
-		this.#mutations = new GanttChartMutations(options);
+		this.#history = new GanttChartHistory(options, (target, commit, direction) =>
+			this.#mutations.restoreSnapshot(target, commit, direction)
+		);
+		this.#clipboard = new GanttChartClipboard(options);
+		this.#mutations = new GanttChartMutations(options, (commit) => {
+			const forgetHistory = this.#history.record(commit);
+			this.a11y.announceCommit(commit);
+			return () => {
+				forgetHistory?.();
+				this.a11y.announceRevert(commit.title);
+			};
+		});
 		this.interaction = new GanttChartInteractions(options, this.#mutations, () => this.schedule);
+		this.a11y = new GanttChartA11y(options, this.interaction, () => this.schedule, {
+			select: (selection) => this.select(selection),
+			removeTask: (taskId) => this.removeTaskFromKeyboard(taskId),
+			removeDependency: (dependencyId) => this.removeDependencyFromKeyboard(dependencyId),
+			copySelection: () => this.copySelection(),
+			paste: () => this.paste(),
+			undo: () => this.undo(),
+			redo: () => this.redo(),
+			scrollToTask: (taskId) => this.scrollToTask(taskId)
+		});
 	}
 
 	get schedule(): ResolvedGanttSchedule<
@@ -515,6 +555,13 @@ export class GanttChartState<
 		this.#requireAccepted(this.#mutations.removeTask(taskId, 'api'), 'removeTask');
 	}
 
+	removeTaskFromKeyboard(taskId: string): boolean {
+		if (!this.#options.interactions.keyboard) return false;
+		const accepted = this.#mutations.removeTask(taskId, 'keyboard');
+		if (accepted && this.#options.selection.kind !== null) this.clearSelection();
+		return accepted;
+	}
+
 	addDependency(dependency: GanttDependency<TDependencyFields>): void {
 		this.#requireAccepted(this.#mutations.addDependency(dependency, 'api'), 'addDependency');
 	}
@@ -576,9 +623,14 @@ export class GanttChartState<
 		return this.#mutations.updateTask(task, 'inline-edit');
 	}
 
-	reorderTask(taskId: string, targetTaskId: string, position: 'before' | 'after'): boolean {
+	reorderTask(
+		taskId: string,
+		targetTaskId: string,
+		position: 'before' | 'after',
+		source: Extract<GanttMutationSource, 'pointer' | 'keyboard'> = 'pointer'
+	): boolean {
 		if (!this.#options.interactions.reorderRows) return false;
-		return this.#mutations.reorderTask(taskId, targetTaskId, position);
+		return this.#mutations.reorderTask(taskId, targetTaskId, position, source);
 	}
 
 	indentTask(
@@ -599,32 +651,42 @@ export class GanttChartState<
 		this.#options.onInteractionBlocked?.(info);
 	}
 
-	copySelection(): never {
-		return this.#unavailableMutation('copySelection');
+	copySelection(): boolean {
+		const accepted = this.#clipboard.copySelection();
+		const title = this.#clipboard.copiedRootTitle;
+		if (accepted && title) {
+			this.a11y.announce(
+				this.#options.messages.ganttChartCopiedTask(title, this.#clipboard.omittedDependencyCount)
+			);
+		}
+		return accepted;
 	}
 
-	paste(): never {
-		return this.#unavailableMutation('paste');
+	paste(): boolean {
+		const records = this.#clipboard.preparePaste();
+		const accepted = this.#mutations.pasteSubtree(records);
+		if (accepted) this.#clipboard.markPasted(records.copyIndex);
+		return accepted;
 	}
 
-	undo(): never {
-		return this.#unavailableMutation('undo');
+	undo(): boolean {
+		return this.#history.undo();
 	}
 
-	redo(): never {
-		return this.#unavailableMutation('redo');
+	redo(): boolean {
+		return this.#history.redo();
 	}
 
-	canUndo(): never {
-		return this.#unavailableMutation('canUndo');
+	canUndo(): boolean {
+		return this.#history.canUndo();
 	}
 
-	canRedo(): never {
-		return this.#unavailableMutation('canRedo');
+	canRedo(): boolean {
+		return this.#history.canRedo();
 	}
 
 	cancelInteraction(): void {
-		this.interaction.cancel();
+		if (!this.a11y.cancelKeyboardMode()) this.interaction.cancel();
 	}
 
 	#stepZoom(direction: -1 | 1, anchorDate?: Date): boolean {
@@ -704,20 +766,6 @@ export class GanttChartState<
 	#assertNavigationEnabled(): void {
 		if (!this.#options.disabled) return;
 		throw new GanttChartError('disabled', 'GanttChart is disabled.');
-	}
-
-	#unavailableMutation(method: string, details?: Readonly<Record<string, unknown>>): never {
-		if (this.#options.disabled) {
-			throw new GanttChartError('disabled', 'GanttChart is disabled.');
-		}
-		if (this.#options.loading) {
-			throw new GanttChartError('invalid-operation', 'GanttChart is loading.');
-		}
-		throw new GanttChartError(
-			'invalid-operation',
-			`${method} is not available until the controlled mutation pipeline is mounted.`,
-			{ method, ...details }
-		);
 	}
 
 	#requireAccepted(isAccepted: boolean, method: string): void {

@@ -25,6 +25,56 @@ export type GanttDerivedTaskChange<TTaskFields extends object> = Readonly<{
 	workingDurationMinutes: number;
 }>;
 
+export function deriveGanttTaskKeyboardChange<TTaskFields extends object>(input: {
+	task: GanttTask<TTaskFields>;
+	operation: GanttTaskPointerOperation | 'progress';
+	stepCount: number;
+	calendar: GanttCalendarRuntime;
+	snapDuration: GanttDuration;
+}): GanttDerivedTaskChange<TTaskFields> {
+	if (!Number.isInteger(input.stepCount)) {
+		throw new GanttChartError('invalid-operation', 'Keyboard task steps must be an integer.');
+	}
+	if (input.operation === 'progress') {
+		const { task } = input;
+		if (!task.start || !task.end || task.type === 'milestone') {
+			throw new GanttChartError(
+				'invalid-operation',
+				`Task ${task.id} has no keyboard-editable progress.`,
+				{ taskId: task.id }
+			);
+		}
+		const progress = Math.max(0, Math.min(1, (task.progress ?? 0) + input.stepCount * 0.05));
+		const nextTask = Object.assign({}, task, { progress });
+		return {
+			kind: 'progress',
+			task: nextTask,
+			workingDurationMinutes: getTaskWorkingMinutes(nextTask, input.calendar) ?? 0
+		};
+	}
+	if (!input.task.start || !input.task.end) {
+		throw new GanttChartError(
+			'invalid-operation',
+			`Task ${input.task.id} has no keyboard-editable schedule.`,
+			{ taskId: input.task.id }
+		);
+	}
+	const originInstant = input.operation === 'resize-end' ? input.task.end : input.task.start;
+	const pointerInstant = addWorkingMinutes(
+		originInstant,
+		input.stepCount * getGanttSnapMinutes(input.snapDuration, input.calendar),
+		input.calendar
+	);
+	return deriveGanttTaskPointerChange({
+		task: input.task,
+		operation: input.operation,
+		originInstant,
+		pointerInstant,
+		calendar: input.calendar,
+		snapDuration: input.snapDuration
+	});
+}
+
 export function deriveGanttTaskPointerChange<TTaskFields extends object>(input: {
 	task: GanttTask<TTaskFields>;
 	operation: GanttTaskPointerOperation;
@@ -117,6 +167,7 @@ export function deriveGanttRangeProposal(input: {
 	calendar: GanttCalendarRuntime;
 	snapDuration: GanttDuration;
 	parentId?: string;
+	source?: GanttRangeProposal['source'];
 }): Readonly<{ proposal: GanttRangeProposal; workingDurationMinutes: number }> {
 	const step = getGanttSnapMinutes(input.snapDuration, input.calendar);
 	const origin = addWorkingMinutes(input.originInstant, 0, input.calendar);
@@ -127,13 +178,38 @@ export function deriveGanttRangeProposal(input: {
 	const end = isForward ? addWorkingMinutes(origin, duration, input.calendar) : origin;
 	return {
 		proposal: {
-			source: 'pointer',
+			source: input.source ?? 'pointer',
 			start,
 			end,
 			...(input.parentId === undefined ? {} : { parentId: input.parentId })
 		},
 		workingDurationMinutes: duration
 	};
+}
+
+export function deriveGanttRangeKeyboardProposal(input: {
+	originInstant: Date;
+	stepCount: number;
+	calendar: GanttCalendarRuntime;
+	snapDuration: GanttDuration;
+	parentId?: string;
+}): Readonly<{ proposal: GanttRangeProposal; workingDurationMinutes: number }> {
+	if (!Number.isInteger(input.stepCount) || input.stepCount === 0) {
+		throw new GanttChartError(
+			'invalid-operation',
+			'Keyboard range steps must be a non-zero integer.'
+		);
+	}
+	const pointerInstant = addWorkingMinutes(
+		input.originInstant,
+		input.stepCount * getGanttSnapMinutes(input.snapDuration, input.calendar),
+		input.calendar
+	);
+	return deriveGanttRangeProposal({
+		...input,
+		pointerInstant,
+		source: 'keyboard'
+	});
 }
 
 export function validateGanttTaskChange<TTaskFields extends object>(

@@ -28,7 +28,8 @@
 		'onTaskClick',
 		'onTaskDoubleClick',
 		'onDependencyClick',
-		'onEmptyRangeSelect'
+		'onEmptyRangeSelect',
+		'onkeydown'
 	]);
 
 	function filterGanttChartAttributes(
@@ -77,6 +78,7 @@
 	const defaultTouchActivation = {};
 	const defaultInteractions = {};
 	const defaultDisplay = {};
+	const rootId = $props.id();
 
 	let {
 		tasks = $bindable<GanttTask<TTaskFields>[]>([]),
@@ -157,6 +159,8 @@
 		canUpdateAssignment,
 		onAssignmentUpdate,
 		canCreateRange,
+		historyLimit = 50,
+		getPasteId,
 		onTasksChange,
 		onDependenciesChange,
 		onAssignmentsChange,
@@ -255,6 +259,16 @@
 		get timeZone() {
 			return timeZone;
 		},
+		get locale() {
+			return resolvedLocale;
+		},
+		get direction() {
+			return resolvedDirection;
+		},
+		get messages() {
+			return messages;
+		},
+		rootId,
 		get projectCalendarId() {
 			return projectCalendarId;
 		},
@@ -315,6 +329,12 @@
 		get canCreateRange() {
 			return canCreateRange;
 		},
+		get historyLimit() {
+			return historyLimit;
+		},
+		get getPasteId() {
+			return getPasteId;
+		},
 		get onTasksChange() {
 			return onTasksChange;
 		},
@@ -372,6 +392,22 @@
 		void calendars;
 		chart.interaction.reconcileControlledState();
 	});
+
+	$effect(() => {
+		chart.a11y.syncInteractionStatus(chart.interaction.status, chart.interaction.dependencyStatus);
+	});
+
+	$effect(() => {
+		chart.a11y.syncSelection(selection);
+	});
+
+	function handleRootKeydown(
+		event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }
+	): void {
+		const consumerHandler = remainingProps.onkeydown;
+		if (typeof consumerHandler === 'function') consumerHandler(event);
+		if (!event.defaultPrevented) chart.a11y.handleRootKeydown(event);
+	}
 
 	export function fitProject(): boolean {
 		return chart.fitProject();
@@ -532,6 +568,8 @@
 	}
 
 	onMount(() => {
+		if (!ref) throw new Error('GanttChart root did not mount.');
+		const disconnectA11y = chart.a11y.connectRoot(ref);
 		const parentElement = ref?.parentElement;
 		const updateAmbientDirection = () => {
 			if (!parentElement) return;
@@ -545,7 +583,10 @@
 				attributeFilter: ['class', 'dir', 'style']
 			});
 		}
-		return () => observer.disconnect();
+		return () => {
+			disconnectA11y();
+			observer.disconnect();
+		};
 	});
 </script>
 
@@ -555,6 +596,8 @@
 	dir={resolvedDirection}
 	role="region"
 	aria-label={rootAriaLabel}
+	aria-describedby={chart.a11y.instructionsId}
+	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
 	data-density={density}
 	data-color={color}
@@ -605,6 +648,7 @@
 		{scrollbars}
 		{columns}
 		interactions={resolvedInteractions}
+		touchActivation={resolvedTouchActivation}
 		{scales}
 		{validRange}
 		{initialScrollDate}
@@ -644,9 +688,15 @@
 		{onDependencyClick}
 	/>
 	<div
+		id={chart.a11y.liveRegionId}
 		data-gantt-chart-part="live-region"
 		class={classes.liveRegion({ density, color, disabled })}
 		aria-live="polite"
 		aria-atomic="true"
-	></div>
+	>
+		{chart.a11y.announcement}
+	</div>
+	<div id={chart.a11y.instructionsId} class="sr-only">
+		{messages.ganttChartKeyboardInstructions}
+	</div>
 </div>
