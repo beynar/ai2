@@ -126,8 +126,10 @@
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
 	const isFocusTarget = $derived(chart.a11y.isTaskTabStop(node.taskId));
-	const startHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 10 : -10));
-	const endHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -10 : 10));
+	const resizeStartHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 12 : -12));
+	const resizeEndHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -12 : 12));
+	const dependencyStartHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 36 : -36));
+	const dependencyEndHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -36 : 36));
 	const handleTop = $derived(positioned.geometry.top + positioned.geometry.height / 2);
 	const progressHandleLeft = $derived(getProgressHandleLeft(positioned, progressValue, direction));
 	const canCreateDependency = $derived(
@@ -423,11 +425,13 @@
 			data-edge="start"
 			data-task-id={node.taskId}
 			class={classes.resizeHandle({ density, color: semanticColor, disabled })}
-			style:left={`${startHandleLeft}px`}
+			style:left={`${resizeStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.taskDrag(node.taskId, 'resize-start', rowTop)}
 		>
-			<span class="h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)]"></span>
+			<span
+				class={`h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)] ${direction === 'rtl' ? '-translate-x-3' : 'translate-x-3'}`}
+			></span>
 		</span>
 		<span
 			role="button"
@@ -438,11 +442,13 @@
 			data-edge="end"
 			data-task-id={node.taskId}
 			class={classes.resizeHandle({ density, color: semanticColor, disabled })}
-			style:left={`${endHandleLeft}px`}
+			style:left={`${resizeEndHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.taskDrag(node.taskId, 'resize-end', rowTop)}
 		>
-			<span class="h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)]"></span>
+			<span
+				class={`h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)] ${direction === 'rtl' ? 'translate-x-3' : '-translate-x-3'}`}
+			></span>
 		</span>
 	{/if}
 
@@ -475,14 +481,16 @@
 			data-task-id={node.taskId}
 			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'start') || undefined}
 			class={classes.dependencyHandle({ density, color: semanticColor, disabled })}
-			style:left={`${startHandleLeft}px`}
+			style:left={`${dependencyStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'start', {
-				x: startHandleLeft,
+				x: dependencyStartHandleLeft,
 				y: handleTop
 			})}
 		>
-			<span class="size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface"></span>
+			<span
+				class={`size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface ${direction === 'rtl' ? '-translate-x-3' : 'translate-x-3'}`}
+			></span>
 		</span>
 		<span
 			role="button"
@@ -493,14 +501,16 @@
 			data-task-id={node.taskId}
 			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'end') || undefined}
 			class={classes.dependencyHandle({ density, color: semanticColor, disabled })}
-			style:left={`${endHandleLeft}px`}
+			style:left={`${dependencyEndHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'end', {
-				x: endHandleLeft,
+				x: dependencyEndHandleLeft,
 				y: handleTop
 			})}
 		>
-			<span class="size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface"></span>
+			<span
+				class={`size-2 rounded-full border border-[var(--gantt-task-color)] bg-surface ${direction === 'rtl' ? 'translate-x-3' : '-translate-x-3'}`}
+			></span>
 		</span>
 	{/if}
 

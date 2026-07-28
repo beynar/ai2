@@ -165,10 +165,9 @@
 			tabindex={isTabStop && !disabled ? 0 : -1}
 			data-gantt-chart-part="connector-control"
 			data-dependency-id={dependency.dependency.id}
-			class="pointer-events-auto absolute z-20 size-6 rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color/60"
+			class="pointer-events-none absolute z-20 size-6 rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color/60"
 			style:left={`${focusLeft}px`}
 			style:top={`${focusTop}px`}
-			onpointerdown={(event) => event.stopPropagation()}
 			onclick={onActivate}
 			onfocus={onFocus}
 			ondblclick={(event) => {

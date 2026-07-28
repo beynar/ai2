@@ -409,6 +409,10 @@
 		if (!event.defaultPrevented) chart.a11y.handleRootKeydown(event);
 	}
 
+	function handleRootKeydownCapture(event: KeyboardEvent): void {
+		if (event.key === 'Escape' && chart.a11y.keyboardMode) chart.a11y.handleRootKeydown(event);
+	}
+
 	export function fitProject(): boolean {
 		return chart.fitProject();
 	}
@@ -597,6 +601,7 @@
 	role="region"
 	aria-label={rootAriaLabel}
 	aria-describedby={chart.a11y.instructionsId}
+	onkeydowncapture={handleRootKeydownCapture}
 	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
 	data-density={density}

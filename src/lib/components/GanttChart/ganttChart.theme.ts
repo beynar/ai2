@@ -61,7 +61,7 @@ const gridPane = createGanttChartPart(
 	'relative min-h-0 min-w-0 overflow-x-clip overflow-y-visible bg-surface'
 );
 const splitter = createGanttChartPart(
-	'bg-neutral-muted/80 outline-none focus-visible:ring-2 focus-visible:ring-color/60'
+	'z-30 bg-neutral-muted/80 outline-none before:w-6 focus-visible:ring-2 focus-visible:ring-color/60'
 );
 const timelinePane = createGanttChartPart(
 	'relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-visible bg-surface'
