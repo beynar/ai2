@@ -9,12 +9,24 @@
 			body: 'timeZone is required. Project, task, and resource calendars use explicit IANA zones, half-open working intervals, and civil-date exceptions. Unscheduled tasks stay visible without a bar, while milestones require equal start and end instants.'
 		},
 		{
-			title: 'Application-owned editing',
-			body: 'GanttChart does not own create or edit dialogs. Compose task callbacks with Svelai Dialog and Form controls, validate the domain record, then publish a fresh controlled array. Persistence and retry policy remain at the application boundary.'
+			title: 'One mutation boundary',
+			body: 'Pointer and touch gestures, keyboard modes, built-in or custom column editors, clipboard, history, and API calls produce the same typed proposals. Structural checks run before canUpdate hooks; adjusted records are revalidated before fresh arrays and changed objects publish. Change callbacks carry one guarded revert and never swallow persistence failures.'
 		},
 		{
-			title: 'Composition and theme',
-			body: 'Header, task, timeline, tooltip, progress, project-element, resource, loading, and empty snippets customize content inside component-owned semantics. Use the ganttChart theme key and CSS metric variables for geometry without replacing selection, focus, hit targets, or announcements.'
+			title: 'Scheduling and completed tasks',
+			body: 'All four dependency types support signed lag. Auto-scheduling preserves working duration and never moves a completed leaf task; an impossible successor or constraint is exposed as a violation. Critical-path and slack analysis still includes completed tasks, whose actual dates constrain successors.'
+		},
+		{
+			title: 'Resources are diagnostic',
+			body: 'Assignments, task and resource calendars, units, and capacity feed the workload panel and over-allocation markers. Resource hierarchy, filtering, and grouping never rewrite task hierarchy. This version deliberately performs no automatic resource leveling.'
+		},
+		{
+			title: 'Application-owned dialogs',
+			body: 'GanttChart does not own create or edit dialogs. Compose onTaskDoubleClick or onEmptyRangeSelect with Svelai Dialog and Form controls, validate the domain record, then publish a fresh controlled array or call the imperative API. Persistence, fetching, retries, and conflict UI remain at the application boundary.'
+		},
+		{
+			title: 'Composition, accessibility, and scale',
+			body: 'Every content snippet renders inside component-owned roles, focus targets, selection, hit areas, gestures, and live announcements. M/S/E/P/D/R enter keyboard mutation modes; Enter commits and Escape cancels. One virtual row model and a windowed time axis keep mounted DOM bounded. Use the ganttChart theme key and CSS metric variables without replacing those owners.'
 		}
 	];
 </script>

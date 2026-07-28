@@ -5,17 +5,18 @@
 		type GanttDependencyCreationRequest,
 		type GanttTask
 	} from '$lib/components/GanttChart/index.js';
+	import { parisProjectCalendar } from './ganttChartDemoData.js';
 
 	let nextDependencyId = 0;
 
 	let tasks = $state<GanttTask[]>([
-		{ id: 'discovery', title: 'Discovery', type: 'summary', progress: 0.75 },
+		{ id: 'discovery', title: 'Discovery', type: 'summary' },
 		{
 			id: 'research',
 			parentId: 'discovery',
 			title: 'User research',
 			start: new Date('2026-07-27T07:00:00.000Z'),
-			end: new Date('2026-07-30T16:00:00.000Z'),
+			end: new Date('2026-07-30T15:00:00.000Z'),
 			progress: 1
 		},
 		{
@@ -23,7 +24,7 @@
 			parentId: 'discovery',
 			title: 'Product brief',
 			start: new Date('2026-07-31T07:00:00.000Z'),
-			end: new Date('2026-08-04T16:00:00.000Z'),
+			end: new Date('2026-08-04T15:00:00.000Z'),
 			progress: 0.5
 		},
 		{ id: 'delivery', title: 'Delivery', type: 'summary' },
@@ -32,7 +33,7 @@
 			parentId: 'delivery',
 			title: 'Implementation',
 			start: new Date('2026-08-05T07:00:00.000Z'),
-			end: new Date('2026-08-18T16:00:00.000Z'),
+			end: new Date('2026-08-18T15:00:00.000Z'),
 			progress: 0.2
 		},
 		{
@@ -75,6 +76,8 @@
 	bind:tasks
 	bind:dependencies
 	{createDependency}
+	calendars={[parisProjectCalendar]}
+	projectCalendarId={parisProjectCalendar.id}
 	timeZone="Europe/Paris"
 	initialScrollDate={new Date('2026-08-05T10:00:00.000Z')}
 	class="h-[34rem] w-full"
