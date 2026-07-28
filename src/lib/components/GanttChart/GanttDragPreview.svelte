@@ -53,6 +53,8 @@
 	} = $props();
 	let labelWidth = $state(0);
 	let labelHeight = $state(0);
+	const LABEL_GAP = 8;
+	const LABEL_EDGE_INSET = 8;
 
 	const taskProposal = $derived(status.type === 'task' ? status.proposal : null);
 	const proposedTask = $derived(taskProposal?.task ?? null);
@@ -112,15 +114,25 @@
 	const durationLabel = $derived(
 		`${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
 	);
-	const labelLeft = $derived(
-		Math.max(
-			visiblePixels.start + 8,
-			Math.min(visiblePixels.end - labelWidth - 8, status.pointerCanvasX + 12)
-		)
-	);
-	const labelTop = $derived(
-		Math.max(4, Math.min(totalHeight - labelHeight - 4, status.rowTop - 4))
-	);
+	const labelPlacement = $derived.by(() => {
+		const minimumLeft = visiblePixels.start + LABEL_EDGE_INSET;
+		const maximumLeft = Math.max(minimumLeft, visiblePixels.end - labelWidth - LABEL_EDGE_INSET);
+		const left = Math.max(
+			minimumLeft,
+			Math.min(maximumLeft, status.pointerCanvasX - labelWidth / 2)
+		);
+		const previewTop = geometry?.top ?? status.rowTop;
+		const previewBottom = geometry ? geometry.top + geometry.height : status.rowTop + rowHeight;
+		const above = previewTop - labelHeight - LABEL_GAP;
+		const below = previewBottom + LABEL_GAP;
+		const maximumTop = Math.max(LABEL_EDGE_INSET, totalHeight - labelHeight - LABEL_EDGE_INSET);
+		const side = above >= LABEL_EDGE_INSET ? 'top' : 'bottom';
+		return {
+			left,
+			top: Math.max(LABEL_EDGE_INSET, Math.min(maximumTop, side === 'top' ? above : below)),
+			side
+		};
+	});
 	const payload = $derived(
 		status.proposal && geometry
 			? ({
@@ -191,12 +203,13 @@
 		<Slot render={dragPreview ?? defaultContent} {payload} />
 	</div>
 	<div
-		bind:clientWidth={labelWidth}
-		bind:clientHeight={labelHeight}
+		bind:offsetWidth={labelWidth}
+		bind:offsetHeight={labelHeight}
 		data-gantt-chart-part="drag-preview-label"
+		data-side={labelPlacement.side}
 		class="pointer-events-none absolute z-50 grid max-w-72 gap-0.5 rounded-md border border-neutral-muted bg-surface-raised/95 px-2 py-1 text-xs text-neutral shadow-lg backdrop-blur"
-		style:left={`${labelLeft}px`}
-		style:top={`${labelTop}px`}
+		style:left={`${labelPlacement.left}px`}
+		style:top={`${labelPlacement.top}px`}
 		aria-hidden="true"
 	>
 		{#if proposedTask}<strong class="truncate">{proposedTask.title}</strong>{/if}
