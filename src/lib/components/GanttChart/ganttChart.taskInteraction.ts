@@ -1,3 +1,5 @@
+import { addCivilDateDays } from '$lib/scheduling/civilDate.js';
+import { getInstantZonedParts, resolveZonedWallTime } from '$lib/scheduling/zonedTime.js';
 import {
 	addWorkingMinutes,
 	getTaskWorkingMinutes,
@@ -59,19 +61,11 @@ export function deriveGanttTaskKeyboardChange<TTaskFields extends object>(input:
 			{ taskId: input.task.id }
 		);
 	}
-	const originInstant = input.operation === 'resize-end' ? input.task.end : input.task.start;
-	const pointerInstant = addWorkingMinutes(
-		originInstant,
-		input.stepCount * getGanttSnapMinutes(input.snapDuration, input.calendar),
-		input.calendar
-	);
-	return deriveGanttTaskPointerChange({
+	return deriveGanttTaskWorkingChange({
 		task: input.task,
 		operation: input.operation,
-		originInstant,
-		pointerInstant,
 		calendar: input.calendar,
-		snapDuration: input.snapDuration
+		workingDelta: input.stepCount * getGanttSnapMinutes(input.snapDuration, input.calendar)
 	});
 }
 
@@ -91,12 +85,32 @@ export function deriveGanttTaskPointerChange<TTaskFields extends object>(input: 
 			{ taskId: task.id }
 		);
 	}
-	const workingDelta = snapGanttWorkingDelta(
+	const workingDelta = getGanttPointerWorkingDelta(
 		input.originInstant,
 		input.pointerInstant,
 		calendar,
 		input.snapDuration
 	);
+	return deriveGanttTaskWorkingChange({
+		task,
+		operation: input.operation,
+		calendar,
+		workingDelta
+	});
+}
+
+function deriveGanttTaskWorkingChange<TTaskFields extends object>(input: {
+	task: GanttTask<TTaskFields>;
+	operation: GanttTaskPointerOperation;
+	calendar: GanttCalendarRuntime;
+	workingDelta: number;
+}): GanttDerivedTaskChange<TTaskFields> {
+	const { task, calendar, workingDelta } = input;
+	if (!task.start || !task.end) {
+		throw new GanttChartError('invalid-operation', `Task ${task.id} has no editable schedule.`, {
+			taskId: task.id
+		});
+	}
 	if (input.operation === 'move') {
 		const nextStart = addWorkingMinutes(task.start, workingDelta, calendar);
 		const movedTask = moveTaskToStart(task, nextStart, calendar);
@@ -171,9 +185,15 @@ export function deriveGanttRangeProposal(input: {
 }): Readonly<{ proposal: GanttRangeProposal; workingDurationMinutes: number }> {
 	const step = getGanttSnapMinutes(input.snapDuration, input.calendar);
 	const origin = addWorkingMinutes(input.originInstant, 0, input.calendar);
-	const rawDelta = getWorkingMinutesBetween(origin, input.pointerInstant, input.calendar);
+	const rawDelta = input.pointerInstant.getTime() - input.originInstant.getTime();
 	const isForward = input.pointerInstant.getTime() >= input.originInstant.getTime();
-	const duration = Math.max(step, Math.ceil(Math.abs(rawDelta) / step) * step);
+	const elapsedStep = getGanttSnapElapsedMilliseconds(
+		input.snapDuration,
+		input.originInstant,
+		isForward ? 1 : -1,
+		input.calendar.calendar.timeZone
+	);
+	const duration = Math.max(step, Math.ceil(Math.abs(rawDelta) / elapsedStep) * step);
 	const start = isForward ? origin : subtractWorkingMinutes(origin, duration, input.calendar);
 	const end = isForward ? addWorkingMinutes(origin, duration, input.calendar) : origin;
 	return {
@@ -200,16 +220,21 @@ export function deriveGanttRangeKeyboardProposal(input: {
 			'Keyboard range steps must be a non-zero integer.'
 		);
 	}
-	const pointerInstant = addWorkingMinutes(
-		input.originInstant,
-		input.stepCount * getGanttSnapMinutes(input.snapDuration, input.calendar),
-		input.calendar
-	);
-	return deriveGanttRangeProposal({
-		...input,
-		pointerInstant,
-		source: 'keyboard'
-	});
+	const step = getGanttSnapMinutes(input.snapDuration, input.calendar);
+	const duration = Math.abs(input.stepCount) * step;
+	const origin = addWorkingMinutes(input.originInstant, 0, input.calendar);
+	const start =
+		input.stepCount > 0 ? origin : subtractWorkingMinutes(origin, duration, input.calendar);
+	const end = input.stepCount > 0 ? addWorkingMinutes(origin, duration, input.calendar) : origin;
+	return {
+		proposal: {
+			source: 'keyboard',
+			start,
+			end,
+			...(input.parentId === undefined ? {} : { parentId: input.parentId })
+		},
+		workingDurationMinutes: duration
+	};
 }
 
 export function validateGanttTaskChange<TTaskFields extends object>(
@@ -253,15 +278,56 @@ export function validateGanttRangeProposal(
 	});
 }
 
-function snapGanttWorkingDelta(
+function getGanttPointerWorkingDelta(
 	origin: Date,
 	pointer: Date,
 	calendar: GanttCalendarRuntime,
 	duration: GanttDuration
 ): number {
-	const step = getGanttSnapMinutes(duration, calendar);
-	const workingDelta = getWorkingMinutesBetween(origin, pointer, calendar);
-	return Math.round(workingDelta / step) * step;
+	const workingStep = getGanttSnapMinutes(duration, calendar);
+	const elapsedDelta = pointer.getTime() - origin.getTime();
+	const elapsedStep = getGanttSnapElapsedMilliseconds(
+		duration,
+		origin,
+		elapsedDelta < 0 ? -1 : 1,
+		calendar.calendar.timeZone
+	);
+	const elapsedSteps = elapsedDelta / elapsedStep;
+	const stepCount = Math.sign(elapsedSteps) * Math.floor(Math.abs(elapsedSteps) + 0.5);
+	return stepCount * workingStep;
+}
+
+function getGanttSnapElapsedMilliseconds(
+	duration: GanttDuration,
+	origin: Date,
+	direction: -1 | 1,
+	timeZone: string
+): number {
+	const minute = 60_000;
+	if (duration.unit === 'minute') return duration.value * minute;
+	if (duration.unit === 'hour') return duration.value * 60 * minute;
+	if (duration.unit === 'day' || duration.unit === 'week') {
+		const dayCount = duration.value * (duration.unit === 'week' ? 7 : 1);
+		const wholeDays = Math.trunc(dayCount);
+		const partialDayMilliseconds = (dayCount - wholeDays) * 24 * 60 * minute;
+		if (wholeDays === 0) return partialDayMilliseconds;
+		const originParts = getInstantZonedParts(origin, timeZone);
+		const targetDay = addCivilDateDays(originParts, direction * wholeDays);
+		const target = resolveZonedWallTime(
+			{
+				...targetDay,
+				hour: originParts.hour,
+				minute: originParts.minute,
+				second: originParts.second,
+				millisecond: originParts.millisecond
+			},
+			timeZone
+		);
+		return Math.abs(target.getTime() - origin.getTime()) + partialDayMilliseconds;
+	}
+	throw new GanttChartError('invalid-operation', 'snapDuration has an unsupported unit.', {
+		snapDuration: duration
+	});
 }
 
 function getGanttSnapMinutes(duration: GanttDuration, calendar: GanttCalendarRuntime): number {

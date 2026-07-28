@@ -684,6 +684,7 @@ export class GanttChartInteractions<
 		if (!task) return;
 		this.#didNativeCancel = false;
 		const pointer = payload.location.current.input;
+		const originPointer = payload.location.initial.input;
 		const schedule = this.#getSchedule();
 		this.#gesture = {
 			type: 'task',
@@ -694,7 +695,7 @@ export class GanttChartInteractions<
 			calendar: getTaskCalendar(schedule.model, task),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
-			originInstant: this.getPointerInstant(pointer, timeline.scale, timeline.viewport),
+			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
 			rowTop: source.rowTop,
 			pointer,
 			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
@@ -718,6 +719,7 @@ export class GanttChartInteractions<
 		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
 		if (!timeline || !task || !this.canBeginTaskGesture(taskId, operation)) return false;
 		const pointer = { clientX: payload.x, clientY: payload.y };
+		const originPointer = { clientX: payload.startX, clientY: payload.startY };
 		this.#gesture = {
 			type: 'task',
 			inputMode: 'pointer',
@@ -727,7 +729,7 @@ export class GanttChartInteractions<
 			calendar: getTaskCalendar(this.#getSchedule().model, task),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
-			originInstant: this.getPointerInstant(pointer, timeline.scale, timeline.viewport),
+			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
 			rowTop,
 			pointer,
 			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
@@ -806,9 +808,10 @@ export class GanttChartInteractions<
 			return false;
 		}
 		const pointer = toPointerCoordinates(payload);
+		const originPointer = { clientX: payload.startX, clientY: payload.startY };
 		const canvasBounds = payload.node.getBoundingClientRect();
 		const rowTop =
-			Math.max(0, Math.floor((pointer.clientY - canvasBounds.top) / timeline.rowHeight)) *
+			Math.max(0, Math.floor((originPointer.clientY - canvasBounds.top) / timeline.rowHeight)) *
 			timeline.rowHeight;
 		this.#gesture = {
 			type: 'range',
@@ -816,7 +819,7 @@ export class GanttChartInteractions<
 			calendar: getCalendarRuntime(this.#getSchedule().model.projectCalendar),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
-			originInstant: this.getPointerInstant(pointer, timeline.scale, timeline.viewport),
+			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
 			rowTop,
 			pointer,
 			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
