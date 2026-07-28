@@ -38,14 +38,27 @@ const setCustomNativeDragPreviewEntry =
 	setCustomNativeDragPreviewRuntime as typeof SetCustomNativeDragPreview;
 const preventUnhandledEntry = preventUnhandledRuntime as typeof PreventUnhandled;
 const reorderEntry = reorderRuntime as typeof Reorder;
+const { preventUnhandled } = preventUnhandledEntry;
 
 export const { autoScrollForElements, autoScrollWindowForElements } = autoScroll;
 export const { combine } = combineEntry;
-export const { draggable, dropTargetForElements, monitorForElements } = elementAdapter;
+export const draggable: typeof elementAdapter.draggable = (args) =>
+	elementAdapter.draggable({
+		...args,
+		onDragStart(payload) {
+			// Keep every library-owned drag on the managed drop path instead of native snap-back.
+			preventUnhandled.start();
+			args.onDragStart?.(payload);
+		},
+		onDrop(payload) {
+			preventUnhandled.stop();
+			args.onDrop?.(payload);
+		}
+	});
+export const { dropTargetForElements, monitorForElements } = elementAdapter;
 export const { disableNativeDragPreview } = disableNativeDragPreviewEntry;
 export const { pointerOutsideOfPreview } = pointerOutsideOfPreviewEntry;
 export const { setCustomNativeDragPreview } = setCustomNativeDragPreviewEntry;
-export const { preventUnhandled } = preventUnhandledEntry;
 export const { reorder } = reorderEntry;
 
 export type { ElementEventPayloadMap } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';

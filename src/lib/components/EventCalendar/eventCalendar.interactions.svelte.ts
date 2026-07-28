@@ -6,7 +6,6 @@ import {
 	draggable,
 	dropTargetForElements,
 	monitorForElements,
-	preventUnhandled,
 	type ElementEventPayloadMap
 } from '$lib/utils/pragmaticDragAndDrop.js';
 import { untrack } from 'svelte';
@@ -1178,8 +1177,6 @@ export class EventCalendarInteractionsController<
 			isOverflowSource: source.isOverflowSource,
 			sourceResourceId: source.sourceResourceId
 		};
-		// Avoid the native snap-back delay when a release is rejected or outside a calendar target.
-		preventUnhandled.start();
 		this.updateItemGesture(payload);
 	}
 
@@ -1204,7 +1201,6 @@ export class EventCalendarInteractionsController<
 
 	private handleItemDrop(payload: ElementEventPayloadMap['onDrop']): void {
 		this.cancelItemDragFrame();
-		preventUnhandled.stop();
 		const active = this.gesture;
 		if (!active || active.kind === 'slot-create') return;
 		if (this.didNativeCancel) {

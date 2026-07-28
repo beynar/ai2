@@ -5,7 +5,6 @@ import {
 	dropTargetForElements,
 	monitorForElements,
 	pointerOutsideOfPreview,
-	preventUnhandled,
 	reorder,
 	setCustomNativeDragPreview
 } from '$lib/utils/pragmaticDragAndDrop.js';
@@ -490,7 +489,6 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		location: { current: { dropTargets: Array<{ data: Record<string | symbol, unknown> }> } };
 	}) => {
 		hideIndicator();
-		preventUnhandled.stop();
 		unlockNativeScroll();
 		isOver = false;
 		const overAtDrop = over;
@@ -904,9 +902,6 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 						const from = freshIndex(options.items(), id);
 						if (from !== -1) setOver(from, payload());
 						element.setAttribute('data-dnd-dragging', 'true');
-						// Without this, drops outside any target play the slow native
-						// snap-back animation before dragend.
-						preventUnhandled.start();
 						options.onDragStart?.({ item: itemData, index: from });
 					},
 					onDrop: () => {
