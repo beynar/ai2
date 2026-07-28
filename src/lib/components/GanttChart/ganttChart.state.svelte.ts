@@ -258,6 +258,7 @@ export class GanttChartState<
 		this.interaction = new GanttChartInteractions(options, this.#mutations, () => this.schedule);
 		this.a11y = new GanttChartA11y(options, this.interaction, () => this.schedule, {
 			select: (selection) => this.select(selection),
+			clearSelection: () => this.clearSelection(),
 			removeTask: (taskId) => this.removeTaskFromKeyboard(taskId),
 			removeDependency: (dependencyId) => this.removeDependencyFromKeyboard(dependencyId),
 			copySelection: () => this.copySelection(),

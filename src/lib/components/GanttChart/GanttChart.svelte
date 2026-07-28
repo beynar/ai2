@@ -406,11 +406,11 @@
 	): void {
 		const consumerHandler = remainingProps.onkeydown;
 		if (typeof consumerHandler === 'function') consumerHandler(event);
-		if (!event.defaultPrevented) chart.a11y.handleRootKeydown(event);
+		if (event.key !== 'Escape' && !event.defaultPrevented) chart.a11y.handleRootKeydown(event);
 	}
 
 	function handleRootKeydownCapture(event: KeyboardEvent): void {
-		if (event.key === 'Escape' && chart.a11y.keyboardMode) chart.a11y.handleRootKeydown(event);
+		if (event.key === 'Escape') chart.a11y.scheduleDismissFocus();
 	}
 
 	export function fitProject(): boolean {

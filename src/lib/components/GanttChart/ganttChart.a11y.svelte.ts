@@ -40,6 +40,7 @@ type KeyboardMode =
 
 type A11yActions = Readonly<{
 	select: (selection: GanttSelection) => void;
+	clearSelection: () => void;
 	removeTask: (taskId: string) => boolean;
 	removeDependency: (dependencyId: string) => boolean;
 	copySelection: () => boolean;
@@ -68,6 +69,7 @@ export class GanttChartA11y<
 	#announcementRevision = 0;
 	#lastInteractionKey = '';
 	#focusFrames: number[] = [];
+	#dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(
 		private readonly options: GanttChartStateOptions<
@@ -99,6 +101,8 @@ export class GanttChartA11y<
 		return () => {
 			if (this.#root === root) this.#root = null;
 			this.cancelFocusFrames();
+			if (this.#dismissTimer !== null) clearTimeout(this.#dismissTimer);
+			this.#dismissTimer = null;
 		};
 	}
 
@@ -246,6 +250,41 @@ export class GanttChartA11y<
 		else if (target?.kind === 'dependency') {
 			this.handleDependencyNavigation(event, target.dependencyId);
 		}
+	}
+
+	private dismissFocus(): void {
+		const mode = this.keyboardMode;
+		this.interaction.cancel();
+		this.keyboardMode = null;
+		this.actions.clearSelection();
+		this.activeTarget = null;
+		this.cancelFocusFrames();
+		if (mode) this.announce(this.options.messages.ganttChartMutationCancelled(mode.title));
+
+		const root = this.#root;
+		if (!root) return;
+		queueMicrotask(() => {
+			if (this.#root !== root) return;
+			const activeElement = root.ownerDocument.activeElement;
+			if (
+				activeElement &&
+				root.contains(activeElement) &&
+				'blur' in activeElement &&
+				typeof activeElement.blur === 'function'
+			) {
+				activeElement.blur();
+			}
+		});
+	}
+
+	scheduleDismissFocus(): void {
+		const root = this.#root;
+		if (!root) return;
+		if (this.#dismissTimer !== null) clearTimeout(this.#dismissTimer);
+		this.#dismissTimer = setTimeout(() => {
+			this.#dismissTimer = null;
+			if (this.#root === root) this.dismissFocus();
+		}, 0);
 	}
 
 	syncInteractionStatus(
