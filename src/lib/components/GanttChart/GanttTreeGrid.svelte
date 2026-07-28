@@ -85,6 +85,9 @@
 	const canReorder = $derived(
 		interactions.reorderRows && !disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted
 	);
+	const canChangeHierarchy = $derived(
+		!disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted
+	);
 	const headerPayload = $derived<
 		GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ columns: rowModel.visibleColumns, defaultContent: defaultGridHeader });
@@ -214,10 +217,53 @@
 		});
 	}
 
-	function blockHierarchyOperation(taskId: string): void {
+	function canIndentRow(rowIndex: number): boolean {
+		if (!canChangeHierarchy || !interactions.indent) return false;
+		const node = rowModel.rows[rowIndex];
+		const previousNode = rowModel.rows[rowIndex - 1];
+		return Boolean(
+			node &&
+			previousNode &&
+			!node.task.readOnly &&
+			!previousNode.task.readOnly &&
+			previousNode.type === 'summary' &&
+			(node.parentId ?? null) === (previousNode.parentId ?? null)
+		);
+	}
+
+	function canOutdentRow(rowIndex: number): boolean {
+		if (!canChangeHierarchy || !interactions.outdent) return false;
+		const node = rowModel.rows[rowIndex];
+		return Boolean(node && node.parentId && !node.task.readOnly);
+	}
+
+	function indentRow(rowIndex: number): void {
+		const node = rowModel.rows[rowIndex];
+		const previousNode = rowModel.rows[rowIndex - 1];
+		if (
+			!node ||
+			!previousNode ||
+			!canIndentRow(rowIndex) ||
+			!chart.indentTask(node.taskId, previousNode.taskId, 'pointer')
+		) {
+			if (node) blockHierarchyOperation(node.taskId, 'pointer');
+		}
+	}
+
+	function outdentRow(rowIndex: number): void {
+		const node = rowModel.rows[rowIndex];
+		if (!node || !canOutdentRow(rowIndex) || !chart.outdentTask(node.taskId, 'pointer')) {
+			if (node) blockHierarchyOperation(node.taskId, 'pointer');
+		}
+	}
+
+	function blockHierarchyOperation(
+		taskId: string,
+		source: 'keyboard' | 'pointer' = 'keyboard'
+	): void {
 		chart.blockInteraction({
 			reason: 'invalid-target',
-			source: 'keyboard',
+			source,
 			taskId,
 			message: 'Hierarchy operations require a compatible sibling summary target.'
 		});
@@ -305,16 +351,21 @@
 							{timeZone}
 							{density}
 							{color}
+							{direction}
 							{disabled}
 							{loading}
 							isSelected={isTaskSelected(node.taskId)}
 							activeColumnId={activeTaskId === node.taskId ? activeColumnId : ''}
 							showDragHandle={canReorder}
+							canIndent={canIndentRow(virtualRow.index)}
+							canOutdent={canOutdentRow(virtualRow.index)}
 							{classes}
 							treeCell={snippets.treeCell}
 							taskRow={snippets.taskRow}
 							rowAttachment={dnd.item(node, virtualRow.index)}
 							onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
+							onIndent={() => indentRow(virtualRow.index)}
+							onOutdent={() => outdentRow(virtualRow.index)}
 							onNavigate={(event, columnIndex) =>
 								navigateCell(event, virtualRow.index, columnIndex)}
 						/>

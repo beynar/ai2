@@ -5,7 +5,9 @@
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import GanttDependencyLayer from './GanttDependencyLayer.svelte';
+	import GanttDragPreview from './GanttDragPreview.svelte';
 	import GanttTaskBar from './GanttTaskBar.svelte';
 	import GanttTimeShadeLayer from './GanttTimeShadeLayer.svelte';
 	import { positionGanttTask, type GanttTimeShade } from './ganttChart.layout.js';
@@ -18,6 +20,7 @@
 		GanttBaselinePayload,
 		GanttDeadlinePayload,
 		GanttDependencyTooltipPayload,
+		GanttDragPreviewPayload,
 		GanttNonWorkingTimePayload,
 		GanttProgressPayload,
 		GanttTaskLabelPayload,
@@ -48,6 +51,7 @@
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
 		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
+		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	};
 
 	let {
@@ -138,6 +142,7 @@
 		projectRange ? getGanttScalePixel(scale, projectRange.end) : null
 	);
 	const todayLeft = $derived(now ? getGanttScalePixel(scale, now) : null);
+	const rangeDrag: Attachment<HTMLElement> = (element) => chart.interaction.rangeDrag()(element);
 
 	function isTaskSelected(taskId: string): boolean {
 		return selection.kind === 'task' && selection.taskId === taskId;
@@ -157,6 +162,12 @@
 	style:width={`${scale.totalWidth}px`}
 	style:height={`${totalHeight}px`}
 >
+	<div
+		data-gantt-chart-part="range-surface"
+		class="absolute inset-0 z-0"
+		aria-hidden="true"
+		{@attach rangeDrag}
+	></div>
 	<GanttTimeShadeLayer
 		{shades}
 		{totalHeight}
@@ -247,6 +258,7 @@
 			{#if positioned}
 				<GanttTaskBar
 					{positioned}
+					rowTop={virtualRow.start}
 					{chart}
 					{resources}
 					{assignments}
@@ -270,6 +282,24 @@
 			{/if}
 		{/each}
 	</div>
+
+	{#if chart.interaction.status}
+		<GanttDragPreview
+			status={chart.interaction.status}
+			{rowModel}
+			{scale}
+			{visibleRange}
+			{visiblePixels}
+			{rowHeight}
+			{locale}
+			{timeZone}
+			{density}
+			{color}
+			{disabled}
+			{classes}
+			dragPreview={snippets.dragPreview}
+		/>
+	{/if}
 
 	<GanttDependencyLayer
 		dependencies={resolvedDependencies}

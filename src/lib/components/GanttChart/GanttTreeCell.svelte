@@ -13,6 +13,8 @@
 >
 	import { caretDownIcon } from '$lib/components/Icons/caretDown.js';
 	import { caretRightIcon } from '$lib/components/Icons/caretRight.js';
+	import { arrowLineLeftIcon } from '$lib/components/Icons/arrowLineLeft.js';
+	import { arrowLineRightIcon } from '$lib/components/Icons/arrowLineRight.js';
 	import { dotsSixVerticalIcon } from '$lib/components/Icons/dotsSixVertical.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
@@ -49,14 +51,19 @@
 		timeZone,
 		density,
 		color,
+		direction,
 		disabled,
 		loading,
 		isSelected,
 		isFocused,
 		showDragHandle,
+		canIndent,
+		canOutdent,
 		classes,
 		treeCell,
 		onFocus,
+		onIndent,
+		onOutdent,
 		onNavigate
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
@@ -77,16 +84,21 @@
 		timeZone: string;
 		density: Density;
 		color: Colors;
+		direction: 'ltr' | 'rtl';
 		disabled: boolean;
 		loading: boolean;
 		isSelected: boolean;
 		isFocused: boolean;
 		showDragHandle: boolean;
+		canIndent: boolean;
+		canOutdent: boolean;
 		classes: GanttChartClasses;
 		treeCell?: Snippet<
 			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
 		>;
 		onFocus: () => void;
+		onIndent: () => void;
+		onOutdent: () => void;
 		onNavigate: (event: KeyboardEvent) => void;
 	} = $props();
 
@@ -206,6 +218,34 @@
 		/>
 	{:else}
 		<Slot render={treeCell ?? defaultContent} {payload} />
+		{#if column.id === 'title' && canOutdent}
+			<button
+				type="button"
+				class="grid size-6 shrink-0 place-items-center rounded text-neutral/55 outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60"
+				aria-label={messages.ganttChartOutdentAction}
+				tabindex="-1"
+				onclick={(event) => {
+					event.stopPropagation();
+					onOutdent();
+				}}
+			>
+				{@render (direction === 'rtl' ? arrowLineRightIcon : arrowLineLeftIcon)({ size: 12 })}
+			</button>
+		{/if}
+		{#if column.id === 'title' && canIndent}
+			<button
+				type="button"
+				class="grid size-6 shrink-0 place-items-center rounded text-neutral/55 outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60"
+				aria-label={messages.ganttChartIndentAction}
+				tabindex="-1"
+				onclick={(event) => {
+					event.stopPropagation();
+					onIndent();
+				}}
+			>
+				{@render (direction === 'rtl' ? arrowLineLeftIcon : arrowLineRightIcon)({ size: 12 })}
+			</button>
+		{/if}
 	{/if}
 </div>
 

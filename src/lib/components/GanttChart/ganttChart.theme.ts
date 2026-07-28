@@ -94,12 +94,12 @@ const timeHeaderLower = createGanttChartPart(
 );
 const timelineRows = createGanttChartPart('relative min-w-full overflow-x-clip');
 const timelineRow = createGanttChartPart(
-	'absolute inset-x-0 h-[var(--gantt-row-height)] border-b border-neutral-muted/55'
+	'pointer-events-none absolute inset-x-0 h-[var(--gantt-row-height)] border-b border-neutral-muted/55'
 );
 const gridLine = createGanttChartPart(
 	'pointer-events-none absolute top-0 border-e border-neutral-muted/45'
 );
-const taskLayer = createGanttChartPart('pointer-events-none absolute inset-0');
+const taskLayer = createGanttChartPart('pointer-events-none absolute inset-0 z-10');
 const task = createGanttChartPart(
 	'group/task pointer-events-auto absolute flex h-[var(--gantt-task-height)] min-w-0 items-center rounded border border-[color-mix(in_oklab,var(--gantt-task-color)_40%,transparent)] bg-[color-mix(in_oklab,var(--gantt-task-color)_18%,var(--color-surface))] text-neutral shadow-sm outline-none data-[continues-before]:rounded-s-none data-[continues-after]:rounded-e-none focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText] forced-colors:focus-visible:outline-2'
 );
@@ -114,10 +114,10 @@ const progress = createGanttChartPart(
 	'pointer-events-none absolute inset-y-0 start-0 rounded-s bg-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)]'
 );
 const progressHandle = createGanttChartPart(
-	'absolute end-0 top-1/2 size-6 -translate-y-1/2 translate-x-1/2 touch-none rounded-full outline-none opacity-0 group-hover/task:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
+	'pointer-events-auto absolute z-30 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none place-items-center rounded-full outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
 );
 const resizeHandle = createGanttChartPart(
-	'absolute top-1/2 z-20 h-6 w-3 -translate-y-1/2 touch-none outline-none opacity-0 group-hover/task:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
+	'pointer-events-auto absolute z-30 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none place-items-center rounded outline-none opacity-0 transition-opacity group-hover/gantt-task:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
 );
 const dependencyHandle = createGanttChartPart(
 	'absolute top-1/2 z-20 grid size-6 -translate-y-1/2 place-items-center rounded-full outline-none opacity-0 group-hover/task:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
@@ -157,10 +157,10 @@ const nonWorkingTime = createGanttChartPart(
 );
 const holiday = createGanttChartPart('pointer-events-none absolute top-0 bg-warning/8');
 const dragPreview = createGanttChartPart(
-	'pointer-events-none fixed z-50 rounded border border-dashed border-[var(--gantt-task-color)] bg-[color-mix(in_oklab,var(--gantt-task-color)_12%,var(--color-surface))] px-2 py-1 text-xs shadow-md'
+	'pointer-events-none absolute z-40 overflow-hidden rounded border border-dashed border-[var(--gantt-task-color)] bg-[color-mix(in_oklab,var(--gantt-task-color)_12%,var(--color-surface))] text-xs shadow-md'
 );
 const rangeSelection = createGanttChartPart(
-	'pointer-events-none absolute z-20 border border-color bg-color/10'
+	'pointer-events-none absolute z-40 border border-dashed border-color bg-color/10'
 );
 const workloadPanel = createGanttChartPart(
 	'relative shrink-0 border-t border-neutral-muted bg-surface'

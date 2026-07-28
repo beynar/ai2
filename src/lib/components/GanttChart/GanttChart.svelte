@@ -68,12 +68,22 @@
 		GanttZoomLevel
 	} from './ganttChart.types.js';
 
+	const defaultResources: never[] = [];
+	const defaultCalendars: never[] = [];
+	const defaultZoomLevels = [...DEFAULT_GANTT_ZOOM_LEVELS];
+	const defaultScales: never[] = [];
+	const defaultHolidays: never[] = [];
+	const defaultSnapDuration = { value: 1, unit: 'day' } as const;
+	const defaultTouchActivation = {};
+	const defaultInteractions = {};
+	const defaultDisplay = {};
+
 	let {
 		tasks = $bindable<GanttTask<TTaskFields>[]>([]),
 		dependencies = $bindable<GanttDependency<TDependencyFields>[]>([]),
-		resources = [],
+		resources = defaultResources,
 		assignments = $bindable<GanttAssignment<TAssignmentFields>[]>([]),
-		calendars = [],
+		calendars = defaultCalendars,
 		expandedTaskIds = $bindable<string[]>(
 			tasks.flatMap((task) => (task.type === 'summary' ? [task.id] : []))
 		),
@@ -92,12 +102,14 @@
 		disabled = false,
 		projectCalendarId,
 		validRange,
-		zoomLevels = [...DEFAULT_GANTT_ZOOM_LEVELS],
-		scales = [],
+		zoomLevels = defaultZoomLevels,
+		scales = defaultScales,
 		initialScrollDate,
 		showTodayIndicator = true,
 		showWeekends = true,
-		holidays = [],
+		holidays = defaultHolidays,
+		snapDuration = defaultSnapDuration,
+		touchActivation = defaultTouchActivation,
 		rowHeight = 36,
 		overscan = 6,
 		scrollMode = 'contained',
@@ -109,10 +121,10 @@
 		minGridWidth = 240,
 		maxGridWidth = 640,
 		columns,
-		interactions = {},
+		interactions = defaultInteractions,
 		autoSchedule = false,
 		moveDependencies = false,
-		display = {},
+		display = defaultDisplay,
 		header,
 		actions,
 		gridHeader,
@@ -131,6 +143,7 @@
 		baseline,
 		deadline,
 		nonWorkingTime,
+		dragPreview,
 		empty,
 		loadingContent,
 		canUpdateTask,
@@ -139,6 +152,7 @@
 		onDependencyUpdate,
 		canUpdateAssignment,
 		onAssignmentUpdate,
+		canCreateRange,
 		onTasksChange,
 		onDependenciesChange,
 		onAssignmentsChange,
@@ -149,6 +163,7 @@
 		onTaskClick,
 		onTaskDoubleClick,
 		onDependencyClick,
+		onEmptyRangeSelect,
 		onInteractionBlocked,
 		onScheduleViolations,
 		...remainingProps
@@ -156,8 +171,16 @@
 
 	const messages = $derived(useI18n(i18n));
 	const resolvedLocale = $derived(locale ?? messages.locale);
+	const resolvedResources = $derived(resources.length === 0 ? defaultResources : resources);
+	const resolvedCalendars = $derived(calendars.length === 0 ? defaultCalendars : calendars);
 	const customScaleIds = $derived(new Set(scales.map((scale) => scale.id)));
 	const resolvedInteractions = $derived({ ...DEFAULT_GANTT_INTERACTIONS, ...interactions });
+	const resolvedTouchActivation = $derived({
+		distancePx: 5,
+		touchDelayMs: 300,
+		touchTolerancePx: 8,
+		...touchActivation
+	});
 	const resolvedDisplay = $derived({
 		criticalPath: false,
 		baselines: true,
@@ -196,7 +219,7 @@
 			dependencies = value;
 		},
 		get resources() {
-			return resources;
+			return resolvedResources;
 		},
 		get assignments() {
 			return assignments;
@@ -205,7 +228,7 @@
 			assignments = value;
 		},
 		get calendars() {
-			return calendars;
+			return resolvedCalendars;
 		},
 		get expandedTaskIds() {
 			return expandedTaskIds;
@@ -258,6 +281,12 @@
 		get interactions() {
 			return resolvedInteractions;
 		},
+		get snapDuration() {
+			return snapDuration;
+		},
+		get touchActivation() {
+			return resolvedTouchActivation;
+		},
 		get canUpdateTask() {
 			return canUpdateTask;
 		},
@@ -275,6 +304,9 @@
 		},
 		get onAssignmentUpdate() {
 			return onAssignmentUpdate;
+		},
+		get canCreateRange() {
+			return canCreateRange;
 		},
 		get onTasksChange() {
 			return onTasksChange;
@@ -297,6 +329,9 @@
 		get onSelectionChange() {
 			return onSelectionChange;
 		},
+		get onEmptyRangeSelect() {
+			return onEmptyRangeSelect;
+		},
 		get onZoomChange() {
 			return onZoomChange;
 		},
@@ -309,7 +344,7 @@
 		(): GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> => ({
 			tasks,
 			dependencies,
-			resources,
+			resources: resolvedResources,
 			assignments,
 			resolvedTasks: chart.schedule.resolvedTasks,
 			expandedTaskIds,
@@ -321,6 +356,15 @@
 			api: chart
 		})
 	);
+
+	$effect(() => {
+		void tasks;
+		void dependencies;
+		void resources;
+		void assignments;
+		void calendars;
+		chart.interaction.reconcileControlledState();
+	});
 
 	export function fitProject(): boolean {
 		return chart.fitProject();
@@ -581,6 +625,7 @@
 			baseline,
 			deadline,
 			nonWorkingTime,
+			dragPreview,
 			empty,
 			loadingContent
 		}}

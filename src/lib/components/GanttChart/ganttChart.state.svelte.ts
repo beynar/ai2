@@ -3,6 +3,7 @@ import { assertScheduleInstant, assertScheduleRange } from '$lib/scheduling/sche
 import { applyGanttColumnEdit } from './ganttChart.columns.js';
 import { calculateGanttWorkload } from './ganttChart.workload.js';
 import { GanttChartError } from './ganttChart.error.js';
+import { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { GanttChartMutations } from './ganttChart.mutations.js';
 import { createGanttColumnContext } from './ganttChart.rows.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
@@ -19,9 +20,12 @@ import type {
 	GanttDependencyProposal,
 	GanttDependencyUpdateResult,
 	GanttDependenciesChange,
+	GanttDuration,
 	GanttInteractionBlockedInfo,
 	GanttInteractions,
+	GanttMutationSource,
 	GanttRange,
+	GanttRangeProposal,
 	GanttResolvedTaskNode,
 	GanttResource,
 	GanttScheduleAnalysis,
@@ -30,6 +34,7 @@ import type {
 	GanttTaskProposal,
 	GanttTasksChange,
 	GanttTaskUpdateResult,
+	GanttTouchActivation,
 	GanttWorkloadBucket,
 	GanttZoomLevel
 } from './ganttChart.types.js';
@@ -95,6 +100,8 @@ export type GanttChartStateOptions<
 	readonly autoSchedule: boolean;
 	readonly moveDependencies: boolean;
 	readonly interactions: GanttInteractions;
+	readonly snapDuration: GanttDuration;
+	readonly touchActivation: GanttTouchActivation;
 	readonly canUpdateTask: ((proposal: GanttTaskProposal<TTaskFields>) => boolean) | undefined;
 	readonly onTaskUpdate:
 		((proposal: GanttTaskProposal<TTaskFields>) => GanttTaskUpdateResult<TTaskFields>) | undefined;
@@ -112,6 +119,7 @@ export type GanttChartStateOptions<
 				proposal: GanttAssignmentProposal<TAssignmentFields>
 		  ) => GanttAssignmentUpdateResult<TAssignmentFields>)
 		| undefined;
+	readonly canCreateRange: ((proposal: GanttRangeProposal) => boolean) | undefined;
 	readonly onTasksChange:
 		((tasks: GanttTask<TTaskFields>[], change: GanttTasksChange<TTaskFields>) => void) | undefined;
 	readonly onDependenciesChange:
@@ -135,6 +143,7 @@ export type GanttChartStateOptions<
 		| undefined;
 	readonly onExpansionChange: ((expandedTaskIds: string[]) => void) | undefined;
 	readonly onSelectionChange: ((selection: GanttSelection) => void) | undefined;
+	readonly onEmptyRangeSelect: ((proposal: GanttRangeProposal) => void) | undefined;
 	readonly onZoomChange: ((zoom: GanttZoomLevel) => void) | undefined;
 	readonly onVisibleRangeChange:
 		| ((info: {
@@ -196,6 +205,12 @@ export class GanttChartState<
 		TResourceFields,
 		TAssignmentFields
 	>;
+	readonly interaction: GanttChartInteractions<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>;
 
 	constructor(
 		options: GanttChartStateOptions<
@@ -207,6 +222,7 @@ export class GanttChartState<
 	) {
 		this.#options = options;
 		this.#mutations = new GanttChartMutations(options);
+		this.interaction = new GanttChartInteractions(options, this.#mutations, () => this.schedule);
 	}
 
 	get schedule(): ResolvedGanttSchedule<
@@ -551,14 +567,18 @@ export class GanttChartState<
 		return this.#mutations.reorderTask(taskId, targetTaskId, position);
 	}
 
-	indentTask(taskId: string, previousTaskId: string | null): boolean {
+	indentTask(
+		taskId: string,
+		previousTaskId: string | null,
+		source: GanttMutationSource = 'keyboard'
+	): boolean {
 		if (!this.#options.interactions.indent || !previousTaskId) return false;
-		return this.#mutations.indentTask(taskId, previousTaskId);
+		return this.#mutations.indentTask(taskId, previousTaskId, source);
 	}
 
-	outdentTask(taskId: string): boolean {
+	outdentTask(taskId: string, source: GanttMutationSource = 'keyboard'): boolean {
 		if (!this.#options.interactions.outdent) return false;
-		return this.#mutations.outdentTask(taskId);
+		return this.#mutations.outdentTask(taskId, source);
 	}
 
 	blockInteraction(info: GanttInteractionBlockedInfo): void {
@@ -589,8 +609,8 @@ export class GanttChartState<
 		return this.#unavailableMutation('canRedo');
 	}
 
-	cancelInteraction(): never {
-		return this.#unavailableMutation('cancelInteraction');
+	cancelInteraction(): void {
+		this.interaction.cancel();
 	}
 
 	#stepZoom(direction: -1 | 1, anchorDate?: Date): boolean {

@@ -8,9 +8,11 @@
 	import GanttTimeHeader from './GanttTimeHeader.svelte';
 	import GanttTimelineRows from './GanttTimelineRows.svelte';
 	import { getCalendarRuntime } from './ganttChart.calendar.js';
+	import { GanttChartError } from './ganttChart.error.js';
 	import { resolveGanttTimeShades } from './ganttChart.layout.js';
 	import type {
 		GanttDisplayOptions,
+		GanttDragPreviewPayload,
 		GanttSnapshot,
 		GanttTimeHeaderPayload,
 		GanttTaskPayload,
@@ -54,6 +56,7 @@
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
 		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
+		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	};
 
 	let {
@@ -192,6 +195,10 @@
 	});
 
 	$effect(() => {
+		chart.interaction.reconcileScale(scale);
+	});
+
+	$effect(() => {
 		const width = viewportWidth;
 		if (!isMounted || width <= 0) return;
 		const previousWidth = untrack(() => lastViewportWidth);
@@ -212,7 +219,23 @@
 		isMounted = true;
 		now = new Date();
 		lastScaleKey = scaleKey;
+		const viewport = horizontalViewport;
+		if (!viewport) {
+			throw new GanttChartError(
+				'invalid-operation',
+				'GanttChart timeline mounted without its horizontal viewport.'
+			);
+		}
 		const disconnectNavigation = chart.connectTimelineNavigation(navigation);
+		const disconnectInteractions = chart.interaction.connectTimeline({
+			get scale() {
+				return scale;
+			},
+			viewport,
+			get rowHeight() {
+				return rowHeight;
+			}
+		});
 		const initialAnchor = initialScrollDate ?? projectRange?.start ?? snapshot.visibleRange.start;
 		void tick().then(() => {
 			scrollToDate(initialAnchor, { align: initialScrollDate ? 'center' : 'start' });
@@ -220,6 +243,7 @@
 		return () => {
 			isMounted = false;
 			disconnectNavigation();
+			disconnectInteractions();
 			if (visibleRangeFrame !== null) cancelAnimationFrame(visibleRangeFrame);
 		};
 	});
@@ -232,6 +256,7 @@
 
 	function handleWheel(event: WheelEvent): void {
 		if (!horizontalViewport || disabled) return;
+		if (chart.interaction.isActive) return;
 		if (event.ctrlKey || event.metaKey) {
 			event.preventDefault();
 			const bounds = horizontalViewport.getBoundingClientRect();
@@ -351,12 +376,14 @@
 		data-gantt-chart-part="timeline-viewport"
 		data-scrollbars={scrollbars}
 		data-compressed={scale.isCompressed || undefined}
+		data-interaction-invalid={chart.interaction.isInvalid || undefined}
 		data-visible-start={visibleRange.start.toISOString()}
 		data-visible-end={visibleRange.end.toISOString()}
 		class={classes.viewport({
 			density,
 			color,
 			disabled,
+			invalid: chart.interaction.isInvalid,
 			class: 'h-auto overflow-x-auto overflow-y-clip overscroll-x-contain'
 		})}
 		style:height={`${totalHeight}px`}

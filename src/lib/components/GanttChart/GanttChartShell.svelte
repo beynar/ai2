@@ -97,6 +97,7 @@
 		GanttDeadlinePayload,
 		GanttDependencyTooltipPayload,
 		GanttDisplayOptions,
+		GanttDragPreviewPayload,
 		GanttNonWorkingTimePayload,
 		GanttProgressPayload,
 		GanttSnapshot,
@@ -146,6 +147,7 @@
 		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
 		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
 		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
+		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 		empty?: Snippet<[GanttEmptyPayload]>;
 		loadingContent?: Snippet<[GanttLoadingPayload]>;
 	};
@@ -288,6 +290,13 @@
 			scrollMargin,
 			getItemKey: (index) => rows[index]?.taskId ?? index
 		});
+	});
+
+	$effect(() => {
+		const mode = scrollMode;
+		const scrollOwner = mode === 'page' ? pageScrollElement : viewportRef;
+		if (!scrollOwner) return;
+		return chart.interaction.connectVerticalScrollOwner(scrollOwner, mode);
 	});
 
 	$effect(() => {

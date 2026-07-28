@@ -19,6 +19,31 @@ type Schedule<TTaskFields extends object, TDependencyFields extends object> = Pi
 	'tasks' | 'autoScheduledTaskIds' | 'analysis'
 >;
 
+type MutationBoundary<
+	TTaskFields extends object,
+	TDependencyFields extends object,
+	TResourceFields extends object,
+	TAssignmentFields extends object
+> = Readonly<{
+	tasks: GanttTask<TTaskFields>[];
+	dependencies: GanttDependency<TDependencyFields>[];
+	resources: GanttChartStateOptions<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>['resources'];
+	assignments: GanttAssignment<TAssignmentFields>[];
+	calendars: GanttChartStateOptions<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>['calendars'];
+	timeZone: string;
+	projectCalendarId: string | undefined;
+}>;
+
 export class GanttChartMutations<
 	TTaskFields extends object,
 	TDependencyFields extends object,
@@ -47,16 +72,27 @@ export class GanttChartMutations<
 	}
 
 	updateTask(task: GanttTask<TTaskFields>, source: GanttMutationSource): boolean {
+		return this.updateTaskWithKind(task, 'update', source);
+	}
+
+	updateTaskWithKind(
+		task: GanttTask<TTaskFields>,
+		kind: Exclude<GanttTaskMutationKind, 'add' | 'remove' | 'paste'>,
+		source: GanttMutationSource,
+		expectedTasks: readonly GanttTask<TTaskFields>[] = this.options.tasks
+	): boolean {
 		this.assertMutationEnabled();
+		this.assertExpectedTasks(expectedTasks);
 		const previousTask = this.requireTask(task.id);
 		this.assertTaskWritable(previousTask);
 		const nextTask = cloneTask(task);
 		return this.commitTaskMutation({
-			kind: 'update',
+			kind,
 			source,
 			previousTask,
 			task: nextTask,
-			candidateTasks: replaceById(this.options.tasks, nextTask)
+			candidateTasks: replaceById(expectedTasks, nextTask),
+			expectedTasks
 		});
 	}
 
@@ -97,7 +133,11 @@ export class GanttChartMutations<
 		});
 	}
 
-	indentTask(taskId: string, previousTaskId: string): boolean {
+	indentTask(
+		taskId: string,
+		previousTaskId: string,
+		source: GanttMutationSource = 'keyboard'
+	): boolean {
 		this.assertMutationEnabled();
 		const previousTask = this.requireTask(taskId);
 		const parentTask = this.requireTask(previousTaskId);
@@ -111,14 +151,14 @@ export class GanttChartMutations<
 		const task = cloneTaskWithParent(previousTask, parentTask.id);
 		return this.commitTaskMutation({
 			kind: 'indent',
-			source: 'keyboard',
+			source,
 			previousTask,
 			task,
 			candidateTasks: replaceById(this.options.tasks, task)
 		});
 	}
 
-	outdentTask(taskId: string): boolean {
+	outdentTask(taskId: string, source: GanttMutationSource = 'keyboard'): boolean {
 		this.assertMutationEnabled();
 		const previousTask = this.requireTask(taskId);
 		this.assertTaskWritable(previousTask);
@@ -127,7 +167,7 @@ export class GanttChartMutations<
 		const task = cloneTaskWithParent(previousTask, parentTask.parentId);
 		return this.commitTaskMutation({
 			kind: 'outdent',
-			source: 'keyboard',
+			source,
 			previousTask,
 			task,
 			candidateTasks: replaceById(this.options.tasks, task)
@@ -232,12 +272,17 @@ export class GanttChartMutations<
 		previousTask: GanttTask<TTaskFields> | null;
 		task: GanttTask<TTaskFields> | null;
 		candidateTasks: GanttTask<TTaskFields>[];
+		expectedTasks?: readonly GanttTask<TTaskFields>[];
 	}): boolean {
+		const boundary = this.getBoundary();
+		if (input.expectedTasks) this.assertExpectedTasks(input.expectedTasks);
 		let candidateTasks = input.candidateTasks;
-		let schedule = this.resolveSchedule(candidateTasks, this.options.dependencies);
+		let schedule = this.resolveSchedule(candidateTasks, boundary.dependencies);
 		const proposal = this.createTaskProposal(input, schedule);
 		if (this.options.canUpdateTask?.(proposal) === false) return false;
+		this.assertBoundary(boundary);
 		const decision = this.options.onTaskUpdate?.(proposal);
+		this.assertBoundary(boundary);
 		if (decision === false) return false;
 		if (decision && typeof decision === 'object') {
 			if (!input.task || decision.id !== input.task.id) {
@@ -248,10 +293,20 @@ export class GanttChartMutations<
 			}
 			const adjustedTask = cloneTask(decision);
 			candidateTasks = replaceById(candidateTasks, adjustedTask);
-			schedule = this.resolveAdjustedSchedule(candidateTasks, this.options.dependencies);
+			schedule = this.resolveAdjustedSchedule(candidateTasks, boundary.dependencies);
+			const adjustedProposal = this.createTaskProposal({ ...input, task: adjustedTask }, schedule);
+			if (this.options.canUpdateTask?.(adjustedProposal) === false) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'onTaskUpdate returned an adjustment rejected by canUpdateTask.',
+					{ taskId: adjustedTask.id }
+				);
+			}
+			this.assertBoundary(boundary);
 		}
+		this.assertBoundary(boundary);
 		const publishedTasks = [...schedule.tasks];
-		const previousTasks = this.options.tasks;
+		const previousTasks = boundary.tasks;
 		this.options.tasks = publishedTasks;
 		const committedTasks = this.options.tasks;
 		const revert = createGuardedRevert(
@@ -285,10 +340,13 @@ export class GanttChartMutations<
 		dependency: GanttDependency<TDependencyFields> | null;
 		candidateDependencies: GanttDependency<TDependencyFields>[];
 	}): boolean {
+		const boundary = this.getBoundary();
 		let candidateDependencies = input.candidateDependencies;
 		let proposal = createDependencyProposal(input);
 		if (this.options.canUpdateDependency?.(proposal) === false) return false;
+		this.assertBoundary(boundary);
 		const decision = this.options.onDependencyUpdate?.(proposal);
+		this.assertBoundary(boundary);
 		if (decision === false) return false;
 		if (decision && typeof decision === 'object') {
 			if (!input.dependency || decision.id !== input.dependency.id) {
@@ -300,10 +358,19 @@ export class GanttChartMutations<
 			const adjustedDependency = cloneDependency(decision);
 			candidateDependencies = replaceById(candidateDependencies, adjustedDependency);
 			proposal = createDependencyProposal({ ...input, dependency: adjustedDependency });
+			if (this.options.canUpdateDependency?.(proposal) === false) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'onDependencyUpdate returned an adjustment rejected by canUpdateDependency.',
+					{ dependencyId: adjustedDependency.id }
+				);
+			}
+			this.assertBoundary(boundary);
 		}
-		const schedule = this.resolveAdjustedSchedule(this.options.tasks, candidateDependencies);
-		const previousTasks = this.options.tasks;
-		const previousDependencies = this.options.dependencies;
+		const schedule = this.resolveAdjustedSchedule(boundary.tasks, candidateDependencies);
+		this.assertBoundary(boundary);
+		const previousTasks = boundary.tasks;
+		const previousDependencies = boundary.dependencies;
 		const publishedTasks = [...schedule.tasks];
 		const publishedDependencies = [...candidateDependencies];
 		this.options.tasks = publishedTasks;
@@ -352,10 +419,13 @@ export class GanttChartMutations<
 		assignment: GanttAssignment<TAssignmentFields> | null;
 		candidateAssignments: GanttAssignment<TAssignmentFields>[];
 	}): boolean {
+		const boundary = this.getBoundary();
 		let candidateAssignments = input.candidateAssignments;
 		let proposal = createAssignmentProposal(input);
 		if (this.options.canUpdateAssignment?.(proposal) === false) return false;
+		this.assertBoundary(boundary);
 		const decision = this.options.onAssignmentUpdate?.(proposal);
+		this.assertBoundary(boundary);
 		if (decision === false) return false;
 		if (decision && typeof decision === 'object') {
 			if (!input.assignment || decision.id !== input.assignment.id) {
@@ -367,9 +437,18 @@ export class GanttChartMutations<
 			const adjustedAssignment = cloneAssignment(decision);
 			candidateAssignments = replaceById(candidateAssignments, adjustedAssignment);
 			proposal = createAssignmentProposal({ ...input, assignment: adjustedAssignment });
+			if (this.options.canUpdateAssignment?.(proposal) === false) {
+				throw new GanttChartError(
+					'invalid-adjustment',
+					'onAssignmentUpdate returned an adjustment rejected by canUpdateAssignment.',
+					{ assignmentId: adjustedAssignment.id }
+				);
+			}
+			this.assertBoundary(boundary);
 		}
-		this.resolveSchedule(this.options.tasks, this.options.dependencies, candidateAssignments);
-		const previousAssignments = this.options.assignments;
+		this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
+		this.assertBoundary(boundary);
+		const previousAssignments = boundary.assignments;
 		this.options.assignments = [...candidateAssignments];
 		const committedAssignments = this.options.assignments;
 		const revert = createGuardedRevert(
@@ -477,6 +556,51 @@ export class GanttChartMutations<
 		if (this.options.loading) {
 			throw new GanttChartError('invalid-operation', 'GanttChart is loading.');
 		}
+	}
+
+	private getBoundary(): MutationBoundary<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	> {
+		return {
+			tasks: this.options.tasks,
+			dependencies: this.options.dependencies,
+			resources: this.options.resources,
+			assignments: this.options.assignments,
+			calendars: this.options.calendars,
+			timeZone: this.options.timeZone,
+			projectCalendarId: this.options.projectCalendarId
+		};
+	}
+
+	private assertBoundary(
+		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
+	): void {
+		if (
+			boundary.tasks === this.options.tasks &&
+			boundary.dependencies === this.options.dependencies &&
+			boundary.resources === this.options.resources &&
+			boundary.assignments === this.options.assignments &&
+			boundary.calendars === this.options.calendars &&
+			boundary.timeZone === this.options.timeZone &&
+			boundary.projectCalendarId === this.options.projectCalendarId
+		) {
+			return;
+		}
+		throw new GanttChartError(
+			'stale-transaction',
+			'The controlled Gantt model changed while validating the mutation.'
+		);
+	}
+
+	private assertExpectedTasks(expectedTasks: readonly GanttTask<TTaskFields>[]): void {
+		if (expectedTasks === this.options.tasks) return;
+		throw new GanttChartError(
+			'stale-transaction',
+			'The controlled task collection changed during the interaction.'
+		);
 	}
 
 	private requireTask(taskId: string): GanttTask<TTaskFields> {

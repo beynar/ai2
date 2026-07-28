@@ -33,16 +33,21 @@
 		timeZone,
 		density,
 		color,
+		direction,
 		disabled,
 		loading,
 		isSelected,
 		activeColumnId,
 		showDragHandle,
+		canIndent,
+		canOutdent,
 		classes,
 		treeCell,
 		taskRow,
 		rowAttachment,
 		onCellFocus,
+		onIndent,
+		onOutdent,
 		onNavigate
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
@@ -63,11 +68,14 @@
 		timeZone: string;
 		density: Density;
 		color: Colors;
+		direction: 'ltr' | 'rtl';
 		disabled: boolean;
 		loading: boolean;
 		isSelected: boolean;
 		activeColumnId: string;
 		showDragHandle: boolean;
+		canIndent: boolean;
+		canOutdent: boolean;
 		classes: GanttChartClasses;
 		treeCell?: Snippet<
 			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
@@ -75,6 +83,8 @@
 		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
 		rowAttachment: Attachment<HTMLElement> | null;
 		onCellFocus: (columnId: string) => void;
+		onIndent: () => void;
+		onOutdent: () => void;
 		onNavigate: (event: KeyboardEvent, columnIndex: number) => void;
 	} = $props();
 
@@ -120,14 +130,19 @@
 			{timeZone}
 			{density}
 			{color}
+			{direction}
 			{disabled}
 			{loading}
 			{isSelected}
 			isFocused={activeColumnId === column.id}
 			showDragHandle={showDragHandle && column.id === 'title'}
+			canIndent={canIndent && column.id === 'title'}
+			canOutdent={canOutdent && column.id === 'title'}
 			{classes}
 			{treeCell}
 			onFocus={() => onCellFocus(column.id)}
+			{onIndent}
+			{onOutdent}
 			onNavigate={(event) => onNavigate(event, columnIndex)}
 		/>
 	{/each}

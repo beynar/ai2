@@ -37,6 +37,7 @@
 
 	let {
 		positioned,
+		rowTop,
 		chart,
 		resources,
 		assignments,
@@ -58,6 +59,7 @@
 		onTaskDoubleClick
 	}: {
 		positioned: GanttPositionedTask<TTaskFields>;
+		rowTop: number;
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		resources: readonly GanttResource<TResourceFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
@@ -94,6 +96,11 @@
 	const progressValue = $derived(node.progress ?? 0);
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
+	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
+	const startHandleLeft = $derived(positioned.startX + (direction === 'rtl' ? 10 : -10));
+	const endHandleLeft = $derived(positioned.endX + (direction === 'rtl' ? -10 : 10));
+	const handleTop = $derived(positioned.geometry.top + positioned.geometry.height / 2);
+	const progressHandleLeft = $derived(getProgressHandleLeft(positioned, progressValue, direction));
 	const dateFormatter = $derived(
 		getDateTimeFormatter(locale, timeZone, {
 			year: 'numeric',
@@ -131,7 +138,7 @@
 		assignments: taskAssignments,
 		isSelected,
 		isFocused,
-		isDragging: false,
+		isDragging,
 		isCritical,
 		defaultContent
 	});
@@ -195,102 +202,188 @@
 		if (disabled) return;
 		onTaskDoubleClick?.(node, event);
 	}
+
+	function getProgressHandleLeft(
+		currentTask: GanttPositionedTask<TTaskFields>,
+		progress: number,
+		currentDirection: 'ltr' | 'rtl'
+	): number {
+		if (currentTask.segments.length === 0) {
+			return currentTask.startX + (currentTask.endX - currentTask.startX) * progress;
+		}
+		const totalWidth = currentTask.segments.reduce((sum, segment) => sum + segment.width, 0);
+		let remaining = totalWidth * progress;
+		for (const segment of currentTask.segments) {
+			if (remaining <= segment.width) {
+				return currentDirection === 'rtl'
+					? segment.left + segment.width - remaining
+					: segment.left + remaining;
+			}
+			remaining -= segment.width;
+		}
+		const lastSegment = currentTask.segments.at(-1);
+		if (!lastSegment) return currentTask.endX;
+		return currentDirection === 'rtl' ? lastSegment.left : lastSegment.left + lastSegment.width;
+	}
 </script>
 
-{#if showBaseline && positioned.baselineGeometry && node.task.baseline}
-	{@const baselinePayload = {
-		node,
-		range: node.task.baseline,
-		geometry: positioned.baselineGeometry,
-		defaultContent: defaultBaseline
-	} satisfies GanttBaselinePayload<TTaskFields>}
-	<div
-		data-gantt-chart-part="baseline"
+<div class="group/gantt-task contents" data-gantt-task-group={node.taskId}>
+	{#if showBaseline && positioned.baselineGeometry && node.task.baseline}
+		{@const baselinePayload = {
+			node,
+			range: node.task.baseline,
+			geometry: positioned.baselineGeometry,
+			defaultContent: defaultBaseline
+		} satisfies GanttBaselinePayload<TTaskFields>}
+		<div
+			data-gantt-chart-part="baseline"
+			data-task-id={node.taskId}
+			class={classes.baseline({ density, color: semanticColor, disabled })}
+			style:left={`${positioned.baselineGeometry.left}px`}
+			style:top={`${positioned.baselineGeometry.top}px`}
+			style:width={`${positioned.baselineGeometry.width}px`}
+			style:height={`${positioned.baselineGeometry.height}px`}
+			aria-hidden="true"
+		>
+			<Slot render={snippets.baseline ?? defaultBaseline} payload={baselinePayload} />
+		</div>
+	{/if}
+
+	{#if showDeadline && positioned.deadlineLeft !== null && node.task.deadline}
+		{@const deadlinePayload = {
+			node,
+			deadline: node.task.deadline,
+			left: positioned.deadlineLeft,
+			defaultContent: defaultDeadline
+		} satisfies GanttDeadlinePayload<TTaskFields>}
+		<div
+			data-gantt-chart-part="deadline"
+			data-task-id={node.taskId}
+			class={classes.deadline({ density, color: semanticColor, disabled })}
+			style:left={`${positioned.deadlineLeft}px`}
+			style:top={`${positioned.geometry.top + positioned.geometry.height / 2 - 6}px`}
+			title={dateFormatter.format(node.task.deadline)}
+			aria-hidden="true"
+		>
+			<Slot render={snippets.deadline ?? defaultDeadline} payload={deadlinePayload} />
+		</div>
+	{/if}
+
+	<button
+		type="button"
+		aria-label={defaultAccessibleLabel}
+		aria-pressed={isSelected}
+		aria-current={isFocused ? 'true' : undefined}
+		{disabled}
+		tabindex={isSelected || isFocused ? 0 : -1}
+		data-gantt-chart-part={node.type === 'summary'
+			? 'summary-task'
+			: node.type === 'milestone'
+				? 'milestone'
+				: 'task'}
 		data-task-id={node.taskId}
-		class={classes.baseline({ density, color: semanticColor, disabled })}
-		style:left={`${positioned.baselineGeometry.left}px`}
-		style:top={`${positioned.baselineGeometry.top}px`}
-		style:width={`${positioned.baselineGeometry.width}px`}
-		style:height={`${positioned.baselineGeometry.height}px`}
+		data-task-type={node.type}
+		data-selected={isSelected || undefined}
+		data-critical={isCritical || undefined}
+		data-dragging={isDragging || undefined}
+		data-continues-before={positioned.geometry.continuesBefore || undefined}
+		data-continues-after={positioned.geometry.continuesAfter || undefined}
+		data-color={semanticColor}
+		style:--gantt-task-color={taskColor}
+		style:left={`${positioned.geometry.left}px`}
+		style:top={`${positioned.geometry.top}px`}
+		style:width={`${positioned.geometry.width}px`}
+		style:height={`${positioned.geometry.height}px`}
+		class={visualClass({
+			density,
+			color: semanticColor,
+			disabled,
+			selected: isSelected,
+			critical: isCritical,
+			readOnly: node.task.readOnly ?? false,
+			class: [
+				node.type === 'task' && positioned.segments.length > 0
+					? 'border-0 bg-transparent shadow-none'
+					: undefined,
+				isDragging ? 'opacity-35' : undefined
+			]
+		})}
+		onclick={activate}
+		ondblclick={handleDoubleClick}
+		{@attach node.type === 'summary' ||
+		node.task.readOnly ||
+		node.task.draggable === false ||
+		disabled
+			? null
+			: chart.interaction.taskDrag(node.taskId, 'move', rowTop)}
+		{@attach taskTooltipAttachment}
+	>
+		<Slot render={visualSnippet ?? defaultContent} payload={taskPayload} />
+	</button>
+
+	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled}
+		<span
+			role="button"
+			aria-label={messages.ganttChartResizeStartAction}
+			aria-disabled={disabled}
+			tabindex="-1"
+			data-gantt-chart-part="resize-handle"
+			data-edge="start"
+			data-task-id={node.taskId}
+			class={classes.resizeHandle({ density, color: semanticColor, disabled })}
+			style:left={`${startHandleLeft}px`}
+			style:top={`${handleTop}px`}
+			{@attach chart.interaction.taskDrag(node.taskId, 'resize-start', rowTop)}
+		>
+			<span class="h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)]"></span>
+		</span>
+		<span
+			role="button"
+			aria-label={messages.ganttChartResizeEndAction}
+			aria-disabled={disabled}
+			tabindex="-1"
+			data-gantt-chart-part="resize-handle"
+			data-edge="end"
+			data-task-id={node.taskId}
+			class={classes.resizeHandle({ density, color: semanticColor, disabled })}
+			style:left={`${endHandleLeft}px`}
+			style:top={`${handleTop}px`}
+			{@attach chart.interaction.taskDrag(node.taskId, 'resize-end', rowTop)}
+		>
+			<span class="h-3 w-0.5 rounded-full bg-[var(--gantt-task-color)]"></span>
+		</span>
+	{/if}
+
+	{#if node.type === 'task' && !node.task.readOnly && node.task.progressEditable !== false && !disabled}
+		<span
+			role="slider"
+			aria-label={messages.ganttChartProgressAction}
+			aria-valuemin="0"
+			aria-valuemax="100"
+			aria-valuenow={Math.round(progressValue * 100)}
+			tabindex="-1"
+			data-gantt-chart-part="progress-handle"
+			data-task-id={node.taskId}
+			class={classes.progressHandle({ density, color: semanticColor, disabled })}
+			style:left={`${progressHandleLeft}px`}
+			style:top={`${handleTop}px`}
+			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
+		>
+			<span class="size-2 rounded-full border border-surface bg-[var(--gantt-task-color)]"></span>
+		</span>
+	{/if}
+
+	<div
+		data-gantt-chart-part="task-label"
+		data-task-id={node.taskId}
+		class={classes.taskLabel({ density, color: semanticColor, disabled })}
+		style:left={`${taskLabelLeft}px`}
+		style:top={`${positioned.geometry.top + positioned.geometry.height / 2}px`}
+		style:transform={direction === 'rtl' ? 'translate(-100%, -50%)' : 'translateY(-50%)'}
 		aria-hidden="true"
 	>
-		<Slot render={snippets.baseline ?? defaultBaseline} payload={baselinePayload} />
+		<Slot render={snippets.taskLabel ?? defaultLabel} payload={labelPayload} />
 	</div>
-{/if}
-
-{#if showDeadline && positioned.deadlineLeft !== null && node.task.deadline}
-	{@const deadlinePayload = {
-		node,
-		deadline: node.task.deadline,
-		left: positioned.deadlineLeft,
-		defaultContent: defaultDeadline
-	} satisfies GanttDeadlinePayload<TTaskFields>}
-	<div
-		data-gantt-chart-part="deadline"
-		data-task-id={node.taskId}
-		class={classes.deadline({ density, color: semanticColor, disabled })}
-		style:left={`${positioned.deadlineLeft}px`}
-		style:top={`${positioned.geometry.top + positioned.geometry.height / 2 - 6}px`}
-		title={dateFormatter.format(node.task.deadline)}
-		aria-hidden="true"
-	>
-		<Slot render={snippets.deadline ?? defaultDeadline} payload={deadlinePayload} />
-	</div>
-{/if}
-
-<button
-	type="button"
-	aria-label={defaultAccessibleLabel}
-	aria-pressed={isSelected}
-	aria-current={isFocused ? 'true' : undefined}
-	{disabled}
-	tabindex={isSelected || isFocused ? 0 : -1}
-	data-gantt-chart-part={node.type === 'summary'
-		? 'summary-task'
-		: node.type === 'milestone'
-			? 'milestone'
-			: 'task'}
-	data-task-id={node.taskId}
-	data-task-type={node.type}
-	data-selected={isSelected || undefined}
-	data-critical={isCritical || undefined}
-	data-continues-before={positioned.geometry.continuesBefore || undefined}
-	data-continues-after={positioned.geometry.continuesAfter || undefined}
-	data-color={semanticColor}
-	style:--gantt-task-color={taskColor}
-	style:left={`${positioned.geometry.left}px`}
-	style:top={`${positioned.geometry.top}px`}
-	style:width={`${positioned.geometry.width}px`}
-	style:height={`${positioned.geometry.height}px`}
-	class={visualClass({
-		density,
-		color: semanticColor,
-		disabled,
-		selected: isSelected,
-		critical: isCritical,
-		readOnly: node.task.readOnly ?? false,
-		class:
-			node.type === 'task' && positioned.segments.length > 0
-				? 'border-0 bg-transparent shadow-none'
-				: undefined
-	})}
-	onclick={activate}
-	ondblclick={handleDoubleClick}
-	{@attach taskTooltipAttachment}
->
-	<Slot render={visualSnippet ?? defaultContent} payload={taskPayload} />
-</button>
-
-<div
-	data-gantt-chart-part="task-label"
-	data-task-id={node.taskId}
-	class={classes.taskLabel({ density, color: semanticColor, disabled })}
-	style:left={`${taskLabelLeft}px`}
-	style:top={`${positioned.geometry.top + positioned.geometry.height / 2}px`}
-	style:transform={direction === 'rtl' ? 'translate(-100%, -50%)' : 'translateY(-50%)'}
-	aria-hidden="true"
->
-	<Slot render={snippets.taskLabel ?? defaultLabel} payload={labelPayload} />
 </div>
 
 {#snippet defaultContent()}
