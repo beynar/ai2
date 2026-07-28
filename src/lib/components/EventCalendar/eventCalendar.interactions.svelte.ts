@@ -1,15 +1,13 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- DOM registries and immutable gesture snapshots do not require reactive collections. */
 import {
+	autoScrollForElements,
+	autoScrollWindowForElements,
+	disableNativeDragPreview,
 	draggable,
 	dropTargetForElements,
 	monitorForElements,
 	type ElementEventPayloadMap
-} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import {
-	autoScrollForElements,
-	autoScrollWindowForElements
-} from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
-import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview';
+} from '$lib/utils/pragmaticDragAndDrop.js';
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';

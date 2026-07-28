@@ -1,14 +1,14 @@
 import {
+	autoScrollForElements,
+	combine,
 	draggable,
 	dropTargetForElements,
-	monitorForElements
-} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
-import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled';
-import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
-import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview';
-import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
+	monitorForElements,
+	pointerOutsideOfPreview,
+	preventUnhandled,
+	reorder,
+	setCustomNativeDragPreview
+} from '$lib/utils/pragmaticDragAndDrop.js';
 import type { Attachment } from 'svelte/attachments';
 
 export type DndAxis = 'vertical' | 'horizontal';

@@ -1,9 +1,9 @@
 import {
+	disableNativeDragPreview,
 	draggable,
 	dropTargetForElements,
 	type ElementEventPayloadMap
-} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview';
+} from '$lib/utils/pragmaticDragAndDrop.js';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
