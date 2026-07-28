@@ -63,7 +63,6 @@
 	} = $props();
 
 	const markerId = $props.id();
-	const selectedMarkerId = `${markerId}-selected`;
 	const positionedDependencies = $derived(
 		dependencies.flatMap((dependency) => {
 			const geometry = positionGanttDependency({
@@ -109,17 +108,6 @@
 		>
 			<path d="M 0 0 L 8 4 L 0 8 z" class="fill-neutral/55"></path>
 		</marker>
-		<marker
-			id={selectedMarkerId}
-			viewBox="0 0 8 8"
-			refX="7"
-			refY="4"
-			markerWidth="6"
-			markerHeight="6"
-			orient="auto-start-reverse"
-		>
-			<path d="M 0 0 L 8 4 L 0 8 z" class="fill-[var(--color)]"></path>
-		</marker>
 	</defs>
 	{#each positionedDependencies as positioned (positioned.dependency.dependency.id)}
 		{@const isSelected =
@@ -137,12 +125,9 @@
 				color,
 				disabled,
 				critical: isCritical,
-				class: [
-					isCritical ? 'stroke-danger' : undefined,
-					isSelected ? 'stroke-[var(--color)] stroke-[2.5]' : undefined
-				]
+				class: [isCritical ? 'stroke-danger' : undefined, isSelected ? 'stroke-[2.5]' : undefined]
 			})}
-			marker-end={`url(#${isSelected ? selectedMarkerId : markerId})`}
+			marker-end={`url(#${markerId})`}
 			aria-hidden="true"
 		></path>
 		<path
