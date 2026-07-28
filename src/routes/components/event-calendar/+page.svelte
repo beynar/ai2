@@ -53,7 +53,7 @@
 
 		<ComponentCard
 			title="Owned semantics, custom content"
-			description="Header and cell snippets compose ready-made defaults; item content stays inside the calendar-owned activation button and retains interaction and accessibility behavior."
+			description="Header and cell snippets compose ready-made defaults; the single item snippet receives the active view, including agenda, while content stays inside the calendar-owned activation button."
 			code={compositionCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

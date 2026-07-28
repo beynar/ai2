@@ -101,12 +101,12 @@ Snippets replace content inside component-owned semantic and interactive wrapper
 
 - 'header': snapshot plus ready-made previous, today, next, title, viewSwitcher, datePicker, and actions snippets
 - 'actions': calendar snapshot and API
-- 'item': occurrence, segment, view, states, and defaultContent
+- 'item': occurrence, segment, active view (including agenda), states, and defaultContent
 - 'itemTooltip': occurrence, segment, view, and defaultAccessibleLabel
 - 'monthCell': day/state/segments/overflow and defaultContent
 - 'dayHeader', 'timeGutter', 'allDay'
 - 'overflow' and 'overflowContent'
-- 'agendaItem' and 'agendaDetails'
+- 'agendaDetails'
 - 'resourceHeader'
 - 'nowIndicatorContent', 'dragPreview', 'empty', and 'loadingContent'
 

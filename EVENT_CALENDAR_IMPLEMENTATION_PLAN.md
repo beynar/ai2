@@ -745,11 +745,6 @@ export type EventCalendarOverflowContentPayload<TItemFields extends object> = Re
 	close: () => void;
 }>;
 
-export type EventCalendarAgendaItemPayload<TItemFields extends object> = Readonly<{
-	occurrence: EventCalendarOccurrence<TItemFields>;
-	defaultContent: Snippet;
-}>;
-
 export type EventCalendarAgendaDetailsPayload<TItemFields extends object> = Readonly<{
 	occurrence: EventCalendarOccurrence<TItemFields>;
 }>;
@@ -798,7 +793,6 @@ export type EventCalendarSnippetProps<
 	allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
 	overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
 	overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
-	agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
 	agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 	resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
 	nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
@@ -808,25 +802,24 @@ export type EventCalendarSnippetProps<
 };
 ```
 
-| Snippet               | Payload and ownership                                                                                                                                                           |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `header`              | Snapshot plus ready-made `previous`, `today`, `next`, `title`, `viewSwitcher`, `datePicker`, and `actions` snippets. Replaces header contents, not the themed semantic wrapper. |
-| `actions`             | Snapshot and API; appended to the default header.                                                                                                                               |
-| `item`                | Occurrence, segment, view, selected/dragging state, and `defaultContent`. It renders non-interactive content inside the component-owned primary activation button.              |
-| `itemTooltip`         | Occurrence, segment, view, and default accessible label.                                                                                                                        |
-| `monthCell`           | Day, day segments, today/outside/off state, overflow count, and `defaultContent`.                                                                                               |
-| `dayHeader`           | Day, active view, today state, and default label/content.                                                                                                                       |
-| `timeGutter`          | Instant plus localized default label.                                                                                                                                           |
-| `allDay`              | Visible days, all-day segments, and `defaultContent`.                                                                                                                           |
-| `overflow`            | Day, hidden occurrences, count, and default `+N more` content.                                                                                                                  |
-| `overflowContent`     | Day, hidden occurrences, and a `close` function.                                                                                                                                |
-| `agendaItem`          | Occurrence and `defaultContent`.                                                                                                                                                |
-| `agendaDetails`       | Occurrence; rendering content enables the row’s disclosure behavior.                                                                                                            |
-| `resourceHeader`      | Typed resource or `null` for the localized Unassigned column, `isUnassigned`, hierarchy depth, and default content.                                                             |
-| `nowIndicatorContent` | Current display-zone time and default content.                                                                                                                                  |
-| `dragPreview`         | Active proposal, validity, and default preview.                                                                                                                                 |
-| `empty`               | Active view, visible range, and `mode: 'grid-status' \| 'agenda-replacement'`; grid surfaces remain mounted.                                                                    |
-| `loadingContent`      | Active view and visible range.                                                                                                                                                  |
+| Snippet               | Payload and ownership                                                                                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `header`              | Snapshot plus ready-made `previous`, `today`, `next`, `title`, `viewSwitcher`, `datePicker`, and `actions` snippets. Replaces header contents, not the themed semantic wrapper.              |
+| `actions`             | Snapshot and API; appended to the default header.                                                                                                                                            |
+| `item`                | Occurrence, segment, active view (including agenda), selected/dragging state, and `defaultContent`. It renders non-interactive content inside the component-owned primary activation button. |
+| `itemTooltip`         | Occurrence, segment, view, and default accessible label.                                                                                                                                     |
+| `monthCell`           | Day, day segments, today/outside/off state, overflow count, and `defaultContent`.                                                                                                            |
+| `dayHeader`           | Day, active view, today state, and default label/content.                                                                                                                                    |
+| `timeGutter`          | Instant plus localized default label.                                                                                                                                                        |
+| `allDay`              | Visible days, all-day segments, and `defaultContent`.                                                                                                                                        |
+| `overflow`            | Day, hidden occurrences, count, and default `+N more` content.                                                                                                                               |
+| `overflowContent`     | Day, hidden occurrences, and a `close` function.                                                                                                                                             |
+| `agendaDetails`       | Occurrence; rendering content enables the row’s disclosure behavior.                                                                                                                         |
+| `resourceHeader`      | Typed resource or `null` for the localized Unassigned column, `isUnassigned`, hierarchy depth, and default content.                                                                          |
+| `nowIndicatorContent` | Current display-zone time and default content.                                                                                                                                               |
+| `dragPreview`         | Active proposal, validity, and default preview.                                                                                                                                              |
+| `empty`               | Active view, visible range, and `mode: 'grid-status' \| 'agenda-replacement'`; grid surfaces remain mounted.                                                                                 |
+| `loadingContent`      | Active view and visible range.                                                                                                                                                               |
 
 `EventCalendarItem.svelte` owns a non-interactive segment container with a primary activation button plus sibling resize handles and a sibling action-menu trigger. Drag registration targets the container or explicit handle, `Tooltip` targets the primary button, and snippet content never nests one interactive control inside another.
 
@@ -1099,7 +1092,7 @@ Each phase is a coherent review boundary containing one or more atomic Conventio
 - [ ] Add `EventCalendarAgendaView.svelte` grouped chronologically by display-zone day for `agendaDayCount` days.
 - [ ] Add sticky date gutters in page/contained modes, collapsible day groups, summary colors/counts, and optional details disclosure.
 - [ ] Reuse the same occurrence formatting, item click/selection, color, and loading rules; agenda alone may replace its list with the existing `Empty` component.
-- [ ] Add `agendaItem` and `agendaDetails` snippets; the component retains button/disclosure semantics.
+- [ ] Reuse the shared `item` snippet with `view: 'agenda'` and add `agendaDetails`; the component retains button/disclosure semantics.
 - [ ] Confirm agenda navigation steps by its configured window and reports the correct fetch range.
 
 **Exit gate:** agenda output stays consistent with grid views for recurrence, all-day ranges, time zones, selection, colors, and empty/loading states.

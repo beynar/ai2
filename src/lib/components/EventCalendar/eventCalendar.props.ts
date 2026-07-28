@@ -120,11 +120,6 @@ export type EventCalendarOverflowContentPayload<TItemFields extends object> = Re
 	close: () => void;
 }>;
 
-export type EventCalendarAgendaItemPayload<TItemFields extends object> = Readonly<{
-	occurrence: EventCalendarOccurrence<TItemFields>;
-	defaultContent: Snippet;
-}>;
-
 export type EventCalendarAgendaDetailsPayload<TItemFields extends object> = Readonly<{
 	occurrence: EventCalendarOccurrence<TItemFields>;
 }>;
@@ -173,7 +168,6 @@ export type EventCalendarSnippetProps<
 	allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
 	overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
 	overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
-	agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
 	agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 	resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
 	nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;

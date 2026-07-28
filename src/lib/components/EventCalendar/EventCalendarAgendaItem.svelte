@@ -14,7 +14,7 @@
 	} from './eventCalendar.color.js';
 	import type {
 		EventCalendarAgendaDetailsPayload,
-		EventCalendarAgendaItemPayload
+		EventCalendarItemPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
 	import type { EventCalendarOccurrence } from './eventCalendar.types.js';
@@ -32,7 +32,7 @@
 		classes,
 		isSelected,
 		disabled,
-		agendaItem,
+		item,
 		agendaDetails,
 		onActivate,
 		onDoubleClick
@@ -49,7 +49,7 @@
 		classes: EventCalendarClasses;
 		isSelected: boolean;
 		disabled: boolean;
-		agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
+		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 		onActivate: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 		onDoubleClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
@@ -84,8 +84,12 @@
 		}
 		return `${occurrence.item.title}, ${rangeLabel}`;
 	});
-	const itemPayload = $derived<EventCalendarAgendaItemPayload<TItemFields>>({
+	const itemPayload = $derived<EventCalendarItemPayload<TItemFields>>({
 		occurrence,
+		segment: entry.segment,
+		view: 'agenda',
+		isSelected,
+		isDragging: false,
 		defaultContent
 	});
 
@@ -142,7 +146,7 @@
 			onfocus={() => a11y.handleOccurrenceFocus(occurrence.key, entry.segment.day)}
 			{@attach registerItemControl}
 		>
-			<Slot render={agendaItem ?? defaultContent} payload={itemPayload} />
+			<Slot render={item ?? defaultContent} payload={itemPayload} />
 		</button>
 
 		{#if agendaDetails}

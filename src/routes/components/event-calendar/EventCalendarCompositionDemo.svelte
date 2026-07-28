@@ -13,6 +13,7 @@
 	views={['month', 'week', 'agenda']}
 	timeZone="Europe/Paris"
 	maxItemsPerCell={3}
+	data-event-calendar-demo="composition"
 	class="h-[36rem] w-full"
 >
 	{#snippet header({ previous, today, next, title, viewSwitcher })}
@@ -29,8 +30,8 @@
 		</div>
 	{/snippet}
 
-	{#snippet item({ occurrence, defaultContent })}
-		<div class="flex min-w-0 items-center gap-1">
+	{#snippet item({ occurrence, view, defaultContent })}
+		<div data-event-calendar-demo-item-view={view} class="flex min-w-0 items-center gap-1">
 			<span class="size-1.5 shrink-0 rounded-full bg-current"></span>
 			<div class="min-w-0">{@render defaultContent()}</div>
 			<span class="sr-only">Owned by {occurrence.item.owner}</span>

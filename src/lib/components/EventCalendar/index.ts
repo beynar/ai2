@@ -2,7 +2,6 @@ export { default as EventCalendar } from './EventCalendar.svelte';
 export { EventCalendarError, type EventCalendarErrorCode } from './eventCalendar.error.js';
 export type {
 	EventCalendarAgendaDetailsPayload,
-	EventCalendarAgendaItemPayload,
 	EventCalendarAllDayPayload,
 	EventCalendarCallbackProps,
 	EventCalendarDayHeaderPayload,

@@ -12,7 +12,7 @@
 	import { getCachedDateTimeFormatter, startOfZonedDay } from './eventCalendar.date.js';
 	import type {
 		EventCalendarAgendaDetailsPayload,
-		EventCalendarAgendaItemPayload,
+		EventCalendarItemPayload,
 		EventCalendarSnapshot
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
@@ -30,7 +30,7 @@
 		scrollMode,
 		scrollbars,
 		classes,
-		agendaItem,
+		item,
 		agendaDetails,
 		onItemClick,
 		onItemDoubleClick
@@ -45,7 +45,7 @@
 		scrollMode: 'contained' | 'page';
 		scrollbars: 'custom' | 'native';
 		classes: EventCalendarClasses;
-		agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
+		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 		onItemDoubleClick?: (
@@ -189,7 +189,7 @@
 								{classes}
 								isSelected={selectedItemKey === entry.occurrence.key}
 								{disabled}
-								{agendaItem}
+								{item}
 								{agendaDetails}
 								onActivate={handleItemActivate}
 								onDoubleClick={onItemDoubleClick}

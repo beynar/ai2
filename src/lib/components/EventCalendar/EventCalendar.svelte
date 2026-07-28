@@ -118,7 +118,6 @@
 		allDay,
 		overflow,
 		overflowContent,
-		agendaItem,
 		agendaDetails,
 		resourceHeader,
 		nowIndicatorContent,
@@ -804,7 +803,6 @@
 		{timeGutter}
 		{allDay}
 		{nowIndicatorContent}
-		{agendaItem}
 		{agendaDetails}
 		{resourceHeader}
 		{item}

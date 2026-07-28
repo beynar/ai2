@@ -15,7 +15,6 @@
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarAgendaDetailsPayload,
-		EventCalendarAgendaItemPayload,
 		EventCalendarAllDayPayload,
 		EventCalendarDayHeaderPayload,
 		EventCalendarEmptyPayload,
@@ -62,7 +61,6 @@
 		timeGutter,
 		allDay,
 		nowIndicatorContent,
-		agendaItem,
 		agendaDetails,
 		resourceHeader,
 		item,
@@ -98,7 +96,6 @@
 		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
 		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
 		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
-		agendaItem?: Snippet<[EventCalendarAgendaItemPayload<TItemFields>]>;
 		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 		resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
@@ -245,7 +242,7 @@
 					{scrollMode}
 					{scrollbars}
 					{classes}
-					{agendaItem}
+					{item}
 					{agendaDetails}
 					{onItemClick}
 					{onItemDoubleClick}
