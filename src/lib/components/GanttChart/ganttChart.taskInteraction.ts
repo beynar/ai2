@@ -293,7 +293,7 @@ function getGanttPointerWorkingDelta(
 		calendar.calendar.timeZone
 	);
 	const elapsedSteps = elapsedDelta / elapsedStep;
-	const stepCount = Math.sign(elapsedSteps) * Math.floor(Math.abs(elapsedSteps) + 0.5);
+	const stepCount = Math.sign(elapsedSteps) * Math.floor(Math.abs(elapsedSteps));
 	return stepCount * workingStep;
 }
 
