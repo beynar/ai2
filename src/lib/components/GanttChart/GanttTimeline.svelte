@@ -142,8 +142,12 @@
 	let pinchZoomIdleTimer: ReturnType<typeof setTimeout> | null = null;
 	let isPinchZoomLocked = false;
 	const PINCH_ZOOM_IDLE_MS = 180;
+	const FIT_PROJECT_EDGE_INSET = 16;
 	const fallbackViewportWidth = 960;
 	const effectiveViewportWidth = $derived(viewportWidth || fallbackViewportWidth);
+	const fitProjectWidth = $derived(
+		Math.max(1, effectiveViewportWidth - FIT_PROJECT_EDGE_INSET * 2)
+	);
 	const projectRange = $derived(chart.schedule.analysis.projectRange);
 	const emptyCanvasRange = untrack(() => snapshot.visibleRange);
 	const canvasSourceRange = $derived(validRange ?? projectRange ?? emptyCanvasRange);
@@ -155,9 +159,9 @@
 			locale,
 			direction,
 			scales,
-			minimumWidth: effectiveViewportWidth,
+			minimumWidth: fitToProject ? fitProjectWidth : effectiveViewportWidth,
 			pad: validRange === undefined,
-			fitToWidth: fitToProject
+			fitRange: fitToProject ? (projectRange ?? undefined) : undefined
 		})
 	);
 	const visiblePixels = $derived({
@@ -341,6 +345,7 @@
 	}
 
 	function resolveFitZoom(range: GanttRange): GanttZoomLevel {
+		const duration = range.end.getTime() - range.start.getTime();
 		for (const zoom of chart.enabledZoomLevels) {
 			const candidate = createGanttTimeScale({
 				range,
@@ -350,9 +355,9 @@
 				direction,
 				scales,
 				minimumWidth: 0,
-				pad: validRange === undefined
+				pad: false
 			});
-			if (candidate.totalWidth <= effectiveViewportWidth) return zoom;
+			if (duration * candidate.pixelsPerMillisecond <= fitProjectWidth) return zoom;
 		}
 		return chart.enabledZoomLevels.at(-1) ?? snapshot.zoom;
 	}

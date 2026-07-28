@@ -85,9 +85,22 @@ export function createGanttTimeScale(input: {
 	scales: readonly GanttScaleDefinition[];
 	minimumWidth: number;
 	pad?: boolean;
-	fitToWidth?: boolean;
+	fitRange?: GanttRange;
 }): GanttTimeScale {
 	assertScheduleRange(input.range, 'timelineRange');
+	if (input.fitRange) {
+		assertScheduleRange(input.fitRange, 'timelineFitRange');
+		if (
+			input.fitRange.start.getTime() < input.range.start.getTime() ||
+			input.fitRange.end.getTime() > input.range.end.getTime()
+		) {
+			throw new GanttChartError(
+				'invalid-range',
+				'Timeline fit range must be contained by the timeline range.',
+				{ range: input.range, fitRange: input.fitRange }
+			);
+		}
+	}
 	if (!Number.isFinite(input.minimumWidth) || input.minimumWidth < 0) {
 		throw new GanttChartError(
 			'invalid-zoom-level',
@@ -135,8 +148,11 @@ export function createGanttTimeScale(input: {
 		resolved.definition.step
 	);
 	const minimumPixelsPerMillisecond = resolved.definition.minColumnWidth / nominalCellDuration;
-	const fillPixelsPerMillisecond = input.minimumWidth > 0 ? input.minimumWidth / duration : 0;
-	const requestedPixelsPerMillisecond = input.fitToWidth
+	const fillDuration = input.fitRange
+		? input.fitRange.end.getTime() - input.fitRange.start.getTime()
+		: duration;
+	const fillPixelsPerMillisecond = input.minimumWidth > 0 ? input.minimumWidth / fillDuration : 0;
+	const requestedPixelsPerMillisecond = input.fitRange
 		? fillPixelsPerMillisecond || minimumPixelsPerMillisecond
 		: Math.max(minimumPixelsPerMillisecond, fillPixelsPerMillisecond);
 	const requestedWidth = duration * requestedPixelsPerMillisecond;
