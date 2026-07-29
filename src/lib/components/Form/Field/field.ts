@@ -24,6 +24,7 @@ export type MultipleChoiceInputType = 'checkboxes';
 export type FileInputType = 'file' | 'files';
 export type CalendarInputType = 'calendar' | 'calendar-range';
 export type ColorInputType = 'color';
+export type FieldLabelPosition = 'top' | 'left';
 
 export type InputType =
 	| FileInputType
@@ -97,11 +98,13 @@ export type InputProps<T extends InputType> = WithSlot<
 		disabled?: boolean;
 		/** Visual size of the field (label, spacing, and control). */
 		size?: Sizes;
+		/** Places the field label above the control or to its left from the desktop breakpoint. */
+		labelPosition?: FieldLabelPosition;
 		/** Whether the field is rendered; when false the field is hidden from the form. */
 		visible?: boolean;
 		// schema?: any;
 		/** Validates the current value, returning error messages (or false) when invalid. */
-		onValidate?: (value: FieldValue<T>) => string[] | boolean;
+		onValidate?: (value: FieldValue<T>) => string | string[] | boolean | null | undefined;
 		/** Called whenever the field value changes. */
 		onChange?: (value: FieldValue<T>) => void;
 		/** Extra HTML attributes spread onto the underlying input element. */
@@ -134,23 +137,35 @@ export type FieldProps<T extends InputType> = Omit<
 	'type' | 'name' | 'required' | 'disabled' | 'visible' | 'onValidate' | 'onChange'
 > & {
 	as?: string;
+	labelFor?: string | false;
 	children: Snippet;
 	field: FieldState<T>;
 };
 
 const defaultField = cva({
-	base: 'flex flex-col gap-2',
+	base: 'grid min-w-0 gap-2',
 	variants: {
+		labelPosition: {
+			top: 'grid-cols-1',
+			left: 'grid-cols-1 md:grid-cols-[minmax(8rem,0.4fr)_minmax(0,1fr)] md:gap-x-6'
+		},
 		hasError: {
 			true: 'text-danger-readable',
 			false: ''
 		}
+	},
+	defaultVariants: {
+		labelPosition: 'top'
 	}
 });
 
 const defaultFieldHeader = cva({
 	base: 'flex items-center gap-2 relative',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-1 md:row-start-1 md:self-start md:pt-2'
+		},
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
@@ -200,6 +215,10 @@ const defaultFieldActions = cva({
 const defaultFieldErrorsContainer = cva({
 	base: 'grid gap-1',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-2'
+		},
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
@@ -222,6 +241,10 @@ const defaultFieldError = cva({
 const defaultFieldInputContainer = cva({
 	base: 'flex-1 gap-2 flex justify-between w-full items-center',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-2 md:row-start-1 md:self-center'
+		},
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
@@ -283,6 +306,10 @@ const defaultFieldActionButton = cva({
 const defaultFieldFooter = cva({
 	base: 'flex items-start gap-2 justify-between',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-2'
+		},
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',

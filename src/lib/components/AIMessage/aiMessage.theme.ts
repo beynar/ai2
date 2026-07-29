@@ -22,7 +22,7 @@ const defaultRoot = cva({
 	defaultVariants: { role: 'assistant', size: 'normal' }
 });
 const defaultBody = cva({
-	base: 'flex min-w-0 max-w-[min(38rem,82%)] flex-col',
+	base: 'relative flex min-w-0 max-w-[min(38rem,82%)] flex-col',
 	variants: {
 		role: {
 			user: 'items-end',
@@ -116,10 +116,11 @@ const defaultMarkdown = cva({
 });
 const defaultFiles = cva({ base: 'max-w-full min-w-0' });
 const defaultActions = cva({
-	base: 'transition-opacity motion-reduce:transition-none',
+	base: 'absolute left-0 top-full z-10 w-full transition-opacity motion-reduce:transition-none',
 	variants: {
 		visibility: {
-			hover: 'opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100',
+			hover:
+				'pointer-events-none opacity-0 group-hover/message:pointer-events-auto group-hover/message:opacity-100 group-focus-within/message:pointer-events-auto group-focus-within/message:opacity-100',
 			always: 'opacity-100',
 			none: 'hidden'
 		}

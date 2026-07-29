@@ -1,6 +1,10 @@
 <script lang="ts">
 	import AITool from '$lib/components/AITool/AITool.svelte';
-	import type { AIToolCall } from '$lib/components/AITool/aiTool.props.js';
+	import type {
+		AIToolCall,
+		AIToolToggleIcon,
+		AIToolVariant
+	} from '$lib/components/AITool/aiTool.props.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
@@ -10,11 +14,25 @@
 
 	const controls = createComponentControls([
 		{
+			name: 'variant',
+			type: 'segmented',
+			label: 'Variant',
+			value: 'ghost',
+			options: ['card', 'ghost', 'outline', 'soft']
+		},
+		{
 			name: 'status',
 			type: 'segmented',
 			label: 'Status',
 			value: 'running',
 			options: ['running', 'success', 'error']
+		},
+		{
+			name: 'toggleIcon',
+			type: 'segmented',
+			label: 'Toggle',
+			value: 'none',
+			options: ['none', 'chevron', 'math']
 		},
 		{
 			name: 'expansionMode',
@@ -28,6 +46,8 @@
 		}
 	]);
 	let openTools = $state<string[]>(['search']);
+	const variant = $derived(controls.value.variant as AIToolVariant);
+	const toggleIcon = $derived(controls.value.toggleIcon as AIToolToggleIcon);
 	const multiple = $derived(controls.value.expansionMode === 'multiple');
 	const toolCalls = $derived<AIToolCall[]>([
 		{
@@ -86,6 +106,8 @@
   circular.self = circular;
 
   let status = $state<'running' | 'success' | 'error'>('running');
+  let variant = $state<'card' | 'ghost' | 'outline' | 'soft'>('ghost');
+  let toggleIcon = $state<'none' | 'chevron' | 'math'>('none');
   let openTools = $state<string[]>(['search']);
   let multiple = $state(true);
   const toolCalls = $derived<AIToolCall[]>([
@@ -108,12 +130,14 @@
   ]);
 ${'</' + 'script>'}
 
-<AITool tools={toolCalls} bind:value={openTools} {multiple} aria-label="Tool calls" />`}
+<AITool tools={toolCalls} bind:value={openTools} {multiple} {variant} {toggleIcon} aria-label="Tool calls" />`}
 	>
 		<AITool
 			tools={toolCalls}
 			bind:value={openTools}
 			{multiple}
+			{variant}
+			{toggleIcon}
 			aria-label="Tool calls"
 			class="w-full max-w-3xl"
 		/>

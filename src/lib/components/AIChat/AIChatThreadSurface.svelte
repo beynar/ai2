@@ -1,7 +1,11 @@
 <script lang="ts" generics="TMessage extends AIThreadItem = AIThreadItem">
 	import type { AIConversationState } from '../AIConversation/aiConversation.state.svelte.js';
 	import AIThread from '../AIThread/AIThread.svelte';
-	import type { AIThreadItem, AIThreadRenderPayload } from '../AIThread/aiThread.props.js';
+	import type {
+		AIThreadItem,
+		AIThreadMessageRenderPayload,
+		AIThreadRenderPayload
+	} from '../AIThread/aiThread.props.js';
 	import Slot from '../Slot/Slot.svelte';
 	import type { AIChatAppPayload, AIChatProps, AIChatToolPayload } from './aiChat.props.js';
 	import { useAIChatTheme } from './aiChat.theme.js';
@@ -91,7 +95,7 @@
 	{/if}
 {/snippet}
 
-{#snippet renderMessage(payload: AIThreadRenderPayload<TMessage>)}
+{#snippet renderMessage(payload: AIThreadMessageRenderPayload<TMessage>)}
 	<Slot render={message} {payload} />
 {/snippet}
 

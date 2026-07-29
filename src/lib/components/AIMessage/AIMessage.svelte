@@ -117,6 +117,7 @@
 	data-role={resolvedRole}
 	data-size={size}
 	data-variant={variant}
+	data-actions-visibility={resolvedActionVisibility}
 	class={classes.root({
 		role: roleLayout,
 		size,

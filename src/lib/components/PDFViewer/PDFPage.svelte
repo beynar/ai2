@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import type { PDFViewerState, TextLayerInstance } from './pdfViewer.state.svelte.js';
+	import type {
+		PDFAnnotation,
+		PDFPageProxy,
+		PDFViewport,
+		PDFViewerState,
+		TextLayerInstance
+	} from './pdfViewer.state.svelte.js';
 
-	type ClassFn = (options?: Record<string, unknown>) => string;
+	type ClassFn = () => string;
 
 	let {
 		viewer,
@@ -119,7 +125,7 @@
 		}
 	};
 
-	const renderTextLayer = async (page: any, viewport: any, token: number) => {
+	const renderTextLayer = async (page: PDFPageProxy, viewport: PDFViewport, token: number) => {
 		const pdfjs = viewer.pdfjs;
 		if (!pdfjs || !textEl) return;
 		textLayer?.cancel();
@@ -136,21 +142,33 @@
 		applyHighlights();
 	};
 
-	const renderLinks = async (page: any, viewport: any, token: number) => {
+	const safeLink = (value: string) => {
+		try {
+			const url = new URL(value, window.location.href);
+			return ['http:', 'https:', 'mailto:'].includes(url.protocol) ? url.href : null;
+		} catch {
+			return null;
+		}
+	};
+
+	const renderLinks = async (page: PDFPageProxy, viewport: PDFViewport, token: number) => {
 		const annots = await page.getAnnotations();
 		if (token !== renderToken) return;
-		links = annots
-			.filter((a: any) => a.subtype === 'Link' && a.url)
-			.map((a: any) => {
-				const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(a.rect);
-				return {
-					url: a.url,
+		links = annots.flatMap((annotation: PDFAnnotation) => {
+			if (annotation.subtype !== 'Link' || !annotation.url) return [];
+			const url = safeLink(annotation.url);
+			if (!url) return [];
+			const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(annotation.rect);
+			return [
+				{
+					url,
 					left: Math.min(x1, x2),
 					top: Math.min(y1, y2),
 					width: Math.abs(x2 - x1),
 					height: Math.abs(y2 - y1)
-				};
-			});
+				}
+			];
+		});
 	};
 
 	const teardown = () => {

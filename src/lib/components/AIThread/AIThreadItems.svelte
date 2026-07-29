@@ -2,7 +2,7 @@
 	import type { VirtualItem } from '@tanstack/svelte-virtual';
 	import type { Attachment } from 'svelte/attachments';
 	import Alert from '../Alert/Alert.svelte';
-	import type { AIConversationState } from '../AIConversation/aiConversation.state.svelte.js';
+	import { getAIConversation } from '../AIConversation/aiConversation.state.svelte.js';
 	import Empty from '../Empty/Empty.svelte';
 	import AIMessage from '../AIMessage/AIMessage.svelte';
 	import type { AIMessageActionState } from '../AIMessageActions/aiMessageActions.props.js';
@@ -57,7 +57,6 @@
 		virtualItems: readonly VirtualItem[];
 		totalSize: number;
 		measureItem: Attachment<HTMLElement>;
-		conversation: AIConversationState<TMessage> | null;
 	};
 
 	let {
@@ -65,7 +64,6 @@
 		virtualItems,
 		totalSize,
 		measureItem,
-		conversation,
 		suggestions = [],
 		onSuggestionClick,
 		density = 'normal',
@@ -98,7 +96,9 @@
 		theme
 	}: Props<TMessage> = $props();
 
+	const conversation = getAIConversation<TMessage>();
 	const classes = $derived(useAIThreadTheme(theme));
+	const resolvedMessageActionsVisibility = $derived(messageActionsVisibility ?? 'always');
 
 	function messageRole(message: TMessage): AIThreadRole {
 		return message.role ?? 'assistant';
@@ -123,17 +123,6 @@
 			return undefined;
 		}
 		return item.message.name;
-	}
-
-	function actionsVisibility(item: MessageRenderItem<TMessage>, index: number) {
-		if (messageActionsVisibility) return messageActionsVisibility;
-		const role = messageRole(item.message);
-		if (role !== 'user' && role !== 'assistant') return 'hover';
-		for (let nextIndex = renderItems.length - 1; nextIndex > index; nextIndex -= 1) {
-			const next = renderItems[nextIndex];
-			if (next?.kind === 'message' && messageRole(next.message) === role) return 'hover';
-		}
-		return 'always';
 	}
 
 	async function handleLegacyRetry(state: AIMessageActionState<TMessage>): Promise<void> {
@@ -174,7 +163,11 @@
 						{#if messageSlot}
 							<Slot
 								render={messageSlot}
-								payload={{ message: item.message, index: item.messageIndex }}
+								payload={{
+									message: item.message,
+									index: item.messageIndex,
+									actionsVisibility: resolvedMessageActionsVisibility
+								}}
 							/>
 						{:else}
 							<AIMessage
@@ -186,7 +179,7 @@
 								content={item.content ?? item.message.content ?? ''}
 								{conversation}
 								actions={messageActions}
-								actionVisibility={actionsVisibility(item, virtualItem.index)}
+								actionVisibility={resolvedMessageActionsVisibility}
 								copyAction={messageCopyable}
 								editAction={messageEditable}
 								retryAction={messageRetryable}

@@ -13,6 +13,9 @@ export type AIToolStatus =
 	| 'cancelled'
 	| (string & {});
 
+export type AIToolVariant = 'card' | 'ghost' | 'outline' | 'soft';
+export type AIToolToggleIcon = 'none' | 'chevron' | 'math';
+
 export type AIToolCall = {
 	id?: string | number | bigint;
 	name?: string;
@@ -59,13 +62,17 @@ export type AIToolProps = WithAttachments<
 		value?: string[];
 		/** Allows multiple nested tool-call rows to remain expanded. */
 		multiple?: boolean;
+		/** Visual treatment applied to the group trigger and each complete call surface. @default 'ghost' */
+		variant?: AIToolVariant;
+		/** Expand indicator shown on group and child triggers. */
+		toggleIcon?: AIToolToggleIcon;
 		/** Maximum nested object depth in the default value renderer. */
 		maxDepth?: number;
 		/** Maximum entries rendered per object or array. */
 		maxEntries?: number;
 		/** Overrides labels used by the default renderer. */
 		labels?: Partial<AIToolLabels>;
-		/** Formats status text while preserving semantic status colors. */
+		/** Formats the accessible label for the default status indicator. */
 		formatStatus?: (status: AIToolStatus) => string;
 		/** Custom renderer for the tool icon. */
 		icon?: Slot<AIToolRenderPayload>;

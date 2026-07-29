@@ -1,7 +1,7 @@
 export const floatingWindowDescription = `
 # FloatingWindow Component
 
-FloatingWindow renders a non-modal, portaled utility window that can be moved, resized, minimized into a configurable viewport-edge dock, restored, and closed. Multiple windows inside the same Theme provider coordinate their z-order and stack independently by dock placement.
+FloatingWindow renders a non-modal, portaled utility window that can be moved, resized, minimized into a configurable viewport-edge dock, restored, and closed. Multiple windows inside the same Theme provider coordinate their z-order and stack independently by dock placement. The Theme keeps floating windows below modal Dialog surfaces, so an open window remains mounted behind a dialog and returns unchanged when the dialog closes.
 
 ## Basic Usage
 

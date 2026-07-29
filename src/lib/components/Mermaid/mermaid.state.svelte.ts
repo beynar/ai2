@@ -8,7 +8,7 @@ import type { MermaidProps } from './mermaid.props.js';
 // mermaid is loaded from cdnjs at runtime and never bundled with the component,
 // so we declare the minimal structural types we use rather than depending on the
 // `mermaid` npm type package. Bump this single const to any version cdnjs hosts
-// to upgrade mermaid (mirrors PDFJS_CDN_VERSION in PDFViewer).
+// to upgrade mermaid (mirrors the pinned PDF.js runtime in DocumentViewer).
 const MERMAID_CDN_VERSION = '11.12.0';
 // The self-contained UMD build. NOT the ESM `.mjs` — mermaid's ESM is split into
 // sibling chunks that fail to resolve cross-origin from cdnjs.

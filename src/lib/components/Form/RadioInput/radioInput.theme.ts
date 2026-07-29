@@ -12,11 +12,11 @@ const defaultRadioInput = cva({
 });
 
 const defaultRadioInputItem = cva({
-	base: 'transition-all relative grid items-start min-h-10  gap-1 pl-12 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-left rounded',
+	base: 'relative grid min-h-10 w-full cursor-pointer items-start gap-1 rounded text-left transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 	variants: {
 		mode: {
-			card: 'rounded bg-surface-raised raised py-2 ',
-			normal: 'py-1'
+			card: 'raised rounded bg-surface-raised py-2 pl-10',
+			normal: 'py-1 pl-12'
 		},
 		checked: {
 			true: '',
@@ -48,7 +48,7 @@ const defaultRadioInputItemTrack = cva({
 			false: ''
 		},
 		mode: {
-			card: 'top-2',
+			card: 'top-3 size-4',
 			normal: 'top-1'
 		},
 		disabled: {
@@ -66,7 +66,7 @@ const defaultRadioInputItemThumb = cva({
 			false: ''
 		},
 		mode: {
-			card: 'top-2',
+			card: 'top-3 size-4',
 			normal: 'top-1'
 		},
 		disabled: {

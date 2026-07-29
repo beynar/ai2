@@ -19,6 +19,7 @@
 		marks,
 		groupLabel,
 		getThumbLabel,
+		onFirstThumbRef,
 		t
 	}: {
 		id: string;
@@ -30,6 +31,7 @@
 		marks: SliderMark[];
 		groupLabel?: string;
 		getThumbLabel: (index: number) => string | undefined;
+		onFirstThumbRef?: (node: HTMLButtonElement | null) => void;
 		t: Messages;
 	} = $props();
 
@@ -37,6 +39,9 @@
 		if (size === 'small') return '10px';
 		if (size === 'large') return '18px';
 		return '14px';
+	};
+	const setFirstThumb = (node: HTMLButtonElement | null) => {
+		onFirstThumbRef?.(node);
 	};
 	const getThickThumbSize = () => {
 		if (size === 'small') return '20px';
@@ -127,6 +132,7 @@
 
 		{#each slider.valuePayloads as payload (payload.index)}
 			<SliderThumb
+				onRef={payload.index === 0 ? setFirstThumb : undefined}
 				id={payload.index === 0 ? id : `${id}-thumb-${payload.index}`}
 				{payload}
 				label={getThumbLabel(payload.index)}

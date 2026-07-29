@@ -1,16 +1,26 @@
 import type { Snippet } from 'svelte';
 import type { WithSlot } from '$lib/components/Slot/slot.js';
 import type { ButtonProps } from '$lib/components/Button/index.js';
-import type { FormInputs, FormSubmitHandler, InferFormValue } from './form.js';
+import type { Density, Sizes } from '$lib/types/theme.js';
+import type {
+	FormAction,
+	FormInputs,
+	FormInputsWithState,
+	FormSubmitHandler,
+	LiveFormValue
+} from './form.js';
 import type { FormState } from './form.state.svelte.js';
 import type { FormThemeProps } from './form.theme.js';
+
+export type FormVariant = 'plain' | 'sectioned' | 'card';
+export type FormLayout = 'vertical' | 'horizontal';
 
 export type FormProps<I extends FormInputs> = WithSlot<
 	{
 		/**
-		 * Field definitions keyed by name; each entry selects an input type and its props.
+		 * Ordered field, group, action, or custom definitions keyed by entry name.
 		 */
-		inputs: I;
+		inputs: I & FormInputsWithState<I>;
 		/**
 		 * Called after successful validation with the visible field values.
 		 */
@@ -18,7 +28,7 @@ export type FormProps<I extends FormInputs> = WithSlot<
 		/**
 		 * Bindable object of current field values, inferred from the inputs configuration.
 		 */
-		value?: InferFormValue<I>;
+		value?: LiveFormValue<I>;
 		/**
 		 * Custom content rendered after the fields, receiving the form state instance.
 		 */
@@ -33,13 +43,35 @@ export type FormProps<I extends FormInputs> = WithSlot<
 		 */
 		class?: string;
 		/**
-		 * Theme overrides for form layout, header, title, and description styling.
+		 * Size token controlling typography and the default size of fields and actions.
+		 */
+		size?: Sizes;
+		/**
+		 * Density token controlling gaps between form regions independently from size.
+		 */
+		density?: Density;
+		/**
+		 * Visual presentation of the form root.
+		 */
+		variant?: FormVariant;
+		/**
+		 * Field layout; horizontal places labels to the left from the desktop breakpoint.
+		 */
+		layout?: FormLayout;
+		/**
+		 * Theme overrides for form layout, header, groups, actions, and typography.
 		 */
 		theme?: FormThemeProps;
 		/**
-		 * Props for an optional submit button rendered at the bottom; set to null to hide it.
+		 * Buttons rendered after the form content. Each handler receives the live form state.
+		 */
+		actions?: FormAction<I>[];
+		/**
+		 * Props for the legacy submit button rendered after the actions; set to null to hide it.
+		 * @deprecated Use actions with an onClick handler that calls form.submit().
 		 */
 		submitButton?: ButtonProps | null;
 	},
-	'header' | 'title' | 'description' | 'footer'
+	'header' | 'title' | 'description' | 'footer',
+	FormState<I>
 >;

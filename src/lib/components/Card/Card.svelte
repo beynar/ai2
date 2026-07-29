@@ -36,8 +36,8 @@
 	const hasHeader = $derived(!!(header || title || description || action));
 	const hasContent = $derived(!!(content || children));
 	const hasFooter = $derived(!!footer);
-	const hasBorderBottom = $derived(showBorders && hasFooter);
-	const hasBorderTop = $derived(showBorders && hasHeader);
+	const hasHeaderBorder = $derived(showBorders && hasHeader && hasContent);
+	const hasFooterBorder = $derived(showBorders && hasFooter && (hasHeader || hasContent));
 	const hasAction = $derived(!!action);
 
 	const element = $derived(href ? 'a' : 'div');
@@ -126,7 +126,7 @@
 		attrs={{
 			'data-color': color
 		}}
-		class={classes.header({ density, hasAction, hasBorder: hasBorderTop, variant })}
+		class={classes.header({ density, hasAction, hasBorder: hasHeaderBorder, variant })}
 	>
 		<Slot render={title} class={classes.title({ size, variant })} />
 		<Slot render={description} class={classes.description({ size, variant })} />
@@ -134,8 +134,8 @@
 		{#if action}
 			{#if isButtonProps(action)}
 				{@const actionClass = classes.action({ class: action.class })}
-				{@const { class: _, ...actionWithoutClass } = action}
-				<Button size={'small'} variant="ghost" {...actionWithoutClass} class={actionClass} />
+				{@const actionWithoutClass = { ...action, class: undefined }}
+				<Button size="small" variant="ghost" {...actionWithoutClass} class={actionClass} />
 			{:else}
 				<Slot render={action} class={classes.action()} />
 			{/if}
@@ -145,10 +145,10 @@
 	<Slot
 		renderIf={hasContent}
 		render={content}
-		class={classes.content({ density, hasBorderBottom, hasBorderTop })}
+		class={classes.content({ density, hasBorderBottom: false, hasBorderTop: false })}
 	>
 		<Slot render={children} />
 	</Slot>
 
-	<Slot render={footer} class={classes.footer({ density, hasBorder: hasBorderBottom })} />
+	<Slot render={footer} class={classes.footer({ density, hasBorder: hasFooterBorder })} />
 </svelte:element>

@@ -118,9 +118,7 @@
 
 <Field
 	attrs={{
-		...attrs,
-		name: field.name,
-		id: field.id
+		...attrs
 	}}
 	as="fieldset"
 	{field}

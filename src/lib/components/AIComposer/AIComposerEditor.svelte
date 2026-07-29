@@ -59,9 +59,9 @@
 	const classes = $derived(useAIComposerTheme(theme));
 	const embeddedEditorTheme = {
 		scrollArea: { base: '!min-h-0' },
-		editorShell: { base: 'p-0' },
+		editorShell: { base: 'px-2 py-0' },
 		editor: { base: '!min-h-10' },
-		placeholder: { base: 'left-0 top-0' }
+		placeholder: { base: 'left-2 top-0' }
 	} satisfies RichTextInputThemeProps;
 </script>
 

@@ -18,6 +18,7 @@
 		color,
 		size,
 		classes,
+		onRef,
 		attachment,
 		hitboxAttachment
 	}: {
@@ -31,6 +32,7 @@
 		color: Colors;
 		size?: Sizes;
 		classes: SliderClasses;
+		onRef?: (node: HTMLButtonElement | null) => void;
 		attachment: Attachment<HTMLButtonElement>;
 		hitboxAttachment: Attachment<HTMLElement>;
 	} = $props();
@@ -71,6 +73,11 @@
 			? `bottom: ${containedPosition};`
 			: `left: ${containedPosition};`;
 	});
+
+	const registerRef = (node: HTMLButtonElement) => {
+		onRef?.(node);
+		return () => onRef?.(null);
+	};
 </script>
 
 <span
@@ -87,6 +94,7 @@
 ></span>
 
 <button
+	{@attach registerRef}
 	{@attach attachment}
 	{id}
 	type="button"

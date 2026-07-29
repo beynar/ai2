@@ -63,6 +63,14 @@
 		toolbar = 'hover',
 		formats,
 		autoresize = true,
+		voiceInput = false,
+		voiceInputVariant = 'compact',
+		voiceInputMinDuration,
+		voiceInputMaxDuration,
+		voiceInputColor,
+		voiceInputAriaLabel,
+		voiceInputStopLabel,
+		voiceInputProcessingLabel,
 		placeholder,
 		submitLabel,
 		stopLabel,
@@ -97,6 +105,7 @@
 		onSuggestionClose,
 		onSuggestionQueryChange,
 		onSuggestionHighlightChange,
+		onVoiceInput,
 		modelSelector,
 		header,
 		dropzone,
@@ -107,6 +116,7 @@
 		suffix,
 		class: className,
 		theme,
+		voiceInputTheme,
 		...formAttachments
 	}: AIComposerProps = $props();
 
@@ -484,6 +494,15 @@
 		{footerStart}
 		{actions}
 		{modelSelector}
+		{voiceInput}
+		{voiceInputVariant}
+		{voiceInputMinDuration}
+		{voiceInputMaxDuration}
+		voiceInputColor={voiceInputColor ?? 'primary'}
+		voiceInputAriaLabel={voiceInputAriaLabel ?? 'Start voice recording'}
+		voiceInputStopLabel={voiceInputStopLabel ?? 'Stop recording'}
+		voiceInputProcessingLabel={voiceInputProcessingLabel ?? 'Processing voice input'}
+		{onVoiceInput}
 		{fileDropzone}
 		attachDisabled={disabled || isWorking || displayFiles.length >= resolvedMaxFiles}
 		{disabled}
@@ -498,5 +517,6 @@
 		onAttach={() => fileDropzoneController.open()}
 		onStop={submitController.stop}
 		{theme}
+		{voiceInputTheme}
 	/>
 </form>

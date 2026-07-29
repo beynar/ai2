@@ -25,7 +25,9 @@ export type {
 	AIComposerSuggestionLifecycleCallback,
 	AIComposerSuggestionLifecycleState,
 	AIComposerSuggestionTrigger,
-	AIComposerTriggerSource
+	AIComposerTriggerSource,
+	AIComposerVoiceInputHandler,
+	AIComposerVoiceInputVariant
 } from './aiComposer.props.js';
 export {
 	aiComposerTheme,

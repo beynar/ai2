@@ -2,8 +2,10 @@ import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 import type { FieldValue, InputType } from './field.js';
 import * as v from 'valibot';
 import { schemas } from './schemas.js';
-import { getContext, untrack } from 'svelte';
+import { getContext, onDestroy, untrack } from 'svelte';
 import type { FormState } from '../Form/form.state.svelte.js';
+
+export type FieldValidationResult = string | string[] | boolean | null | undefined;
 
 type FieldStateStaticOptions<T extends InputType> = {
 	type: T;
@@ -11,7 +13,7 @@ type FieldStateStaticOptions<T extends InputType> = {
 	required?: boolean;
 	disabled?: boolean;
 	visible?: boolean;
-	onValidate?: (value: FieldValue<T>) => string[] | boolean;
+	onValidate?: (value: FieldValue<T>) => FieldValidationResult;
 	onChange?: (value: FieldValue<T>) => void;
 	id: string;
 };
@@ -24,7 +26,11 @@ type FieldStateBindableOptions<T extends InputType> = {
 
 export type FieldState<T extends InputType> = ReturnType<typeof createFieldState<T>>;
 
-type Require<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+const normalizeErrors = (validation: FieldValidationResult): string[] => {
+	if (!validation) return [];
+	if (validation === true) return ['Invalid value'];
+	return Array.isArray(validation) ? validation : [validation];
+};
 
 export const createFieldState = <T extends InputType>(
 	options: FieldStateBindableOptions<T> & FieldStateStaticOptions<T>
@@ -36,8 +42,11 @@ export const createFieldState = <T extends InputType>(
 		declare form?: FormState;
 		node = $state<HTMLElement | null>(null);
 		rootNode = $state<HTMLElement | null>(null);
-		hasError = $derived(typeof this.errors === 'boolean' ? this.errors : !!this.errors?.length);
-		mounted = $state(false);
+		labelId = `${options.id}-label`;
+		errorId = `${options.id}-errors`;
+		errorMessages = $derived(normalizeErrors(this.errors));
+		hasError = $derived(this.errorMessages.length > 0);
+		private mounted = false;
 		constructor(options: FieldStateBindableOptions<T> & FieldStateStaticOptions<T>) {
 			super(options);
 			if (!this.name) {
@@ -54,7 +63,7 @@ export const createFieldState = <T extends InputType>(
 						}
 						this.onChange?.(newValue as FieldValue<T>);
 						if (this.form) {
-							this.form.updateField(field);
+							this.form.updateFieldValue(field);
 						}
 					}
 				});
@@ -62,7 +71,7 @@ export const createFieldState = <T extends InputType>(
 		}
 
 		checkSchema(value?: FieldValue<T> | null) {
-			let schema = schemas[this.required ? 'required' : 'optional'][this.type];
+			const schema = schemas[this.required ? 'required' : 'optional'][this.type];
 			return v.safeParse(schema, value);
 		}
 
@@ -75,26 +84,26 @@ export const createFieldState = <T extends InputType>(
 			this.errors = [];
 
 			if (!parseResult.success && parseResult.issues.length > 0) {
-				this.errors = true;
-				return [this.hasError, parseResult.output];
+				this.errors = parseResult.issues.map((issue) => issue.message);
+				return [true, parseResult.output] as const;
 			}
 
 			// We should only call onValidate if the value is not null or undefined and not an empty string when the field is not required
 			const shouldCallOnValidate =
 				this.required || (value !== null && value !== undefined && value !== '');
 			if (this.onValidate && shouldCallOnValidate) {
-				this.errors = this.onValidate(value as FieldValue<T>);
+				this.errors = normalizeErrors(this.onValidate(value as FieldValue<T>));
 			}
 
-			return [this.hasError, parseResult.output];
+			return [this.hasError, parseResult.output] as const;
 		};
 	}
 
 	const field = new FieldState(options);
 	const formContext = getContext<FormState>('form');
 	if (formContext) {
-		formContext.addField(field);
 		field.form = formContext;
+		onDestroy(formContext.registerField(field));
 	}
 	return field;
 };

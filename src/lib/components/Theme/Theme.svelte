@@ -6,6 +6,8 @@
 	import Tooltip from '../Tooltip/Tooltip.svelte';
 	import DialogBackdrop from '../Dialog/DialogBackdrop.svelte';
 	import type { ThemeProps } from './theme.props.js';
+	import { portal } from '$lib/attachments/portal.js';
+	import { FLOATING_WINDOW_LAYER_Z_INDEX } from './theme.layers.js';
 
 	let {
 		children,
@@ -142,6 +144,14 @@
 <svelte:head>
 	{@html themeScript}
 </svelte:head>
+
+<div
+	{@attach portal()}
+	{@attach sveltaiTheme.floatingWindows.layer}
+	data-slot="floating-window-layer"
+	class="pointer-events-none fixed inset-0"
+	style:z-index={FLOATING_WINDOW_LAYER_Z_INDEX}
+></div>
 
 {@render children(sveltaiTheme)}
 

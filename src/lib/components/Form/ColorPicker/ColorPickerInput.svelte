@@ -23,18 +23,18 @@
 
 	const id = $props.id();
 
-	const field = createFieldState({
+	const field = createFieldState<'color'>({
 		id,
 		get value() {
 			return value;
 		},
-		set value(v: any) {
-			value = v;
+		set value(v: string | null | undefined) {
+			value = v ?? null;
 		},
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -44,7 +44,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			onChange?.(v as any);
+			onChange?.(v);
 		},
 		get disabled() {
 			return disabled;
@@ -73,7 +73,7 @@
 	});
 </script>
 
-<Field {field} {size} theme={theme?.field} {...rest}>
+<Field as="fieldset" {field} {size} theme={theme?.field} {...rest}>
 	<!-- display:contents wrapper: zero layout impact, catches bubbled focus so
 	     bind:focused works like on the text inputs. -->
 	<div

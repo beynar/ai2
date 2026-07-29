@@ -2,7 +2,7 @@ import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultFloatingWindow = cva({
-	base: 'bg-surface-floating text-neutral fixed isolate flex flex-col overflow-visible rounded-xl shadow-xl ring-1 ring-neutral/15 outline-none focus-visible:ring-2 focus-visible:ring-primary',
+	base: 'bg-surface-floating text-neutral pointer-events-auto fixed isolate flex flex-col overflow-visible rounded-xl shadow-xl ring-1 ring-neutral/15 outline-none focus-visible:ring-2 focus-visible:ring-primary',
 	variants: {
 		dragFrom: {
 			header: '',
@@ -76,7 +76,7 @@ const defaultFloatingWindowResizeHandle = cva({
 });
 
 const defaultFloatingWindowDockItem = cva({
-	base: 'bg-surface-floating text-neutral fixed flex touch-none items-center overflow-hidden shadow-lg ring-1 ring-neutral/15',
+	base: 'bg-surface-floating text-neutral pointer-events-auto fixed flex touch-none items-center overflow-hidden shadow-lg ring-1 ring-neutral/15',
 	variants: {
 		orientation: {
 			horizontal: 'h-9 flex-row',

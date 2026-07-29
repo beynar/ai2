@@ -5,6 +5,7 @@
 	import { get } from 'svelte/store';
 	import Alert from '../Alert/Alert.svelte';
 	import Button from '../Button/Button.svelte';
+	import type { AIMessageSize } from '../AIMessage/aiMessage.props.js';
 	import { arrowDownIcon } from '../Icons/arrowDown.js';
 	import type {
 		AIAskAnswers,
@@ -34,14 +35,30 @@
 	type EndStateVirtualizer = {
 		isAtEnd: (threshold?: number) => boolean;
 	};
-	const DENSITY_PADDING = { small: 8, normal: 16, large: 24 } satisfies Record<
-		AIThreadDensity,
-		number
-	>;
-	const DENSITY_ESTIMATE_SIZE = { small: 80, normal: 96, large: 120 } satisfies Record<
-		AIThreadDensity,
-		number
-	>;
+	const DENSITY_PADDING: Record<AIThreadDensity, number> = { small: 8, normal: 16, large: 24 };
+	const DENSITY_ESTIMATE_SIZE: Record<AIThreadDensity, number> = {
+		small: 80,
+		normal: 96,
+		large: 120
+	};
+	const MESSAGE_ACTION_HEIGHT: Record<AIMessageSize, number> = {
+		small: 24,
+		normal: 28,
+		large: 32
+	};
+	const MESSAGE_BOTTOM_PADDING: Record<AIMessageSize, number> = {
+		small: 6,
+		normal: 8,
+		large: 10
+	};
+	const ITEM_BOTTOM_PADDING: Record<AIThreadDensity, number> = {
+		small: 2,
+		normal: 8,
+		large: 14
+	};
+	function normalizeThreadScale(value: unknown): 'small' | 'normal' | 'large' {
+		return value === 'small' || value === 'large' ? value : 'normal';
+	}
 
 	let {
 		ref = $bindable(),
@@ -129,26 +146,40 @@
 	let prependScrollTarget: 'start' | 'end' | undefined;
 	let initialEndFrame: number | undefined;
 	let initialEndSchedule = 0;
+	const resolvedDensity: AIThreadDensity = $derived(normalizeThreadScale(density));
+	const resolvedMessageSize: AIMessageSize = $derived(normalizeThreadScale(messageSize));
 	const resolvedEstimateSize = $derived(
-		Math.max(1, estimateSize ?? DENSITY_ESTIMATE_SIZE[density])
+		Math.max(1, estimateSize ?? DENSITY_ESTIMATE_SIZE[resolvedDensity])
 	);
-	const resolvedPadding = $derived(Math.max(0, padding ?? DENSITY_PADDING[density]));
+	const resolvedPadding = $derived(Math.max(0, padding ?? DENSITY_PADDING[resolvedDensity]));
 	const resolvedPaddingStart = $derived(Math.max(0, paddingStart ?? resolvedPadding));
-	const resolvedPaddingEnd = $derived(Math.max(0, paddingEnd ?? resolvedPadding));
+	const messageActionOverflow = $derived(
+		messageActions === false || messageActionsVisibility === 'none'
+			? 0
+			: Math.max(
+					0,
+					MESSAGE_ACTION_HEIGHT[resolvedMessageSize] -
+						MESSAGE_BOTTOM_PADDING[resolvedMessageSize] -
+						ITEM_BOTTOM_PADDING[resolvedDensity]
+				)
+	);
+	const resolvedPaddingEnd = $derived(
+		Math.max(0, paddingEnd ?? Math.max(resolvedPadding, messageActionOverflow))
+	);
 
-	const resolvedMessages = $derived(messages ?? conversation?.messages ?? []);
+	const resolvedMessages = $derived<readonly TMessage[]>(messages ?? conversation?.messages ?? []);
 	const resolvedLiveText = $derived(liveText ?? conversation?.liveText);
 	const resolvedStreaming = $derived(isStreaming ?? conversation?.isStreaming ?? false);
 	const resolvedSuggestions = $derived(suggestions ?? conversation?.suggestions ?? []);
 	const messageKeys = $derived.by(() => createMessageKeys(resolvedMessages));
-	const detectedQuestion = $derived(
+	const detectedQuestion = $derived<AIThreadAskUserQuestion<TMessage> | null>(
 		findActiveAskUserQuestion(
 			resolvedMessages,
 			(_message, index) => messageKeys[index] ?? `missing:${index}`,
 			questionStates
 		)
 	);
-	const resolvedQuestion = $derived.by(() => {
+	const resolvedQuestion = $derived.by<AIThreadAskUserQuestion<TMessage> | null>(() => {
 		const request =
 			activeAskUserQuestion !== undefined
 				? activeAskUserQuestion
@@ -490,7 +521,7 @@
 <div
 	bind:this={ref}
 	data-slot="ai-thread"
-	data-density={density}
+	data-density={resolvedDensity}
 	{role}
 	aria-busy={resolvedStreaming}
 	class={classes.root({ className })}
@@ -521,9 +552,8 @@
 				{virtualItems}
 				{totalSize}
 				{measureItem}
-				{conversation}
-				{density}
-				{messageSize}
+				density={resolvedDensity}
+				messageSize={resolvedMessageSize}
 				{messageVariant}
 				suggestions={resolvedSuggestions}
 				onSuggestionClick={handleSuggestionClick}

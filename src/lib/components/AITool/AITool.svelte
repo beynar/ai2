@@ -1,16 +1,18 @@
 <script lang="ts">
 	import Accordion from '../Accordion/Accordion.svelte';
-	import { wrenchIcon } from '../Icons/wrench.js';
+	import Spinner from '../Spinner/Spinner.svelte';
 	import type { AIToolCall, AIToolLabels, AIToolProps } from './aiTool.props.js';
 	import { useAIToolTheme } from './aiTool.theme.js';
 	import { createAIToolAccordionTheme } from './aiToolPrimitiveThemes.js';
 	import {
 		formatAIToolStatus,
 		getAIToolGroupValue,
-		resolveAIToolGroupStatus
+		getAIToolStatusTone,
+		isActiveAIToolStatus,
+		resolveAIToolGroupStatus,
+		resolveAIToolStatus
 	} from './toolRendering.js';
 	import AIToolCallList from './AIToolCallList.svelte';
-	import AIToolStatusBadge from './AIToolStatusBadge.svelte';
 
 	type ToolGroupAccordionItem = { id: string; tools: readonly AIToolCall[] };
 
@@ -20,6 +22,8 @@
 		tools = [],
 		value = $bindable([]),
 		multiple = true,
+		variant = 'ghost',
+		toggleIcon = 'none',
 		maxDepth = 8,
 		maxEntries = 80,
 		labels,
@@ -52,29 +56,49 @@
 		error: labels?.error ?? 'Error',
 		empty: labels?.empty ?? 'No input or output yet.'
 	});
+	const resolvedStatus = $derived(
+		singleTool ? resolveAIToolStatus(singleTool) : resolveAIToolGroupStatus(resolvedTools)
+	);
+	const resolvedTone = $derived(getAIToolStatusTone(resolvedStatus));
 	const classes = $derived(useAIToolTheme(theme));
-	const groupAccordionTheme = $derived(createAIToolAccordionTheme(classes, 'group'));
+	const groupAccordionTheme = $derived(
+		createAIToolAccordionTheme(classes, {
+			scope: 'group',
+			variant,
+			tone: resolvedTone,
+			toggleIcon
+		})
+	);
 </script>
 
 {#snippet groupTitle(payload: { item: ToolGroupAccordionItem })}
 	{@const currentStatus = resolveAIToolGroupStatus(payload.item.tools)}
 	<div data-slot="ai-tool-group-trigger-content" class={classes.title()}>
-		<span data-slot="ai-tool-group-icon" class={classes.groupIcon()}>
-			{@render wrenchIcon({ size: 14 })}
+		<span
+			data-slot="ai-tool-group-icon"
+			aria-label={formatStatus(currentStatus)}
+			class={classes.groupIcon({ tone: getAIToolStatusTone(currentStatus) })}
+		>
+			{#if isActiveAIToolStatus(currentStatus)}
+				<Spinner size="small" decorative class="motion-reduce:[&_*]:animate-none" />
+			{:else}
+				<span class={classes.indicatorDot()}></span>
+			{/if}
 		</span>
 		<span data-slot="ai-tool-group-title" class={classes.name()}>
 			{resolvedLabels.group(payload.item.tools.length)}
 		</span>
-		<AIToolStatusBadge status={currentStatus} {formatStatus} {theme} />
 	</div>
 {/snippet}
 
 {#snippet groupContent(payload: { item: ToolGroupAccordionItem })}
-	<div data-slot="ai-tool-group-panel-content" class={classes.groupContent()}>
+	<div data-slot="ai-tool-group-panel-content" class={classes.groupContent({ variant })}>
 		<AIToolCallList
 			tools={payload.item.tools}
 			bind:value={nestedValue}
 			{multiple}
+			{variant}
+			{toggleIcon}
 			labels={resolvedLabels}
 			{formatStatus}
 			{icon}
@@ -92,12 +116,20 @@
 {/snippet}
 
 {#if singleTool}
-	<div {...rootAttributes} bind:this={ref} data-slot="ai-tool" class={classes.root({ className })}>
+	<div
+		{...rootAttributes}
+		bind:this={ref}
+		data-slot="ai-tool"
+		data-variant={variant}
+		data-status={resolvedStatus}
+		class={classes.root({ scope: 'single', variant, tone: resolvedTone, className })}
+	>
 		<AIToolCallList
 			tools={[singleTool]}
 			bind:value
 			{multiple}
 			scope="single"
+			{toggleIcon}
 			labels={resolvedLabels}
 			{formatStatus}
 			{icon}
@@ -113,13 +145,21 @@
 		/>
 	</div>
 {:else if groupItems.length > 0}
-	<div {...rootAttributes} bind:this={ref} data-slot="ai-tool" class={classes.root({ className })}>
+	<div
+		{...rootAttributes}
+		bind:this={ref}
+		data-slot="ai-tool"
+		data-variant={variant}
+		data-status={resolvedStatus}
+		class={classes.root({ scope: 'group', variant, tone: resolvedTone, className })}
+	>
 		<Accordion
 			items={groupItems}
 			bind:value
 			oneAtATime={!multiple}
 			title={groupTitle}
 			content={groupContent}
+			icon={toggleIcon === 'none' ? false : toggleIcon}
 			variant="classic"
 			density="small"
 			theme={groupAccordionTheme}

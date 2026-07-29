@@ -61,8 +61,8 @@
 	);
 	const collapsedMediaPadding = $derived(
 		compact
-			? 'group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-compact-media-size))/2)]'
-			: 'group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-media-size))/2)]'
+			? 'group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-icon-button-width)-var(--sidebar-compact-media-size))/2)]'
+			: 'group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-icon-button-width)-var(--sidebar-media-size))/2)]'
 	);
 	const buttonClass = $derived(
 		classes.menuButton({

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/Button/Button.svelte';
 	import Chip from '$lib/components/Chip/Chip.svelte';
+	import Dialog from '$lib/components/Dialog/Dialog.svelte';
 	import FloatingWindow from '$lib/components/FloatingWindow/FloatingWindow.svelte';
 	import type { FloatingWindowDockPlacement } from '$lib/components/FloatingWindow/floatingWindow.props.js';
 	import { terminalWindowIcon } from '$lib/components/Icons/terminalWindow.js';
@@ -17,6 +18,8 @@
 	let placementOpen = $state(false);
 	let placementMinimized = $state(false);
 	let activeDockPlacement = $state<FloatingWindowDockPlacement>('bottom-left');
+	let layeringWindowOpen = $state(false);
+	let layeringDialogOpen = $state(false);
 
 	const dockPlacements: FloatingWindowDockPlacement[] = [
 		'bottom-left',
@@ -46,6 +49,11 @@
 		placementOpen = true;
 		placementMinimized = true;
 	};
+
+	const openLayeringExample = () => {
+		layeringWindowOpen = true;
+		layeringDialogOpen = true;
+	};
 </script>
 
 {#snippet inspectorTitle()}
@@ -67,6 +75,7 @@
 		'Viewport-safe geometry',
 		'Crossfaded minimize and restore transitions',
 		'Theme-scoped z-order and configurable edge docks',
+		'Dialog-safe layer ordering',
 		'Topmost Escape dismissal',
 		'Bindable position, dimensions, and visibility'
 	]}
@@ -121,6 +130,43 @@
 	</ComponentCard>
 
 	{#snippet examples()}
+		<ComponentCard
+			title="Dialog layering"
+			description="Floating windows remain mounted beneath modal dialogs. Closing the dialog returns to the window without resetting its position or content."
+			code={`<FloatingWindow bind:open={windowOpen} title="Research notes">
+	Window content
+</FloatingWindow>
+
+<Dialog bind:open={dialogOpen} title="Confirm publish">
+	Dialog content
+</Dialog>`}
+		>
+			<Button variant="outline" onClick={openLayeringExample}>Open window and dialog</Button>
+
+			<FloatingWindow
+				bind:open={layeringWindowOpen}
+				title="Research notes"
+				position={{ x: 96, y: 132 }}
+				dimensions={{ width: 390, height: 240 }}
+			>
+				<p class="text-neutral/70 text-sm">
+					This non-modal window stays mounted beneath the modal layer.
+				</p>
+			</FloatingWindow>
+
+			<Dialog bind:open={layeringDialogOpen} title="Confirm publish">
+				<div class="grid gap-4">
+					<p class="text-neutral/70 text-sm">
+						The dialog and its backdrop always render above every floating window in this Theme.
+					</p>
+					<div class="flex justify-end gap-2">
+						<Button variant="ghost" onClick={() => (layeringDialogOpen = false)}>Cancel</Button>
+						<Button onClick={() => (layeringDialogOpen = false)}>Confirm</Button>
+					</div>
+				</div>
+			</Dialog>
+		</ComponentCard>
+
 		<ComponentCard
 			title="Coordinated dock"
 			description="Instances sharing a placement stack together without affecting docks on other edges. Bottom and top docks remain horizontally draggable."

@@ -1,16 +1,17 @@
-import { bind } from '$lib/utils/state.svelte.js';
+import { createBindableStateClass } from '$lib/utils/state.svelte.js';
 // import { useTheme } from '$lib/utils/theme.svelte.js';
 import { getContext, onMount, setContext, untrack } from 'svelte';
 import { useTheme } from '../Theme/theme.state.svelte.js';
-import type { DialogProps, DialogType } from './dialog.props.js';
+import type { DialogProps } from './dialog.props.js';
 import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
 import { useFocusTrap } from '$lib/utils/useFocusTrap.svelte.js';
+import { DIALOG_Z_BASE, DIALOG_Z_STEP } from '../Theme/theme.layers.js';
+
+export { DIALOG_Z_BASE, DIALOG_Z_STEP } from '../Theme/theme.layers.js';
 
 // Stacked dialogs sit above a single shared backdrop (at DIALOG_Z_BASE - 1),
 // each open dialog getting a z-index bump by its open order.
-export const DIALOG_Z_BASE = 50;
-export const DIALOG_Z_STEP = 10;
 
 type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 interface DialogOptions extends MakeRequired<
@@ -21,8 +22,6 @@ interface DialogOptions extends MakeRequired<
 		| 'size'
 		| 'scroll'
 		| 'transition'
-		| 'onClose'
-		| 'onOpen'
 		| 'closeOnEscape'
 		| 'closeOnClickOutside'
 		| 'closable'
@@ -136,8 +135,7 @@ const defaultTransition = {
 	}
 } as const;
 
-export interface DialogState extends DialogOptions {}
-export class DialogState {
+export class DialogState extends createBindableStateClass<DialogOptions>() {
 	parent = getContext<DialogState | null>('dialog');
 	children = $state<DialogState[]>([]);
 	hasTransitioned = $state(false);
@@ -204,7 +202,7 @@ export class DialogState {
 	});
 
 	focusTrap = useFocusTrap({
-		isActive: () => false
+		isActive: () => this.isTop
 	});
 
 	addChild = (child: DialogState) => () => {
@@ -215,10 +213,10 @@ export class DialogState {
 	};
 
 	constructor(options: DialogOptions) {
-		bind(this, options);
+		super(options);
 		setContext('dialog', this);
 		onMount(this.theme.addDialog(this));
-		this.parent && onMount(this.parent.addChild(this));
+		if (this.parent) onMount(this.parent.addChild(this));
 
 		// Assign a fresh open-order each time the dialog opens so it stacks on top.
 		$effect(() => {
@@ -270,7 +268,15 @@ export class DialogState {
 
 	// Native controls that own their own pointer gesture — a drag starting on one of
 	// these must never become a drawer dismiss.
-	static NO_SWIPE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'VIDEO', 'AUDIO']);
+	static readonly NO_SWIPE_TAGS: readonly string[] = [
+		'INPUT',
+		'TEXTAREA',
+		'SELECT',
+		'BUTTON',
+		'A',
+		'VIDEO',
+		'AUDIO'
+	];
 
 	// Vaul-style drag-to-dismiss for drawer types. Pointer-event driven so it works for
 	// mouse and touch; inner scroll wins over the swipe (see swipeOwnsGesture).
@@ -293,7 +299,7 @@ export class DialogState {
 			let el = target instanceof Element ? target : null;
 			while (el) {
 				if (el.hasAttribute('data-no-swipe')) return true;
-				if (DialogState.NO_SWIPE_TAGS.has(el.tagName) || (el as HTMLElement).isContentEditable)
+				if (DialogState.NO_SWIPE_TAGS.includes(el.tagName) || (el as HTMLElement).isContentEditable)
 					return true;
 				const style = getComputedStyle(el);
 				const overflow = this.swipeAxis === 'y' ? style.overflowY : style.overflowX;
@@ -411,5 +417,3 @@ export class DialogState {
 		};
 	};
 }
-
-// Use interface merging to add the properties

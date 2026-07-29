@@ -1,4 +1,5 @@
 import type { FloatingWindowDockPlacement } from '../FloatingWindow/floatingWindow.props.js';
+import type { Attachment } from 'svelte/attachments';
 
 export type FloatingWindowSurface = 'window' | 'dock';
 
@@ -11,7 +12,28 @@ type FloatingWindowDockEntry = {
 export class ThemeFloatingWindows {
 	private zIndex = 1000;
 	private dockEntries: FloatingWindowDockEntry[] = [];
+	private layerNode?: HTMLElement;
+	private portalNodes = new Set<HTMLElement>();
 	private surfaces = new Map<string, { type: FloatingWindowSurface; zIndex: number }>();
+
+	readonly layer: Attachment<HTMLElement> = (node) => {
+		this.layerNode = node;
+		this.portalNodes.forEach((portalNode) => node.appendChild(portalNode));
+
+		return () => {
+			if (this.layerNode === node) this.layerNode = undefined;
+		};
+	};
+
+	readonly portal: Attachment<HTMLElement> = (node) => {
+		this.portalNodes.add(node);
+		(this.layerNode ?? document.body).appendChild(node);
+
+		return () => {
+			this.portalNodes.delete(node);
+			node.remove();
+		};
+	};
 
 	activate(id: string, type: FloatingWindowSurface) {
 		this.zIndex += 1;

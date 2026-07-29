@@ -1,11 +1,10 @@
-<script lang="ts">
+<script lang="ts" generics="T extends 'calendar' | 'calendar-range'">
 	import type { CalendarInputProps } from './calendarInput.props.js';
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
+	import type { FieldValue } from '../Field/field.js';
 	import CalendarPrimitive from './CalendarPrimitive.svelte';
-	import { useCalendarInputTheme } from './calendar.theme.js';
-
-	type T = $$Generic<'calendar' | 'calendar-range'>;
+	import type { CalendarValue } from './useCalendar.svelte.js';
 
 	let {
 		value = $bindable(null as CalendarInputProps<T>['value']),
@@ -38,19 +37,20 @@
 	}: CalendarInputProps<T> = $props();
 
 	const id = $props.id();
+	type CalendarFieldValue = FieldValue<T>;
 
-	const field = createFieldState({
+	const field = createFieldState<T>({
 		id,
 		get value() {
-			return value;
+			return value as CalendarFieldValue | null;
 		},
-		set value(v: any) {
-			value = v;
+		set value(nextValue: CalendarFieldValue | null | undefined) {
+			value = nextValue as typeof value;
 		},
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -60,7 +60,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			onChange?.(v as any);
+			onChange?.(v as unknown as CalendarValue<T>);
 		},
 		get disabled() {
 			return disabled;
@@ -89,7 +89,7 @@
 	});
 </script>
 
-<Field {field} theme={theme?.field} {...rest}>
+<Field as="fieldset" {field} theme={theme?.field} {...rest}>
 	<!-- display:contents wrapper: zero layout impact, catches bubbled focus so
 	     bind:focused works like on the text inputs. -->
 	<div
@@ -102,11 +102,11 @@
 		}}
 	>
 		<CalendarPrimitive
-			onChange={(v: any) => {
-				field.value = v;
+			onChange={(nextValue: CalendarValue<T>) => {
+				field.value = nextValue as unknown as CalendarFieldValue;
 			}}
 			theme={theme?.calendar}
-			value={field.value as any}
+			value={field.value as unknown as CalendarValue<T>}
 			type={type || 'calendar'}
 			{disabledDates}
 			{minDate}

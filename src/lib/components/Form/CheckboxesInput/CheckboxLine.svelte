@@ -21,6 +21,7 @@
 		label,
 		description,
 		classes,
+		ref = $bindable(null),
 		onCheckedChange,
 		onFocus,
 		onBlur
@@ -36,6 +37,7 @@
 		label?: SlotContent;
 		description?: SlotContent;
 		classes: CheckboxLineClasses;
+		ref?: HTMLElement | null;
 		onCheckedChange: (checked: boolean) => void;
 		onFocus?: () => void;
 		onBlur?: () => void;
@@ -54,11 +56,13 @@
 </script>
 
 <button
+	bind:this={ref}
+	{id}
 	type="button"
 	role="checkbox"
 	aria-label={ariaLabel}
 	aria-checked={indeterminate ? 'mixed' : checked}
-	aria-controls={id}
+	{disabled}
 	data-state={indeterminate ? 'mixed' : checked ? 'checked' : 'unchecked'}
 	onclick={toggle}
 	onfocus={onFocus}
@@ -73,7 +77,7 @@
 		{checked}
 		{@attach syncIndeterminate}
 		{name}
-		{id}
+		id={`${id}-input`}
 		value={inputValue}
 		{disabled}
 	/>

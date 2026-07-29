@@ -175,6 +175,17 @@ const defaultAccordionIcon = cva({
 	}
 });
 
+const defaultAccordionIconWrapper = cva({
+	base: 'shrink-0 translate-y-0.5 transition-transform',
+	variants: {
+		expanded: {
+			true: 'rotate-180',
+			false: ''
+		}
+	},
+	defaultVariants: { expanded: false }
+});
+
 const defaultAccordionContent = cva({
 	base: 'pt-0 origin-top w-full',
 	variants: {
@@ -209,6 +220,7 @@ export const accordionTheme = {
 	title: defaultAccordionTitle,
 	description: defaultAccordionDescription,
 	icon: defaultAccordionIcon,
+	iconWrapper: defaultAccordionIconWrapper,
 	content: defaultAccordionContent
 };
 

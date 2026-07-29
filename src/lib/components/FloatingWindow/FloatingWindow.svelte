@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { crossfade, scale } from 'svelte/transition';
-	import { portal } from '$lib/attachments/portal.js';
 	import Button from '../Button/Button.svelte';
 	import { minusIcon } from '../Icons/minus.js';
 	import { squareIcon } from '../Icons/square.js';
@@ -156,7 +155,7 @@
 
 {#if open && !minimized && windowState.position}
 	<div
-		{@attach portal()}
+		{@attach windowState.theme.floatingWindows.portal}
 		{@attach windowState.root}
 		{@attach windowState.windowDrag}
 		in:receive={{ key: id }}
@@ -260,7 +259,7 @@
 
 {#if open && minimized}
 	<div
-		{@attach portal()}
+		{@attach windowState.theme.floatingWindows.portal}
 		{@attach windowState.dock}
 		{@attach windowState.dockDrag}
 		in:receive={{ key: id }}

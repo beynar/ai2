@@ -9,9 +9,11 @@
 	} from '$lib/components/AppShell/index.js';
 	import { Button } from '$lib/components/Button/index.js';
 	import Confirmation from '$lib/components/Confirmation/Confirmation.svelte';
+	import Ask from '$lib/components/Form/Ask/Ask.svelte';
 	import { commandIcon } from '$lib/components/Icons/command.js';
 	import { sidebarSimpleIcon } from '$lib/components/Icons/sidebarSimple.js';
 	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
+	import type { PageShellThemeProps } from '$lib/components/PageShell/index.js';
 	import type {
 		SidebarApi,
 		SidebarCollapsible,
@@ -31,6 +33,11 @@
 
 	const sidebarVariants: SidebarVariant[] = ['admin', 'floating', 'inset', 'split'];
 	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
+	const docsPageShellTheme = {
+		contentInner: {
+			padding: { large: 'p-5 md:p-5' }
+		}
+	} satisfies PageShellThemeProps;
 	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
 	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
 	let sidebarVariant = $state<SidebarVariant>('inset');
@@ -203,6 +210,7 @@
 {/snippet}
 <Theme transition={themeTransition}>
 	{#snippet children(theme: ThemeState)}
+		<Ask />
 		{#if isPreviewRoute}
 			{@render childrenSnippet()}
 		{:else}
@@ -244,6 +252,7 @@
 				footer={shellFooter}
 				contentPadding="large"
 				contentWidth="wide"
+				pageShellTheme={docsPageShellTheme}
 			>
 				{#snippet children()}
 					{@render childrenSnippet()}

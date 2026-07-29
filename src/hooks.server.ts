@@ -91,7 +91,7 @@ import { timeInputDescription } from '$lib/components/Form/TimeInput/timeInput.m
 // import { fieldDescription } from '$lib/components/Form/Field/field.mcp.js';
 import { collapsibleDescription } from '$lib/components/Collapsible/collapsible.mcp.js';
 import { qrCodeDescription } from '$lib/components/QRCode/qrCode.mcp.js';
-import { pdfViewerDescription } from '$lib/components/PDFViewer/pdfViewer.mcp.js';
+import { documentViewerDescription } from '$lib/components/DocumentViewer/documentViewer.mcp.js';
 import { globeDescription } from '$lib/components/Globe/globe.mcp.js';
 import { gridDescription } from '$lib/components/Grid/grid.mcp.js';
 import { stackDescription } from '$lib/components/Stack/stack.mcp.js';
@@ -221,7 +221,7 @@ const components = {
 	'ai-suggestion': aiSuggestionDescription,
 	'ai-tool': aiToolDescription,
 	'ai-mcp-app': aiMcpAppDescription,
-	'pdf-viewer': pdfViewerDescription
+	'document-viewer': documentViewerDescription
 };
 
 const handler = mcpHandler({

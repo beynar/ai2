@@ -143,7 +143,7 @@
 	);
 	const hasMarks = $derived(marks.length > 0);
 	const hasContainedLayout = $derived(
-		variant === 'contained' && slider.orientationValue === 'horizontal'
+		variant === 'contained' && slider.orientationValue === 'horizontal' && !rest.labelPosition
 	);
 
 	const getThumbLabel = (index: number) => {
@@ -161,6 +161,9 @@
 			: index === slider.values.length - 1
 				? t.maximumValue
 				: t.sliderThumbValue(index + 1);
+	};
+	const setFirstThumb = (node: HTMLButtonElement | null) => {
+		field.node = node;
 	};
 </script>
 
@@ -208,6 +211,7 @@
 			{/if}
 
 			<SliderTrack
+				onFirstThumbRef={setFirstThumb}
 				{id}
 				{slider}
 				{classes}

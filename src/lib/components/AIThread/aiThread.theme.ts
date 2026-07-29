@@ -18,7 +18,7 @@ const defaultViewport = cva({
 });
 const defaultList = cva({ base: 'relative w-full' });
 const defaultItem = cva({
-	base: 'absolute top-0 left-0 w-full',
+	base: 'absolute top-0 left-0 z-0 w-full has-[[data-actions-visibility=always]]:z-10 hover:!z-20 focus-within:!z-20',
 	variants: {
 		density: {
 			small: 'px-3 py-0.5',

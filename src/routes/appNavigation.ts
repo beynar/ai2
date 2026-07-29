@@ -197,7 +197,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/image-gallery', text: 'Image gallery' },
 			{ href: '/components/image-zoom', text: 'Image zoom' },
 			{ href: '/components/media-volume', text: 'Media volume' },
-			{ href: '/components/pdf-viewer', text: 'PDF viewer' },
+			{ href: '/components/document-viewer', text: 'Document viewer' },
 			{ href: '/components/video-player', text: 'Video player' }
 		]
 	},

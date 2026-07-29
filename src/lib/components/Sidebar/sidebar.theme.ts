@@ -32,14 +32,17 @@ const defaultRoot = cva({
 });
 
 const defaultPanel = cva({
-	base: 'flex h-full flex-col text-neutral',
+	base: 'flex h-full flex-col text-neutral group-data-[collapsible=icon]:overflow-hidden',
 	variants: {
 		variant: {
 			admin:
-				'border-neutral-muted bg-surface-canvas data-[side=left]:border-r data-[side=right]:border-l',
-			floating: 'rounded-xl border border-neutral-muted bg-surface-raised shadow-sm',
-			inset: 'border-0 bg-surface-canvas shadow-none',
-			split: 'rounded-xl border border-neutral-muted bg-surface-raised shadow-sm'
+				'border-neutral-muted bg-surface-canvas [--sidebar-icon-button-width:calc(var(--sidebar-width-icon)-0.5rem)] data-[side=left]:border-r data-[side=right]:border-l',
+			floating:
+				'rounded-xl border border-neutral-muted bg-surface shadow-sm [--sidebar-icon-button-width:var(--sidebar-width-icon)]',
+			inset:
+				'border-0 bg-surface-canvas shadow-none [--sidebar-icon-button-width:calc(var(--sidebar-width-icon)-0.5rem)]',
+			split:
+				'rounded-xl border border-neutral-muted bg-surface shadow-sm [--sidebar-icon-button-width:var(--sidebar-width-icon)]'
 		},
 		placement: {
 			panel: 'w-[var(--sidebar-width)]',
@@ -66,7 +69,7 @@ const defaultPanel = cva({
 });
 
 const defaultStackSection = cva({
-	base: 'flex flex-col',
+	base: 'flex flex-col group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-[var(--sidebar-group-padding)] group-data-[collapsible=icon]:py-[calc((var(--sidebar-width-icon)-var(--sidebar-icon-button-width))/2)] group-data-[collapsible=icon]:[&>[data-slot=sidebar-menu-button]]:h-[var(--sidebar-icon-button-width)]',
 	variants: {
 		density: {
 			small: 'gap-1 p-1.5',
@@ -177,19 +180,16 @@ const defaultMenu = cva({
 });
 
 const defaultMenuButton = cva({
-	base: 'state-layer peer/menu-button group/menu-button flex w-full items-center overflow-hidden rounded-md text-left outline-none transition-[background,color,width,height,padding,margin] duration-200 ease-linear hover:text-neutral focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-primary-muted data-active:text-primary-muted-readable data-active:font-medium group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:-mx-[var(--sidebar-group-padding)] group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-width-icon)-var(--sidebar-icon-size))/2)] group-data-[collapsible=icon]:ring-inset [&_svg]:shrink-0',
+	base: 'state-layer peer/menu-button group/menu-button flex w-full items-center overflow-hidden rounded-md text-left outline-none transition-[background,color,width,height,padding,margin,border-radius] duration-200 ease-linear hover:text-neutral focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-primary-muted data-active:text-primary-muted-readable data-active:font-medium group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:mx-[calc((var(--sidebar-width-icon)-var(--sidebar-icon-button-width))/2-var(--sidebar-group-padding))] group-data-[collapsible=icon]:w-[var(--sidebar-icon-button-width)] group-data-[collapsible=icon]:rounded-none group-data-[variant=admin]:group-data-[collapsible=icon]:rounded-sm group-data-[variant=inset]:group-data-[collapsible=icon]:rounded-sm group-data-[collapsible=icon]:![padding-inline:calc((var(--sidebar-icon-button-width)-var(--sidebar-icon-size))/2)] group-data-[collapsible=icon]:ring-inset [&_svg]:shrink-0',
 	variants: {
 		variant: {
 			default: '',
 			outline: 'border border-neutral-muted bg-surface'
 		},
 		componentSize: {
-			small:
-				'text-xs leading-4 group-data-[collapsible=icon]:-my-0.5 group-data-[collapsible=icon]:h-9 [&_svg]:size-3.5',
-			normal:
-				'text-sm leading-5 group-data-[collapsible=icon]:-my-0.5 group-data-[collapsible=icon]:h-10 [&_svg]:size-4',
-			large:
-				'text-base leading-6 group-data-[collapsible=icon]:-my-0.5 group-data-[collapsible=icon]:h-11 [&_svg]:size-5'
+			small: 'text-xs leading-4 [&_svg]:size-3.5',
+			normal: 'text-sm leading-5 [&_svg]:size-4',
+			large: 'text-base leading-6 [&_svg]:size-5'
 		},
 		density: {
 			small: 'gap-1.5 px-1.5',

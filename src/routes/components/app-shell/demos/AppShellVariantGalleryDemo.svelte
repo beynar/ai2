@@ -5,6 +5,7 @@
 		type AppShellSidebarProps,
 		type AppShellThemeProps
 	} from '$lib/components/AppShell/index.js';
+	import { SegmentedControl } from '$lib/components/SegmentedControl/index.js';
 	import type { SidebarGroup, SidebarVariant } from '$lib/components/Sidebar/index.js';
 	import { arrowClockwiseIcon } from '$lib/components/Icons/arrowClockwise.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
@@ -27,9 +28,42 @@
 		sidebar: Pick<AppShellSidebarProps, 'collapsible' | 'rail' | 'width' | 'widthIcon'>;
 		items: SidebarGroup[];
 	};
+	type MobileActionCountOption = '0' | '1' | '2';
 
 	let selectedRecipeId = $state('inset');
 	let sidebarWidth = $state('16rem');
+	let contentWidth = $state<VariantRecipe['contentWidth']>('wide');
+	let contentPadding = $state<VariantRecipe['contentPadding']>('normal');
+	let actionOverflow = $state<'auto' | 'never'>('auto');
+	let mobileActionCountOption = $state<MobileActionCountOption>('1');
+
+	const contentWidthItems = [
+		{ value: 'full', label: 'Full' },
+		{ value: 'narrow', label: 'Narrow' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'wide', label: 'Wide' },
+		{ value: 'prose', label: 'Prose' }
+	] as const;
+
+	const contentPaddingItems = [
+		{ value: 'none', label: 'None' },
+		{ value: 'small', label: 'Small' },
+		{ value: 'normal', label: 'Normal' },
+		{ value: 'large', label: 'Large' }
+	] as const;
+
+	const actionOverflowItems = [
+		{ value: 'auto', label: 'Auto' },
+		{ value: 'never', label: 'Never' }
+	] as const;
+
+	const mobileActionCountItems = [
+		{ value: '0', label: '0' },
+		{ value: '1', label: '1' },
+		{ value: '2', label: '2' }
+	] as const;
+
+	const mobileActionCounts = { '0': 0, '1': 1, '2': 2 } as const;
 
 	const previewAppShellTheme = {
 		root: {
@@ -109,6 +143,7 @@
 	const selectedRecipe = $derived(
 		variantRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? variantRecipes[0]
 	);
+	const mobileActionCount = $derived(mobileActionCounts[mobileActionCountOption]);
 
 	const sidebar = $derived<AppShellSidebarProps>({
 		...selectedRecipe.sidebar,
@@ -132,6 +167,8 @@
 	function selectRecipe(recipe: VariantRecipe) {
 		selectedRecipeId = recipe.id;
 		sidebarWidth = recipe.sidebar.width ?? '16rem';
+		contentWidth = recipe.contentWidth;
+		contentPadding = recipe.contentPadding;
 	}
 </script>
 
@@ -151,6 +188,48 @@
 			</button>
 		{/each}
 	</div>
+
+	<section
+		aria-label="App shell layout controls"
+		class="grid gap-4 rounded-lg border border-neutral-muted bg-surface p-4 lg:grid-cols-2"
+	>
+		<div class="grid gap-2">
+			<span class="text-sm font-medium text-neutral">Content width</span>
+			<SegmentedControl
+				items={contentWidthItems}
+				bind:value={contentWidth}
+				size="small"
+				ariaLabel="Content width"
+			/>
+		</div>
+		<div class="grid gap-2">
+			<span class="text-sm font-medium text-neutral">Content padding</span>
+			<SegmentedControl
+				items={contentPaddingItems}
+				bind:value={contentPadding}
+				size="small"
+				ariaLabel="Content padding"
+			/>
+		</div>
+		<div class="grid gap-2">
+			<span class="text-sm font-medium text-neutral">Action overflow</span>
+			<SegmentedControl
+				items={actionOverflowItems}
+				bind:value={actionOverflow}
+				size="small"
+				ariaLabel="Action overflow"
+			/>
+		</div>
+		<div class="grid gap-2">
+			<span class="text-sm font-medium text-neutral">Mobile inline actions</span>
+			<SegmentedControl
+				items={mobileActionCountItems}
+				bind:value={mobileActionCountOption}
+				size="small"
+				ariaLabel="Mobile inline actions"
+			/>
+		</div>
+	</section>
 
 	<div class="grid gap-2 md:grid-cols-2">
 		<div class="rounded-lg border border-neutral-muted bg-surface-raised p-3">
@@ -177,9 +256,10 @@
 			subtitle={selectedRecipe.description}
 			eyebrow={`${selectedRecipe.variant} / ${selectedRecipe.sidebar.collapsible}`}
 			{headerActions}
-			contentPadding={selectedRecipe.contentPadding}
-			contentWidth={selectedRecipe.contentWidth}
-			mobileActionCount={1}
+			{contentPadding}
+			{contentWidth}
+			{actionOverflow}
+			{mobileActionCount}
 			theme={previewAppShellTheme}
 		>
 			{#snippet footer()}
@@ -194,7 +274,7 @@
 					<section class="rounded-lg border border-neutral-muted bg-surface-raised p-4">
 						<p class="text-sm font-medium text-neutral">Recipe anatomy</p>
 						<div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-							{#each [['Sidebar', selectedRecipe.variant], ['Collapse', selectedRecipe.sidebar.collapsible], ['Rail', selectedRecipe.sidebar.rail ? 'edge toggle' : 'none'], ['Content', selectedRecipe.contentWidth]] as detail}
+							{#each [['Sidebar', selectedRecipe.variant], ['Collapse', selectedRecipe.sidebar.collapsible], ['Rail', selectedRecipe.sidebar.rail ? 'edge toggle' : 'none'], ['Content', contentWidth]] as detail}
 								<div class="rounded-md border border-neutral-muted bg-surface p-3">
 									<p class="text-xs font-medium uppercase tracking-normal text-neutral/50">
 										{detail[0]}

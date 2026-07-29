@@ -26,6 +26,7 @@ import type {
 	AIThreadDensity,
 	AIThreadAskUserQuestion,
 	AIThreadItem,
+	AIThreadMessageRenderPayload,
 	AIThreadRenderPayload,
 	AIThreadTocSide,
 	AIThreadTocState
@@ -177,7 +178,7 @@ type AIChatBaseProps<TMessage extends AIThreadItem> = AIChatComposerBehaviorProp
 	/** Replaces the default empty transcript state. */
 	empty?: Slot<AIChatState<TMessage>>;
 	/** Custom renderer for message rows. */
-	message?: Slot<AIThreadRenderPayload<TMessage>>;
+	message?: Slot<AIThreadMessageRenderPayload<TMessage>>;
 	/** Custom renderer for grouped normal tool calls. */
 	tool?: Slot<AIChatToolPayload<TMessage>>;
 	/** Custom renderer for transcript markers. */

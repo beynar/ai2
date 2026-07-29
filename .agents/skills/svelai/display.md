@@ -13,7 +13,7 @@
 - [ToggleButton](#togglebutton)
 - [ToggleButtonGroup](#togglebuttongroup)
 - [QRCode](#qrcode)
-- [PDFViewer](#pdfviewer)
+- [DocumentViewer](#documentviewer)
 - [Icons](#icons)
 
 ---
@@ -456,46 +456,46 @@ Renders a QR code as an SVG. `size` maps to fixed dimensions (small: 96px, norma
 
 ---
 
-## PDFViewer
+## DocumentViewer
 
-`import { PDFViewer } from 'svelai/pdf-viewer'`
+`import { DocumentViewer } from 'svelai/document-viewer'`
 
-Continuous-scroll PDF reader on pdf.js (loaded from cdnjs at runtime — not bundled — client-only, SSR-safe). Renders every page lazily in a ScrollArea with a selectable text layer, in-document search + highlighting, clickable link overlays, zoom, fit-to-width, pinch/Ctrl-wheel zoom, rotation, download and print. `size`/`color` style the toolbar. A strict CSP must allow cdnjs.cloudflare.com.
+Read-only PDF, Word, Excel, CSV, and PowerPoint viewer. Heavy parsing and rendering engines load from pinned CDN assets only for the active format; none are package dependencies. The toolbar adapts to format capabilities, paged formats use a thumbnail sidebar, and XLS/XLSX workbooks use a bottom sheet-tab rail.
+
+The default CDN manifest requires its three origins in `script-src` and `connect-src`, plus `worker-src blob:` and `'wasm-unsafe-eval'` in `script-src`. Override `assets` to use self-hosted origins.
 
 ### Unique Props
 
-| Prop                            | Type                                       | Default      | Notes                                                                                                             |
-| ------------------------------- | ------------------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| src                             | string \| URL \| Uint8Array \| ArrayBuffer | required     | Document url or binary content                                                                                    |
-| page                            | number (bindable)                          | 1            | Current page (nearest viewport middle); set it to scroll                                                          |
-| scale                           | number (bindable)                          | 1            | Zoom scale, clamped to minScale/maxScale (0.5/3)                                                                  |
-| rotation                        | number (bindable)                          | 0            | Degrees, added to each page's intrinsic /Rotate                                                                   |
-| fit                             | 'width' \| 'page' \| null (bindable)       | 'width'      | Fit mode; derives scale from viewport, re-applies on resize/rotation; zooming clears it                           |
-| mode                            | 'scroll' \| 'single' (bindable)            | 'scroll'     | Continuous scroll of all pages, or one page at a time                                                             |
-| orientation                     | 'vertical' \| 'horizontal' (bindable)      | 'vertical'   | Direction pages flow and scroll                                                                                   |
-| pageTransition                  | boolean                                    | true         | Single mode: animate page changes as a card stack (next slides in from the right)                                 |
-| toolbarPosition                 | 'top' \| 'bottom' \| 'left' \| 'right'     | 'top'        | Toolbar placement; 'left'/'right' stack the controls vertically                                                   |
-| color                           | Colors                                     | 'neutral' | Toolbar control color (neutral by default)                                                                        |
-| totalPages                      | number (bindable)                          | 0            | Read-only output                                                                                                  |
-| controls                        | array \| false                             | all          | Subset of 'navigation', 'pageInfo', 'zoom', 'fit', 'mode', 'orientation', 'rotate', 'search', 'download', 'print' |
-| password                        | string                                     | -            | For protected documents                                                                                           |
-| downloadFileName                | string                                     | -            | Name used by the download control                                                                                 |
-| onLoad / onError / onPageChange | functions                                  | -            | Lifecycle callbacks                                                                                               |
-| toolbar / error                 | Snippet<[PDFViewerState]>                  | -            | Replace the default toolbar or error display                                                                      |
+| Prop                                        | Type                                               | Default             | Notes                                                                                                 |
+| ------------------------------------------- | -------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
+| src                                         | string \| URL \| Blob \| Uint8Array \| ArrayBuffer | required            | URL or binary document source                                                                         |
+| format                                      | pdf/docx/doc/xlsx/xls/csv/pptx/ppt/pages           | detected            | Explicit format override                                                                              |
+| fileName                                    | string                                             | -                   | Detection and download name for anonymous binary input                                                |
+| page / sheet                                | number (bindable, one-based)                       | 1                   | Current page, slide, or workbook sheet                                                                |
+| scale / rotation / fit / mode / orientation | bindable viewer values                             | format defaults     | `mode` selects scroll or single; `orientation` applies to continuous PDF and Word layouts             |
+| sidebar / sheetTabs                         | boolean                                            | true                | Thumbnail pager and workbook tab rail                                                                 |
+| assets                                      | DocumentViewerAssetsOverride                       | pinned CDN manifest | Override module, worker, and WASM URLs for self-hosting                                               |
+| controls                                    | array \| false                                     | all                 | Includes sidebar, navigation, pageInfo, zoom, fit, mode, orientation, rotate, search, download, print |
+| onLoad / onError / onWarning                | functions                                          | -                   | Lifecycle and degraded-fidelity reporting                                                             |
+| onPageChange / onSheetChange                | functions                                          | -                   | One-based navigation callbacks                                                                        |
+| toolbar / error / thumbnail                 | snippets                                           | -                   | Customize the shell without replacing its state                                                       |
 
 ### Theme Parts
 
-`container`, `toolbar`, `pageInfo`, `viewer`, `pages`, `single`, `singlePage`, `scroller`, `page`, `canvas`, `pageError`, `error`, `skeleton`, `search`, `searchInput`, `searchCount`
+`root`, `toolbar`, `pageInfo`, `viewer`, `workspace`, `content`, `warning`, `sidebar`, `thumbnails`, `thumbnail`, `surface`, `pages`, `page`, `error`, `skeleton`, `search`, `sheetTabs`, `sheetTab`, `grid`, `gridCell`, `gridHeader`, `legacyPage`, `ooxmlPage`
 
 ### Key Example
 
+DocumentViewer fills its nearest sized parent. The parent must provide a definite height.
+
 ```svelte
-<PDFViewer
-	src="/document.pdf"
-	fit="width"
-	color="secondary"
-	controls={['pageInfo', 'search', 'download']}
-/>
+<div class="h-[600px]">
+	<DocumentViewer
+		src="/quarterly-report.xlsx"
+		bind:sheet
+		controls={['zoom', 'search', 'download']}
+	/>
+</div>
 ```
 
 ---

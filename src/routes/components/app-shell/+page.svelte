@@ -21,6 +21,7 @@
 			.replaceAll('$lib/components/Breadcrumbs/index.js', 'svelai/breadcrumbs')
 			.replaceAll('$lib/components/Button/Button.svelte', 'svelai/button')
 			.replaceAll('$lib/components/PageShell/index.js', 'svelai/page-shell')
+			.replaceAll('$lib/components/SegmentedControl/index.js', 'svelai/segmented-control')
 			.replaceAll('$lib/components/Sidebar/index.js', 'svelai/sidebar')
 			.replace(/\$lib\/components\/Icons\/([A-Za-z0-9]+)\.js/g, 'svelai/icons/$1');
 	}

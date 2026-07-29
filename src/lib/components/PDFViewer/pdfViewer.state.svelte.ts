@@ -2,13 +2,12 @@ import { bind } from '$lib/utils/state.svelte.js';
 import { BROWSER } from 'esm-env';
 import { onDestroy, untrack } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import type { PDFViewerProps } from './pdfViewer.props.js';
-
-// pdf.js is loaded from cdnjs at runtime and never bundled with the component,
-// so we declare the minimal structural types we use rather than depending on
-// `pdfjs-dist`. Bump this to any version cdnjs hosts to upgrade pdf.js.
-const PDFJS_CDN_VERSION = '5.4.149';
-const PDFJS_CDN = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_CDN_VERSION}`;
+import {
+	documentViewerAssets,
+	loadDocumentViewerRuntime,
+	type DocumentViewerAssets
+} from '../DocumentViewer/documentViewer.assets.js';
+import { getDocumentUnitAtReadingPosition } from '../DocumentViewer/documentPageTracking.js';
 
 export interface PDFViewport {
 	width: number;
@@ -25,7 +24,7 @@ interface TextItem {
 interface TextContent {
 	items: TextItem[];
 }
-interface PDFAnnotation {
+export interface PDFAnnotation {
 	subtype: string;
 	url?: string;
 	rect: number[];
@@ -88,10 +87,13 @@ export type PDFOrientation = 'vertical' | 'horizontal';
 
 const ZOOM_STEP = 0.25;
 
-interface PDFViewerOptions extends Pick<
-	PDFViewerProps,
-	'src' | 'password' | 'downloadFileName' | 'onLoad' | 'onError' | 'onPageChange'
-> {
+interface PDFViewerOptions {
+	src: string | URL | Uint8Array | ArrayBuffer;
+	password?: string;
+	downloadFileName?: string;
+	onLoad?: (viewer: PDFViewerState) => void;
+	onError?: (error: Error) => void;
+	onPageChange?: (page: number) => void;
 	page: number;
 	scale: number;
 	rotation: number;
@@ -101,6 +103,7 @@ interface PDFViewerOptions extends Pick<
 	fit: FitMode;
 	mode: PDFViewMode;
 	orientation: PDFOrientation;
+	runtimeAssets?: DocumentViewerAssets['pdf'];
 }
 
 export class PDFViewerState {
@@ -166,13 +169,17 @@ export class PDFViewerState {
 		return this.axis === 'x' ? r.width : r.height;
 	}
 	private get scrollPos() {
-		return this.axis === 'x' ? this.viewport!.scrollLeft : this.viewport!.scrollTop;
+		const viewport = this.viewport;
+		if (!viewport) return 0;
+		return this.axis === 'x' ? viewport.scrollLeft : viewport.scrollTop;
 	}
 	// Instant, not smooth: the ScrollArea viewport is overflow:hidden, where
 	// scrollTo({behavior:'smooth'}) is an unreliable no-op in some browsers.
 	private setScrollPos(value: number) {
-		if (this.axis === 'x') this.viewport!.scrollLeft = value;
-		else this.viewport!.scrollTop = value;
+		const viewport = this.viewport;
+		if (!viewport) return;
+		if (this.axis === 'x') viewport.scrollLeft = value;
+		else viewport.scrollTop = value;
 	}
 
 	constructor(options: PDFViewerOptions) {
@@ -260,22 +267,26 @@ export class PDFViewerState {
 		this.error = null;
 
 		try {
-			// Loaded from cdnjs at runtime; @vite-ignore keeps pdf.js out of the bundle.
+			const runtimeAssets = this.runtimeAssets ?? documentViewerAssets.pdf;
 			const pdfjs: PDFJSModule =
-				this.pdfjs ?? (await import(/* @vite-ignore */ `${PDFJS_CDN}/pdf.min.mjs`));
-			if (!pdfjs.GlobalWorkerOptions.workerSrc && !pdfjs.GlobalWorkerOptions.workerPort) {
-				pdfjs.GlobalWorkerOptions.workerSrc = `${PDFJS_CDN}/pdf.worker.min.mjs`;
+				this.pdfjs ?? (await loadDocumentViewerRuntime<PDFJSModule>(runtimeAssets.moduleUrl));
+			if (
+				!pdfjs.GlobalWorkerOptions.workerPort &&
+				pdfjs.GlobalWorkerOptions.workerSrc !== runtimeAssets.workerUrl
+			) {
+				pdfjs.GlobalWorkerOptions.workerSrc = runtimeAssets.workerUrl;
 			}
 			if (token !== this.loadToken) return;
 			this.pdfjs = pdfjs;
 
 			const src = this.src;
-			const source =
-				typeof src === 'string' || src instanceof URL
-					? { url: src }
-					: // Copy the buffer: pdf.js transfers it to the worker, which would
-						// detach a caller-owned buffer on reload
-						{ data: src instanceof Uint8Array ? src.slice() : src.slice(0) };
+			let source: { url: string | URL } | { data: Uint8Array | ArrayBuffer };
+			if (typeof src === 'string' || src instanceof URL) {
+				source = { url: src };
+			} else {
+				// pdf.js transfers binary input to its worker, so preserve caller-owned buffers.
+				source = { data: src instanceof Uint8Array ? src.slice() : src.slice(0) };
+			}
 			const doc = await pdfjs.getDocument({
 				...source,
 				...(this.password ? { password: this.password } : {})
@@ -290,7 +301,10 @@ export class PDFViewerState {
 			// the right size before render; the `rotation` prop is applied on top.
 			const first = await doc.getPage(1);
 			const dims = first.getViewport({ scale: 1 });
-			if (token !== this.loadToken) return;
+			if (token !== this.loadToken) {
+				void doc.loadingTask.destroy();
+				return;
+			}
 
 			this.baseWidth = dims.width;
 			this.baseHeight = dims.height;
@@ -311,8 +325,7 @@ export class PDFViewerState {
 
 	// --- Virtualization + current-page tracking -------------------------------
 
-	// Attached to the pages container; derives the scroll container (the
-	// ScrollArea viewport for vertical, the native wrapper for horizontal) and
+	// Attached to the pages container; derives the shared ScrollArea viewport and
 	// wires up the virtualization observer, scroll sync and resize-driven fit.
 	attach = (content: HTMLElement) => {
 		return untrack(() => {
@@ -416,18 +429,16 @@ export class PDFViewerState {
 		// position must never override it, or it fights the slide transition.
 		if (!vp || !this.doc || this.mode === 'single') return;
 		const vr = vp.getBoundingClientRect();
-		const center = this.startOf(vr) + this.sizeOf(vr) / 2;
-		let best = this.page;
-		let bestDist = Infinity;
-		for (const [n, el] of this.pageEls) {
-			const r = el.getBoundingClientRect();
-			const pageCenter = this.startOf(r) + this.sizeOf(r) / 2;
-			const dist = Math.abs(pageCenter - center);
-			if (dist < bestDist) {
-				bestDist = dist;
-				best = n;
-			}
-		}
+		const best = getDocumentUnitAtReadingPosition(
+			this.page,
+			this.startOf(vr),
+			this.sizeOf(vr),
+			Array.from(this.pageEls, ([unit, element]) => {
+				const bounds = element.getBoundingClientRect();
+				const start = this.startOf(bounds);
+				return { unit, start, end: start + this.sizeOf(bounds) };
+			})
+		);
 		if (best !== this.page) {
 			// Scroll-driven change: update the indicator but don't scroll back
 			// (that would snap the page into alignment while the user scrolls).
@@ -485,7 +496,8 @@ export class PDFViewerState {
 	};
 	goTo = (page: number) => {
 		const target = Math.min(Math.max(Math.floor(page), 1), this.totalPages || 1);
-		this.direction = target > this.page ? 1 : target < this.page ? -1 : this.direction;
+		if (target > this.page) this.direction = 1;
+		else if (target < this.page) this.direction = -1;
 		this.page = target;
 	};
 
@@ -518,7 +530,9 @@ export class PDFViewerState {
 	applyFit = () => {
 		const vp = this.viewport;
 		const content = this.content;
-		if (!vp || !content || !this.fit || !this.baseWidth || !this.baseHeight) return;
+		if (!vp || !content || !this.fit || !this.baseWidth || !this.baseHeight) {
+			return;
+		}
 		// Account for a 90°/270° rotation swapping the rendered width and height.
 		const rotated = ((this.rotation % 180) + 180) % 180 === 90;
 		const bw = rotated ? this.baseHeight : this.baseWidth;
@@ -559,7 +573,9 @@ export class PDFViewerState {
 	private async pageText(pageNumber: number): Promise<string[]> {
 		const cached = this.textCache.get(pageNumber);
 		if (cached) return cached;
-		const page = await this.doc!.getPage(pageNumber);
+		const document = this.doc;
+		if (!document) throw new Error('No PDF document is loaded.');
+		const page = await document.getPage(pageNumber);
 		const content = await page.getTextContent();
 		const strs = content.items.map((i) => i.str);
 		this.textCache.set(pageNumber, strs);
@@ -621,6 +637,28 @@ export class PDFViewerState {
 		this.searchToken++;
 	};
 
+	renderThumbnail = async (canvas: HTMLCanvasElement, pageNumber: number, width: number) => {
+		if (!this.doc) throw new Error('No PDF document is loaded.');
+		const page = await this.doc.getPage(pageNumber);
+		const natural = page.getViewport({ scale: 1, rotation: this.rotationFor(page.rotate) });
+		const viewport = page.getViewport({
+			scale: width / natural.width,
+			rotation: this.rotationFor(page.rotate)
+		});
+		const context = canvas.getContext('2d');
+		if (!context) throw new Error('The browser could not create a PDF thumbnail context.');
+		const outputScale = window.devicePixelRatio || 1;
+		canvas.width = Math.floor(viewport.width * outputScale);
+		canvas.height = Math.floor(viewport.height * outputScale);
+		canvas.style.width = `${Math.floor(viewport.width)}px`;
+		canvas.style.height = `${Math.floor(viewport.height)}px`;
+		await page.render({
+			canvasContext: context,
+			viewport,
+			transform: outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined
+		}).promise;
+	};
+
 	/** Character ranges (and which is active) to highlight on a given page. */
 	matchesForPage(pageNumber: number) {
 		const active = this.matches[this.activeMatch];
@@ -639,26 +677,25 @@ export class PDFViewerState {
 	private getBlob = async (): Promise<Blob> => {
 		if (!this.doc) throw new Error('No document loaded');
 		const data = await this.doc.getData();
-		return new Blob([data as BlobPart], { type: 'application/pdf' });
+		const copy = new Uint8Array(data.byteLength);
+		copy.set(data);
+		return new Blob([copy.buffer], { type: 'application/pdf' });
 	};
 
 	download = async (name?: string) => {
 		const src = this.src;
-		const fromUrl =
-			src instanceof URL
-				? src.pathname.split('/').pop()
-				: typeof src === 'string'
-					? src.split('/').pop()?.split(/[?#]/)[0]
-					: undefined;
+		let fromUrl: string | undefined;
+		if (src instanceof URL) fromUrl = src.pathname.split('/').pop();
+		else if (typeof src === 'string') fromUrl = src.split('/').pop()?.split(/[?#]/)[0];
 		const fileName = name || this.downloadFileName || fromUrl || 'download.pdf';
 		const url = URL.createObjectURL(await this.getBlob());
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = fileName;
-		a.rel = 'noopener';
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = fileName;
+		anchor.rel = 'noopener';
+		document.body.appendChild(anchor);
+		anchor.click();
+		document.body.removeChild(anchor);
 		URL.revokeObjectURL(url);
 	};
 

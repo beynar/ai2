@@ -53,7 +53,7 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 * The icon marking the expand state. A rotating "chevron" (default), a
 			 * plus/minus "math" icon, or a custom slot. Pass false to hide it.
 			 */
-			icon?: 'math' | 'chevron' | Slot;
+			icon?: 'math' | 'chevron' | Slot | false;
 			/**
 			 * Size token controlling the typography scale (title, description,
 			 * content text and icon).
@@ -90,7 +90,7 @@ export type AccordionProps<Item extends Record<string, any>> = WithAttachments<
 			 */
 			accessible?: boolean;
 		},
-		'actions' | 'icon' | 'title' | 'description' | 'content',
+		'actions' | 'title' | 'description' | 'content',
 		{ item: Item }
 	>
 >;

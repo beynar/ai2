@@ -38,6 +38,8 @@ Product-level snippets receive the central \`AIConversationState\` instance dire
 - \`context\` and \`modelSelector\` replace their individual composer controls; \`controls\` replaces both together.
 - \`empty\` replaces the transcript empty state; \`suggestionsRegion\` replaces suggestions inside that empty state.
 - \`message\`, \`tool\`, \`marker\`, and \`app\` customize transcript renderers with their row payloads.
+  Message payloads include the thread-resolved \`actionsVisibility\` value so custom AIMessage
+  composition does not make intermediate actions permanently visible.
 - \`toc\` receives the complete \`AIThreadTocState\`.
 
 \`\`\`svelte
@@ -64,6 +66,8 @@ Use \`density\` for transcript spacing, \`messageSize\` for the default message 
 presentation. Configure advanced virtualizer tuning on \`AIThread\` through direct composition.
 
 Use \`messageActions\`, \`messageActionsVisibility\` (\`hover\`, \`always\`, or \`none\`), \`messageCopyable\`, \`messageEditable\`, \`messageRetryable\`, \`onMessageCopy\`, \`onMessageEdit\`, and \`onMessageRetry\` for default message actions. Explicit message-action callbacks take precedence over conversation fallbacks.
+Intermediate assistant segments that continue through tools into another assistant segment omit the
+action region; actions attach to the terminal assistant response for the turn.
 
 Set \`mcpHost\` to render MCP App tool calls through AIMcpApp.
 

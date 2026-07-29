@@ -3,10 +3,12 @@
 import * as v from 'valibot';
 import type { InputType } from './field.js';
 
+type Schema = v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+
 const nonEmptyString = v.pipe(v.string(), v.nonEmpty());
-const nonEmptyArray = (schema: v.BaseSchema<any, any, any>) =>
+const nonEmptyArray = <TSchema extends Schema>(schema: TSchema) =>
 	v.pipe(v.array(schema), v.minLength(1));
-const emptyStringNull = (schema: v.BaseSchema<any, any, any>) =>
+const emptyStringNull = <TSchema extends Schema>(schema: TSchema) =>
 	v.union([
 		v.pipe(
 			v.literal(''),
@@ -15,7 +17,7 @@ const emptyStringNull = (schema: v.BaseSchema<any, any, any>) =>
 		schema
 	]);
 
-const emptyArrayNull = (schema: v.BaseSchema<any, any, any>) =>
+const emptyArrayNull = <TSchema extends Schema>(schema: TSchema) =>
 	v.union([
 		v.pipe(
 			v.strictTuple([]),
@@ -24,7 +26,7 @@ const emptyArrayNull = (schema: v.BaseSchema<any, any, any>) =>
 		schema
 	]);
 
-const optional = (schema: v.BaseSchema<any, any, any>) =>
+const optional = <TSchema extends Schema>(schema: TSchema) =>
 	v.optional(v.nullable(schema, null), null);
 const sliderRangeValue = v.pipe(v.array(v.number()), v.minLength(2));
 const tagGroupValue = v.union([nonEmptyString, nonEmptyArray(v.string())]);
@@ -32,7 +34,7 @@ const keyValuePair = v.object({ key: v.string(), value: v.string() });
 const calendarRangeValue = v.strictTuple([v.nullable(v.date()), v.nullable(v.date())]);
 const completeCalendarRangeValue = v.strictTuple([v.date(), v.date()]);
 
-type Schemas = Record<InputType, v.BaseSchema<any, any, any>>;
+type Schemas = Record<InputType, Schema>;
 export const schemas: {
 	required: Schemas;
 	optional: Schemas;

@@ -37,7 +37,9 @@
 
 	const id = $props.id();
 	const dialog = new DialogState({
-		id: customId || id,
+		get id() {
+			return customId || id;
+		},
 		get type() {
 			return type;
 		},
@@ -73,9 +75,7 @@
 		},
 		get swipeFrom() {
 			return swipeFrom;
-		},
-		onClose,
-		onOpen
+		}
 	});
 
 	const classes = $derived(useDialogTheme(theme));

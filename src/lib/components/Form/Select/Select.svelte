@@ -7,7 +7,6 @@
 	import Popover from '../../Popover/Popover.svelte';
 	import ScrollArea from '../../ScrollArea/ScrollArea.svelte';
 	import MenuOption from '../../MenuOption/MenuOption.svelte';
-	import type { PopoverState } from '../../Popover/popover.state.svelte.js';
 	import { caretDownIcon } from '../../Icons/caretDown.js';
 	import { checkIcon } from '../../Icons/check.js';
 
@@ -43,7 +42,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -113,61 +112,64 @@
 	closeOnEscape={false}
 	fitTrigger
 	position="bottom"
+	ref={field.node?.parentElement}
 	size="small"
+	transition={{
+		in: { scale: 1, opacity: 0 },
+		out: { scale: 1, opacity: 0 }
+	}}
 	open={select.isOpen}
 >
-	{#snippet children(popover: PopoverState)}
-		<!-- Virtual focus: DOM focus stays on the combobox trigger; tabindex=-1 keeps the
-		     listbox out of the tab order while remaining a valid programmatic target. -->
-		<div
-			id={select.listboxId}
-			role="listbox"
-			aria-label="Options"
-			tabindex={-1}
-			class={classes.content({ size })}
-			onmousedown={(event) => {
-				// Keep DOM focus on the trigger for ANY press inside the panel (group labels,
-				// separators, padding, scrollbar) — otherwise the trigger blurs and the dropdown
-				// closes before the click lands.
-				event.preventDefault();
-			}}
-		>
-			<ScrollArea scrollOnEdges type="auto" class="flex max-h-[240px] flex-col">
-				{#each select.renderGroups as group, groupIndex (groupIndex)}
-					{#if separators && groupIndex > 0}
-						<div role="separator" class={classes.separator({ size })}></div>
+	<!-- Virtual focus: DOM focus stays on the combobox trigger; tabindex=-1 keeps the
+	     listbox out of the tab order while remaining a valid programmatic target. -->
+	<div
+		id={select.listboxId}
+		role="listbox"
+		aria-label="Options"
+		tabindex={-1}
+		class={classes.content({ size })}
+		onmousedown={(event) => {
+			// Keep DOM focus on the trigger for ANY press inside the panel (group labels,
+			// separators, padding, scrollbar) — otherwise the trigger blurs and the dropdown
+			// closes before the click lands.
+			event.preventDefault();
+		}}
+	>
+		<ScrollArea scrollOnEdges type="auto" class="flex max-h-[240px] flex-col">
+			{#each select.renderGroups as group, groupIndex (groupIndex)}
+				{#if separators && groupIndex > 0}
+					<div role="separator" class={classes.separator({ size })}></div>
+				{/if}
+				<div role="group" aria-label={group.label} class={classes.group({ size })}>
+					{#if group.label}
+						<div aria-hidden="true" class={classes.groupLabel({ size })}>{group.label}</div>
 					{/if}
-					<div role="group" aria-label={group.label} class={classes.group({ size })}>
-						{#if group.label}
-							<div aria-hidden="true" class={classes.groupLabel({ size })}>{group.label}</div>
-						{/if}
-						{#each group.items as option (option.value)}
-							<MenuOption
-								as="button"
-								role="option"
-								{size}
-								{density}
-								title={option.label}
-								highlighted={select.nav.highlighted === option.value}
-								selected={field.value === option.value}
-								disabled={!!option.disabled}
-								suffix={field.value === option.value ? checkMark : undefined}
-								onClick={() => select.selectValue(option.value)}
-								attrs={{
-									id: select.optionId(option.value),
-									tabindex: -1,
-									onpointermove: () => {
-										if (!option.disabled) select.nav.setHighlighted(option.value);
-									}
-								}}
-							/>
-						{/each}
-					</div>
-				{/each}
-			</ScrollArea>
-		</div>
-	{/snippet}
-	{#snippet trigger(popover: PopoverState)}
+					{#each group.items as option (option.value)}
+						<MenuOption
+							as="button"
+							role="option"
+							{size}
+							{density}
+							title={option.label}
+							highlighted={select.nav.highlighted === option.value}
+							selected={field.value === option.value}
+							disabled={!!option.disabled}
+							suffix={field.value === option.value ? checkMark : undefined}
+							onClick={() => select.selectValue(option.value)}
+							attrs={{
+								id: select.optionId(option.value),
+								tabindex: -1,
+								onpointermove: () => {
+									if (!option.disabled) select.nav.setHighlighted(option.value);
+								}
+							}}
+						/>
+					{/each}
+				</div>
+			{/each}
+		</ScrollArea>
+	</div>
+	{#snippet trigger()}
 		<Field
 			{field}
 			{size}
@@ -183,7 +185,6 @@
 				}
 			}}
 			{...rest}
-			{@attach popover.reference}
 		>
 			<button
 				type="button"

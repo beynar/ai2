@@ -20,7 +20,7 @@ const defaultTextArea = cva({
 });
 
 const defaultTextAreaContainer = cva({
-	base: 'px-3 py-2 bg-surface-raised border border-neutral-muted rounded text-neutral w-full focus-within:ring-1 focus-within:ring-primary ring-0 transition-all',
+	base: 'w-full items-start rounded border border-neutral-muted bg-surface-raised px-3 py-2 text-neutral ring-0 transition-all focus-within:ring-1 focus-within:ring-primary',
 	variants: {
 		size: {
 			small: 'min-h-20 py-1.5 text-xs',

@@ -46,7 +46,8 @@ The Card component is a flexible container component used to display content in 
   - Disables interactions and applies opacity styling
 
 - **showBorders**: boolean (default: false)
-  - Shows subtle borders (neutral-muted, 1px) between sections (header/content, content/footer)
+  - Shows edge-to-edge neutral-muted boundaries below the header and above the footer
+  - Boundary spacing follows density and is owned by the adjacent header/footer section
 
 ### Interactive Props
 - **href**: string - Makes the card a link (renders as <a>)
@@ -265,7 +266,7 @@ The Card component uses a flexible slot-based structure:
 \`\`\`
 
 ### Card with Border Separators
-Enable subtle borders between sections using the \`showBorders\` prop.
+Enable edge-to-edge boundaries between sections using the \`showBorders\` prop.
 
 \`\`\`svelte
 <Card showBorders={true}>

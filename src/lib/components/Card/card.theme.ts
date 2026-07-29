@@ -91,7 +91,7 @@ const defaultCardHeader = cva({
 			false: ''
 		},
 		hasBorder: {
-			true: '',
+			true: 'border-b border-neutral-muted',
 			false: ''
 		},
 		variant: {
@@ -105,7 +105,12 @@ const defaultCardHeader = cva({
 		density: 'normal',
 		hasAction: false,
 		hasBorder: false
-	}
+	},
+	compoundVariants: [
+		{ hasBorder: true, density: 'small', class: 'pb-3' },
+		{ hasBorder: true, density: 'normal', class: 'pb-4' },
+		{ hasBorder: true, density: 'large', class: 'pb-6' }
+	]
 });
 
 const defaultCardTitle = cva({
@@ -161,25 +166,18 @@ const defaultCardContent = cva({
 			large: 'px-6'
 		},
 		hasBorderTop: {
-			true: 'border-t border-neutral-muted',
+			true: '',
 			false: ''
 		},
 		hasBorderBottom: {
-			true: 'border-b border-neutral-muted',
+			true: '',
 			false: ''
 		}
 	},
 	defaultVariants: {
 		density: 'normal'
 	},
-	compoundVariants: [
-		{ hasBorderTop: true, density: 'small', class: 'pt-3' },
-		{ hasBorderTop: true, density: 'normal', class: 'pt-4' },
-		{ hasBorderTop: true, density: 'large', class: 'pt-6' },
-		{ hasBorderBottom: true, density: 'small', class: 'pb-3' },
-		{ hasBorderBottom: true, density: 'normal', class: 'pb-4' },
-		{ hasBorderBottom: true, density: 'large', class: 'pb-6' }
-	]
+	compoundVariants: []
 });
 
 const defaultCardFooter = cva({
@@ -191,14 +189,19 @@ const defaultCardFooter = cva({
 			large: 'px-6 gap-3'
 		},
 		hasBorder: {
-			true: '',
+			true: 'border-t border-neutral-muted',
 			false: ''
 		}
 	},
 	defaultVariants: {
 		density: 'normal',
 		hasBorder: false
-	}
+	},
+	compoundVariants: [
+		{ hasBorder: true, density: 'small', class: 'pt-3' },
+		{ hasBorder: true, density: 'normal', class: 'pt-4' },
+		{ hasBorder: true, density: 'large', class: 'pt-6' }
+	]
 });
 
 export const cardTheme = {

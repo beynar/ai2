@@ -18,7 +18,6 @@
 		name,
 		onValidate,
 		visible,
-		field: providedField,
 		onChange,
 		onClick,
 		label,
@@ -38,7 +37,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -82,11 +81,7 @@
 
 <!-- Create own field wrapper (when used standalone) -->
 <Field
-	attrs={{
-		name: field.name,
-		id: field.id
-	}}
-	as={'fieldset'}
+	as="fieldset"
 	{field}
 	{label}
 	class={componentTheme.root({ mode })}
@@ -109,8 +104,9 @@
 		{@const optionDisabled = Boolean(field.disabled || option.disabled)}
 		<button
 			type="button"
+			role="checkbox"
+			aria-checked={checked}
 			disabled={optionDisabled}
-			aria-controls={optionId}
 			onclick={() => {
 				if (optionDisabled) return;
 				if (checked) {

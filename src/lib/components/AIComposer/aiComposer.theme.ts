@@ -42,8 +42,27 @@ const defaultEditor = cva({
 const defaultToolbar = cva({ base: 'min-w-0' });
 const defaultFile = cva({ base: 'shrink-0' });
 const defaultError = cva({ base: 'min-w-0' });
-const defaultFooter = cva({ base: 'flex min-w-0 items-center justify-between gap-2' });
-const defaultActions = cva({ base: 'flex items-center gap-1' });
+const defaultFooter = cva({ base: 'flex min-w-0 items-center gap-2' });
+const defaultActions = cva({
+	base: 'flex items-center gap-1',
+	variants: {
+		side: {
+			start: 'shrink-0',
+			end: 'ml-auto min-w-0 flex-1 justify-end'
+		}
+	},
+	defaultVariants: { side: 'start' }
+});
+const defaultVoiceInput = cva({
+	base: 'min-w-0',
+	variants: {
+		variant: {
+			compact: 'shrink-0',
+			expandable: 'flex min-w-0 flex-1 justify-end'
+		}
+	},
+	defaultVariants: { variant: 'compact' }
+});
 const defaultQueue = cva({ base: 'grid gap-1 border-b border-neutral-muted pb-2' });
 const defaultQueueEditing = cva({
 	base: 'flex min-w-0 items-center justify-between gap-2 rounded bg-neutral-muted/50 px-2 py-1 text-sm text-neutral/75'
@@ -64,6 +83,7 @@ export const aiComposerTheme = {
 	error: defaultError,
 	footer: defaultFooter,
 	actions: defaultActions,
+	voiceInput: defaultVoiceInput,
 	queue: defaultQueue,
 	queueEditing: defaultQueueEditing,
 	queueList: defaultQueueList,

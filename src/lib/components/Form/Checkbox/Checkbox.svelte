@@ -22,6 +22,7 @@
 		onClick,
 		label,
 		description,
+		labelPosition,
 		...rest
 	}: CheckboxProps = $props();
 
@@ -38,7 +39,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -85,11 +86,10 @@
 </script>
 
 <Field
-	attrs={{
-		name: field.name,
-		id: field.id
-	}}
 	{field}
+	{labelPosition}
+	label={labelPosition ? label : undefined}
+	description={labelPosition ? description : undefined}
 	class={componentTheme.root({ mode })}
 	theme={{
 		...theme,
@@ -105,6 +105,7 @@
 	{...rest}
 >
 	<CheckboxLine
+		bind:ref={field.node}
 		id={field.id}
 		name={field.name}
 		inputValue="true"
@@ -113,8 +114,8 @@
 		{ariaLabel}
 		disabled={field.disabled}
 		{mode}
-		{label}
-		{description}
+		label={labelPosition ? undefined : label}
+		description={labelPosition ? undefined : description}
 		classes={componentTheme}
 		onCheckedChange={setChecked}
 		onFocus={() => (field.focused = true)}

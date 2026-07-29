@@ -7,7 +7,9 @@
 		AIToolLabels,
 		AIToolRenderPayload,
 		AIToolSnippet,
-		AIToolStatus
+		AIToolStatus,
+		AIToolToggleIcon,
+		AIToolVariant
 	} from './aiTool.props.js';
 	import type { AIToolThemeProps } from './aiTool.theme.js';
 	import { useAIToolTheme } from './aiTool.theme.js';
@@ -26,7 +28,6 @@
 		isActiveAIToolStatus,
 		resolveAIToolStatus
 	} from './toolRendering.js';
-	import AIToolStatusBadge from './AIToolStatusBadge.svelte';
 	import AIToolValueSection from './AIToolValueSection.svelte';
 
 	type ToolAccordionItem = { id: string; tool: AIToolCall; index: number };
@@ -36,6 +37,8 @@
 		value = $bindable([]),
 		multiple = true,
 		scope = 'calls',
+		variant = 'ghost',
+		toggleIcon = 'none',
 		labels,
 		formatStatus = formatAIToolStatus,
 		icon,
@@ -53,6 +56,8 @@
 		value?: string[];
 		multiple?: boolean;
 		scope?: Extract<AIToolAccordionScope, 'single' | 'calls'>;
+		variant?: AIToolVariant;
+		toggleIcon?: AIToolToggleIcon;
 		labels: AIToolLabels;
 		formatStatus?: (status: AIToolStatus) => string;
 		icon?: AIToolSnippet;
@@ -75,7 +80,9 @@
 		}))
 	);
 	const classes = $derived(useAIToolTheme(theme));
-	const accordionTheme = $derived(createAIToolAccordionTheme(classes, scope));
+	const accordionTheme = $derived(
+		createAIToolAccordionTheme(classes, { scope, variant, toggleIcon })
+	);
 
 	function displayName(tool: AIToolCall): string {
 		return tool.title ?? tool.name ?? labels.fallbackTitle;
@@ -86,9 +93,14 @@
 	{@const tool = payload.item.tool}
 	{@const renderPayload: AIToolRenderPayload = { tool, index: payload.item.index }}
 	{@const currentStatus = resolveAIToolStatus(tool)}
-	<div data-slot="ai-tool-call-trigger-content" class={classes.title()}>
+	<div
+		data-slot="ai-tool-call-trigger-content"
+		data-tone={getAIToolStatusTone(currentStatus)}
+		class={classes.title()}
+	>
 		<span
 			data-slot="ai-tool-call-status-indicator"
+			aria-label={formatStatus(currentStatus)}
 			class={classes.indicator({ tone: getAIToolStatusTone(currentStatus) })}
 		>
 			{#if icon}
@@ -105,9 +117,9 @@
 			<span data-slot="ai-tool-call-title" class={classes.name()}>{displayName(tool)}</span>
 		{/if}
 		{#if status}
-			<Slot render={status} payload={renderPayload} />
-		{:else}
-			<AIToolStatusBadge status={currentStatus} {formatStatus} {theme} />
+			<span data-slot="ai-tool-status" class={classes.status()}>
+				<Slot render={status} payload={renderPayload} />
+			</span>
 		{/if}
 	</div>
 {/snippet}
@@ -127,6 +139,7 @@
 					{tool}
 					{index}
 					label={labels.input}
+					kind="input"
 					value={tool.input}
 					snippet={input}
 					{maxDepth}
@@ -140,6 +153,7 @@
 					{tool}
 					{index}
 					label={labels.error}
+					kind="error"
 					value={errorValue}
 					snippet={error ?? output}
 					tone="error"
@@ -152,6 +166,7 @@
 					{tool}
 					{index}
 					label={labels.output}
+					kind="output"
 					value={outputValue}
 					snippet={output}
 					{maxDepth}
@@ -173,6 +188,7 @@
 	oneAtATime={!multiple}
 	title={toolTitle}
 	content={toolContent}
+	icon={toggleIcon === 'none' ? false : toggleIcon}
 	variant={scope === 'single' ? 'outlined' : 'classic'}
 	density="small"
 	theme={accordionTheme}

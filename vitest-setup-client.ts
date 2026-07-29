@@ -15,7 +15,7 @@ Object.defineProperty(window, 'matchMedia', {
 	}))
 });
 
-// jsdom lacks these observers; components (ScrollArea, PDFViewer) construct them on mount.
+// jsdom lacks these observers; components (ScrollArea, DocumentViewer) construct them on mount.
 class MockObserver {
 	observe() {}
 	unobserve() {}

@@ -146,15 +146,12 @@
 					/>
 				</div>
 				{#if icon}
-					<!-- Rotation lives on a span wrapper: the CSS rotate property is not
-					     applied to SVG elements, and dynamic classes don't belong on icon
-					     props (span-wrapper house pattern). -->
 					<span
+						data-slot="accordion-icon-wrapper"
 						aria-hidden="true"
-						class="shrink-0 translate-y-0.5 transition-transform {icon === 'chevron' &&
-						accordionControl.isExpanded
-							? 'rotate-180'
-							: ''}"
+						class={classes.iconWrapper({
+							expanded: icon === 'chevron' && accordionControl.isExpanded
+						})}
 					>
 						{@render renderIcon(accordionControl.isExpanded)}
 					</span>

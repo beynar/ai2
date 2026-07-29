@@ -115,6 +115,12 @@ export type AIThreadRenderPayload<TMessage extends AIThreadItem = AIThreadItem> 
 	index: number;
 };
 
+export type AIThreadMessageRenderPayload<TMessage extends AIThreadItem = AIThreadItem> =
+	AIThreadRenderPayload<TMessage> & {
+		/** Visibility resolved by the thread for this message's action region. */
+		actionsVisibility: AIMessageActionVisibility;
+	};
+
 export type AIThreadScrollBehavior = 'auto' | 'smooth' | 'instant';
 export type AIThreadScrollButtonPosition = 'left' | 'center' | 'right';
 export type AIThreadDensity = Density;
@@ -237,10 +243,10 @@ export type AIThreadProps<TMessage extends AIThreadItem = AIThreadItem> = WithAt
 		/** Replaces the default empty transcript state. */
 		empty?: Slot;
 		/** Custom message renderer. */
-		message?: Slot<AIThreadRenderPayload<TMessage>>;
+		message?: Slot<AIThreadMessageRenderPayload<TMessage>>;
 		/** Custom action renderer shared by default message rows. */
 		messageActions?: AIMessageActionSnippet<TMessage> | false;
-		/** Controls default message action visibility. */
+		/** Controls default message action visibility. @default 'always' */
 		messageActionsVisibility?: AIMessageActionVisibility;
 		/** Enables or disables copy actions. */
 		messageCopyable?: boolean;

@@ -1,119 +1,102 @@
 export const multiStepFormDescription = `
-# MultiStepForm Component
+# MultiStepForm
 
-MultiStepForm renders an ordered collection of form-step items with a Stepper, optional Meter, per-step validation, and final submission.
+MultiStepForm owns one Form per step, displays them through Stepper, validates visited steps before navigation, and validates every step before final submission. Field names must be unique across steps.
 
-## Basic Usage
+## Basic usage
 
 \`\`\`svelte
-<script>
-	let value = $state({});
+<script lang="ts">
+	import {
+		MultiStepForm,
+		type FormStep,
+		type MergedMultiStepFormInputs
+	} from 'svelai/multi-step-form';
+	import type { FormInputs, InferFormValue, LiveFormValue } from 'svelai/form';
 
-	const items = [
+	const accountInputs = {
+		name: { type: 'text', label: 'Name', required: true },
+		email: { type: 'email', label: 'Email', required: true }
+	} satisfies FormInputs;
+	const preferenceInputs = {
+		newsletter: { type: 'switch', label: 'Newsletter' }
+	} satisfies FormInputs;
+
+	const items: [
+		FormStep<typeof accountInputs>,
+		FormStep<typeof preferenceInputs>
+	] = [
 		{
 			title: 'Account',
-			description: 'Tell us who you are',
-			inputs: {
-				name: { type: 'text', label: 'Name', required: true },
-				email: { type: 'email', label: 'Email', required: true }
-			}
+			inputs: accountInputs
 		},
 		{
 			title: 'Preferences',
-			inputs: {
-				plan: {
-					type: 'select',
-					label: 'Plan',
-					items: [
-						{ value: 'free', label: 'Free' },
-						{ value: 'pro', label: 'Pro' }
-					]
-				}
-			}
+			inputs: preferenceInputs
 		}
 	];
+
+	type Inputs = MergedMultiStepFormInputs<typeof items>;
+	let value = $state<LiveFormValue<Inputs>>({});
+	let submitted = $state<InferFormValue<Inputs> | null>(null);
 </script>
 
 <MultiStepForm
 	{items}
 	bind:value
-	onSubmitForm={(values) => {
-		console.log(values);
+	onSubmitForm={(validatedValue) => {
+		submitted = validatedValue;
 	}}
 />
 \`\`\`
 
 ## Props
 
-- **items**: FormStep[] (required) - Ordered form-step items.
-- **value**: object (bindable) - Merged values across every step.
-- **showMeter**: boolean - Renders the progress meter when true. Defaults to true.
-- **meterColor**: Colors - Color token used by the meter.
-- **previousText**: string - Previous button label. Defaults to "Previous".
-- **nextText**: string - Next button label. Defaults to "Next".
-- **submitText**: string - Final submit button label. Defaults to "Submit".
-- **onSubmitForm**: (values) => void | Promise<void> - Called on final submit.
-- **onSubmitStep**: (values, step, index) => boolean | void | Promise<boolean | void> - Called before advancing; return false to block.
-- **previousButtonProps**: ButtonProps - Props spread onto the previous button.
-- **nextButtonProps**: ButtonProps - Props spread onto the next button.
-- **submitButtonProps**: ButtonProps - Props spread onto the final submit button.
-- **class**: string - Additional CSS classes for the root.
-- **theme**: MultiStepFormThemeProps - Theme overrides, with optional nested Form theme.
+- **items** (required): ordered FormStep array. Duplicate field names across steps throw.
+- **value** (bindable): partial values merged across all steps, synchronized in both directions.
+- **onSubmitForm**: called with the validated merged payload on the final step only.
+- **onSubmitStep**: called with the validated values from visited steps after the step's onBeforeChange; unvisited step keys remain optional. Return false to block advancing.
+- **showMeter**: whether to render the progress meter. Defaults to true.
+- **meterColor**: meter color token.
+- **previousText**, **nextText**, **submitText**: navigation labels.
+- **variant**: visual presentation applied to every nested Form. Supports plain, sectioned, and card; defaults to plain.
+- **previousButtonProps**, **nextButtonProps**, **submitButtonProps**: Button props. Custom click handlers are composed with internal behavior; disabled and loading protection cannot be overridden.
+- **class**: additional classes on the root.
+- **theme**: MultiStepForm theme overrides plus optional nested form theme overrides.
+
+The **header**, **children**, and **footer** snippets receive the MultiStepFormState instance directly. Supplying a header or footer replaces that region's default meter or controls.
 
 ## FormStep
 
 \`\`\`ts
-type FormStep = {
+type FormStep<I extends FormInputs> = {
 	title?: string;
 	description?: string;
-	inputs: FormInputs;
+	inputs: I;
+	onBeforeChange?: (context: {
+		value: InferFormValue<I>;
+		form: FormState<I>;
+		next: () => void;
+	}) => void | Promise<void>;
 };
 \`\`\`
 
-## Snippets
+When onBeforeChange is present, navigation remains blocked unless the hook calls next(). After permission is granted, onSubmitStep may still block by returning false.
 
-- **header**: Custom header content. By default the component renders the meter here.
-- **footer**: Custom footer content. By default the component renders previous/next/submit buttons.
-- **children**: Receives the MultiStepFormState for custom content below the stepper.
+## Submission behavior
 
-## Examples
+- Next validates every visited step. Hooks do not run and the active step does not change when validation fails.
+- Final submission validates every step before calling onSubmitForm; partial invalid data is never submitted.
+- Rejected hooks and submit handlers propagate their errors, while loading always resets.
+- Concurrent calls to submit() share one active promise.
 
-### Hide Meter
+## MultiStepFormState
 
-\`\`\`svelte
-<MultiStepForm
-	items={steps}
-	showMeter={false}
-	onSubmitForm={save}
-/>
-\`\`\`
-
-### Block Step Advance
-
-\`\`\`svelte
-<MultiStepForm
-	items={steps}
-	onSubmitStep={async (values, step, index) => {
-		if (index === 0 && !values.email) return false;
-	}}
-	onSubmitForm={save}
-/>
-\`\`\`
-
-### Read Form State
-
-\`\`\`svelte
-<MultiStepForm items={steps} onSubmitForm={save}>
-	{#snippet children(form)}
-		<p>Current step: {(form.stepper?.activeStep ?? 0) + 1}</p>
-	{/snippet}
-</MultiStepForm>
-\`\`\`
-
-## Theme
-
-- **root**: Main multi-step form container.
-- **multiStepFormHeader**: Header wrapper.
-- **multiStepFormFooter**: Footer wrapper.
-- **form**: Theme forwarded to the nested Form component.
+- **steps**: current step definitions.
+- **stepper**: bound Stepper state, including activeStep, next(), and previous().
+- **value**: merged live partial value.
+- **loading**: true while a navigation or final-submit hook is pending.
+- **isLastStep**: whether the current step is final.
+- **progress** and **meterSteps**: values used by the default meter.
+- **submit()**: validates and advances or submits, returning the validated visited-step payload or false. The final-step result is the complete validated payload.
 `;

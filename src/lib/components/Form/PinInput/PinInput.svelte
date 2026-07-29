@@ -122,6 +122,7 @@
 		class={classes.root({ size: rest.size, disabled: field.disabled })}
 	>
 		<input
+			bind:this={field.node}
 			{@attach state.inputAttachment}
 			data-slot="pin-input-input"
 			type="text"

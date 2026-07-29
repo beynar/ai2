@@ -42,7 +42,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -90,9 +90,8 @@
 		});
 	});
 
-	// The visible <label for={field.id}> associates with the slider (via id={id}) for focus, but a
-	// role="slider" div is not a labelable element, so <label for> does not name it. Adopt the visible
-	// label text as the accessible name when it is a plain string; otherwise fall back to t.rating.
+	// Field connects a visible label through aria-labelledby because this role="slider" element is
+	// not labelable. Use a translated fallback when no visible label is present.
 	const ariaLabel = $derived(typeof label === 'string' ? label : t.rating);
 
 	// While hovering, preview the hovered value; otherwise show the committed value.
@@ -172,7 +171,7 @@
 	};
 </script>
 
-<Field {field} size={rest.size} {theme} {label} {...rest}>
+<Field {field} size={rest.size} {theme} {label} labelFor={false} {...rest}>
 	<!-- The Rating display renders the stars; the slider role/aria/keyboard spread here overrides
 	     its read-only defaults, turning it into the form control. -->
 	<Rating
@@ -191,7 +190,7 @@
 		{id}
 		role="slider"
 		tabindex={readonly || field.disabled ? -1 : 0}
-		aria-label={ariaLabel}
+		aria-label={label ? undefined : ariaLabel}
 		aria-valuemin={0}
 		aria-valuemax={max}
 		aria-valuenow={field.value ?? 0}

@@ -150,7 +150,7 @@
 
 <div
 	class={cx(
-		'group peer relative hidden text-neutral data-[display-state=hidden]:z-20 data-[edge-revealed=true]:!z-30 md:block data-[side=right]:order-last',
+		'group peer relative z-0 hidden text-neutral transition-[z-index] duration-200 [transition-timing-function:step-end] data-[display-state=hidden]:z-20 data-[display-state=hidden]:duration-0 data-[edge-revealed=true]:!z-30 md:block data-[side=right]:order-last',
 		frame === 'contained' && 'sticky top-0 max-h-[var(--window-height,100dvh)]'
 	)}
 	data-slot="sidebar"

@@ -357,13 +357,15 @@ function expandAlias(
 	return undefined;
 }
 
-/** Checker type text, cleaned of `import("...").` prefixes and the `undefined` from optionality. */
+/** Checker type text without expanding generic conditional types, cleaned for display. */
 function typeText(
 	type: Type,
 	location: Node,
 	checker: ReturnType<Project['getTypeChecker']>
 ): string {
-	return stripUndefined(cleanImports(checker.getTypeText(type, location)));
+	return stripUndefined(
+		cleanImports(checker.getTypeText(type, location, ts.TypeFormatFlags.NoTypeReduction))
+	);
 }
 
 /** Strip `import("path").` prefixes the checker emits for out-of-scope types (e.g. `Slot`). */

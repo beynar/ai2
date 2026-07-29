@@ -1,4 +1,6 @@
-import type { FormInput, InferFormValue, FormInputs } from './form.js';
+import type { FormFieldInput, FormInput, FormValueRecord } from './form.js';
+import type { Sizes } from '$lib/types/theme.js';
+import type { FieldLabelPosition } from '../Field/field.js';
 
 /**
  * Evaluates whether a form field should be visible based on its visibility configuration.
@@ -20,10 +22,7 @@ import type { FormInput, InferFormValue, FormInputs } from './form.js';
  * ) // true
  * ```
  */
-export function isFieldVisible<I extends FormInputs>(
-	input: FormInput,
-	formValue: InferFormValue<I>
-): boolean {
+export function isFieldVisible(input: FormInput, formValue: FormValueRecord): boolean {
 	if (input.visible === undefined) {
 		return true; // Default to visible if not specified
 	}
@@ -46,11 +45,18 @@ export function isFieldVisible<I extends FormInputs>(
  * @param input - The form input configuration
  * @returns Input props without function-based visibility
  */
-export function prepareInputProps(input: FormInput) {
+export function prepareInputProps(
+	input: FormFieldInput,
+	size: Sizes,
+	labelPosition?: FieldLabelPosition
+) {
 	// `type` and `display` pick the component in Form.svelte; they are not props.
-	const { type, visible, ...rest } = input as FormInput & { display?: string };
+	const { type, visible, ...rest } = input as FormFieldInput & { display?: string };
 	void type;
 	if ('display' in rest) delete (rest as { display?: string }).display;
 	// Only include visible if it's a boolean, not a function
-	return typeof visible === 'boolean' ? { ...rest, visible } : rest;
+	const defaults = labelPosition ? { size, labelPosition } : { size };
+	return typeof visible === 'boolean'
+		? { ...defaults, ...rest, visible }
+		: { ...defaults, ...rest };
 }

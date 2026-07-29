@@ -67,7 +67,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -236,12 +236,8 @@
 	const classes = $derived(useKeyValueInputTheme(theme));
 </script>
 
-<!-- Rendered as a <fieldset> with id={field.id} so the Field's <label for={field.id}> resolves to
-     an element that exists (mirrors TagGroup). There are N key + N value inputs, so a single input
-     id could not carry the label; the fieldset groups them and the label names the group. -->
 <Field
 	as="fieldset"
-	attrs={{ id }}
 	{field}
 	{description}
 	{prefix}

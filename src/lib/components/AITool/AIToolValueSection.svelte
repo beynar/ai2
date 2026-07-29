@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { signInIconBold } from '../Icons/signIn.js';
+	import { signOutIconBold } from '../Icons/signOut.js';
 	import ScrollArea from '../ScrollArea/ScrollArea.svelte';
 	import Slot from '../Slot/Slot.svelte';
+	import { tooltip } from '../Tooltip/tooltip.svelte.js';
 	import type { AIToolCall, AIToolSnippet } from './aiTool.props.js';
 	import type { AIToolThemeProps } from './aiTool.theme.js';
 	import { useAIToolTheme } from './aiTool.theme.js';
@@ -11,6 +14,7 @@
 		tool,
 		index,
 		label,
+		kind,
 		value,
 		snippet,
 		tone = 'default',
@@ -21,6 +25,7 @@
 		tool: AIToolCall;
 		index: number;
 		label: string;
+		kind: 'input' | 'output' | 'error';
 		value: unknown;
 		snippet?: AIToolSnippet;
 		tone?: AIToolValueTone;
@@ -36,9 +41,27 @@
 <section
 	data-slot={tone === 'error' ? 'ai-tool-error' : 'ai-tool-value'}
 	data-tone={tone}
+	data-kind={kind}
 	class={classes.section({ tone })}
 >
-	<div data-slot="ai-tool-value-label" class={classes.label({ tone })}>{label}</div>
+	{#if kind === 'input' || kind === 'output'}
+		<span
+			data-slot="ai-tool-value-label"
+			role="img"
+			aria-label={label}
+			class={classes.label({ tone, kind: 'icon' })}
+			{@attach tooltip({ content: label, position: 'top', size: 'small', delay: 350 })}
+		>
+			{@render (kind === 'input' ? signInIconBold : signOutIconBold)({
+				size: 14,
+				'aria-hidden': 'true'
+			})}
+		</span>
+	{:else}
+		<div data-slot="ai-tool-value-label" class={classes.label({ tone, kind: 'text' })}>
+			{label}
+		</div>
+	{/if}
 	{#if snippet}
 		<Slot render={snippet} payload={{ tool, index }} />
 	{:else}

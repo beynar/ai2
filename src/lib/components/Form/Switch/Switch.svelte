@@ -17,6 +17,7 @@
 		visible,
 		size = 'normal',
 		label,
+		labelPosition,
 		ariaLabel,
 		onChange,
 		...rest
@@ -35,7 +36,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -89,6 +90,9 @@
 
 <Field
 	{field}
+	{labelPosition}
+	labelFor={false}
+	label={labelPosition ? label : undefined}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
@@ -113,25 +117,25 @@
 	/>
 	<div
 		bind:this={field.node}
+		id={field.id}
 		data-checked={!!value}
 		aria-checked={!!value}
 		aria-label={ariaLabel}
+		aria-labelledby={!ariaLabel && label ? field.labelId : undefined}
+		aria-disabled={field.disabled || undefined}
 		role="switch"
-		tabindex="0"
+		tabindex={field.disabled ? -1 : 0}
 		class={classes.toggle({ checked: !!value, size, disabled })}
 		{onclick}
 		onkeydown={onKeydown}
+		onfocus={() => (field.focused = true)}
+		onblur={() => (field.focused = false)}
 	>
 		<span class={classes.thumb({ checked: !!value, size })} data-checked={!!value}></span>
 	</div>
 	{#snippet suffix()}
-		<Slot
-			as="label"
-			attrs={{
-				for: 'input-' + field.id
-			}}
-			render={label}
-			class={fieldClasses.label()}
-		/>
+		{#if !labelPosition}
+			<Slot as="span" attrs={{ id: field.labelId }} render={label} class={fieldClasses.label()} />
+		{/if}
 	{/snippet}
 </Field>

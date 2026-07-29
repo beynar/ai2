@@ -1,94 +1,95 @@
-import { tick, untrack } from 'svelte';
 import { on } from 'svelte/events';
+import { SvelteMap } from 'svelte/reactivity';
 
-export const useFocusTrap = (opts: { isActive: () => boolean }) => {
-	let trapNode: HTMLElement | null;
-	let listener: (() => void) | null;
-	let focusableEls: HTMLElement[] = [];
-	let mutationObserver: MutationObserver | null;
-	let firstFocusableEl: HTMLElement | null;
-	const findFirstFocusableEl = () => {
-		const input = focusableEls.find((el) => el.tagName === 'INPUT');
-		return input || focusableEls[0] || null;
-	};
+const focusableSelector = [
+	'a[href]',
+	'area[href]',
+	'button',
+	'input:not([type="hidden"])',
+	'select',
+	'textarea',
+	'iframe',
+	'object',
+	'embed',
+	'audio[controls]',
+	'video[controls]',
+	'summary',
+	'[contenteditable]:not([contenteditable="false"])',
+	'[tabindex]'
+].join(',');
 
-	const moveFocus = (e: KeyboardEvent) => {
-		if (
-			e.key === 'Tab' ||
-			e.key === 'ArrowDown' ||
-			e.key === 'ArrowUp' ||
-			e.key === 'ArrowLeft' ||
-			e.key === 'ArrowRight'
-		) {
-			const direction: 'forward' | 'backward' =
-				e.shiftKey || e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? 'backward' : 'forward';
+function isTabbable(element: HTMLElement): boolean {
+	if (element.tabIndex < 0 || element.matches(':disabled')) return false;
+	if (element.closest('[inert], [hidden], [aria-hidden="true"]')) return false;
+	if (element.getClientRects().length === 0) return false;
 
-			if (
-				document.activeElement &&
-				e.key !== 'Tab' &&
-				['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)
-			) {
-				return;
-			}
-			e.preventDefault();
+	const style = getComputedStyle(element);
+	return style.visibility !== 'hidden' && style.visibility !== 'collapse';
+}
 
-			const nextIndex =
-				focusableEls.indexOf(document.activeElement as HTMLElement) +
-				(direction === 'forward' ? 1 : -1);
-			const nextFocusableEl =
-				direction === 'forward'
-					? nextIndex === focusableEls.length
-						? firstFocusableEl
-						: focusableEls[nextIndex]
-					: nextIndex === -1
-						? focusableEls[focusableEls.length - 1]
-						: focusableEls[nextIndex];
-			nextFocusableEl?.focus();
+function getTabbableElements(node: HTMLElement): HTMLElement[] {
+	const visibleElements = Array.from(node.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+		isTabbable
+	);
+	const radioGroups = new SvelteMap<
+		HTMLFormElement | null,
+		SvelteMap<string, HTMLInputElement>
+	>();
+
+	for (const element of visibleElements) {
+		if (!(element instanceof HTMLInputElement) || element.type !== 'radio' || !element.name)
+			continue;
+		let formGroups = radioGroups.get(element.form);
+		if (!formGroups) {
+			formGroups = new SvelteMap();
+			radioGroups.set(element.form, formGroups);
 		}
-	};
+		const current = formGroups.get(element.name);
+		if (!current || element.checked) formGroups.set(element.name, element);
+	}
 
-	const setFocusableEls = () => {
-		focusableEls = Array.from(
-			opts.isActive() && trapNode
-				? trapNode.querySelectorAll(
-						'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]'
-					)
-				: []
-		);
-	};
+	const elements = visibleElements.filter((element) => {
+		if (!(element instanceof HTMLInputElement) || element.type !== 'radio' || !element.name)
+			return true;
+		return radioGroups.get(element.form)?.get(element.name) === element;
+	});
+	const positiveTabIndex = elements
+		.filter((element) => element.tabIndex > 0)
+		.sort((left, right) => left.tabIndex - right.tabIndex);
+	const documentOrder = elements.filter((element) => element.tabIndex === 0);
 
-	const focusTrap = (node: HTMLElement) => {
-		firstFocusableEl = findFirstFocusableEl();
-		listener = on(window, 'keydown', moveFocus);
+	return [...positiveTabIndex, ...documentOrder];
+}
 
-		setFocusableEls();
-		if (!mutationObserver) {
-			mutationObserver = new MutationObserver(setFocusableEls);
-		}
-		mutationObserver?.observe(node, { childList: true, subtree: true });
-		tick().then(() => firstFocusableEl?.focus());
-	};
-
-	const unfocusTrap = (node: HTMLElement) => {
-		listener?.();
-		mutationObserver?.disconnect();
-		listener = null;
-		mutationObserver = null;
-		focusableEls = [];
-		firstFocusableEl = null;
-		trapNode = null;
-	};
-
+export function useFocusTrap(options: { isActive: () => boolean }) {
 	return {
 		attachment: (node: HTMLElement) => {
-			if (!opts.isActive()) return;
-			return untrack(() => {
-				focusTrap(node);
-				trapNode = node;
-				return () => {
-					unfocusTrap(node);
-				};
-			});
+			const handleKeyDown = (event: KeyboardEvent) => {
+				if (!options.isActive() || event.key !== 'Tab' || event.defaultPrevented) return;
+
+				const tabbableElements = getTabbableElements(node);
+				if (tabbableElements.length === 0) {
+					event.preventDefault();
+					node.focus();
+					return;
+				}
+
+				const activeElement = node.ownerDocument.activeElement;
+				const activeIndex = tabbableElements.indexOf(activeElement as HTMLElement);
+				const firstElement = tabbableElements[0];
+				const lastElement = tabbableElements[tabbableElements.length - 1];
+				const shouldWrapBackward = event.shiftKey && activeIndex <= 0;
+				const shouldWrapForward = !event.shiftKey && activeIndex === tabbableElements.length - 1;
+				const shouldContainOutsideFocus = activeElement ? !node.contains(activeElement) : true;
+
+				if (!shouldWrapBackward && !shouldWrapForward && !shouldContainOutsideFocus) return;
+
+				event.preventDefault();
+				(event.shiftKey ? lastElement : firstElement).focus();
+			};
+
+			node.tabIndex = node.tabIndex < 0 ? -1 : node.tabIndex;
+			return on(node.ownerDocument, 'keydown', handleKeyDown);
 		}
 	};
-};
+}

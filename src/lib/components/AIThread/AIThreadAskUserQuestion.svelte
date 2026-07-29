@@ -50,8 +50,8 @@
 		nextLabel={request.nextLabel}
 		previousLabel={request.previousLabel}
 		discardLabel={request.discardLabel}
-		onChange={(nextValues) => onChange(request, nextValues)}
-		onSubmit={(detail) => onResolve(request, 'completed', detail)}
+		onChange={(nextValues: AIAskAnswers) => onChange(request, nextValues)}
+		onSubmit={(detail: AIAskUserQuestionSubmitDetail) => onResolve(request, 'completed', detail)}
 		onDiscard={() => onResolve(request, 'discarded')}
 	/>
 </div>

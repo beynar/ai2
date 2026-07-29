@@ -5,7 +5,9 @@ export type {
 	AIToolProps,
 	AIToolRenderPayload,
 	AIToolSnippet,
-	AIToolStatus
+	AIToolStatus,
+	AIToolToggleIcon,
+	AIToolVariant
 } from './aiTool.props.js';
 export {
 	aiToolTheme,

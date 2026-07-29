@@ -8,6 +8,7 @@ export type {
 	AIThreadAskUserQuestionStateChange,
 	AIThreadDensity,
 	AIThreadItem,
+	AIThreadMessageRenderPayload,
 	AIThreadMessageKey,
 	AIThreadPart,
 	AIThreadProps,

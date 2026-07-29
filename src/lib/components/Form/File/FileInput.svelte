@@ -115,6 +115,7 @@
 </script>
 
 <Field
+	as="fieldset"
 	{@attach dropzone.zone}
 	{field}
 	size={rest.size}

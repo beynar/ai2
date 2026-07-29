@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Chip from '../Chip/Chip.svelte';
-	import { chatCircleTextIcon } from '../Icons/chatCircleText.js';
 	import type { AIAskQuestion } from './aiAskUserQuestion.props.js';
 	import {
 		useAIAskUserQuestionTheme,
@@ -40,15 +38,9 @@
 			{#if context}<div class={classes.description()}>{context}</div>{/if}
 		</div>
 		<div class={classes.progressGroup()}>
-			<Chip
-				prefix={chatCircleTextIcon}
-				color="neutral"
-				variant="soft"
-				size="normal"
-				class={classes.progress()}
-			>
+			<span class={classes.progress()}>
 				{progressLabel(activeIndex + 1, questions.length)}
-			</Chip>
+			</span>
 			<div class={classes.steps()} aria-label="Questions">
 				{#each questions as question, index (question.id)}
 					<button

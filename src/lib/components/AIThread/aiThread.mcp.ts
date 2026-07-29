@@ -68,12 +68,17 @@ When text parts are present, top-level message content is not rendered again. Co
 
 ## Message composition
 
-- **message**: Slot<{ message, index }> - Replaces a complete message row.
+- **message**: Slot<{ message, index, actionsVisibility }> - Replaces a complete message row. The
+  resolved action visibility keeps custom renderers aligned with the thread's latest-message rule.
 - **messageSize**, **messageVariant** - Configure only the default AIMessage renderer; a custom message slot owns its presentation.
 - **messageActions**: AIMessageActionSnippet | false - Replaces or disables default actions.
-- **messageActionsVisibility**: 'hover' | 'always' | 'none'
+- **messageActionsVisibility**: 'hover' | 'always' | 'none' (default: 'always')
 - **messageCopyable**, **messageEditable**, **messageRetryable**: boolean
 - **onMessageCopy**, **onMessageEdit**, **onMessageRetry**: AIMessage action handlers.
+
+Assistant text that continues through tool or app rows into another assistant segment does not render
+an action region. Actions belong to the terminal assistant segment for that user turn; completed
+historical turns retain hover actions.
 - **onRetry**: legacy (message, index) callback used when \`onMessageRetry\` is omitted.
 
 ## Tool, marker, and MCP composition

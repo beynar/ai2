@@ -1,10 +1,15 @@
-<script lang="ts">
+<script lang="ts" generics="Mode extends DateSelectorInputMode">
 	import Field from '../Field/Field.svelte';
 	import { createFieldState } from '../Field/field.state.svelte.js';
+	import type { FieldValue } from '../Field/field.js';
 	import DateSelector from './DateSelector.svelte';
-	import type { DateSelectorInputMode, DateSelectorInputProps } from './dateSelector.props.js';
+	import type {
+		DateSelectorInputMode,
+		DateSelectorInputProps,
+		DateSelectorValue
+	} from './dateSelector.props.js';
 
-	type Mode = $$Generic<DateSelectorInputMode>;
+	type FieldType = Mode extends 'date' ? 'date' : 'calendar-range';
 
 	let {
 		value = $bindable(null),
@@ -41,19 +46,19 @@
 
 	const id = $props.id();
 
-	const field = createFieldState({
+	const field = createFieldState<FieldType>({
 		id,
 		get value() {
-			return value;
+			return value as unknown as FieldValue<FieldType> | null;
 		},
-		set value(v: any) {
-			value = v;
+		set value(nextValue) {
+			value = nextValue as typeof value;
 		},
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
-			errors = v;
+		set errors(nextErrors: string[] | boolean) {
+			errors = nextErrors;
 		},
 		get focused() {
 			return focused;
@@ -61,8 +66,8 @@
 		set focused(v: boolean) {
 			focused = v;
 		},
-		onChange: (v) => {
-			onChange?.(v as any);
+		onChange: (nextValue) => {
+			onChange?.(nextValue as Parameters<NonNullable<typeof onChange>>[0]);
 		},
 		get disabled() {
 			return disabled;
@@ -86,9 +91,7 @@
 			return visible;
 		},
 		get type() {
-			return (mode === 'date' ? 'date' : 'calendar-range') as Mode extends 'date'
-				? 'date'
-				: 'calendar-range';
+			return (mode === 'date' ? 'date' : 'calendar-range') as FieldType;
 		}
 	});
 
@@ -100,7 +103,7 @@
 	});
 </script>
 
-<Field {field} {size} theme={theme?.field} {...rest}>
+<Field as="fieldset" {field} {size} theme={theme?.field} {...rest}>
 	<!-- display:contents wrapper: zero layout impact, catches bubbled focus on the trigger. -->
 	<div
 		class="contents"
@@ -113,9 +116,9 @@
 	>
 		<DateSelector
 			{mode}
-			value={field.value as any}
-			onChange={(v: any) => {
-				field.value = v;
+			value={field.value as unknown as DateSelectorValue<Mode>}
+			onChange={(nextValue: DateSelectorValue<Mode>) => {
+				field.value = nextValue as unknown as FieldValue<FieldType>;
 			}}
 			bind:open
 			{closeOnSelect}

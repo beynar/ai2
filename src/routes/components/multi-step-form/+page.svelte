@@ -1,164 +1,130 @@
 <script lang="ts">
+	import {
+		MultiStepForm,
+		type FormStep,
+		type MergedMultiStepFormInputs
+	} from '$lib/components/Form/MultiStepForm/index.js';
+	import type {
+		FormInputs,
+		InferFormValue,
+		LiveFormValue
+	} from '$lib/components/Form/Form/index.js';
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
-	import { MultiStepForm, type FormStep } from '$lib/components/Form/MultiStepForm/index.js';
 
-	const steps: FormStep[] = [
+	const accountInputs = {
+		name: { type: 'text', label: 'Name', placeholder: 'Your name', required: true },
+		email: {
+			type: 'email',
+			label: 'Email',
+			placeholder: 'you@example.com',
+			required: true
+		}
+	} satisfies FormInputs;
+
+	const securityInputs = {
+		password: {
+			type: 'password',
+			label: 'Password',
+			placeholder: 'Choose a password',
+			required: true
+		},
+		twoFactor: {
+			type: 'switch',
+			label: 'Enable two-factor authentication'
+		}
+	} satisfies FormInputs;
+
+	const preferenceInputs = {
+		plan: {
+			type: 'select',
+			label: 'Plan',
+			placeholder: 'Choose a plan',
+			required: true,
+			items: [
+				{ value: 'free', label: 'Free' },
+				{ value: 'pro', label: 'Pro' },
+				{ value: 'team', label: 'Team' }
+			]
+		},
+		newsletter: { type: 'switch', label: 'Subscribe to newsletter' }
+	} satisfies FormInputs;
+
+	const steps: [
+		FormStep<typeof accountInputs>,
+		FormStep<typeof securityInputs>,
+		FormStep<typeof preferenceInputs>
+	] = [
 		{
 			title: 'Account',
 			description: 'Tell us who you are',
-			inputs: {
-				name: { type: 'text', label: 'Name', placeholder: 'Your name', required: true },
-				email: { type: 'email', label: 'Email', placeholder: 'you@example.com', required: true }
+			inputs: accountInputs,
+			onBeforeChange: async ({ next }) => {
+				await Promise.resolve();
+				next();
 			}
 		},
 		{
 			title: 'Security',
 			description: 'Secure your account',
-			inputs: {
-				password: {
-					type: 'password',
-					label: 'Password',
-					placeholder: 'Choose a password',
-					required: true
-				},
-				twoFactor: {
-					type: 'switch',
-					label: 'Enable two-factor authentication',
-					description: 'Recommended for extra security'
-				}
-			}
+			inputs: securityInputs
 		},
 		{
 			title: 'Preferences',
 			description: 'Customize your experience',
-			inputs: {
-				plan: {
-					type: 'select',
-					label: 'Plan',
-					placeholder: 'Choose a plan',
-					required: true,
-					items: [
-						{ value: 'free', label: 'Free' },
-						{ value: 'pro', label: 'Pro' },
-						{ value: 'team', label: 'Team' }
-					]
-				},
-				newsletter: {
-					type: 'switch',
-					label: 'Subscribe to newsletter',
-					description: 'Receive product updates'
-				}
-			}
+			inputs: preferenceInputs
 		}
 	];
+
+	type Inputs = MergedMultiStepFormInputs<typeof steps>;
+	let value = $state<LiveFormValue<Inputs>>({ name: 'Ada' });
+	let submission = $state<InferFormValue<Inputs> | null>(null);
 </script>
 
 <DocPage
 	title="Multi-step form"
-	subtitle="Splits a long form into sequential, validated steps."
+	subtitle="Sequential forms with visited-step validation and complete final submission."
 	component="MultiStepForm"
 	features={[
-		'Stepper with progress meter',
-		'Validates current step before advancing',
-		'Previous, next and submit buttons',
-		'Bindable accumulated form value',
-		'Optional showMeter toggle'
+		'Explicit state ownership per step',
+		'Validated navigation hooks',
+		'Complete final-form validation',
+		'Two-way merged value synchronization',
+		'Deduplicated async submission'
 	]}
 >
 	<ComponentCard
-		description="A wizard with a progress meter and per-step validation"
+		description="Every required step must be valid before final submission"
 		class="!items-start"
-		code={`<MultiStepForm
-	items={[
-		{
-			title: 'Account',
-			description: 'Tell us who you are',
-			inputs: {
-				name: { type: 'text', label: 'Name', placeholder: 'Your name', required: true },
-				email: { type: 'email', label: 'Email', placeholder: 'you@example.com', required: true }
-			}
-		},
-		{
-			title: 'Security',
-			description: 'Secure your account',
-			inputs: {
-				password: {
-					type: 'password',
-					label: 'Password',
-					placeholder: 'Choose a password',
-					required: true
-				},
-				twoFactor: {
-					type: 'switch',
-					label: 'Enable two-factor authentication',
-					description: 'Recommended for extra security'
-				}
-			}
-		},
-		{
-			title: 'Preferences',
-			description: 'Customize your experience',
-			inputs: {
-				plan: {
-					type: 'select',
-					label: 'Plan',
-					placeholder: 'Choose a plan',
-					required: true,
-					items: [
-						{ value: 'free', label: 'Free' },
-						{ value: 'pro', label: 'Pro' },
-						{ value: 'team', label: 'Team' }
-					]
-				},
-				newsletter: {
-					type: 'switch',
-					label: 'Subscribe to newsletter',
-					description: 'Receive product updates'
-				}
-			}
-		}
-	]}
-	onSubmitForm={(values) => {
-		console.log('Form submitted:', values);
-	}}
-/>`}
 	>
-		<div class="w-full max-w-lg">
+		<div class="grid w-full max-w-xl gap-4">
 			<MultiStepForm
 				items={steps}
-				onSubmitForm={(values) => {
-					console.log('Form submitted:', values);
+				bind:value
+				onSubmitForm={(validatedValue) => {
+					submission = validatedValue;
 				}}
 			/>
+			<pre
+				class="bg-surface-sunken text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
+					{ value, submitted: submission },
+					null,
+					2
+				)}</pre>
 		</div>
 	</ComponentCard>
 
 	{#snippet examples()}
 		<ComponentCard
-			description="A wizard with a progress meter and per-step validation"
+			description="The same flow without the default progress meter"
 			class="!items-start"
 		>
-			<div class="w-full max-w-lg">
-				<MultiStepForm
-					items={steps}
-					onSubmitForm={(values) => {
-						console.log('Form submitted:', values);
-					}}
-				/>
-			</div>
-		</ComponentCard>
-
-		<ComponentCard
-			description="Hide the progress meter with showMeter={false}"
-			class="!items-start"
-		>
-			<div class="w-full max-w-lg">
+			<div class="w-full max-w-xl">
 				<MultiStepForm
 					items={steps}
 					showMeter={false}
-					onSubmitForm={(values) => {
-						console.log('Form submitted:', values);
+					onSubmitForm={(validatedValue) => {
+						submission = validatedValue;
 					}}
 				/>
 			</div>

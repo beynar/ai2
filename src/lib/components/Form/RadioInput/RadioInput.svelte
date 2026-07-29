@@ -36,7 +36,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -75,11 +75,8 @@
 
 <!-- Create own field wrapper (when used standalone) -->
 <Field
-	attrs={{
-		name: field.name,
-		id: field.id
-	}}
-	as={'fieldset'}
+	as="fieldset"
+	attrs={{ role: 'radiogroup', 'aria-labelledby': field.labelId }}
 	{field}
 	{label}
 	class={componentTheme.root({ mode })}
@@ -102,9 +99,10 @@
 		{@const optionDisabled = Boolean(field.disabled || option.disabled)}
 		<button
 			type="button"
+			role="radio"
+			aria-checked={checked}
 			disabled={optionDisabled}
 			aria-label={option.label}
-			aria-controls={optionId}
 			class={componentTheme.radiosInputItem({ mode, checked, disabled: optionDisabled })}
 			onclick={() => {
 				if (optionDisabled) return;

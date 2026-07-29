@@ -72,5 +72,5 @@ The default required message is \`Answer required.\`. \`requiredMessage\` accept
 
 The \`question\` slot receives \`{ question, value, setValue }\`. Its setter preserves central validation, change callbacks, and single-choice auto-advance; no public compound subcomponents are required.
 
-The root forwards native div attributes and exposes bindable \`ref\`, \`class\`, and \`theme\`. Theme parts cover root, header text/progress group/steps, the bordered body panel, step content, question title and description, textarea, option/file regions, empty/error states, and footer.
+The root forwards native div attributes and exposes bindable \`ref\`, \`class\`, and \`theme\`. Theme parts cover root, header text/progress group/steps, the body region, step content, question title and description, textarea, option/file regions, empty/error states, and footer.
 `;

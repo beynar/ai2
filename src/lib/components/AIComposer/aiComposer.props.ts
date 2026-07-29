@@ -13,8 +13,11 @@ import type {
 } from '$lib/components/RichTextInput/richTextInput.props.js';
 import type { FileRejection } from '$lib/components/Form/File/fileAcceptance.js';
 import type { FileDropzoneState } from '$lib/components/Form/File/fileDropzone.svelte.js';
+import type { VoiceInputVariant } from '$lib/components/Form/VoiceInput/voiceInput.props.js';
+import type { VoiceInputThemeProps } from '$lib/components/Form/VoiceInput/voiceInput.theme.js';
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
+import type { Colors } from '$lib/types/theme.js';
 import type { AIComposerThemeProps } from './aiComposer.theme.js';
 import type { HTMLFormAttributes } from 'svelte/elements';
 
@@ -136,6 +139,9 @@ export type AIComposerSuggestionLifecycleCallback = (
 	state: AIComposerSuggestionLifecycleState
 ) => void;
 
+export type AIComposerVoiceInputVariant = Exclude<VoiceInputVariant, 'default'>;
+export type AIComposerVoiceInputHandler = (audioBuffer: ArrayBuffer) => Promise<void>;
+
 export type AIComposerProps = WithAttachments<
 	Omit<
 		HTMLFormAttributes,
@@ -200,6 +206,22 @@ export type AIComposerProps = WithAttachments<
 		formats?: RichTextInputFormat[];
 		/** Lets the editor grow with content; false fixes the editor to a compact multiline height. */
 		autoresize?: boolean;
+		/** Enables the existing VoiceInput control in the default composer footer. */
+		voiceInput?: boolean;
+		/** Chooses a mic-only control or a control that expands into a waveform. @default 'compact' */
+		voiceInputVariant?: AIComposerVoiceInputVariant;
+		/** Minimum accepted voice recording duration in seconds. */
+		voiceInputMinDuration?: number;
+		/** Maximum voice recording duration in seconds. Recording stops at this limit. */
+		voiceInputMaxDuration?: number;
+		/** Semantic color used while recording. */
+		voiceInputColor?: Colors;
+		/** Accessible label and tooltip for starting voice capture. */
+		voiceInputAriaLabel?: string;
+		/** Accessible label and tooltip for stopping voice capture. */
+		voiceInputStopLabel?: string;
+		/** Accessible label shown while the voice callback is pending. */
+		voiceInputProcessingLabel?: string;
 		/** Editor placeholder, inherited from the conversation when omitted. */
 		placeholder?: string;
 		/** Accessible label for the submit action. */
@@ -292,9 +314,13 @@ export type AIComposerProps = WithAttachments<
 		onSuggestionQueryChange?: AIComposerSuggestionLifecycleCallback;
 		/** Called when the highlighted suggestion changes. */
 		onSuggestionHighlightChange?: AIComposerSuggestionLifecycleCallback;
+		/** Receives finalized microphone audio. The voice control shows a spinner until it resolves. */
+		onVoiceInput?: AIComposerVoiceInputHandler;
 		/** Class applied to the composer form. */
 		class?: string;
 		/** Theme overrides for the editor, attachments, queue, and action row. */
 		theme?: AIComposerThemeProps;
+		/** Theme overrides forwarded to the integrated VoiceInput primitive. */
+		voiceInputTheme?: VoiceInputThemeProps;
 	}
 >;

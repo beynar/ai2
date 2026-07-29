@@ -28,4 +28,4 @@ export type CheckboxesInputProps<T extends CheckboxOption = CheckboxOption> = Om
 	items: T[];
 	/** Theme overrides for the checkbox group and shared field parts. */
 	theme?: CheckboxesInputThemeProps & InputProps<'checkboxes'>['theme'];
-} & Partial<Omit<FieldProps<'checkboxes'>, 'children' | 'type' | 'theme'>>;
+} & Partial<Omit<FieldProps<'checkboxes'>, 'children' | 'field' | 'type' | 'theme'>>;

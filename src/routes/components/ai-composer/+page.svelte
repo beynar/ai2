@@ -3,7 +3,8 @@
 	import AIConversation from '$lib/components/AIConversation/AIConversation.svelte';
 	import type {
 		AIComposerQueuedMessage,
-		AIComposerSubmitDetail
+		AIComposerSubmitDetail,
+		AIComposerVoiceInputVariant
 	} from '$lib/components/AIComposer/aiComposer.props.js';
 	import Switch from '$lib/components/Form/Switch/Switch.svelte';
 	import ComponentCard from '../../ComponentCard.svelte';
@@ -36,8 +37,15 @@
 		items: [{ id: 'review', label: 'Review', description: 'Review for omissions.' }]
 	};
 	let submitted = $state<AIComposerSubmitDetail>();
+	let voiceInputStatus = $state('Ready to record');
 	let isStreaming = $state(true);
 	let queuedMessages = $state<AIComposerQueuedMessage[]>([]);
+	async function processVoiceInput(audioBuffer: ArrayBuffer): Promise<void> {
+		voiceInputStatus = `Processing ${audioBuffer.byteLength} bytes`;
+		await new Promise<void>((resolve) => setTimeout(resolve, 900));
+		voiceInputStatus = 'Voice input processed';
+	}
+
 	const controls = createComponentControls([
 		{
 			name: 'mode',
@@ -52,18 +60,29 @@
 			label: 'Toolbar',
 			value: 'hover',
 			options: ['hover', 'fixed', 'both', 'none']
+		},
+		{
+			name: 'voiceInput',
+			type: 'segmented',
+			label: 'Voice',
+			value: 'compact',
+			options: ['off', 'compact', 'expandable']
 		}
 	]);
+	const selectedVoiceInputVariant = $derived<AIComposerVoiceInputVariant>(
+		controls.value.voiceInput === 'expandable' ? 'expandable' : 'compact'
+	);
 </script>
 
 <DocPage
 	title="AI Composer"
-	subtitle="A Markdown composer with typed tokens, validated files, steering, sortable queueing, and submit/stop lifecycle."
+	subtitle="A Markdown composer with typed tokens, validated files, voice capture, steering, sortable queueing, and submit/stop lifecycle."
 	component="AIComposer"
 	features={[
 		'Existing RichTextInput editor',
 		'Commands, mentions, references, and skills',
 		'Paste, drop, and file chooser acceptance',
+		'Compact or expandable voice capture',
 		'Explicit attachment upload states',
 		'Sortable queued messages',
 		'Imperative insertion and focus methods'
@@ -83,9 +102,12 @@ ${'</' + 'script>'}
   {references}
 	  {skills}
 	  fileDropzone
+	  voiceInput
+	  voiceInputVariant="compact"
 	  accept={['image/*', '.pdf']}
 	  toolbar="hover"
 	  submitShortcut="enter"
+	  onVoiceInput={(audioBuffer) => transcribe(audioBuffer)}
 	  onSubmit={sendMessage}
 />`}
 	>
@@ -96,6 +118,8 @@ ${'</' + 'script>'}
 				{references}
 				{skills}
 				fileDropzone
+				voiceInput={controls.value.voiceInput !== 'off'}
+				voiceInputVariant={selectedVoiceInputVariant}
 				accept={['image/*', '.pdf']}
 				toolbar={controls.value.toolbar}
 				submitShortcut="enter"
@@ -104,10 +128,12 @@ ${'</' + 'script>'}
 				onStop={() => {
 					controls.value.mode = 'idle';
 				}}
+				onVoiceInput={processVoiceInput}
 				onSubmit={(detail) => {
 					submitted = detail;
 				}}
 			/>
+			<span class="text-neutral/60 text-xs" aria-live="polite">{voiceInputStatus}</span>
 			{#if submitted}
 				<pre
 					class="max-h-28 overflow-auto rounded border border-neutral-muted p-3 text-xs">{JSON.stringify(

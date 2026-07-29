@@ -1,583 +1,229 @@
 export const formDescription = `
-# Form Component
+# Form
 
-The Form component provides a comprehensive form system with built-in validation, type-safe inputs, and automatic layout. It manages form state and handles submission.
+Form renders configured svelai fields inside a div, owns their state and validation, and submits programmatically. It does not provide native form, Enter-key submission, browser constraint validation, or FormData behavior.
 
-## Basic Usage
+## Basic usage
 
 \`\`\`svelte
-<script>
-	let formValue = $state({});
-	
-	function handleSubmit(data) {
-		console.log('Form submitted:', data);
-	}
+<script lang="ts">
+	import {
+		Form,
+		type FormState,
+		type InferFormValue,
+		type LiveFormValue
+	} from 'svelai/form';
+
+	const inputs = {
+		identity: {
+			type: 'group',
+			label: 'Identity',
+			description: 'Core account details',
+			columns: 2,
+			inputs: {
+				name: { type: 'text', label: 'Name', required: true },
+				email: { type: 'email', label: 'Email', required: true }
+			}
+		}
+	} as const;
+
+	let value = $state<LiveFormValue<typeof inputs>>({ name: 'Ada' });
+	let form = $state<FormState<typeof inputs>>();
+	let submitted = $state<InferFormValue<typeof inputs> | null>(null);
 </script>
 
-<Form 
-	inputs={{
-		name: { type: 'text', label: 'Name', required: true },
-		email: { type: 'email', label: 'Email', required: true },
-		age: { type: 'number', label: 'Age' }
+<Form
+	{inputs}
+	bind:value
+	bind:form
+	variant="card"
+	layout="horizontal"
+	size="small"
+	density="normal"
+	actions={[
+		{
+			children: 'Save',
+			onClick: (form) => form.submit()
+		}
+	]}
+	onSubmit={(validatedValue) => {
+		submitted = validatedValue;
 	}}
-	onSubmit={handleSubmit}
-	bind:value={formValue}
 />
 \`\`\`
 
 ## Props
 
-### Core Props
-- **inputs**: FormInputs (required) - Object defining form fields
-  - Key: field name
-  - Value: field configuration (type + field-specific props)
+- **inputs** (required): ordered object keyed by entry name. Entries may be value-bearing fields, visual groups, action-button rows, or custom snippets. Only fields contribute keys to the live and validated values.
+- **value** (bindable): partial live value. Visible mounted fields are published; hidden fields are omitted. A supplied top-level value takes precedence over an input's configured value.
+- **form** (bindable): the FormState instance.
+- **onSubmit**: called with the validated visible payload. Its return value is ignored; rejected promises propagate.
+- **size**: small, normal (default), or large. Controls Form typography and becomes the fallback size for fields and actions. An explicit field or action size takes precedence.
+- **density**: small, normal (default), or large. Controls gaps between the Form header, fields, footer, and actions independently from size.
+- **variant**: plain (default), sectioned, or card. All variants consume the shared Card typography and header/footer density rules. Plain remains transparent without separators. Sectioned stays transparent and adds edge-to-edge separators between the header, visible top-level fields or groups, and footer. Card adds the same separators inside the Card surface and inset. Separators do not appear between fields inside a group.
+- **layout**: vertical (default) or horizontal. Horizontal keeps one field per row and places labels to the left from the desktop breakpoint; fields remain stacked on smaller screens.
+- **actions**: optional array of Button props. Each action's onClick receives the live FormState, so a submit action calls form.submit(). Actions are disabled while the form is submitting; their own loading and disabled props are composed with that protection.
+- **submitButton**: deprecated compatibility prop for one built-in submit button. Prefer actions. Its click handler is still composed with form.submit(), and its loading and disabled protection cannot be overridden.
+- **class**: additional classes on the root div.
+- **theme**: Form theme overrides for root, header, title, description, group, group label/description/fields, top-level items, custom entries, footer, and actions. Global Card typography and section-rhythm changes flow into all Form variants before Form-specific overrides are composed; Card surface changes apply only to the card variant.
 
-- **value**: InferFormValue<I> (bindable) - Form values
-- **root**: FormState (bindable) - Form state instance
+The **header**, **title**, **description**, **children**, and **footer** snippets each receive the FormState instance directly. No-argument snippets remain valid.
 
-### Event Props
-- **onSubmit**: (value: InferFormValue<I>) => void | Promise<void> - Submit handler
+## FormState
 
-### Content Slots
-- **children**: Snippet<[form: FormState]> - Custom form content with access to form state
-- **header**: Snippet<[form: FormState]> - Form header
-- **title**: Snippet<[form: FormState]> - Form title
-- **description**: Snippet<[form: FormState]> - Form description
-- **footer**: Snippet<[form: FormState]> - Form footer (commonly used for buttons)
+- **value**: current visible partial value.
+- **loading**: true while the active submission handler is pending.
+- **hasError**: true after validation fails; reset after successful validation.
+- **validate()**: returns the validated visible payload, or false.
+- **submit()**: returns a promise of the validated visible payload, or false. Concurrent calls share the active promise.
 
-### Styling Props
-- **class**: string - Additional CSS classes
-- **theme**: ComponentTheme - Custom theme overrides
+## Programmatic Dialog forms
 
-## Input Types
+Mount one Ask host near the application root, then call ask() from any client-side event. Both exports come from svelai/form:
 
-### Text Inputs
-- **text** - Standard text input
-- **email** - Email input with validation
-- **url** - URL input with validation
-- **password** - Password input with visibility toggle
-
-### Number Input
-- **number** - Numeric input with step controls
-- **rating** - Star rating input
-- **slider** - Bounded scalar slider input (\`number\`)
-- **slider-range** - Bounded range or multi-thumb slider input (\`number[]\`)
-
-### Selection Inputs
-- **select** - Dropdown selection
-- **combobox** - Searchable dropdown selection
-- **radio** - Radio button group
-- **checkboxes** - Checkbox group
-- **tag-group** - Selectable chip group
-
-### Toggle Input
-- **switch** - Toggle switch
-
-### Date/Time Inputs
-- **date** - Date picker. Add \`display: 'selector'\` to render the popover DateSelector instead of the text date input.
-- **datetime** - Date and time picker
-- **calendar** - Calendar date picker
-- **calendar-range** - Date range picker. Add \`display: 'selector'\` to render the popover DateSelector (range mode) instead of the inline calendar.
-- **time** - Time input
-
-### Other Inputs
-- **color** - Color input (swatch + text + popover picker). Add \`display: 'picker'\` to render the inline ColorPicker panel instead.
-- **textarea** - Multi-line text input
-- **rich-text** - Markdown rich text editor
-- **phone** - Phone number input with formatting
-- **file** - Single file upload
-- **files** - Multiple files upload
-- **voice** - Microphone recording input with a live waveform and Blob value
-
-### Standalone Field Inputs Not Yet Supported by Form
-- **checkbox** - Use \`Checkbox\` directly, or \`switch\` in Form for boolean values
-- **tag** - Use \`TagsInput\` directly
-- **keyvalue** - Use \`KeyValueInput\` directly
-- **pin** - Use \`PinInput\` directly
-
-## Input Configuration
-
-Each input in the \`inputs\` object supports:
-- **type**: Input type (required)
-- **display**: Alternative control for the same value type — \`'picker'\` on \`color\`, \`'selector'\` on \`date\` and \`calendar-range\`. Omit for the default control; the bound value shape and validation are identical either way.
-- **label**: Field label
-- **description**: Helper text
-- **placeholder**: Placeholder text
-- **required**: Whether field is required
-- **disabled**: Whether field is disabled
-- **defaultValue**: Initial value
-- **validation**: Custom validation function
-- Type-specific props (e.g., min/max for numbers, items for select)
-
-## Examples
-
-### Basic Form
 \`\`\`svelte
-<script>
-	function handleSubmit(data) {
-		console.log(data);
-	}
-</script>
+<script lang="ts">
+	import { Ask, ask } from 'svelai/form';
 
-<Form 
-	inputs={{
-		username: { type: 'text', label: 'Username', required: true },
-		email: { type: 'email', label: 'Email', required: true },
-		password: { type: 'password', label: 'Password', required: true }
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
+	const inputs = {
+		name: { type: 'text', label: 'Name', required: true },
+		email: { type: 'email', label: 'Email', required: true }
+	} as const;
 
-### With Initial Values
-\`\`\`svelte
-<script>
-	let formValue = $state({
-		name: 'John Doe',
-		age: 30
-	});
-</script>
-
-<Form 
-	inputs={{
-		name: { type: 'text', label: 'Name' },
-		age: { type: 'number', label: 'Age' }
-	}}
-	bind:value={formValue}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### With Custom Layout
-\`\`\`svelte
-<Form 
-	inputs={{
-		firstName: { type: 'text', label: 'First Name', class: 'col-span-1' },
-		lastName: { type: 'text', label: 'Last Name', class: 'col-span-1' },
-		email: { type: 'email', label: 'Email' },
-		phone: { type: 'phone', label: 'Phone' }
-	}}
-	onSubmit={handleSubmit}
->
-	{#snippet footer({ form })}
-		<div class="flex gap-2 justify-end col-span-2">
-			<Button variant="ghost" type="button">Cancel</Button>
-			<Button type="submit" disabled={!form.isValid}>Submit</Button>
-		</div>
-	{/snippet}
-</Form>
-\`\`\`
-
-### Select Input
-\`\`\`svelte
-<Form 
-	inputs={{
-		country: { 
-			type: 'select',
-			label: 'Country',
-			required: true,
-			items: [
-				{ value: 'us', label: 'United States' },
-				{ value: 'uk', label: 'United Kingdom' },
-				{ value: 'ca', label: 'Canada' }
-			]
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Radio Buttons
-\`\`\`svelte
-<Form 
-	inputs={{
-		plan: {
-			type: 'radio',
-			label: 'Select Plan',
-			required: true,
-			items: [
-				{ value: 'free', label: 'Free' },
-				{ value: 'pro', label: 'Pro' },
-				{ value: 'enterprise', label: 'Enterprise' }
-			]
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Checkboxes
-\`\`\`svelte
-<Form 
-	inputs={{
-		interests: {
-			type: 'checkboxes',
-			label: 'Interests',
-			items: [
-				{ value: 'coding', label: 'Coding' },
-				{ value: 'design', label: 'Design' },
-				{ value: 'marketing', label: 'Marketing' }
-			]
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Switch Toggle
-\`\`\`svelte
-<Form 
-	inputs={{
-		notifications: {
-			type: 'switch',
-			label: 'Enable Notifications'
-		},
-		marketing: {
-			type: 'switch',
-			label: 'Marketing Emails'
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Slider Inputs
-\`\`\`svelte
-<Form
-	inputs={{
-		volume: {
-			type: 'slider',
-			label: 'Volume',
-			value: 35,
-			min: 0,
-			max: 100,
-			step: 5,
-			showValue: true
-		},
-		comfortBand: {
-			type: 'slider-range',
-			label: 'Comfort band',
-			value: [18, 24],
-			min: 12,
-			max: 32,
-			step: 1,
-			dragRange: true,
-			showValue: true
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Date Inputs
-\`\`\`svelte
-<Form 
-	inputs={{
-		birthdate: {
-			type: 'date',
-			label: 'Birth Date',
-			required: true
-		},
-		startDate: {
-			type: 'calendar',
-			label: 'Start Date'
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### File Upload
-\`\`\`svelte
-<Form 
-	inputs={{
-		avatar: {
-			type: 'file',
-			label: 'Profile Picture',
-			accept: 'image/*'
-		},
-		documents: {
-			type: 'files',
-			label: 'Documents',
-			accept: '.pdf,.doc,.docx'
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Textarea
-\`\`\`svelte
-<Form 
-	inputs={{
-		bio: {
-			type: 'textarea',
-			label: 'Biography',
-			placeholder: 'Tell us about yourself...',
-			rows: 4
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Rich Text
-\`\`\`svelte
-<Form
-	inputs={{
-		notes: {
-			type: 'rich-text',
-			label: 'Notes',
-			placeholder: 'Write formatted notes...',
-			toolbar: 'fixed'
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Tag Group
-\`\`\`svelte
-<Form
-	inputs={{
-		category: {
-			type: 'tag-group',
-			label: 'Category',
-			required: true,
-			items: [
-				{ value: 'news', label: 'News' },
-				{ value: 'travel', label: 'Travel' },
-				{ value: 'gaming', label: 'Gaming' }
-			]
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Combobox
-\`\`\`svelte
-<Form
-	inputs={{
-		country: {
-			type: 'combobox',
-			label: 'Country',
-			placeholder: 'Search countries...',
-			items: [
-				{ value: 'us', label: 'United States' },
-				{ value: 'uk', label: 'United Kingdom' },
-				{ value: 'ca', label: 'Canada' }
-			]
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Time and Rating
-\`\`\`svelte
-<Form
-	inputs={{
-		startTime: {
-			type: 'time',
-			label: 'Start time',
-			format: 'HH:MM'
-		},
-		score: {
-			type: 'rating',
-			label: 'Score',
-			max: 5
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### With Custom Validation
-\`\`\`svelte
-<Form 
-	inputs={{
-		password: {
-			type: 'password',
-			label: 'Password',
-			required: true,
-			validation: (value) => {
-				if (value.length < 8) return 'Password must be at least 8 characters';
-				return null;
-			}
-		},
-		confirmPassword: {
-			type: 'password',
-			label: 'Confirm Password',
-			required: true
-		}
-	}}
-	onSubmit={handleSubmit}
-/>
-\`\`\`
-
-### Accessing Form State
-\`\`\`svelte
-<script>
-	let formState;
-</script>
-
-<Form 
-	bind:form={formState}
-	inputs={{...}}
-	onSubmit={handleSubmit}
->
-	{#snippet children({ form })}
-		<p>Valid: {form.isValid}</p>
-		<p>Dirty: {form.isDirty}</p>
-		<p>Submitting: {form.isSubmitting}</p>
-	{/snippet}
-</Form>
-\`\`\`
-
-### Complete Registration Form
-\`\`\`svelte
-<script>
-	async function handleSubmit(data) {
-		const response = await fetch('/api/register', {
-			method: 'POST',
-			body: JSON.stringify(data)
+	async function editProfile() {
+		const outcome = await ask({
+			title: 'Edit profile',
+			description: 'Review the account details.',
+			inputs,
+			value: { name: 'Ada' },
+			confirm: 'Save',
+			cancel: 'Cancel'
 		});
-		return response.json();
+
+		if (outcome.submitted) {
+			// outcome.value is InferFormValue<typeof inputs>
+		} else {
+			// outcome.value is the partial, visible live value at cancellation
+		}
 	}
 </script>
 
-<Form 
-	inputs={{
-		firstName: { type: 'text', label: 'First Name', required: true, class: 'col-span-1' },
-		lastName: { type: 'text', label: 'Last Name', required: true, class: 'col-span-1' },
-		email: { type: 'email', label: 'Email', required: true },
-		password: { type: 'password', label: 'Password', required: true },
-		age: { type: 'number', label: 'Age', min: 18, max: 120 },
-		country: {
-			type: 'select',
-			label: 'Country',
-			required: true,
-			items: countries
-		},
-		terms: {
-			type: 'switch',
-			label: 'I agree to the terms and conditions',
-			required: true
-		}
-	}}
-	onSubmit={handleSubmit}
->
-	{#snippet header()}
-		<h2>Create Account</h2>
-		<p>Fill in your details to get started</p>
-	{/snippet}
-	
-	{#snippet footer({ form })}
-		<Button type="submit" fullWidth disabled={!form.isValid || form.isSubmitting}>
-			{form.isSubmitting ? 'Creating Account...' : 'Create Account'}
-		</Button>
-	{/snippet}
-</Form>
+<Ask />
 \`\`\`
 
-## Form State API
+AskOptions accepts inputs, value, onSubmit, class, size, density, variant, layout, and theme with the same contracts as Form. title is required for the Dialog's accessible name. confirm and cancel accept a string or Button presentation props plus text. Their click, loading, link, and native type behavior is owned by Ask. Set type on the mounted Ask host for its default Dialog type; a request's optional dialog object may override type and also accepts responsive, size, and scroll.
 
-The form state object provides:
-- **isValid**: boolean - All fields pass validation
-- **isDirty**: boolean - Form has been modified
-- **isSubmitting**: boolean - Form is currently submitting
-- **errors**: Record<string, string> - Validation errors per field
-- **reset()**: Reset form to initial values
-- **submit()**: Programmatically submit form
+Validation failures keep the Dialog open and focus the first invalid field. A successful submission resolves with the validated visible payload. Cancel, the close button, and Escape resolve with submitted: false and the current partial visible value. Outside-click and swipe dismissal are disabled. While submission is active, all close paths and actions are protected. Rejected onSubmit promises reject ask() after the Dialog closes. Concurrent ask() calls render as independent stacked Dialogs. Calling ask() during SSR or without one mounted host rejects clearly.
+
+## Visibility and values
+
+The visible prop may be a boolean or a predicate receiving the complete private value cache:
+
+\`\`\`svelte
+<Form
+	inputs={{
+		contactMethod: {
+			type: 'select',
+			label: 'Contact method',
+			items: [
+				{ label: 'Email', value: 'email' },
+				{ label: 'Phone', value: 'phone' }
+			]
+		},
+		phone: {
+			type: 'phone',
+			label: 'Phone',
+			visible: (value) => value.contactMethod === 'phone'
+		}
+	}}
+/>
+\`\`\`
+
+Hidden field values are preserved privately and restored when shown again. Hidden fields are excluded from value, validation, and submission. Removing an input definition removes its cached value.
+
+## Field label position
+
+All configured inputs inherit the Form layout through the shared Field wrapper. Set labelPosition: 'top' or 'left' on an individual input to override the Form layout without affecting value inference:
+
+\`\`\`ts
+const inputs = {
+	name: { type: 'text', label: 'Name' },
+	notes: { type: 'textarea', label: 'Notes', labelPosition: 'top' }
+} as const;
+\`\`\`
+
+The left position becomes a two-column label/control layout at the desktop breakpoint and remains stacked on smaller screens. Form uses layout rather than orientation so controls such as Slider and RadioInput retain their own orientation prop.
+
+## Visual groups
+
+A group renders a transparent semantic fieldset with a required legend label and an optional description. Its label and description use the same size scale as ordinary fields; grouping does not add another card or padded container:
+
+\`\`\`ts
+const inputs = {
+	contact: {
+		type: 'group',
+		label: 'Contact details',
+		description: 'How we can reach you',
+		columns: 1,
+		inputs: {
+			email: { type: 'email', label: 'Email', required: true },
+			phone: { type: 'phone', label: 'Phone' }
+		}
+	}
+} as const;
+
+type Value = InferFormValue<typeof inputs>;
+// { email: string; phone: string | null }
+\`\`\`
+
+The group key is visual only and never appears in value or submission output. Descendant field names remain top-level, so duplicate names across groups are rejected. Group visibility hides all descendants, preserves field values in the private cache, and makes inferred field keys optional. In a vertical form layout, set columns to 1, 2, 3, or 4 to control the equal-width desktop grid; groups collapse to one column on smaller screens. Horizontal form layouts ignore columns and always render group entries in one column. A child class may span tracks when an entry needs more room. Groups may contain fields, action rows, and custom snippets; nested groups are intentionally unsupported.
+
+## Non-value entries
+
+Use type: 'action' to place a labelled row of buttons in the ordered inputs flow. It accepts optional label and description content plus the same Form-aware action objects as the top-level actions prop. Its label position follows the Form layout unless labelPosition overrides it. Form size is the default button size, action density follows the Form, and loading or disabled protection cannot be overridden while the Form is submitting.
+
+Use type: 'custom' to place a snippet in the flow. The snippet receives the live public FormState and owns its own surface and padding; Form adds neither. Both entry types support class and visible, may appear at the top level or inside a group, and are omitted from bind:value, validation, and inferred submission output:
+
+\`\`\`svelte
+{#snippet accountStatus(form)}
+	<p>{Object.keys(form.value).length} visible values</p>
+{/snippet}
+
+<Form
+	inputs={{
+		name: { type: 'text', label: 'Name', required: true },
+		status: { type: 'custom', snippet: accountStatus },
+		controls: {
+			type: 'action',
+			label: 'Account actions',
+			description: 'Validate or save this account.',
+			actions: [
+				{ children: 'Validate', variant: 'soft', onClick: (form) => form.validate() },
+				{ children: 'Save', onClick: (form) => form.submit() }
+			]
+		}
+	}}
+/>
+\`\`\`
+
+For this configuration, InferFormValue contains name only; status and controls are presentation keys.
 
 ## Validation
 
-- Required fields are automatically validated
-- Type-specific validation (email, URL, etc.)
-- Custom validation functions per field
-- Real-time validation on blur
-- Validation errors displayed inline
+Built-in validation uses the field schema and preserves its issue messages. onValidate may return:
 
-## Layout
+- false, null, undefined, an empty string, or an empty array for valid input;
+- true for a generic error;
+- a string for one error;
+- a string array for multiple errors.
 
-- Default 2-column grid layout
-- Fields span 2 columns by default
-- Add \`class: 'col-span-1'\` to a field for single column
-- Fully customizable with CSS classes
+Validation runs on submission. After a field has an error, it revalidates while edited. Failed submission scrolls to and focuses the first invalid control.
 
-## Accessibility
+## Supported input types
 
-- Proper label associations
-- ARIA attributes for validation
-- Error announcements for screen readers
-- Keyboard navigation support
-- Focus management
+text, email, url, password, number, rating, voice, slider, slider-range, textarea, rich-text, select, combobox, radio, checkboxes, checkbox, switch, phone, calendar, calendar-range, date, datetime, color, file, files, tag-group, tag, keyvalue, pin, and time.
 
-## Notes
+Alternative displays are display: 'selector' for date and calendar-range, and display: 'picker' for color.
 
-- Form values are type-safe based on input configuration
-- Async submit handlers are supported
-- Form automatically handles loading states
-- All form inputs are built on the Field component
-- Grid layout makes responsive forms easy
-
-## Theme Customization
-
-The Form component uses a theme object that can be customized using the \`theme\` prop or by setting a global theme. The Form component forwards theme to its child Field components.
-
-### Theme Structure
-
-The theme object contains the following parts:
-- **root**: Main form container styles
-- **field**: Field component theme (forwarded to all fields)
-
-### Available Variants
-
-**root**:
-- base: Base classes for form container
-
-**field**:
-- Theme structure matches the Field component theme (see Field component documentation)
-
-### Usage Examples
-
-**Basic Theme Override**:
-\`\`\`svelte
-<Form 
-  inputs={inputs}
-  onSubmit={handleSubmit}
-  theme={{
-    root: {
-      base: 'grid grid-cols-2 gap-4'
-    }
-  }}
-/>
-\`\`\`
-
-**Custom Form Layout**:
-\`\`\`svelte
-<Form 
-  inputs={inputs}
-  onSubmit={handleSubmit}
-  theme={{
-    root: {
-      base: 'flex flex-col gap-6 max-w-2xl mx-auto'
-    }
-  }}
-/>
-\`\`\`
-
-**Global Theme Setting**:
-\`\`\`svelte
-<script>
-  import { setFormTheme } from 'svelai/form';
-  
-  setFormTheme({
-    root: {
-      base: 'grid grid-cols-1 md:grid-cols-2 gap-4'
-    }
-  });
-</script>
-\`\`\`
+group, action, and custom are structural visual nodes rather than value-bearing input types.
 `;

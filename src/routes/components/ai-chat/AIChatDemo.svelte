@@ -199,12 +199,18 @@
 			<Button size="small" variant="outline" onClick={askForInput}>Ask for input</Button>
 		</div>
 	{/snippet}
-	{#snippet message({ message, index })}
+	{#snippet message({ message, index, actionsVisibility })}
 		<div class="grid gap-2">
 			{#if message.reasoning}
 				<AIReasoning content={message.reasoning} duration={4} />
 			{/if}
-			<AIMessage {message} {index} size={messageSize} variant={messageVariant} />
+			<AIMessage
+				{message}
+				{index}
+				size={messageSize}
+				variant={messageVariant}
+				{actionsVisibility}
+			/>
 		</div>
 	{/snippet}
 	{#snippet footer(state)}
