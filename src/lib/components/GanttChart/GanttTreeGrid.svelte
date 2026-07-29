@@ -557,9 +557,6 @@
 						<span
 							class="absolute -start-1.5 top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-color bg-surface"
 						></span>
-						{#if rowDropPreview.intent === 'nest' || rowDropPreview.intent === 'reparent'}
-							<span class="absolute bottom-0 start-0 h-3 w-0.5 bg-color"></span>
-						{/if}
 					</div>
 				{/if}
 			</div>
