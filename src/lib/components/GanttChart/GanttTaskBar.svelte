@@ -236,7 +236,11 @@
 	);
 	const progressHandleLeft = $derived.by(() => {
 		if (progressInteraction?.proposal) {
-			return clampHandleCenter(progressInteraction.pointerCanvasX, visiblePixels, 14);
+			const liveThumbLeft = Math.max(
+				taskVisibleStart,
+				Math.min(taskVisibleEnd, progressInteraction.pointerCanvasX)
+			);
+			return clampHandleCenter(liveThumbLeft, visiblePixels, 14);
 		}
 		if (controlledProgressValue <= 0 || controlledProgressValue >= 1) {
 			const controlledMarkerLeft = getProgressHandleLeft(
@@ -263,7 +267,7 @@
 	const progressHandleTop = $derived(positioned.geometry.top);
 	const showProgressHandle = $derived(
 		progressInteraction?.proposal
-			? isPixelVisible(progressInteraction.pointerCanvasX, visiblePixels)
+			? taskVisibleEnd >= taskVisibleStart
 			: taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels)
 	);
 	const canCreateDependency = $derived(
