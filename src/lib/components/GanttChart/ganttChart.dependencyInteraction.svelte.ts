@@ -567,7 +567,7 @@ export class GanttDependencyInteraction<
 			}
 			const dependency = createDependency(request);
 			assertCreatedGanttDependency(request, dependency);
-			const accepted = this.#mutations.addDependency(dependency, gesture.inputMode, true);
+			const accepted = this.#mutations.addDependency(dependency, gesture.inputMode);
 			if (!accepted) {
 				this.reportBlocked({
 					reason: 'custom-policy',
