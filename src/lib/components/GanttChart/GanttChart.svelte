@@ -120,7 +120,7 @@
 		showHeader = true,
 		showGrid = true,
 		gridWidth = $bindable(352),
-		minGridWidth = 240,
+		minGridWidth = 160,
 		maxGridWidth = 640,
 		columns,
 		interactions = defaultInteractions,
