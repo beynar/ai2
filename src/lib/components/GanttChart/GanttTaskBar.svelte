@@ -267,7 +267,7 @@
 	const progressVisualOffset = $derived(
 		progressInteraction?.proposal ? 0 : progressMarkerLeft - progressHandleLeft
 	);
-	const progressHandleTop = $derived(positioned.geometry.top);
+	const progressHandleTop = $derived(positioned.geometry.top - 4);
 	const showProgressHandle = $derived(
 		progressInteraction?.proposal
 			? taskVisibleEnd >= taskVisibleStart
