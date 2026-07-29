@@ -752,6 +752,7 @@
 	data-loading={loading || undefined}
 	data-disabled={disabled || undefined}
 	data-interaction-kind={calendar.interaction.gesture?.kind}
+	data-interaction-input={calendar.interaction.gesture?.inputMode}
 	data-interaction-valid={calendar.interaction.isValid ?? undefined}
 	class={classes.root({
 		density,
