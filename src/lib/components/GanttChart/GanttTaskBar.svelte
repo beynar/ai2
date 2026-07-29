@@ -264,6 +264,9 @@
 			14
 		);
 	});
+	const progressVisualOffset = $derived(
+		progressInteraction?.proposal ? 0 : progressMarkerLeft - progressHandleLeft
+	);
 	const progressHandleTop = $derived(positioned.geometry.top);
 	const showProgressHandle = $derived(
 		progressInteraction?.proposal
@@ -628,7 +631,9 @@
 			style:top={`${progressHandleTop}px`}
 			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
 		>
-			<span class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
+			<span
+				class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
+				style:transform={`translateX(${progressVisualOffset}px)`}
 			></span>
 		</span>
 	{/if}
