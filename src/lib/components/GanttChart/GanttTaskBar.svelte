@@ -180,6 +180,14 @@
 	const progressValue = $derived(
 		progressInteraction?.proposal?.task?.progress ?? controlledProgressValue
 	);
+	const isResizingTask = $derived.by(() => {
+		const status = chart.interaction.status;
+		return (
+			status?.type === 'task' &&
+			status.taskId === node.taskId &&
+			(status.operation === 'resize-start' || status.operation === 'resize-end')
+		);
+	});
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
@@ -268,11 +276,11 @@
 		progressInteraction?.proposal ? 0 : progressMarkerLeft - progressHandleLeft
 	);
 	const progressHandleTop = $derived(positioned.geometry.top - 4);
-	const showProgressHandle = $derived(
-		progressInteraction?.proposal
-			? taskVisibleEnd >= taskVisibleStart
-			: taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels)
-	);
+	const showProgressHandle = $derived.by(() => {
+		if (isResizingTask) return false;
+		if (progressInteraction?.proposal) return taskVisibleEnd >= taskVisibleStart;
+		return taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels);
+	});
 	const canCreateDependency = $derived(
 		chart.interaction.dependency.canCreateForTask(node.taskId) && !disabled
 	);
