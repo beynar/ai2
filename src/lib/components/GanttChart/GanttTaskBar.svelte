@@ -169,6 +169,8 @@
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
+	let isHoverCardOpen = $state(false);
+	const isInteractionActive = $derived(chart.interaction.isActive);
 	const isFocusTarget = $derived(chart.a11y.isTaskTabStop(node.taskId));
 	const canMoveTask = $derived(
 		node.type !== 'summary' && !node.task.readOnly && node.task.draggable !== false && !disabled
@@ -357,6 +359,10 @@
 			: Math.max(positioned.startX, positioned.endX) + 6
 	);
 
+	$effect(() => {
+		if (isInteractionActive) isHoverCardOpen = false;
+	});
+
 	function activate(event: MouseEvent): void {
 		event.stopPropagation();
 		if (chart.interaction.shouldSuppressTaskActivation(node.taskId)) {
@@ -475,11 +481,13 @@
 		style:height={`${positioned.geometry.height}px`}
 	>
 		<HoverCard
+			bind:open={isHoverCardOpen}
 			position="top"
 			offset={10}
 			delay={250}
 			closeDelay={120}
 			openOnFocus
+			disabled={disabled || isInteractionActive}
 			triggerClass="pointer-events-auto size-full"
 			popoverClass="pointer-events-none"
 			popoverTheme={TASK_TOOLTIP_POPOVER_THEME}
