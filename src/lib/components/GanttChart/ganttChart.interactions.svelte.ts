@@ -47,7 +47,6 @@ import type { ResolvedGanttSchedule } from './ganttChart.schedule.js';
 
 const POINTER_EDGE_SIZE = 48;
 const POINTER_MAX_SCROLL = 18;
-const MIN_PROGRESS_DRAG_SPAN = 120;
 const TASK_ACTIVATION_SUPPRESSION_MS = 700;
 
 type PointerCoordinates = Readonly<{ clientX: number; clientY: number }>;
@@ -901,23 +900,23 @@ export class GanttChartInteractions<
 				{ taskId: task.id }
 			);
 		}
-		const taskPixelWidth =
-			task.segments && task.segments.length > 0
-				? task.segments.reduce(
-						(width, segment) =>
-							width +
-							Math.abs(
-								getGanttScalePixel(scale, segment.end) - getGanttScalePixel(scale, segment.start)
-							),
-						0
-					)
-				: Math.abs(getGanttScalePixel(scale, task.end) - getGanttScalePixel(scale, task.start));
+		const initialProgress = Math.max(0, Math.min(1, task.progress ?? 0));
+		const startCanvasX = getGanttScalePixel(scale, task.start);
+		const endCanvasX = getGanttScalePixel(scale, task.end);
 		const originCanvasX = getGanttScalePixel(scale, gesture.originInstant);
 		const chronologicalDirection = scale.direction === 'rtl' ? -1 : 1;
-		return (
-			((pointerCanvasX - originCanvasX) * chronologicalDirection) /
-			Math.max(MIN_PROGRESS_DRAG_SPAN, taskPixelWidth)
-		);
+		const pointerDelta = (pointerCanvasX - originCanvasX) * chronologicalDirection;
+		if (pointerDelta === 0) return 0;
+		// Idle edge handles are inset to preserve resize access. Scale each drag direction against
+		// its remaining endpoint distance so progress starts without a jump and reaches 0/100 at the edge.
+		if (pointerDelta < 0) {
+			const spanToStart = Math.max(0, (originCanvasX - startCanvasX) * chronologicalDirection);
+			if (spanToStart === 0) return -initialProgress;
+			return -initialProgress * Math.min(1, -pointerDelta / spanToStart);
+		}
+		const spanToEnd = Math.max(0, (endCanvasX - originCanvasX) * chronologicalDirection);
+		if (spanToEnd === 0) return 1 - initialProgress;
+		return (1 - initialProgress) * Math.min(1, pointerDelta / spanToEnd);
 	}
 
 	private updateRangeProposal(

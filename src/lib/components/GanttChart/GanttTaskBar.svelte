@@ -165,7 +165,21 @@
 	);
 	const semanticColor = $derived(isGanttSemanticColor(node.task.color) ? node.task.color : color);
 	const taskColor = $derived(getGanttTaskColor(node.task.color, color));
-	const progressValue = $derived(node.progress ?? 0);
+	const controlledProgressValue = $derived(node.progress ?? 0);
+	const progressInteraction = $derived.by(() => {
+		const status = chart.interaction.status;
+		if (
+			status?.type !== 'task' ||
+			status.taskId !== node.taskId ||
+			status.operation !== 'progress'
+		) {
+			return null;
+		}
+		return status;
+	});
+	const progressValue = $derived(
+		progressInteraction?.proposal?.task?.progress ?? controlledProgressValue
+	);
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
@@ -220,38 +234,37 @@
 	const taskVisibleEnd = $derived(
 		Math.min(Math.max(positioned.startX, positioned.endX), visiblePixels.end)
 	);
-	const isCompactTask = $derived(taskVisibleEnd - taskVisibleStart < 48);
-	const isProgressAtBoundary = $derived(progressValue <= 0 || progressValue >= 1);
 	const progressHandleLeft = $derived.by(() => {
-		if (isProgressAtBoundary) {
+		if (progressInteraction?.proposal) {
+			return clampHandleCenter(progressInteraction.pointerCanvasX, visiblePixels, 14);
+		}
+		if (controlledProgressValue <= 0 || controlledProgressValue >= 1) {
+			const controlledMarkerLeft = getProgressHandleLeft(
+				positioned,
+				controlledProgressValue,
+				direction
+			);
 			const chronologicalDirection = direction === 'rtl' ? -1 : 1;
-			const inwardDirection = progressValue <= 0 ? chronologicalDirection : -chronologicalDirection;
+			const inwardDirection =
+				controlledProgressValue <= 0 ? chronologicalDirection : -chronologicalDirection;
 			const boundaryInset = Math.min(18, Math.max(0, taskVisibleEnd - taskVisibleStart) / 2);
 			return clampHandleCenter(
-				progressMarkerLeft + inwardDirection * boundaryInset,
+				controlledMarkerLeft + inwardDirection * boundaryInset,
 				visiblePixels,
 				14
 			);
 		}
-		if (!isCompactTask) {
-			return clampHandleCenter(
-				progressMarkerLeft,
-				{ start: taskVisibleStart, end: taskVisibleEnd },
-				14
-			);
-		}
-		const startSpace = taskVisibleStart - visiblePixels.start;
-		const endSpace = visiblePixels.end - taskVisibleEnd;
-		const preferred = endSpace >= startSpace ? taskVisibleEnd + 62 : taskVisibleStart - 62;
-		return clampHandleCenter(preferred, visiblePixels, 14);
+		return clampHandleCenter(
+			progressMarkerLeft,
+			{ start: taskVisibleStart, end: taskVisibleEnd },
+			14
+		);
 	});
 	const progressHandleTop = $derived(positioned.geometry.top);
-	const progressVisualOffset = $derived(progressMarkerLeft - progressHandleLeft);
-	const progressMarkerOffset = $derived(14 + progressVisualOffset);
-	const progressStemLeft = $derived(Math.min(14, progressMarkerOffset));
-	const progressStemWidth = $derived(Math.abs(progressMarkerOffset - 14));
 	const showProgressHandle = $derived(
-		taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels)
+		progressInteraction?.proposal
+			? isPixelVisible(progressInteraction.pointerCanvasX, visiblePixels)
+			: taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels)
 	);
 	const canCreateDependency = $derived(
 		chart.interaction.dependency.canCreateForTask(node.taskId) && !disabled
@@ -605,20 +618,12 @@
 				density,
 				color: semanticColor,
 				disabled,
-				class: '!z-[35]'
+				class: progressInteraction ? '!z-[35] !opacity-100' : '!z-[35]'
 			})}
 			style:left={`${progressHandleLeft}px`}
 			style:top={`${progressHandleTop}px`}
 			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
 		>
-			{#if !isProgressAtBoundary && progressStemWidth > 0}
-				<span
-					aria-hidden="true"
-					class="pointer-events-none absolute top-1/2 h-px -translate-y-1/2 bg-[var(--gantt-task-color)]/70"
-					style:left={`${progressStemLeft}px`}
-					style:width={`${progressStemWidth}px`}
-				></span>
-			{/if}
 			<span class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
 			></span>
 		</span>

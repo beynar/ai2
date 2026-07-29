@@ -114,6 +114,12 @@
 	const durationLabel = $derived(
 		`${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
 	);
+	const isProgressOperation = $derived(status.type === 'task' && status.operation === 'progress');
+	const progressLabel = $derived(
+		new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(
+			proposedTask?.progress ?? 0
+		)
+	);
 	const labelPlacement = $derived.by(() => {
 		const minimumLeft = visiblePixels.start + LABEL_EDGE_INSET;
 		const maximumLeft = Math.max(minimumLeft, visiblePixels.end - labelWidth - LABEL_EDGE_INSET);
@@ -212,9 +218,13 @@
 		style:top={`${labelPlacement.top}px`}
 		aria-hidden="true"
 	>
-		{#if proposedTask}<strong class="truncate">{proposedTask.title}</strong>{/if}
-		<span class="whitespace-nowrap">{rangeLabel}</span>
-		<span class="tabular-nums text-neutral/70">{durationLabel}</span>
+		{#if isProgressOperation}
+			<strong class="tabular-nums">{progressLabel}</strong>
+		{:else}
+			{#if proposedTask}<strong class="truncate">{proposedTask.title}</strong>{/if}
+			<span class="whitespace-nowrap">{rangeLabel}</span>
+			<span class="tabular-nums text-neutral/70">{durationLabel}</span>
+		{/if}
 	</div>
 {/if}
 
