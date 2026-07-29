@@ -288,7 +288,7 @@
 	const rowVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
 		count: 0,
 		getScrollElement: () => null,
-		estimateSize: () => 36,
+		estimateSize: () => 32,
 		overscan: 6
 	});
 

@@ -33,10 +33,10 @@ const COLUMN_DEFAULTS: Readonly<
 		}>
 	>
 > = {
-	wbs: { width: 68, minWidth: 56, maxWidth: 120, align: 'start', sortable: true, editable: false },
+	wbs: { width: 56, minWidth: 48, maxWidth: 120, align: 'start', sortable: true, editable: false },
 	title: {
-		width: 220,
-		minWidth: 140,
+		width: 192,
+		minWidth: 112,
 		maxWidth: 520,
 		align: 'start',
 		sortable: true,

@@ -65,7 +65,7 @@ export class GanttChartA11y<
 	#rowTaskIds: readonly string[] = [];
 	#columnIds: readonly string[] = [];
 	#dependencyIds: readonly string[] = [];
-	#rowHeight = 36;
+	#rowHeight = 32;
 	#announcementRevision = 0;
 	#lastInteractionKey = '';
 	#focusFrames: number[] = [];

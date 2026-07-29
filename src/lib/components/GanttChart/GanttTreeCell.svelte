@@ -164,7 +164,7 @@
 	style:width={`${column.width}px`}
 	style:min-width={`${column.minWidth}px`}
 	style:max-width={`${column.maxWidth}px`}
-	style:padding-inline-start={column.id === 'title' ? `${8 + node.depth * 16}px` : undefined}
+	style:padding-inline-start={column.id === 'title' ? `${4 + node.depth * 12}px` : undefined}
 	role="gridcell"
 	aria-colindex={columnIndex + 1}
 	aria-selected={isSelected}
@@ -214,7 +214,7 @@
 	{#if isEditing}
 		<input
 			bind:value={editValue}
-			class="h-7 min-w-0 flex-1 rounded border border-color/45 bg-surface px-1 text-sm outline-none focus:ring-2 focus:ring-color/35"
+			class="h-6 min-w-0 flex-1 rounded border border-color/45 bg-surface px-1 text-xs outline-none focus:ring-2 focus:ring-color/35"
 			aria-label={`${label}: ${formattedValue}`}
 			onblur={commitEdit}
 			onkeydown={(event) => {

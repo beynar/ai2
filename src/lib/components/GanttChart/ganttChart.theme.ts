@@ -44,7 +44,7 @@ function createGanttChartPart(base: string) {
 }
 
 const root = createGanttChartPart(
-	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/60 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] [--gantt-workload-row-height:2rem] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none forced-colors:border-[CanvasText]'
+	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/60 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2rem] [--gantt-header-height:3rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] [--gantt-workload-row-height:2rem] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none forced-colors:border-[CanvasText]'
 );
 const header = createGanttChartPart(
 	'flex min-w-0 shrink-0 flex-wrap items-center gap-2 border-b border-neutral-muted/60 bg-surface-raised px-3 py-2'
@@ -71,7 +71,7 @@ const gridHeader = createGanttChartPart(
 	'relative flex h-[var(--gantt-header-height)] border-b border-neutral-muted/60 bg-surface-raised/95 backdrop-blur'
 );
 const columnHeader = createGanttChartPart(
-	'flex min-w-0 items-center border-e border-neutral-muted/35 px-2 text-xs font-semibold text-neutral/75 outline-none last:border-e-0'
+	'flex min-w-0 items-center border-e border-neutral-muted/35 px-1.5 text-[0.6875rem] font-semibold text-neutral/75 outline-none last:border-e-0'
 );
 const rows = createGanttChartPart('relative min-w-full');
 const row = createGanttChartPart(
@@ -81,7 +81,7 @@ const rowDropIndicator = createGanttChartPart(
 	'pointer-events-none absolute inset-e-0 z-50 h-0.5 -translate-y-1/2 rounded-full bg-color shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-surface)_65%,transparent)]'
 );
 const treeCell = createGanttChartPart(
-	'flex min-w-0 items-center px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
+	'flex min-w-0 items-center px-1.5 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60'
 );
 const expander = createGanttChartPart(
 	'grid size-6 shrink-0 place-items-center rounded outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60'
