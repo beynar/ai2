@@ -245,7 +245,7 @@
 		const preferred = endSpace >= startSpace ? taskVisibleEnd + 62 : taskVisibleStart - 62;
 		return clampHandleCenter(preferred, visiblePixels, 14);
 	});
-	const progressHandleTop = $derived(isProgressAtBoundary ? positioned.geometry.top : handleTop);
+	const progressHandleTop = $derived(positioned.geometry.top);
 	const progressVisualOffset = $derived(progressMarkerLeft - progressHandleLeft);
 	const progressMarkerOffset = $derived(14 + progressVisualOffset);
 	const progressStemLeft = $derived(Math.min(14, progressMarkerOffset));
@@ -619,15 +619,8 @@
 					style:width={`${progressStemWidth}px`}
 				></span>
 			{/if}
-			{#if isProgressAtBoundary}
-				<span
-					class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
-				></span>
-			{:else}
-				<span
-					class="pointer-events-none size-3 rounded-full border-2 border-surface bg-[var(--gantt-task-color)] shadow-sm"
-				></span>
-			{/if}
+			<span class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
+			></span>
 		</span>
 	{/if}
 
