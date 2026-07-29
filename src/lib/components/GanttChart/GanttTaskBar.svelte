@@ -221,7 +221,18 @@
 		Math.min(Math.max(positioned.startX, positioned.endX), visiblePixels.end)
 	);
 	const isCompactTask = $derived(taskVisibleEnd - taskVisibleStart < 48);
+	const isProgressAtBoundary = $derived(progressValue <= 0 || progressValue >= 1);
 	const progressHandleLeft = $derived.by(() => {
+		if (isProgressAtBoundary) {
+			const chronologicalDirection = direction === 'rtl' ? -1 : 1;
+			const inwardDirection = progressValue <= 0 ? chronologicalDirection : -chronologicalDirection;
+			const boundaryInset = Math.min(18, Math.max(0, taskVisibleEnd - taskVisibleStart) / 2);
+			return clampHandleCenter(
+				progressMarkerLeft + inwardDirection * boundaryInset,
+				visiblePixels,
+				14
+			);
+		}
 		if (!isCompactTask) {
 			return clampHandleCenter(
 				progressMarkerLeft,
@@ -234,6 +245,7 @@
 		const preferred = endSpace >= startSpace ? taskVisibleEnd + 62 : taskVisibleStart - 62;
 		return clampHandleCenter(preferred, visiblePixels, 14);
 	});
+	const progressHandleTop = $derived(isProgressAtBoundary ? positioned.geometry.top : handleTop);
 	const progressVisualOffset = $derived(progressMarkerLeft - progressHandleLeft);
 	const progressMarkerOffset = $derived(14 + progressVisualOffset);
 	const progressStemLeft = $derived(Math.min(14, progressMarkerOffset));
@@ -596,10 +608,10 @@
 				class: '!z-[35]'
 			})}
 			style:left={`${progressHandleLeft}px`}
-			style:top={`${handleTop}px`}
+			style:top={`${progressHandleTop}px`}
 			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
 		>
-			{#if progressStemWidth > 0}
+			{#if !isProgressAtBoundary && progressStemWidth > 0}
 				<span
 					aria-hidden="true"
 					class="pointer-events-none absolute top-1/2 h-px -translate-y-1/2 bg-[var(--gantt-task-color)]/70"
@@ -607,9 +619,15 @@
 					style:width={`${progressStemWidth}px`}
 				></span>
 			{/if}
-			<span
-				class="pointer-events-none size-3 rounded-full border-2 border-surface bg-[var(--gantt-task-color)] shadow-sm"
-			></span>
+			{#if isProgressAtBoundary}
+				<span
+					class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
+				></span>
+			{:else}
+				<span
+					class="pointer-events-none size-3 rounded-full border-2 border-surface bg-[var(--gantt-task-color)] shadow-sm"
+				></span>
+			{/if}
 		</span>
 	{/if}
 
