@@ -189,6 +189,10 @@
 				status.operation === 'resize-end')
 		);
 	});
+	const isProgressInteractionActive = $derived.by(() => {
+		const status = chart.interaction.status;
+		return status?.type === 'task' && status.operation === 'progress';
+	});
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
 	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
@@ -285,6 +289,7 @@
 	const canCreateDependency = $derived(
 		chart.interaction.dependency.canCreateForTask(node.taskId) &&
 			!isTaskTransformActive &&
+			!isProgressInteractionActive &&
 			!disabled
 	);
 	const dateFormatter = $derived(
