@@ -146,16 +146,31 @@ export function positionGanttDependency<
 	const toX = getGanttScalePixel(input.scale, toDate);
 	const fromY = fromIndex * input.rowHeight + input.rowHeight / 2;
 	const toY = toIndex * input.rowHeight + input.rowHeight / 2;
-	const direction = toX >= fromX ? 1 : -1;
-	const exitX = fromX + direction * CONNECTOR_OFFSET;
-	const entryX = toX - direction * CONNECTOR_OFFSET;
-	const middleX = direction > 0 && exitX <= entryX ? (exitX + entryX) / 2 : exitX;
-	const path =
-		fromY === toY
-			? `M ${round(fromX)} ${round(fromY)} H ${round(toX)}`
-			: `M ${round(fromX)} ${round(fromY)} H ${round(middleX)} V ${round(toY)} H ${round(toX)}`;
-	const horizontalStart = Math.min(fromX, toX, middleX);
-	const horizontalEnd = Math.max(fromX, toX, middleX);
+	const chronologicalDirection = input.scale.direction === 'rtl' ? -1 : 1;
+	const sourceUsesFinish = input.dependency.dependency.type.startsWith('finish');
+	const targetUsesFinish = input.dependency.dependency.type.endsWith('finish');
+	const sourceDirection = sourceUsesFinish ? chronologicalDirection : -chronologicalDirection;
+	const targetDirection = targetUsesFinish ? -chronologicalDirection : chronologicalDirection;
+	const exitX = fromX + sourceDirection * CONNECTOR_OFFSET;
+	const entryX = toX - targetDirection * CONNECTOR_OFFSET;
+	const middleX = getDependencyMiddleX(exitX, entryX, sourceDirection, targetDirection);
+	let path: string;
+	let horizontalStart: number;
+	let horizontalEnd: number;
+	if (fromY === toY) {
+		path = `M ${round(fromX)} ${round(fromY)} H ${round(toX)}`;
+		horizontalStart = Math.min(fromX, toX);
+		horizontalEnd = Math.max(fromX, toX);
+	} else if (middleX !== null) {
+		path = `M ${round(fromX)} ${round(fromY)} H ${round(middleX)} V ${round(toY)} H ${round(toX)}`;
+		horizontalStart = Math.min(fromX, toX, middleX);
+		horizontalEnd = Math.max(fromX, toX, middleX);
+	} else {
+		const targetApproachY = toY - Math.sign(toY - fromY) * (input.rowHeight / 2);
+		path = `M ${round(fromX)} ${round(fromY)} H ${round(exitX)} V ${round(targetApproachY)} H ${round(entryX)} V ${round(toY)} H ${round(toX)}`;
+		horizontalStart = Math.min(fromX, toX, exitX, entryX);
+		horizontalEnd = Math.max(fromX, toX, exitX, entryX);
+	}
 	const verticalStart = Math.min(fromY, toY);
 	const verticalEnd = Math.max(fromY, toY);
 	const visible =
@@ -165,6 +180,24 @@ export function positionGanttDependency<
 		verticalStart <= input.visibleRows.end;
 
 	return { path, visible, fromX, fromY, toX, toY };
+}
+
+function getDependencyMiddleX(
+	exitX: number,
+	entryX: number,
+	sourceDirection: number,
+	targetDirection: number
+): number | null {
+	let minimum = Number.NEGATIVE_INFINITY;
+	let maximum = Number.POSITIVE_INFINITY;
+	if (sourceDirection > 0) minimum = exitX;
+	else maximum = exitX;
+	if (targetDirection > 0) maximum = Math.min(maximum, entryX);
+	else minimum = Math.max(minimum, entryX);
+	if (minimum > maximum) return null;
+	if (!Number.isFinite(minimum)) return maximum;
+	if (!Number.isFinite(maximum)) return minimum;
+	return (minimum + maximum) / 2;
 }
 
 export function resolveGanttTimeShades(input: {
