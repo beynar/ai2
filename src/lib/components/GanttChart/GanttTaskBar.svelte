@@ -180,11 +180,13 @@
 	const progressValue = $derived(
 		progressInteraction?.proposal?.task?.progress ?? controlledProgressValue
 	);
-	const isResizeInteractionActive = $derived.by(() => {
+	const isTaskTransformActive = $derived.by(() => {
 		const status = chart.interaction.status;
 		return (
 			status?.type === 'task' &&
-			(status.operation === 'resize-start' || status.operation === 'resize-end')
+			(status.operation === 'move' ||
+				status.operation === 'resize-start' ||
+				status.operation === 'resize-end')
 		);
 	});
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
@@ -276,13 +278,13 @@
 	);
 	const progressHandleTop = $derived(positioned.geometry.top - 4);
 	const showProgressHandle = $derived.by(() => {
-		if (isResizeInteractionActive) return false;
+		if (isTaskTransformActive) return false;
 		if (progressInteraction?.proposal) return taskVisibleEnd >= taskVisibleStart;
 		return taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels);
 	});
 	const canCreateDependency = $derived(
 		chart.interaction.dependency.canCreateForTask(node.taskId) &&
-			!isResizeInteractionActive &&
+			!isTaskTransformActive &&
 			!disabled
 	);
 	const dateFormatter = $derived(
@@ -596,7 +598,12 @@
 			data-gantt-chart-part="resize-handle"
 			data-edge="start"
 			data-task-id={node.taskId}
-			class={classes.resizeHandle({ density, color: semanticColor, disabled })}
+			class={classes.resizeHandle({
+				density,
+				color: semanticColor,
+				disabled,
+				class: isTaskTransformActive ? '!opacity-0' : undefined
+			})}
 			style:left={`${resizeStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.taskDrag(node.taskId, 'resize-start', rowTop)}
@@ -613,7 +620,12 @@
 			data-gantt-chart-part="resize-handle"
 			data-edge="end"
 			data-task-id={node.taskId}
-			class={classes.resizeHandle({ density, color: semanticColor, disabled })}
+			class={classes.resizeHandle({
+				density,
+				color: semanticColor,
+				disabled,
+				class: isTaskTransformActive ? '!opacity-0' : undefined
+			})}
 			style:left={`${resizeEndHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.taskDrag(node.taskId, 'resize-end', rowTop)}
