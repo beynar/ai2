@@ -1,19 +1,53 @@
 import { compareScheduleValues } from '$lib/scheduling/scheduleOrder.js';
 import { civilDayDifference } from './eventCalendar.date.js';
-import type { EventCalendarMonthInsertion } from './eventCalendar.interactions.svelte.js';
-import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
-import type { EventCalendarDateOnly } from './eventCalendar.types.js';
+import type { EventCalendarAllDayInsertion } from './eventCalendar.interactions.svelte.js';
+import { packEventCalendarLanes, type EventCalendarLaneLayout } from './eventCalendar.layout.js';
+import type { EventCalendarDateOnly, EventCalendarSegment } from './eventCalendar.types.js';
 
-export type EventCalendarMonthRowInsertion = EventCalendarMonthInsertion & {
+export type EventCalendarAllDayRowInsertion = EventCalendarAllDayInsertion & {
 	startIndex: number;
 	endIndex: number;
 	lane: number;
 };
 
-export function getEventCalendarMonthRowInsertion(
+export function createEventCalendarAllDayPreviewLayout<TItemFields extends object>(
+	segments: readonly EventCalendarSegment<TItemFields>[],
 	days: readonly EventCalendarDateOnly[],
-	insertion: EventCalendarMonthInsertion | null
-): Omit<EventCalendarMonthRowInsertion, 'lane'> | null {
+	insertion: EventCalendarAllDayInsertion | null
+): {
+	layout: EventCalendarLaneLayout<TItemFields>;
+	insertion: EventCalendarAllDayRowInsertion | null;
+	draggingOccurrenceKey: string | null;
+} {
+	const sourceLayout = packEventCalendarLanes(segments, days);
+	const rowInsertion = getEventCalendarAllDayRowInsertion(days, insertion);
+	if (!insertion || !rowInsertion) {
+		return { layout: sourceLayout, insertion: null, draggingOccurrenceKey: null };
+	}
+	const sourcePlacement = sourceLayout.placements.find(
+		(placement) => placement.occurrence.key === insertion.occurrenceKey
+	);
+	const baseLayout = packEventCalendarLanes(
+		segments.filter((segment) => segment.occurrence.key !== insertion.occurrenceKey),
+		days
+	);
+	const preview = createEventCalendarAllDayInsertionLayout(baseLayout, rowInsertion);
+	return {
+		layout: sourcePlacement
+			? {
+					...preview.layout,
+					placements: [...preview.layout.placements, sourcePlacement]
+				}
+			: preview.layout,
+		insertion: preview.insertion,
+		draggingOccurrenceKey: insertion.occurrenceKey
+	};
+}
+
+function getEventCalendarAllDayRowInsertion(
+	days: readonly EventCalendarDateOnly[],
+	insertion: EventCalendarAllDayInsertion | null
+): Omit<EventCalendarAllDayRowInsertion, 'lane'> | null {
 	if (!insertion) return null;
 	const startIndex = days.indexOf(insertion.start);
 	if (startIndex < 0) return null;
@@ -25,10 +59,10 @@ export function getEventCalendarMonthRowInsertion(
 	};
 }
 
-export function createEventCalendarMonthInsertionLayout<TItemFields extends object>(
+function createEventCalendarAllDayInsertionLayout<TItemFields extends object>(
 	layout: EventCalendarLaneLayout<TItemFields>,
-	insertion: Omit<EventCalendarMonthRowInsertion, 'lane'>
-): { layout: EventCalendarLaneLayout<TItemFields>; insertion: EventCalendarMonthRowInsertion } {
+	insertion: Omit<EventCalendarAllDayRowInsertion, 'lane'>
+): { layout: EventCalendarLaneLayout<TItemFields>; insertion: EventCalendarAllDayRowInsertion } {
 	const schedules = [
 		...layout.placements.map((placement) => ({
 			key: placement.key,
@@ -40,7 +74,7 @@ export function createEventCalendarMonthInsertionLayout<TItemFields extends obje
 			priority: placement.occurrence.item.priority ?? 0
 		})),
 		{ key: insertion.occurrenceKey, isInsertion: true, ...insertion }
-	].sort(compareMonthSchedules);
+	].sort(compareAllDaySchedules);
 	const laneEnds: number[] = [];
 	const placementLanes: Record<string, number> = {};
 	let insertionLane = 0;
@@ -68,7 +102,7 @@ export function createEventCalendarMonthInsertionLayout<TItemFields extends obje
 	};
 }
 
-type MonthSchedule = {
+type AllDaySchedule = {
 	key: string;
 	isInsertion: boolean;
 	startIndex: number;
@@ -78,7 +112,7 @@ type MonthSchedule = {
 	priority: number;
 };
 
-function compareMonthSchedules(left: MonthSchedule, right: MonthSchedule): number {
+function compareAllDaySchedules(left: AllDaySchedule, right: AllDaySchedule): number {
 	if (left.startIndex !== right.startIndex) return left.startIndex - right.startIndex;
 	if (left.endIndex !== right.endIndex) return right.endIndex - left.endIndex;
 	return compareScheduleValues(

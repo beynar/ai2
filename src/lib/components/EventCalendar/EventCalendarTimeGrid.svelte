@@ -12,6 +12,7 @@
 	import EventCalendarTimeGridAllDay from './EventCalendarTimeGridAllDay.svelte';
 	import EventCalendarTimeGridDayColumn from './EventCalendarTimeGridDayColumn.svelte';
 	import type { EventCalendarA11y, EventCalendarTimeTarget } from './eventCalendar.a11y.svelte.js';
+	import { createEventCalendarAllDayPreviewLayout } from './eventCalendar.allDayInsertion.js';
 	import {
 		addCivilDays,
 		assertValidInstant,
@@ -286,8 +287,13 @@
 			])
 		)
 	);
-	const allDayLayout = $derived.by(() => {
-		if (view !== 'resource') return packEventCalendarLanes(allDaySegments, visibleDays);
+	const allDayInsertion = $derived(
+		view === 'resource' ? null : calendar.interaction.getAllDayInsertion()
+	);
+	const allDayPreview = $derived.by(() => {
+		if (view !== 'resource') {
+			return createEventCalendarAllDayPreviewLayout(allDaySegments, visibleDays, allDayInsertion);
+		}
 		const placements = columnBuckets.flatMap(({ column, bucket }) => {
 			const segments = (bucket?.allDay ?? []).filter(
 				(segment) => segment.occurrence.item.display !== 'background'
@@ -299,11 +305,16 @@
 			}));
 		});
 		return {
-			placements,
-			laneCount: placements.reduce((count, placement) => Math.max(count, placement.lane + 1), 0),
-			layoutIdentity: {}
+			layout: {
+				placements,
+				laneCount: placements.reduce((count, placement) => Math.max(count, placement.lane + 1), 0),
+				layoutIdentity: {}
+			},
+			insertion: null,
+			draggingOccurrenceKey: null
 		};
 	});
+	const allDayLayout = $derived(allDayPreview.layout);
 	const allDayHeight = $derived(
 		`calc(${Math.max(1, allDayLayout.laneCount)} * var(--event-calendar-item-min-height) + 0.5rem)`
 	);
@@ -717,6 +728,8 @@
 				{dayGeometries}
 				{allDayBackgroundSegments}
 				{allDayLayout}
+				insertion={allDayPreview.insertion}
+				draggingOccurrenceKey={allDayPreview.draggingOccurrenceKey}
 				{allDayHeight}
 				{gridTemplateColumns}
 				{allDayPayload}

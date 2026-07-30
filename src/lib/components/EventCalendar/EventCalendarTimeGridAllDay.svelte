@@ -9,6 +9,10 @@
 		if (first === last) return first;
 		return { ...first, end: last.end, isEnd: last.isEnd, continuesAfter: last.continuesAfter };
 	}
+
+	function getAllDayBarWidth(startIndex: number, endIndex: number): string {
+		return `calc(${endIndex - startIndex} * 100%)`;
+	}
 </script>
 
 <script
@@ -21,8 +25,12 @@
 	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
-	import { getEventCalendarItemColor } from './eventCalendar.color.js';
+	import {
+		getEventCalendarItemColor,
+		isEventCalendarSemanticColor
+	} from './eventCalendar.color.js';
 	import { startOfZonedDay } from './eventCalendar.date.js';
+	import type { EventCalendarAllDayRowInsertion } from './eventCalendar.allDayInsertion.js';
 	import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
 	import { serializeEventCalendarTarget } from './eventCalendar.interactions.svelte.js';
 	import type {
@@ -48,6 +56,8 @@
 		dayGeometries,
 		allDayBackgroundSegments,
 		allDayLayout,
+		insertion,
+		draggingOccurrenceKey,
 		allDayHeight,
 		gridTemplateColumns,
 		allDayPayload,
@@ -77,6 +87,8 @@
 		dayGeometries: readonly EventCalendarTimeGridDayGeometry<TItemFields>[];
 		allDayBackgroundSegments: ReadonlyMap<string, readonly EventCalendarSegment<TItemFields>[]>;
 		allDayLayout: EventCalendarLaneLayout<TItemFields>;
+		insertion: EventCalendarAllDayRowInsertion | null;
+		draggingOccurrenceKey: string | null;
 		allDayHeight: string;
 		gridTemplateColumns: string;
 		allDayPayload: EventCalendarAllDayPayload<TItemFields>;
@@ -190,14 +202,46 @@
 					style:background={getEventCalendarItemColor(segment.occurrence, color)}
 				></div>
 			{/each}
+			{#if calendar.interaction.isValid === true && insertion?.startIndex === geometry.column}
+				{@const proposal = calendar.interaction.proposal}
+				{#if proposal}
+					{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
+						? proposal.item.color
+						: color}
+					{@const indicatorItemColor =
+						proposal.item.color && !isEventCalendarSemanticColor(proposal.item.color)
+							? proposal.item.color
+							: 'var(--color)'}
+					<div
+						aria-hidden="true"
+						class="pointer-events-none absolute inset-inline-start-0 z-20 h-[var(--event-calendar-item-min-height)] px-0.5 transition-[top] duration-150 motion-reduce:transition-none"
+						style:top={`calc(${insertion.lane} * var(--event-calendar-item-min-height))`}
+						style:width={getAllDayBarWidth(insertion.startIndex, insertion.endIndex)}
+					>
+						<div
+							data-event-calendar-part="drop-indicator"
+							data-color={indicatorColor}
+							class={classes.dropIndicator({
+								density,
+								color: indicatorColor,
+								view,
+								class: 'h-full w-full'
+							})}
+							style:--event-calendar-item-color={indicatorItemColor}
+						></div>
+					</div>
+				{/if}
+			{/if}
 			{#each allDayLayout.placements.filter((placement) => placement.startIndex === geometry.column) as placement (placement.key)}
 				{@const segment = getPlacementSegment(placement.segments)}
 				{@const itemTargetKey = `all-day-item:${placement.key}`}
 				<div
-					class="pointer-events-auto absolute z-10 px-0.5"
+					class="pointer-events-auto absolute z-10 px-0.5 transition-[top,opacity] duration-150 motion-reduce:transition-none"
+					class:pointer-events-none={placement.occurrence.key === draggingOccurrenceKey}
+					class:opacity-0={placement.occurrence.key === draggingOccurrenceKey}
 					style:top={`calc(${placement.lane} * var(--event-calendar-item-min-height))`}
 					style:inset-inline-start="0"
-					style:width={`calc(${placement.endIndex - placement.startIndex} * 100%)`}
+					style:width={getAllDayBarWidth(placement.startIndex, placement.endIndex)}
 				>
 					<EventCalendarItem
 						{segment}

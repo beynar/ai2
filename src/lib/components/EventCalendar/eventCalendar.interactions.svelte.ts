@@ -174,7 +174,7 @@ export type EventCalendarDropIndicatorRect = Readonly<{
 	clipPath?: string;
 }>;
 
-export type EventCalendarMonthInsertion = Readonly<{
+export type EventCalendarAllDayInsertion = Readonly<{
 	occurrenceKey: string;
 	start: EventCalendarDateOnly;
 	end: EventCalendarDateOnly;
@@ -686,7 +686,7 @@ export class EventCalendarInteractionsController<
 		if (!targetElement?.isConnected) return null;
 		const target = this.readElementTarget(targetElement);
 		if (!target) return null;
-		if (target.view === 'month' && gesture.kind === 'move' && gesture.inputMode === 'pointer') {
+		if (target.allDay && target.view !== 'resource' && gesture.kind === 'move') {
 			return null;
 		}
 		const rect = target.allDay
@@ -695,7 +695,7 @@ export class EventCalendarInteractionsController<
 		return rect ? this.clipDropIndicatorRect(rect, targetElement) : null;
 	}
 
-	getMonthInsertion(): EventCalendarMonthInsertion | null {
+	getAllDayInsertion(): EventCalendarAllDayInsertion | null {
 		const gesture = this.gesture;
 		if (
 			typeof document === 'undefined' ||
@@ -711,7 +711,7 @@ export class EventCalendarInteractionsController<
 		const targetElement = this.targetElements.get(gesture.targetKey);
 		if (!targetElement?.isConnected) return null;
 		const target = this.readElementTarget(targetElement);
-		if (!target?.allDay || target.view !== 'month') return null;
+		if (!target?.allDay || target.view === 'resource') return null;
 		const item = gesture.proposal.item;
 		const start =
 			item.allDay === true ? item.start : getZonedDay(item.start, this.calendar.timeZone);

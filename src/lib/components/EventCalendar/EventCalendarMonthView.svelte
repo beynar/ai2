@@ -89,11 +89,7 @@
 		rangesIntersect,
 		startOfZonedDay
 	} from './eventCalendar.date.js';
-	import { packEventCalendarLanes } from './eventCalendar.layout.js';
-	import {
-		createEventCalendarMonthInsertionLayout,
-		getEventCalendarMonthRowInsertion
-	} from './eventCalendar.monthInsertion.js';
+	import { createEventCalendarAllDayPreviewLayout } from './eventCalendar.allDayInsertion.js';
 	import type {
 		EventCalendarDayHeaderPayload,
 		EventCalendarItemPayload,
@@ -233,37 +229,19 @@
 		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, { weekday: 'narrow' })
 	);
 	const autoLaneSlots = $derived(getAutoLaneSlots(monthHeight, weekRows.length, density));
-	const monthInsertion = $derived(calendar.interaction.getMonthInsertion());
+	const allDayInsertion = $derived(calendar.interaction.getAllDayInsertion());
 	const weekLayouts = $derived(
 		weekRows.map((row) => {
 			const { days } = row;
 			const foregroundSegments = days.flatMap(
 				(day) => itemIndex.segmentsByDay.get(day)?.foreground ?? []
 			);
-			const sourceLayout = packEventCalendarLanes(foregroundSegments, days);
-			const sourcePlacement = monthInsertion
-				? sourceLayout.placements.find(
-						(placement) => placement.occurrence.key === monthInsertion.occurrenceKey
-					)
-				: undefined;
-			const baseLayout = monthInsertion
-				? packEventCalendarLanes(
-						foregroundSegments.filter(
-							(segment) => segment.occurrence.key !== monthInsertion.occurrenceKey
-						),
-						days
-					)
-				: sourceLayout;
-			const rowInsertion = getEventCalendarMonthRowInsertion(days, monthInsertion);
-			const preview = rowInsertion
-				? createEventCalendarMonthInsertionLayout(baseLayout, rowInsertion)
-				: { layout: baseLayout, insertion: null };
-			const layout = sourcePlacement
-				? {
-						...preview.layout,
-						placements: [...preview.layout.placements, sourcePlacement]
-					}
-				: preview.layout;
+			const preview = createEventCalendarAllDayPreviewLayout(
+				foregroundSegments,
+				days,
+				allDayInsertion
+			);
+			const layout = preview.layout;
 			const baseVisibleLaneCount =
 				maxItemsPerCell === 'auto'
 					? layout.laneCount > autoLaneSlots
@@ -310,7 +288,7 @@
 				layout: shiftedLayout,
 				visibleLaneCount,
 				insertion: shiftedInsertion,
-				draggingOccurrenceKey: monthInsertion?.occurrenceKey ?? null
+				draggingOccurrenceKey: preview.draggingOccurrenceKey
 			};
 		})
 	);
