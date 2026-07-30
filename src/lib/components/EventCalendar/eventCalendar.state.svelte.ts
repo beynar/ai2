@@ -74,6 +74,7 @@ const VIEW_SET = new Set<EventCalendarView>(EVENT_CALENDAR_VIEWS);
 type EventCalendarRuntimeItem = {
 	id: string;
 	title: string;
+	description?: unknown;
 	resourceId?: string;
 	resourceIds?: unknown;
 	start: unknown;
@@ -890,6 +891,13 @@ function validateItems<TItemFields extends object>(
 			throw new EventCalendarError('invalid-item', `Item ${item.id} must have a string title.`, {
 				id: item.id
 			});
+		}
+		if (item.description !== undefined && typeof item.description !== 'string') {
+			throw new EventCalendarError(
+				'invalid-item',
+				`Item ${item.id} description must be a string when provided.`,
+				{ id: item.id }
+			);
 		}
 		validateItemPlacement(item);
 		itemsById.set(item.id, item);

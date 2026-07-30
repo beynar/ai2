@@ -95,7 +95,7 @@
 		stickyHeader = false,
 		showHeader = true,
 		showDatePicker = false,
-		showItemTooltip = false,
+		showItemTooltip = true,
 		interactions,
 		createActivation,
 		allowOverlap = true,

@@ -3,8 +3,9 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import { repeatIcon } from '$lib/components/Icons/repeat.js';
+	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
+	import type { HoverCardPayload } from '$lib/components/HoverCard/index.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { untrack, type Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
@@ -85,6 +86,11 @@
 			? occurrence.item.color
 			: 'var(--color)'
 	);
+	const hoverCardColor = $derived(
+		occurrence.item.color && !isEventCalendarSemanticColor(occurrence.item.color)
+			? occurrence.item.color
+			: `var(--color-${semanticColor})`
+	);
 	const timeFormatter = $derived(
 		getCachedDateTimeFormatter(locale, timeZone, { hour: 'numeric', minute: '2-digit' })
 	);
@@ -102,17 +108,18 @@
 	const timeLabel = $derived(timeFormatter.format(segment.start));
 	const isTimedGridItem = $derived(!occurrence.allDay && view !== 'month' && view !== 'agenda');
 	const timeRangeLabel = $derived(timeFormatter.formatRange(segment.start, segment.end));
-	const defaultAccessibleLabel = $derived.by(() => {
+	const dateRangeLabel = $derived.by(() => {
 		const formatter = occurrence.allDay ? dateFormatter : dateTimeFormatter;
 		const inclusiveEnd = occurrence.allDay
 			? new Date(Math.max(occurrence.start.getTime(), occurrence.end.getTime() - 1))
 			: occurrence.end;
-		const rangeLabel =
-			occurrence.start.getTime() === inclusiveEnd.getTime()
-				? formatter.format(occurrence.start)
-				: formatter.formatRange(occurrence.start, inclusiveEnd);
-		return `${occurrence.item.title}, ${rangeLabel}${occurrence.isRecurring ? ', recurring' : ''}`;
+		return occurrence.start.getTime() === inclusiveEnd.getTime()
+			? formatter.format(occurrence.start)
+			: formatter.formatRange(occurrence.start, inclusiveEnd);
 	});
+	const defaultAccessibleLabel = $derived(
+		`${occurrence.item.title}, ${dateRangeLabel}${occurrence.isRecurring ? ', recurring' : ''}`
+	);
 	const itemPayload = $derived<EventCalendarItemPayload<TItemFields>>({
 		occurrence,
 		segment,
@@ -131,13 +138,8 @@
 		defaultAccessibleLabel,
 		defaultContent: defaultTooltip
 	});
-	const itemTooltipAttachment = tooltip({
-		get content() {
-			return resolvedTooltip;
-		},
-		position: 'top',
-		delay: 350
-	});
+	let isHoverCardOpen = $state(false);
+	const isInteractionActive = $derived(Boolean(interaction?.gesture));
 	const isMoveAllowed = $derived(
 		!(view === 'month' && (occurrence.isRecurring || occurrence.item.recurringItemId !== undefined))
 	);
@@ -157,6 +159,18 @@
 			)
 		)
 	);
+
+	$effect(() => {
+		if (isInteractionActive) isHoverCardOpen = false;
+	});
+
+	function getItemDescribedBy(hoverCard?: HoverCardPayload): string | undefined {
+		const ids = [
+			hasKeyboardActions ? `${a11y.liveRegionId}-instructions` : undefined,
+			hoverCard?.isOpen ? hoverCard.id : undefined
+		].filter((id): id is string => Boolean(id));
+		return ids.length > 0 ? ids.join(' ') : undefined;
+	}
 
 	function registerItemControl(node: HTMLElement): () => void {
 		return untrack(() => {
@@ -225,10 +239,60 @@
 			{/if}
 		</div>
 	{/if}
+	{#if showItemTooltip}
+		<HoverCard
+			bind:open={isHoverCardOpen}
+			position="top"
+			offset={10}
+			delay={250}
+			closeDelay={100}
+			openOnFocus
+			transition={{ out: { duration: 0 } }}
+			disabled={disabled || isInteractionActive}
+			trigger={hoverCardTrigger}
+			content={resolvedTooltip}
+			triggerClass="block h-full w-full"
+		/>
+	{:else}
+		{@render itemControl()}
+	{/if}
+	{#if canResize && interaction && segment.isEnd}
+		<div
+			aria-hidden="true"
+			data-event-calendar-part="resize-handle"
+			data-edge="end"
+			class={classes.resizeHandle({
+				class: isHorizontalResize
+					? 'inset-y-0 end-0 grid w-1.5 cursor-ew-resize place-items-center'
+					: 'inset-x-0 bottom-0 grid h-1.5 translate-y-1/2 cursor-ns-resize place-items-center'
+			})}
+			{@attach interaction.draggableItem(segment, 'resize-end', view, projectionResourceId)}
+		>
+			{#if resizeEnd}
+				<Slot render={resizeEnd} />
+			{:else}
+				<span
+					class={isHorizontalResize
+						? 'pointer-events-none h-3 w-0.5 rounded-full bg-current'
+						: 'pointer-events-none h-0.5 w-3 rounded-full bg-current'}
+				></span>
+			{/if}
+		</div>
+	{/if}
+</div>
+
+{#snippet hoverCardTrigger(hoverCard: HoverCardPayload)}
+	{@render itemControl(hoverCard)}
+{/snippet}
+
+{#snippet itemControl(hoverCard?: HoverCardPayload)}
 	<button
 		type="button"
 		aria-label={defaultAccessibleLabel}
-		aria-describedby={hasKeyboardActions ? `${a11y.liveRegionId}-instructions` : undefined}
+		aria-describedby={getItemDescribedBy(hoverCard)}
+		aria-haspopup={hoverCard ? 'dialog' : undefined}
+		aria-expanded={hoverCard?.isOpen}
+		aria-controls={hoverCard?.id}
 		aria-pressed={isSelected}
 		{disabled}
 		{tabindex}
@@ -270,34 +334,10 @@
 			onControlKeydown?.(event);
 		}}
 		{@attach registerItemControl}
-		{@attach showItemTooltip ? itemTooltipAttachment : null}
 	>
 		<Slot render={item ?? defaultContent} payload={itemPayload} />
 	</button>
-	{#if canResize && interaction && segment.isEnd}
-		<div
-			aria-hidden="true"
-			data-event-calendar-part="resize-handle"
-			data-edge="end"
-			class={classes.resizeHandle({
-				class: isHorizontalResize
-					? 'inset-y-0 end-0 grid w-1.5 cursor-ew-resize place-items-center'
-					: 'inset-x-0 bottom-0 grid h-1.5 translate-y-1/2 cursor-ns-resize place-items-center'
-			})}
-			{@attach interaction.draggableItem(segment, 'resize-end', view, projectionResourceId)}
-		>
-			{#if resizeEnd}
-				<Slot render={resizeEnd} />
-			{:else}
-				<span
-					class={isHorizontalResize
-						? 'pointer-events-none h-3 w-0.5 rounded-full bg-current'
-						: 'pointer-events-none h-0.5 w-3 rounded-full bg-current'}
-				></span>
-			{/if}
-		</div>
-	{/if}
-</div>
+{/snippet}
 
 {#snippet defaultContent()}
 	<span
@@ -365,7 +405,15 @@
 {/snippet}
 
 {#snippet defaultTooltip()}
-	{defaultAccessibleLabel}
+	<div class="grid gap-1.5 text-start">
+		<strong class="text-sm leading-5" style:color={hoverCardColor}>{occurrence.item.title}</strong>
+		{#if occurrence.item.description}
+			<p class="whitespace-pre-wrap text-sm leading-5 text-neutral/75">
+				{occurrence.item.description}
+			</p>
+		{/if}
+		<p class="text-xs leading-4 text-neutral/55 tabular-nums">{dateRangeLabel}</p>
+	</div>
 {/snippet}
 
 {#snippet resolvedTooltip()}

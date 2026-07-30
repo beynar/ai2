@@ -67,6 +67,7 @@ export type EventCalendarRecurrenceRule<
 type EventCalendarItemBase = {
 	id: string;
 	title: string;
+	description?: string;
 	display?: 'auto' | 'background';
 	color?: EventCalendarColor;
 	readOnly?: boolean;

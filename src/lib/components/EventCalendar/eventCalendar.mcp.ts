@@ -24,7 +24,7 @@ A typed scheduling calendar for Svelte 5. It renders month, week, day, configura
 - All-day starts and exclusive ends are canonical YYYY-MM-DD strings. Valid civil dates span 0001-01-01 through 9999-12-31, but 9999-12-30 is the last selectable/renderable day because a rendered day needs an exclusive end. An all-day end may be 9999-12-31.
 - Items need stable unique ids. Invalid items, resources, views, zones, recurrence, and stale transactions throw EventCalendarError with a public EventCalendarErrorCode.
 - 'items' and 'resources' are immutable controlled collections: allocate a fresh outer array for every consumer update and replace changed definitions. EventCalendar never mutates consumer objects.
-- EventCalendarItem<TItemFields> and EventCalendarResource<TResourceFields> preserve custom fields through props, snippets, callbacks, and API methods. Custom fields cannot redeclare calendar-owned keys.
+- EventCalendarItem<TItemFields> includes an optional 'description' and preserves custom fields through props, snippets, callbacks, and API methods. Custom fields cannot redeclare calendar-owned keys.
 - Foreground items can be timed, all-day, multi-day, or recurring. 'display: background' items are display-only and never interactive.
 - Assign one leaf with 'resourceId' or several leaves with an ordered unique 'resourceIds' array. The two fields are mutually exclusive.
 - Timed recurrence requires an explicit 'recurrenceTimeZone'. All-day recurrence remains floating civil dates.
@@ -63,7 +63,7 @@ The component never changes 'view' because its container becomes narrow. Previou
 - Agenda: 'agendaDayCount=30'.
 - Current time: 'nowIndicator=true', 'nowIndicatorInterval=30000'.
 - Work time: 'offDays=false', 'businessHours=[]', 'constrainToBusinessHours=false'.
-- Scrolling/chrome: 'scrollMode="contained"', 'scrollbars="custom"', 'stickyHeader=false', 'showHeader=true', 'showDatePicker=false', 'showItemTooltip=false'.
+- Scrolling/chrome: 'scrollMode="contained"', 'scrollbars="custom"', 'stickyHeader=false', 'showHeader=true', 'showDatePicker=false', 'showItemTooltip=true'.
 
 Numeric and time settings are validated and never silently clamped. Hidden weekdays are removed from 'visibleDays'; day and agenda counts count rendered days.
 
@@ -102,7 +102,7 @@ Snippets replace content inside component-owned semantic and interactive wrapper
 - 'header': snapshot plus ready-made previous, today, next, title, viewSwitcher, datePicker, and actions snippets
 - 'actions': calendar snapshot and API
 - 'item': occurrence, segment, active view (including agenda), states, defaultContent, markerContent, titleContent, and timeContent
-- 'itemTooltip': occurrence, segment, view, defaultAccessibleLabel, and defaultContent
+- 'itemTooltip': customizes the item HoverCard with occurrence, segment, view, defaultAccessibleLabel, and defaultContent
 - 'monthCell': day/state/segments/overflow and defaultContent
 - 'dayHeader', 'timeGutter' with defaultContent, and 'allDay'
 - 'overflow' and 'overflowContent'; both expose defaultContent, and the latter preserves the built-in interactive item list when rendered

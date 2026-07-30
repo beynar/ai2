@@ -305,7 +305,7 @@ type EventCalendarOwnProps<
 		showHeader?: boolean;
 		/** Adds the default date-jump popover. Defaults to `false`. */
 		showDatePicker?: boolean;
-		/** Enables the accessible default item tooltip. Defaults to `false`. */
+		/** Enables the accessible default item hover card. Defaults to `true`. */
 		showItemTooltip?: boolean;
 		/** Fine-grained policy; drag, resize, slot, keyboard, and pointer features default on; duration preservation defaults off. */
 		interactions?: Partial<EventCalendarInteractions>;

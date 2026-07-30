@@ -18,6 +18,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 		{
 			id: 'planning',
 			title: 'Product planning',
+			description: 'Align the product scope, owners, and release priorities.',
 			start: new Date('2026-07-13T07:00:00.000Z'),
 			end: new Date('2026-07-13T08:30:00.000Z'),
 			resourceIds: ['studio', 'boardroom'],
@@ -28,6 +29,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 		{
 			id: 'standup',
 			title: 'Team stand-up',
+			description: 'Daily team check-in for progress and blockers.',
 			start: new Date('2026-07-14T07:00:00.000Z'),
 			end: new Date('2026-07-14T07:30:00.000Z'),
 			recurrence: {
@@ -44,6 +46,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 		{
 			id: 'release',
 			title: 'Release window',
+			description: 'Reserved deployment window for the July release.',
 			start: '2026-07-15',
 			end: '2026-07-18',
 			allDay: true,
