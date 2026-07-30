@@ -1,6 +1,6 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
 import type { WithAttachments } from '$lib/types/props.js';
-import type { Sizes } from '$lib/types/theme.js';
+import type { Density, Sizes } from '$lib/types/theme.js';
 import type { ButtonProps } from '../Button/index.js';
 import type { CardProps, CardThemeProps } from '../Card/index.js';
 import type { PopoverProps, PopoverThemeProps } from '../Popover/index.js';
@@ -60,6 +60,8 @@ export type HoverCardProps = WithAttachments<{
 	transition?: PopoverProps['transition'];
 	/** Visual size shared by the Popover panel and Card surface. */
 	size?: Sizes;
+	/** Spacing density applied to the inner Card. */
+	density?: Density;
 	/** When true, prevents hover, focus, and click opening. */
 	disabled?: boolean;
 	/** Additional CSS classes merged onto the Card surface. */

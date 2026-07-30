@@ -48,6 +48,7 @@ HoverCard previews supplemental content when a trigger is hovered or focused. It
 
 ### Styling Props
 - **size**: 'small' | 'normal' | 'large' (default: 'normal') - Controls Popover panel and Card sizing.
+- **density**: 'small' | 'normal' | 'large' (default: 'normal') - Controls inner Card padding and spacing.
 - **class**: string - Extra classes on the inner Card.
 - **triggerClass**: string - Extra classes on the trigger wrapper.
 - **popoverClass**: string - Extra classes on the transparent Popover panel.

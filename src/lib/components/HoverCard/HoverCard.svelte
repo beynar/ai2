@@ -29,6 +29,7 @@
 		directedTransition = true,
 		transition,
 		size = 'normal',
+		density = 'normal',
 		disabled = false,
 		class: className,
 		triggerClass,
@@ -202,42 +203,41 @@
 		{/if}
 	{/snippet}
 
-	{#snippet children()}
-		<div
-			role="presentation"
-			onpointerenter={openImmediately}
-			onpointerleave={scheduleClose}
-			onfocusin={handleFocusIn}
-			onfocusout={scheduleClose}
-		>
-			{#snippet cardTitle()}
-				<Slot render={title} {payload} />
-			{/snippet}
+	<div
+		role="presentation"
+		onpointerenter={openImmediately}
+		onpointerleave={scheduleClose}
+		onfocusin={handleFocusIn}
+		onfocusout={scheduleClose}
+	>
+		{#snippet cardTitle()}
+			<Slot render={title} {payload} />
+		{/snippet}
 
-			{#snippet cardDescription()}
-				<Slot render={description} {payload} />
-			{/snippet}
+		{#snippet cardDescription()}
+			<Slot render={description} {payload} />
+		{/snippet}
 
-			{#snippet cardContentSlot()}
-				<Slot render={cardContent} {payload} />
-			{/snippet}
+		{#snippet cardContentSlot()}
+			<Slot render={cardContent} {payload} />
+		{/snippet}
 
-			{#snippet cardFooter()}
-				<Slot render={footer} {payload} />
-			{/snippet}
+		{#snippet cardFooter()}
+			<Slot render={footer} {payload} />
+		{/snippet}
 
-			<Card
-				{size}
-				color={cardColor}
-				variant={cardVariant}
-				{showBorders}
-				class={classes.card({ size, className })}
-				theme={cardTheme}
-				title={title ? cardTitle : undefined}
-				description={description ? cardDescription : undefined}
-				content={cardContent ? cardContentSlot : undefined}
-				footer={footer ? cardFooter : undefined}
-			/>
-		</div>
-	{/snippet}
+		<Card
+			{size}
+			{density}
+			color={cardColor}
+			variant={cardVariant}
+			{showBorders}
+			class={classes.card({ size, className })}
+			theme={cardTheme}
+			title={title ? cardTitle : undefined}
+			description={description ? cardDescription : undefined}
+			content={cardContent ? cardContentSlot : undefined}
+			footer={footer ? cardFooter : undefined}
+		/>
+	</div>
 </Popover>

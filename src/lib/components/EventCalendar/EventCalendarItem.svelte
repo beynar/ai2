@@ -248,6 +248,7 @@
 			closeDelay={100}
 			openOnFocus
 			size="small"
+			density="small"
 			transition={{ out: { duration: 0 } }}
 			disabled={disabled || isInteractionActive}
 			trigger={hoverCardTrigger}
