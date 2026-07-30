@@ -243,10 +243,11 @@
 		<HoverCard
 			bind:open={isHoverCardOpen}
 			position="top"
-			offset={10}
+			offset={8}
 			delay={250}
 			closeDelay={100}
 			openOnFocus
+			size="small"
 			transition={{ out: { duration: 0 } }}
 			disabled={disabled || isInteractionActive}
 			trigger={hoverCardTrigger}
@@ -405,14 +406,14 @@
 {/snippet}
 
 {#snippet defaultTooltip()}
-	<div class="grid gap-1.5 text-start">
-		<strong class="text-sm leading-5" style:color={hoverCardColor}>{occurrence.item.title}</strong>
+	<div class="grid gap-1 text-start">
+		<strong class="text-xs leading-4" style:color={hoverCardColor}>{occurrence.item.title}</strong>
 		{#if occurrence.item.description}
-			<p class="whitespace-pre-wrap text-sm leading-5 text-neutral/75">
+			<p class="whitespace-pre-wrap text-xs leading-4 text-neutral/75">
 				{occurrence.item.description}
 			</p>
 		{/if}
-		<p class="text-xs leading-4 text-neutral/55 tabular-nums">{dateRangeLabel}</p>
+		<p class="text-[0.6875rem] leading-3 text-neutral/55 tabular-nums">{dateRangeLabel}</p>
 	</div>
 {/snippet}
 
