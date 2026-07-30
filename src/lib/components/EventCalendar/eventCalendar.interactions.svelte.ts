@@ -1,7 +1,5 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- DOM registries and immutable gesture snapshots do not require reactive collections. */
 import {
-	autoScrollForElements,
-	autoScrollWindowForElements,
 	disableNativeDragPreview,
 	draggable,
 	dropTargetForElements,
@@ -197,10 +195,9 @@ export class EventCalendarInteractionsController<
 	private escapeCleanup: (() => void) | null = null;
 	private nativeCancelCleanup: (() => void) | null = null;
 	private didNativeCancel = false;
-	private autoScrollCleanups = new Set<() => void>();
-	private slotScrollElement: HTMLElement | null = null;
-	private slotScrollMode: 'contained' | 'page' = 'contained';
-	private slotScrollFrame: number | null = null;
+	private dragScrollElement: HTMLElement | null = null;
+	private dragScrollMode: 'contained' | 'page' = 'contained';
+	private dragScrollFrame: number | null = null;
 	private suppressedClickKey: string | null = null;
 	private isSlotClickSuppressed = false;
 	private singlePointerAnchor: EventCalendarSlot | null = null;
@@ -302,8 +299,6 @@ export class EventCalendarInteractionsController<
 		this.escapeCleanup = null;
 		this.nativeCancelCleanup?.();
 		this.nativeCancelCleanup = null;
-		for (const cleanup of this.autoScrollCleanups) cleanup();
-		this.autoScrollCleanups.clear();
 	}
 
 	cancel(reason?: 'stale'): void {
@@ -312,7 +307,7 @@ export class EventCalendarInteractionsController<
 		this.gestureBoundary = null;
 		this.lastPublishedProposalKey = null;
 		this.cancelItemDragFrame();
-		this.stopSlotAutoScroll();
+		this.stopDragAutoScroll();
 		if (!active) return;
 		if (!reason) {
 			this.calendar.onInteractionStatus?.({
@@ -886,24 +881,12 @@ export class EventCalendarInteractionsController<
 	autoScroll(mode: 'contained' | 'page'): Attachment<HTMLElement> {
 		return (element) =>
 			untrack(() => {
-				this.slotScrollElement = element;
-				this.slotScrollMode = mode;
-				const cleanup =
-					mode === 'contained'
-						? autoScrollForElements({
-								element,
-								canScroll: ({ source }) =>
-									this.readSource(source.data)?.calendarInstanceId === this.instanceId
-							})
-						: autoScrollWindowForElements({
-								canScroll: ({ source }) =>
-									this.readSource(source.data)?.calendarInstanceId === this.instanceId
-							});
-				this.autoScrollCleanups.add(cleanup);
+				this.dragScrollElement = element;
+				this.dragScrollMode = mode;
 				return () => {
-					cleanup();
-					this.autoScrollCleanups.delete(cleanup);
-					if (this.slotScrollElement === element) this.slotScrollElement = null;
+					if (this.dragScrollElement !== element) return;
+					this.dragScrollElement = null;
+					this.stopDragAutoScroll();
 				};
 			});
 	}
@@ -1177,6 +1160,7 @@ export class EventCalendarInteractionsController<
 			isOverflowSource: source.isOverflowSource,
 			sourceResourceId: source.sourceResourceId
 		};
+		this.startDragAutoScroll();
 		this.updateItemGesture(payload);
 	}
 
@@ -1201,6 +1185,7 @@ export class EventCalendarInteractionsController<
 
 	private handleItemDrop(payload: ElementEventPayloadMap['onDrop']): void {
 		this.cancelItemDragFrame();
+		this.stopDragAutoScroll();
 		const active = this.gesture;
 		if (!active || active.kind === 'slot-create') return;
 		if (this.didNativeCancel) {
@@ -1540,7 +1525,7 @@ export class EventCalendarInteractionsController<
 			return false;
 		}
 		this.gesture = { ...this.gesture, isValid: reason === null, reason };
-		this.startSlotAutoScroll();
+		this.startDragAutoScroll();
 		return true;
 	}
 
@@ -1591,7 +1576,7 @@ export class EventCalendarInteractionsController<
 		const active = this.gesture;
 		this.gesture = null;
 		this.gestureBoundary = null;
-		this.stopSlotAutoScroll();
+		this.stopDragAutoScroll();
 		if (!active || active.kind !== 'slot-create') return;
 		if (!active.isValid) {
 			this.reportBlocked({
@@ -2613,11 +2598,11 @@ export class EventCalendarInteractionsController<
 			clipRight = Math.min(clipRight, columnRect.right);
 			clipBottom = Math.min(clipBottom, columnRect.bottom);
 			if (
-				this.slotScrollMode === 'contained' &&
-				this.slotScrollElement?.isConnected &&
-				this.slotScrollElement.contains(targetElement)
+				this.dragScrollMode === 'contained' &&
+				this.dragScrollElement?.isConnected &&
+				this.dragScrollElement.contains(targetElement)
 			) {
-				const viewportRect = this.slotScrollElement.getBoundingClientRect();
+				const viewportRect = this.dragScrollElement.getBoundingClientRect();
 				clipLeft = Math.max(clipLeft, viewportRect.left);
 				clipTop = Math.max(clipTop, viewportRect.top);
 				clipRight = Math.min(clipRight, viewportRect.right);
@@ -2769,17 +2754,20 @@ export class EventCalendarInteractionsController<
 		this.pendingItemDrag = null;
 	}
 
-	private startSlotAutoScroll(): void {
-		if (this.slotScrollFrame !== null) return;
+	private startDragAutoScroll(): void {
+		if (this.dragScrollFrame !== null) return;
 		const tick = () => {
-			this.slotScrollFrame = null;
+			this.dragScrollFrame = null;
 			const active = this.gesture;
-			if (!active || active.kind !== 'slot-create') return;
+			if (!active || active.inputMode !== 'pointer') return;
 			const scroller =
-				this.slotScrollMode === 'page' ? document.scrollingElement : this.slotScrollElement;
-			if (!scroller) return;
+				this.dragScrollMode === 'page' ? document.scrollingElement : this.dragScrollElement;
+			if (!scroller) {
+				this.dragScrollFrame = requestAnimationFrame(tick);
+				return;
+			}
 			const rect =
-				this.slotScrollMode === 'page'
+				this.dragScrollMode === 'page'
 					? { top: 0, right: window.innerWidth, bottom: window.innerHeight, left: 0 }
 					: (scroller as HTMLElement).getBoundingClientRect();
 			const topDistance = active.pointerY - rect.top;
@@ -2807,18 +2795,26 @@ export class EventCalendarInteractionsController<
 					scroller.scrollTop !== previousScrollTop ||
 					scroller.scrollLeft !== previousScrollLeft
 				) {
-					this.updateSlotAtPointer(active.pointerX, active.pointerY);
+					if (active.kind === 'slot-create') {
+						this.updateSlotAtPointer(active.pointerX, active.pointerY);
+					} else {
+						this.updateItemGestureAt(
+							this.getTargetAt(active.pointerX, active.pointerY),
+							active.pointerX,
+							active.pointerY
+						);
+					}
 				}
 			}
-			this.slotScrollFrame = requestAnimationFrame(tick);
+			this.dragScrollFrame = requestAnimationFrame(tick);
 		};
-		this.slotScrollFrame = requestAnimationFrame(tick);
+		this.dragScrollFrame = requestAnimationFrame(tick);
 	}
 
-	private stopSlotAutoScroll(): void {
-		if (this.slotScrollFrame === null) return;
-		cancelAnimationFrame(this.slotScrollFrame);
-		this.slotScrollFrame = null;
+	private stopDragAutoScroll(): void {
+		if (this.dragScrollFrame === null) return;
+		cancelAnimationFrame(this.dragScrollFrame);
+		this.dragScrollFrame = null;
 	}
 
 	private missingTarget(kind: string, value: string): never {
