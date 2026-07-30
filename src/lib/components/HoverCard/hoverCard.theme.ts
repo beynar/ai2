@@ -19,12 +19,12 @@ const defaultHoverCardPopover = cva({
 });
 
 const defaultHoverCardCard = cva({
-	base: 'max-w-[calc(100vw-2rem)]',
+	base: 'w-max',
 	variants: {
 		size: {
-			small: 'w-64',
-			normal: 'w-72',
-			large: 'w-96'
+			small: 'max-w-[min(16rem,calc(100vw-2rem))]',
+			normal: 'max-w-[min(18rem,calc(100vw-2rem))]',
+			large: 'max-w-[min(24rem,calc(100vw-2rem))]'
 		}
 	},
 	defaultVariants: {
