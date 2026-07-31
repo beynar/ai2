@@ -63,7 +63,7 @@ The component never changes 'view' because its container becomes narrow. Previou
 - Agenda: 'agendaDayCount=30'.
 - Current time: 'nowIndicator=true', 'nowIndicatorInterval=30000'.
 - Work time: 'offDays=false', 'businessHours=[]', 'constrainToBusinessHours=false'.
-- Scrolling/chrome: 'scrollMode="contained"', 'scrollbars="custom"', 'stickyHeader=false', 'showHeader=true', 'showDatePicker=false', 'showItemTooltip=true'.
+- Scrolling/chrome: 'scrollMode="contained"' uses ScrollArea; 'stickyHeader=false', 'showHeader=true', 'showDatePicker=false', 'showItemTooltip=true'.
 
 Numeric and time settings are validated and never silently clamped. Hidden weekdays are removed from 'visibleDays'; day and agenda counts count rendered days.
 

@@ -488,8 +488,7 @@ The concrete `EventCalendarProps<TItemFields, TResourceFields>` is one `WithAtta
 | `nowIndicatorInterval`      | `number`                                | `30_000`      | Refresh cadence, paused while the page is hidden.                                                    |
 | `offDays`                   | `boolean \| EventCalendarOffDaysConfig` | `false`       | Non-working-day appearance.                                                                          |
 | `businessHours`             | `EventCalendarBusinessHours[]`          | `[]`          | Display and optional mutation constraint windows.                                                    |
-| `scrollMode`                | `'contained' \| 'page'`                 | `'contained'` | Internal scrolling versus document flow.                                                             |
-| `scrollbars`                | `'custom' \| 'native'`                  | `'custom'`    | Existing `ScrollArea` or browser scrollbars.                                                         |
+| `scrollMode`                | `'contained' \| 'page'`                 | `'contained'` | `ScrollArea` internal scrolling versus document flow.                                                |
 | `stickyHeader`              | `boolean`                               | `false`       | Sticky default header in page-scroll mode.                                                           |
 | `showHeader`                | `boolean`                               | `true`        | Removes the default header while retaining imperative navigation.                                    |
 | `showDatePicker`            | `boolean`                               | `false`       | Adds the `Popover` + `CalendarPrimitive` date jump to the default header.                            |

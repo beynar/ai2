@@ -50,7 +50,6 @@
 		loading,
 		disabled,
 		scrollMode,
-		scrollbars,
 		classes,
 		nowIndicator,
 		showWeekNumbers,
@@ -85,7 +84,6 @@
 		loading: boolean;
 		disabled: boolean;
 		scrollMode: 'contained' | 'page';
-		scrollbars: 'custom' | 'native';
 		classes: EventCalendarClasses;
 		nowIndicator: boolean;
 		showWeekNumbers: boolean;
@@ -223,7 +221,6 @@
 					{disabled}
 					{offDays}
 					{scrollMode}
-					{scrollbars}
 					{nowIndicator}
 					{showItemTooltip}
 					{dayHeader}
@@ -246,7 +243,6 @@
 					{color}
 					{disabled}
 					{scrollMode}
-					{scrollbars}
 					{classes}
 					{item}
 					{agendaDetails}
@@ -267,7 +263,6 @@
 					{disabled}
 					{offDays}
 					{scrollMode}
-					{scrollbars}
 					{nowIndicator}
 					{showItemTooltip}
 					{timeGutter}

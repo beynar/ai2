@@ -36,7 +36,6 @@
 		disabled,
 		offDays,
 		scrollMode,
-		scrollbars,
 		nowIndicator,
 		showItemTooltip,
 		timeGutter,
@@ -60,7 +59,6 @@
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
 		scrollMode: 'contained' | 'page';
-		scrollbars: 'custom' | 'native';
 		nowIndicator: boolean;
 		showItemTooltip: boolean;
 		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
@@ -98,7 +96,6 @@
 	{disabled}
 	{offDays}
 	{scrollMode}
-	{scrollbars}
 	{nowIndicator}
 	{showItemTooltip}
 	{timeGutter}

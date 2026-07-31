@@ -297,8 +297,6 @@ type EventCalendarOwnProps<
 		businessHours?: EventCalendarBusinessHours[];
 		/** Internal or document scrolling. Defaults to `contained`. */
 		scrollMode?: 'contained' | 'page';
-		/** Svelai or browser scrollbars. Defaults to `custom`. */
-		scrollbars?: 'custom' | 'native';
 		/** Makes the default header sticky in page-scroll mode. Defaults to `false`. */
 		stickyHeader?: boolean;
 		/** Renders the default header. Defaults to `true`. */

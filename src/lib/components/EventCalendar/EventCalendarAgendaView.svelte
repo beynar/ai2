@@ -28,7 +28,6 @@
 		color,
 		disabled,
 		scrollMode,
-		scrollbars,
 		classes,
 		item,
 		agendaDetails,
@@ -43,7 +42,6 @@
 		color: Colors;
 		disabled: boolean;
 		scrollMode: 'contained' | 'page';
-		scrollbars: 'custom' | 'native';
 		classes: EventCalendarClasses;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
@@ -202,12 +200,12 @@
 	</div>
 {/snippet}
 
-{#if scrollMode === 'contained' && scrollbars === 'custom'}
+{#if scrollMode === 'contained'}
 	<ScrollArea class="h-full min-h-0" ariaLabel={profile.title}>
 		{@render agendaContent()}
 	</ScrollArea>
 {:else}
-	<div class={scrollMode === 'contained' ? 'h-full min-h-0 overflow-auto' : 'overflow-visible'}>
+	<div class="overflow-visible">
 		{@render agendaContent()}
 	</div>
 {/if}

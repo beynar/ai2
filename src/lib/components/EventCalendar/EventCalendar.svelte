@@ -91,7 +91,6 @@
 		offDays = false,
 		businessHours = [],
 		scrollMode = 'contained',
-		scrollbars = 'custom',
 		stickyHeader = false,
 		showHeader = true,
 		showDatePicker = false,
@@ -792,7 +791,6 @@
 		{loading}
 		{disabled}
 		{scrollMode}
-		{scrollbars}
 		{classes}
 		{nowIndicator}
 		{showWeekNumbers}

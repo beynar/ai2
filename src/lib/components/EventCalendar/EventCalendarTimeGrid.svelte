@@ -69,7 +69,6 @@
 		disabled,
 		offDays,
 		scrollMode,
-		scrollbars,
 		nowIndicator,
 		showItemTooltip,
 		dayHeader,
@@ -97,7 +96,6 @@
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
 		scrollMode: 'contained' | 'page';
-		scrollbars: 'custom' | 'native';
 		nowIndicator: boolean;
 		showItemTooltip: boolean;
 		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
@@ -459,7 +457,6 @@
 		void profile.currentRange.start.getTime();
 		void profile.currentRange.end.getTime();
 		void scrollMode;
-		void scrollbars;
 		const scrollHour = calendar.scrollToHour;
 		const version = ++initialScrollVersion;
 		void tick().then(() => {
@@ -818,17 +815,12 @@
 	</div>
 {/snippet}
 
-{#if scrollMode === 'contained' && scrollbars === 'custom'}
+{#if scrollMode === 'contained'}
 	<ScrollArea bind:viewportRef={scrollViewport} class="h-full min-h-0" ariaLabel={profile.title}>
 		{@render timeGridContent()}
 	</ScrollArea>
 {:else}
-	<div
-		bind:this={scrollViewport}
-		class={scrollMode === 'contained'
-			? 'h-full min-h-0 overflow-auto'
-			: 'overflow-x-auto overflow-y-visible'}
-	>
+	<div bind:this={scrollViewport} class="overflow-x-auto overflow-y-visible">
 		{@render timeGridContent()}
 	</div>
 {/if}
