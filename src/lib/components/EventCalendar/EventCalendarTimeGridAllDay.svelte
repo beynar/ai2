@@ -20,7 +20,7 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
@@ -66,7 +66,6 @@
 		longDayFormatter,
 		columnLabels,
 		density,
-		color,
 		classes,
 		disabled,
 		showItemTooltip,
@@ -97,7 +96,6 @@
 		longDayFormatter: Intl.DateTimeFormat;
 		columnLabels: ReadonlyMap<string, string>;
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		showItemTooltip: boolean;
@@ -118,10 +116,10 @@
 
 <div
 	data-event-calendar-part="all-day-row"
-	class={classes.allDayRow({ density, color, view, disabled })}
+	class={classes.allDayRow({ density, view, disabled })}
 	style:grid-template-columns={gridTemplateColumns}
 >
-	<div data-event-calendar-part="time-gutter" class={classes.timeGutter({ density, color, view })}>
+	<div data-event-calendar-part="time-gutter" class={classes.timeGutter({ density, view })}>
 		<Slot render={allDay ?? allDayPayload.defaultContent} payload={allDayPayload} />
 	</div>
 	{#each dayGeometries as geometry (geometry.key)}
@@ -148,7 +146,6 @@
 			data-off-day={isOff || undefined}
 			class={classes.allDayCell({
 				density,
-				color,
 				view,
 				offDay: isOff,
 				disabled,
@@ -185,7 +182,6 @@
 						data-event-calendar-part="slot-selection"
 						class={classes.slotSelection({
 							density,
-							color,
 							view,
 							invalid: calendar.interaction.isValid === false,
 							class: 'absolute inset-0'
@@ -199,7 +195,7 @@
 					data-event-calendar-background
 					data-occurrence-key={segment.occurrence.key}
 					class="pointer-events-none absolute inset-0 opacity-20"
-					style:background={getEventCalendarItemColor(segment.occurrence, color)}
+					style:background={getEventCalendarItemColor(segment.occurrence)}
 				></div>
 			{/each}
 			{#if calendar.interaction.isValid === true && insertion?.startIndex === geometry.column}
@@ -207,7 +203,7 @@
 				{#if proposal}
 					{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
 						? proposal.item.color
-						: color}
+						: 'neutral'}
 					{@const indicatorItemColor =
 						proposal.item.color && !isEventCalendarSemanticColor(proposal.item.color)
 							? proposal.item.color
@@ -250,7 +246,6 @@
 						locale={calendar.locale}
 						timeZone={calendar.timeZone}
 						{density}
-						{color}
 						{classes}
 						interaction={calendar.interaction}
 						projectionResourceId={geometry.resourceId}

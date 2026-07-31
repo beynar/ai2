@@ -6,7 +6,7 @@
 	import Spinner from '$lib/components/Spinner/Spinner.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarAgendaView from './EventCalendarAgendaView.svelte';
 	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
@@ -46,7 +46,6 @@
 		messages,
 		direction,
 		density,
-		color,
 		loading,
 		disabled,
 		scrollMode,
@@ -80,7 +79,6 @@
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;
-		color: Colors;
 		loading: boolean;
 		disabled: boolean;
 		scrollMode: 'contained' | 'page';
@@ -153,7 +151,6 @@
 	aria-busy={loading}
 	class={classes.content({
 		density,
-		color,
 		view: snapshot.view,
 		disabled,
 		class: scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden'
@@ -167,7 +164,7 @@
 			data-event-calendar-part="empty"
 			data-empty-mode="agenda-replacement"
 			inert={loading ? true : undefined}
-			class={classes.empty({ density, color, view: snapshot.view, disabled })}
+			class={classes.empty({ density, view: snapshot.view, disabled })}
 		>
 			<Empty>
 				<Slot render={empty ?? emptyPayload.defaultContent} payload={emptyPayload} />
@@ -178,7 +175,7 @@
 			data-event-calendar-part="viewport"
 			data-view={snapshot.view}
 			inert={loading ? true : undefined}
-			class={classes.viewport({ density, color, view: snapshot.view, disabled })}
+			class={classes.viewport({ density, view: snapshot.view, disabled })}
 		>
 			{#if snapshot.view === 'month'}
 				<EventCalendarMonthView
@@ -188,7 +185,6 @@
 					{messages}
 					{direction}
 					{density}
-					{color}
 					{classes}
 					{disabled}
 					{showWeekNumbers}
@@ -216,7 +212,6 @@
 					{messages}
 					{direction}
 					{density}
-					{color}
 					{classes}
 					{disabled}
 					{offDays}
@@ -240,7 +235,6 @@
 					{a11y}
 					{messages}
 					{density}
-					{color}
 					{disabled}
 					{scrollMode}
 					{classes}
@@ -258,7 +252,6 @@
 					{messages}
 					{direction}
 					{density}
-					{color}
 					{classes}
 					{disabled}
 					{offDays}
@@ -285,7 +278,7 @@
 				data-event-calendar-part="empty"
 				data-empty-mode="grid-status"
 				inert={loading ? true : undefined}
-				class={classes.empty({ density, color, view: snapshot.view, disabled })}
+				class={classes.empty({ density, view: snapshot.view, disabled })}
 			>
 				<Slot render={empty ?? emptyPayload.defaultContent} payload={emptyPayload} />
 			</div>
@@ -295,7 +288,7 @@
 	{#if loading}
 		<div
 			data-event-calendar-part="loading"
-			class={classes.loading({ density, color, view: snapshot.view })}
+			class={classes.loading({ density, view: snapshot.view })}
 		>
 			<Slot render={loadingContent ?? loadingPayload.defaultContent} payload={loadingPayload} />
 		</div>
@@ -308,7 +301,6 @@
 
 {#snippet defaultLoading()}
 	<Spinner
-		{color}
 		label={messages.eventCalendarLoading}
 		text={messages.eventCalendarLoading}
 		theme={{ label: { base: 'text-neutral/75' } }}

@@ -14,7 +14,7 @@
 	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density, Colors } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import {
 		fromDateJumpDate,
@@ -41,7 +41,6 @@
 		direction,
 		showDatePicker,
 		density,
-		color,
 		disabled,
 		stickyHeader,
 		scrollMode,
@@ -55,7 +54,6 @@
 		direction: 'ltr' | 'rtl';
 		showDatePicker: boolean;
 		density: Density;
-		color: Colors;
 		disabled: boolean;
 		stickyHeader: boolean;
 		scrollMode: 'contained' | 'page';
@@ -130,7 +128,6 @@
 	data-event-calendar-part="header"
 	class={classes.header({
 		density,
-		color,
 		view: calendar.view,
 		disabled,
 		class:
@@ -154,7 +151,7 @@
 	{:else}
 		<div
 			data-event-calendar-part="navigation"
-			class={classes.navigation({ density, color, view: calendar.view, disabled })}
+			class={classes.navigation({ density, view: calendar.view, disabled })}
 		>
 			<ButtonGroup
 				items={[previousButton, nextButton]}
@@ -181,14 +178,7 @@
 {/snippet}
 
 {#snippet todayPart()}
-	<Button
-		type="button"
-		size="small"
-		variant="outline"
-		{color}
-		{disabled}
-		onClick={() => calendar.today()}
-	>
+	<Button type="button" size="small" variant="outline" {disabled} onClick={() => calendar.today()}>
 		{messages.eventCalendarToday}
 	</Button>
 {/snippet}
@@ -201,7 +191,7 @@
 	<div
 		role="status"
 		data-event-calendar-part="title"
-		class={classes.title({ density, color, view: calendar.view, disabled })}
+		class={classes.title({ density, view: calendar.view, disabled })}
 		aria-live="polite"
 		aria-label={messages.eventCalendarRangeAnnouncement(profile.title)}
 	>
@@ -212,14 +202,13 @@
 {#snippet viewSwitcherPart()}
 	<div
 		data-event-calendar-part="view-switcher"
-		class={classes.viewSwitcher({ density, color, view: calendar.view, disabled })}
+		class={classes.viewSwitcher({ density, view: calendar.view, disabled })}
 	>
 		<div class="hidden @[40rem]:block">
 			<SegmentedControl
 				items={viewItems}
 				value={calendar.view}
 				size="small"
-				{color}
 				ariaLabel={messages.eventCalendarViewSwitcher}
 				onChange={(nextView) => calendar.setView(nextView)}
 			/>
@@ -231,7 +220,6 @@
 						type="button"
 						size="small"
 						variant="outline"
-						{color}
 						suffix={caretDownIcon}
 						label={messages.eventCalendarViewMenu}
 						aria-haspopup="menu"
@@ -301,7 +289,7 @@
 	{#if actions}
 		<div
 			data-event-calendar-part="actions"
-			class={classes.actions({ density, color, view: calendar.view, disabled })}
+			class={classes.actions({ density, view: calendar.view, disabled })}
 		>
 			<Slot render={actions} payload={snapshot} />
 		</div>

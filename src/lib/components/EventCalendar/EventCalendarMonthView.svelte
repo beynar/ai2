@@ -74,7 +74,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarMonthWeek from './EventCalendarMonthWeek.svelte';
@@ -114,7 +114,6 @@
 		messages,
 		direction,
 		density,
-		color,
 		classes,
 		disabled,
 		showWeekNumbers,
@@ -138,7 +137,6 @@
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		showWeekNumbers: boolean;
@@ -333,13 +331,13 @@
 	aria-colcount={columnCount + (showWeekNumbers ? 1 : 0)}
 	aria-label={`${messages.eventCalendarMonthView}: ${profile.title}`}
 	data-event-calendar-part="month"
-	class={classes.month({ density, color, view: 'month', disabled })}
+	class={classes.month({ density, view: 'month', disabled })}
 	{@attach maxItemsPerCell === 'auto' ? monthResizeObserver.reference : null}
 >
 	<div
 		role="row"
 		data-event-calendar-part="month-header"
-		class={classes.monthHeader({ density, color, view: 'month', disabled })}
+		class={classes.monthHeader({ density, view: 'month', disabled })}
 		style:grid-template-columns={gridTemplateColumns}
 		style:min-width={gridMinimumWidth}
 	>
@@ -360,7 +358,7 @@
 				role="columnheader"
 				aria-label={longWeekdayFormatter.format(dayInstant)}
 				data-event-calendar-part="day-header"
-				class={classes.dayHeader({ density, color, view: 'month', today: todayDay === day })}
+				class={classes.dayHeader({ density, view: 'month', today: todayDay === day })}
 			>
 				<Slot render={dayHeader ?? defaultDayHeader} payload={headerPayload} />
 			</div>
@@ -375,7 +373,7 @@
 	<div
 		role="rowgroup"
 		data-event-calendar-part="month-grid"
-		class={classes.monthGrid({ density, color, view: 'month', disabled })}
+		class={classes.monthGrid({ density, view: 'month', disabled })}
 		style:min-width={gridMinimumWidth}
 	>
 		{#each weekLayouts as weekLayout, weekIndex (`${weekLayout.days[0]}:${weekLayout.days.at(-1)}`)}
@@ -400,7 +398,6 @@
 				{todayDay}
 				{showWeekNumbers}
 				{density}
-				{color}
 				{classes}
 				{disabled}
 				{offDays}

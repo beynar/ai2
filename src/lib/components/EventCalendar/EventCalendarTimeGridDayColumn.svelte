@@ -3,7 +3,7 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -36,7 +36,6 @@
 		geometry,
 		columnLabel,
 		density,
-		color,
 		classes,
 		disabled,
 		isOffDay,
@@ -63,7 +62,6 @@
 		geometry: EventCalendarTimeGridDayGeometry<TItemFields>;
 		columnLabel: string;
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		isOffDay: boolean;
@@ -156,7 +154,7 @@
 	data-resource-id={geometry.resourceId}
 	data-minute-count={geometry.minuteCount}
 	data-off-day={isOffDay || undefined}
-	class={classes.dayColumn({ density, color, view, offDay: isOffDay, disabled })}
+	class={classes.dayColumn({ density, view, offDay: isOffDay, disabled })}
 	style:min-width={view === 'resource' ? 'var(--event-calendar-resource-min-width)' : undefined}
 	style:height={`calc(${geometry.minuteCount / calendar.interval} * var(--event-calendar-slot-height))`}
 	data-event-calendar-target={serializeEventCalendarTarget(columnDropTarget)}
@@ -175,7 +173,6 @@
 			data-event-calendar-local-time-label
 			class={classes.timeLabel({
 				density,
-				color,
 				view,
 				class:
 					'pointer-events-none absolute inset-inline-start-0 z-[2] w-[var(--event-calendar-time-gutter-width)] bg-surface/90'
@@ -209,7 +206,7 @@
 			data-event-calendar-background
 			data-occurrence-key={segment.occurrence.key}
 			class="pointer-events-none absolute inset-x-0 opacity-20"
-			style:background={getEventCalendarItemColor(segment.occurrence, color)}
+			style:background={getEventCalendarItemColor(segment.occurrence)}
 			style:top={`calc(${getEventCalendarElapsedMinutes(geometry.windowStart, segment.start) / calendar.interval} * var(--event-calendar-slot-height))`}
 			style:height={`calc(${Math.max(0.125, getEventCalendarElapsedMinutes(segment.start, segment.end) / calendar.interval)} * var(--event-calendar-slot-height))`}
 		></div>
@@ -244,7 +241,6 @@
 			data-event-calendar-target-key={dropTarget.key}
 			class={classes.timeSlot({
 				density,
-				color,
 				view,
 				disabled,
 				invalid: calendar.interaction.isInvalidTarget(dropTarget.key)
@@ -267,7 +263,7 @@
 			data-event-calendar-part="slot-selection"
 			data-slot-start={timedSelection.start.toISOString()}
 			data-slot-end={timedSelection.end.toISOString()}
-			class={classes.slotSelection({ density, color, view, disabled, class: 'absolute' })}
+			class={classes.slotSelection({ density, view, disabled, class: 'absolute' })}
 			style:inset-inline="2px"
 			style:top={`calc(${timedSelection.top} * var(--event-calendar-slot-height))`}
 			style:height={`calc(${timedSelection.height} * var(--event-calendar-slot-height))`}
@@ -295,7 +291,6 @@
 				locale={calendar.locale}
 				timeZone={calendar.timeZone}
 				{density}
-				{color}
 				{classes}
 				interaction={calendar.interaction}
 				projectionResourceId={geometry.resourceId}
@@ -322,7 +317,7 @@
 			role="img"
 			aria-label={accessibleTimeFormatter.format(nowPayload.now)}
 			data-event-calendar-part="now-indicator"
-			class={classes.nowIndicator({ density, color, view })}
+			class={classes.nowIndicator({ density, view })}
 			style:inset-inline="0"
 			style:top={`calc(${getEventCalendarElapsedMinutes(geometry.windowStart, nowPayload.now) / calendar.interval} * var(--event-calendar-slot-height))`}
 		>

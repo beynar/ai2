@@ -4,7 +4,7 @@
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { untrack, type Snippet } from 'svelte';
 	import EventCalendarAgendaItem from './EventCalendarAgendaItem.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -25,7 +25,6 @@
 		a11y,
 		messages,
 		density,
-		color,
 		disabled,
 		scrollMode,
 		classes,
@@ -39,7 +38,6 @@
 		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		messages: Messages;
 		density: Density;
-		color: Colors;
 		disabled: boolean;
 		scrollMode: 'contained' | 'page';
 		classes: EventCalendarClasses;
@@ -139,7 +137,7 @@
 		data-event-calendar-part="agenda"
 		data-time-zone={calendar.timeZone}
 		data-day-count={profile.visibleDays.length}
-		class={classes.agenda({ density, color, view: 'agenda', disabled })}
+		class={classes.agenda({ density, view: 'agenda', disabled })}
 	>
 		{#each groups as group (group.day)}
 			{@const dayStart = startOfZonedDay(group.day, calendar.timeZone)}
@@ -150,7 +148,7 @@
 					data-event-calendar-part="agenda-day"
 					data-day={group.day}
 					data-count={group.entries.length}
-					class={classes.agendaDay({ density, color, view: 'agenda', disabled })}
+					class={classes.agendaDay({ density, view: 'agenda', disabled })}
 				>
 					<summary
 						aria-label={`${dayLabel}, ${messages.eventCalendarEventCount(group.entries.length)}`}
@@ -183,7 +181,6 @@
 								{zonedTimeFormatter}
 								{accessibleDateFormatter}
 								{density}
-								{color}
 								{classes}
 								isSelected={selectedItemKey === entry.occurrence.key}
 								{disabled}

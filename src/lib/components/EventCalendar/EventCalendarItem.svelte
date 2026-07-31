@@ -6,7 +6,7 @@
 	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
 	import type { HoverCardPayload } from '$lib/components/HoverCard/index.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { untrack, type Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
@@ -25,7 +25,6 @@
 		locale,
 		timeZone,
 		density,
-		color,
 		classes,
 		a11y,
 		interaction,
@@ -53,7 +52,6 @@
 		locale: string;
 		timeZone: string;
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		interaction?: EventCalendarInteractionsController<TItemFields, TResourceFields>;
@@ -79,7 +77,7 @@
 
 	const occurrence = $derived(segment.occurrence);
 	const semanticColor = $derived(
-		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : color
+		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : 'neutral'
 	);
 	const itemColor = $derived(
 		occurrence.item.color && !isEventCalendarSemanticColor(occurrence.item.color)

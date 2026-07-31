@@ -1,6 +1,6 @@
 import type { Messages } from '$lib/i18n/en.js';
 import type { WithAttachments } from '$lib/types/props.js';
-import type { Colors, Density } from '$lib/types/theme.js';
+import type { Density } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { EventCalendarThemeProps } from './eventCalendar.theme.js';
@@ -237,8 +237,6 @@ type EventCalendarOwnProps<
 		disabled?: boolean;
 		/** Chrome and item spacing, independent of the time scale. Defaults to `normal`. */
 		density?: Density;
-		/** Default focus, selection, and item accent. Defaults to `primary`. */
-		color?: Colors;
 		/** Root classes; contained scrolling requires an explicit height here. Defaults to none. */
 		class?: string;
 		/** Bindable root element reference. Defaults to none. */
@@ -341,6 +339,6 @@ export type EventCalendarProps<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
 > = WithAttachments<
-	Omit<HTMLAttributes<HTMLDivElement>, 'children'> &
+	Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'color'> &
 		EventCalendarOwnProps<TItemFields, TResourceFields>
 >;

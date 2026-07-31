@@ -3,7 +3,7 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import EventCalendarTimeGrid from './EventCalendarTimeGrid.svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -31,7 +31,6 @@
 		messages,
 		direction,
 		density,
-		color,
 		classes,
 		disabled,
 		offDays,
@@ -54,7 +53,6 @@
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
@@ -91,7 +89,6 @@
 	{messages}
 	{direction}
 	{density}
-	{color}
 	{classes}
 	{disabled}
 	{offDays}

@@ -5,7 +5,7 @@
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import EventCalendarResourceHeader from './EventCalendarResourceHeader.svelte';
@@ -64,7 +64,6 @@
 		messages,
 		direction,
 		density,
-		color,
 		classes,
 		disabled,
 		offDays,
@@ -91,7 +90,6 @@
 		messages: Messages;
 		direction: 'ltr' | 'rtl';
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
@@ -633,7 +631,7 @@
 		data-interval={calendar.interval}
 		data-slot-duration={calendar.slotDuration}
 		data-snap-duration={calendar.snapDuration}
-		class={classes.timeGrid({ density, color, view, disabled })}
+		class={classes.timeGrid({ density, view, disabled })}
 		style:min-width={gridMinimumWidth}
 	>
 		<div
@@ -642,7 +640,7 @@
 		>
 			<div
 				data-event-calendar-part="time-header"
-				class={classes.timeHeader({ density, color, view, disabled })}
+				class={classes.timeHeader({ density, view, disabled })}
 				style:grid-template-columns={gridTemplateColumns}
 				style:grid-template-rows={view === 'resource' && resourceModel
 					? `repeat(${resourceModel.structure.maxDepth + 1}, auto)`
@@ -663,7 +661,6 @@
 						timeZone={calendar.timeZone}
 						{longDayFormatter}
 						{density}
-						{color}
 						{classes}
 						{disabled}
 						{resourceHeader}
@@ -696,7 +693,6 @@
 							data-off-day={isOff || undefined}
 							class={classes.dayHeader({
 								density,
-								color,
 								view,
 								today: geometry.day === todayDay,
 								offDay: isOff,
@@ -735,7 +731,6 @@
 				{longDayFormatter}
 				{columnLabels}
 				{density}
-				{color}
 				{classes}
 				{disabled}
 				{showItemTooltip}
@@ -757,10 +752,7 @@
 			style:grid-template-columns={gridTemplateColumns}
 			style:height={`calc(${maximumMinuteCount / calendar.interval} * var(--event-calendar-slot-height))`}
 		>
-			<div
-				data-event-calendar-part="time-gutter"
-				class={classes.timeGutter({ density, color, view })}
-			>
+			<div data-event-calendar-part="time-gutter" class={classes.timeGutter({ density, view })}>
 				{#each gutterProfile?.labels ?? [] as gutterLabel (gutterLabel.instant.getTime())}
 					{@const gutterPayload = {
 						...gutterLabel,
@@ -769,7 +761,7 @@
 					<time
 						datetime={gutterLabel.instant.toISOString()}
 						data-event-calendar-part="time-label"
-						class={classes.timeLabel({ density, color, view })}
+						class={classes.timeLabel({ density, view })}
 						style:height="var(--event-calendar-slot-height)"
 					>
 						<Slot render={timeGutter ?? gutterPayload.defaultContent} payload={gutterPayload} />
@@ -790,7 +782,6 @@
 					{geometry}
 					columnLabel={columnLabels.get(geometry.key) ?? geometry.day}
 					{density}
-					{color}
 					{classes}
 					{disabled}
 					isOffDay={offDaysByDay.get(geometry.day) ?? false}

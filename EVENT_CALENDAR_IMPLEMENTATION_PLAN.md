@@ -444,14 +444,13 @@ The concrete `EventCalendarProps<TItemFields, TResourceFields>` is one `WithAtta
 
 ### Style and root integration
 
-| Prop                 | Type                             | Default     | Contract                                                                       |
-| -------------------- | -------------------------------- | ----------- | ------------------------------------------------------------------------------ |
-| `density`            | `Density`                        | `'normal'`  | Controls chrome, grid, and item spacing without changing the time scale.       |
-| `color`              | `Colors`                         | `'primary'` | Default focus, selection, and item accent token.                               |
-| `class`              | `string`                         | none        | Root class; contained mode receives its explicit height here.                  |
-| `ref`                | `HTMLElement \| null`            | none        | Bindable root element reference.                                               |
-| `theme`              | `EventCalendarThemeProps`        | none        | Per-instance overrides for stable theme parts and variants.                    |
-| root HTML attributes | `HTMLAttributes<HTMLDivElement>` | none        | Forwarded to the first DOM element; attachment props follow `WithAttachments`. |
+| Prop                 | Type                             | Default    | Contract                                                                       |
+| -------------------- | -------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| `density`            | `Density`                        | `'normal'` | Controls chrome, grid, and item spacing without changing the time scale.       |
+| `class`              | `string`                         | none       | Root class; contained mode receives its explicit height here.                  |
+| `ref`                | `HTMLElement \| null`            | none       | Bindable root element reference.                                               |
+| `theme`              | `EventCalendarThemeProps`        | none       | Per-instance overrides for stable theme parts and variants.                    |
+| root HTML attributes | `HTMLAttributes<HTMLDivElement>` | none       | Forwarded to the first DOM element; attachment props follow `WithAttachments`. |
 
 ### Date, locale, and visible range
 
@@ -899,7 +898,7 @@ Stable parts are grouped by real visual responsibility:
 - Items and interaction: `item`, `itemControl`, `itemContent`, `itemTitle`, `itemTime`, `overflow`, `overflowPopover`, `dragPreview`, `dropIndicator`, `slotSelection`, `resizeHandle`, `actionTrigger`.
 - Agenda and resources: `agenda`, `agendaDay`, `agendaItem`, `agendaDetails`, `resourceHeader`.
 
-Theme variants include `density`, `color`, `view`, selected/dragging/invalid/disabled states, today/outside/off-day states, item display type, and segment start/end/continuation states. `color` supplies the default item/focus accent; per-item semantic colors use the same Svelai color map. Arbitrary CSS colors flow through `--event-calendar-item-color` without inventing Tailwind class names.
+Theme variants include `density`, `color`, `view`, selected/dragging/invalid/disabled states, today/outside/off-day states, item display type, and segment start/end/continuation states. The internal `color` variant resolves per-item semantic colors through the Svelai color map; items without a color use `neutral`, while calendar chrome uses the primary theme context. Arbitrary CSS item colors flow through `--event-calendar-item-color` without inventing Tailwind class names.
 
 Metric CSS variables keep layout tunable without turning every measurement into a prop:
 
@@ -1022,7 +1021,7 @@ Each phase is a coherent review boundary containing one or more atomic Conventio
 
 - [ ] Add `eventCalendar.error.ts` with one exported error class and stable codes for invalid input, unsupported recurrence, expansion limits, and stale transactions.
 - [ ] Add `eventCalendar.types.ts` with generic consumer fields, items, occurrences, segments, flat resources, ranges, recurrence, selection, proposals, transactions, interaction settings, and API types.
-- [ ] Add `eventCalendar.props.ts` with `TItemFields`/`TResourceFields` generics, snippet payloads, `WithAttachments`, root HTML attributes, JSDoc, `class`, `ref`, `density`, `color`, and `theme`.
+- [ ] Add `eventCalendar.props.ts` with `TItemFields`/`TResourceFields` generics, snippet payloads, `WithAttachments`, root HTML attributes, JSDoc, `class`, `ref`, `density`, and `theme`.
 - [ ] Add `eventCalendar.date.ts` with time-zone/date-only validation, civil day keys, zoned start/end-of-day, explicit gap/repeat resolution, DST-aware instant slot enumeration, range intersection, visible-day generation, snapping, week-number calculation, cached `Intl` formatters, and date profiles for every view.
 - [ ] Add `eventCalendar.state.svelte.ts` with bindable `items`, `view`, `date`, `dayCount`, and `selection`; derived date profile; navigation methods; deterministic enabled-view reconciliation; and range-change notification.
 - [ ] Enforce duplicate ID, invalid instant/date-only/range/zone/hour/view, empty or duplicate `views`, an empty enabled-view set, an empty visible-day set, and malformed recurrence-versus-exception field errors at the state boundary.

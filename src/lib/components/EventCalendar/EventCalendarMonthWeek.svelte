@@ -22,7 +22,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { untrack, type Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import EventCalendarMonthOverflow from './EventCalendarMonthOverflow.svelte';
@@ -78,7 +78,6 @@
 		todayDay,
 		showWeekNumbers,
 		density,
-		color,
 		classes,
 		disabled,
 		offDays,
@@ -113,7 +112,6 @@
 		todayDay: EventCalendarDateOnly | null;
 		showWeekNumbers: boolean;
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
@@ -233,7 +231,7 @@
 <div
 	role="row"
 	data-event-calendar-part="week-row"
-	class={classes.weekRow({ density, color, view: 'month', disabled })}
+	class={classes.weekRow({ density, view: 'month', disabled })}
 	style:grid-template-columns={gridTemplateColumns}
 >
 	{#if showWeekNumbers}
@@ -242,7 +240,7 @@
 			role="rowheader"
 			aria-label={messages.eventCalendarWeekNumber(week)}
 			data-event-calendar-part="week-number"
-			class={classes.weekNumber({ density, color, view: 'month' })}
+			class={classes.weekNumber({ density, view: 'month' })}
 		>
 			{week}
 		</div>
@@ -256,7 +254,6 @@
 			data-domain-placeholder
 			class={classes.monthCell({
 				density,
-				color,
 				view: 'month',
 				disabled: true,
 				outside: true
@@ -316,7 +313,6 @@
 			data-event-calendar-target-key={dropTarget.key}
 			class={classes.monthCell({
 				density,
-				color,
 				view: 'month',
 				disabled: isDisabled,
 				today: isToday,
@@ -344,7 +340,6 @@
 						data-event-calendar-part="slot-selection"
 						class={classes.slotSelection({
 							density,
-							color,
 							view: 'month',
 							invalid: calendar.interaction.isValid === false,
 							class: 'absolute inset-0'
@@ -359,7 +354,7 @@
 						data-event-calendar-background
 						data-occurrence-key={segment.occurrence.key}
 						class="pointer-events-none absolute inset-x-0 bottom-0 top-7 bg-[var(--event-calendar-item-color)] opacity-20"
-						style:--event-calendar-item-color={getEventCalendarItemColor(segment.occurrence, color)}
+						style:--event-calendar-item-color={getEventCalendarItemColor(segment.occurrence)}
 					></div>
 				{/each}
 
@@ -368,7 +363,7 @@
 					{#if proposal}
 						{@const indicatorColor = isEventCalendarSemanticColor(proposal.item.color)
 							? proposal.item.color
-							: color}
+							: 'neutral'}
 						{@const indicatorItemColor =
 							proposal.item.color && !isEventCalendarSemanticColor(proposal.item.color)
 								? proposal.item.color
@@ -410,7 +405,6 @@
 							locale={calendar.locale}
 							timeZone={calendar.timeZone}
 							{density}
-							{color}
 							{classes}
 							interaction={calendar.interaction}
 							isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
@@ -438,7 +432,6 @@
 							locale={calendar.locale}
 							timeZone={calendar.timeZone}
 							{density}
-							{color}
 							{classes}
 							interaction={calendar.interaction}
 							{disabled}
@@ -460,7 +453,7 @@
 		{#snippet defaultMonthCell()}
 			<span
 				data-event-calendar-part="day-number"
-				class={classes.dayNumber({ density, color, view: 'month', today: isToday })}
+				class={classes.dayNumber({ density, view: 'month', today: isToday })}
 			>
 				{dayNumberFormatter.format(startOfZonedDay(day, calendar.timeZone))}
 			</span>
@@ -475,7 +468,6 @@
 			data-domain-placeholder
 			class={classes.monthCell({
 				density,
-				color,
 				view: 'month',
 				disabled: true,
 				outside: true

@@ -3,7 +3,7 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { startOfZonedDay } from './eventCalendar.date.js';
@@ -21,7 +21,6 @@
 		timeZone,
 		longDayFormatter,
 		density,
-		color,
 		classes,
 		disabled,
 		resourceHeader,
@@ -36,7 +35,6 @@
 		timeZone: string;
 		longDayFormatter: Intl.DateTimeFormat;
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
@@ -79,7 +77,6 @@
 			data-unassigned={cell.isUnassigned || undefined}
 			class={classes.resourceHeader({
 				density,
-				color,
 				view: 'resource',
 				disabled,
 				class:
@@ -104,7 +101,6 @@
 			data-resource-group
 			class={classes.resourceHeader({
 				density,
-				color,
 				view: 'resource',
 				disabled,
 				class: 'border-e border-b border-neutral-muted px-2 py-1 text-center'

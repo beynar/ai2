@@ -16,10 +16,9 @@ export function isEventCalendarSemanticColor(value: string | undefined): value i
 }
 
 export function getEventCalendarItemColor<TItemFields extends object>(
-	occurrence: EventCalendarOccurrence<TItemFields>,
-	fallback: Colors
+	occurrence: EventCalendarOccurrence<TItemFields>
 ): string {
 	const itemColor = occurrence.item.color;
-	if (!itemColor) return `var(--color-${fallback})`;
+	if (!itemColor) return 'var(--color-neutral)';
 	return isEventCalendarSemanticColor(itemColor) ? `var(--color-${itemColor})` : itemColor;
 }

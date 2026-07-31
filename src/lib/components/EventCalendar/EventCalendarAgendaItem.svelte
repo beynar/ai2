@@ -4,7 +4,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { untrack, type Snippet } from 'svelte';
 	import type { EventCalendarAgendaEntry } from './eventCalendar.agenda.js';
 	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
@@ -28,7 +28,6 @@
 		zonedTimeFormatter,
 		accessibleDateFormatter,
 		density,
-		color,
 		classes,
 		isSelected,
 		disabled,
@@ -45,7 +44,6 @@
 		zonedTimeFormatter: Intl.DateTimeFormat;
 		accessibleDateFormatter: Intl.DateTimeFormat;
 		density: Density;
-		color: Colors;
 		classes: EventCalendarClasses;
 		isSelected: boolean;
 		disabled: boolean;
@@ -57,9 +55,9 @@
 
 	const occurrence = $derived(entry.occurrence);
 	const semanticColor = $derived(
-		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : color
+		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : 'neutral'
 	);
-	const itemColor = $derived(getEventCalendarItemColor(occurrence, color));
+	const itemColor = $derived(getEventCalendarItemColor(occurrence));
 	const timeLabel = $derived.by(() => {
 		if (occurrence.allDay) return messages.eventCalendarAllDay;
 		const startZone = getTimeZoneName(zonedTimeFormatter, entry.segment.start);

@@ -61,7 +61,6 @@
 		loading = false,
 		disabled = false,
 		density = 'normal',
-		color = 'primary',
 		class: className,
 		ref = $bindable<HTMLElement | null>(null),
 		theme,
@@ -745,7 +744,7 @@
 	aria-label={rootAttributes['aria-label'] ?? messages.eventCalendarLabel}
 	data-event-calendar-part="root"
 	data-density={density}
-	data-color={color}
+	data-color="primary"
 	data-view={calendar.view}
 	data-direction={resolvedDirection}
 	data-loading={loading || undefined}
@@ -755,7 +754,6 @@
 	data-interaction-valid={calendar.interaction.isValid ?? undefined}
 	class={classes.root({
 		density,
-		color,
 		view: calendar.view,
 		disabled,
 		class: [scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden', className]
@@ -770,7 +768,6 @@
 			direction={resolvedDirection}
 			{showDatePicker}
 			{density}
-			{color}
 			{disabled}
 			{classes}
 			{header}
@@ -787,7 +784,6 @@
 		{messages}
 		direction={resolvedDirection}
 		{density}
-		{color}
 		{loading}
 		{disabled}
 		{scrollMode}
@@ -828,7 +824,6 @@
 			data-invalid={calendar.interaction.isValid === false || undefined}
 			class={classes.dragPreview({
 				density,
-				color,
 				view: calendar.view,
 				invalid: calendar.interaction.isValid === false
 			})}
@@ -846,7 +841,7 @@
 			calendar.interaction.gesture.kind !== 'slot-create'
 				? (calendar.interaction.gesture.occurrence.item.color ?? proposal.item.color)
 				: proposal.item.color}
-		{@const indicatorColor = isEventCalendarSemanticColor(eventColor) ? eventColor : color}
+		{@const indicatorColor = isEventCalendarSemanticColor(eventColor) ? eventColor : 'neutral'}
 		{@const indicatorItemColor =
 			eventColor && !isEventCalendarSemanticColor(eventColor) ? eventColor : 'var(--color)'}
 		{#if indicatorRect && calendar.interaction.isValid === true}
