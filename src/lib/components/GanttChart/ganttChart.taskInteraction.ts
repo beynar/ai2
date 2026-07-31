@@ -244,21 +244,22 @@ export function deriveGanttRangeProposal(input: {
 	parentId?: string;
 	source?: GanttRangeProposal['source'];
 }): Readonly<{ proposal: GanttRangeProposal; workingDurationMinutes: number }> {
-	const step = getGanttSnapMinutes(input.snapDuration, input.calendar);
-	const origin = addWorkingMinutes(input.originInstant, 0, input.calendar);
-	const rawDelta = input.pointerInstant.getTime() - input.originInstant.getTime();
-	const isForward = input.pointerInstant.getTime() >= input.originInstant.getTime();
-	const elapsedStep = Math.abs(
-		getGanttElapsedSnapDelta(
-			input.originInstant,
-			isForward ? 1 : -1,
-			input.snapDuration,
-			input.calendar.calendar.timeZone
-		)
+	const elapsedDelta = getGanttPointerElapsedDelta(
+		input.originInstant,
+		input.originInstant,
+		input.pointerInstant,
+		input.snapDuration,
+		input.calendar.calendar.timeZone
 	);
-	const duration = Math.max(step, Math.ceil(Math.abs(rawDelta) / elapsedStep) * step);
-	const start = isForward ? origin : subtractWorkingMinutes(origin, duration, input.calendar);
-	const end = isForward ? addWorkingMinutes(origin, duration, input.calendar) : origin;
+	if (elapsedDelta === 0) {
+		throw new GanttChartError(
+			'invalid-operation',
+			'Range pointer movement must complete at least one snap step.'
+		);
+	}
+	const pointerEdge = new Date(input.originInstant.getTime() + elapsedDelta);
+	const start = elapsedDelta > 0 ? new Date(input.originInstant) : pointerEdge;
+	const end = elapsedDelta > 0 ? pointerEdge : new Date(input.originInstant);
 	return {
 		proposal: {
 			source: input.source ?? 'pointer',
@@ -266,7 +267,7 @@ export function deriveGanttRangeProposal(input: {
 			end,
 			...(input.parentId === undefined ? {} : { parentId: input.parentId })
 		},
-		workingDurationMinutes: duration
+		workingDurationMinutes: getWorkingMinutesBetween(start, end, input.calendar)
 	};
 }
 
