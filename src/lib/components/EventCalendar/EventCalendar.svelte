@@ -841,51 +841,33 @@
 			<Slot render={dragPreview ?? defaultDragPreview} payload={previewPayload} />
 		</div>
 	{/if}
-	{#if calendar.interaction.gesture?.inputMode === 'pointer'}
-		{#if calendar.interaction.proposal}
-			{@const proposal = calendar.interaction.proposal}
-			{@const indicatorRect = calendar.interaction.getDropIndicatorRect()}
-			{@const eventColor =
-				calendar.interaction.gesture.kind !== 'slot-create'
-					? (calendar.interaction.gesture.occurrence.item.color ?? proposal.item.color)
-					: proposal.item.color}
-			{@const indicatorColor = isEventCalendarSemanticColor(eventColor) ? eventColor : color}
-			{@const indicatorItemColor =
-				eventColor && !isEventCalendarSemanticColor(eventColor) ? eventColor : 'var(--color)'}
-			{#if indicatorRect && calendar.interaction.isValid === true}
-				<div
-					aria-hidden="true"
-					data-event-calendar-part="drop-indicator"
-					data-color={indicatorColor}
-					class={classes.dropIndicator({
-						density,
-						color: indicatorColor,
-						view: calendar.view,
-						class: 'fixed'
-					})}
-					style:--event-calendar-item-color={indicatorItemColor}
-					style:left={`${indicatorRect.left}px`}
-					style:top={`${indicatorRect.top}px`}
-					style:width={`${indicatorRect.width}px`}
-					style:height={`${indicatorRect.height}px`}
-					style:clip-path={indicatorRect.clipPath}
-				></div>
-			{/if}
-		{/if}
-		{#if calendar.interaction.gesture.kind === 'slot-create'}
+	{#if calendar.interaction.proposal && calendar.interaction.gesture?.inputMode === 'pointer'}
+		{@const proposal = calendar.interaction.proposal}
+		{@const indicatorRect = calendar.interaction.getDropIndicatorRect()}
+		{@const eventColor =
+			calendar.interaction.gesture.kind !== 'slot-create'
+				? (calendar.interaction.gesture.occurrence.item.color ?? proposal.item.color)
+				: proposal.item.color}
+		{@const indicatorColor = isEventCalendarSemanticColor(eventColor) ? eventColor : color}
+		{@const indicatorItemColor =
+			eventColor && !isEventCalendarSemanticColor(eventColor) ? eventColor : 'var(--color)'}
+		{#if indicatorRect && calendar.interaction.isValid === true}
 			<div
 				aria-hidden="true"
-				data-event-calendar-part="slot-selection"
-				data-invalid={calendar.interaction.isValid === false || undefined}
-				class={classes.slotSelection({
+				data-event-calendar-part="drop-indicator"
+				data-color={indicatorColor}
+				class={classes.dropIndicator({
 					density,
-					color,
+					color: indicatorColor,
 					view: calendar.view,
-					invalid: calendar.interaction.isValid === false,
-					class: 'fixed h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded'
+					class: 'fixed'
 				})}
-				style:left={`${calendar.interaction.gesture.pointerX}px`}
-				style:top={`${calendar.interaction.gesture.pointerY}px`}
+				style:--event-calendar-item-color={indicatorItemColor}
+				style:left={`${indicatorRect.left}px`}
+				style:top={`${indicatorRect.top}px`}
+				style:width={`${indicatorRect.width}px`}
+				style:height={`${indicatorRect.height}px`}
+				style:clip-path={indicatorRect.clipPath}
 			></div>
 		{/if}
 	{/if}
