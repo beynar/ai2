@@ -125,6 +125,24 @@
 		end: geometry.windowEnd,
 		resourceId: geometry.resourceId
 	});
+	const timedSelection = $derived.by(() => {
+		const draft = calendar.interaction.slot;
+		if (draft && calendar.interaction.isValid !== true) return null;
+		const selected = snapshot.selection.kind === 'slot' ? snapshot.selection.slot : null;
+		const slot = draft ?? selected;
+		if (!slot || slot.allDay || slot.resourceId !== geometry.resourceId) return null;
+
+		const start = new Date(Math.max(slot.start.getTime(), geometry.windowStart.getTime()));
+		const end = new Date(Math.min(slot.end.getTime(), geometry.windowEnd.getTime()));
+		if (end <= start) return null;
+
+		return {
+			start,
+			end,
+			top: getEventCalendarElapsedMinutes(geometry.windowStart, start) / calendar.interval,
+			height: Math.max(0.125, getEventCalendarElapsedMinutes(start, end) / calendar.interval)
+		};
+	});
 </script>
 
 <div
@@ -237,22 +255,21 @@
 			onkeydown={(event) => handleTargetKeydown(event, slot.key, true)}
 			{@attach disabled ? null : registerTimeTarget(slot.key)}
 			{@attach disabled ? null : calendar.interaction.slotDrag(dropTarget)}
-		>
-			{#if calendar.interaction.isSlotDraftTarget(dropTarget)}
-				<span
-					aria-hidden="true"
-					data-event-calendar-part="slot-selection"
-					class={classes.slotSelection({
-						density,
-						color,
-						view,
-						invalid: calendar.interaction.isValid === false,
-						class: 'absolute inset-0'
-					})}
-				></span>
-			{/if}
-		</button>
+		></button>
 	{/each}
+
+	{#if timedSelection}
+		<div
+			aria-hidden="true"
+			data-event-calendar-part="slot-selection"
+			data-slot-start={timedSelection.start.toISOString()}
+			data-slot-end={timedSelection.end.toISOString()}
+			class={classes.slotSelection({ density, color, view, disabled, class: 'absolute' })}
+			style:inset-inline="2px"
+			style:top={`calc(${timedSelection.top} * var(--event-calendar-slot-height))`}
+			style:height={`calc(${timedSelection.height} * var(--event-calendar-slot-height))`}
+		></div>
+	{/if}
 
 	{#each geometry.intervalInstants as instant (instant.getTime())}
 		<div

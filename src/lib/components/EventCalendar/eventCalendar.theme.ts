@@ -195,7 +195,7 @@ const dropIndicator = createEventCalendarPart(
 	'pointer-events-none z-40 rounded-md border border-dashed border-[color-mix(in_oklab,var(--event-calendar-item-color)_55%,transparent)] bg-[color-mix(in_oklab,var(--event-calendar-item-color)_8%,transparent)]'
 );
 const slotSelection = createEventCalendarPart(
-	'pointer-events-none z-20 border border-color bg-color/15'
+	'pointer-events-none z-20 rounded-md border border-dashed border-[color-mix(in_oklab,var(--color)_55%,transparent)] bg-[color-mix(in_oklab,var(--color)_8%,transparent)]'
 );
 const resizeHandle = createEventCalendarPart(
 	'absolute z-30 touch-none text-neutral/45 opacity-0 outline-none transition-opacity duration-100 group-hover/item:opacity-100 focus-visible:ring-2 focus-visible:ring-color'
