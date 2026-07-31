@@ -166,7 +166,7 @@ const dragPreview = createGanttChartPart(
 	'pointer-events-none absolute z-40 overflow-hidden rounded border border-dashed border-[var(--gantt-task-color)] bg-[color-mix(in_oklab,var(--gantt-task-color)_12%,var(--color-surface))] text-xs shadow-md'
 );
 const rangeSelection = createGanttChartPart(
-	'pointer-events-none absolute z-40 border border-dashed border-color bg-color/10'
+	'pointer-events-none absolute z-40 rounded border border-dashed border-color bg-color/10'
 );
 const workloadPanel = createGanttChartPart(
 	'relative shrink-0 border-t border-neutral-muted bg-surface'
