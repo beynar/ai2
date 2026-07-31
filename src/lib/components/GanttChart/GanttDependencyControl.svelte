@@ -155,6 +155,8 @@
 		delay={250}
 		closeDelay={120}
 		openOnFocus
+		size="small"
+		density="small"
 		triggerClass="size-full"
 	>
 		{#snippet trigger()}

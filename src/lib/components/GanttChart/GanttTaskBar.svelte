@@ -535,6 +535,8 @@
 			delay={250}
 			closeDelay={120}
 			openOnFocus
+			size="small"
+			density="small"
 			disabled={disabled || isInteractionActive}
 			triggerClass="pointer-events-auto size-full"
 			popoverClass="pointer-events-none"
