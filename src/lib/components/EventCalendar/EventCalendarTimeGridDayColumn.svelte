@@ -126,11 +126,14 @@
 		resourceId: geometry.resourceId
 	});
 	const timedSelection = $derived.by(() => {
-		const draft = calendar.interaction.slot;
-		if (draft && calendar.interaction.isValid !== true) return null;
-		const selected = snapshot.selection.kind === 'slot' ? snapshot.selection.slot : null;
-		const slot = draft ?? selected;
-		if (!slot || slot.allDay || slot.resourceId !== geometry.resourceId) return null;
+		const slot = calendar.interaction.slot;
+		if (
+			!slot ||
+			calendar.interaction.isValid !== true ||
+			slot.allDay ||
+			slot.resourceId !== geometry.resourceId
+		)
+			return null;
 
 		const start = new Date(Math.max(slot.start.getTime(), geometry.windowStart.getTime()));
 		const end = new Date(Math.min(slot.end.getTime(), geometry.windowEnd.getTime()));
