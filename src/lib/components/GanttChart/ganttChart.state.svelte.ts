@@ -10,38 +10,35 @@ import { GanttChartError } from './ganttChart.error.js';
 import { GanttChartHistory } from './ganttChart.history.svelte.js';
 import { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { GanttChartMutations } from './ganttChart.mutations.js';
-import type { GanttSnapshot } from './ganttChart.props.js';
+import type {
+	GanttEventHandlers,
+	GanttInteractionOptions,
+	GanttMutationPolicy,
+	GanttScaleOption,
+	GanttScheduleOptions,
+	GanttSnapshot,
+	GanttTimelineOptions
+} from './ganttChart.props.js';
+import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
 import { createGanttColumnContext } from './ganttChart.rows.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type {
 	GanttAssignment,
-	GanttAssignmentProposal,
-	GanttAssignmentUpdateResult,
-	GanttAssignmentsChange,
 	GanttCalendar,
 	GanttChartApi,
 	GanttColumnDefinition,
-	GanttConstraintViolation,
 	GanttDependency,
-	GanttDependencyCreationRequest,
-	GanttDependencyProposal,
-	GanttDependencyUpdateResult,
-	GanttDependenciesChange,
 	GanttDuration,
 	GanttInteractionBlockedInfo,
 	GanttInteractions,
 	GanttMutationSource,
-	GanttPasteIdRequest,
 	GanttRange,
-	GanttRangeProposal,
 	GanttResolvedTaskNode,
 	GanttResource,
+	GanttScaleDefinition,
 	GanttScheduleAnalysis,
 	GanttSelection,
 	GanttTask,
-	GanttTaskProposal,
-	GanttTasksChange,
-	GanttTaskUpdateResult,
 	GanttTouchActivation,
 	GanttWorkloadBucket,
 	GanttZoomLevel
@@ -82,8 +79,13 @@ export const DEFAULT_GANTT_INTERACTIONS: GanttInteractions = Object.freeze({
 const BUILT_IN_ZOOM_LEVELS = new Set(DEFAULT_GANTT_ZOOM_LEVELS);
 const EMPTY_RANGE_ANCHOR = new Date(0);
 const DEFAULT_RANGE_SPAN_MS = 14 * 24 * 60 * 60 * 1000;
+const DEFAULT_GANTT_TOUCH_ACTIVATION: GanttTouchActivation = Object.freeze({
+	distancePx: 4,
+	touchDelayMs: 300,
+	touchTolerancePx: 8
+});
 
-export type GanttChartStateOptions<
+export type GanttChartStateBindings<
 	TTaskFields extends object,
 	TDependencyFields extends object,
 	TResourceFields extends object,
@@ -102,72 +104,14 @@ export type GanttChartStateOptions<
 	readonly direction: 'ltr' | 'rtl';
 	readonly messages: Messages;
 	readonly rootId: string;
-	readonly projectCalendarId: string | undefined;
-	readonly validRange: GanttRange | undefined;
-	readonly zoomLevels: readonly GanttZoomLevel[];
-	readonly customScaleIds: ReadonlySet<GanttZoomLevel>;
 	readonly loading: boolean;
 	readonly disabled: boolean;
-	readonly autoSchedule: boolean;
-	readonly moveDependencies: boolean;
-	readonly interactions: GanttInteractions;
-	readonly createDependency:
-		((request: GanttDependencyCreationRequest) => GanttDependency<TDependencyFields>) | undefined;
-	readonly snapDuration: GanttDuration;
-	readonly touchActivation: GanttTouchActivation;
-	readonly canUpdateTask: ((proposal: GanttTaskProposal<TTaskFields>) => boolean) | undefined;
-	readonly onTaskUpdate:
-		((proposal: GanttTaskProposal<TTaskFields>) => GanttTaskUpdateResult<TTaskFields>) | undefined;
-	readonly canUpdateDependency:
-		((proposal: GanttDependencyProposal<TDependencyFields>) => boolean) | undefined;
-	readonly onDependencyUpdate:
-		| ((
-				proposal: GanttDependencyProposal<TDependencyFields>
-		  ) => GanttDependencyUpdateResult<TDependencyFields>)
-		| undefined;
-	readonly canUpdateAssignment:
-		((proposal: GanttAssignmentProposal<TAssignmentFields>) => boolean) | undefined;
-	readonly onAssignmentUpdate:
-		| ((
-				proposal: GanttAssignmentProposal<TAssignmentFields>
-		  ) => GanttAssignmentUpdateResult<TAssignmentFields>)
-		| undefined;
-	readonly canCreateRange: ((proposal: GanttRangeProposal) => boolean) | undefined;
-	readonly historyLimit: number;
-	readonly getPasteId: ((request: GanttPasteIdRequest) => string) | undefined;
-	readonly onTasksChange:
-		((tasks: GanttTask<TTaskFields>[], change: GanttTasksChange<TTaskFields>) => void) | undefined;
-	readonly onDependenciesChange:
-		| ((
-				dependencies: GanttDependency<TDependencyFields>[],
-				change: GanttDependenciesChange<TDependencyFields>
-		  ) => void)
-		| undefined;
-	readonly onAssignmentsChange:
-		| ((
-				assignments: GanttAssignment<TAssignmentFields>[],
-				change: GanttAssignmentsChange<TAssignmentFields>
-		  ) => void)
-		| undefined;
-	readonly onInteractionBlocked: ((info: GanttInteractionBlockedInfo) => void) | undefined;
-	readonly onScheduleViolations:
-		| ((
-				violations: readonly GanttConstraintViolation[],
-				source: 'validation' | 'task-change' | 'dependency-change' | 'calendar-change'
-		  ) => void)
-		| undefined;
-	readonly onExpansionChange: ((expandedTaskIds: string[]) => void) | undefined;
-	readonly onSelectionChange: ((selection: GanttSelection) => void) | undefined;
-	readonly onEmptyRangeSelect: ((proposal: GanttRangeProposal) => void) | undefined;
-	readonly onZoomChange: ((zoom: GanttZoomLevel) => void) | undefined;
-	readonly onVisibleRangeChange:
-		| ((info: {
-				range: GanttRange;
-				projectRange: GanttRange | null;
-				zoom: GanttZoomLevel;
-				timeZone: string;
-		  }) => void)
-		| undefined;
+	readonly scheduleOptions: GanttScheduleOptions | undefined;
+	readonly timelineOptions: GanttTimelineOptions | undefined;
+	readonly interactionOptions: GanttInteractionOptions<TDependencyFields> | undefined;
+	readonly mutationPolicy:
+		GanttMutationPolicy<TTaskFields, TDependencyFields, TAssignmentFields> | undefined;
+	readonly eventHandlers: GanttEventHandlers<TTaskFields, TDependencyFields> | undefined;
 };
 
 export type GanttTimelineNavigation = Readonly<{
@@ -185,7 +129,7 @@ export interface GanttChartState<
 	TDependencyFields extends object,
 	TResourceFields extends object,
 	TAssignmentFields extends object
-> extends GanttChartStateOptions<
+> extends GanttChartStateBindings<
 	TTaskFields,
 	TDependencyFields,
 	TResourceFields,
@@ -223,7 +167,7 @@ export class GanttChartState<
 	readonly a11y: GanttChartA11y<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 
 	constructor(
-		options: GanttChartStateOptions<
+		options: GanttChartStateBindings<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
@@ -260,6 +204,76 @@ export class GanttChartState<
 			this.a11y.syncSelection(this.selection);
 		});
 	}
+
+	readonly projectCalendarId = $derived(this.scheduleOptions?.calendarId);
+	readonly validRange = $derived(this.scheduleOptions?.validRange);
+	readonly autoSchedule = $derived(this.scheduleOptions?.propagation === 'auto');
+	readonly moveDependencies = $derived(this.scheduleOptions?.propagation === 'move-successors');
+	readonly scales: readonly GanttScaleDefinition[] = $derived(
+		(this.timelineOptions?.scales ?? DEFAULT_GANTT_ZOOM_LEVELS).filter(
+			(scale): scale is GanttScaleDefinition => typeof scale !== 'string'
+		)
+	);
+	readonly zoomLevels: readonly GanttZoomLevel[] = $derived(
+		(this.timelineOptions?.scales ?? DEFAULT_GANTT_ZOOM_LEVELS).map((scale: GanttScaleOption) =>
+			typeof scale === 'string' ? scale : scale.id
+		)
+	);
+	readonly customScaleIds: ReadonlySet<GanttZoomLevel> = $derived(
+		new Set(this.scales.map((scale) => scale.id))
+	);
+	readonly snapDuration: GanttDuration = $derived(
+		this.timelineOptions?.snapDuration ?? resolveGanttScaleSnapDuration(this.zoom, this.scales)
+	);
+	readonly touchActivation = DEFAULT_GANTT_TOUCH_ACTIVATION;
+	readonly interactions: GanttInteractions = $derived({
+		moveTask: this.interactionOptions?.moveTask ?? DEFAULT_GANTT_INTERACTIONS.moveTask,
+		resizeStart: this.interactionOptions?.resizeStart ?? DEFAULT_GANTT_INTERACTIONS.resizeStart,
+		resizeEnd: this.interactionOptions?.resizeEnd ?? DEFAULT_GANTT_INTERACTIONS.resizeEnd,
+		resizeProgress:
+			this.interactionOptions?.resizeProgress ?? DEFAULT_GANTT_INTERACTIONS.resizeProgress,
+		createDependency:
+			this.interactionOptions?.dependencyCreation !== false &&
+			!!this.interactionOptions?.dependencyCreation,
+		reorderRows: this.interactionOptions?.reorderRows ?? DEFAULT_GANTT_INTERACTIONS.reorderRows,
+		indent: this.interactionOptions?.indent ?? DEFAULT_GANTT_INTERACTIONS.indent,
+		outdent: this.interactionOptions?.outdent ?? DEFAULT_GANTT_INTERACTIONS.outdent,
+		createRange: this.interactionOptions?.createRange ?? DEFAULT_GANTT_INTERACTIONS.createRange,
+		keyboard: this.interactionOptions?.keyboard ?? DEFAULT_GANTT_INTERACTIONS.keyboard,
+		touch: this.interactionOptions?.touch ?? DEFAULT_GANTT_INTERACTIONS.touch,
+		clipboard: this.interactionOptions?.clipboard !== false,
+		history: this.interactionOptions?.history !== false
+	});
+	readonly createDependency = $derived(
+		this.interactionOptions?.dependencyCreation === false
+			? undefined
+			: this.interactionOptions?.dependencyCreation?.create
+	);
+	readonly getPasteId = $derived(
+		this.interactionOptions?.clipboard === false
+			? undefined
+			: this.interactionOptions?.clipboard?.getId
+	);
+	readonly historyLimit = $derived(
+		this.interactionOptions?.history === false ? 0 : (this.interactionOptions?.history?.limit ?? 50)
+	);
+	readonly canUpdateTask = $derived(this.mutationPolicy?.task?.validate);
+	readonly onTaskUpdate = $derived(this.mutationPolicy?.task?.resolve);
+	readonly canUpdateDependency = $derived(this.mutationPolicy?.dependency?.validate);
+	readonly onDependencyUpdate = $derived(this.mutationPolicy?.dependency?.resolve);
+	readonly canUpdateAssignment = $derived(this.mutationPolicy?.assignment?.validate);
+	readonly onAssignmentUpdate = $derived(this.mutationPolicy?.assignment?.resolve);
+	readonly canCreateRange = $derived(this.mutationPolicy?.range?.validate);
+	readonly onTasksChange = $derived(this.mutationPolicy?.task?.onChange);
+	readonly onDependenciesChange = $derived(this.mutationPolicy?.dependency?.onChange);
+	readonly onAssignmentsChange = $derived(this.mutationPolicy?.assignment?.onChange);
+	readonly onInteractionBlocked = $derived(this.eventHandlers?.interactionBlocked);
+	readonly onScheduleViolations = $derived(this.eventHandlers?.scheduleViolations);
+	readonly onExpansionChange = $derived(this.eventHandlers?.expansionChange);
+	readonly onSelectionChange = $derived(this.eventHandlers?.selectionChange);
+	readonly onEmptyRangeSelect = $derived(this.eventHandlers?.emptyRangeSelect);
+	readonly onZoomChange = $derived(this.eventHandlers?.zoomChange);
+	readonly onVisibleRangeChange = $derived(this.eventHandlers?.visibleRangeChange);
 
 	readonly schedule: ResolvedGanttSchedule<
 		TTaskFields,

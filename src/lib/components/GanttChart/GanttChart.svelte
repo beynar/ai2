@@ -90,21 +90,14 @@
 	import { onMount } from 'svelte';
 	import GanttChartHeader from './GanttChartHeader.svelte';
 	import GanttChartShell from './GanttChartShell.svelte';
-	import type { GanttChartProps, GanttScaleOption } from './ganttChart.props.js';
-	import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
-	import {
-		DEFAULT_GANTT_ZOOM_LEVELS,
-		DEFAULT_GANTT_INTERACTIONS,
-		EMPTY_GANTT_SELECTION,
-		GanttChartState
-	} from './ganttChart.state.svelte.js';
+	import type { GanttChartProps } from './ganttChart.props.js';
+	import { EMPTY_GANTT_SELECTION, GanttChartState } from './ganttChart.state.svelte.js';
 	import { useGanttChartTheme } from './ganttChart.theme.js';
 	import type {
 		GanttAssignment,
 		GanttDependency,
 		GanttRange,
 		GanttResource,
-		GanttScaleDefinition,
 		GanttScheduleAnalysis,
 		GanttSelection,
 		GanttTask,
@@ -114,13 +107,7 @@
 
 	const defaultResources: never[] = [];
 	const defaultCalendars: never[] = [];
-	const defaultScaleOptions: GanttScaleOption[] = [...DEFAULT_GANTT_ZOOM_LEVELS];
 	const defaultHolidays: never[] = [];
-	const DEFAULT_TOUCH_ACTIVATION = {
-		distancePx: 4,
-		touchDelayMs: 300,
-		touchTolerancePx: 8
-	} as const;
 	const DEFAULT_ROW_HEIGHT = { small: 28, normal: 32, large: 36 } as const;
 	const DEFAULT_GRID_MIN_WIDTH = 64;
 	const DEFAULT_GRID_MAX_WIDTH = 640;
@@ -165,33 +152,6 @@
 	const resolvedLocale = $derived(messages.locale);
 	const resolvedResources = $derived(resources.length === 0 ? defaultResources : resources);
 	const resolvedCalendars = $derived(calendars.length === 0 ? defaultCalendars : calendars);
-	const scaleOptions = $derived(timeline?.scales ?? defaultScaleOptions);
-	const scales = $derived(
-		scaleOptions.filter((scale): scale is GanttScaleDefinition => typeof scale !== 'string')
-	);
-	const zoomLevels = $derived(
-		scaleOptions.map((scale) => (typeof scale === 'string' ? scale : scale.id))
-	);
-	const customScaleIds = $derived(new Set(scales.map((scale) => scale.id)));
-	const resolvedSnapDuration = $derived(
-		timeline?.snapDuration ?? resolveGanttScaleSnapDuration(zoom, scales)
-	);
-	const resolvedInteractions = $derived({
-		moveTask: interactions?.moveTask ?? DEFAULT_GANTT_INTERACTIONS.moveTask,
-		resizeStart: interactions?.resizeStart ?? DEFAULT_GANTT_INTERACTIONS.resizeStart,
-		resizeEnd: interactions?.resizeEnd ?? DEFAULT_GANTT_INTERACTIONS.resizeEnd,
-		resizeProgress: interactions?.resizeProgress ?? DEFAULT_GANTT_INTERACTIONS.resizeProgress,
-		createDependency:
-			interactions?.dependencyCreation !== false && !!interactions?.dependencyCreation,
-		reorderRows: interactions?.reorderRows ?? DEFAULT_GANTT_INTERACTIONS.reorderRows,
-		indent: interactions?.indent ?? DEFAULT_GANTT_INTERACTIONS.indent,
-		outdent: interactions?.outdent ?? DEFAULT_GANTT_INTERACTIONS.outdent,
-		createRange: interactions?.createRange ?? DEFAULT_GANTT_INTERACTIONS.createRange,
-		keyboard: interactions?.keyboard ?? DEFAULT_GANTT_INTERACTIONS.keyboard,
-		touch: interactions?.touch ?? DEFAULT_GANTT_INTERACTIONS.touch,
-		clipboard: interactions?.clipboard !== false,
-		history: interactions?.history !== false
-	});
 	const resolvedDisplay = $derived({
 		criticalPath: false,
 		baselines: true,
@@ -201,9 +161,6 @@
 		workload: false,
 		...timeline?.display
 	});
-	const propagation = $derived(schedule?.propagation ?? 'manual');
-	const projectCalendarId = $derived(schedule?.calendarId);
-	const validRange = $derived(schedule?.validRange);
 	const showTodayIndicator = $derived(timeline?.todayIndicator ?? true);
 	const showWeekends = $derived(timeline?.weekends ?? true);
 	const holidays = $derived(timeline?.holidays ?? defaultHolidays);
@@ -214,17 +171,6 @@
 	const columns = $derived(layout?.grid === false ? undefined : layout?.grid?.columns);
 	const showHeader = $derived(render?.header !== false);
 	const header = $derived(render?.header === false ? undefined : render?.header);
-	const createDependency = $derived(
-		interactions?.dependencyCreation === false
-			? undefined
-			: interactions?.dependencyCreation?.create
-	);
-	const getPasteId = $derived(
-		interactions?.clipboard === false ? undefined : interactions?.clipboard?.getId
-	);
-	const historyLimit = $derived(
-		interactions?.history === false ? 0 : (interactions?.history?.limit ?? 50)
-	);
 	const classes = $derived(useGanttChartTheme(theme));
 	const contextualDirection = $derived(useI18nDirection());
 	const directionAttributes = $derived(contextualDirection ? { dir: contextualDirection } : {});
@@ -297,98 +243,26 @@
 			return messages;
 		},
 		rootId,
-		get projectCalendarId() {
-			return projectCalendarId;
-		},
-		get validRange() {
-			return validRange;
-		},
-		get zoomLevels() {
-			return zoomLevels;
-		},
-		get customScaleIds() {
-			return customScaleIds;
-		},
 		get loading() {
 			return loading;
 		},
 		get disabled() {
 			return disabled;
 		},
-		get autoSchedule() {
-			return propagation === 'auto';
+		get scheduleOptions() {
+			return schedule;
 		},
-		get moveDependencies() {
-			return propagation === 'move-successors';
+		get timelineOptions() {
+			return timeline;
 		},
-		get interactions() {
-			return resolvedInteractions;
+		get interactionOptions() {
+			return interactions;
 		},
-		get createDependency() {
-			return createDependency;
+		get mutationPolicy() {
+			return mutations;
 		},
-		get snapDuration() {
-			return resolvedSnapDuration;
-		},
-		get touchActivation() {
-			return DEFAULT_TOUCH_ACTIVATION;
-		},
-		get canUpdateTask() {
-			return mutations?.task?.validate;
-		},
-		get onTaskUpdate() {
-			return mutations?.task?.resolve;
-		},
-		get canUpdateDependency() {
-			return mutations?.dependency?.validate;
-		},
-		get onDependencyUpdate() {
-			return mutations?.dependency?.resolve;
-		},
-		get canUpdateAssignment() {
-			return mutations?.assignment?.validate;
-		},
-		get onAssignmentUpdate() {
-			return mutations?.assignment?.resolve;
-		},
-		get canCreateRange() {
-			return mutations?.range?.validate;
-		},
-		get historyLimit() {
-			return historyLimit;
-		},
-		get getPasteId() {
-			return getPasteId;
-		},
-		get onTasksChange() {
-			return mutations?.task?.onChange;
-		},
-		get onDependenciesChange() {
-			return mutations?.dependency?.onChange;
-		},
-		get onAssignmentsChange() {
-			return mutations?.assignment?.onChange;
-		},
-		get onInteractionBlocked() {
-			return events?.interactionBlocked;
-		},
-		get onScheduleViolations() {
-			return events?.scheduleViolations;
-		},
-		get onExpansionChange() {
-			return events?.expansionChange;
-		},
-		get onSelectionChange() {
-			return events?.selectionChange;
-		},
-		get onEmptyRangeSelect() {
-			return events?.emptyRangeSelect;
-		},
-		get onZoomChange() {
-			return events?.zoomChange;
-		},
-		get onVisibleRangeChange() {
-			return events?.visibleRangeChange;
+		get eventHandlers() {
+			return events;
 		}
 	});
 
@@ -655,10 +529,10 @@
 		overscan={DEFAULT_OVERSCAN}
 		{scrollMode}
 		{columns}
-		interactions={resolvedInteractions}
-		touchActivation={DEFAULT_TOUCH_ACTIVATION}
-		{scales}
-		{validRange}
+		interactions={chart.interactions}
+		touchActivation={chart.touchActivation}
+		scales={chart.scales}
+		validRange={chart.validRange}
 		{holidays}
 		{showTodayIndicator}
 		{showWeekends}
