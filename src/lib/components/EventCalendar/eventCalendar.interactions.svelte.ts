@@ -220,6 +220,8 @@ export class EventCalendarInteractionsController<
 		pointerX: number;
 		pointerY: number;
 	} | null = null;
+	private slotDragFrame: number | null = null;
+	private pendingSlotDrag: { pointerX: number; pointerY: number } | null = null;
 	private clipboardItem: EventCalendarItem<TItemFields> | null = null;
 	private historyPast: EventCalendarHistoryEntry<TItemFields>[] = [];
 	private historyFuture: EventCalendarHistoryEntry<TItemFields>[] = [];
@@ -316,6 +318,7 @@ export class EventCalendarInteractionsController<
 		this.gestureBoundary = null;
 		this.lastPublishedProposalKey = null;
 		this.cancelItemDragFrame();
+		this.cancelSlotDragFrame();
 		this.stopDragAutoScroll();
 		if (!active) return;
 		if (!reason) {
@@ -1209,6 +1212,10 @@ export class EventCalendarInteractionsController<
 				this.getTargetAt(pending.pointerX, pending.pointerY) ??
 				deserializeTarget(pending.fallbackTargetData);
 			this.updateItemGestureAt(target, pending.pointerX, pending.pointerY);
+			const current = this.gesture;
+			if (current && current.kind !== 'slot-create' && current.source !== 'external-drop') {
+				this.startDragAutoScroll();
+			}
 		});
 	}
 
@@ -1627,8 +1634,17 @@ export class EventCalendarInteractionsController<
 	}
 
 	private updateSlotGesture(payload: PointerDragPayload): void {
-		this.suppressSlotClick();
-		this.updateSlotAtPointer(payload.x, payload.y);
+		if (this.gesture?.kind !== 'slot-create') return;
+		this.pendingSlotDrag = { pointerX: payload.x, pointerY: payload.y };
+		if (this.slotDragFrame !== null) return;
+		this.slotDragFrame = requestAnimationFrame(() => {
+			this.slotDragFrame = null;
+			const pending = this.pendingSlotDrag;
+			this.pendingSlotDrag = null;
+			if (!pending) return;
+			this.updateSlotAtPointer(pending.pointerX, pending.pointerY);
+			this.startDragAutoScroll();
+		});
 	}
 
 	private updateSlotAtPointer(pointerX: number, pointerY: number): void {
@@ -1640,6 +1656,11 @@ export class EventCalendarInteractionsController<
 			target.allDay !== active.anchor.allDay ||
 			target.resourceId !== active.anchor.resourceId
 		) {
+			if (active.targetKey === null && !active.isValid && active.reason === 'invalid-target') {
+				active.pointerX = pointerX;
+				active.pointerY = pointerY;
+				return;
+			}
 			this.gesture = {
 				...active,
 				targetKey: null,
@@ -1652,6 +1673,12 @@ export class EventCalendarInteractionsController<
 		}
 		const point = this.slotFromTarget(target, pointerY);
 		const slot = mergeSlots(active.anchor, point);
+		if (areSlotsEqual(active.slot, slot)) {
+			active.pointerX = pointerX;
+			active.pointerY = pointerY;
+			active.targetKey = target.key;
+			return;
+		}
 		const reason = this.validateSlot(slot);
 		this.gesture = {
 			...active,
@@ -1665,7 +1692,9 @@ export class EventCalendarInteractionsController<
 	}
 
 	private finishSlotGesture(payload: PointerDragPayload): void {
-		this.updateSlotGesture(payload);
+		this.cancelSlotDragFrame();
+		this.suppressSlotClick();
+		this.updateSlotAtPointer(payload.x, payload.y);
 		if (this.isGestureStale()) {
 			this.cancel('stale');
 			return;
@@ -2895,6 +2924,12 @@ export class EventCalendarInteractionsController<
 		this.pendingItemDrag = null;
 	}
 
+	private cancelSlotDragFrame(): void {
+		if (this.slotDragFrame !== null) cancelAnimationFrame(this.slotDragFrame);
+		this.slotDragFrame = null;
+		this.pendingSlotDrag = null;
+	}
+
 	private startDragAutoScroll(): void {
 		if (this.dragScrollFrame !== null) return;
 		const tick = () => {
@@ -2903,10 +2938,7 @@ export class EventCalendarInteractionsController<
 			if (!active || active.inputMode !== 'pointer') return;
 			const scroller =
 				this.dragScrollMode === 'page' ? document.scrollingElement : this.dragScrollElement;
-			if (!scroller) {
-				this.dragScrollFrame = requestAnimationFrame(tick);
-				return;
-			}
+			if (!scroller) return;
 			const rect =
 				this.dragScrollMode === 'page'
 					? { top: 0, right: window.innerWidth, bottom: window.innerHeight, left: 0 }
@@ -2927,27 +2959,29 @@ export class EventCalendarInteractionsController<
 					: rightDistance < EDGE_SCROLL_DISTANCE
 						? edgeScrollDelta(rightDistance)
 						: 0;
-			if (verticalDelta !== 0 || horizontalDelta !== 0) {
-				const previousScrollTop = scroller.scrollTop;
-				const previousScrollLeft = scroller.scrollLeft;
-				scroller.scrollTop += verticalDelta;
-				scroller.scrollLeft += horizontalDelta;
-				if (
-					scroller.scrollTop !== previousScrollTop ||
-					scroller.scrollLeft !== previousScrollLeft
-				) {
-					if (active.kind === 'slot-create') {
-						this.updateSlotAtPointer(active.pointerX, active.pointerY);
-					} else {
-						this.updateItemGestureAt(
-							this.getTargetAt(active.pointerX, active.pointerY),
-							active.pointerX,
-							active.pointerY
-						);
-					}
-				}
+			if (verticalDelta === 0 && horizontalDelta === 0) return;
+			const previousScrollTop = scroller.scrollTop;
+			const previousScrollLeft = scroller.scrollLeft;
+			scroller.scrollTop += verticalDelta;
+			scroller.scrollLeft += horizontalDelta;
+			if (scroller.scrollTop === previousScrollTop && scroller.scrollLeft === previousScrollLeft)
+				return;
+			if (active.kind === 'slot-create') {
+				this.updateSlotAtPointer(active.pointerX, active.pointerY);
+			} else {
+				this.updateItemGestureAt(
+					this.getTargetAt(active.pointerX, active.pointerY),
+					active.pointerX,
+					active.pointerY
+				);
 			}
-			this.dragScrollFrame = requestAnimationFrame(tick);
+			const current = this.gesture;
+			if (
+				!current ||
+				(current.kind !== 'slot-create' && current.source === 'external-drop' && !current.targetKey)
+			)
+				return;
+			if (this.dragScrollFrame === null) this.dragScrollFrame = requestAnimationFrame(tick);
 		};
 		this.dragScrollFrame = requestAnimationFrame(tick);
 	}
@@ -3227,6 +3261,16 @@ function areCompatibleSlots(anchor: EventCalendarSlot, point: EventCalendarSlot)
 		anchor.view === point.view &&
 		anchor.allDay === point.allDay &&
 		anchor.resourceId === point.resourceId
+	);
+}
+
+function areSlotsEqual(left: EventCalendarSlot, right: EventCalendarSlot): boolean {
+	return (
+		left.view === right.view &&
+		left.allDay === right.allDay &&
+		left.resourceId === right.resourceId &&
+		isSameEndpoint(left.start, right.start) &&
+		isSameEndpoint(left.end, right.end)
 	);
 }
 
