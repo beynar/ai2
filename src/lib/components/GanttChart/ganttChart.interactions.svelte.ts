@@ -206,8 +206,6 @@ export class GanttChartInteractions<
 		TAssignmentFields
 	> | null>(null);
 	#timeline: GanttTimelineInteractionContext | null = null;
-	#pendingPointer: PointerCoordinates | null = null;
-	#pointerFrame: number | null = null;
 	#pointerAutoScrollFrame: number | null = null;
 	#pointerCapture: Readonly<{ node: HTMLElement; pointerId: number }> | null = null;
 	#suppressedTaskClickId: string | null = null;
@@ -525,6 +523,7 @@ export class GanttChartInteractions<
 				(operation !== 'move' || isTaskBodyPointerTarget(event.target)),
 			disabled: () => !this.canBeginTaskGesture(taskId, operation),
 			activation: () => this.#options.touchActivation,
+			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => {
 				const didBegin = this.beginTaskPointerGesture(
@@ -536,7 +535,7 @@ export class GanttChartInteractions<
 				if (didBegin) this.startPointerAutoScroll();
 				return didBegin;
 			},
-			onMove: (payload) => this.queuePointerUpdate(payload),
+			onMove: (payload) => this.updatePointerDrag(payload),
 			onEnd: (payload) => this.finishPointerGesture(payload),
 			onCancel: () => this.cancel()
 		});
@@ -563,10 +562,11 @@ export class GanttChartInteractions<
 			disabled: () => !this.canBeginProgressGesture(taskId),
 			canStart: (event) => event.pointerType !== 'touch' || this.#options.interactions.touch,
 			activation: () => this.#options.touchActivation,
+			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) =>
 				this.beginProgressGesture(taskId, this.#taskRowTops.get(taskId) ?? rowTop, payload),
-			onMove: (payload) => this.queuePointerUpdate(payload),
+			onMove: (payload) => this.updatePointerDrag(payload),
 			onEnd: (payload) => this.finishPointerGesture(payload),
 			onCancel: () => this.cancel()
 		});
@@ -591,9 +591,10 @@ export class GanttChartInteractions<
 				this.#options.disabled || this.#options.loading || !this.#options.interactions.createRange,
 			canStart: (event) => event.pointerType !== 'touch' || this.#options.interactions.touch,
 			activation: () => this.#options.touchActivation,
+			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => this.beginRangeGesture(payload),
-			onMove: (payload) => this.queuePointerUpdate(payload),
+			onMove: (payload) => this.updatePointerDrag(payload),
 			onEnd: (payload) => this.finishPointerGesture(payload),
 			onCancel: () => this.cancel()
 		});
@@ -645,7 +646,7 @@ export class GanttChartInteractions<
 		}
 		this.#gesture = null;
 		this.#pointerCapture = null;
-		this.cancelPointerFrames();
+		this.stopPointerAutoScroll();
 		if (hasPointerCapture && pointerCapture) {
 			pointerCapture.node.releasePointerCapture(pointerCapture.pointerId);
 		}
@@ -767,27 +768,14 @@ export class GanttChartInteractions<
 	}
 
 	private finishPointerGesture(payload: PointerDragPayload): void {
-		this.flushPointerUpdate(toPointerCoordinates(payload));
+		this.updatePointerGesture(toPointerCoordinates(payload));
 		if (this.#gesture?.type === 'range') this.commitRangeGesture();
 		else this.commitTaskGesture();
 	}
 
-	private queuePointerUpdate(pointer: PointerCoordinates | PointerDragPayload): void {
-		this.#pendingPointer = isPointerDragPayload(pointer) ? toPointerCoordinates(pointer) : pointer;
-		if (this.#pointerFrame !== null) return;
-		this.#pointerFrame = requestAnimationFrame(() => {
-			this.#pointerFrame = null;
-			const pending = this.#pendingPointer;
-			this.#pendingPointer = null;
-			if (pending) this.updatePointerGesture(pending);
-		});
-	}
-
-	private flushPointerUpdate(pointer: PointerCoordinates): void {
-		if (this.#pointerFrame !== null) cancelAnimationFrame(this.#pointerFrame);
-		this.#pointerFrame = null;
-		this.#pendingPointer = null;
-		this.updatePointerGesture(pointer);
+	private updatePointerDrag(payload: PointerDragPayload): void {
+		this.updatePointerGesture(toPointerCoordinates(payload));
+		if (this.#gesture) this.startPointerAutoScroll();
 	}
 
 	private updatePointerGesture(pointer: PointerCoordinates): void {
@@ -1128,22 +1116,21 @@ export class GanttChartInteractions<
 					: endDistance < POINTER_EDGE_SIZE
 						? getPointerScrollDelta(endDistance)
 						: 0;
-			if (delta !== 0) {
-				const previous = timeline.viewport.scrollLeft;
-				timeline.viewport.scrollLeft += delta;
-				if (timeline.viewport.scrollLeft !== previous) this.updatePointerGesture(gesture.pointer);
+			if (delta === 0) return;
+			const previous = timeline.viewport.scrollLeft;
+			timeline.viewport.scrollLeft += delta;
+			if (timeline.viewport.scrollLeft === previous) return;
+			this.updatePointerGesture(gesture.pointer);
+			if (this.#gesture && this.#timeline === timeline) {
+				this.#pointerAutoScrollFrame = requestAnimationFrame(step);
 			}
-			this.#pointerAutoScrollFrame = requestAnimationFrame(step);
 		};
 		this.#pointerAutoScrollFrame = requestAnimationFrame(step);
 	}
 
-	private cancelPointerFrames(): void {
-		if (this.#pointerFrame !== null) cancelAnimationFrame(this.#pointerFrame);
+	private stopPointerAutoScroll(): void {
 		if (this.#pointerAutoScrollFrame !== null) cancelAnimationFrame(this.#pointerAutoScrollFrame);
-		this.#pointerFrame = null;
 		this.#pointerAutoScrollFrame = null;
-		this.#pendingPointer = null;
 	}
 
 	private armTaskClickSuppression(
@@ -1204,12 +1191,6 @@ export class GanttChartInteractions<
 
 function toPointerCoordinates(payload: PointerDragPayload): PointerCoordinates {
 	return { clientX: payload.x, clientY: payload.y };
-}
-
-function isPointerDragPayload(
-	pointer: PointerCoordinates | PointerDragPayload
-): pointer is PointerDragPayload {
-	return 'x' in pointer && 'y' in pointer;
 }
 
 function getBlockedReason(error: GanttChartError): GanttInteractionBlockedInfo['reason'] {

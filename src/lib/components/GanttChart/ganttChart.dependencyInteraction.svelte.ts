@@ -243,6 +243,7 @@ export class GanttDependencyInteraction<
 					canStart: (event) => event.pointerType === 'touch' && this.#options.interactions.touch,
 					disabled: () => !this.canBegin(taskId),
 					activation: () => this.#options.touchActivation,
+					frameCoalesced: true,
 					stopPropagation: true,
 					onStart: (payload) => this.beginTouch({ taskId, endpoint }, payload),
 					onMove: (payload) => this.updateTouch({ taskId, endpoint }, payload),
@@ -467,7 +468,8 @@ export class GanttDependencyInteraction<
 			scale: timeline.scale,
 			boundary: this.getBoundary()
 		};
-		this.updateFromPointer(source, { clientX: payload.x, clientY: payload.y }, []);
+		const input = { clientX: payload.x, clientY: payload.y };
+		this.updateFromPointer(source, input, this.readPointerTarget(input));
 		return true;
 	}
 
@@ -476,21 +478,23 @@ export class GanttDependencyInteraction<
 	): void {
 		const source = this.readSource(payload.source.data);
 		if (!source) return;
+		const input = payload.location.current.input;
 		this.updateFromPointer(
 			source,
-			payload.location.current.input,
-			payload.location.current.dropTargets
+			input,
+			this.readCurrentTarget(payload.location.current.dropTargets) ?? this.readPointerTarget(input)
 		);
 	}
 
 	private updateTouch(source: DependencySource, payload: PointerDragPayload): void {
-		this.updateFromPointer(source, { clientX: payload.x, clientY: payload.y }, []);
+		const input = { clientX: payload.x, clientY: payload.y };
+		this.updateFromPointer(source, input, this.readPointerTarget(input));
 	}
 
 	private updateFromPointer(
 		source: DependencySource,
 		input: Readonly<{ clientX: number; clientY: number }>,
-		dropTargets: readonly { data: Record<string, unknown> }[]
+		target: DependencyTarget | null
 	): void {
 		const gesture = this.#gesture;
 		if (!gesture) return;
@@ -498,7 +502,6 @@ export class GanttDependencyInteraction<
 			this.reconcileControlledState();
 			return;
 		}
-		const target = this.readPointerTarget(input) ?? this.readCurrentTarget(dropTargets);
 		const pointerPoint = this.getPointerPoint(input);
 		if (!target) {
 			this.#gesture = {

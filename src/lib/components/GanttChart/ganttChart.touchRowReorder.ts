@@ -59,6 +59,7 @@ export class GanttTouchRowReorder {
 				Boolean(event.target.closest('[data-dnd-handle]')),
 			disabled: () => this.options.disabled() || !this.canDrag(taskId),
 			activation: this.options.activation,
+			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => this.begin(taskId, payload),
 			onMove: (payload) => this.update(payload),
@@ -107,6 +108,7 @@ export class GanttTouchRowReorder {
 		session.pointerX = payload.x;
 		session.pointerY = payload.y;
 		this.updateTarget(payload.x, payload.y);
+		this.startAutoScroll();
 	}
 
 	private finish(payload: PointerDragPayload<HTMLElement>): void {
@@ -169,16 +171,13 @@ export class GanttTouchRowReorder {
 	private startAutoScroll(): void {
 		if (this.#autoScrollFrame !== null) return;
 		const update = (time: number) => {
+			this.#autoScrollFrame = null;
 			const session = this.#session;
-			if (!session) {
-				this.#autoScrollFrame = null;
-				return;
-			}
-			this.#autoScrollFrame = requestAnimationFrame(update);
+			if (!session) return;
 			const content = session.sourceElement.closest<HTMLElement>(
 				'[data-gantt-chart-part="content"]'
 			);
-			if (!content || time - session.lastAutoScrollAt < AUTO_SCROLL_INTERVAL_MS) return;
+			if (!content) return;
 			const bounds = content.getBoundingClientRect();
 			const direction =
 				session.pointerY < bounds.top + AUTO_SCROLL_EDGE_PX
@@ -187,6 +186,10 @@ export class GanttTouchRowReorder {
 						? 1
 						: 0;
 			if (direction === 0) return;
+			if (time - session.lastAutoScrollAt < AUTO_SCROLL_INTERVAL_MS) {
+				this.#autoScrollFrame = requestAnimationFrame(update);
+				return;
+			}
 			const currentTaskId = session.targetTaskId ?? session.taskId;
 			const currentIndex = session.rows.findIndex((row) => row.taskId === currentTaskId);
 			const nextIndex = Math.max(0, Math.min(session.rows.length - 1, currentIndex + direction));
@@ -194,6 +197,7 @@ export class GanttTouchRowReorder {
 			session.lastAutoScrollAt = time;
 			this.options.scrollToRow(nextIndex);
 			requestAnimationFrame(() => this.updateTarget(session.pointerX, session.pointerY));
+			this.#autoScrollFrame = requestAnimationFrame(update);
 		};
 		this.#autoScrollFrame = requestAnimationFrame(update);
 	}
