@@ -27,6 +27,10 @@ export type PointerDragOptions<Node extends HTMLElement = HTMLElement> = {
 	canStart?: (event: PointerEvent) => boolean;
 	moveTolerance?: number;
 	activation?: () => PointerDragActivation;
+	/** Deliver only the latest pointer move in each animation frame. The final
+	 * pointer is always available to `onEnd`; queued moves are discarded on end
+	 * or cancellation. */
+	frameCoalesced?: boolean;
 	stopPropagation?: boolean;
 	onStart?: (payload: PointerDragPayload<Node>) => boolean | void;
 	onMove?: (payload: PointerDragPayload<Node>) => void;
@@ -53,6 +57,29 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 	options: PointerDragOptions<Node>
 ): Attachment<Node> => {
 	let session: PointerDragSession<Node> | null = null;
+	let moveFrame: number | null = null;
+	let pendingMove: PointerDragPayload<Node> | null = null;
+
+	const cancelPendingMove = () => {
+		if (moveFrame !== null) cancelAnimationFrame(moveFrame);
+		moveFrame = null;
+		pendingMove = null;
+	};
+
+	const dispatchMove = (payload: PointerDragPayload<Node>) => {
+		if (!options.frameCoalesced) {
+			options.onMove?.(payload);
+			return;
+		}
+		pendingMove = payload;
+		if (moveFrame !== null) return;
+		moveFrame = requestAnimationFrame(() => {
+			moveFrame = null;
+			const latest = pendingMove;
+			pendingMove = null;
+			if (latest) options.onMove?.(latest);
+		});
+	};
 
 	const getPayload = (
 		event: PointerEvent,
@@ -103,6 +130,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 	};
 
 	const cancel = (event: PointerEvent, currentSession: PointerDragSession<Node>) => {
+		cancelPendingMove();
 		clearActivationTimer(currentSession);
 		const payload = getPayload(event, currentSession);
 		if (session === currentSession) session = null;
@@ -116,6 +144,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 		const currentSession = session;
 		const payload = getPayload(event, currentSession);
 		session = null;
+		cancelPendingMove();
 		clearActivationTimer(currentSession);
 		releasePointer(currentSession);
 		if (currentSession.isActive) options.onEnd?.(payload);
@@ -171,7 +200,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 						cancel(nextSession.lastEvent, nextSession);
 						return;
 					}
-					options.onMove?.(getPayload(nextSession.lastEvent, nextSession));
+					dispatchMove(getPayload(nextSession.lastEvent, nextSession));
 				}, activation.touchDelayMs);
 			};
 
@@ -183,7 +212,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 				const payload = getPayload(event, currentSession);
 				if (!activation || currentSession.isActive) {
 					event.preventDefault();
-					options.onMove?.(payload);
+					dispatchMove(payload);
 					return;
 				}
 				const distance = Math.hypot(payload.deltaX, payload.deltaY);
@@ -196,7 +225,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 					cancel(event, currentSession);
 					return;
 				}
-				options.onMove?.(getPayload(event, currentSession));
+				dispatchMove(getPayload(event, currentSession));
 			};
 
 			const cleanup = () => {

@@ -220,8 +220,6 @@ export class EventCalendarInteractionsController<
 		pointerX: number;
 		pointerY: number;
 	} | null = null;
-	private slotDragFrame: number | null = null;
-	private pendingSlotDrag: { pointerX: number; pointerY: number } | null = null;
 	private clipboardItem: EventCalendarItem<TItemFields> | null = null;
 	private historyPast: EventCalendarHistoryEntry<TItemFields>[] = [];
 	private historyFuture: EventCalendarHistoryEntry<TItemFields>[] = [];
@@ -318,7 +316,6 @@ export class EventCalendarInteractionsController<
 		this.gestureBoundary = null;
 		this.lastPublishedProposalKey = null;
 		this.cancelItemDragFrame();
-		this.cancelSlotDragFrame();
 		this.stopDragAutoScroll();
 		if (!active) return;
 		if (!reason) {
@@ -864,6 +861,7 @@ export class EventCalendarInteractionsController<
 			disabled: () =>
 				this.calendar.disabled || this.calendar.loading || !this.calendar.interactions.selectSlot,
 			activation: () => this.calendar.createActivation,
+			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => {
 				const origin = payload.startTarget;
@@ -1634,17 +1632,8 @@ export class EventCalendarInteractionsController<
 	}
 
 	private updateSlotGesture(payload: PointerDragPayload): void {
-		if (this.gesture?.kind !== 'slot-create') return;
-		this.pendingSlotDrag = { pointerX: payload.x, pointerY: payload.y };
-		if (this.slotDragFrame !== null) return;
-		this.slotDragFrame = requestAnimationFrame(() => {
-			this.slotDragFrame = null;
-			const pending = this.pendingSlotDrag;
-			this.pendingSlotDrag = null;
-			if (!pending) return;
-			this.updateSlotAtPointer(pending.pointerX, pending.pointerY);
-			this.startDragAutoScroll();
-		});
+		this.updateSlotAtPointer(payload.x, payload.y);
+		this.startDragAutoScroll();
 	}
 
 	private updateSlotAtPointer(pointerX: number, pointerY: number): void {
@@ -1692,7 +1681,6 @@ export class EventCalendarInteractionsController<
 	}
 
 	private finishSlotGesture(payload: PointerDragPayload): void {
-		this.cancelSlotDragFrame();
 		this.suppressSlotClick();
 		this.updateSlotAtPointer(payload.x, payload.y);
 		if (this.isGestureStale()) {
@@ -2922,12 +2910,6 @@ export class EventCalendarInteractionsController<
 		if (this.itemDragFrame !== null) cancelAnimationFrame(this.itemDragFrame);
 		this.itemDragFrame = null;
 		this.pendingItemDrag = null;
-	}
-
-	private cancelSlotDragFrame(): void {
-		if (this.slotDragFrame !== null) cancelAnimationFrame(this.slotDragFrame);
-		this.slotDragFrame = null;
-		this.pendingSlotDrag = null;
 	}
 
 	private startDragAutoScroll(): void {
