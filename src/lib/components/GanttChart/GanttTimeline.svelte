@@ -148,12 +148,11 @@
 	);
 	const projectRange = $derived(chart.schedule.analysis.projectRange);
 	const emptyCanvasRange = untrack(() => snapshot.visibleRange);
-	let projectCanvasRange = $state<GanttRange>(
-		untrack(() => cloneRange(projectRange ?? emptyCanvasRange))
+	let projectCanvasRange = $state<GanttRange | null>(
+		untrack(() => (projectRange ? cloneRange(projectRange) : null))
 	);
-	let hasProjectCanvasRange = $state(untrack(() => projectRange !== null));
 	let fittedProjectRange = $state<GanttRange | null>(null);
-	const canvasSourceRange = $derived(validRange ?? projectCanvasRange);
+	const canvasSourceRange = $derived(validRange ?? projectCanvasRange ?? emptyCanvasRange);
 	const scale = $derived(
 		createGanttTimeScale({
 			range: canvasSourceRange,
@@ -206,12 +205,12 @@
 
 	$effect(() => {
 		if (validRange || !projectRange) return;
-		if (!hasProjectCanvasRange) {
+		if (!projectCanvasRange) {
 			projectCanvasRange = cloneRange(projectRange);
-			hasProjectCanvasRange = true;
 			return;
 		}
 		const currentRange = untrack(() => projectCanvasRange);
+		if (!currentRange) return;
 		const nextStart = Math.min(currentRange.start.getTime(), projectRange.start.getTime());
 		const nextEnd = Math.max(currentRange.end.getTime(), projectRange.end.getTime());
 		if (nextStart === currentRange.start.getTime() && nextEnd === currentRange.end.getTime()) {
@@ -360,7 +359,6 @@
 		pendingAnchor = { date: center, offset: effectiveViewportWidth / 2 };
 		if (!validRange) {
 			projectCanvasRange = cloneRange(projectRange);
-			hasProjectCanvasRange = true;
 		}
 		if (isZoomChange) chart.setZoom(zoom, center);
 		fittedProjectRange = cloneRange(projectRange);

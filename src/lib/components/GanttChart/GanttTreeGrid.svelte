@@ -97,8 +97,6 @@
 
 	let horizontalViewport = $state<HTMLDivElement | null>(null);
 	let horizontalScrollLeft = $state(0);
-	let activeTaskId = $state('');
-	let activeColumnId = $state('');
 	let touchDropTarget = $state<GanttRowDropTarget | null>(null);
 	const gridId = $props.id();
 	const nodesByTaskId = $derived(new Map(rowModel.rows.map((node) => [node.taskId, node])));
@@ -177,23 +175,6 @@
 	});
 	const rowDropPreview = $derived(resolveRowDropPreview(touchDropTarget ?? nativeDropTarget));
 
-	$effect(() => {
-		const rows = rowModel.rows;
-		const columns = rowModel.visibleColumns;
-		if (!rows.some((row) => row.taskId === activeTaskId)) {
-			activeTaskId =
-				selection.kind === 'cell' && rows.some((row) => row.taskId === selection.taskId)
-					? selection.taskId
-					: (rows[0]?.taskId ?? '');
-		}
-		if (!columns.some((column) => column.id === activeColumnId)) {
-			activeColumnId =
-				selection.kind === 'cell' && columns.some((column) => column.id === selection.cell.columnId)
-					? selection.cell.columnId
-					: (columns[0]?.id ?? '');
-		}
-	});
-
 	function isTaskSelected(taskId: string): boolean {
 		return (
 			(selection.kind === 'task' && selection.taskId === taskId) ||
@@ -202,8 +183,6 @@
 	}
 
 	function focusCell(taskId: string, columnId: string): void {
-		activeTaskId = taskId;
-		activeColumnId = columnId;
 		chart.a11y.setCellTarget(taskId, columnId);
 		chart.select({
 			kind: 'cell',
