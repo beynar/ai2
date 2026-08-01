@@ -114,6 +114,19 @@ export type GanttChartStateBindings<
 	readonly eventHandlers: GanttEventHandlers<TTaskFields, TDependencyFields> | undefined;
 };
 
+export type GanttModelBoundary<
+	TTaskFields extends object,
+	TDependencyFields extends object,
+	TResourceFields extends object,
+	TAssignmentFields extends object
+> = Readonly<{
+	tasks: GanttTask<TTaskFields>[];
+	dependencies: GanttDependency<TDependencyFields>[];
+	resources: readonly GanttResource<TResourceFields>[];
+	assignments: GanttAssignment<TAssignmentFields>[];
+	calendars: readonly GanttCalendar[];
+}>;
+
 export type GanttTimelineNavigation = Readonly<{
 	fitProject: () => boolean;
 	prepareZoom: (anchorDate: Date) => void;
@@ -274,6 +287,24 @@ export class GanttChartState<
 	readonly onEmptyRangeSelect = $derived(this.eventHandlers?.emptyRangeSelect);
 	readonly onZoomChange = $derived(this.eventHandlers?.zoomChange);
 	readonly onVisibleRangeChange = $derived(this.eventHandlers?.visibleRangeChange);
+	readonly modelBoundary: GanttModelBoundary<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	> = $derived({
+		tasks: this.tasks,
+		dependencies: this.dependencies,
+		resources: this.resources,
+		assignments: this.assignments,
+		calendars: this.calendars
+	});
+
+	isModelBoundaryCurrent(
+		boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
+	): boolean {
+		return boundary === this.modelBoundary;
+	}
 
 	readonly schedule: ResolvedGanttSchedule<
 		TTaskFields,

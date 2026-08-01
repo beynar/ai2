@@ -16,7 +16,7 @@ import {
 import { getGanttValueSignature } from './ganttChart.signature.js';
 import { getGanttTaskSubtreeIds } from './ganttChart.subtree.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
-import type { GanttChartState } from './ganttChart.state.svelte.js';
+import type { GanttChartState, GanttModelBoundary } from './ganttChart.state.svelte.js';
 import type {
 	GanttAssignment,
 	GanttAssignmentMutationKind,
@@ -41,26 +41,18 @@ type MutationBoundary<
 	TDependencyFields extends object,
 	TResourceFields extends object,
 	TAssignmentFields extends object
-> = Readonly<{
-	tasks: GanttTask<TTaskFields>[];
-	dependencies: GanttDependency<TDependencyFields>[];
-	resources: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['resources'];
-	assignments: GanttAssignment<TAssignmentFields>[];
-	calendars: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['calendars'];
-	timeZone: string;
-	projectCalendarId: string | undefined;
-	selection: GanttSelection;
-}>;
+> = GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> &
+	Readonly<{
+		modelBoundary: GanttModelBoundary<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
+		timeZone: string;
+		projectCalendarId: string | undefined;
+		selection: GanttSelection;
+	}>;
 
 export class GanttChartMutations<
 	TTaskFields extends object,
@@ -1186,11 +1178,8 @@ export class GanttChartMutations<
 		TAssignmentFields
 	> {
 		return {
-			tasks: this.chart.tasks,
-			dependencies: this.chart.dependencies,
-			resources: this.chart.resources,
-			assignments: this.chart.assignments,
-			calendars: this.chart.calendars,
+			...this.chart.modelBoundary,
+			modelBoundary: this.chart.modelBoundary,
 			timeZone: this.chart.timeZone,
 			projectCalendarId: this.chart.projectCalendarId,
 			selection: this.chart.selection
@@ -1201,11 +1190,7 @@ export class GanttChartMutations<
 		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): void {
 		if (
-			boundary.tasks === this.chart.tasks &&
-			boundary.dependencies === this.chart.dependencies &&
-			boundary.resources === this.chart.resources &&
-			boundary.assignments === this.chart.assignments &&
-			boundary.calendars === this.chart.calendars &&
+			this.chart.isModelBoundaryCurrent(boundary.modelBoundary) &&
 			boundary.timeZone === this.chart.timeZone &&
 			boundary.projectCalendarId === this.chart.projectCalendarId
 		) {

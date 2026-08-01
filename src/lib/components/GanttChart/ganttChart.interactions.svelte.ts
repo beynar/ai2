@@ -22,7 +22,7 @@ import {
 	getGanttScalePixel,
 	type GanttTimeScale
 } from './ganttChart.scale.js';
-import type { GanttChartState } from './ganttChart.state.svelte.js';
+import type { GanttChartState, GanttModelBoundary } from './ganttChart.state.svelte.js';
 import {
 	deriveGanttProgressChange,
 	deriveGanttRangeKeyboardProposal,
@@ -51,39 +51,6 @@ const TASK_ACTIVATION_SUPPRESSION_MS = 700;
 
 type PointerCoordinates = Readonly<{ clientX: number; clientY: number }>;
 
-type GestureBoundary<
-	TTaskFields extends object,
-	TDependencyFields extends object,
-	TResourceFields extends object,
-	TAssignmentFields extends object
-> = Readonly<{
-	tasks: readonly GanttTask<TTaskFields>[];
-	dependencies: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['dependencies'];
-	resources: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['resources'];
-	assignments: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['assignments'];
-	calendars: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['calendars'];
-}>;
-
 type TaskGesture<
 	TTaskFields extends object,
 	TDependencyFields extends object,
@@ -97,7 +64,7 @@ type TaskGesture<
 	task: GanttTask<TTaskFields>;
 	calendar: GanttCalendarRuntime;
 	scale: GanttTimeScale;
-	boundary: GestureBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 	originInstant: Date;
 	rowTop: number;
 	pointer: PointerCoordinates;
@@ -120,7 +87,7 @@ type RangeGesture<
 	inputMode: 'pointer' | 'keyboard';
 	calendar: GanttCalendarRuntime;
 	scale: GanttTimeScale;
-	boundary: GestureBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 	originInstant: Date;
 	rowTop: number;
 	pointer: PointerCoordinates;
@@ -1034,31 +1001,19 @@ export class GanttChartInteractions<
 		);
 	}
 
-	private getBoundary(): GestureBoundary<
+	private getBoundary(): GanttModelBoundary<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	> {
-		return {
-			tasks: this.#chart.tasks,
-			dependencies: this.#chart.dependencies,
-			resources: this.#chart.resources,
-			assignments: this.#chart.assignments,
-			calendars: this.#chart.calendars
-		};
+		return this.#chart.modelBoundary;
 	}
 
 	private isBoundaryCurrent(
-		boundary: GestureBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
+		boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): boolean {
-		return (
-			boundary.tasks === this.#chart.tasks &&
-			boundary.dependencies === this.#chart.dependencies &&
-			boundary.resources === this.#chart.resources &&
-			boundary.assignments === this.#chart.assignments &&
-			boundary.calendars === this.#chart.calendars
-		);
+		return this.#chart.isModelBoundaryCurrent(boundary);
 	}
 
 	private getPointerInstant(

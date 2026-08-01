@@ -15,7 +15,7 @@ import {
 import { GanttChartError } from './ganttChart.error.js';
 import type { GanttChartMutations } from './ganttChart.mutations.js';
 import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
-import type { GanttChartState } from './ganttChart.state.svelte.js';
+import type { GanttChartState, GanttModelBoundary } from './ganttChart.state.svelte.js';
 import type {
 	GanttDependencyCreationRequest,
 	GanttDependencyEndpoint,
@@ -37,44 +37,6 @@ export type GanttTimelineInteractionContext = Readonly<{
 	rowHeight: number;
 }>;
 
-type DependencyBoundary<
-	TTaskFields extends object,
-	TDependencyFields extends object,
-	TResourceFields extends object,
-	TAssignmentFields extends object
-> = Readonly<{
-	tasks: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['tasks'];
-	dependencies: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['dependencies'];
-	resources: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['resources'];
-	assignments: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['assignments'];
-	calendars: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>['calendars'];
-}>;
-
 type DependencyGesture<
 	TTaskFields extends object,
 	TDependencyFields extends object,
@@ -94,7 +56,7 @@ type DependencyGesture<
 	invalidReason: GanttInteractionBlockedInfo['reason'] | null;
 	invalidMessage: string | null;
 	scale: GanttTimeScale;
-	boundary: DependencyBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 }>;
 
 export type GanttDependencyInteractionStatus = Readonly<{
@@ -709,31 +671,19 @@ export class GanttDependencyInteraction<
 		};
 	}
 
-	private getBoundary(): DependencyBoundary<
+	private getBoundary(): GanttModelBoundary<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	> {
-		return {
-			tasks: this.#chart.tasks,
-			dependencies: this.#chart.dependencies,
-			resources: this.#chart.resources,
-			assignments: this.#chart.assignments,
-			calendars: this.#chart.calendars
-		};
+		return this.#chart.modelBoundary;
 	}
 
 	private isBoundaryCurrent(
-		boundary: DependencyBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
+		boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): boolean {
-		return (
-			boundary.tasks === this.#chart.tasks &&
-			boundary.dependencies === this.#chart.dependencies &&
-			boundary.resources === this.#chart.resources &&
-			boundary.assignments === this.#chart.assignments &&
-			boundary.calendars === this.#chart.calendars
-		);
+		return this.#chart.isModelBoundaryCurrent(boundary);
 	}
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
