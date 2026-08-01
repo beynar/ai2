@@ -368,13 +368,6 @@ export class GanttChartMutations<
 		let candidateDependencies = input.dependencies.map(cloneGanttDependency);
 		let candidateAssignments = input.assignments.map(cloneGanttAssignment);
 		const shouldAutoSchedule = input.source !== 'history' && this.chart.autoSchedule;
-		const initialSchedule = this.resolveSchedule(
-			candidateTasks,
-			candidateDependencies,
-			candidateAssignments,
-			shouldAutoSchedule
-		);
-		candidateTasks = [...initialSchedule.tasks];
 
 		const taskPolicy = this.applyTaskPolicies({
 			before: boundary.tasks,
@@ -394,6 +387,7 @@ export class GanttChartMutations<
 			after: candidateDependencies,
 			tasks: candidateTasks,
 			assignments: candidateAssignments,
+			schedule: taskPolicy.schedule,
 			source: input.source,
 			autoSchedule: shouldAutoSchedule,
 			boundary
@@ -407,6 +401,7 @@ export class GanttChartMutations<
 			after: candidateAssignments,
 			tasks: candidateTasks,
 			dependencies: candidateDependencies,
+			schedule: dependencyPolicy.schedule,
 			source: input.source,
 			autoSchedule: shouldAutoSchedule,
 			boundary
@@ -599,6 +594,12 @@ export class GanttChartMutations<
 		after: readonly GanttDependency<TDependencyFields>[];
 		tasks: readonly GanttTask<TTaskFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
+		schedule: ResolvedGanttSchedule<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
 		source: GanttMutationSource;
 		autoSchedule: boolean;
 		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
@@ -612,12 +613,7 @@ export class GanttChartMutations<
 		>;
 	}> | null {
 		let dependencies = input.after.map(cloneGanttDependency);
-		let schedule = this.resolveSchedule(
-			input.tasks,
-			dependencies,
-			input.assignments,
-			input.autoSchedule
-		);
+		let schedule = input.schedule;
 		let tasks = schedule.tasks.map(cloneGanttTask);
 		for (const dependencyId of getChangedRecordIds(input.before, dependencies)) {
 			const previousDependency =
@@ -677,6 +673,12 @@ export class GanttChartMutations<
 		after: readonly GanttAssignment<TAssignmentFields>[];
 		tasks: readonly GanttTask<TTaskFields>[];
 		dependencies: readonly GanttDependency<TDependencyFields>[];
+		schedule: ResolvedGanttSchedule<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>;
 		source: GanttMutationSource;
 		autoSchedule: boolean;
 		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
@@ -690,12 +692,7 @@ export class GanttChartMutations<
 		>;
 	}> | null {
 		let assignments = input.after.map(cloneGanttAssignment);
-		let schedule = this.resolveSchedule(
-			input.tasks,
-			input.dependencies,
-			assignments,
-			input.autoSchedule
-		);
+		let schedule = input.schedule;
 		for (const assignmentId of getChangedRecordIds(input.before, assignments)) {
 			const previousAssignment =
 				input.before.find((assignment) => assignment.id === assignmentId) ?? null;
