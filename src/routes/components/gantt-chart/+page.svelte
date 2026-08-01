@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
+	import { createComponentControls } from '../../componentControls.svelte.js';
 	import DocPage from '../../DocPage.svelte';
 	import GanttChartGuide from './GanttChartGuide.svelte';
 	import GanttChartCustomizationDemo from './GanttChartCustomizationDemo.svelte';
@@ -20,6 +21,44 @@
 		overviewCode,
 		resourcesCode
 	} from './codeSnippets.js';
+
+	const usageControls = createComponentControls([
+		{
+			name: 'density',
+			type: 'segmented',
+			label: 'Density',
+			value: 'normal',
+			options: [
+				{ value: 'small', label: 'Small' },
+				{ value: 'normal', label: 'Normal' },
+				{ value: 'large', label: 'Large' }
+			]
+		},
+		{
+			name: 'height',
+			type: 'slider',
+			label: 'Height',
+			value: 544,
+			min: 416,
+			max: 736,
+			step: 64,
+			showValue: true,
+			class: 'w-36'
+		},
+		{
+			name: 'state',
+			type: 'segmented',
+			label: 'State',
+			value: 'ready',
+			options: [
+				{ value: 'ready', label: 'Ready' },
+				{ value: 'loading', label: 'Loading' },
+				{ value: 'disabled', label: 'Disabled' }
+			]
+		},
+		{ name: 'grid', type: 'switch', label: 'Tree grid', value: true },
+		{ name: 'todayIndicator', type: 'switch', label: 'Today line', value: true }
+	]);
 </script>
 
 <DocPage
@@ -38,12 +77,19 @@
 	<GanttChartGuide />
 
 	<ComponentCard
+		controls={usageControls}
 		title="Controlled project shell"
-		description="The tree and time panes share one resolved hierarchy, expansion model, row height, selection, and vertical scroll owner. Resize the inline splitter or change the zoom level without mutating task definitions."
+		description="Change density, height, state, and grouped view options while the tree and timeline keep one hierarchy, row model, selection, and vertical scroll owner."
 		code={overviewCode}
 		class="min-h-0 items-stretch p-3 md:p-5"
 	>
-		<GanttChartOverviewDemo />
+		<GanttChartOverviewDemo
+			density={usageControls.value.density}
+			height={usageControls.value.height}
+			demoState={usageControls.value.state}
+			showGrid={usageControls.value.grid}
+			showTodayIndicator={usageControls.value.todayIndicator}
+		/>
 	</ComponentCard>
 
 	{#snippet examples()}

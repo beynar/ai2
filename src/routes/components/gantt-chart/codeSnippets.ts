@@ -6,12 +6,22 @@ export const overviewCode = [
 	"    { id: 'design', parentId: 'plan', title: 'Design', start, end, progress: 0.4 }",
 	'  ]);',
 	'  let dependencies = $state<GanttDependency[]>([]);',
+	"  let density = $state<'small' | 'normal' | 'large'>('normal');",
+	'  let height = $state(544);',
+	"  let demoState = $state<'ready' | 'loading' | 'disabled'>('ready');",
+	'  let showGrid = $state(true);',
+	'  let showTodayIndicator = $state(true);',
 	'</script>',
 	'',
 	'<GanttChart',
 	'  bind:tasks bind:dependencies',
 	'  timeZone="Europe/Paris"',
-	'  class="h-[36rem]"',
+	'  {density}',
+	"  loading={demoState === 'loading'} disabled={demoState === 'disabled'}",
+	'  layout={{ grid: showGrid ? {} : false }}',
+	'  timeline={{ todayIndicator: showTodayIndicator }}',
+	'  style={`height: ${height}px`}',
+	'  class="w-full"',
 	'/>'
 ].join('\n');
 

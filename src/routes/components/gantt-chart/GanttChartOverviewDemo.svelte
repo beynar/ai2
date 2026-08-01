@@ -5,7 +5,24 @@
 		type GanttDependencyCreationRequest,
 		type GanttTask
 	} from '$lib/components/GanttChart/index.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { parisProjectCalendar } from './ganttChartDemoData.js';
+
+	type DemoState = 'ready' | 'loading' | 'disabled';
+
+	let {
+		density = 'normal',
+		height = 544,
+		demoState = 'ready',
+		showGrid = true,
+		showTodayIndicator = true
+	}: {
+		density?: Density;
+		height?: number;
+		demoState?: DemoState;
+		showGrid?: boolean;
+		showTodayIndicator?: boolean;
+	} = $props();
 
 	let nextDependencyId = 0;
 
@@ -81,7 +98,13 @@
 	bind:dependencies
 	calendars={[parisProjectCalendar]}
 	timeZone="Europe/Paris"
+	{density}
+	loading={demoState === 'loading'}
+	disabled={demoState === 'disabled'}
 	schedule={{ calendarId: parisProjectCalendar.id }}
+	timeline={{ todayIndicator: showTodayIndicator }}
+	layout={{ grid: showGrid ? {} : false }}
 	interactions={{ dependencyCreation: { create: createDependency } }}
-	class="h-[34rem] w-full"
+	style={`height: ${height}px`}
+	class="w-full"
 />
