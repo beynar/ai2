@@ -9,6 +9,7 @@ import { GanttChartError } from './ganttChart.error.js';
 import { GanttChartHistory } from './ganttChart.history.svelte.js';
 import { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { GanttChartMutations } from './ganttChart.mutations.js';
+import type { GanttSnapshot } from './ganttChart.props.js';
 import { createGanttColumnContext } from './ganttChart.rows.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type {
@@ -168,23 +169,6 @@ export type GanttChartStateOptions<
 		| undefined;
 };
 
-type ScheduleCache<
-	TTaskFields extends object,
-	TDependencyFields extends object,
-	TResourceFields extends object,
-	TAssignmentFields extends object
-> = {
-	tasks: readonly GanttTask<TTaskFields>[];
-	dependencies: readonly GanttDependency<TDependencyFields>[];
-	resources: readonly GanttResource<TResourceFields>[];
-	assignments: readonly GanttAssignment<TAssignmentFields>[];
-	calendars: readonly GanttCalendar[];
-	expandedTaskIds: readonly string[];
-	timeZone: string;
-	projectCalendarId: string | undefined;
-	value: ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-};
-
 export type GanttTimelineNavigation = Readonly<{
 	fitProject: () => boolean;
 	prepareZoom: (anchorDate: Date) => void;
@@ -207,8 +191,6 @@ export class GanttChartState<
 		TResourceFields,
 		TAssignmentFields
 	>;
-	#scheduleCache:
-		ScheduleCache<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> | undefined;
 	#visibleRange = $state<GanttRange | null>(null);
 	#timelineNavigation: GanttTimelineNavigation | null = null;
 	#rowNavigation: GanttRowNavigation | null = null;
@@ -266,30 +248,30 @@ export class GanttChartState<
 			redo: () => this.redo(),
 			scrollToTask: (taskId) => this.scrollToTask(taskId)
 		});
+		$effect(() => {
+			void options.tasks;
+			void options.dependencies;
+			void options.resources;
+			void options.assignments;
+			void options.calendars;
+			this.interaction.reconcileControlledState();
+		});
+		$effect(() => {
+			this.a11y.syncInteractionStatus(this.interaction.status, this.interaction.dependencyStatus);
+		});
+		$effect(() => {
+			this.a11y.syncSelection(options.selection);
+		});
 	}
 
-	get schedule(): ResolvedGanttSchedule<
+	readonly schedule: ResolvedGanttSchedule<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
-	> {
+	> = $derived.by(() => {
 		const options = this.#options;
-		const cache = this.#scheduleCache;
-		if (
-			cache &&
-			cache.tasks === options.tasks &&
-			cache.dependencies === options.dependencies &&
-			cache.resources === options.resources &&
-			cache.assignments === options.assignments &&
-			cache.calendars === options.calendars &&
-			cache.expandedTaskIds === options.expandedTaskIds &&
-			cache.timeZone === options.timeZone &&
-			cache.projectCalendarId === options.projectCalendarId
-		) {
-			return cache.value;
-		}
-		const value = resolveGanttSchedule({
+		return resolveGanttSchedule({
 			tasks: options.tasks,
 			dependencies: options.dependencies,
 			resources: options.resources,
@@ -300,19 +282,30 @@ export class GanttChartState<
 			projectCalendarId: options.projectCalendarId,
 			autoSchedule: false
 		});
-		this.#scheduleCache = {
+	});
+
+	readonly snapshot: GanttSnapshot<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	> = $derived.by(() => {
+		const options = this.#options;
+		return {
 			tasks: options.tasks,
 			dependencies: options.dependencies,
 			resources: options.resources,
 			assignments: options.assignments,
-			calendars: options.calendars,
+			resolvedTasks: this.schedule.resolvedTasks,
 			expandedTaskIds: options.expandedTaskIds,
-			timeZone: options.timeZone,
-			projectCalendarId: options.projectCalendarId,
-			value
+			selection: options.selection,
+			zoom: options.zoom,
+			visibleRange: this.visibleRange,
+			loading: options.loading,
+			disabled: options.disabled,
+			api: this
 		};
-		return value;
-	}
+	});
 
 	get visibleRange(): GanttRange {
 		if (this.#visibleRange) return cloneRange(this.#visibleRange);

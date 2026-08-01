@@ -64,7 +64,6 @@ export class GanttChartHistory<
 > {
 	#past = $state.raw<HistoryEntry<TTaskFields, TDependencyFields, TAssignmentFields>[]>([]);
 	#future = $state.raw<HistoryEntry<TTaskFields, TDependencyFields, TAssignmentFields>[]>([]);
-	#revision = $state(0);
 
 	constructor(
 		private readonly options: GanttChartStateOptions<
@@ -99,19 +98,16 @@ export class GanttChartHistory<
 		};
 		this.#past = [...this.#past, entry].slice(-limit);
 		this.#future = [];
-		this.#revision += 1;
 		return () => this.forget(entry);
 	}
 
 	canUndo(): boolean {
-		void this.#revision;
 		if (!this.options.interactions.history || this.getLimit() === 0) return false;
 		const entry = this.#past.at(-1);
 		return Boolean(entry && this.isCurrent(entry, entry.afterSignature));
 	}
 
 	canRedo(): boolean {
-		void this.#revision;
 		if (!this.options.interactions.history || this.getLimit() === 0) return false;
 		const entry = this.#future.at(-1);
 		return Boolean(entry && this.isCurrent(entry, entry.beforeSignature));
@@ -150,7 +146,6 @@ export class GanttChartHistory<
 			this.#future = this.#future.slice(0, -1);
 			this.#past = [...this.#past, entry];
 		}
-		this.#revision += 1;
 		return true;
 	}
 
@@ -201,7 +196,6 @@ export class GanttChartHistory<
 			this.#past = [];
 		}
 		this.#future = [];
-		this.#revision += 1;
 	}
 }
 

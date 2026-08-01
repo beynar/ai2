@@ -90,7 +90,7 @@
 	import { onMount } from 'svelte';
 	import GanttChartHeader from './GanttChartHeader.svelte';
 	import GanttChartShell from './GanttChartShell.svelte';
-	import type { GanttChartProps, GanttScaleOption, GanttSnapshot } from './ganttChart.props.js';
+	import type { GanttChartProps, GanttScaleOption } from './ganttChart.props.js';
 	import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
 	import {
 		DEFAULT_GANTT_ZOOM_LEVELS,
@@ -392,39 +392,7 @@
 		}
 	});
 
-	const snapshot = $derived.by(
-		(): GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> => ({
-			tasks,
-			dependencies,
-			resources: resolvedResources,
-			assignments,
-			resolvedTasks: chart.schedule.resolvedTasks,
-			expandedTaskIds,
-			selection,
-			zoom,
-			visibleRange: chart.visibleRange,
-			loading,
-			disabled,
-			api: chart
-		})
-	);
-
-	$effect(() => {
-		void tasks;
-		void dependencies;
-		void resources;
-		void assignments;
-		void calendars;
-		chart.interaction.reconcileControlledState();
-	});
-
-	$effect(() => {
-		chart.a11y.syncInteractionStatus(chart.interaction.status, chart.interaction.dependencyStatus);
-	});
-
-	$effect(() => {
-		chart.a11y.syncSelection(selection);
-	});
+	const snapshot = $derived(chart.snapshot);
 
 	function handleRootKeydown(
 		event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }

@@ -247,7 +247,7 @@ export class GanttChartInteractions<
 		);
 	}
 
-	get status(): GanttChartInteractionStatus<TTaskFields> | null {
+	readonly status: GanttChartInteractionStatus<TTaskFields> | null = $derived.by(() => {
 		const gesture = this.#gesture;
 		if (!gesture) return null;
 		if (gesture.type === 'range') {
@@ -275,7 +275,7 @@ export class GanttChartInteractions<
 			isValid: gesture.isValid,
 			invalidReason: gesture.invalidReason
 		};
-	}
+	});
 
 	get isActive(): boolean {
 		return this.#gesture !== null || this.dependency.isActive;
