@@ -216,7 +216,7 @@ export class EventCalendarInteractionsController<
 	private itemDragFrame: number | null = null;
 	private lastPublishedProposalKey: string | null = null;
 	private pendingItemDrag: {
-		target: EventCalendarDropTarget | null;
+		fallbackTargetData: unknown;
 		pointerX: number;
 		pointerY: number;
 	} | null = null;
@@ -1183,12 +1183,19 @@ export class EventCalendarInteractionsController<
 	}
 
 	private handleItemDrag(payload: ElementEventPayloadMap['onDrag']): void {
-		if (!this.gesture || this.gesture.kind === 'slot-create') return;
+		const active = this.gesture;
+		if (!active || active.kind === 'slot-create') return;
 		const input = payload.location.current.input;
+		const fallbackTargetData = this.findTargetData(payload.location.current.dropTargets);
+		if (
+			active.source === 'external-drop' &&
+			!active.targetKey &&
+			fallbackTargetData === undefined &&
+			this.itemDragFrame === null
+		)
+			return;
 		this.pendingItemDrag = {
-			target:
-				this.getTargetAt(input.clientX, input.clientY) ??
-				this.readTarget(payload.location.current.dropTargets),
+			fallbackTargetData,
 			pointerX: input.clientX,
 			pointerY: input.clientY
 		};
@@ -1197,7 +1204,11 @@ export class EventCalendarInteractionsController<
 			this.itemDragFrame = null;
 			const pending = this.pendingItemDrag;
 			this.pendingItemDrag = null;
-			if (pending) this.updateItemGestureAt(pending.target, pending.pointerX, pending.pointerY);
+			if (!pending) return;
+			const target =
+				this.getTargetAt(pending.pointerX, pending.pointerY) ??
+				deserializeTarget(pending.fallbackTargetData);
+			this.updateItemGestureAt(target, pending.pointerX, pending.pointerY);
 		});
 	}
 
@@ -1281,6 +1292,16 @@ export class EventCalendarInteractionsController<
 			else this.stopDragAutoScroll();
 		}
 		if (!target) {
+			if (
+				active.proposal === null &&
+				active.targetKey === null &&
+				!active.isValid &&
+				active.reason === 'invalid-target'
+			) {
+				active.pointerX = pointerX;
+				active.pointerY = pointerY;
+				return;
+			}
 			this.gesture = {
 				...active,
 				proposal: null,
@@ -1294,10 +1315,17 @@ export class EventCalendarInteractionsController<
 			return;
 		}
 		const proposal = this.deriveItemProposal(active, target, pointerX, pointerY);
+		const operation = proposal ? getProposalOperation(proposal, active.kind) : active.kind;
+		if (proposal && this.hasSameLiveProposal(active, proposal, operation)) {
+			active.pointerX = pointerX;
+			active.pointerY = pointerY;
+			active.targetKey = target.key;
+			return;
+		}
 		const reason = proposal ? this.validateProposal(proposal) : 'invalid-target';
 		this.gesture = {
 			...active,
-			kind: proposal ? getProposalOperation(proposal, active.kind) : active.kind,
+			kind: operation,
 			source: proposal?.source ?? active.source,
 			proposal,
 			targetKey: target.key,
@@ -1307,6 +1335,27 @@ export class EventCalendarInteractionsController<
 			pointerY
 		};
 		this.publishProposal(this.gesture);
+	}
+
+	private hasSameLiveProposal(
+		active: EventCalendarItemGesture<TItemFields>,
+		proposal: EventCalendarProposedUpdate<TItemFields>,
+		operation: EventCalendarItemOperation
+	): boolean {
+		const current = active.proposal;
+		if (!current || active.kind !== operation || current.source !== proposal.source) return false;
+		const currentItem = current.item;
+		const nextItem = proposal.item;
+		return (
+			currentItem.id === nextItem.id &&
+			(currentItem.allDay === true) === (nextItem.allDay === true) &&
+			isSameEndpoint(currentItem.start, nextItem.start) &&
+			isSameEndpoint(currentItem.end, nextItem.end) &&
+			areStringArraysEqual(
+				this.calendar.resourceModel.resolveItemLeafIds(currentItem),
+				this.calendar.resourceModel.resolveItemLeafIds(nextItem)
+			)
+		);
 	}
 
 	private deriveItemProposal(
@@ -2580,13 +2629,18 @@ export class EventCalendarInteractionsController<
 	private readTarget(
 		dropTargets: ElementEventPayloadMap['onDrag']['location']['current']['dropTargets']
 	): EventCalendarDropTarget | null {
+		return deserializeTarget(this.findTargetData(dropTargets));
+	}
+
+	private findTargetData(
+		dropTargets: ElementEventPayloadMap['onDrag']['location']['current']['dropTargets']
+	): unknown {
 		for (const record of dropTargets) {
 			if (record.data.mark !== SOURCE_MARK || record.data.calendarInstanceId !== this.instanceId)
 				continue;
-			const target = deserializeTarget(record.data.target);
-			if (target) return target;
+			return record.data.target;
 		}
-		return null;
+		return undefined;
 	}
 
 	private getTimedDropIndicatorRect(
