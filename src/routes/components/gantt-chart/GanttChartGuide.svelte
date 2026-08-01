@@ -26,7 +26,7 @@
 		},
 		{
 			title: 'Composition, accessibility, and scale',
-			body: 'Every content snippet renders inside component-owned roles, focus targets, selection, hit areas, gestures, and live announcements. M/S/E/P/D/R enter keyboard mutation modes; Enter commits and Escape cancels. One virtual row model and a windowed time axis keep mounted DOM bounded. Use the ganttChart theme key and CSS metric variables without replacing those owners.'
+			body: 'Every content snippet renders inside component-owned roles, focus targets, selection, hit areas, gestures, and live announcements. M/S/E/P/D/R enter keyboard mutation modes; Enter commits and Escape cancels. One virtual row model and a windowed time axis keep mounted DOM bounded. Size controls typography, controls, and task geometry; density controls spacing and row geometry. Use the ganttChart theme key and CSS metric variables without replacing those owners.'
 		}
 	];
 </script>

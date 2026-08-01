@@ -141,6 +141,7 @@
 		zoom = $bindable<GanttZoomLevel>('week'),
 		timeZone,
 		i18n,
+		size = 'normal',
 		density = 'normal',
 		class: className,
 		ref = $bindable<HTMLElement | null>(null),
@@ -630,6 +631,7 @@
 	onkeydowncapture={handleRootKeydownCapture}
 	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
+	data-size={size}
 	data-density={density}
 	data-color="primary"
 	data-direction={resolvedDirection}
@@ -637,6 +639,7 @@
 	data-loading={loading || undefined}
 	data-disabled={disabled || undefined}
 	class={classes.root({
+		size,
 		density,
 		color,
 		disabled,
@@ -650,6 +653,7 @@
 			{messages}
 			locale={resolvedLocale}
 			{timeZone}
+			{size}
 			{density}
 			{color}
 			{disabled}
@@ -664,6 +668,7 @@
 		{chart}
 		{snapshot}
 		{messages}
+		{size}
 		{density}
 		{color}
 		direction={resolvedDirection}
@@ -719,7 +724,7 @@
 	<div
 		id={chart.a11y.liveRegionId}
 		data-gantt-chart-part="live-region"
-		class={classes.liveRegion({ density, color, disabled })}
+		class={classes.liveRegion({ size, density, color, disabled })}
 		aria-live="polite"
 		aria-atomic="true"
 	>

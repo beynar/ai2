@@ -5,7 +5,7 @@
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { useDndList } from '$lib/utils/useDndList.svelte.js';
 	import GanttColumnHeader from './GanttColumnHeader.svelte';
 	import GanttTreeRow from './GanttTreeRow.svelte';
@@ -60,6 +60,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -80,6 +81,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -448,7 +450,7 @@
 
 <div
 	data-gantt-chart-part="grid-pane"
-	class={classes.gridPane({ density, color, disabled })}
+	class={classes.gridPane({ size, density, color, disabled })}
 	role="treegrid"
 	aria-label={messages.ganttChartGrid}
 	aria-rowcount={rowModel.rows.length + 1}
@@ -465,7 +467,7 @@
 		>
 			<div
 				data-gantt-chart-part="grid-header"
-				class={classes.gridHeader({ density, color, disabled })}
+				class={classes.gridHeader({ size, density, color, disabled })}
 				role="row"
 				aria-rowindex="1"
 			>
@@ -479,6 +481,7 @@
 						{column}
 						{columnIndex}
 						{messages}
+						{size}
 						{density}
 						{color}
 						{disabled}
@@ -506,7 +509,7 @@
 			<div style:width={`${gridWidth}px`} style:min-width="100%" dir={direction}>
 				<div
 					data-gantt-chart-part="rows"
-					class={classes.rows({ density, color, disabled })}
+					class={classes.rows({ size, density, color, disabled })}
 					style:height={`${totalHeight}px`}
 					{@attach dnd.list}
 				>
@@ -527,6 +530,7 @@
 								{messages}
 								{locale}
 								{timeZone}
+								{size}
 								{density}
 								{color}
 								{direction}
@@ -555,7 +559,7 @@
 						<div
 							data-gantt-row-drop-indicator
 							data-gantt-reorder-intent={rowDropPreview.intent}
-							class={classes.rowDropIndicator({ density, color, disabled })}
+							class={classes.rowDropIndicator({ size, density, color, disabled })}
 							style:top={`${rowDropPreview.top}px`}
 							style:inset-inline-start={`${rowDropPreview.inlineStart}px`}
 							aria-hidden="true"

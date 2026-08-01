@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { GanttPositionedScaleCell } from './ganttChart.scale.js';
 	import type { GanttTimeHeaderPayload } from './ganttChart.props.js';
@@ -9,6 +9,7 @@
 	let {
 		positioned,
 		level,
+		size,
 		density,
 		color,
 		disabled,
@@ -17,6 +18,7 @@
 	}: {
 		positioned: GanttPositionedScaleCell;
 		level: 'upper' | 'lower';
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -38,7 +40,7 @@
 	data-cell-index={positioned.cell.index}
 	data-start={positioned.cell.start.toISOString()}
 	data-end={positioned.cell.end.toISOString()}
-	class={partClass({ density, color, disabled })}
+	class={partClass({ size, density, color, disabled })}
 	style:left={`${positioned.left}px`}
 	style:width={`${positioned.width}px`}
 	title={positioned.label}

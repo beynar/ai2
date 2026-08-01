@@ -88,7 +88,7 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import Spinner from '$lib/components/Spinner/Spinner.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
 	import { get } from 'svelte/store';
 	import GanttTimeline from './GanttTimeline.svelte';
@@ -174,6 +174,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -207,6 +208,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -461,7 +463,7 @@
 	data-empty={rowModel.rows.length === 0 || undefined}
 	data-loading={loading || undefined}
 	aria-busy={loading}
-	class={classes.content({ density, color, disabled })}
+	class={classes.content({ size, density, color, disabled })}
 	style:--gantt-row-height={`${rowHeight}px`}
 	style:--gantt-min-grid-width={`${minGridWidth}px`}
 	style:--gantt-max-grid-width={`${maxGridWidth}px`}
@@ -489,7 +491,7 @@
 	{#if rowModel.rows.length === 0}
 		<div
 			data-gantt-chart-part="empty"
-			class={classes.empty({ density, color, disabled })}
+			class={classes.empty({ size, density, color, disabled })}
 			role="status"
 			aria-live="polite"
 		>
@@ -502,7 +504,7 @@
 	{#if loading}
 		<div
 			data-gantt-chart-part="loading"
-			class={classes.loading({ density, color, disabled, class: 'pointer-events-none' })}
+			class={classes.loading({ size, density, color, disabled, class: 'pointer-events-none' })}
 			role="status"
 			aria-live="polite"
 		>
@@ -542,7 +544,7 @@
 					}
 				]}
 				class="min-h-full overflow-visible"
-				theme={{ handle: { base: classes.splitter({ density, color, disabled }) } }}
+				theme={{ handle: { base: classes.splitter({ size, density, color, disabled }) } }}
 				getHandleAriaLabel={() => messages.ganttChartResizePanels}
 				onLayoutChanged={(sizes, meta) => {
 					if (meta.isUserInteraction) publishGridWidth(sizes);
@@ -564,6 +566,7 @@
 		{messages}
 		{locale}
 		{timeZone}
+		{size}
 		{density}
 		{color}
 		{direction}
@@ -596,6 +599,7 @@
 		{messages}
 		{locale}
 		{timeZone}
+		{size}
 		{density}
 		{color}
 		{direction}
@@ -609,11 +613,11 @@
 {/snippet}
 
 {#snippet defaultEmpty()}
-	<div class="text-sm text-neutral/65">{messages.ganttChartEmpty}</div>
+	<div class="text-neutral/65">{messages.ganttChartEmpty}</div>
 {/snippet}
 
 {#snippet defaultLoading()}
-	<Spinner text={messages.ganttChartLoading} />
+	<Spinner text={messages.ganttChartLoading} {size} />
 {/snippet}
 
 <style>

@@ -4,7 +4,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
 	import type { GanttChartInteractionStatus } from './ganttChart.interactions.svelte.js';
@@ -30,6 +30,7 @@
 		rowHeight,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		disabled,
@@ -45,6 +46,7 @@
 		rowHeight: number;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -72,7 +74,7 @@
 					node: previewNode,
 					rowTop: status.rowTop,
 					rowHeight,
-					density,
+					size,
 					scale,
 					visibleRange,
 					visiblePixels
@@ -196,6 +198,7 @@
 		data-gantt-chart-part={status.type === 'range' ? 'range-selection' : 'drag-preview'}
 		data-operation={status.operation}
 		class={(status.type === 'range' ? classes.rangeSelection : classes.dragPreview)({
+			size,
 			density,
 			color: semanticColor,
 			disabled

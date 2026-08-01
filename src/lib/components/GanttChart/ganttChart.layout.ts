@@ -6,7 +6,7 @@ import {
 } from '$lib/scheduling/civilDate.js';
 import { intersectScheduleRanges } from '$lib/scheduling/scheduleRange.js';
 import { getInstantZonedDay, startOfZonedCivilDay } from '$lib/scheduling/zonedTime.js';
-import type { Density } from '$lib/types/theme.js';
+import type { Sizes } from '$lib/types/theme.js';
 import { getCalendarWorkingIntervals, type GanttCalendarRuntime } from './ganttChart.calendar.js';
 import { GanttChartError } from './ganttChart.error.js';
 import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
@@ -23,7 +23,7 @@ import type {
 const CONNECTOR_OFFSET = 14;
 
 const TASK_METRICS: Record<
-	Density,
+	Sizes,
 	Readonly<{
 		taskHeight: number;
 		summaryHeight: number;
@@ -68,14 +68,14 @@ export function positionGanttTask<TTaskFields extends object>(input: {
 	node: GanttResolvedTaskNode<TTaskFields>;
 	rowTop: number;
 	rowHeight: number;
-	density: Density;
+	size: Sizes;
 	scale: GanttTimeScale;
 	visibleRange: GanttRange;
 	visiblePixels: Readonly<{ start: number; end: number }>;
 }): GanttPositionedTask<TTaskFields> | null {
 	const { node } = input;
 	if (!node.resolvedStart || !node.resolvedEnd) return null;
-	const metrics = TASK_METRICS[input.density];
+	const metrics = TASK_METRICS[input.size];
 	const taskHeight =
 		node.type === 'milestone'
 			? metrics.milestoneSize

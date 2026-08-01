@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import GanttTimeHeaderCell from './GanttTimeHeaderCell.svelte';
 	import { getGanttScaleCells, type GanttTimeScale } from './ganttChart.scale.js';
@@ -10,6 +10,7 @@
 		scale,
 		visiblePixels,
 		viewportWidth,
+		size,
 		density,
 		color,
 		disabled,
@@ -20,6 +21,7 @@
 		scale: GanttTimeScale;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		viewportWidth: number;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -35,13 +37,14 @@
 
 <div
 	data-gantt-chart-part="time-header"
-	class={classes.timeHeader({ density, color, disabled })}
+	class={classes.timeHeader({ size, density, color, disabled })}
 	style:width={`${scale.totalWidth}px`}
 >
 	{#each upperCells as positioned (`upper:${positioned.cell.index}`)}
 		<GanttTimeHeaderCell
 			{positioned}
 			level="upper"
+			{size}
 			{density}
 			{color}
 			{disabled}
@@ -53,6 +56,7 @@
 		<GanttTimeHeaderCell
 			{positioned}
 			level="lower"
+			{size}
 			{density}
 			{color}
 			{disabled}

@@ -27,7 +27,7 @@
 	import { dotsSixVerticalIcon } from '$lib/components/Icons/dotsSixVertical.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import {
 		formatGanttColumnValue,
 		getGanttColumnLabel,
@@ -61,6 +61,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -96,6 +97,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -170,7 +172,7 @@
 	data-column-id={column.id}
 	data-grid-row={rowIndex}
 	data-grid-column={columnIndex}
-	class={classes.treeCell({ density, color, disabled })}
+	class={classes.treeCell({ size, density, color, disabled })}
 	class:justify-center={column.align === 'center'}
 	class:justify-end={column.align === 'end'}
 	style:width={`${column.width}px`}
@@ -204,7 +206,7 @@
 		{#if node.type === 'summary'}
 			<button
 				type="button"
-				class={classes.expander({ density, color, disabled })}
+				class={classes.expander({ size, density, color, disabled })}
 				aria-label={node.isExpanded
 					? messages.ganttChartCollapseTask(node.task.title)
 					: messages.ganttChartExpandTask(node.task.title)}
@@ -219,14 +221,26 @@
 				{@render (node.isExpanded ? caretDownIcon : caretRightIcon)({ size: 12 })}
 			</button>
 		{:else}
-			<span class="size-6 shrink-0" aria-hidden="true"></span>
+			<span
+				class={classes.expander({
+					size,
+					density,
+					color,
+					disabled,
+					class: 'invisible pointer-events-none'
+				})}
+				aria-hidden="true"
+			></span>
 		{/if}
 	{/if}
 
 	{#if isEditing}
 		<input
 			bind:value={editValue}
-			class="h-6 min-w-0 flex-1 rounded border border-color/45 bg-surface px-1 text-xs outline-none focus:ring-2 focus:ring-color/35"
+			class="min-w-0 flex-1 rounded border border-color/45 bg-surface px-1 outline-none focus:ring-2 focus:ring-color/35"
+			class:h-5={size === 'small'}
+			class:h-6={size === 'normal'}
+			class:h-7={size === 'large'}
 			aria-label={`${label}: ${formattedValue}`}
 			onblur={commitEdit}
 			onkeydown={(event) => {
@@ -240,7 +254,7 @@
 			<span
 				data-gantt-chart-part="resource-group-label"
 				data-resource-id={resourceGroup.id}
-				class="inline-flex max-w-28 shrink-0 items-center gap-1 rounded bg-surface-recessed px-1.5 py-0.5 text-[0.6875rem] font-medium text-neutral/65"
+				class="inline-flex max-w-28 shrink-0 items-center gap-1 rounded bg-surface-recessed px-1.5 py-0.5 font-medium text-neutral/65"
 				title={resourceGroup.title}
 			>
 				<span

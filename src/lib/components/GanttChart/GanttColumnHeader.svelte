@@ -4,7 +4,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { getGanttColumnLabel } from './ganttChart.columns.js';
 	import type { GanttColumnHeaderPayload } from './ganttChart.props.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
@@ -15,6 +15,7 @@
 		column,
 		columnIndex,
 		messages,
+		size,
 		density,
 		color,
 		disabled,
@@ -30,6 +31,7 @@
 		>;
 		columnIndex: number;
 		messages: Messages;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -49,7 +51,7 @@
 <div
 	data-gantt-chart-part="column-header"
 	data-column-id={column.id}
-	class={classes.columnHeader({ density, color, disabled })}
+	class={classes.columnHeader({ size, density, color, disabled })}
 	style:width={`${column.width}px`}
 	style:min-width={`${column.minWidth}px`}
 	style:max-width={`${column.maxWidth}px`}

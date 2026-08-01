@@ -4,7 +4,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import { getGanttTaskColor } from './ganttChart.color.js';
 	import type { GanttResourceAssignmentsPayload } from './ganttChart.props.js';
@@ -22,6 +22,7 @@
 		overAllocatedResourceIds,
 		messages,
 		locale,
+		size,
 		density,
 		color,
 		disabled,
@@ -34,6 +35,7 @@
 		overAllocatedResourceIds: ReadonlySet<string>;
 		messages: Messages;
 		locale: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -71,6 +73,7 @@
 		data-task-id={node.taskId}
 		data-over-allocated={isOverAllocated || undefined}
 		class={classes.resourceAssignments({
+			size,
 			density,
 			color,
 			disabled,
@@ -81,7 +84,7 @@
 		{#if isOverAllocated}
 			<span
 				data-gantt-chart-part="over-allocation"
-				class={classes.overAllocation({ density, color, disabled, overAllocated: true })}
+				class={classes.overAllocation({ size, density, color, disabled, overAllocated: true })}
 				title={messages.ganttChartOverAllocated(
 					resources
 						.filter((resource) => overAllocatedResourceIds.has(resource.id))

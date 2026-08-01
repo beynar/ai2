@@ -1,6 +1,6 @@
 <script lang="ts" generics="TTaskFields extends object, TDependencyFields extends object">
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import GanttDependencyControl from './GanttDependencyControl.svelte';
 	import { positionGanttDependency } from './ganttChart.layout.js';
@@ -20,6 +20,7 @@
 		selection,
 		messages,
 		instructionsId,
+		size,
 		density,
 		color,
 		disabled,
@@ -43,6 +44,7 @@
 		selection: GanttSelection;
 		messages: Messages;
 		instructionsId: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -90,7 +92,7 @@
 
 <svg
 	data-gantt-chart-part="connector-layer"
-	class={classes.connectorLayer({ density, color, disabled })}
+	class={classes.connectorLayer({ size, density, color, disabled })}
 	width={scale.totalWidth}
 	height={totalHeight}
 	viewBox={`0 0 ${scale.totalWidth} ${totalHeight}`}
@@ -121,6 +123,7 @@
 			data-critical={isCritical || undefined}
 			data-selected={isSelected || undefined}
 			class={classes.connector({
+				size,
 				density,
 				color,
 				disabled,
@@ -134,7 +137,7 @@
 			d={positioned.geometry.path}
 			data-gantt-chart-part="connector-hit-target"
 			data-dependency-id={positioned.dependency.dependency.id}
-			class={classes.connectorHitTarget({ density, color, disabled })}
+			class={classes.connectorHitTarget({ size, density, color, disabled })}
 			pointer-events="stroke"
 			aria-hidden="true"
 			onclick={(event) => activate(positioned.dependency, event)}

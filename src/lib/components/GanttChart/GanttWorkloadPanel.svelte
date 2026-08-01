@@ -1,7 +1,7 @@
 <script lang="ts" generics="TResourceFields extends object">
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
 	import { get } from 'svelte/store';
 	import type { Snippet } from 'svelte';
@@ -32,6 +32,7 @@
 		height,
 		messages,
 		locale,
+		size,
 		density,
 		color,
 		direction,
@@ -47,6 +48,7 @@
 		height: number;
 		messages: Messages;
 		locale: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -166,7 +168,7 @@
 
 <div
 	data-gantt-chart-part="workload-panel"
-	class={classes.workloadPanel({ density, color, disabled, class: 'overflow-hidden' })}
+	class={classes.workloadPanel({ size, density, color, disabled, class: 'overflow-hidden' })}
 	style:width={`${scale.totalWidth}px`}
 	style:height={`${height}px`}
 >
@@ -181,13 +183,14 @@
 		aria-rowcount={resourceView.resources.length + 1}
 	>
 		<div
-			class="relative border-b border-neutral-muted bg-surface-raised/95 text-[0.6875rem] font-semibold text-neutral/70"
+			class="relative border-b border-neutral-muted bg-surface-raised/95 font-semibold text-neutral/70"
 			style:height={`${headerHeight}px`}
 			role="row"
 		>
 			{#each visibleCells as positionedCell (positionedCell.cell.index)}
 				<div
 					class={classes.workloadCell({
+						size,
 						density,
 						color,
 						disabled,
@@ -241,6 +244,7 @@
 										height={resourceRowHeight}
 										accessibleLabel={getCellLabel(resource, positionedCell, bucket)}
 										{locale}
+										{size}
 										{density}
 										{color}
 										{disabled}
@@ -249,7 +253,7 @@
 									/>
 								{/each}
 								<div
-									class="absolute inset-y-0 z-20 flex w-36 items-center gap-1.5 border-e border-neutral-muted bg-surface/95 px-2 text-xs"
+									class="absolute inset-y-0 z-20 flex w-36 items-center gap-1.5 border-e border-neutral-muted bg-surface/95 px-2"
 									class:left-0={direction === 'ltr'}
 									class:right-0={direction === 'rtl'}
 									style:padding-inline-start={`${8 + (resourceView.depthByResourceId.get(resource.id) ?? 0) * 14}px`}

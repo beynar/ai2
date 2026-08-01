@@ -4,8 +4,10 @@ import {
 	type InferComponentTheme,
 	useComponentTheme
 } from '$lib/utils/cva/index.js';
+import type { Density, Sizes } from '$lib/types/theme.js';
 
-type DensityClasses = Record<'small' | 'normal' | 'large', string>;
+type DensityClasses = Record<Density, string>;
+type SizeClasses = Record<Sizes, string>;
 
 const densityVariants: DensityClasses = {
 	small: '',
@@ -13,7 +15,14 @@ const densityVariants: DensityClasses = {
 	large: ''
 };
 
+const sizeVariants: SizeClasses = {
+	small: '',
+	normal: '',
+	large: ''
+};
+
 const ganttChartVariants = {
+	size: sizeVariants,
 	density: densityVariants,
 	color: {
 		primary: '',
@@ -35,6 +44,7 @@ const ganttChartVariants = {
 } as const;
 
 const defaultVariants = {
+	size: 'normal',
 	density: 'normal',
 	color: 'primary',
 	selected: false,
@@ -47,10 +57,17 @@ const defaultVariants = {
 	overAllocated: false
 } as const;
 
-function createGanttChartPart(base: string, density: DensityClasses = densityVariants) {
+function createGanttChartPart(
+	base: string,
+	variants: Readonly<{ size?: SizeClasses; density?: DensityClasses }> = {}
+) {
 	return cva({
 		base,
-		variants: { ...ganttChartVariants, density },
+		variants: {
+			...ganttChartVariants,
+			size: variants.size ?? sizeVariants,
+			density: variants.density ?? densityVariants
+		},
 		defaultVariants
 	});
 }
@@ -58,43 +75,60 @@ function createGanttChartPart(base: string, density: DensityClasses = densityVar
 const root = createGanttChartPart(
 	'relative isolate flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-muted/60 bg-surface text-neutral [container-type:inline-size] [--gantt-row-height:2rem] [--gantt-header-height:3rem] [--gantt-grid-width:22rem] [--gantt-task-height:1.25rem] [--gantt-task-color:var(--color)] [--gantt-workload-row-height:2rem] [--gantt-indent-size:0.75rem] motion-reduce:scroll-auto motion-reduce:[&_*]:!animate-none motion-reduce:[&_*]:!transition-none forced-colors:border-[CanvasText]',
 	{
-		small:
-			'[--gantt-row-height:1.75rem] [--gantt-header-height:2.5rem] [--gantt-task-height:1rem] [--gantt-workload-row-height:1.75rem] [--gantt-indent-size:0.625rem]',
-		normal: '',
-		large:
-			'[--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-task-height:1.5rem] [--gantt-workload-row-height:2.5rem] [--gantt-indent-size:0.875rem]'
+		density: {
+			small:
+				'[--gantt-row-height:1.75rem] [--gantt-header-height:2.5rem] [--gantt-workload-row-height:1.75rem] [--gantt-indent-size:0.625rem]',
+			normal: '',
+			large:
+				'[--gantt-row-height:2.25rem] [--gantt-header-height:3.5rem] [--gantt-workload-row-height:2.5rem] [--gantt-indent-size:0.875rem]'
+		},
+		size: {
+			small: '[--gantt-task-height:1rem]',
+			normal: '',
+			large: '[--gantt-task-height:1.5rem]'
+		}
 	}
 );
 const header = createGanttChartPart(
 	'flex min-w-0 shrink-0 flex-wrap items-center border-b border-neutral-muted/60 bg-surface-raised',
 	{
-		small: 'gap-1.5 px-2 py-1.5',
-		normal: 'gap-2 px-3 py-2',
-		large: 'gap-3 px-4 py-3'
+		density: {
+			small: 'gap-1.5 px-2 py-1.5',
+			normal: 'gap-2 px-3 py-2',
+			large: 'gap-3 px-4 py-3'
+		}
 	}
 );
 const navigation = createGanttChartPart('flex min-w-0 items-center', {
-	small: 'gap-1',
-	normal: 'gap-2',
-	large: 'gap-3'
+	density: {
+		small: 'gap-1',
+		normal: 'gap-2',
+		large: 'gap-3'
+	}
 });
 const title = createGanttChartPart(
 	'min-w-0 flex-1 truncate font-semibold tracking-tight text-neutral',
 	{
-		small: 'text-xs',
-		normal: 'text-sm',
-		large: 'text-base'
+		size: {
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-base'
+		}
 	}
 );
 const zoomControl = createGanttChartPart('flex min-w-0 items-center', {
-	small: 'gap-0.5',
-	normal: 'gap-1',
-	large: 'gap-1.5'
+	density: {
+		small: 'gap-0.5',
+		normal: 'gap-1',
+		large: 'gap-1.5'
+	}
 });
 const actions = createGanttChartPart('ms-auto flex min-w-0 items-center', {
-	small: 'gap-1',
-	normal: 'gap-1.5',
-	large: 'gap-2'
+	density: {
+		small: 'gap-1',
+		normal: 'gap-1.5',
+		large: 'gap-2'
+	}
 });
 const content = createGanttChartPart('relative min-h-0 min-w-0 flex-1');
 const splitShell = createGanttChartPart('flex h-full min-h-0 min-w-0');
@@ -114,9 +148,8 @@ const gridHeader = createGanttChartPart(
 const columnHeader = createGanttChartPart(
 	'flex min-w-0 items-center border-e border-neutral-muted/35 font-semibold text-neutral/75 outline-none last:border-e-0',
 	{
-		small: 'px-1 text-[0.625rem]',
-		normal: 'px-1.5 text-[0.6875rem]',
-		large: 'px-2 text-xs'
+		density: { small: 'px-1', normal: 'px-1.5', large: 'px-2' },
+		size: { small: 'text-[0.625rem]', normal: 'text-[0.6875rem]', large: 'text-xs' }
 	}
 );
 const rows = createGanttChartPart('relative min-w-full');
@@ -129,17 +162,18 @@ const rowDropIndicator = createGanttChartPart(
 const treeCell = createGanttChartPart(
 	'flex min-w-0 items-center outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-color/60',
 	{
-		small: 'px-1 text-[0.6875rem]',
-		normal: 'px-1.5 text-xs',
-		large: 'px-2 text-sm'
+		density: { small: 'px-1', normal: 'px-1.5', large: 'px-2' },
+		size: { small: 'text-[0.6875rem]', normal: 'text-xs', large: 'text-sm' }
 	}
 );
 const expander = createGanttChartPart(
 	'grid shrink-0 place-items-center rounded outline-none hover:bg-neutral-muted/50 focus-visible:ring-2 focus-visible:ring-color/60',
 	{
-		small: 'size-6',
-		normal: 'size-6',
-		large: 'size-7'
+		size: {
+			small: 'size-6',
+			normal: 'size-6',
+			large: 'size-7'
+		}
 	}
 );
 const timeHeader = createGanttChartPart(
@@ -148,17 +182,21 @@ const timeHeader = createGanttChartPart(
 const timeHeaderUpper = createGanttChartPart(
 	'absolute top-0 flex h-1/2 items-center justify-center truncate border-e border-b border-neutral-muted/35 px-1 font-semibold text-neutral/75',
 	{
-		small: 'text-[0.6875rem]',
-		normal: 'text-xs',
-		large: 'text-sm'
+		size: {
+			small: 'text-[0.6875rem]',
+			normal: 'text-xs',
+			large: 'text-sm'
+		}
 	}
 );
 const timeHeaderLower = createGanttChartPart(
 	'absolute bottom-0 flex h-1/2 items-center justify-center truncate border-e border-neutral-muted/35 px-1 text-neutral/65',
 	{
-		small: 'text-[0.625rem]',
-		normal: 'text-[0.6875rem]',
-		large: 'text-xs'
+		size: {
+			small: 'text-[0.625rem]',
+			normal: 'text-[0.6875rem]',
+			large: 'text-xs'
+		}
 	}
 );
 const timelineRows = createGanttChartPart('relative min-w-full overflow-x-clip');
@@ -176,7 +214,8 @@ const summaryTask = createGanttChartPart(
 	'group/task pointer-events-auto absolute h-full touch-pan-y border-t-2 border-[var(--gantt-task-color)] before:absolute before:start-0 before:top-0 before:h-full before:border-s-2 before:border-[var(--gantt-task-color)] after:absolute after:end-0 after:top-0 after:h-full after:border-e-2 after:border-[var(--gantt-task-color)] outline-none data-[critical]:drop-shadow-[0_0_2px_var(--color-danger)] data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText]'
 );
 const milestone = createGanttChartPart(
-	'group/task pointer-events-auto absolute size-4 touch-pan-y rotate-45 border border-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)] bg-[var(--gantt-task-color)] outline-none data-[critical]:ring-2 data-[critical]:ring-danger/55 data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[CanvasText]'
+	'group/task pointer-events-auto absolute touch-pan-y rotate-45 border border-[color-mix(in_oklab,var(--gantt-task-color)_55%,transparent)] bg-[var(--gantt-task-color)] outline-none data-[critical]:ring-2 data-[critical]:ring-danger/55 data-[violated]:outline data-[violated]:outline-1 data-[violated]:outline-warning/70 focus-visible:ring-2 focus-visible:ring-color/60 forced-colors:border-[CanvasText] forced-colors:bg-[CanvasText]',
+	{ size: { small: 'size-3.5', normal: 'size-4', large: 'size-5' } }
 );
 const segment = createGanttChartPart('absolute inset-y-0 rounded bg-inherit');
 const progress = createGanttChartPart(
@@ -194,17 +233,22 @@ const dependencyHandle = createGanttChartPart(
 const taskLabel = createGanttChartPart(
 	'pointer-events-none absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-medium text-neutral/85',
 	{
-		small: 'text-[0.6875rem]',
-		normal: 'text-xs',
-		large: 'text-sm'
+		size: {
+			small: 'text-[0.6875rem]',
+			normal: 'text-xs',
+			large: 'text-sm'
+		}
 	}
 );
 const resourceAssignments = createGanttChartPart(
 	'ms-2 inline-flex max-w-64 items-center rounded bg-surface/85 font-normal text-neutral/70 shadow-sm data-[over-allocated]:text-danger forced-colors:border forced-colors:border-[CanvasText]',
 	{
-		small: 'gap-1 px-1 py-0.5 text-[0.625rem]',
-		normal: 'gap-1.5 px-1.5 py-0.5 text-[0.6875rem]',
-		large: 'gap-2 px-2 py-1 text-xs'
+		density: {
+			small: 'gap-1 px-1 py-0.5',
+			normal: 'gap-1.5 px-1.5 py-0.5',
+			large: 'gap-2 px-2 py-1'
+		},
+		size: { small: 'text-[0.625rem]', normal: 'text-[0.6875rem]', large: 'text-xs' }
 	}
 );
 const expectedProgress = createGanttChartPart(
@@ -241,23 +285,34 @@ const holiday = createGanttChartPart('pointer-events-none absolute top-0 bg-warn
 const dragPreview = createGanttChartPart(
 	'pointer-events-none absolute z-40 overflow-hidden rounded border border-dashed border-[var(--gantt-task-color)] bg-[color-mix(in_oklab,var(--gantt-task-color)_12%,var(--color-surface))] shadow-md',
 	{
-		small: 'text-[0.6875rem]',
-		normal: 'text-xs',
-		large: 'text-sm'
+		size: {
+			small: 'text-[0.6875rem]',
+			normal: 'text-xs',
+			large: 'text-sm'
+		}
 	}
 );
 const rangeSelection = createGanttChartPart(
 	'pointer-events-none absolute z-40 rounded border border-dashed border-color bg-color/10'
 );
 const workloadPanel = createGanttChartPart(
-	'relative shrink-0 border-t border-neutral-muted bg-surface'
+	'relative shrink-0 border-t border-neutral-muted bg-surface',
+	{
+		size: {
+			small: 'text-[0.625rem]',
+			normal: 'text-[0.6875rem]',
+			large: 'text-xs'
+		}
+	}
 );
 const workloadCell = createGanttChartPart(
 	'absolute border-e border-neutral-muted/55 tabular-nums data-[over-allocated]:bg-danger/12 data-[over-allocated]:font-semibold data-[over-allocated]:text-danger forced-colors:border-[CanvasText]',
 	{
-		small: 'text-[0.625rem]',
-		normal: 'text-[0.6875rem]',
-		large: 'text-xs'
+		size: {
+			small: 'text-[0.625rem]',
+			normal: 'text-[0.6875rem]',
+			large: 'text-xs'
+		}
 	}
 );
 const overAllocation = createGanttChartPart(
@@ -269,9 +324,8 @@ const loading = createGanttChartPart(
 const empty = createGanttChartPart(
 	'absolute inset-0 grid place-items-center text-center text-neutral/65',
 	{
-		small: 'p-4 text-xs',
-		normal: 'p-6 text-sm',
-		large: 'p-8 text-base'
+		density: { small: 'p-4', normal: 'p-6', large: 'p-8' },
+		size: { small: 'text-xs', normal: 'text-sm', large: 'text-base' }
 	}
 );
 const liveRegion = createGanttChartPart('sr-only');

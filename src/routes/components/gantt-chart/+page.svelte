@@ -24,6 +24,17 @@
 
 	const usageControls = createComponentControls([
 		{
+			name: 'size',
+			type: 'segmented',
+			label: 'Size',
+			value: 'normal',
+			options: [
+				{ value: 'small', label: 'Small' },
+				{ value: 'normal', label: 'Normal' },
+				{ value: 'large', label: 'Large' }
+			]
+		},
+		{
 			name: 'density',
 			type: 'segmented',
 			label: 'Density',
@@ -81,11 +92,12 @@
 	<ComponentCard
 		controls={usageControls}
 		title="Controlled project shell"
-		description="Change density, height, state, and grouped view options while the tree and timeline keep one hierarchy, row model, selection, and vertical scroll owner."
+		description="Change visual size, layout density, height, state, and grouped view options while the tree and timeline keep one hierarchy, row model, selection, and vertical scroll owner."
 		code={overviewCode}
 		class="min-h-0 items-stretch p-3 md:p-5"
 	>
 		<GanttChartOverviewDemo
+			size={usageControls.value.size}
 			density={usageControls.value.density}
 			height={usageControls.value.height}
 			demoState={usageControls.value.state}

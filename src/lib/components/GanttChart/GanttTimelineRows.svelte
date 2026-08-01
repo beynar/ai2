@@ -3,7 +3,7 @@
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import GanttDependencyLayer from './GanttDependencyLayer.svelte';
@@ -87,6 +87,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -122,6 +123,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -171,7 +173,7 @@
 
 <div
 	data-gantt-chart-part="timeline-rows"
-	class={classes.timelineRows({ density, color, disabled })}
+	class={classes.timelineRows({ size, density, color, disabled })}
 	style:width={`${scale.totalWidth}px`}
 	style:height={`${totalHeight}px`}
 >
@@ -184,6 +186,7 @@
 	<GanttTimeShadeLayer
 		{shades}
 		{totalHeight}
+		{size}
 		{density}
 		{color}
 		{disabled}
@@ -194,7 +197,7 @@
 	{#each gridCells as positioned (positioned.cell.index)}
 		<div
 			data-gantt-chart-part="grid-line"
-			class={classes.gridLine({ density, color, disabled })}
+			class={classes.gridLine({ size, density, color, disabled })}
 			style:left={`${positioned.left}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -213,6 +216,7 @@
 				data-resource-group={resourceGroup?.id}
 				data-resource-group-start={isResourceGroupStart || undefined}
 				class={classes.timelineRow({
+					size,
 					density,
 					color,
 					disabled,
@@ -231,7 +235,7 @@
 		<div
 			data-gantt-chart-part="project-line"
 			data-edge="start"
-			class={classes.projectLine({ density, color, disabled })}
+			class={classes.projectLine({ size, density, color, disabled })}
 			style:left={`${projectStartLeft}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -241,7 +245,7 @@
 		<div
 			data-gantt-chart-part="project-line"
 			data-edge="end"
-			class={classes.projectLine({ density, color, disabled })}
+			class={classes.projectLine({ size, density, color, disabled })}
 			style:left={`${projectEndLeft}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -250,7 +254,7 @@
 	{#if showTodayIndicator && todayLeft !== null && todayLeft >= 0 && todayLeft <= scale.totalWidth}
 		<div
 			data-gantt-chart-part="today-indicator"
-			class={classes.todayIndicator({ density, color, disabled, today: true })}
+			class={classes.todayIndicator({ size, density, color, disabled, today: true })}
 			style:left={`${todayLeft}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -259,7 +263,7 @@
 
 	<div
 		data-gantt-chart-part="task-layer"
-		class={classes.taskLayer({ density, color, disabled })}
+		class={classes.taskLayer({ size, density, color, disabled })}
 		style:width={`${scale.totalWidth}px`}
 		style:height={`${totalHeight}px`}
 	>
@@ -270,7 +274,7 @@
 						node,
 						rowTop: virtualRow.start,
 						rowHeight,
-						density,
+						size,
 						scale,
 						visibleRange,
 						visiblePixels
@@ -289,6 +293,7 @@
 					{messages}
 					{locale}
 					{timeZone}
+					{size}
 					{density}
 					{color}
 					{direction}
@@ -318,6 +323,7 @@
 			{rowHeight}
 			{locale}
 			{timeZone}
+			{size}
 			{density}
 			{color}
 			{disabled}
@@ -331,6 +337,7 @@
 			status={chart.interaction.dependencyStatus}
 			{totalHeight}
 			totalWidth={scale.totalWidth}
+			{size}
 			{density}
 			{color}
 			{disabled}
@@ -349,6 +356,7 @@
 		{selection}
 		{messages}
 		instructionsId={chart.a11y.instructionsId}
+		{size}
 		{density}
 		{color}
 		{disabled}

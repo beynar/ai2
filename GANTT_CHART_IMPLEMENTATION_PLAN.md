@@ -112,7 +112,7 @@ The frozen public surface keeps controlled state flat and groups configuration b
 
 - Bindable `tasks`, `dependencies`, `assignments`, `expandedTaskIds`, `selection`, `zoom`, and `gridWidth`.
 - Immutable `resources` and `calendars`.
-- Required `timeZone`; optional per-instance `i18n`, effective `density`, `class`, root `ref`, and `theme`.
+- Required `timeZone`; optional per-instance `i18n`, visual `size`, layout `density`, `class`, root `ref`, and `theme`.
 - Standard `loading` and `disabled` state.
 - `schedule` owns the project calendar, valid range, and one non-contradictory propagation value: `manual`, `move-successors`, or `auto`.
 - `timeline` owns the ordered built-in/custom scales, today/weekend/holiday presentation, optional fixed snap duration, scheduling-display toggles, and resource view.
@@ -197,7 +197,7 @@ Until a capability is implemented, it is not exposed by a runtime object that pr
 
 ## Theme contract
 
-One `ganttChartTheme` object owns stable parts for the shell, header/actions, split panes, splitter, scroll viewport, grid headers/cells/rows, timeline headers/cells, task/summary/milestone/segment/progress/baseline/deadline/labels, connectors and hit targets, non-working/today/project/constraint/critical/workload markers, previews, handles, focus/live/loading/empty states, and optional workload panel. It exports `setGanttChartTheme`, `useGanttChartTheme`, density/color/state variants, and CSS metric variables.
+One `ganttChartTheme` object owns stable parts for the shell, header/actions, split panes, splitter, scroll viewport, grid headers/cells/rows, timeline headers/cells, task/summary/milestone/segment/progress/baseline/deadline/labels, connectors and hit targets, non-working/today/project/constraint/critical/workload markers, previews, handles, focus/live/loading/empty states, and optional workload panel. It exports `setGanttChartTheme`, `useGanttChartTheme`, size/density/color/state variants, and CSS metric variables.
 
 ## Deliberate reuse
 

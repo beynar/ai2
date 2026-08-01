@@ -4,7 +4,7 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import GanttTreeCell from './GanttTreeCell.svelte';
 	import type { GanttTaskRowPayload, GanttTreeCellPayload } from './ganttChart.props.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
@@ -33,6 +33,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -71,6 +72,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -122,6 +124,7 @@
 	data-resource-group-start={showResourceGroupLabel || undefined}
 	data-gantt-reorder-parent={isDropParent || undefined}
 	class={classes.row({
+		size,
 		density,
 		color,
 		disabled,
@@ -154,6 +157,7 @@
 			{messages}
 			{locale}
 			{timeZone}
+			{size}
 			{density}
 			{color}
 			{direction}

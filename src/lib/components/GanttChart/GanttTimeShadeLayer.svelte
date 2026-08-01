@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { GanttTimeShade } from './ganttChart.layout.js';
 	import type { GanttNonWorkingTimePayload } from './ganttChart.props.js';
@@ -9,6 +9,7 @@
 	let {
 		shades,
 		totalHeight,
+		size,
 		density,
 		color,
 		disabled,
@@ -17,6 +18,7 @@
 	}: {
 		shades: readonly GanttTimeShade[];
 		totalHeight: number;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -39,6 +41,7 @@
 		data-kind={shade.kind}
 		data-weekend={shade.isWeekend || undefined}
 		class={(shade.kind === 'holiday' ? classes.holiday : classes.nonWorkingTime)({
+			size,
 			density,
 			color,
 			disabled,

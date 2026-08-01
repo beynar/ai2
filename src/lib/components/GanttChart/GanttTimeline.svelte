@@ -4,7 +4,7 @@
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { onMount, tick, untrack, type Snippet } from 'svelte';
 	import GanttTimeHeader from './GanttTimeHeader.svelte';
 	import GanttTimelineRows from './GanttTimelineRows.svelte';
@@ -85,6 +85,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -111,6 +112,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -407,7 +409,7 @@
 
 <div
 	data-gantt-chart-part="timeline-pane"
-	class={classes.timelinePane({ density, color, disabled })}
+	class={classes.timelinePane({ size, density, color, disabled })}
 	role="group"
 	aria-label={messages.ganttChartTimeline}
 >
@@ -423,6 +425,7 @@
 				{scale}
 				{visiblePixels}
 				{viewportWidth}
+				{size}
 				{density}
 				{color}
 				{disabled}
@@ -442,6 +445,7 @@
 		data-visible-start={visibleRange.start.toISOString()}
 		data-visible-end={visibleRange.end.toISOString()}
 		class={classes.viewport({
+			size,
 			density,
 			color,
 			disabled,
@@ -490,6 +494,7 @@
 					{messages}
 					{locale}
 					{timeZone}
+					{size}
 					{density}
 					{color}
 					{direction}
@@ -510,6 +515,7 @@
 						height={workloadPanelHeight}
 						{messages}
 						{locale}
+						{size}
 						{density}
 						{color}
 						{direction}

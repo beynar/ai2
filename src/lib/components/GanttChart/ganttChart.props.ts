@@ -1,6 +1,6 @@
 import type { Messages } from '$lib/i18n/en.js';
 import type { WithAttachments } from '$lib/types/props.js';
-import type { Density } from '$lib/types/theme.js';
+import type { Density, Sizes } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { GanttChartThemeProps } from './ganttChart.theme.js';
@@ -471,7 +471,9 @@ type GanttOwnProps<
 	timeZone: string;
 	/** Per-instance Svelai message overrides. */
 	i18n?: Partial<Messages>;
-	/** Chrome and row density, independent of zoom. Defaults to `normal`. */
+	/** Typography, controls, and task geometry scale. Defaults to `normal`. */
+	size?: Sizes;
+	/** Row, header, padding, gap, and indentation density. Defaults to `normal`. */
 	density?: Density;
 	/** Root classes; contained scrolling requires an explicit height. */
 	class?: string;

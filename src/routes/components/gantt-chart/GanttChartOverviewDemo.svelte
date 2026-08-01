@@ -5,12 +5,13 @@
 		type GanttDependencyCreationRequest,
 		type GanttTask
 	} from '$lib/components/GanttChart/index.js';
-	import type { Density } from '$lib/types/theme.js';
+	import type { Density, Sizes } from '$lib/types/theme.js';
 	import { parisProjectCalendar } from './ganttChartDemoData.js';
 
 	type DemoState = 'ready' | 'loading' | 'disabled';
 
 	let {
+		size = 'normal',
 		density = 'normal',
 		height = 544,
 		demoState = 'ready',
@@ -19,6 +20,7 @@
 		showWeekends = true,
 		showCriticalPath = false
 	}: {
+		size?: Sizes;
 		density?: Density;
 		height?: number;
 		demoState?: DemoState;
@@ -109,6 +111,7 @@
 	bind:dependencies
 	calendars={[parisProjectCalendar]}
 	timeZone="Europe/Paris"
+	{size}
 	{density}
 	loading={demoState === 'loading'}
 	disabled={demoState === 'disabled'}

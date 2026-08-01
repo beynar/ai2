@@ -44,7 +44,7 @@
 	import type { PopoverThemeProps } from '$lib/components/Popover/index.js';
 	import type { Messages } from '$lib/i18n/en.js';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import GanttResourceAssignments from './GanttResourceAssignments.svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
@@ -93,6 +93,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		direction,
@@ -117,6 +118,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		direction: 'ltr' | 'rtl';
@@ -471,7 +473,7 @@
 		<div
 			data-gantt-chart-part="baseline"
 			data-task-id={node.taskId}
-			class={classes.baseline({ density, color: semanticColor, disabled })}
+			class={classes.baseline({ size, density, color: semanticColor, disabled })}
 			style:left={`${positioned.baselineGeometry.left}px`}
 			style:top={`${positioned.baselineGeometry.top}px`}
 			style:width={`${positioned.baselineGeometry.width}px`}
@@ -492,7 +494,7 @@
 		<div
 			data-gantt-chart-part="deadline"
 			data-task-id={node.taskId}
-			class={classes.deadline({ density, color: semanticColor, disabled })}
+			class={classes.deadline({ size, density, color: semanticColor, disabled })}
 			style:left={`${positioned.deadlineLeft}px`}
 			style:top={`${positioned.geometry.top + positioned.geometry.height / 2 - 6}px`}
 			title={dateFormatter.format(node.task.deadline)}
@@ -509,6 +511,7 @@
 			data-constraint-type={node.task.constraint.type}
 			data-violated={hasConstraintViolation || undefined}
 			class={classes.constraint({
+				size,
 				density,
 				color: semanticColor,
 				disabled,
@@ -570,6 +573,7 @@
 					data-continues-after={positioned.geometry.continuesAfter || undefined}
 					data-color={semanticColor}
 					class={visualClass({
+						size,
 						density,
 						color: semanticColor,
 						disabled,
@@ -606,6 +610,7 @@
 			data-edge="start"
 			data-task-id={node.taskId}
 			class={classes.resizeHandle({
+				size,
 				density,
 				color: semanticColor,
 				disabled,
@@ -628,6 +633,7 @@
 			data-edge="end"
 			data-task-id={node.taskId}
 			class={classes.resizeHandle({
+				size,
 				density,
 				color: semanticColor,
 				disabled,
@@ -650,6 +656,7 @@
 			data-gantt-chart-part="progress-handle"
 			data-task-id={node.taskId}
 			class={classes.progressHandle({
+				size,
 				density,
 				color: semanticColor,
 				disabled,
@@ -673,7 +680,7 @@
 			data-endpoint="start"
 			data-task-id={node.taskId}
 			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'start') || undefined}
-			class={classes.dependencyHandle({ density, color: semanticColor, disabled })}
+			class={classes.dependencyHandle({ size, density, color: semanticColor, disabled })}
 			style:left={`${dependencyStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'start', {
@@ -694,7 +701,7 @@
 			data-endpoint="end"
 			data-task-id={node.taskId}
 			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'end') || undefined}
-			class={classes.dependencyHandle({ density, color: semanticColor, disabled })}
+			class={classes.dependencyHandle({ size, density, color: semanticColor, disabled })}
 			style:left={`${dependencyEndHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'end', {
@@ -712,7 +719,7 @@
 	<div
 		data-gantt-chart-part="task-label"
 		data-task-id={node.taskId}
-		class={classes.taskLabel({ density, color: semanticColor, disabled })}
+		class={classes.taskLabel({ size, density, color: semanticColor, disabled })}
 		style:left={`${taskLabelLeft}px`}
 		style:top={`${positioned.geometry.top + positioned.geometry.height / 2}px`}
 		style:transform={direction === 'rtl' ? 'translate(-100%, -50%)' : 'translateY(-50%)'}
@@ -726,6 +733,7 @@
 			{overAllocatedResourceIds}
 			{messages}
 			{locale}
+			{size}
 			{density}
 			{color}
 			{disabled}
@@ -742,6 +750,7 @@
 				<span
 					data-gantt-chart-part="segment"
 					class={classes.segment({
+						size,
 						density,
 						color: semanticColor,
 						disabled,
@@ -753,12 +762,12 @@
 				>
 					<span
 						data-gantt-chart-part="expected-progress"
-						class={classes.expectedProgress({ density, color: semanticColor, disabled })}
+						class={classes.expectedProgress({ size, density, color: semanticColor, disabled })}
 						style:width={`${segment.expectedProgressWidth}px`}
 					></span>
 					<span
 						data-gantt-chart-part="progress"
-						class={classes.progress({ density, color: semanticColor, disabled })}
+						class={classes.progress({ size, density, color: semanticColor, disabled })}
 						style:width={`${segment.progressWidth}px`}
 					></span>
 				</span>
@@ -778,13 +787,13 @@
 	{#if expectedProgressValue !== null}
 		<span
 			data-gantt-chart-part="expected-progress"
-			class={classes.expectedProgress({ density, color: semanticColor, disabled })}
+			class={classes.expectedProgress({ size, density, color: semanticColor, disabled })}
 			style:width={`${expectedProgressValue * 100}%`}
 		></span>
 	{/if}
 	<span
 		data-gantt-chart-part="progress"
-		class={classes.progress({ density, color: semanticColor, disabled })}
+		class={classes.progress({ size, density, color: semanticColor, disabled })}
 		style:width={`${progressValue * 100}%`}
 	></span>
 {/snippet}

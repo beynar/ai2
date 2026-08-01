@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { GanttDependencyInteractionStatus } from './ganttChart.dependencyInteraction.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
 
@@ -7,6 +7,7 @@
 		status,
 		totalWidth,
 		totalHeight,
+		size,
 		density,
 		color,
 		disabled,
@@ -15,6 +16,7 @@
 		status: GanttDependencyInteractionStatus;
 		totalWidth: number;
 		totalHeight: number;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -54,6 +56,7 @@
 	<path
 		d={path}
 		class={classes.connector({
+			size,
 			density,
 			color,
 			disabled,

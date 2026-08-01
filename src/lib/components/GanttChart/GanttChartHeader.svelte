@@ -12,7 +12,7 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
 	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { GanttHeaderPayload, GanttSnapshot } from './ganttChart.props.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
@@ -25,6 +25,7 @@
 		messages,
 		locale,
 		timeZone,
+		size,
 		density,
 		color,
 		disabled,
@@ -39,6 +40,7 @@
 		messages: Messages;
 		locale: string;
 		timeZone: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -93,6 +95,7 @@
 <div
 	data-gantt-chart-part="header"
 	class={classes.header({
+		size,
 		density,
 		color,
 		disabled,
@@ -118,14 +121,14 @@
 	{:else}
 		<div
 			data-gantt-chart-part="navigation"
-			class={classes.navigation({ density, color, disabled })}
+			class={classes.navigation({ size, density, color, disabled })}
 		>
 			{@render todayPart()}
 			{@render fitProjectPart()}
 		</div>
 		<div
 			data-gantt-chart-part="title"
-			class={classes.title({ density, color, disabled })}
+			class={classes.title({ size, density, color, disabled })}
 			role="status"
 			aria-live="polite"
 		>
@@ -140,7 +143,7 @@
 	<Button
 		type="button"
 		squared
-		size="small"
+		{size}
 		variant="ghost"
 		color="neutral"
 		prefix={minusIcon}
@@ -154,7 +157,7 @@
 	<Button
 		type="button"
 		squared
-		size="small"
+		{size}
 		variant="ghost"
 		color="neutral"
 		prefix={plusIcon}
@@ -168,7 +171,7 @@
 	<Button
 		type="button"
 		squared
-		size="small"
+		{size}
 		variant="ghost"
 		color="neutral"
 		prefix={arrowsInIcon}
@@ -181,7 +184,7 @@
 {#snippet todayPart()}
 	<Button
 		type="button"
-		size="small"
+		{size}
 		variant="outline"
 		{color}
 		prefix={calendarIcon}
@@ -195,14 +198,14 @@
 {#snippet zoomControlPart()}
 	<div
 		data-gantt-chart-part="zoom-control"
-		class={classes.zoomControl({ density, color, disabled })}
+		class={classes.zoomControl({ size, density, color, disabled })}
 	>
-		<ButtonGroup items={zoomButtons} size="small" variant="ghost" color="neutral" {disabled} />
+		<ButtonGroup items={zoomButtons} {size} variant="ghost" color="neutral" {disabled} />
 		<Select
 			items={zoomItems}
 			value={snapshot.zoom}
-			size="small"
-			density="small"
+			{size}
+			{density}
 			{disabled}
 			attrs={{ 'aria-label': messages.ganttChartZoomLevel }}
 			onChange={(zoom) => chart.setZoom(zoom as GanttZoomLevel)}
@@ -212,7 +215,10 @@
 
 {#snippet actionsPart()}
 	{#if actions}
-		<div data-gantt-chart-part="actions" class={classes.actions({ density, color, disabled })}>
+		<div
+			data-gantt-chart-part="actions"
+			class={classes.actions({ size, density, color, disabled })}
+		>
 			<Slot render={actions} payload={snapshot} />
 		</div>
 	{/if}

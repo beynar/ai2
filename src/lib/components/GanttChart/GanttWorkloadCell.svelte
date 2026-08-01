@@ -1,6 +1,6 @@
 <script lang="ts" generics="TResourceFields extends object">
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density } from '$lib/types/theme.js';
+	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { GanttWorkloadCellPayload } from './ganttChart.props.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
@@ -14,6 +14,7 @@
 		height,
 		accessibleLabel,
 		locale,
+		size,
 		density,
 		color,
 		disabled,
@@ -27,6 +28,7 @@
 		height: number;
 		accessibleLabel: string;
 		locale: string;
+		size: Sizes;
 		density: Density;
 		color: Colors;
 		disabled: boolean;
@@ -47,6 +49,7 @@
 	data-resource-id={resource.id}
 	data-over-allocated={bucket.isOverAllocated || undefined}
 	class={classes.workloadCell({
+		size,
 		density,
 		color,
 		disabled,
