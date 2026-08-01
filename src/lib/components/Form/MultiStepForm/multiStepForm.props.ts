@@ -72,7 +72,7 @@ export type MultiStepFormProps<I extends MultiStepFormItems = FormStep[]> = With
 		items: I & MultiStepFormItemsWithState<I>;
 		/** When true, renders a progress meter above the stepper. */
 		showMeter?: boolean;
-		/** Color token applied to the progress meter segments. */
+		/** Color token applied to the progress meter segments. Defaults to neutral. */
 		meterColor?: Colors;
 		/** Label for the previous-step navigation button. */
 		previousText?: string;
@@ -94,11 +94,11 @@ export type MultiStepFormProps<I extends MultiStepFormItems = FormStep[]> = With
 		) => Promise<void | boolean> | void | boolean;
 		/** Additional CSS classes applied to the root container. */
 		class?: string;
-		/** Visual presentation passed to every nested Form. */
+		/** Visual presentation of the multi-step shell. Card renders one shared card around all steps. */
 		variant?: FormProps<FormInputs>['variant'];
 		/** Theme overrides for the multi-step form container and footer. */
 		theme?: MultiStepFormThemeProps & {
-			/** Theme overrides passed to each step's nested Form component. */
+			/** Theme overrides passed to each step Form component. */
 			form?: FormProps<FormInputs>['theme'];
 		};
 		/** Props spread onto the previous-step button. */

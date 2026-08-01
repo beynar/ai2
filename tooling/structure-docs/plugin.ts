@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { Project } from 'ts-morph';
 import type { Plugin } from 'vite';
 import { extractComponentStructure, readThemeParts, readThemeSetter } from './extract';
@@ -67,7 +67,7 @@ export function svelaiStructureDocs(): Plugin {
 			return `export default ${JSON.stringify(buildMap())};`;
 		},
 		handleHotUpdate(ctx) {
-			if (!ctx.file.endsWith('.svelte') && !ctx.file.endsWith('.theme.ts')) return;
+			if (!affectsStructureDocs(root, ctx.file)) return;
 			if (project) project.getSourceFile(ctx.file)?.refreshFromFileSystemSync();
 			cachedMap = null;
 
@@ -78,6 +78,18 @@ export function svelaiStructureDocs(): Plugin {
 			}
 		}
 	};
+}
+
+function affectsStructureDocs(root: string, filePath: string): boolean {
+	const componentsRoot = resolve(root, COMPONENTS_DIR);
+	if (!filePath.startsWith(`${componentsRoot}${sep}`)) return false;
+	if (filePath.endsWith('.theme.ts')) return true;
+	if (!filePath.endsWith('.svelte')) return false;
+
+	const directory = dirname(filePath);
+	return readdirSync(directory)
+		.filter((file) => file.endsWith('.theme.ts'))
+		.some((themeFile) => findMainSvelteFiles(join(directory, themeFile)).includes(filePath));
 }
 
 /**

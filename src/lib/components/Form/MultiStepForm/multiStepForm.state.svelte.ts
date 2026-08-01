@@ -69,14 +69,14 @@ export class MultiStepFormState<I extends MultiStepFormItems = FormStep[]> {
 	value = $derived.by(() => this.mergeStepValues());
 	progress = $derived({
 		value: (((this.stepper?.activeStep ?? 0) + 1) / this.steps.length) * 100,
-		color: this.options.meterColor ?? 'info'
+		color: this.options.meterColor ?? 'neutral'
 	});
 	meterSteps = $derived(
 		this.steps.map((_, index) => ({
 			label: '',
 			start: (index / this.steps.length) * 100,
 			end: ((index + 1) / this.steps.length) * 100,
-			color: this.options.meterColor ?? 'info'
+			color: this.options.meterColor ?? 'neutral'
 		}))
 	);
 

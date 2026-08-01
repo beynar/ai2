@@ -5,7 +5,7 @@
 	import { onMount, tick } from 'svelte';
 	import Form from '../Form/Form.svelte';
 	import type { FormState } from '../Form/form.state.svelte.js';
-	import type { FormInputs, LiveFormValue } from '../Form/form.js';
+	import type { FormInputs, InferFormValue, LiveFormValue } from '../Form/form.js';
 	import type { AskButton, AskProps, AskResult } from './ask.props.js';
 	import { registerAskHost, type AskRequest } from './ask.js';
 
@@ -116,6 +116,26 @@
 		}
 	}
 
+	async function completeAskSubmission(
+		askState: AskViewState,
+		value: InferFormValue<FormInputs>
+	): Promise<void> {
+		try {
+			await askState.options.onSubmit?.(value);
+		} catch (error) {
+			if (askState.open && !askState.settled) {
+				askState.failure = error;
+				askState.hasFailure = true;
+				askState.open = false;
+			}
+			throw error;
+		}
+
+		if (!askState.open || askState.settled) return;
+		askState.outcome = { submitted: true, value };
+		askState.open = false;
+	}
+
 	async function restoreFocusAfterClose(returnFocusPath: HTMLElement[]): Promise<void> {
 		await tick();
 		const remainingAsk = getTopOpenAsk();
@@ -178,6 +198,10 @@
 		closeOnEscape={askState.open && !askState.form?.loading}
 		closeOnClickOutside={false}
 		swipeToDismiss={false}
+		theme={{
+			header: { base: '-mx-4 px-4' },
+			footer: { base: 'border-neutral-muted -mx-4 mt-2 border-t px-4 pt-3' }
+		}}
 		onOpen={(dialog) => {
 			if (dialog.isTop) focusFirstControl(askState);
 		}}
@@ -185,7 +209,7 @@
 	>
 		<Form
 			inputs={askState.options.inputs}
-			onSubmit={askState.options.onSubmit}
+			onSubmit={(value) => completeAskSubmission(askState, value)}
 			bind:value={askState.value}
 			bind:form={askState.form}
 			class={askState.options.class}
@@ -197,9 +221,7 @@
 		/>
 
 		{#snippet footer()}
-			<div
-				class="border-neutral-muted mt-2 flex flex-col gap-2 border-t pt-3 sm:flex-row sm:justify-end"
-			>
+			<div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
 				<Button
 					color="neutral"
 					{...cancelButton.props}

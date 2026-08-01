@@ -1,4 +1,5 @@
 <script lang="ts" generics="I extends FormInputs">
+	import { getContext } from 'svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import { useCardTheme } from '$lib/components/Card/card.theme.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
@@ -9,6 +10,7 @@
 	import type { FormProps } from './form.props.js';
 	import { useFormTheme } from './form.theme.js';
 	import { useForm } from './form.state.svelte.js';
+	import { formCardSurfaceContextKey, type FormCardSurfaceContext } from './form.context.js';
 	let {
 		inputs,
 		onSubmit,
@@ -52,6 +54,9 @@
 	);
 	const labelPosition = $derived(layout === 'horizontal' ? 'left' : undefined);
 	const hasSectionBorders = $derived(variant !== 'plain');
+	const cardSurfaceContext = getContext<FormCardSurfaceContext>(formCardSurfaceContextKey);
+	const hasCardSurface = $derived(variant === 'card' && !cardSurfaceContext?.isOwned);
+	const cardTextVariant = $derived(hasCardSurface ? 'solid' : 'ghost');
 
 	const classes = $derived(useFormTheme(theme));
 	const cardClasses = $derived(useCardTheme());
@@ -67,7 +72,7 @@
 		render={title}
 		payload={form}
 		class={cx(
-			cardClasses.title({ size, variant: variant === 'card' ? 'solid' : 'ghost' }),
+			cardClasses.title({ size, variant: cardTextVariant }),
 			classes.formTitle({ size, variant })
 		)}
 	/>
@@ -75,7 +80,7 @@
 		render={description}
 		payload={formState}
 		class={cx(
-			cardClasses.description({ size, variant: variant === 'card' ? 'solid' : 'ghost' }),
+			cardClasses.description({ size, variant: cardTextVariant }),
 			classes.formDescription({ size, variant })
 		)}
 	/>
@@ -110,13 +115,15 @@
 	{/if}
 {/snippet}
 <div
+	role="form"
+	{@attach formState.keyboardNavigation}
 	data-size={size}
 	data-density={density}
 	data-variant={variant}
-	data-color={variant === 'card' ? 'neutral' : undefined}
+	data-color={hasCardSurface ? 'neutral' : undefined}
 	data-layout={layout}
 	class={cx(
-		variant === 'card'
+		hasCardSurface
 			? cardClasses.root({
 					color: 'neutral',
 					variant: 'solid',
@@ -137,7 +144,7 @@
 				density,
 				hasAction: false,
 				hasBorder: hasSectionBorders,
-				variant: variant === 'card' ? 'solid' : 'ghost'
+				variant: cardTextVariant
 			}),
 			classes.formHeader({ density, variant })
 		)}

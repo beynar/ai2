@@ -42,6 +42,9 @@
 		"@tailwindcss/vite": "^4.3.2",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/svelte": "^5.4.2",
+		"@types/d3-geo": "3.1.0",
+		"@types/d3-scale": "4.0.9",
+		"@types/d3-shape": "3.1.8",
 		"eslint": "^10.6.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.20.0",
@@ -89,15 +92,18 @@
 		"@pierre/diffs": "^1.2.12",
 		"@pierre/trees": "1.0.0-beta.4",
 		"@sveltejs/kit": "^2.69.0",
+		"@tanstack/charts": "0.3.1",
 		"@tanstack/svelte-virtual": "3.13.32",
 		"@tanstack/table-core": "8.21.3",
-		"zod": "^4.4.3",
 		"add": "^2.0.6",
 		"bits-ui": "^2.18.1",
 		"cnfast": "^0.0.8",
 		"cobe": "^2.0.1",
 		"color2k": "^2.0.3",
 		"colorizr": "^5.1.1",
+		"d3-geo": "3.1.1",
+		"d3-scale": "4.0.2",
+		"d3-shape": "3.2.0",
 		"embla-carousel": "^8.6.0",
 		"embla-carousel-auto-height": "^8.6.0",
 		"embla-carousel-autoplay": "^8.6.0",
@@ -116,7 +122,8 @@
 		"svelte-streamdown": "^3.1.2",
 		"svelte-themes": "^2.0.10",
 		"type-fest": "^5.7.0",
-		"valibot": "^1.4.2"
+		"valibot": "^1.4.2",
+		"zod": "^4.4.3"
 	},
 	"exports": {
 		"./package.json": "./package.json",
@@ -209,6 +216,11 @@
 			"types": "./dist/components/MetadataList/index.d.ts",
 			"svelte": "./dist/components/MetadataList/index.js",
 			"default": "./dist/components/MetadataList/index.js"
+		},
+		"./timeline": {
+			"types": "./dist/components/Timeline/index.d.ts",
+			"svelte": "./dist/components/Timeline/index.js",
+			"default": "./dist/components/Timeline/index.js"
 		},
 		"./sortable-list": {
 			"types": "./dist/components/SortableList/index.d.ts",
@@ -309,6 +321,11 @@
 			"types": "./dist/components/GanttChart/index.d.ts",
 			"svelte": "./dist/components/GanttChart/index.js",
 			"default": "./dist/components/GanttChart/index.js"
+		},
+		"./chart": {
+			"types": "./dist/components/Chart/index.d.ts",
+			"svelte": "./dist/components/Chart/index.js",
+			"default": "./dist/components/Chart/index.js"
 		},
 		"./calendar-primitive": {
 			"types": "./dist/components/Form/Calendar/index.d.ts",
@@ -748,6 +765,9 @@
 			"./stepper": [
 				"./dist/components/Stepper/index.d.ts"
 			],
+			"./timeline": [
+				"./dist/components/Timeline/index.d.ts"
+			],
 			"./selection-menu": [
 				"./dist/components/SelectionMenu/index.d.ts"
 			],
@@ -882,6 +902,9 @@
 			],
 			"./gantt-chart": [
 				"./dist/components/GanttChart/index.d.ts"
+			],
+			"./chart": [
+				"./dist/components/Chart/index.d.ts"
 			],
 			"./date-selector": [
 				"./dist/components/Form/DateSelector/index.d.ts"

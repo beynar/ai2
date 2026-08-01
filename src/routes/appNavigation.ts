@@ -118,6 +118,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 		links: [
 			{ href: '/components/avatar', text: 'Avatar' },
 			{ href: '/components/avatar-group', text: 'Avatar group' },
+			{ href: '/components/chart', text: 'Chart' },
 			{ href: '/components/chip', text: 'Chip' },
 			{ href: '/components/event-calendar', text: 'Event calendar' },
 			{ href: '/components/gantt-chart', text: 'Gantt chart' },
@@ -130,6 +131,7 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/stat', text: 'Stat' },
 			{ href: '/components/table', text: 'Table' },
 			{ href: '/components/data-table', text: 'Data table' },
+			{ href: '/components/timeline', text: 'Timeline' },
 			{ href: '/components/tree', text: 'Tree' }
 		]
 	},

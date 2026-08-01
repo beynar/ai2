@@ -1,4 +1,6 @@
 import { setContext, untrack } from 'svelte';
+import type { Attachment } from 'svelte/attachments';
+import { on } from 'svelte/events';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { FieldState } from '../Field/field.state.svelte.js';
 import type { FieldValue, InputType } from '../Field/field.js';
@@ -22,6 +24,29 @@ type FormStateOptions<I extends FormInputs> = {
 };
 
 type RegisteredField = FieldState<InputType>;
+
+type NavigableField = {
+	field: RegisteredField;
+	focusTarget: HTMLElement;
+};
+
+const focusableControl =
+	'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+
+const enterNavigationInputTypes = new Set([
+	'text',
+	'search',
+	'email',
+	'url',
+	'password',
+	'number',
+	'tel',
+	'date',
+	'datetime-local',
+	'time',
+	'month',
+	'week'
+]);
 
 const supportedInputTypes = new Set<InputType>([
 	'file',
@@ -136,6 +161,33 @@ export class FormState<I extends FormInputs = FormInputs> {
 		if (this.fields.get(field.name) !== (field as RegisteredField)) return;
 		this.setCachedValue(field.name, field.value);
 	}
+
+	keyboardNavigation: Attachment<HTMLElement> = (node) => on(node, 'keydown', this.handleKeydown);
+
+	private handleKeydown = (event: KeyboardEvent): void => {
+		if (!this.isEnterNavigationEvent(event)) return;
+
+		const target = event.target as Node;
+		const navigableFields = this.getNavigableFields();
+		const currentIndex = navigableFields.findIndex(({ field }) => field.rootNode?.contains(target));
+		if (currentIndex === -1) return;
+
+		event.preventDefault();
+		const lastFieldIndex = navigableFields.length - 1;
+		if (currentIndex === lastFieldIndex) {
+			void this.submit();
+			return;
+		}
+
+		const currentField = navigableFields[currentIndex];
+		const [hasError] = currentField.field.validate();
+		if (hasError) {
+			currentField.focusTarget.focus();
+			return;
+		}
+
+		navigableFields[currentIndex + 1]?.focusTarget.focus();
+	};
 
 	isInputVisible(name: string): boolean {
 		return this.getActiveFieldDefinitions().some((field) => field.name === name);
@@ -375,14 +427,48 @@ export class FormState<I extends FormInputs = FormInputs> {
 	}
 
 	private revealField(field: RegisteredField): void {
-		const focusTarget =
-			field.node ??
-			field.rootNode?.querySelector<HTMLElement>(
-				'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-			);
+		const focusTarget = this.getFieldFocusTarget(field);
 		const scrollTarget = field.rootNode ?? focusTarget;
 		scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		focusTarget?.focus({ preventScroll: true });
+	}
+
+	private getNavigableFields(): NavigableField[] {
+		const navigableFields: NavigableField[] = [];
+		for (const definition of this.getActiveFieldDefinitions()) {
+			const field = this.fields.get(definition.name);
+			if (!field || field.disabled) continue;
+			const focusTarget = this.getFieldFocusTarget(field);
+			if (focusTarget) navigableFields.push({ field, focusTarget });
+		}
+		return navigableFields;
+	}
+
+	private getFieldFocusTarget(field: RegisteredField): HTMLElement | null {
+		return field.node ?? field.rootNode?.querySelector<HTMLElement>(focusableControl) ?? null;
+	}
+
+	private isEnterNavigationEvent(event: KeyboardEvent): boolean {
+		if (
+			event.key !== 'Enter' ||
+			event.defaultPrevented ||
+			event.repeat ||
+			event.isComposing ||
+			event.shiftKey ||
+			event.altKey ||
+			event.ctrlKey ||
+			event.metaKey
+		) {
+			return false;
+		}
+
+		const target = event.target;
+		return (
+			target instanceof HTMLInputElement &&
+			!target.disabled &&
+			!target.readOnly &&
+			enterNavigationInputTypes.has(target.type)
+		);
 	}
 }
 

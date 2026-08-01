@@ -253,6 +253,7 @@
 		'Action and custom entries stay out of form values',
 		'Accessible errors with first-invalid focus',
 		'Programmatic submission through FormState',
+		'Managed Enter navigation and submission',
 		'Programmatic Dialog forms through Ask',
 		'Plain, sectioned, and card presentations share Card typography and section rhythm',
 		'Responsive vertical and horizontal field layouts',

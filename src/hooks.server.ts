@@ -37,6 +37,7 @@ import { voiceInputDescription } from '$lib/components/Form/VoiceInput/voiceInpu
 import { ratingDescription } from '$lib/components/Rating/rating.mcp.js';
 import { miniCalendarDescription } from '$lib/components/MiniCalendar/miniCalendar.mcp.js';
 import { metadataListDescription } from '$lib/components/MetadataList/metadataList.mcp.js';
+import { timelineDescription } from '$lib/components/Timeline/timeline.mcp.js';
 import { sortableListDescription } from '$lib/components/SortableList/sortableList.mcp.js';
 import { passwordInputDescription } from '$lib/components/Form/PasswordInput/passwordInput.mcp.js';
 import { phoneInputDescription } from '$lib/components/Form/PhoneInput/phoneInput.mcp.js';
@@ -76,6 +77,7 @@ import { menuOptionDescription } from '$lib/components/MenuOption/menuOption.mcp
 import { separatorDescription } from '$lib/components/Separator/separator.mcp.js';
 import { breadcrumbsDescription } from '$lib/components/Breadcrumbs/breadcrumbs.mcp.js';
 import { cardDescription } from '$lib/components/Card/card.mcp.js';
+import { chartDescription } from '$lib/components/Chart/chart.mcp.js';
 import { dataTableDescription } from '$lib/components/DataTable/dataTable.mcp.js';
 import { tableDescription } from '$lib/components/Table/table.mcp.js';
 import { marqueeDescription } from '$lib/components/Marquee/marquee.mcp.js';
@@ -181,6 +183,7 @@ const components = {
 	separator: separatorDescription,
 	breadcrumbs: breadcrumbsDescription,
 	card: cardDescription,
+	chart: chartDescription,
 	'data-table': dataTableDescription,
 	table: tableDescription,
 	marquee: marqueeDescription,
@@ -199,6 +202,7 @@ const components = {
 	rating: ratingDescription,
 	'mini-calendar': miniCalendarDescription,
 	'metadata-list': metadataListDescription,
+	timeline: timelineDescription,
 	'sortable-list': sortableListDescription,
 	globe: globeDescription,
 	grid: gridDescription,

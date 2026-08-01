@@ -2,34 +2,35 @@ import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
 import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
 
 const defaultMultiStep = cva({
-	base: 'flex flex-col relative p-2'
-	// variants: {
-	// size: {
-	// 	small: 'gap-2',
-	// 	normal: 'gap-4',
-	// 	large: 'gap-6'
-	// }
-	// }
+	base: 'relative flex min-w-0 flex-col',
+	variants: {
+		variant: {
+			plain: 'p-2',
+			sectioned: 'p-2',
+			card: ''
+		}
+	},
+	defaultVariants: {
+		variant: 'plain'
+	}
 });
 
 const defaultMultiStepHeader = cva({
 	base: ''
 });
 
+const defaultMultiStepContent = cva({
+	base: 'min-w-0'
+});
+
 const defaultMultiStepFooter = cva({
 	base: 'flex justify-between gap-2'
-	// variants: {
-	// 	size: {
-	// 		small: 'gap-2',
-	// 		normal: 'gap-4',
-	// 		large: 'gap-6'
-	// 	}
-	// }
 });
 
 export const multiStepFormTheme = {
 	root: defaultMultiStep,
 	multiStepFormHeader: defaultMultiStepHeader,
+	multiStepFormContent: defaultMultiStepContent,
 	multiStepFormFooter: defaultMultiStepFooter
 };
 

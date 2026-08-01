@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { Project } from 'ts-morph';
+import { Project, type SourceFile } from 'ts-morph';
 import type { Plugin } from 'vite';
 import { extractComponentDocs } from './extract';
 import type { PropsMap } from './types';
@@ -61,10 +61,10 @@ export function svelaiPropsDocs(): Plugin {
 		handleHotUpdate(ctx) {
 			if (!ctx.file.endsWith('.ts')) return;
 
-			if (project) {
-				const sourceFile = project.getSourceFile(ctx.file);
-				if (sourceFile) sourceFile.refreshFromFileSystemSync();
-			}
+			if (!project) return;
+			const sourceFile = project.getSourceFile(ctx.file);
+			if (!sourceFile || !affectsPropsDocs(sourceFile)) return;
+			sourceFile.refreshFromFileSystemSync();
 			cachedMap = null;
 
 			const module = ctx.server.moduleGraph.getModuleById(RESOLVED_ID);
@@ -74,4 +74,15 @@ export function svelaiPropsDocs(): Plugin {
 			}
 		}
 	};
+}
+
+function affectsPropsDocs(sourceFile: SourceFile, visited = new Set<string>()): boolean {
+	const filePath = sourceFile.getFilePath();
+	if (filePath.endsWith('.props.ts')) return true;
+	if (visited.has(filePath)) return false;
+	visited.add(filePath);
+
+	return sourceFile
+		.getReferencingSourceFiles()
+		.some((referencingFile) => affectsPropsDocs(referencingFile, visited));
 }

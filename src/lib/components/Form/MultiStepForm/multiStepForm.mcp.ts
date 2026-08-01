@@ -57,14 +57,14 @@ MultiStepForm owns one Form per step, displays them through Stepper, validates v
 - **onSubmitForm**: called with the validated merged payload on the final step only.
 - **onSubmitStep**: called with the validated values from visited steps after the step's onBeforeChange; unvisited step keys remain optional. Return false to block advancing.
 - **showMeter**: whether to render the progress meter. Defaults to true.
-- **meterColor**: meter color token.
+- **meterColor**: meter color token. Defaults to neutral.
 - **previousText**, **nextText**, **submitText**: navigation labels.
-- **variant**: visual presentation applied to every nested Form. Supports plain, sectioned, and card; defaults to plain.
+- **variant**: visual presentation of the multi-step shell. Card renders one shared Card surface around the fixed meter, transitioning step content, and navigation footer. Each step reuses Form's card spacing and edge-to-edge separator rules without creating another Card surface. Supports plain, sectioned, and card; defaults to plain.
 - **previousButtonProps**, **nextButtonProps**, **submitButtonProps**: Button props. Custom click handlers are composed with internal behavior; disabled and loading protection cannot be overridden.
 - **class**: additional classes on the root.
 - **theme**: MultiStepForm theme overrides plus optional nested form theme overrides.
 
-The **header**, **children**, and **footer** snippets receive the MultiStepFormState instance directly. Supplying a header or footer replaces that region's default meter or controls.
+The **header**, **children**, and **footer** snippets receive the MultiStepFormState instance directly. Supplying a header or footer replaces that region's default meter or controls. In the card variant, header and footer content remains inside the shared card while only the active step content transitions.
 
 ## FormStep
 
@@ -87,6 +87,7 @@ When onBeforeChange is present, navigation remains blocked unless the hook calls
 
 - Next validates every visited step. Hooks do not run and the active step does not change when validation fails.
 - Final submission validates every step before calling onSubmitForm; partial invalid data is never submitted.
+- Enter follows Form's field-navigation behavior. A terminal Enter validates the current and visited steps, advances when permitted, and submits from the final step.
 - Rejected hooks and submit handlers propagate their errors, while loading always resets.
 - Concurrent calls to submit() share one active promise.
 
