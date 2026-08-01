@@ -1,5 +1,6 @@
 import type {
 	EventCalendarItem,
+	EventCalendarProposedUpdate,
 	EventCalendarResource
 } from '$lib/components/EventCalendar/index.js';
 
@@ -12,6 +13,26 @@ export type RoomFields = {
 	floor: string;
 	capacity?: number;
 };
+
+export const EVENT_CALENDAR_DEMO_TIME_ZONE = 'Europe/Paris';
+
+const civilDayFormatter = new Intl.DateTimeFormat('en', {
+	timeZone: EVENT_CALENDAR_DEMO_TIME_ZONE,
+	dateStyle: 'short'
+});
+
+export function validateDemoItemUpdate(
+	proposal: EventCalendarProposedUpdate<MeetingFields>
+): boolean {
+	if (proposal.kind !== 'move' || !proposal.occurrence?.isRecurring) return true;
+	if (proposal.item.allDay === true) return false;
+	const occurrenceDay = civilDayFormatter.format(proposal.occurrence.start);
+	const inclusiveEnd = new Date(proposal.item.end.getTime() - 1);
+	return (
+		civilDayFormatter.format(proposal.item.start) === occurrenceDay &&
+		civilDayFormatter.format(inclusiveEnd) === occurrenceDay
+	);
+}
 
 export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 	return [
@@ -37,7 +58,7 @@ export function createDemoItems(): EventCalendarItem<MeetingFields>[] {
 				count: 8,
 				exDates: [new Date('2026-07-17T07:00:00.000Z')]
 			},
-			recurrenceTimeZone: 'Europe/Paris',
+			recurrenceTimeZone: EVENT_CALENDAR_DEMO_TIME_ZONE,
 			resourceId: 'boardroom',
 			color: 'success',
 			owner: 'Noah',

@@ -8,7 +8,12 @@
 		type EventCalendarSlot,
 		type EventCalendarSlotSelectInfo
 	} from '$lib/components/EventCalendar/index.js';
-	import { createDemoItems, type MeetingFields } from './eventCalendarDemoData.js';
+	import {
+		EVENT_CALENDAR_DEMO_TIME_ZONE,
+		createDemoItems,
+		type MeetingFields,
+		validateDemoItemUpdate as validateItemUpdate
+	} from './eventCalendarDemoData.js';
 
 	let items = $state(createDemoItems().filter((item) => item.display !== 'background'));
 	let date = $state(new Date('2026-07-15T10:00:00.000Z'));
@@ -107,13 +112,14 @@
 		bind:date
 		view="week"
 		views={['week', 'day', 'days']}
-		timeZone="Europe/Paris"
+		timeZone={EVENT_CALENDAR_DEMO_TIME_ZONE}
 		timeGrid={{ startHour: 7, endHour: 19, scrollToHour: 8 }}
 		availability={{
 			businessHours: [{ daysOfWeek: [1, 2, 3, 4, 5], start: '08:00', end: '18:00' }],
 			constrainMutations: true
 		}}
 		allowOverlap={false}
+		{validateItemUpdate}
 		onItemsChange={handleItemsChange}
 		onSlotSelect={handleSlotSelect}
 		class="h-[34rem] w-full"
