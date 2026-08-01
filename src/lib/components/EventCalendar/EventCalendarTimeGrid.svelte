@@ -52,6 +52,7 @@
 		EventCalendarDateOnly,
 		EventCalendarOffDaysConfig,
 		EventCalendarOccurrence,
+		EventCalendarScrollMode,
 		EventCalendarSegment,
 		EventCalendarSlot
 	} from './eventCalendar.types.js';
@@ -93,7 +94,7 @@
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
-		scrollMode: 'contained' | 'page';
+		scrollMode: EventCalendarScrollMode;
 		nowIndicator: boolean;
 		showItemTooltip: boolean;
 		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;

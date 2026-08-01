@@ -21,11 +21,8 @@
 	view="resource"
 	views={['resource', 'day']}
 	timeZone="Europe/Paris"
-	dayStartHour={7}
-	dayEndHour={19}
-	scrollToHour={8}
-	showItemTooltip
-	constrainToBusinessHours
+	timeGrid={{ startHour: 7, endHour: 19, scrollToHour: 8 }}
+	availability={{ constrainMutations: true }}
 	class="h-[34rem] w-full"
 >
 	{#snippet resourceHeader({ resource, isUnassigned, defaultContent })}

@@ -42,6 +42,7 @@ import type {
 	EventCalendarMutationSource,
 	EventCalendarOccurrence,
 	EventCalendarProposedUpdate,
+	EventCalendarScrollMode,
 	EventCalendarSegment,
 	EventCalendarSelection,
 	EventCalendarSlot,
@@ -196,7 +197,7 @@ export class EventCalendarInteractionsController<
 	private nativeCancelCleanup: (() => void) | null = null;
 	private didNativeCancel = false;
 	private dragScrollElement: HTMLElement | null = null;
-	private dragScrollMode: 'contained' | 'page' = 'contained';
+	private dragScrollMode: EventCalendarScrollMode = 'contained';
 	private dragScrollFrame: number | null = null;
 	private suppressedClickKey: string | null = null;
 	private isSlotClickSuppressed = false;
@@ -878,7 +879,7 @@ export class EventCalendarInteractionsController<
 			});
 	}
 
-	autoScroll(mode: 'contained' | 'page'): Attachment<HTMLElement> {
+	autoScroll(mode: EventCalendarScrollMode): Attachment<HTMLElement> {
 		return (element) =>
 			untrack(() => {
 				this.dragScrollElement = element;
@@ -1748,7 +1749,7 @@ export class EventCalendarInteractionsController<
 				error instanceof EventCalendarError ? error.code : 'structural-validation';
 			throw new EventCalendarError(
 				'invalid-adjustment',
-				'onItemUpdate returned a structurally invalid adjustment.',
+				'resolveItemUpdate returned a structurally invalid adjustment.',
 				{
 					reason: underlyingCode,
 					underlyingCode,
@@ -1763,7 +1764,7 @@ export class EventCalendarInteractionsController<
 			if (isAdjusted) {
 				throw new EventCalendarError(
 					'invalid-adjustment',
-					'onItemUpdate returned an invalid adjustment.',
+					'resolveItemUpdate returned an invalid adjustment.',
 					{ reason: finalReason, id: proposal.item.id }
 				);
 			}
@@ -1848,7 +1849,7 @@ export class EventCalendarInteractionsController<
 			if (reason) {
 				throw new EventCalendarError(
 					'invalid-adjustment',
-					'onItemUpdate returned an invalid recurring adjustment.',
+					'resolveItemUpdate returned an invalid recurring adjustment.',
 					{ reason, id: adjustedItem.id }
 				);
 			}
@@ -1964,7 +1965,7 @@ export class EventCalendarInteractionsController<
 		if (error instanceof EventCalendarError && error.code === 'invalid-adjustment') return error;
 		return new EventCalendarError(
 			'invalid-adjustment',
-			'onItemUpdate returned a structurally invalid recurring adjustment.',
+			'resolveItemUpdate returned a structurally invalid recurring adjustment.',
 			{
 				id,
 				underlyingCode: error instanceof EventCalendarError ? error.code : 'structural-validation',

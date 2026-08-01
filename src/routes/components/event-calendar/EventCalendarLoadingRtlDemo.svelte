@@ -41,9 +41,7 @@
 		dir="rtl"
 		locale="ar"
 		timeZone="Asia/Kathmandu"
-		dayStartHour={7}
-		dayEndHour={18}
-		scrollToHour={8}
+		timeGrid={{ startHour: 7, endHour: 18, scrollToHour: 8 }}
 		onRangeChange={handleRangeChange}
 		class="h-[32rem] w-full"
 	/>

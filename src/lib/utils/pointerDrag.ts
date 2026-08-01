@@ -16,15 +16,17 @@ export type PointerDragPayload<Node extends HTMLElement = HTMLElement> = {
 	hasMoved: boolean;
 };
 
+export type PointerDragActivation = Readonly<{
+	distancePx: number;
+	touchDelayMs: number;
+	touchTolerancePx: number;
+}>;
+
 export type PointerDragOptions<Node extends HTMLElement = HTMLElement> = {
 	disabled?: () => boolean;
 	canStart?: (event: PointerEvent) => boolean;
 	moveTolerance?: number;
-	activation?: () => {
-		distancePx: number;
-		touchDelayMs: number;
-		touchTolerancePx: number;
-	};
+	activation?: () => PointerDragActivation;
 	stopPropagation?: boolean;
 	onStart?: (payload: PointerDragPayload<Node>) => boolean | void;
 	onMove?: (payload: PointerDragPayload<Node>) => void;

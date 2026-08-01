@@ -32,7 +32,7 @@
 	import type { EventCalendarHeaderPayload, EventCalendarSnapshot } from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type { EventCalendarView } from './eventCalendar.types.js';
+	import type { EventCalendarScrollMode, EventCalendarView } from './eventCalendar.types.js';
 
 	let {
 		calendar,
@@ -56,7 +56,7 @@
 		density: Density;
 		disabled: boolean;
 		stickyHeader: boolean;
-		scrollMode: 'contained' | 'page';
+		scrollMode: EventCalendarScrollMode;
 		classes: EventCalendarClasses;
 		header?: Snippet<[EventCalendarHeaderPayload<TItemFields, TResourceFields>]>;
 		actions?: Snippet<[EventCalendarSnapshot<TItemFields, TResourceFields>]>;

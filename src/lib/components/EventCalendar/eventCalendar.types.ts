@@ -1,14 +1,15 @@
 import type { Colors } from '$lib/types/theme.js';
+import type { CivilDateOnly, CivilWeekday } from '$lib/scheduling/civilDate.js';
+import type { ScheduleRange } from '$lib/scheduling/scheduleRange.js';
+import type { ScheduleScrollMode } from '$lib/scheduling/scheduleViewport.js';
+import type { PointerDragActivation } from '$lib/utils/pointerDrag.js';
 
 export type EventCalendarColor = Colors | (string & {});
-export type EventCalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-export type EventCalendarDateOnly = `${number}-${number}-${number}`;
+export type EventCalendarWeekday = CivilWeekday;
+export type EventCalendarDateOnly = CivilDateOnly;
 export type EventCalendarView = 'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource';
-
-export type EventCalendarRange = {
-	start: Date;
-	end: Date;
-};
+export type EventCalendarRange = ScheduleRange;
+export type EventCalendarScrollMode = ScheduleScrollMode;
 
 type EventCalendarSlotBase = {
 	view: EventCalendarView;
@@ -39,11 +40,7 @@ export type EventCalendarOffDaysConfig = {
 	isOffDay?: (date: EventCalendarDateOnly) => boolean;
 };
 
-export type EventCalendarCreateActivation = {
-	distancePx: number;
-	touchDelayMs: number;
-	touchTolerancePx: number;
-};
+export type EventCalendarCreateActivation = PointerDragActivation;
 
 type EventCalendarRecurrenceWeekday = 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
 
@@ -219,7 +216,7 @@ export type EventCalendarInteractions = {
 	selectSlot: boolean;
 	keyboard: boolean;
 	singlePointer: boolean;
-	maintainDurationOnAllDayChange: boolean;
+	clipboard: boolean;
 };
 
 export type EventCalendarRangeChangeInfo = {

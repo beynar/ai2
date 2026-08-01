@@ -17,7 +17,7 @@
 	import type { GanttHeaderPayload, GanttSnapshot } from './ganttChart.props.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type { GanttZoomLevel } from './ganttChart.types.js';
+	import type { GanttScrollMode, GanttZoomLevel } from './ganttChart.types.js';
 
 	let {
 		chart,
@@ -43,7 +43,7 @@
 		color: Colors;
 		disabled: boolean;
 		stickyHeader: boolean;
-		scrollMode: 'contained' | 'page';
+		scrollMode: GanttScrollMode;
 		classes: GanttChartClasses;
 		header?: Snippet<
 			[GanttHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]

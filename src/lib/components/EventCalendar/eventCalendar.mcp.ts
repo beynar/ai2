@@ -57,13 +57,14 @@ The component never changes 'view' because its container becomes narrow. Previou
 
 ## View settings
 
-- Month: 'fixedWeeks=true', 'showOutsideDays=true', 'showWeekends=true', 'weekendDays=[0,6]', 'showWeekNumbers=false', 'maxItemsPerCell="auto"'.
-- Time grids: 'dayStartHour=0', 'dayEndHour=24', 'interval=60', 'slotDuration=30', 'snapDuration=15', 'scrollToHour=7'.
-- Conversion: 'defaultTimedItemDuration=60' minutes and 'defaultAllDayItemDuration=1' civil day.
+- 'month': fixedWeeks=true, showOutsideDays=true, showWeekNumbers=false, and maxItemsPerCell="auto".
+- Weekend columns remain controlled by 'showWeekends=true' and 'weekendDays=[0,6]' because the weekday classification is shared across views.
+- 'timeGrid': startHour=0, endHour=24, labelIntervalMinutes=60, slotClickDurationMinutes=30, snapDurationMinutes=15, scrollToHour=7, and nowIndicatorRefreshMs=30000.
+- 'allDayConversion': preserveDuration=false, timedDurationMinutes=60, and allDayDurationDays=1.
 - Agenda: 'agendaDayCount=30'.
-- Current time: 'nowIndicator=true', 'nowIndicatorInterval=30000'.
-- Work time: 'offDays=false', 'businessHours=[]', 'constrainToBusinessHours=false'.
-- Scrolling/chrome: 'scrollMode="contained"' uses ScrollArea; 'stickyHeader=false', 'showHeader=true', 'showDatePicker=false', 'showItemTooltip=true'.
+- 'availability': offDays=false, businessHours=[], and constrainMutations=false.
+- 'nowIndicator' renders the built-in current-time line when omitted, accepts a replacement snippet, and disables the line when false.
+- Scrolling/chrome: 'scrollMode="contained"' uses ScrollArea; 'stickyHeader=false' and 'showDatePicker=false'. 'header' and 'itemTooltip' use their built-ins when omitted, accept replacement snippets, and disable their regions when false.
 
 Numeric and time settings are validated and never silently clamped. Hidden weekdays are removed from 'visibleDays'; day and agenda counts count rendered days.
 
@@ -71,25 +72,24 @@ Numeric and time settings are validated and never silently clamped. Hidden weekd
 
 Move, resize-start, resize-end, API updates, and keyboard mode share one proposal/validation/commit pipeline. Empty-slot drag creation and two-click selection produce a selected range; EventCalendar never fabricates a domain item.
 
-- 'interactions': partial policy. Drag, resize, slot selection, keyboard controls, and two-click range selection default on; duration preservation across all-day conversion defaults off.
-- 'createActivation': drag-create only; defaults to distancePx 5, touchDelayMs 300, touchTolerancePx 8.
+- 'interactions': partial policy. Drag, resize, slot selection, keyboard controls, two-click range selection, and clipboard default on. interactions.createActivation controls drag-create and defaults to distancePx 5, touchDelayMs 300, touchTolerancePx 8.
 - 'allowOverlap': boolean or predicate = true.
-- 'canUpdateItem(proposal)': synchronous live item validation.
-- 'onItemUpdate(proposal)': accept, reject with false, or adjust placement/resource. Adjustments are fully revalidated.
-- 'canSelectSlot(slot)': synchronous slot validation.
+- 'validateItemUpdate(proposal)': synchronous live item validation.
+- 'resolveItemUpdate(proposal)': accept, reject with false, or adjust placement/resource. Adjustments are fully revalidated.
+- 'validateSlotSelection(slot)': synchronous slot validation.
 - Validation order is structural/editability/range, business hours, overlap, then custom policy.
 
 'onItemsChange(nextItems, change)' runs after one accepted immutable reassignment. Persist 'nextItems' at the application boundary. On failure, call 'change.revert()' and then surface the original error. Revert is guarded and one-shot: it throws 'stale-transaction' rather than overwrite a newer calendar or consumer update.
 
-'clipboard=true' enables internal occurrence copy/paste through the API and Mod+C/Mod+V. Paste creates a standalone item, targets a selected compatible slot when present, and never mutates the copied recurrence series. 'historyLimit=50' bounds immutable undo entries; 0 disables history. Mod+Z undoes, Mod+Shift+Z and Mod+Y redo. History refuses stale controlled collections instead of overwriting consumer state.
+'interactions.clipboard=true' enables internal occurrence copy/paste through the API and Mod+C/Mod+V. Paste creates a standalone item, targets a selected compatible slot when present, and never mutates the copied recurrence series. 'historyLimit=50' bounds immutable undo entries; 0 disables history. Mod+Z undoes, Mod+Shift+Z and Mod+Y redo. History refuses stale controlled collections instead of overwriting consumer state.
 
 Item callbacks are 'onItemClick', 'onItemDoubleClick', 'onMoreClick', and 'onInteractionBlocked'. Slot callbacks are 'onSlotClick' and 'onSlotSelect(slot, { source })'; source is 'drag-create', 'keyboard', or 'single-pointer'. Bound-state callbacks are 'onViewChange', 'onDateChange', 'onDayCountChange', and 'onSelectionChange'.
 
 ## Recurrence
 
-'recurrenceEditScope' is 'occurrence' by default, creating or updating a persisted exception with recurringItemId plus immutable originalStart. 'disabled' blocks recurring mutations. 'series' transforms the source and all bound exceptions atomically and is an assertion that the current 'items' collection contains the complete exception set for that editable series. A windowed consumer that cannot guarantee completeness must use 'occurrence' or 'disabled'.
+'recurrence.editScope' is 'occurrence' by default, creating or updating a persisted exception with recurringItemId plus immutable originalStart. 'disabled' blocks recurring mutations. 'series' transforms the source and all bound exceptions atomically and is an assertion that the current 'items' collection contains the complete exception set for that editable series. A windowed consumer that cannot guarantee completeness must use 'occurrence' or 'disabled'.
 
-Structured recurrence supports daily, weekly, monthly, and yearly rules with interval, count, inclusive until, weekdays including ordinals, month days, months, week start, exclusions, and additions. Supported raw RRULE strings are accepted with explicit restrictions on series transformations. Expansion is finite and capped; unsupported rules and cap exhaustion throw. 'expandRecurrence' is the synchronous bounded escape hatch.
+Structured recurrence supports daily, weekly, monthly, and yearly rules with interval, count, inclusive until, weekdays including ordinals, month days, months, week start, exclusions, and additions. Supported raw RRULE strings are accepted with explicit restrictions on series transformations. Expansion is finite and capped; unsupported rules and cap exhaustion throw. 'recurrence.expand' is the synchronous bounded escape hatch, and 'recurrence.getExceptionId' overrides exception identity generation.
 
 ## Resources
 
@@ -99,16 +99,16 @@ Structured recurrence supports daily, weekly, monthly, and yearly rules with int
 
 Snippets replace content inside component-owned semantic and interactive wrappers:
 
-- 'header': snapshot plus ready-made previous, today, next, title, viewSwitcher, datePicker, and actions snippets
+- 'header': snapshot plus ready-made previous, today, next, title, viewSwitcher, datePicker, and actions snippets; false removes the header
 - 'actions': calendar snapshot and API
 - 'item': occurrence, segment, active view (including agenda), states, defaultContent, markerContent, titleContent, and timeContent
-- 'itemTooltip': customizes the item HoverCard with occurrence, segment, view, defaultAccessibleLabel, and defaultContent
+- 'itemTooltip': customizes the item HoverCard with occurrence, segment, view, defaultAccessibleLabel, and defaultContent; false removes it
 - 'monthCell': day/state/segments/overflow and defaultContent
 - 'dayHeader', 'timeGutter' with defaultContent, and 'allDay'
 - 'overflow' and 'overflowContent'; both expose defaultContent, and the latter preserves the built-in interactive item list when rendered
 - 'agendaDetails'
 - 'resourceHeader'
-- 'nowIndicatorContent', 'dragPreview', 'empty', and 'loadingContent'; replacement state snippets expose defaultContent
+- 'nowIndicator', 'dragPreview', 'empty', and 'loadingContent'; replacement state snippets expose defaultContent, and nowIndicator=false disables the line
 
 Render 'defaultContent' or the ready-made header snippets when wrapping the built-ins. Snippet content cannot remove item focusability, labels, selection state, drag/resize wiring, disclosures, or live announcements.
 

@@ -36,6 +36,7 @@
 		EventCalendarDateOnly,
 		EventCalendarOccurrence,
 		EventCalendarOffDaysConfig,
+		EventCalendarScrollMode,
 		EventCalendarSlot
 	} from './eventCalendar.types.js';
 
@@ -81,7 +82,7 @@
 		density: Density;
 		loading: boolean;
 		disabled: boolean;
-		scrollMode: 'contained' | 'page';
+		scrollMode: EventCalendarScrollMode;
 		classes: EventCalendarClasses;
 		nowIndicator: boolean;
 		showWeekNumbers: boolean;

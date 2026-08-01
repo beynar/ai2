@@ -82,11 +82,11 @@
 		view="week"
 		views={['week', 'day', 'days']}
 		timeZone="Europe/Paris"
-		dayStartHour={7}
-		dayEndHour={19}
-		scrollToHour={8}
-		businessHours={[{ daysOfWeek: [1, 2, 3, 4, 5], start: '08:00', end: '18:00' }]}
-		constrainToBusinessHours
+		timeGrid={{ startHour: 7, endHour: 19, scrollToHour: 8 }}
+		availability={{
+			businessHours: [{ daysOfWeek: [1, 2, 3, 4, 5], start: '08:00', end: '18:00' }],
+			constrainMutations: true
+		}}
 		allowOverlap={false}
 		onItemsChange={handleItemsChange}
 		onSlotSelect={handleSlotSelect}

@@ -2,24 +2,30 @@ export { default as EventCalendar } from './EventCalendar.svelte';
 export { EventCalendarError, type EventCalendarErrorCode } from './eventCalendar.error.js';
 export type {
 	EventCalendarAgendaDetailsPayload,
+	EventCalendarAllDayConversionOptions,
 	EventCalendarAllDayPayload,
+	EventCalendarAvailabilityOptions,
 	EventCalendarCallbackProps,
 	EventCalendarDayHeaderPayload,
 	EventCalendarDragPreviewPayload,
 	EventCalendarEmptyPayload,
 	EventCalendarHeaderPayload,
+	EventCalendarInteractionOptions,
 	EventCalendarItemPayload,
 	EventCalendarItemTooltipPayload,
 	EventCalendarLoadingPayload,
 	EventCalendarMonthCellPayload,
+	EventCalendarMonthOptions,
 	EventCalendarNowIndicatorPayload,
 	EventCalendarOverflowContentPayload,
 	EventCalendarOverflowPayload,
 	EventCalendarProps,
+	EventCalendarRecurrenceOptions,
 	EventCalendarResourceHeaderPayload,
 	EventCalendarSnapshot,
 	EventCalendarSnippetProps,
 	EventCalendarTimeGutterPayload,
+	EventCalendarTimeGridOptions,
 	EventCalendarViewPayload
 } from './eventCalendar.props.js';
 export type {
@@ -43,6 +49,7 @@ export type {
 	EventCalendarRecurrenceExpander,
 	EventCalendarRecurrenceRule,
 	EventCalendarResource,
+	EventCalendarScrollMode,
 	EventCalendarSegment,
 	EventCalendarSelection,
 	EventCalendarSlot,

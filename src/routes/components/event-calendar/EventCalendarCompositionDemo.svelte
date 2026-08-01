@@ -12,7 +12,7 @@
 	view="month"
 	views={['month', 'week', 'agenda']}
 	timeZone="Europe/Paris"
-	maxItemsPerCell={2}
+	month={{ maxItemsPerCell: 2 }}
 	data-event-calendar-demo="composition"
 	class="h-[36rem] w-full"
 >

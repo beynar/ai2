@@ -21,6 +21,7 @@
 	import type {
 		EventCalendarOccurrence,
 		EventCalendarOffDaysConfig,
+		EventCalendarScrollMode,
 		EventCalendarSlot
 	} from './eventCalendar.types.js';
 
@@ -56,7 +57,7 @@
 		classes: EventCalendarClasses;
 		disabled: boolean;
 		offDays: boolean | EventCalendarOffDaysConfig;
-		scrollMode: 'contained' | 'page';
+		scrollMode: EventCalendarScrollMode;
 		nowIndicator: boolean;
 		showItemTooltip: boolean;
 		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;

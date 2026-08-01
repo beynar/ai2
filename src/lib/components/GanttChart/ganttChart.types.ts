@@ -1,9 +1,14 @@
+import type { CivilDateOnly, CivilWeekday } from '$lib/scheduling/civilDate.js';
+import type { ScheduleRange } from '$lib/scheduling/scheduleRange.js';
+import type { ScheduleScrollMode } from '$lib/scheduling/scheduleViewport.js';
 import type { Colors } from '$lib/types/theme.js';
+import type { PointerDragActivation } from '$lib/utils/pointerDrag.js';
 
 export type GanttColor = Colors | (string & {});
-export type GanttDateOnly = `${number}-${number}-${number}`;
-export type GanttWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-export type GanttRange = Readonly<{ start: Date; end: Date }>;
+export type GanttDateOnly = CivilDateOnly;
+export type GanttWeekday = CivilWeekday;
+export type GanttRange = ScheduleRange;
+export type GanttScrollMode = ScheduleScrollMode;
 
 type GanttCustomFields<
 	TFields extends object,
@@ -344,11 +349,7 @@ export type GanttInteractions = Readonly<{
 	history: boolean;
 }>;
 
-export type GanttTouchActivation = Readonly<{
-	distancePx: number;
-	touchDelayMs: number;
-	touchTolerancePx: number;
-}>;
+export type GanttTouchActivation = PointerDragActivation;
 
 export type GanttMutationSource =
 	'pointer' | 'keyboard' | 'inline-edit' | 'clipboard' | 'history' | 'api';

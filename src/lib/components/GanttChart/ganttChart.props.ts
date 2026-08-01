@@ -31,6 +31,7 @@ import type {
 	GanttResource,
 	GanttScaleCell,
 	GanttScaleDefinition,
+	GanttScrollMode,
 	GanttSelection,
 	GanttTask,
 	GanttTaskGeometry,
@@ -409,7 +410,7 @@ type GanttOwnProps<
 		/** Virtual rows/cells rendered beyond the visible window. */
 		overscan?: number;
 		/** Internal or page scrolling. Defaults to `contained`. */
-		scrollMode?: 'contained' | 'page';
+		scrollMode?: GanttScrollMode;
 		/** Svelai or browser scrollbars. Defaults to `custom`. */
 		scrollbars?: 'custom' | 'native';
 		/** Makes default headers sticky in page-scroll mode. */

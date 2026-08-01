@@ -44,6 +44,7 @@ export type {
 	GanttScaleCell,
 	GanttScaleDefinition,
 	GanttScaleUnit,
+	GanttScrollMode,
 	GanttScheduleAnalysis,
 	GanttSelection,
 	GanttSortDirection,

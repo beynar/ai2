@@ -71,6 +71,10 @@ const EVENT_CALENDAR_VIEWS: readonly EventCalendarView[] = [
 ];
 const VIEW_SET = new Set<EventCalendarView>(EVENT_CALENDAR_VIEWS);
 
+type EventCalendarRuntimeInteractions = EventCalendarInteractions & {
+	maintainDurationOnAllDayChange: boolean;
+};
+
 type EventCalendarRuntimeItem = {
 	id: string;
 	title: string;
@@ -142,7 +146,7 @@ export type EventCalendarStateOptions<
 	disabled: boolean;
 	loading: boolean;
 	direction: 'ltr' | 'rtl';
-	interactions: EventCalendarInteractions;
+	interactions: EventCalendarRuntimeInteractions;
 	allowOverlap: boolean | EventCalendarOverlapPredicate<TItemFields>;
 	constrainToBusinessHours: boolean;
 	canUpdateItem?: (proposal: EventCalendarProposedUpdate<TItemFields>) => boolean;
@@ -817,16 +821,16 @@ function validateConfiguration<TItemFields extends object, TResourceFields exten
 	validateWeekdays(state.weekendDays, 'weekendDays');
 	assertPositiveInteger(state.dayCount, 'dayCount');
 	assertPositiveInteger(state.agendaDayCount, 'agendaDayCount');
-	assertPositiveInteger(state.interval, 'interval');
-	assertPositiveInteger(state.slotDuration, 'slotDuration');
-	assertPositiveInteger(state.snapDuration, 'snapDuration');
-	assertPositiveInteger(state.defaultTimedItemDuration, 'defaultTimedItemDuration');
-	assertPositiveInteger(state.defaultAllDayItemDuration, 'defaultAllDayItemDuration');
-	assertPositiveInteger(state.nowIndicatorInterval, 'nowIndicatorInterval');
+	assertPositiveInteger(state.interval, 'timeGrid.labelIntervalMinutes');
+	assertPositiveInteger(state.slotDuration, 'timeGrid.slotClickDurationMinutes');
+	assertPositiveInteger(state.snapDuration, 'timeGrid.snapDurationMinutes');
+	assertPositiveInteger(state.defaultTimedItemDuration, 'allDayConversion.timedDurationMinutes');
+	assertPositiveInteger(state.defaultAllDayItemDuration, 'allDayConversion.allDayDurationDays');
+	assertPositiveInteger(state.nowIndicatorInterval, 'timeGrid.nowIndicatorRefreshMs');
 	assertNonNegativeInteger(state.historyLimit, 'historyLimit');
 	validateHourRange(state.dayStartHour, state.dayEndHour, state.scrollToHour);
 	if (state.maxItemsPerCell !== 'auto') {
-		assertNonNegativeInteger(state.maxItemsPerCell, 'maxItemsPerCell');
+		assertNonNegativeInteger(state.maxItemsPerCell, 'month.maxItemsPerCell');
 	}
 	validateCreateActivation(state.createActivation);
 	validateBusinessHours(state.businessHours);
@@ -1161,9 +1165,9 @@ function validateSlot(slot: EventCalendarSlot): void {
 
 function validateHourRange(dayStartHour: number, dayEndHour: number, scrollToHour: number): void {
 	for (const [name, value] of [
-		['dayStartHour', dayStartHour],
-		['dayEndHour', dayEndHour],
-		['scrollToHour', scrollToHour]
+		['timeGrid.startHour', dayStartHour],
+		['timeGrid.endHour', dayEndHour],
+		['timeGrid.scrollToHour', scrollToHour]
 	] as const) {
 		if (!Number.isFinite(value) || !Number.isInteger(value * 60)) {
 			throw new EventCalendarError('invalid-prop', `${name} must resolve to whole minutes.`, {
@@ -1175,16 +1179,20 @@ function validateHourRange(dayStartHour: number, dayEndHour: number, scrollToHou
 	if (dayStartHour < 0 || dayStartHour >= dayEndHour || dayEndHour > 24) {
 		throw new EventCalendarError(
 			'invalid-prop',
-			'dayStartHour and dayEndHour must form a non-empty interval within 0..24.',
+			'timeGrid.startHour and timeGrid.endHour must form a non-empty interval within 0..24.',
 			{ dayStartHour, dayEndHour }
 		);
 	}
 	if (scrollToHour < dayStartHour || scrollToHour >= dayEndHour) {
-		throw new EventCalendarError('invalid-prop', 'scrollToHour must fall inside displayed hours.', {
-			scrollToHour,
-			dayStartHour,
-			dayEndHour
-		});
+		throw new EventCalendarError(
+			'invalid-prop',
+			'timeGrid.scrollToHour must fall inside displayed hours.',
+			{
+				scrollToHour,
+				dayStartHour,
+				dayEndHour
+			}
+		);
 	}
 }
 
@@ -1192,9 +1200,9 @@ function validateCreateActivation(activation: EventCalendarCreateActivation): vo
 	if (!activation || typeof activation !== 'object' || Array.isArray(activation)) {
 		throw new EventCalendarError(
 			'invalid-prop',
-			'createActivation must be a configuration object.',
+			'interactions.createActivation must be a configuration object.',
 			{
-				prop: 'createActivation'
+				prop: 'interactions.createActivation'
 			}
 		);
 	}
@@ -1203,9 +1211,9 @@ function validateCreateActivation(activation: EventCalendarCreateActivation): vo
 		if (Number.isFinite(value) && value > 0) continue;
 		throw new EventCalendarError(
 			'invalid-prop',
-			`createActivation.${name} must be finite and positive.`,
+			`interactions.createActivation.${name} must be finite and positive.`,
 			{
-				prop: `createActivation.${name}`,
+				prop: `interactions.createActivation.${name}`,
 				value
 			}
 		);
@@ -1214,19 +1222,21 @@ function validateCreateActivation(activation: EventCalendarCreateActivation): vo
 
 function validateBusinessHours(entries: readonly EventCalendarBusinessHours[]): void {
 	if (!Array.isArray(entries)) {
-		throw new EventCalendarError('invalid-prop', 'businessHours must be an array.');
+		throw new EventCalendarError('invalid-prop', 'availability.businessHours must be an array.');
 	}
 	const windows = new Set<string>();
 	for (const entry of entries) {
 		if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-			throw new EventCalendarError('invalid-prop', 'Every businessHours entry must be an object.', {
-				prop: 'businessHours'
-			});
+			throw new EventCalendarError(
+				'invalid-prop',
+				'Every availability.businessHours entry must be an object.',
+				{ prop: 'availability.businessHours' }
+			);
 		}
 		const days = entry.daysOfWeek ?? [0, 1, 2, 3, 4, 5, 6];
-		validateWeekdays(days, 'businessHours.daysOfWeek');
-		const start = parseWallMinutes(entry.start, false, 'businessHours.start');
-		const end = parseWallMinutes(entry.end, true, 'businessHours.end');
+		validateWeekdays(days, 'availability.businessHours.daysOfWeek');
+		const start = parseWallMinutes(entry.start, false, 'availability.businessHours.start');
+		const end = parseWallMinutes(entry.end, true, 'availability.businessHours.end');
 		if (start >= end) {
 			throw new EventCalendarError('invalid-prop', 'Business hours must be a same-day range.', {
 				start: entry.start,
@@ -1236,11 +1246,15 @@ function validateBusinessHours(entries: readonly EventCalendarBusinessHours[]): 
 		for (const day of days) {
 			const key = `${day}:${entry.start}-${entry.end}`;
 			if (windows.has(key)) {
-				throw new EventCalendarError('invalid-prop', 'businessHours contains a duplicate window.', {
-					day,
-					start: entry.start,
-					end: entry.end
-				});
+				throw new EventCalendarError(
+					'invalid-prop',
+					'availability.businessHours contains a duplicate window.',
+					{
+						day,
+						start: entry.start,
+						end: entry.end
+					}
+				);
 			}
 			windows.add(key);
 		}
@@ -1250,32 +1264,45 @@ function validateBusinessHours(entries: readonly EventCalendarBusinessHours[]): 
 function validateOffDays(offDays: boolean | EventCalendarOffDaysConfig): void {
 	if (typeof offDays === 'boolean') return;
 	if (!offDays || typeof offDays !== 'object' || Array.isArray(offDays)) {
-		throw new EventCalendarError('invalid-prop', 'offDays must be a boolean or configuration.');
+		throw new EventCalendarError(
+			'invalid-prop',
+			'availability.offDays must be a boolean or configuration.'
+		);
 	}
-	if (offDays.weekdays !== undefined) validateWeekdays(offDays.weekdays, 'offDays.weekdays');
+	if (offDays.weekdays !== undefined) {
+		validateWeekdays(offDays.weekdays, 'availability.offDays.weekdays');
+	}
 	if (offDays.dates !== undefined && !Array.isArray(offDays.dates)) {
-		throw new EventCalendarError('invalid-prop', 'offDays.dates must be an array.', {
-			prop: 'offDays.dates'
+		throw new EventCalendarError('invalid-prop', 'availability.offDays.dates must be an array.', {
+			prop: 'availability.offDays.dates'
 		});
 	}
 	if (offDays.isOffDay !== undefined && typeof offDays.isOffDay !== 'function') {
-		throw new EventCalendarError('invalid-prop', 'offDays.isOffDay must be a function.', {
-			prop: 'offDays.isOffDay'
-		});
+		throw new EventCalendarError(
+			'invalid-prop',
+			'availability.offDays.isOffDay must be a function.',
+			{ prop: 'availability.offDays.isOffDay' }
+		);
 	}
 	const dates = new Set<EventCalendarDateOnly>();
 	for (const date of offDays.dates ?? []) {
 		if (typeof date !== 'string') {
-			throw new EventCalendarError('invalid-prop', 'offDays.dates must contain date strings.', {
-				prop: 'offDays.dates',
-				date
-			});
+			throw new EventCalendarError(
+				'invalid-prop',
+				'availability.offDays.dates must contain date strings.',
+				{
+					prop: 'availability.offDays.dates',
+					date
+				}
+			);
 		}
-		parseDateOnly(date, 'offDays.dates');
+		parseDateOnly(date, 'availability.offDays.dates');
 		if (dates.has(date)) {
-			throw new EventCalendarError('invalid-prop', 'offDays.dates must not contain duplicates.', {
-				date
-			});
+			throw new EventCalendarError(
+				'invalid-prop',
+				'availability.offDays.dates must not contain duplicates.',
+				{ date }
+			);
 		}
 		dates.add(date);
 	}

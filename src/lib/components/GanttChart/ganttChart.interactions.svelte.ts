@@ -37,6 +37,7 @@ import {
 import type {
 	GanttInteractionBlockedInfo,
 	GanttRangeProposal,
+	GanttScrollMode,
 	GanttTask,
 	GanttTaskMutationKind,
 	GanttTaskProposal
@@ -324,7 +325,7 @@ export class GanttChartInteractions<
 		};
 	}
 
-	connectVerticalScrollOwner(element: HTMLElement, mode: 'contained' | 'page'): () => void {
+	connectVerticalScrollOwner(element: HTMLElement, mode: GanttScrollMode): () => void {
 		if (mode === 'page' && element === document.documentElement) {
 			return autoScrollWindowForElements({
 				canScroll: ({ source }) => this.dependency.isDragSource(source.data),

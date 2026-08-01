@@ -47,7 +47,7 @@
 		selectSlot: true,
 		keyboard: true,
 		singlePointer: true,
-		maintainDurationOnAllDayChange: false
+		clipboard: true
 	};
 
 	let {
@@ -70,42 +70,23 @@
 		dir,
 		weekStartsOn,
 		validRange,
-		fixedWeeks = true,
-		showOutsideDays = true,
+		month,
 		showWeekends = true,
 		weekendDays = [0, 6],
-		showWeekNumbers = false,
-		maxItemsPerCell = 'auto',
-		dayStartHour = 0,
-		dayEndHour = 24,
-		interval = 60,
-		slotDuration = 30,
-		snapDuration = 15,
-		defaultTimedItemDuration = 60,
-		defaultAllDayItemDuration = 1,
-		scrollToHour = 7,
+		timeGrid,
+		allDayConversion,
 		agendaDayCount = 30,
-		nowIndicator = true,
-		nowIndicatorInterval = 30000,
-		offDays = false,
-		businessHours = [],
+		availability,
 		scrollMode = 'contained',
 		stickyHeader = false,
-		showHeader = true,
 		showDatePicker = false,
-		showItemTooltip = true,
 		interactions,
-		createActivation,
 		allowOverlap = true,
-		constrainToBusinessHours = false,
-		canUpdateItem,
-		onItemUpdate,
-		canSelectSlot,
-		recurrenceEditScope = 'occurrence',
-		clipboard = true,
+		validateItemUpdate,
+		resolveItemUpdate,
+		validateSlotSelection,
+		recurrence,
 		historyLimit = 50,
-		getOccurrenceExceptionId,
-		expandRecurrence,
 		header,
 		actions,
 		item,
@@ -118,7 +99,7 @@
 		overflowContent,
 		agendaDetails,
 		resourceHeader,
-		nowIndicatorContent,
+		nowIndicator,
 		dragPreview,
 		empty,
 		loadingContent,
@@ -143,11 +124,44 @@
 	const a11y = new EventCalendarA11y<TItemFields, TResourceFields>(`${componentId}-status`);
 	const resolvedLocale = $derived(locale ?? messages.locale);
 	const resolvedWeekStartsOn = $derived(weekStartsOn ?? getLocaleWeekStartsOn(resolvedLocale));
+	const fixedWeeks = $derived(month?.fixedWeeks ?? true);
+	const showOutsideDays = $derived(month?.showOutsideDays ?? true);
+	const showWeekNumbers = $derived(month?.showWeekNumbers ?? false);
+	const maxItemsPerCell = $derived(month?.maxItemsPerCell ?? 'auto');
+	const dayStartHour = $derived(timeGrid?.startHour ?? 0);
+	const dayEndHour = $derived(timeGrid?.endHour ?? 24);
+	const interval = $derived(timeGrid?.labelIntervalMinutes ?? 60);
+	const slotDuration = $derived(timeGrid?.slotClickDurationMinutes ?? 30);
+	const snapDuration = $derived(timeGrid?.snapDurationMinutes ?? 15);
+	const scrollToHour = $derived(timeGrid?.scrollToHour ?? 7);
+	const nowIndicatorInterval = $derived(timeGrid?.nowIndicatorRefreshMs ?? 30000);
+	const defaultTimedItemDuration = $derived(allDayConversion?.timedDurationMinutes ?? 60);
+	const defaultAllDayItemDuration = $derived(allDayConversion?.allDayDurationDays ?? 1);
+	const offDays = $derived(availability?.offDays ?? false);
+	const businessHours = $derived(availability?.businessHours ?? []);
+	const constrainToBusinessHours = $derived(availability?.constrainMutations ?? false);
+	const recurrenceEditScope = $derived(recurrence?.editScope ?? 'occurrence');
+	const getOccurrenceExceptionId = $derived(recurrence?.getExceptionId);
+	const expandRecurrence = $derived(recurrence?.expand);
 	const resolvedCreateActivation = $derived({
 		...DEFAULT_CREATE_ACTIVATION,
-		...createActivation
+		...interactions?.createActivation
 	});
-	const resolvedInteractions = $derived({ ...DEFAULT_INTERACTIONS, ...interactions });
+	const resolvedInteractions = $derived({
+		drag: interactions?.drag ?? DEFAULT_INTERACTIONS.drag,
+		resize: interactions?.resize ?? DEFAULT_INTERACTIONS.resize,
+		selectSlot: interactions?.selectSlot ?? DEFAULT_INTERACTIONS.selectSlot,
+		keyboard: interactions?.keyboard ?? DEFAULT_INTERACTIONS.keyboard,
+		singlePointer: interactions?.singlePointer ?? DEFAULT_INTERACTIONS.singlePointer,
+		clipboard: interactions?.clipboard ?? DEFAULT_INTERACTIONS.clipboard,
+		maintainDurationOnAllDayChange: allDayConversion?.preserveDuration ?? false
+	});
+	const showHeader = $derived(header !== false);
+	const resolvedHeader = $derived(header === false ? undefined : header);
+	const showItemTooltip = $derived(itemTooltip !== false);
+	const resolvedItemTooltip = $derived(itemTooltip === false ? undefined : itemTooltip);
+	const showNowIndicator = $derived(nowIndicator !== false);
+	const resolvedNowIndicator = $derived(nowIndicator === false ? undefined : nowIndicator);
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
 	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
 	const classes = $derived(useEventCalendarTheme(theme));
@@ -276,19 +290,19 @@
 			return constrainToBusinessHours;
 		},
 		get canUpdateItem() {
-			return canUpdateItem;
+			return validateItemUpdate;
 		},
 		get onItemUpdate() {
-			return onItemUpdate;
+			return resolveItemUpdate;
 		},
 		get canSelectSlot() {
-			return canSelectSlot;
+			return validateSlotSelection;
 		},
 		get recurrenceEditScope() {
 			return recurrenceEditScope;
 		},
 		get clipboard() {
-			return clipboard;
+			return resolvedInteractions.clipboard;
 		},
 		get historyLimit() {
 			return historyLimit;
@@ -703,7 +717,7 @@
 	});
 
 	$effect(() => {
-		if (!calendar.isMounted || !nowIndicator) return;
+		if (!calendar.isMounted || !showNowIndicator) return;
 		const refreshInterval = nowIndicatorInterval;
 		let timer: number | null = null;
 
@@ -770,7 +784,7 @@
 			{density}
 			{disabled}
 			{classes}
-			{header}
+			header={resolvedHeader}
 			{actions}
 			{stickyHeader}
 			{scrollMode}
@@ -788,7 +802,7 @@
 		{disabled}
 		{scrollMode}
 		{classes}
-		{nowIndicator}
+		nowIndicator={showNowIndicator}
 		{showWeekNumbers}
 		{maxItemsPerCell}
 		{offDays}
@@ -797,11 +811,11 @@
 		{dayHeader}
 		{timeGutter}
 		{allDay}
-		{nowIndicatorContent}
+		nowIndicatorContent={resolvedNowIndicator}
 		{agendaDetails}
 		{resourceHeader}
 		{item}
-		{itemTooltip}
+		itemTooltip={resolvedItemTooltip}
 		{overflow}
 		{overflowContent}
 		{empty}

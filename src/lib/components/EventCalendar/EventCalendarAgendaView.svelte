@@ -17,7 +17,11 @@
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type { EventCalendarDateOnly, EventCalendarOccurrence } from './eventCalendar.types.js';
+	import type {
+		EventCalendarDateOnly,
+		EventCalendarOccurrence,
+		EventCalendarScrollMode
+	} from './eventCalendar.types.js';
 
 	let {
 		calendar,
@@ -39,7 +43,7 @@
 		messages: Messages;
 		density: Density;
 		disabled: boolean;
-		scrollMode: 'contained' | 'page';
+		scrollMode: EventCalendarScrollMode;
 		classes: EventCalendarClasses;
 		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
 		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;

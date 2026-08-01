@@ -122,6 +122,7 @@
 		GanttRange,
 		GanttResolvedDependency,
 		GanttScaleDefinition,
+		GanttScrollMode,
 		GanttSortDirection,
 		GanttTouchActivation
 	} from './ganttChart.types.js';
@@ -213,7 +214,7 @@
 		maxGridWidth: number;
 		rowHeight: number;
 		overscan: number;
-		scrollMode: 'contained' | 'page';
+		scrollMode: GanttScrollMode;
 		scrollbars: 'custom' | 'native';
 		columns:
 			| readonly GanttColumnDefinition<

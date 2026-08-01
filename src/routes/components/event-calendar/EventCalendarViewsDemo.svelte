@@ -18,7 +18,7 @@
 	let view = $state<'month' | 'week' | 'day' | 'days' | 'agenda' | 'resource'>('week');
 	let dayCount = $state(3);
 
-	function canUpdateItem(proposal: EventCalendarProposedUpdate<MeetingFields>): boolean {
+	function validateItemUpdate(proposal: EventCalendarProposedUpdate<MeetingFields>): boolean {
 		if (proposal.kind !== 'move' || !proposal.occurrence?.isRecurring) return true;
 		if (proposal.item.allDay === true) return false;
 		const occurrenceDay = civilDayFormatter.format(proposal.occurrence.start);
@@ -37,13 +37,11 @@
 	bind:view
 	bind:dayCount
 	{timeZone}
-	{canUpdateItem}
-	recurrenceEditScope="occurrence"
-	dayStartHour={6}
-	dayEndHour={23}
-	scrollToHour={8}
+	{validateItemUpdate}
+	recurrence={{ editScope: 'occurrence' }}
+	timeGrid={{ startHour: 6, endHour: 23, scrollToHour: 8 }}
 	agendaDayCount={14}
 	showDatePicker
-	showWeekNumbers
+	month={{ showWeekNumbers: true }}
 	class="h-[38rem] w-full"
 />

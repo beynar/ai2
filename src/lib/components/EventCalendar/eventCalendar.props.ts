@@ -21,6 +21,7 @@ import type {
 	EventCalendarRangeChangeInfo,
 	EventCalendarRecurrenceExpander,
 	EventCalendarResource,
+	EventCalendarScrollMode,
 	EventCalendarSegment,
 	EventCalendarSelection,
 	EventCalendarSlot,
@@ -31,6 +32,72 @@ import type {
 } from './eventCalendar.types.js';
 
 export type { EventCalendarThemeProps } from './eventCalendar.theme.js';
+
+export type EventCalendarMonthOptions = Readonly<{
+	/** Renders six month rows. Defaults to `true`. */
+	fixedWeeks?: boolean;
+	/** Shows leading and trailing month dates. Defaults to `true`. */
+	showOutsideDays?: boolean;
+	/** Shows the month week-number gutter. Defaults to `false`. */
+	showWeekNumbers?: boolean;
+	/** Month overflow threshold. Defaults to `auto`. */
+	maxItemsPerCell?: number | 'auto';
+}>;
+
+export type EventCalendarTimeGridOptions = Readonly<{
+	/** First displayed wall hour. Defaults to `0`. */
+	startHour?: number;
+	/** Exclusive last displayed wall hour. Defaults to `24`. */
+	endHour?: number;
+	/** Time-gutter label interval in minutes. Defaults to `60`. */
+	labelIntervalMinutes?: number;
+	/** Empty-slot click duration in minutes. Defaults to `30`. */
+	slotClickDurationMinutes?: number;
+	/** Move, resize, and selection granularity in minutes. Defaults to `15`. */
+	snapDurationMinutes?: number;
+	/** Initial wall-hour scroll target. Defaults to `7`. */
+	scrollToHour?: number;
+	/** Current-time refresh cadence in milliseconds. Defaults to `30000`. */
+	nowIndicatorRefreshMs?: number;
+}>;
+
+export type EventCalendarAvailabilityOptions = Readonly<{
+	/** Non-working-day appearance policy. Defaults to `false`. */
+	offDays?: boolean | EventCalendarOffDaysConfig;
+	/** Same-day display-zone availability windows. Defaults to `[]`. */
+	businessHours?: EventCalendarBusinessHours[];
+	/** Restricts mutations to `businessHours`. Defaults to `false`. */
+	constrainMutations?: boolean;
+}>;
+
+export type EventCalendarAllDayConversionOptions = Readonly<{
+	/** Preserves the source duration when crossing timed/all-day regions. Defaults to `false`. */
+	preserveDuration?: boolean;
+	/** Timed duration used when converting an all-day item. Defaults to `60`. */
+	timedDurationMinutes?: number;
+	/** Civil-day duration used when converting a timed item. Defaults to `1`. */
+	allDayDurationDays?: number;
+}>;
+
+export type EventCalendarInteractionOptions = Readonly<
+	Partial<EventCalendarInteractions> & {
+		/** Empty-slot drag-create thresholds. */
+		createActivation?: Partial<EventCalendarCreateActivation>;
+	}
+>;
+
+export type EventCalendarRecurrenceOptions<TItemFields extends object = Record<never, never>> =
+	Readonly<{
+		/** Recurring mutation scope. Defaults to `occurrence`. */
+		editScope?: 'occurrence' | 'series' | 'disabled';
+		/** Produces a new exception ID. Defaults to the built-in origin-based strategy. */
+		getExceptionId?: (
+			seriesItem: EventCalendarItem<TItemFields>,
+			occurrence: EventCalendarOccurrence<TItemFields>
+		) => string;
+		/** Synchronous bounded recurrence expansion escape hatch. */
+		expand?: EventCalendarRecurrenceExpander<TItemFields>;
+	}>;
 
 export type EventCalendarSnapshot<
 	TItemFields extends object,
@@ -172,10 +239,12 @@ export type EventCalendarSnippetProps<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
 > = {
-	header?: Snippet<[EventCalendarHeaderPayload<TItemFields, TResourceFields>]>;
+	/** Replaces the built-in header; `false` removes it. */
+	header?: Snippet<[EventCalendarHeaderPayload<TItemFields, TResourceFields>]> | false;
 	actions?: Snippet<[EventCalendarSnapshot<TItemFields, TResourceFields>]>;
 	item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-	itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
+	/** Replaces the built-in item HoverCard; `false` removes it. */
+	itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]> | false;
 	monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
 	dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
 	timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
@@ -184,7 +253,8 @@ export type EventCalendarSnippetProps<
 	overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
 	agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 	resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
-	nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
+	/** Replaces the built-in current-time line; `false` removes it. */
+	nowIndicator?: Snippet<[EventCalendarNowIndicatorPayload]> | false;
 	dragPreview?: Snippet<[EventCalendarDragPreviewPayload<TItemFields>]>;
 	empty?: Snippet<[EventCalendarEmptyPayload]>;
 	loadingContent?: Snippet<[EventCalendarLoadingPayload]>;
@@ -255,83 +325,42 @@ type EventCalendarOwnProps<
 		weekStartsOn?: EventCalendarWeekday;
 		/** Half-open navigation, selection, and mutation boundary. Defaults to unbounded. */
 		validRange?: EventCalendarRange;
-		/** Renders six month rows when true. Defaults to `true`. */
-		fixedWeeks?: boolean;
-		/** Shows leading and trailing month dates. Defaults to `true`. */
-		showOutsideDays?: boolean;
+		/** Month-only layout and overflow options. */
+		month?: EventCalendarMonthOptions;
 		/** Includes configured weekend columns. Defaults to `true`. */
 		showWeekends?: boolean;
 		/** Weekend weekday numbers. Defaults to `[0, 6]`. */
 		weekendDays?: EventCalendarWeekday[];
-		/** Shows the month week-number gutter. Defaults to `false`. */
-		showWeekNumbers?: boolean;
-		/** Month overflow threshold. Defaults to `auto`. */
-		maxItemsPerCell?: number | 'auto';
-		/** First displayed wall hour. Defaults to `0`. */
-		dayStartHour?: number;
-		/** Exclusive last displayed wall hour. Defaults to `24`. */
-		dayEndHour?: number;
-		/** Time-grid gutter interval in minutes. Defaults to `60`. */
-		interval?: number;
-		/** Empty-slot click duration in minutes. Defaults to `30`. */
-		slotDuration?: number;
-		/** Move, resize, and selection granularity in minutes. Defaults to `15`. */
-		snapDuration?: number;
-		/** Timed duration used for all-day conversion. Defaults to `60`. */
-		defaultTimedItemDuration?: number;
-		/** Civil-day duration used for timed conversion. Defaults to `1`. */
-		defaultAllDayItemDuration?: number;
-		/** Initial wall-hour scroll target. Defaults to `7`. */
-		scrollToHour?: number;
+		/** Time-grid geometry, selection intervals, initial scroll, and clock refresh. */
+		timeGrid?: EventCalendarTimeGridOptions;
+		/** Timed/all-day conversion policy. */
+		allDayConversion?: EventCalendarAllDayConversionOptions;
 		/** Count of rendered agenda days. Defaults to `30`. */
 		agendaDayCount?: number;
-		/** Enables the current-time line. Defaults to `true`. */
-		nowIndicator?: boolean;
-		/** Current-time refresh cadence in milliseconds. Defaults to `30000`. */
-		nowIndicatorInterval?: number;
-		/** Non-working-day appearance policy. Defaults to `false`. */
-		offDays?: boolean | EventCalendarOffDaysConfig;
-		/** Same-day display-zone availability windows. Defaults to `[]`. */
-		businessHours?: EventCalendarBusinessHours[];
+		/** Non-working days, business windows, and mutation constraints. */
+		availability?: EventCalendarAvailabilityOptions;
 		/** Internal or document scrolling. Defaults to `contained`. */
-		scrollMode?: 'contained' | 'page';
+		scrollMode?: EventCalendarScrollMode;
 		/** Makes the default header sticky in page-scroll mode. Defaults to `false`. */
 		stickyHeader?: boolean;
-		/** Renders the default header. Defaults to `true`. */
-		showHeader?: boolean;
 		/** Adds the default date-jump popover. Defaults to `false`. */
 		showDatePicker?: boolean;
-		/** Enables the accessible default item hover card. Defaults to `true`. */
-		showItemTooltip?: boolean;
-		/** Fine-grained policy; drag, resize, slot, keyboard, and pointer features default on; duration preservation defaults off. */
-		interactions?: Partial<EventCalendarInteractions>;
-		/** Empty-slot drag-create policy. Defaults to `{ distancePx: 5, touchDelayMs: 300, touchTolerancePx: 8 }`. */
-		createActivation?: Partial<EventCalendarCreateActivation>;
+		/** Fine-grained interaction and empty-slot activation policy. */
+		interactions?: EventCalendarInteractionOptions;
 		/** Foreground overlap policy. Defaults to `true`. */
 		allowOverlap?: boolean | EventCalendarOverlapPredicate<TItemFields>;
-		/** Restricts mutations to `businessHours`. Defaults to `false`. */
-		constrainToBusinessHours?: boolean;
 		/** Synchronous live item-proposal validator. Defaults to allowing proposals. */
-		canUpdateItem?: (proposal: EventCalendarProposedUpdate<TItemFields>) => boolean;
+		validateItemUpdate?: (proposal: EventCalendarProposedUpdate<TItemFields>) => boolean;
 		/** Synchronous item-proposal commit policy and adjustment hook. Defaults to accept. */
-		onItemUpdate?: (
+		resolveItemUpdate?: (
 			proposal: EventCalendarProposedUpdate<TItemFields>
 		) => EventCalendarUpdateResult;
 		/** Synchronous slot-range validator. Defaults to allowing slots. */
-		canSelectSlot?: (slot: EventCalendarSlot) => boolean;
-		/** Recurring mutation scope. Defaults to `occurrence`. */
-		recurrenceEditScope?: 'occurrence' | 'series' | 'disabled';
-		/** Enables internal copy/paste shortcuts and API methods. Defaults to `true`. */
-		clipboard?: boolean;
+		validateSlotSelection?: (slot: EventCalendarSlot) => boolean;
+		/** Recurrence mutation and expansion policy. */
+		recurrence?: EventCalendarRecurrenceOptions<TItemFields>;
 		/** Maximum undo entries; `0` disables history. Defaults to `50`. */
 		historyLimit?: number;
-		/** Produces a new exception ID. Defaults to the built-in origin-based strategy. */
-		getOccurrenceExceptionId?: (
-			seriesItem: EventCalendarItem<TItemFields>,
-			occurrence: EventCalendarOccurrence<TItemFields>
-		) => string;
-		/** Synchronous bounded recurrence expansion escape hatch. Defaults to the built-in expander. */
-		expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
 	};
 
 /** Public props for the two-generic EventCalendar component. */
