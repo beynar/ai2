@@ -252,6 +252,11 @@ export class GanttChartA11y<
 		}
 	}
 
+	handleRootClick(event: MouseEvent): void {
+		if (this.options.disabled || isGanttInteractivePointerTarget(event.target)) return;
+		this.scheduleDismissFocus();
+	}
+
 	private dismissFocus(): void {
 		const mode = this.keyboardMode;
 		this.interaction.cancel();
@@ -755,6 +760,15 @@ function isEditableTarget(target: EventTarget | null): boolean {
 		target instanceof HTMLInputElement ||
 		target instanceof HTMLTextAreaElement ||
 		target instanceof HTMLSelectElement
+	);
+}
+
+function isGanttInteractivePointerTarget(target: EventTarget | null): boolean {
+	if (!(target instanceof Element)) return false;
+	return Boolean(
+		target.closest(
+			'button, a[href], input, textarea, select, [contenteditable="true"], [role="gridcell"], [data-dnd-handle], [data-gantt-chart-part$="-handle"], [data-gantt-chart-part="connector-hit-target"]'
+		)
 	);
 }
 

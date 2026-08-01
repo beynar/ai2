@@ -437,6 +437,10 @@
 		if (event.key === 'Escape') chart.a11y.scheduleDismissFocus();
 	}
 
+	function handleRootClickCapture(event: MouseEvent): void {
+		chart.a11y.handleRootClick(event);
+	}
+
 	export function fitProject(): boolean {
 		return chart.fitProject();
 	}
@@ -628,6 +632,7 @@
 	role="region"
 	aria-label={rootAriaLabel}
 	aria-describedby={chart.a11y.instructionsId}
+	onclickcapture={handleRootClickCapture}
 	onkeydowncapture={handleRootKeydownCapture}
 	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
