@@ -57,7 +57,9 @@
 			]
 		},
 		{ name: 'grid', type: 'switch', label: 'Tree grid', value: true },
-		{ name: 'todayIndicator', type: 'switch', label: 'Today line', value: true }
+		{ name: 'todayIndicator', type: 'switch', label: 'Today line', value: true },
+		{ name: 'weekends', type: 'switch', label: 'Weekends', value: true },
+		{ name: 'criticalPath', type: 'switch', label: 'Critical path', value: false }
 	]);
 </script>
 
@@ -89,6 +91,8 @@
 			demoState={usageControls.value.state}
 			showGrid={usageControls.value.grid}
 			showTodayIndicator={usageControls.value.todayIndicator}
+			showWeekends={usageControls.value.weekends}
+			showCriticalPath={usageControls.value.criticalPath}
 		/>
 	</ComponentCard>
 

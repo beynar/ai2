@@ -15,13 +15,17 @@
 		height = 544,
 		demoState = 'ready',
 		showGrid = true,
-		showTodayIndicator = true
+		showTodayIndicator = true,
+		showWeekends = true,
+		showCriticalPath = false
 	}: {
 		density?: Density;
 		height?: number;
 		demoState?: DemoState;
 		showGrid?: boolean;
 		showTodayIndicator?: boolean;
+		showWeekends?: boolean;
+		showCriticalPath?: boolean;
 	} = $props();
 
 	let nextDependencyId = 0;
@@ -69,6 +73,12 @@
 
 	let dependencies = $state<GanttDependency[]>([
 		{
+			id: 'research-to-brief',
+			fromTaskId: 'research',
+			toTaskId: 'brief',
+			type: 'finish-start'
+		},
+		{
 			id: 'brief-to-build',
 			fromTaskId: 'brief',
 			toTaskId: 'implementation',
@@ -78,7 +88,8 @@
 			id: 'build-to-launch',
 			fromTaskId: 'implementation',
 			toTaskId: 'launch',
-			type: 'finish-start'
+			type: 'finish-start',
+			lag: { value: 2, unit: 'hour' }
 		}
 	]);
 
@@ -102,7 +113,11 @@
 	loading={demoState === 'loading'}
 	disabled={demoState === 'disabled'}
 	schedule={{ calendarId: parisProjectCalendar.id }}
-	timeline={{ todayIndicator: showTodayIndicator }}
+	timeline={{
+		todayIndicator: showTodayIndicator,
+		weekends: showWeekends,
+		display: { criticalPath: showCriticalPath, nonWorkingTime: false }
+	}}
 	layout={{ grid: showGrid ? {} : false }}
 	interactions={{ dependencyCreation: { create: createDependency } }}
 	style={`height: ${height}px`}
