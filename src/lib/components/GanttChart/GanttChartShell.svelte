@@ -108,7 +108,6 @@
 		GanttProgressPayload,
 		GanttResourceAssignmentsPayload,
 		GanttResourceView,
-		GanttSnapshot,
 		GanttTaskLabelPayload,
 		GanttTaskPayload,
 		GanttTaskTooltipPayload,
@@ -127,6 +126,7 @@
 		GanttInteractions,
 		GanttRange,
 		GanttResolvedDependency,
+		GanttResolvedTaskNode,
 		GanttScaleDefinition,
 		GanttScrollMode,
 		GanttSortDirection,
@@ -170,7 +170,6 @@
 
 	let {
 		chart,
-		snapshot,
 		messages,
 		locale,
 		timeZone,
@@ -204,7 +203,6 @@
 		onDependencyClick
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-		snapshot: GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		messages: Messages;
 		locale: string;
 		timeZone: string;
@@ -240,8 +238,8 @@
 		resourceView: GanttResourceView | undefined;
 		classes: GanttChartClasses;
 		snippets: ShellSnippets;
-		onTaskClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
-		onTaskDoubleClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
+		onTaskClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
+		onTaskDoubleClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
 		onDependencyClick?: (
 			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
 			event: MouseEvent
@@ -279,11 +277,11 @@
 	);
 	const rowModel = $derived(
 		resolveGanttRows({
-			nodes: snapshot.resolvedTasks,
+			nodes: chart.schedule.resolvedTasks,
 			columns: resolvedColumns,
-			dependencies: snapshot.dependencies,
-			resources: snapshot.resources,
-			assignments: snapshot.assignments,
+			dependencies: chart.dependencies,
+			resources: chart.resources,
+			assignments: chart.assignments,
 			resourceView: resolvedResourceView
 		})
 	);
@@ -407,13 +405,13 @@
 			: 0
 	);
 	const emptyPayload = $derived<GanttEmptyPayload>({
-		visibleRange: snapshot.visibleRange,
-		zoom: snapshot.zoom,
+		visibleRange: chart.visibleRange,
+		zoom: chart.zoom,
 		defaultContent: defaultEmpty
 	});
 	const loadingPayload = $derived<GanttLoadingPayload>({
-		visibleRange: snapshot.visibleRange,
-		zoom: snapshot.zoom,
+		visibleRange: chart.visibleRange,
+		zoom: chart.zoom,
 		defaultContent: defaultLoading
 	});
 
@@ -562,7 +560,7 @@
 		{rowModel}
 		{renderedRows}
 		totalHeight={contentHeight}
-		selection={snapshot.selection}
+		selection={chart.selection}
 		{messages}
 		{locale}
 		{timeZone}
@@ -584,7 +582,6 @@
 {#snippet timelinePane()}
 	<GanttTimeline
 		{chart}
-		{snapshot}
 		{rowModel}
 		{renderedRows}
 		totalHeight={contentHeight}

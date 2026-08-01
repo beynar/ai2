@@ -15,7 +15,6 @@
 	import type {
 		GanttDisplayOptions,
 		GanttDragPreviewPayload,
-		GanttSnapshot,
 		GanttTimeHeaderPayload,
 		GanttTaskPayload,
 		GanttTaskLabelPayload,
@@ -42,6 +41,7 @@
 		GanttHoliday,
 		GanttRange,
 		GanttResolvedDependency,
+		GanttResolvedTaskNode,
 		GanttScaleDefinition,
 		GanttZoomLevel
 	} from './ganttChart.types.js';
@@ -70,7 +70,6 @@
 
 	let {
 		chart,
-		snapshot,
 		rowModel,
 		renderedRows,
 		totalHeight,
@@ -97,7 +96,6 @@
 		onDependencyClick
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-		snapshot: GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		renderedRows: readonly GanttVirtualRow[];
 		totalHeight: number;
@@ -119,8 +117,8 @@
 		disabled: boolean;
 		classes: GanttChartClasses;
 		snippets: TimelineSnippets;
-		onTaskClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
-		onTaskDoubleClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
+		onTaskClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
+		onTaskDoubleClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
 		onDependencyClick?: (
 			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
 			event: MouseEvent
@@ -147,7 +145,7 @@
 		Math.max(1, effectiveViewportWidth - FIT_PROJECT_EDGE_INSET * 2)
 	);
 	const projectRange = $derived(chart.schedule.analysis.projectRange);
-	const emptyCanvasRange = untrack(() => snapshot.visibleRange);
+	const emptyCanvasRange = untrack(() => chart.visibleRange);
 	let projectCanvasRange = $state<GanttRange | null>(
 		untrack(() => (projectRange ? cloneRange(projectRange) : null))
 	);
@@ -156,7 +154,7 @@
 	const scale = $derived(
 		createGanttTimeScale({
 			range: canvasSourceRange,
-			zoom: snapshot.zoom,
+			zoom: chart.zoom,
 			timeZone,
 			locale,
 			direction,
@@ -191,7 +189,7 @@
 		>[]
 	);
 	const scaleKey = $derived(
-		`${snapshot.zoom}:${scale.canvasRange.start.getTime()}:${scale.canvasRange.end.getTime()}:${scale.totalWidth}:${direction}`
+		`${chart.zoom}:${scale.canvasRange.start.getTime()}:${scale.canvasRange.end.getTime()}:${scale.totalWidth}:${direction}`
 	);
 	const workloadPanelHeight = $derived(
 		display.workload && resourceView.resources.length > 0 ? resourceView.workloadHeight : 0
@@ -222,7 +220,7 @@
 	$effect(() => {
 		const key = scaleKey;
 		if (!isMounted || !horizontalViewport || key === lastScaleKey) return;
-		const anchorRange = untrack(() => lastPublishedRange ?? snapshot.visibleRange);
+		const anchorRange = untrack(() => lastPublishedRange ?? chart.visibleRange);
 		const anchor = pendingAnchor ?? {
 			date: new Date((anchorRange.start.getTime() + anchorRange.end.getTime()) / 2),
 			offset: effectiveViewportWidth / 2
@@ -245,7 +243,7 @@
 			queueVisibleRangePublish();
 			return;
 		}
-		const anchorRange = untrack(() => lastPublishedRange ?? snapshot.visibleRange);
+		const anchorRange = untrack(() => lastPublishedRange ?? chart.visibleRange);
 		const anchor = {
 			date: new Date((anchorRange.start.getTime() + anchorRange.end.getTime()) / 2),
 			offset: width / 2
@@ -274,7 +272,7 @@
 				return rowHeight;
 			}
 		});
-		const initialAnchor = projectRange?.start ?? snapshot.visibleRange.start;
+		const initialAnchor = projectRange?.start ?? chart.visibleRange.start;
 		void tick().then(() => {
 			scrollToDate(initialAnchor, { align: 'start' });
 		});
@@ -355,7 +353,7 @@
 		if (!projectRange) return false;
 		const center = new Date((projectRange.start.getTime() + projectRange.end.getTime()) / 2);
 		const zoom = resolveFitZoom(projectRange);
-		const isZoomChange = zoom !== snapshot.zoom;
+		const isZoomChange = zoom !== chart.zoom;
 		pendingAnchor = { date: center, offset: effectiveViewportWidth / 2 };
 		if (!validRange) {
 			projectCanvasRange = cloneRange(projectRange);
@@ -381,7 +379,7 @@
 			});
 			if (duration * candidate.pixelsPerMillisecond <= fitProjectWidth) return zoom;
 		}
-		return chart.enabledZoomLevels.at(-1) ?? snapshot.zoom;
+		return chart.enabledZoomLevels.at(-1) ?? chart.zoom;
 	}
 
 	function applyScrollAnchor(anchor: Readonly<{ date: Date; offset: number }> | null): void {
@@ -471,10 +469,10 @@
 					{rowModel}
 					{renderedRows}
 					{resolvedDependencies}
-					resources={snapshot.resources}
-					assignments={snapshot.assignments}
+					resources={chart.resources}
+					assignments={chart.assignments}
 					workload={chart.schedule.workload}
-					selection={snapshot.selection}
+					selection={chart.selection}
 					{scale}
 					{visibleRange}
 					{visiblePixels}

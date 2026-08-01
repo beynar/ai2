@@ -513,7 +513,6 @@
 	{/if}
 	<GanttChartShell
 		{chart}
-		{snapshot}
 		{messages}
 		{size}
 		{density}
