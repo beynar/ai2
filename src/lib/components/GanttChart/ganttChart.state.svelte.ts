@@ -102,7 +102,6 @@ export type GanttChartStateOptions<
 	readonly rootId: string;
 	readonly projectCalendarId: string | undefined;
 	readonly validRange: GanttRange | undefined;
-	readonly initialScrollDate: Date | undefined;
 	readonly zoomLevels: readonly GanttZoomLevel[];
 	readonly customScaleIds: ReadonlySet<GanttZoomLevel>;
 	readonly loading: boolean;
@@ -324,11 +323,9 @@ export class GanttChartState<
 		}
 		const projectRange = this.schedule.analysis.projectRange;
 		if (projectRange) return cloneRange(projectRange);
-		const anchor = this.#options.initialScrollDate ?? EMPTY_RANGE_ANCHOR;
-		assertInstant(anchor, 'initialScrollDate');
 		return {
-			start: new Date(anchor.getTime() - DEFAULT_RANGE_SPAN_MS / 2),
-			end: new Date(anchor.getTime() + DEFAULT_RANGE_SPAN_MS / 2)
+			start: new Date(EMPTY_RANGE_ANCHOR.getTime() - DEFAULT_RANGE_SPAN_MS / 2),
+			end: new Date(EMPTY_RANGE_ANCHOR.getTime() + DEFAULT_RANGE_SPAN_MS / 2)
 		};
 	}
 

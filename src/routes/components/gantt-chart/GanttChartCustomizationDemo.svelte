@@ -4,12 +4,23 @@
 	import { TextInput } from '$lib/components/Form/TextInput/index.js';
 	import {
 		GanttChart,
+		type GanttHeaderPayload,
 		type GanttResolvedTaskNode,
-		type GanttTask
+		type GanttSnapshot,
+		type GanttTask,
+		type GanttTaskPayload,
+		type GanttTaskTooltipPayload,
+		type GanttTreeCellPayload
 	} from '$lib/components/GanttChart/index.js';
 	import { parisProjectCalendar } from './ganttChartDemoData.js';
 
 	type TaskFields = { owner: string; discipline: 'design' | 'engineering' | 'research' };
+	type EmptyFields = Record<never, never>;
+	type HeaderPayload = GanttHeaderPayload<TaskFields, EmptyFields, EmptyFields, EmptyFields>;
+	type ActionsPayload = GanttSnapshot<TaskFields, EmptyFields, EmptyFields, EmptyFields>;
+	type TreeCellPayload = GanttTreeCellPayload<TaskFields, EmptyFields, EmptyFields, EmptyFields>;
+	type TaskPayload = GanttTaskPayload<TaskFields, EmptyFields>;
+	type TaskTooltipPayload = GanttTaskTooltipPayload<TaskFields, EmptyFields, EmptyFields>;
 
 	let editorOpen = $state(false);
 	let editingTaskId = $state<string | null>(null);
@@ -61,39 +72,60 @@
 	}
 </script>
 
+{#snippet customHeader(payload: HeaderPayload)}
+	<div class="flex w-full flex-wrap items-center justify-between gap-2 px-1">
+		<div class="flex items-center gap-1">
+			{@render payload.today()}{@render payload.fitProject()}
+		</div>
+		<p class="text-neutral/70 text-sm font-medium">
+			{payload.tasks.length} controlled definitions
+		</p>
+		<div class="flex items-center gap-1">
+			{@render payload.zoomControl()}{@render payload.actions()}
+		</div>
+	</div>
+{/snippet}
+
+{#snippet customActions(payload: ActionsPayload)}
+	<Button size="small" variant="outline" onClick={() => payload.api.fitProject()}>Frame plan</Button
+	>
+{/snippet}
+
+{#snippet customTreeCell(payload: TreeCellPayload)}
+	{@render payload.defaultContent()}
+	{#if payload.column.id === 'title'}
+		<span class="text-neutral/45 ms-auto text-[0.65rem] uppercase">
+			{payload.node.task.discipline}
+		</span>
+	{/if}
+{/snippet}
+
+{#snippet customTask(payload: TaskPayload)}
+	<span class="truncate px-2 text-[0.7rem] font-semibold">{payload.node.task.owner}</span>
+{/snippet}
+
+{#snippet customTaskTooltip(payload: TaskTooltipPayload)}
+	{@render payload.defaultContent()}
+	<p class="text-neutral/60 mt-1 text-xs">
+		Owned by {payload.node.task.owner} · {payload.node.task.discipline}
+	</p>
+{/snippet}
+
 <GanttChart
 	bind:tasks
 	calendars={[parisProjectCalendar]}
-	projectCalendarId={parisProjectCalendar.id}
 	timeZone="Europe/Paris"
-	initialScrollDate={new Date('2026-08-11T10:00:00.000Z')}
-	onTaskDoubleClick={openEditor}
+	schedule={{ calendarId: parisProjectCalendar.id }}
+	events={{ taskDoubleClick: openEditor }}
+	render={{
+		header: customHeader,
+		actions: customActions,
+		treeCell: customTreeCell,
+		task: customTask,
+		taskTooltip: customTaskTooltip
+	}}
 	class="h-[32rem] w-full"
->
-	{#snippet header({ today, fitProject, zoomControl, actions, tasks: headerTasks })}
-		<div class="flex w-full flex-wrap items-center justify-between gap-2 px-1">
-			<div class="flex items-center gap-1">{@render today()}{@render fitProject()}</div>
-			<p class="text-neutral/70 text-sm font-medium">{headerTasks.length} controlled definitions</p>
-			<div class="flex items-center gap-1">{@render zoomControl()}{@render actions()}</div>
-		</div>
-	{/snippet}
-	{#snippet actions({ api })}
-		<Button size="small" variant="outline" onClick={() => api.fitProject()}>Frame plan</Button>
-	{/snippet}
-	{#snippet treeCell({ node, column, defaultContent })}
-		{@render defaultContent()}
-		{#if column.id === 'title'}
-			<span class="text-neutral/45 ms-auto text-[0.65rem] uppercase">{node.task.discipline}</span>
-		{/if}
-	{/snippet}
-	{#snippet task({ node })}
-		<span class="truncate px-2 text-[0.7rem] font-semibold">{node.task.owner}</span>
-	{/snippet}
-	{#snippet taskTooltip({ node, defaultContent })}
-		{@render defaultContent()}
-		<p class="text-neutral/60 mt-1 text-xs">Owned by {node.task.owner} · {node.task.discipline}</p>
-	{/snippet}
-</GanttChart>
+/>
 
 <Dialog
 	bind:open={editorOpen}

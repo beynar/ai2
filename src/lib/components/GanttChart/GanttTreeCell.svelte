@@ -1,4 +1,13 @@
 <script lang="ts" module>
+	const TREE_CELL_PADDING: Record<
+		'small' | 'normal' | 'large',
+		Readonly<{ base: number; indent: number }>
+	> = {
+		small: { base: 4, indent: 10 },
+		normal: { base: 6, indent: 12 },
+		large: { base: 8, indent: 14 }
+	};
+
 	function focusEditor(element: HTMLInputElement): void {
 		queueMicrotask(() => {
 			element.focus();
@@ -121,6 +130,9 @@
 	const payload = $derived<
 		GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ node, column, value, isSelected, isFocused, isEditing, defaultContent });
+	const titlePadding = $derived(
+		TREE_CELL_PADDING[density].base + node.depth * TREE_CELL_PADDING[density].indent
+	);
 
 	function beginEdit(): void {
 		if (!isEditable) return;
@@ -164,7 +176,7 @@
 	style:width={`${column.width}px`}
 	style:min-width={`${column.minWidth}px`}
 	style:max-width={`${column.maxWidth}px`}
-	style:padding-inline-start={column.id === 'title' ? `${4 + node.depth * 12}px` : undefined}
+	style:padding-inline-start={column.id === 'title' ? `${titlePadding}px` : undefined}
 	role="gridcell"
 	aria-colindex={columnIndex + 1}
 	aria-selected={isSelected}

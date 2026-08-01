@@ -92,21 +92,30 @@
 	<GanttChart
 		bind:tasks
 		bind:dependencies
-		{autoSchedule}
-		{createDependency}
 		calendars={[parisProjectCalendar]}
-		projectCalendarId={parisProjectCalendar.id}
 		timeZone="Europe/Paris"
-		initialScrollDate={new Date('2026-08-05T10:00:00.000Z')}
-		display={{ criticalPath: true, constraints: true, baselines: true, deadlines: true }}
-		onDependenciesChange={(_next, change) => {
-			status = `${change.kind} dependency committed from ${change.source}.`;
+		schedule={{
+			calendarId: parisProjectCalendar.id,
+			propagation: autoSchedule ? 'auto' : 'manual'
 		}}
-		onScheduleViolations={(violations) => {
-			status =
-				violations.length === 0
-					? 'The schedule satisfies all current constraints.'
-					: `${violations.length} schedule violation${violations.length === 1 ? '' : 's'} detected.`;
+		timeline={{
+			display: { criticalPath: true, constraints: true, baselines: true, deadlines: true }
+		}}
+		interactions={{ dependencyCreation: { create: createDependency } }}
+		mutations={{
+			dependency: {
+				onChange: (_next, change) => {
+					status = `${change.kind} dependency committed from ${change.source}.`;
+				}
+			}
+		}}
+		events={{
+			scheduleViolations: (violations) => {
+				status =
+					violations.length === 0
+						? 'The schedule satisfies all current constraints.'
+						: `${violations.length} schedule violation${violations.length === 1 ? '' : 's'} detected.`;
+			}
 		}}
 		class="h-[33rem] w-full"
 	/>

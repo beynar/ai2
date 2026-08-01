@@ -1,4 +1,10 @@
 <script lang="ts" module>
+	function resolveDensityHeaderHeight(density: 'small' | 'normal' | 'large'): number {
+		if (density === 'small') return 40;
+		if (density === 'large') return 56;
+		return 48;
+	}
+
 	function validateGridMetrics(
 		gridWidth: number,
 		minGridWidth: number,
@@ -180,13 +186,11 @@
 		rowHeight,
 		overscan,
 		scrollMode,
-		scrollbars,
 		columns,
 		interactions,
 		touchActivation,
 		scales,
 		validRange,
-		initialScrollDate,
 		holidays,
 		showTodayIndicator,
 		showWeekends,
@@ -215,7 +219,6 @@
 		rowHeight: number;
 		overscan: number;
 		scrollMode: GanttScrollMode;
-		scrollbars: 'custom' | 'native';
 		columns:
 			| readonly GanttColumnDefinition<
 					TTaskFields,
@@ -228,7 +231,6 @@
 		touchActivation: GanttTouchActivation;
 		scales: readonly GanttScaleDefinition[];
 		validRange: GanttRange | undefined;
-		initialScrollDate: Date | undefined;
 		holidays: readonly GanttHoliday[];
 		showTodayIndicator: boolean;
 		showWeekends: boolean;
@@ -251,7 +253,12 @@
 	let viewportRef = $state<HTMLDivElement | null>(null);
 	let pageScrollElement = $state<HTMLElement | null>(null);
 	let pageScrollMargin = $state(0);
-	let scheduleHeaderHeight = $state(56);
+	let measuredScheduleHeader = $state<Readonly<{ density: Density; height: number }> | undefined>();
+	const scheduleHeaderHeight = $derived(
+		measuredScheduleHeader?.density === density
+			? measuredScheduleHeader.height
+			: resolveDensityHeaderHeight(density)
+	);
 	let sortOverrides = $state<Record<string, GanttSortDirection | null>>({});
 	const baseColumns = $derived(resolveGanttColumns(columns));
 	const resolvedColumns = $derived(
@@ -346,12 +353,19 @@
 	$effect(() => {
 		const viewport = viewportRef;
 		const layoutWidth = containerWidth;
+		const currentDensity = density;
 		void layoutWidth;
 		const header = viewport?.querySelector<HTMLElement>(
 			'[data-gantt-chart-part="grid-header"], [data-gantt-chart-part="time-header"]'
 		);
 		const height = header?.getBoundingClientRect().height;
-		if (height && height !== scheduleHeaderHeight) scheduleHeaderHeight = height;
+		if (
+			height &&
+			(measuredScheduleHeader?.density !== currentDensity ||
+				measuredScheduleHeader.height !== height)
+		) {
+			measuredScheduleHeader = { density: currentDensity, height };
+		}
 	});
 
 	const virtualRows = $derived($rowVirtualizerStore.getVirtualItems());
@@ -443,7 +457,7 @@
 	bind:clientHeight={containerHeight}
 	data-gantt-chart-part="content"
 	data-scroll-mode={scrollMode}
-	data-scrollbars={scrollbars}
+	data-scrollbars="custom"
 	data-empty={rowModel.rows.length === 0 || undefined}
 	data-loading={loading || undefined}
 	aria-busy={loading}
@@ -452,7 +466,7 @@
 	style:--gantt-min-grid-width={`${minGridWidth}px`}
 	style:--gantt-max-grid-width={`${maxGridWidth}px`}
 >
-	{#if scrollMode === 'contained' && scrollbars === 'custom'}
+	{#if scrollMode === 'contained'}
 		<ScrollArea
 			bind:viewportRef
 			class="h-full"
@@ -464,9 +478,7 @@
 	{:else}
 		<div
 			bind:this={viewportRef}
-			class={scrollMode === 'contained'
-				? 'relative h-full min-h-0 overflow-y-auto overflow-x-hidden'
-				: 'relative min-h-0 overflow-visible'}
+			class="relative min-h-0 overflow-visible"
 			role="group"
 			aria-label={messages.ganttChartScrollableContent}
 		>
@@ -576,7 +588,6 @@
 		{rowHeight}
 		{scales}
 		{validRange}
-		{initialScrollDate}
 		{holidays}
 		{showTodayIndicator}
 		{showWeekends}
@@ -589,7 +600,6 @@
 		{color}
 		{direction}
 		{disabled}
-		{scrollbars}
 		{classes}
 		{snippets}
 		{onTaskClick}

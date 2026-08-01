@@ -2,6 +2,7 @@
 	lang="ts"
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
+	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { onMount, tick, untrack, type Snippet } from 'svelte';
@@ -76,7 +77,6 @@
 		rowHeight,
 		scales,
 		validRange,
-		initialScrollDate,
 		holidays,
 		showTodayIndicator,
 		showWeekends,
@@ -89,7 +89,6 @@
 		color,
 		direction,
 		disabled,
-		scrollbars,
 		classes,
 		snippets,
 		onTaskClick,
@@ -104,7 +103,6 @@
 		rowHeight: number;
 		scales: readonly GanttScaleDefinition[];
 		validRange: GanttRange | undefined;
-		initialScrollDate: Date | undefined;
 		holidays: readonly GanttHoliday[];
 		showTodayIndicator: boolean;
 		showWeekends: boolean;
@@ -117,7 +115,6 @@
 		color: Colors;
 		direction: 'ltr' | 'rtl';
 		disabled: boolean;
-		scrollbars: 'custom' | 'native';
 		classes: GanttChartClasses;
 		snippets: TimelineSnippets;
 		onTaskClick?: (task: (typeof snapshot.resolvedTasks)[number], event: MouseEvent) => void;
@@ -276,9 +273,9 @@
 				return rowHeight;
 			}
 		});
-		const initialAnchor = initialScrollDate ?? projectRange?.start ?? snapshot.visibleRange.start;
+		const initialAnchor = projectRange?.start ?? snapshot.visibleRange.start;
 		void tick().then(() => {
-			scrollToDate(initialAnchor, { align: initialScrollDate ? 'center' : 'start' });
+			scrollToDate(initialAnchor, { align: 'start' });
 		});
 		return () => {
 			isMounted = false;
@@ -436,11 +433,10 @@
 		</div>
 	</div>
 	<div
-		bind:this={horizontalViewport}
 		bind:clientWidth={viewportWidth}
 		dir="ltr"
 		data-gantt-chart-part="timeline-viewport"
-		data-scrollbars={scrollbars}
+		data-scrollbars="custom"
 		data-compressed={scale.isCompressed || undefined}
 		data-interaction-invalid={chart.interaction.isInvalid || undefined}
 		data-visible-start={visibleRange.start.toISOString()}
@@ -450,72 +446,79 @@
 			color,
 			disabled,
 			invalid: chart.interaction.isInvalid,
-			class: 'h-auto overflow-x-auto overflow-y-clip overscroll-x-contain'
+			class: 'h-auto'
 		})}
 		style:height={`${totalHeight + workloadPanelHeight}px`}
-		onscroll={handleScroll}
 		onwheel={handleWheel}
 	>
-		<div
-			class="relative overflow-x-clip"
-			style:width={`${scale.totalWidth}px`}
-			style:height={`${totalHeight + workloadPanelHeight}px`}
-			dir={direction}
+		<ScrollArea
+			bind:viewportRef={horizontalViewport}
+			class="h-full min-w-0"
+			ariaLabel={messages.ganttChartTimeline}
+			type="hover"
+			onScroll={handleScroll}
 		>
-			<GanttTimelineRows
-				{chart}
-				{rowModel}
-				{renderedRows}
-				{resolvedDependencies}
-				resources={snapshot.resources}
-				assignments={snapshot.assignments}
-				workload={chart.schedule.workload}
-				selection={snapshot.selection}
-				{scale}
-				{visibleRange}
-				{visiblePixels}
-				{viewportWidth}
-				{totalHeight}
-				{rowHeight}
-				{shades}
-				{projectRange}
-				{now}
-				{showTodayIndicator}
-				showCritical={display.criticalPath}
-				showBaselines={display.baselines}
-				showDeadlines={display.deadlines}
-				showConstraints={display.constraints}
-				{messages}
-				{locale}
-				{timeZone}
-				{density}
-				{color}
-				{direction}
-				{disabled}
-				{classes}
-				{snippets}
-				{onTaskClick}
-				{onTaskDoubleClick}
-				{onDependencyClick}
-			/>
-			{#if workloadPanelHeight > 0}
-				<GanttWorkloadPanel
-					{resourceView}
+			<div
+				class="relative overflow-x-clip"
+				style:width={`${scale.totalWidth}px`}
+				style:height={`${totalHeight + workloadPanelHeight}px`}
+				dir={direction}
+			>
+				<GanttTimelineRows
+					{chart}
+					{rowModel}
+					{renderedRows}
+					{resolvedDependencies}
+					resources={snapshot.resources}
+					assignments={snapshot.assignments}
 					workload={chart.schedule.workload}
+					selection={snapshot.selection}
 					{scale}
+					{visibleRange}
 					{visiblePixels}
 					{viewportWidth}
-					height={workloadPanelHeight}
+					{totalHeight}
+					{rowHeight}
+					{shades}
+					{projectRange}
+					{now}
+					{showTodayIndicator}
+					showCritical={display.criticalPath}
+					showBaselines={display.baselines}
+					showDeadlines={display.deadlines}
+					showConstraints={display.constraints}
 					{messages}
 					{locale}
+					{timeZone}
 					{density}
 					{color}
 					{direction}
 					{disabled}
 					{classes}
-					workloadCell={snippets.workloadCell}
+					{snippets}
+					{onTaskClick}
+					{onTaskDoubleClick}
+					{onDependencyClick}
 				/>
-			{/if}
-		</div>
+				{#if workloadPanelHeight > 0}
+					<GanttWorkloadPanel
+						{resourceView}
+						workload={chart.schedule.workload}
+						{scale}
+						{visiblePixels}
+						{viewportWidth}
+						height={workloadPanelHeight}
+						{messages}
+						{locale}
+						{density}
+						{color}
+						{direction}
+						{disabled}
+						{classes}
+						workloadCell={snippets.workloadCell}
+					/>
+				{/if}
+			</div>
+		</ScrollArea>
 	</div>
 </div>

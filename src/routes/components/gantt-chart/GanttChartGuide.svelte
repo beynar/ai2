@@ -10,7 +10,7 @@
 		},
 		{
 			title: 'One mutation boundary',
-			body: 'Pointer and touch gestures, keyboard modes, built-in or custom column editors, clipboard, history, and API calls produce the same typed proposals. Move, resize, and range snapping follows the active zoom scale unless snapDuration fixes a consumer-defined step. Structural checks run before canUpdate hooks; adjusted records are revalidated before fresh arrays and changed objects publish. Change callbacks carry one guarded revert and never swallow persistence failures.'
+			body: 'Pointer and touch gestures, keyboard modes, built-in or custom column editors, clipboard, history, and API calls produce the same typed proposals. Move, resize, and range snapping follows the active zoom scale unless timeline.snapDuration fixes a consumer-defined step. Structural checks run before mutations validators; resolved records are revalidated before fresh arrays and changed objects publish. Mutation change callbacks carry one guarded revert and never swallow persistence failures.'
 		},
 		{
 			title: 'Scheduling and completed tasks',
@@ -22,7 +22,7 @@
 		},
 		{
 			title: 'Application-owned dialogs',
-			body: 'GanttChart does not own create or edit dialogs. Compose onTaskDoubleClick or onEmptyRangeSelect with Svelai Dialog and Form controls, validate the domain record, then publish a fresh controlled array or call the imperative API. Persistence, fetching, retries, and conflict UI remain at the application boundary.'
+			body: 'GanttChart does not own create or edit dialogs. Compose events.taskDoubleClick or events.emptyRangeSelect with Svelai Dialog and Form controls, validate the domain record, then publish a fresh controlled array or call the imperative API. Persistence, fetching, retries, and conflict UI remain at the application boundary.'
 		},
 		{
 			title: 'Composition, accessibility, and scale',

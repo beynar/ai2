@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { setI18n } from './context.svelte.js';
+	import { setI18n, setI18nDirection } from './context.svelte.js';
 	import { locales, type LocaleCode } from './locales.js';
 	import type { Messages } from './en.js';
 
@@ -25,6 +25,7 @@
 
 	// Provide the merged catalog to all descendants. The getter keeps them reactive to `locale`.
 	setI18n(() => ({ ...locales[locale].messages, ...messages }));
+	setI18nDirection(() => dir ?? locales[locale].dir);
 
 	// Client-only: mirror direction + language onto the document element.
 	// Restore the prior values on unmount / when manageDocument turns off, so a page-scoped

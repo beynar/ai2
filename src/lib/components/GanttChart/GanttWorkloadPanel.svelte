@@ -1,4 +1,5 @@
 <script lang="ts" generics="TResourceFields extends object">
+	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
@@ -16,8 +17,11 @@
 	import type { GanttChartClasses } from './ganttChart.theme.js';
 	import type { GanttResource, GanttWorkloadBucket } from './ganttChart.types.js';
 
-	const HEADER_HEIGHT = 28;
-	const RESOURCE_ROW_HEIGHT = 32;
+	const WORKLOAD_METRICS: Record<Density, Readonly<{ headerHeight: number; rowHeight: number }>> = {
+		small: { headerHeight: 24, rowHeight: 28 },
+		normal: { headerHeight: 28, rowHeight: 32 },
+		large: { headerHeight: 32, rowHeight: 40 }
+	};
 
 	let {
 		resourceView,
@@ -52,11 +56,13 @@
 	} = $props();
 
 	let verticalViewport = $state<HTMLDivElement | null>(null);
+	const headerHeight = $derived(WORKLOAD_METRICS[density].headerHeight);
+	const resourceRowHeight = $derived(WORKLOAD_METRICS[density].rowHeight);
 	const effectiveViewportWidth = $derived(Math.max(1, viewportWidth));
 	const frameLeft = $derived(
 		Math.max(0, Math.min(scale.totalWidth - effectiveViewportWidth, visiblePixels.start))
 	);
-	const bodyHeight = $derived(Math.max(RESOURCE_ROW_HEIGHT, height - HEADER_HEIGHT));
+	const bodyHeight = $derived(Math.max(resourceRowHeight, height - headerHeight));
 	const visibleCells = $derived(
 		getGanttScaleCells(scale, 'lower', visiblePixels, Math.max(120, effectiveViewportWidth / 3))
 	);
@@ -74,7 +80,7 @@
 	const resourceVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
 		count: 0,
 		getScrollElement: () => null,
-		estimateSize: () => RESOURCE_ROW_HEIGHT,
+		estimateSize: () => resourceRowHeight,
 		overscan: 3
 	});
 
@@ -86,7 +92,7 @@
 		get(resourceVirtualizerStore).setOptions({
 			count: resources.length,
 			getScrollElement: () => viewport,
-			estimateSize: () => RESOURCE_ROW_HEIGHT,
+			estimateSize: () => resourceRowHeight,
 			overscan: 3,
 			getItemKey: (index) => resources[index]?.id ?? index
 		});
@@ -94,7 +100,7 @@
 
 	const virtualRows = $derived($resourceVirtualizerStore.getVirtualItems());
 	const fallbackCount = $derived(
-		Math.min(resourceView.resources.length, Math.ceil(bodyHeight / RESOURCE_ROW_HEIGHT) + 3)
+		Math.min(resourceView.resources.length, Math.ceil(bodyHeight / resourceRowHeight) + 3)
 	);
 	const renderedRows = $derived(
 		virtualRows.length > 0
@@ -102,14 +108,14 @@
 			: Array.from({ length: fallbackCount }, (_, index) => ({
 					index,
 					key: resourceView.resources[index]?.id ?? index,
-					start: index * RESOURCE_ROW_HEIGHT,
-					end: (index + 1) * RESOURCE_ROW_HEIGHT,
-					size: RESOURCE_ROW_HEIGHT,
+					start: index * resourceRowHeight,
+					end: (index + 1) * resourceRowHeight,
+					size: resourceRowHeight,
 					lane: 0
 				}))
 	);
 	const totalRowsHeight = $derived(
-		$resourceVirtualizerStore.getTotalSize() || resourceView.resources.length * RESOURCE_ROW_HEIGHT
+		$resourceVirtualizerStore.getTotalSize() || resourceView.resources.length * resourceRowHeight
 	);
 
 	function resolveCellBucket(
@@ -176,7 +182,7 @@
 	>
 		<div
 			class="relative border-b border-neutral-muted bg-surface-raised/95 text-[0.6875rem] font-semibold text-neutral/70"
-			style:height={`${HEADER_HEIGHT}px`}
+			style:height={`${headerHeight}px`}
 			role="row"
 		>
 			{#each visibleCells as positionedCell (positionedCell.cell.index)}
@@ -189,7 +195,7 @@
 					})}
 					style:left={`${positionedCell.left - frameLeft}px`}
 					style:width={`${positionedCell.width}px`}
-					style:height={`${HEADER_HEIGHT}px`}
+					style:height={`${headerHeight}px`}
 					role="columnheader"
 				>
 					<span class="truncate px-1">{positionedCell.label}</span>
@@ -204,60 +210,62 @@
 				{messages.ganttChartWorkload}
 			</div>
 		</div>
-		<div
-			bind:this={verticalViewport}
-			class="relative overflow-y-auto overflow-x-hidden"
-			style:height={`${bodyHeight}px`}
-			role="rowgroup"
-		>
-			<div class="relative" style:height={`${totalRowsHeight}px`}>
-				{#each renderedRows as virtualRow (virtualRow.key)}
-					{@const resource = resourceView.resources[virtualRow.index]}
-					{#if resource}
-						<div
-							data-gantt-chart-part="workload-row"
-							data-resource-id={resource.id}
-							data-resource-depth={resourceView.depthByResourceId.get(resource.id) ?? 0}
-							class="absolute inset-x-0 border-b border-neutral-muted/55"
-							style:top={`${virtualRow.start}px`}
-							style:height={`${RESOURCE_ROW_HEIGHT}px`}
-							role="row"
-							aria-rowindex={virtualRow.index + 2}
-						>
-							{#each visibleCells as positionedCell (positionedCell.cell.index)}
-								{@const bucket = resolveCellBucket(resource, positionedCell)}
-								<GanttWorkloadCell
-									{resource}
-									{bucket}
-									left={positionedCell.left - frameLeft}
-									width={positionedCell.width}
-									height={RESOURCE_ROW_HEIGHT}
-									accessibleLabel={getCellLabel(resource, positionedCell, bucket)}
-									{locale}
-									{density}
-									{color}
-									{disabled}
-									{classes}
-									{workloadCell}
-								/>
-							{/each}
+		<div class="relative" style:height={`${bodyHeight}px`}>
+			<ScrollArea
+				bind:viewportRef={verticalViewport}
+				class="h-full min-w-0"
+				ariaLabel={messages.ganttChartWorkload}
+				type="hover"
+			>
+				<div class="relative" style:height={`${totalRowsHeight}px`} role="rowgroup">
+					{#each renderedRows as virtualRow (virtualRow.key)}
+						{@const resource = resourceView.resources[virtualRow.index]}
+						{#if resource}
 							<div
-								class="absolute inset-y-0 z-20 flex w-36 items-center gap-1.5 border-e border-neutral-muted bg-surface/95 px-2 text-xs"
-								class:left-0={direction === 'ltr'}
-								class:right-0={direction === 'rtl'}
-								style:padding-inline-start={`${8 + (resourceView.depthByResourceId.get(resource.id) ?? 0) * 14}px`}
-								role="rowheader"
+								data-gantt-chart-part="workload-row"
+								data-resource-id={resource.id}
+								data-resource-depth={resourceView.depthByResourceId.get(resource.id) ?? 0}
+								class="absolute inset-x-0 border-b border-neutral-muted/55"
+								style:top={`${virtualRow.start}px`}
+								style:height={`${resourceRowHeight}px`}
+								role="row"
+								aria-rowindex={virtualRow.index + 2}
 							>
-								<span
-									class="size-2 shrink-0 rounded-full"
-									style:background-color={getGanttTaskColor(resource.color, color)}
-								></span>
-								<span class="truncate">{resource.title}</span>
+								{#each visibleCells as positionedCell (positionedCell.cell.index)}
+									{@const bucket = resolveCellBucket(resource, positionedCell)}
+									<GanttWorkloadCell
+										{resource}
+										{bucket}
+										left={positionedCell.left - frameLeft}
+										width={positionedCell.width}
+										height={resourceRowHeight}
+										accessibleLabel={getCellLabel(resource, positionedCell, bucket)}
+										{locale}
+										{density}
+										{color}
+										{disabled}
+										{classes}
+										{workloadCell}
+									/>
+								{/each}
+								<div
+									class="absolute inset-y-0 z-20 flex w-36 items-center gap-1.5 border-e border-neutral-muted bg-surface/95 px-2 text-xs"
+									class:left-0={direction === 'ltr'}
+									class:right-0={direction === 'rtl'}
+									style:padding-inline-start={`${8 + (resourceView.depthByResourceId.get(resource.id) ?? 0) * 14}px`}
+									role="rowheader"
+								>
+									<span
+										class="size-2 shrink-0 rounded-full"
+										style:background-color={getGanttTaskColor(resource.color, color)}
+									></span>
+									<span class="truncate">{resource.title}</span>
+								</div>
 							</div>
-						</div>
-					{/if}
-				{/each}
-			</div>
+						{/if}
+					{/each}
+				</div>
+			</ScrollArea>
 		</div>
 	</div>
 </div>

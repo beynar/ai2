@@ -79,10 +79,9 @@
 <GanttChart
 	bind:tasks
 	bind:dependencies
-	{createDependency}
 	calendars={[parisProjectCalendar]}
-	projectCalendarId={parisProjectCalendar.id}
 	timeZone="Europe/Paris"
-	initialScrollDate={new Date('2026-08-05T10:00:00.000Z')}
+	schedule={{ calendarId: parisProjectCalendar.id }}
+	interactions={{ dependencyCreation: { create: createDependency } }}
 	class="h-[34rem] w-full"
 />

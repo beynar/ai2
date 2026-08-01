@@ -103,7 +103,7 @@
 
 		<ComponentCard
 			title="5,000 controlled tasks, bounded mounted rows"
-			description="The shared virtual row model mounts only the viewport plus overscan in both panes. Jump between the first and last definitions while the live counter reports the bounded tree-row population."
+			description="The shared virtual row model owns its safe off-screen buffer and mounts only a bounded set in both panes. Jump between the first and last definitions while the live counter reports the mounted tree-row population."
 			code={largeDataCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

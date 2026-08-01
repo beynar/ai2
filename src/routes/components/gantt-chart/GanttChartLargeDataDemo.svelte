@@ -61,9 +61,7 @@
 		bind:tasks
 		timeZone="UTC"
 		zoom="month"
-		rowHeight={30}
-		overscan={6}
-		initialScrollDate={new Date('2026-02-15T12:00:00.000Z')}
+		density="small"
 		class="h-[30rem] w-full"
 	/>
 </div>

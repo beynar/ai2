@@ -2,6 +2,7 @@
 	lang="ts"
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
+	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import type { Messages } from '$lib/i18n/en.js';
 	import type { Colors, Density } from '$lib/types/theme.js';
@@ -490,77 +491,83 @@
 		</div>
 	</div>
 	<div
-		bind:this={horizontalViewport}
 		dir="ltr"
 		data-gantt-chart-part="grid-viewport"
-		class="min-w-0 overflow-x-auto overflow-y-clip"
+		class="min-w-0"
 		style:height={`${totalHeight}px`}
-		onscroll={handleHorizontalScroll}
 	>
-		<div style:width={`${gridWidth}px`} style:min-width="100%" dir={direction}>
-			<div
-				data-gantt-chart-part="rows"
-				class={classes.rows({ density, color, disabled })}
-				style:height={`${totalHeight}px`}
-				{@attach dnd.list}
-			>
-				{#each renderedRows as virtualRow (virtualRow.key)}
-					{@const node = rowModel.rows[virtualRow.index]}
-					{#if node}
-						<GanttTreeRow
-							{chart}
-							{node}
-							rowIndex={virtualRow.index}
-							start={virtualRow.start}
-							columns={rowModel.visibleColumns}
-							dependencies={chart.schedule.model.dependencies}
-							resources={chart.schedule.model.resources}
-							assignments={chart.schedule.model.assignments}
-							resourceGroup={rowModel.resourceGroupByTaskId.get(node.taskId) ?? null}
-							showResourceGroupLabel={rowModel.resourceGroupStartTaskIds.has(node.taskId)}
-							{messages}
-							{locale}
-							{timeZone}
-							{density}
-							{color}
-							{direction}
-							{disabled}
-							{loading}
-							isSelected={isTaskSelected(node.taskId)}
-							isDropParent={rowDropPreview?.parentId === node.taskId &&
-								rowDropPreview.intent !== 'reorder'}
-							showDragHandle={canReorder}
-							canIndent={canIndentRow(virtualRow.index)}
-							canOutdent={canOutdentRow(virtualRow.index)}
-							{classes}
-							treeCell={snippets.treeCell}
-							taskRow={snippets.taskRow}
-							rowAttachment={dnd.item(node, virtualRow.index)}
-							touchRowAttachment={touchRowReorder.item(node.taskId)}
-							onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
-							onIndent={() => indentRow(virtualRow.index)}
-							onOutdent={() => outdentRow(virtualRow.index)}
-							onNavigate={(event, columnIndex) =>
-								navigateCell(event, virtualRow.index, columnIndex)}
-						/>
+		<ScrollArea
+			bind:viewportRef={horizontalViewport}
+			class="h-full min-w-0"
+			ariaLabel={messages.ganttChartGrid}
+			type="hover"
+			onScroll={handleHorizontalScroll}
+		>
+			<div style:width={`${gridWidth}px`} style:min-width="100%" dir={direction}>
+				<div
+					data-gantt-chart-part="rows"
+					class={classes.rows({ density, color, disabled })}
+					style:height={`${totalHeight}px`}
+					{@attach dnd.list}
+				>
+					{#each renderedRows as virtualRow (virtualRow.key)}
+						{@const node = rowModel.rows[virtualRow.index]}
+						{#if node}
+							<GanttTreeRow
+								{chart}
+								{node}
+								rowIndex={virtualRow.index}
+								start={virtualRow.start}
+								columns={rowModel.visibleColumns}
+								dependencies={chart.schedule.model.dependencies}
+								resources={chart.schedule.model.resources}
+								assignments={chart.schedule.model.assignments}
+								resourceGroup={rowModel.resourceGroupByTaskId.get(node.taskId) ?? null}
+								showResourceGroupLabel={rowModel.resourceGroupStartTaskIds.has(node.taskId)}
+								{messages}
+								{locale}
+								{timeZone}
+								{density}
+								{color}
+								{direction}
+								{disabled}
+								{loading}
+								isSelected={isTaskSelected(node.taskId)}
+								isDropParent={rowDropPreview?.parentId === node.taskId &&
+									rowDropPreview.intent !== 'reorder'}
+								showDragHandle={canReorder}
+								canIndent={canIndentRow(virtualRow.index)}
+								canOutdent={canOutdentRow(virtualRow.index)}
+								{classes}
+								treeCell={snippets.treeCell}
+								taskRow={snippets.taskRow}
+								rowAttachment={dnd.item(node, virtualRow.index)}
+								touchRowAttachment={touchRowReorder.item(node.taskId)}
+								onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
+								onIndent={() => indentRow(virtualRow.index)}
+								onOutdent={() => outdentRow(virtualRow.index)}
+								onNavigate={(event, columnIndex) =>
+									navigateCell(event, virtualRow.index, columnIndex)}
+							/>
+						{/if}
+					{/each}
+					{#if rowDropPreview}
+						<div
+							data-gantt-row-drop-indicator
+							data-gantt-reorder-intent={rowDropPreview.intent}
+							class={classes.rowDropIndicator({ density, color, disabled })}
+							style:top={`${rowDropPreview.top}px`}
+							style:inset-inline-start={`${rowDropPreview.inlineStart}px`}
+							aria-hidden="true"
+						>
+							<span
+								class="absolute -start-1.5 top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-color bg-surface"
+							></span>
+						</div>
 					{/if}
-				{/each}
-				{#if rowDropPreview}
-					<div
-						data-gantt-row-drop-indicator
-						data-gantt-reorder-intent={rowDropPreview.intent}
-						class={classes.rowDropIndicator({ density, color, disabled })}
-						style:top={`${rowDropPreview.top}px`}
-						style:inset-inline-start={`${rowDropPreview.inlineStart}px`}
-						aria-hidden="true"
-					>
-						<span
-							class="absolute -start-1.5 top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-color bg-surface"
-						></span>
-					</div>
-				{/if}
+				</div>
 			</div>
-		</div>
+		</ScrollArea>
 	</div>
 </div>
 

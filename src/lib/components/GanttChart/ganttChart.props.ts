@@ -1,6 +1,6 @@
 import type { Messages } from '$lib/i18n/en.js';
 import type { WithAttachments } from '$lib/types/props.js';
-import type { Colors, Density } from '$lib/types/theme.js';
+import type { Density } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { GanttChartThemeProps } from './ganttChart.theme.js';
@@ -22,7 +22,6 @@ import type {
 	GanttDuration,
 	GanttHoliday,
 	GanttInteractionBlockedInfo,
-	GanttInteractions,
 	GanttPasteIdRequest,
 	GanttRange,
 	GanttRangeProposal,
@@ -38,7 +37,6 @@ import type {
 	GanttTaskProposal,
 	GanttTasksChange,
 	GanttTaskUpdateResult,
-	GanttTouchActivation,
 	GanttVisibleRangeInfo,
 	GanttWorkloadBucket,
 	GanttZoomLevel
@@ -59,6 +57,125 @@ export type GanttResourceView = Readonly<{
 	filterResourceIds?: readonly string[];
 	groupByResource?: boolean;
 	workloadHeight?: number;
+}>;
+
+export type GanttSchedulePropagation = 'manual' | 'move-successors' | 'auto';
+
+export type GanttScheduleOptions = Readonly<{
+	/** Calendar used when a task has no override. */
+	calendarId?: string;
+	/** Half-open navigation and mutation boundary. */
+	validRange?: GanttRange;
+	/** Successor propagation policy. Defaults to `manual`. */
+	propagation?: GanttSchedulePropagation;
+}>;
+
+export type GanttScaleOption = GanttZoomLevel | GanttScaleDefinition;
+
+export type GanttTimelineOptions = Readonly<{
+	/** Ordered enabled built-in scale IDs and custom scale definitions. */
+	scales?: readonly GanttScaleOption[];
+	/** Shows the current-instant line. Defaults to `true`. */
+	todayIndicator?: boolean;
+	/** Highlights configured weekend weekdays. Defaults to `true`. */
+	weekends?: boolean;
+	/** Project holidays rendered independently of calendar exceptions. */
+	holidays?: readonly GanttHoliday[];
+	/** Fixed move, resize, and range granularity; otherwise follows the active scale. */
+	snapDuration?: GanttDuration;
+	/** Schedule diagnostics and project-element visibility. */
+	display?: Partial<GanttDisplayOptions>;
+	/** Resource filtering, grouping, and workload geometry. */
+	resourceView?: GanttResourceView;
+}>;
+
+export type GanttGridOptions<
+	TTaskFields extends object = Record<never, never>,
+	TDependencyFields extends object = Record<never, never>,
+	TResourceFields extends object = Record<never, never>,
+	TAssignmentFields extends object = Record<never, never>
+> = Readonly<{
+	/** Ordered built-in and custom tree columns. */
+	columns?: readonly GanttColumnDefinition<
+		TTaskFields,
+		TDependencyFields,
+		TResourceFields,
+		TAssignmentFields
+	>[];
+}>;
+
+export type GanttLayoutOptions<
+	TTaskFields extends object = Record<never, never>,
+	TDependencyFields extends object = Record<never, never>,
+	TResourceFields extends object = Record<never, never>,
+	TAssignmentFields extends object = Record<never, never>
+> = Readonly<{
+	/** Shared logical row height in pixels. Density supplies the default. */
+	rowHeight?: number;
+	/** Internal or page scrolling. Defaults to `contained`. */
+	scrollMode?: GanttScrollMode;
+	/** Tree-grid configuration; `false` renders the timeline only. */
+	grid?:
+		false | GanttGridOptions<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+}>;
+
+export type GanttInteractionOptions<TDependencyFields extends object = Record<never, never>> =
+	Readonly<{
+		moveTask?: boolean;
+		resizeStart?: boolean;
+		resizeEnd?: boolean;
+		resizeProgress?: boolean;
+		reorderRows?: boolean;
+		indent?: boolean;
+		outdent?: boolean;
+		createRange?: boolean;
+		keyboard?: boolean;
+		touch?: boolean;
+		/** Dependency-creation capability; omitted or false hides its affordances. */
+		dependencyCreation?:
+			| false
+			| Readonly<{
+					create: (request: GanttDependencyCreationRequest) => GanttDependency<TDependencyFields>;
+			  }>;
+		/** Clipboard capability; `getId` is required for paste. */
+		clipboard?: false | Readonly<{ getId?: (request: GanttPasteIdRequest) => string }>;
+		/** Immutable undo/redo history; defaults to 50 entries. */
+		history?: false | Readonly<{ limit?: number }>;
+	}>;
+
+export type GanttMutationPolicy<
+	TTaskFields extends object = Record<never, never>,
+	TDependencyFields extends object = Record<never, never>,
+	TAssignmentFields extends object = Record<never, never>
+> = Readonly<{
+	task?: Readonly<{
+		validate?: (proposal: GanttTaskProposal<TTaskFields>) => boolean;
+		resolve?: (proposal: GanttTaskProposal<TTaskFields>) => GanttTaskUpdateResult<TTaskFields>;
+		onChange?: (tasks: GanttTask<TTaskFields>[], change: GanttTasksChange<TTaskFields>) => void;
+	}>;
+	dependency?: Readonly<{
+		validate?: (proposal: GanttDependencyProposal<TDependencyFields>) => boolean;
+		resolve?: (
+			proposal: GanttDependencyProposal<TDependencyFields>
+		) => GanttDependencyUpdateResult<TDependencyFields>;
+		onChange?: (
+			dependencies: GanttDependency<TDependencyFields>[],
+			change: GanttDependenciesChange<TDependencyFields>
+		) => void;
+	}>;
+	assignment?: Readonly<{
+		validate?: (proposal: GanttAssignmentProposal<TAssignmentFields>) => boolean;
+		resolve?: (
+			proposal: GanttAssignmentProposal<TAssignmentFields>
+		) => GanttAssignmentUpdateResult<TAssignmentFields>;
+		onChange?: (
+			assignments: GanttAssignment<TAssignmentFields>[],
+			change: GanttAssignmentsChange<TAssignmentFields>
+		) => void;
+	}>;
+	range?: Readonly<{
+		validate?: (proposal: GanttRangeProposal) => boolean;
+	}>;
 }>;
 
 export type GanttSnapshot<
@@ -263,15 +380,18 @@ export type GanttLoadingPayload = Readonly<{
 	defaultContent: Snippet;
 }>;
 
-export type GanttSnippetProps<
+export type GanttRenderers<
 	TTaskFields extends object = Record<never, never>,
 	TDependencyFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>,
 	TAssignmentFields extends object = Record<never, never>
-> = {
-	header?: Snippet<
-		[GanttHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-	>;
+> = Readonly<{
+	/** Replaces the built-in header; `false` removes it. */
+	header?:
+		| Snippet<
+				[GanttHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
+		  >
+		| false;
 	actions?: Snippet<
 		[GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
 	>;
@@ -285,11 +405,8 @@ export type GanttSnippetProps<
 		[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
 	>;
 	taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
-	timeHeaderUpper?: Snippet<[GanttTimeHeaderPayload]>;
-	timeHeaderLower?: Snippet<[GanttTimeHeaderPayload]>;
+	timeHeader?: Snippet<[GanttTimeHeaderPayload]>;
 	task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-	summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-	milestone?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
 	taskLabel?: Snippet<[GanttTaskLabelPayload<TTaskFields>]>;
 	taskTooltip?: Snippet<[GanttTaskTooltipPayload<TTaskFields, TResourceFields, TAssignmentFields>]>;
 	dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
@@ -304,173 +421,85 @@ export type GanttSnippetProps<
 	dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	empty?: Snippet<[GanttEmptyPayload]>;
 	loadingContent?: Snippet<[GanttLoadingPayload]>;
-};
+}>;
 
-export type GanttCallbackProps<
+export type GanttEventHandlers<
 	TTaskFields extends object = Record<never, never>,
-	TDependencyFields extends object = Record<never, never>,
-	TAssignmentFields extends object = Record<never, never>
-> = {
-	onTasksChange?: (tasks: GanttTask<TTaskFields>[], change: GanttTasksChange<TTaskFields>) => void;
-	onDependenciesChange?: (
-		dependencies: GanttDependency<TDependencyFields>[],
-		change: GanttDependenciesChange<TDependencyFields>
-	) => void;
-	onAssignmentsChange?: (
-		assignments: GanttAssignment<TAssignmentFields>[],
-		change: GanttAssignmentsChange<TAssignmentFields>
-	) => void;
-	onSelectionChange?: (selection: GanttSelection) => void;
-	onExpansionChange?: (expandedTaskIds: string[]) => void;
-	onZoomChange?: (zoom: GanttZoomLevel) => void;
-	onVisibleRangeChange?: (info: GanttVisibleRangeInfo) => void;
-	onTaskClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
-	onTaskDoubleClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
-	onDependencyClick?: (
+	TDependencyFields extends object = Record<never, never>
+> = Readonly<{
+	selectionChange?: (selection: GanttSelection) => void;
+	expansionChange?: (expandedTaskIds: string[]) => void;
+	zoomChange?: (zoom: GanttZoomLevel) => void;
+	visibleRangeChange?: (info: GanttVisibleRangeInfo) => void;
+	taskClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
+	taskDoubleClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
+	dependencyClick?: (
 		dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
 		event: MouseEvent
 	) => void;
-	onEmptyRangeSelect?: (proposal: GanttRangeProposal) => void;
-	onInteractionBlocked?: (info: GanttInteractionBlockedInfo) => void;
-	onScheduleViolations?: (
+	emptyRangeSelect?: (proposal: GanttRangeProposal) => void;
+	interactionBlocked?: (info: GanttInteractionBlockedInfo) => void;
+	scheduleViolations?: (
 		violations: readonly GanttConstraintViolation[],
 		source: 'validation' | 'task-change' | 'dependency-change' | 'calendar-change'
 	) => void;
-};
+}>;
 
 type GanttOwnProps<
 	TTaskFields extends object,
 	TDependencyFields extends object,
 	TResourceFields extends object,
 	TAssignmentFields extends object
-> = GanttSnippetProps<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> &
-	GanttCallbackProps<TTaskFields, TDependencyFields, TAssignmentFields> & {
-		/** Bindable immutable task definitions. Defaults to `[]`. */
-		tasks?: GanttTask<TTaskFields>[];
-		/** Bindable immutable dependency definitions. Defaults to `[]`. */
-		dependencies?: GanttDependency<TDependencyFields>[];
-		/** Immutable resource definitions. Defaults to `[]`. */
-		resources?: GanttResource<TResourceFields>[];
-		/** Bindable immutable assignment definitions. Defaults to `[]`. */
-		assignments?: GanttAssignment<TAssignmentFields>[];
-		/** Immutable explicit-zone working calendars. Defaults to the built-in all-time project calendar. */
-		calendars?: GanttCalendar[];
-		/** Bindable ordered unique expanded summary IDs. Defaults to summary definitions with `expanded` omitted, initially expanded. */
-		expandedTaskIds?: string[];
-		/** Bindable task, dependency, tree-cell, or empty selection. */
-		selection?: GanttSelection;
-		/** Bindable active built-in or custom zoom level. Defaults to `week`. */
-		zoom?: GanttZoomLevel;
-		/** Required IANA display time zone or `UTC`. */
-		timeZone: string;
-		/** BCP-47 formatting locale. Defaults to the active Svelai locale. */
-		locale?: string;
-		/** Per-instance Svelai message overrides. */
-		i18n?: Partial<Messages>;
-		/** Explicit reading direction; otherwise inherits ambient direction. */
-		dir?: 'ltr' | 'rtl';
-		/** Chrome and row density, independent of zoom. Defaults to `normal`. */
-		density?: Density;
-		/** Default focus and task accent. Defaults to `primary`. */
-		color?: Colors;
-		/** Root classes; contained scrolling requires an explicit height. */
-		class?: string;
-		/** Bindable root element reference. */
-		ref?: HTMLElement | null;
-		/** Per-instance stable-part theme overrides. */
-		theme?: GanttChartThemeProps;
-		/** Blocks content mutation while preserving safe navigation. */
-		loading?: boolean;
-		/** Disables navigation, selection, and mutation. */
-		disabled?: boolean;
-		/** Calendar used when a task has no override. */
-		projectCalendarId?: string;
-		/** Half-open navigation and mutation boundary. */
-		validRange?: GanttRange;
-		/** Ordered enabled built-in/custom zoom IDs. */
-		zoomLevels?: GanttZoomLevel[];
-		/** Custom scale definitions supplementing built-ins. */
-		scales?: GanttScaleDefinition[];
-		/** Initial timeline anchor applied once after mount. */
-		initialScrollDate?: Date;
-		/** Shows the current-instant line. Defaults to true. */
-		showTodayIndicator?: boolean;
-		/** Highlights configured weekend weekdays. Defaults to true. */
-		showWeekends?: boolean;
-		/** Project holidays rendered independently of calendar exceptions. */
-		holidays?: GanttHoliday[];
-		/**
-		 * Fixed move, resize, and range granularity. When omitted, granularity follows the active
-		 * built-in or custom zoom scale. Built-in steps are 1 minute at hour, 15 minutes at day,
-		 * 1 hour at week, 4 hours at month, 1 day at quarter, and 3 days at year.
-		 */
-		snapDuration?: GanttDuration;
-		/** Shared logical row height in pixels. */
-		rowHeight?: number;
-		/** Virtual rows/cells rendered beyond the visible window. */
-		overscan?: number;
-		/** Internal or page scrolling. Defaults to `contained`. */
-		scrollMode?: GanttScrollMode;
-		/** Svelai or browser scrollbars. Defaults to `custom`. */
-		scrollbars?: 'custom' | 'native';
-		/** Makes default headers sticky in page-scroll mode. */
-		stickyHeader?: boolean;
-		/** Renders the default action header. Defaults to true. */
-		showHeader?: boolean;
-		/** Renders the tree grid pane. Defaults to true. */
-		showGrid?: boolean;
-		/** Bindable initial/current grid width in pixels. */
-		gridWidth?: number;
-		/** Minimum splitter-constrained grid width. */
-		minGridWidth?: number;
-		/** Maximum splitter-constrained grid width. */
-		maxGridWidth?: number;
-		/** Ordered built-in/custom tree columns. */
-		columns?: GanttColumnDefinition<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>[];
-		/** Fine-grained interaction policy. */
-		interactions?: Partial<GanttInteractions>;
-		/** Materializes pointer-created dependency IDs and required consumer fields. */
-		createDependency?: (
-			request: GanttDependencyCreationRequest
-		) => GanttDependency<TDependencyFields>;
-		/** Pointer/touch activation thresholds. */
-		touchActivation?: Partial<GanttTouchActivation>;
-		/** Forward-schedules successors after accepted changes. Defaults to false. */
-		autoSchedule?: boolean;
-		/** Moves dependent successors with a task while auto-scheduling is disabled. */
-		moveDependencies?: boolean;
-		/** Display toggles for schedule diagnostics and project elements. */
-		display?: Partial<GanttDisplayOptions>;
-		/** Resource filtering, grouping, and workload geometry. */
-		resourceView?: GanttResourceView;
-		/** Synchronous live task-proposal policy. */
-		canUpdateTask?: (proposal: GanttTaskProposal<TTaskFields>) => boolean;
-		/** Synchronous task accept/reject/adjust hook. */
-		onTaskUpdate?: (proposal: GanttTaskProposal<TTaskFields>) => GanttTaskUpdateResult<TTaskFields>;
-		/** Synchronous live dependency-proposal policy. */
-		canUpdateDependency?: (proposal: GanttDependencyProposal<TDependencyFields>) => boolean;
-		/** Synchronous dependency accept/reject/adjust hook. */
-		onDependencyUpdate?: (
-			proposal: GanttDependencyProposal<TDependencyFields>
-		) => GanttDependencyUpdateResult<TDependencyFields>;
-		/** Synchronous live assignment-proposal policy. */
-		canUpdateAssignment?: (proposal: GanttAssignmentProposal<TAssignmentFields>) => boolean;
-		/** Synchronous assignment accept/reject/adjust hook. */
-		onAssignmentUpdate?: (
-			proposal: GanttAssignmentProposal<TAssignmentFields>
-		) => GanttAssignmentUpdateResult<TAssignmentFields>;
-		/** Synchronous empty-range proposal policy. */
-		canCreateRange?: (proposal: GanttRangeProposal) => boolean;
-		/** Maximum immutable history entries. Defaults to 50. */
-		historyLimit?: number;
-		/** Generates collision-free IDs for copied tasks and their internal records. */
-		getPasteId?: (request: GanttPasteIdRequest) => string;
-	};
+> = {
+	/** Bindable immutable task definitions. Defaults to `[]`. */
+	tasks?: GanttTask<TTaskFields>[];
+	/** Bindable immutable dependency definitions. Defaults to `[]`. */
+	dependencies?: GanttDependency<TDependencyFields>[];
+	/** Immutable resource definitions. Defaults to `[]`. */
+	resources?: GanttResource<TResourceFields>[];
+	/** Bindable immutable assignment definitions. Defaults to `[]`. */
+	assignments?: GanttAssignment<TAssignmentFields>[];
+	/** Immutable explicit-zone working calendars. Defaults to the built-in all-time project calendar. */
+	calendars?: GanttCalendar[];
+	/** Bindable ordered unique expanded summary IDs. Defaults to summary definitions with `expanded` omitted, initially expanded. */
+	expandedTaskIds?: string[];
+	/** Bindable task, dependency, tree-cell, or empty selection. */
+	selection?: GanttSelection;
+	/** Bindable active built-in or custom zoom level. Defaults to `week`. */
+	zoom?: GanttZoomLevel;
+	/** Required IANA display time zone or `UTC`. */
+	timeZone: string;
+	/** Per-instance Svelai message overrides. */
+	i18n?: Partial<Messages>;
+	/** Chrome and row density, independent of zoom. Defaults to `normal`. */
+	density?: Density;
+	/** Root classes; contained scrolling requires an explicit height. */
+	class?: string;
+	/** Bindable root element reference. */
+	ref?: HTMLElement | null;
+	/** Per-instance stable-part theme overrides. */
+	theme?: GanttChartThemeProps;
+	/** Blocks content mutation while preserving safe navigation. */
+	loading?: boolean;
+	/** Disables navigation, selection, and mutation. */
+	disabled?: boolean;
+	/** Bindable initial/current grid width in pixels. */
+	gridWidth?: number;
+	/** Project scheduling and successor propagation policy. */
+	schedule?: GanttScheduleOptions;
+	/** Time-axis scales, snapping, decoration, and resource analysis. */
+	timeline?: GanttTimelineOptions;
+	/** Split-shell and tree-grid layout. */
+	layout?: GanttLayoutOptions<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	/** Fine-grained interaction capabilities and materialization hooks. */
+	interactions?: GanttInteractionOptions<TDependencyFields>;
+	/** Proposal validation, adjustment, and immutable change notifications. */
+	mutations?: GanttMutationPolicy<TTaskFields, TDependencyFields, TAssignmentFields>;
+	/** View and activation notifications. */
+	events?: GanttEventHandlers<TTaskFields, TDependencyFields>;
+	/** Semantic content customization inside component-owned behavior. */
+	render?: GanttRenderers<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+};
 
 export type GanttChartProps<
 	TTaskFields extends object = Record<never, never>,
@@ -478,6 +507,6 @@ export type GanttChartProps<
 	TResourceFields extends object = Record<never, never>,
 	TAssignmentFields extends object = Record<never, never>
 > = WithAttachments<
-	Omit<HTMLAttributes<HTMLDivElement>, 'children'> &
+	Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'color' | 'dir'> &
 		GanttOwnProps<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 >;

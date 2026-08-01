@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/Button/index.js';
 	import { GanttChart, type GanttTask } from '$lib/components/GanttChart/index.js';
+	import { I18n } from '$lib/i18n/index.js';
 	import { newYorkProjectCalendar } from './ganttChartDemoData.js';
 
 	let loading = $state(false);
@@ -41,16 +42,17 @@
 			</Button>
 		</div>
 	</div>
-	<GanttChart
-		bind:tasks
-		{loading}
-		dir={direction}
-		locale={direction === 'rtl' ? 'ar' : 'en'}
-		calendars={[newYorkProjectCalendar]}
-		projectCalendarId={newYorkProjectCalendar.id}
-		timeZone="America/New_York"
-		zoom="day"
-		initialScrollDate={new Date('2026-03-08T17:00:00.000Z')}
-		class="h-[30rem] w-full"
-	/>
+	<I18n locale={direction === 'rtl' ? 'ar' : 'en'} manageDocument={false}>
+		<div dir={direction}>
+			<GanttChart
+				bind:tasks
+				{loading}
+				calendars={[newYorkProjectCalendar]}
+				timeZone="America/New_York"
+				zoom="day"
+				schedule={{ calendarId: newYorkProjectCalendar.id }}
+				class="h-[30rem] w-full"
+			/>
+		</div>
+	</I18n>
 </div>

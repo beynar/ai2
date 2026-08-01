@@ -91,16 +91,21 @@
 		bind:this={chart}
 		bind:tasks
 		bind:dependencies
-		{createDependency}
-		getPasteId={({ kind, sourceId, copyIndex }) => `${kind}-${sourceId}-copy-${copyIndex}`}
-		historyLimit={20}
 		calendars={[parisProjectCalendar]}
-		projectCalendarId={parisProjectCalendar.id}
 		timeZone="Europe/Paris"
-		initialScrollDate={new Date('2026-08-07T10:00:00.000Z')}
-		onTasksChange={handleTasksChange}
-		onEmptyRangeSelect={handleRange}
-		onInteractionBlocked={(info) => (status = info.message)}
+		schedule={{ calendarId: parisProjectCalendar.id }}
+		interactions={{
+			dependencyCreation: { create: createDependency },
+			clipboard: {
+				getId: ({ kind, sourceId, copyIndex }) => `${kind}-${sourceId}-copy-${copyIndex}`
+			},
+			history: { limit: 20 }
+		}}
+		mutations={{ task: { onChange: handleTasksChange } }}
+		events={{
+			emptyRangeSelect: handleRange,
+			interactionBlocked: (info) => (status = info.message)
+		}}
 		class="h-[31rem] w-full"
 	/>
 </div>

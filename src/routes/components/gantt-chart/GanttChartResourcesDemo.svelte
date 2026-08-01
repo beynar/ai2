@@ -4,12 +4,20 @@
 		GanttChart,
 		type GanttAssignment,
 		type GanttResource,
-		type GanttTask
+		type GanttResourceAssignmentsPayload,
+		type GanttTask,
+		type GanttWorkloadCellPayload
 	} from '$lib/components/GanttChart/index.js';
 	import { parisFourDayCalendar, parisProjectCalendar } from './ganttChartDemoData.js';
 
 	type ResourceFields = { role: string };
 	type AssignmentFields = { booking: 'confirmed' | 'tentative' };
+	type ResourceAssignmentsPayload = GanttResourceAssignmentsPayload<
+		Record<never, never>,
+		ResourceFields,
+		AssignmentFields
+	>;
+	type WorkloadCellPayload = GanttWorkloadCellPayload<ResourceFields>;
 
 	let activeResourceId = $state<string | null>(null);
 	let tasks = $state<GanttTask[]>([
@@ -95,6 +103,20 @@
 	]);
 </script>
 
+{#snippet customResourceAssignments(payload: ResourceAssignmentsPayload)}
+	{@render payload.defaultContent()}
+	{#if payload.isOverAllocated}<span class="sr-only">Over allocated</span>{/if}
+	{#if payload.assignments.some((assignment) => assignment.booking === 'tentative')}
+		<span class="text-warning text-[0.65rem]">tentative</span>
+	{/if}
+	<span class="sr-only">{payload.resources.map((resource) => resource.role).join(', ')}</span>
+{/snippet}
+
+{#snippet customWorkloadCell(payload: WorkloadCellPayload)}
+	{@render payload.defaultContent()}
+	<span class="sr-only">{payload.resource.role}; {payload.bucket.taskIds.length} tasks</span>
+{/snippet}
+
 <div class="grid w-full gap-3">
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<p class="text-neutral/65 text-sm">
@@ -116,33 +138,20 @@
 		bind:assignments
 		{resources}
 		calendars={[parisProjectCalendar, parisFourDayCalendar]}
-		projectCalendarId={parisProjectCalendar.id}
 		timeZone="Europe/Paris"
-		initialScrollDate={new Date('2026-08-07T10:00:00.000Z')}
-		display={{ workload: true }}
-		resourceView={{
-			filterResourceIds: activeResourceId ? [activeResourceId] : [],
-			groupByResource: true,
-			workloadHeight: 120
+		schedule={{ calendarId: parisProjectCalendar.id }}
+		timeline={{
+			display: { workload: true },
+			resourceView: {
+				filterResourceIds: activeResourceId ? [activeResourceId] : [],
+				groupByResource: true,
+				workloadHeight: 120
+			}
+		}}
+		render={{
+			resourceAssignments: customResourceAssignments,
+			workloadCell: customWorkloadCell
 		}}
 		class="h-[37rem] w-full"
-	>
-		{#snippet resourceAssignments({
-			resources: assignedResources,
-			assignments: taskAssignments,
-			isOverAllocated,
-			defaultContent
-		})}
-			{@render defaultContent()}
-			{#if isOverAllocated}<span class="sr-only">Over allocated</span>{/if}
-			{#if taskAssignments.some((assignment) => assignment.booking === 'tentative')}
-				<span class="text-warning text-[0.65rem]">tentative</span>
-			{/if}
-			<span class="sr-only">{assignedResources.map((resource) => resource.role).join(', ')}</span>
-		{/snippet}
-		{#snippet workloadCell({ resource, bucket, defaultContent })}
-			{@render defaultContent()}
-			<span class="sr-only">{resource.role}; {bucket.taskIds.length} tasks</span>
-		{/snippet}
-	</GanttChart>
+	/>
 </div>

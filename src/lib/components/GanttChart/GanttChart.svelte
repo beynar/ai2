@@ -1,15 +1,39 @@
 <script lang="ts" module>
-	const DEFERRED_GANTT_PROP_KEYS = new Set([
+	const REMOVED_GANTT_PROP_KEYS = new Set([
+		'color',
+		'dir',
+		'locale',
+		'projectCalendarId',
+		'validRange',
+		'zoomLevels',
+		'scales',
+		'initialScrollDate',
 		'showTodayIndicator',
 		'showWeekends',
 		'holidays',
 		'snapDuration',
 		'touchActivation',
+		'rowHeight',
+		'overscan',
+		'scrollMode',
+		'scrollbars',
+		'stickyHeader',
+		'showHeader',
+		'showGrid',
+		'minGridWidth',
+		'maxGridWidth',
+		'columns',
+		'createDependency',
+		'autoSchedule',
+		'moveDependencies',
 		'display',
 		'resourceView',
-		'canCreateRange',
-		'historyLimit',
-		'getPasteId',
+		'header',
+		'actions',
+		'gridHeader',
+		'columnHeader',
+		'treeCell',
+		'taskRow',
 		'timeHeaderUpper',
 		'timeHeaderLower',
 		'task',
@@ -25,19 +49,36 @@
 		'resourceAssignments',
 		'workloadCell',
 		'dragPreview',
+		'empty',
+		'loadingContent',
+		'canUpdateTask',
+		'onTaskUpdate',
+		'canUpdateDependency',
+		'onDependencyUpdate',
+		'canUpdateAssignment',
+		'onAssignmentUpdate',
+		'canCreateRange',
+		'historyLimit',
+		'getPasteId',
+		'onTasksChange',
+		'onDependenciesChange',
+		'onAssignmentsChange',
+		'onSelectionChange',
+		'onExpansionChange',
+		'onZoomChange',
+		'onVisibleRangeChange',
 		'onTaskClick',
 		'onTaskDoubleClick',
 		'onDependencyClick',
 		'onEmptyRangeSelect',
-		'onkeydown'
+		'onInteractionBlocked',
+		'onScheduleViolations'
 	]);
 
-	function filterGanttChartAttributes(
-		attributes: Record<string, unknown>
-	): Record<string, unknown> {
-		return Object.fromEntries(
-			Object.entries(attributes).filter(([key]) => !DEFERRED_GANTT_PROP_KEYS.has(key))
-		);
+	function filterGanttRootAttributes(attributes: Record<string, unknown>): Record<string, unknown> {
+		const rootAttributes: Record<string, unknown> = { ...attributes };
+		for (const key of REMOVED_GANTT_PROP_KEYS) delete rootAttributes[key];
+		return rootAttributes;
 	}
 </script>
 
@@ -45,11 +86,11 @@
 	lang="ts"
 	generics="TTaskFields extends object = Record<never, never>, TDependencyFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>, TAssignmentFields extends object = Record<never, never>"
 >
-	import { useI18n } from '$lib/i18n/context.svelte.js';
+	import { useI18n, useI18nDirection } from '$lib/i18n/context.svelte.js';
 	import { onMount } from 'svelte';
 	import GanttChartHeader from './GanttChartHeader.svelte';
 	import GanttChartShell from './GanttChartShell.svelte';
-	import type { GanttChartProps, GanttSnapshot } from './ganttChart.props.js';
+	import type { GanttChartProps, GanttScaleOption, GanttSnapshot } from './ganttChart.props.js';
 	import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
 	import {
 		DEFAULT_GANTT_ZOOM_LEVELS,
@@ -63,6 +104,7 @@
 		GanttDependency,
 		GanttRange,
 		GanttResource,
+		GanttScaleDefinition,
 		GanttScheduleAnalysis,
 		GanttSelection,
 		GanttTask,
@@ -72,12 +114,18 @@
 
 	const defaultResources: never[] = [];
 	const defaultCalendars: never[] = [];
-	const defaultZoomLevels = [...DEFAULT_GANTT_ZOOM_LEVELS];
-	const defaultScales: never[] = [];
+	const defaultScaleOptions: GanttScaleOption[] = [...DEFAULT_GANTT_ZOOM_LEVELS];
 	const defaultHolidays: never[] = [];
-	const defaultTouchActivation = {};
-	const defaultInteractions = {};
-	const defaultDisplay = {};
+	const DEFAULT_TOUCH_ACTIVATION = {
+		distancePx: 4,
+		touchDelayMs: 300,
+		touchTolerancePx: 8
+	} as const;
+	const DEFAULT_ROW_HEIGHT = { small: 28, normal: 32, large: 36 } as const;
+	const DEFAULT_GRID_MIN_WIDTH = 64;
+	const DEFAULT_GRID_MAX_WIDTH = 640;
+	const DEFAULT_OVERSCAN = 6;
+	const color = 'primary';
 	const rootId = $props.id();
 
 	let {
@@ -92,105 +140,56 @@
 		selection = $bindable<GanttSelection>(EMPTY_GANTT_SELECTION),
 		zoom = $bindable<GanttZoomLevel>('week'),
 		timeZone,
-		locale,
 		i18n,
-		dir,
 		density = 'normal',
-		color = 'primary',
 		class: className,
 		ref = $bindable<HTMLElement | null>(null),
 		theme,
 		loading = false,
 		disabled = false,
-		projectCalendarId,
-		validRange,
-		zoomLevels = defaultZoomLevels,
-		scales = defaultScales,
-		initialScrollDate,
-		showTodayIndicator = true,
-		showWeekends = true,
-		holidays = defaultHolidays,
-		snapDuration,
-		touchActivation = defaultTouchActivation,
-		rowHeight = 32,
-		overscan = 6,
-		scrollMode = 'contained',
-		scrollbars = 'custom',
-		stickyHeader = false,
-		showHeader = true,
-		showGrid = true,
 		gridWidth = $bindable(352),
-		minGridWidth = 96,
-		maxGridWidth = 640,
-		columns,
-		interactions = defaultInteractions,
-		createDependency,
-		autoSchedule = false,
-		moveDependencies = false,
-		display = defaultDisplay,
-		resourceView,
-		header,
-		actions,
-		gridHeader,
-		columnHeader,
-		treeCell,
-		taskRow,
-		timeHeaderUpper,
-		timeHeaderLower,
-		task,
-		summaryTask,
-		milestone,
-		taskLabel,
-		taskTooltip,
-		dependencyTooltip,
-		progress,
-		baseline,
-		deadline,
-		nonWorkingTime,
-		resourceAssignments,
-		workloadCell,
-		dragPreview,
-		empty,
-		loadingContent,
-		canUpdateTask,
-		onTaskUpdate,
-		canUpdateDependency,
-		onDependencyUpdate,
-		canUpdateAssignment,
-		onAssignmentUpdate,
-		canCreateRange,
-		historyLimit = 50,
-		getPasteId,
-		onTasksChange,
-		onDependenciesChange,
-		onAssignmentsChange,
-		onSelectionChange,
-		onExpansionChange,
-		onZoomChange,
-		onVisibleRangeChange,
-		onTaskClick,
-		onTaskDoubleClick,
-		onDependencyClick,
-		onEmptyRangeSelect,
-		onInteractionBlocked,
-		onScheduleViolations,
-		...remainingProps
+		schedule,
+		timeline,
+		layout,
+		interactions,
+		mutations,
+		events,
+		render,
+		onkeydown: consumerKeydown,
+		...unfilteredRootAttributes
 	}: GanttChartProps<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> = $props();
 
+	const rootAttributes = $derived(filterGanttRootAttributes(unfilteredRootAttributes));
 	const messages = $derived(useI18n(i18n));
-	const resolvedLocale = $derived(locale ?? messages.locale);
+	const resolvedLocale = $derived(messages.locale);
 	const resolvedResources = $derived(resources.length === 0 ? defaultResources : resources);
 	const resolvedCalendars = $derived(calendars.length === 0 ? defaultCalendars : calendars);
+	const scaleOptions = $derived(timeline?.scales ?? defaultScaleOptions);
+	const scales = $derived(
+		scaleOptions.filter((scale): scale is GanttScaleDefinition => typeof scale !== 'string')
+	);
+	const zoomLevels = $derived(
+		scaleOptions.map((scale) => (typeof scale === 'string' ? scale : scale.id))
+	);
 	const customScaleIds = $derived(new Set(scales.map((scale) => scale.id)));
 	const resolvedSnapDuration = $derived(
-		snapDuration ?? resolveGanttScaleSnapDuration(zoom, scales)
+		timeline?.snapDuration ?? resolveGanttScaleSnapDuration(zoom, scales)
 	);
-	const resolvedInteractions = $derived({ ...DEFAULT_GANTT_INTERACTIONS, ...interactions });
-	const resolvedTouchActivation = $derived({
-		distancePx: 4,
-		touchDelayMs: 300,
-		touchTolerancePx: 8,
-		...touchActivation
+	const resolvedInteractions = $derived({
+		moveTask: interactions?.moveTask ?? DEFAULT_GANTT_INTERACTIONS.moveTask,
+		resizeStart: interactions?.resizeStart ?? DEFAULT_GANTT_INTERACTIONS.resizeStart,
+		resizeEnd: interactions?.resizeEnd ?? DEFAULT_GANTT_INTERACTIONS.resizeEnd,
+		resizeProgress: interactions?.resizeProgress ?? DEFAULT_GANTT_INTERACTIONS.resizeProgress,
+		createDependency:
+			interactions?.dependencyCreation !== false && !!interactions?.dependencyCreation,
+		reorderRows: interactions?.reorderRows ?? DEFAULT_GANTT_INTERACTIONS.reorderRows,
+		indent: interactions?.indent ?? DEFAULT_GANTT_INTERACTIONS.indent,
+		outdent: interactions?.outdent ?? DEFAULT_GANTT_INTERACTIONS.outdent,
+		createRange: interactions?.createRange ?? DEFAULT_GANTT_INTERACTIONS.createRange,
+		keyboard: interactions?.keyboard ?? DEFAULT_GANTT_INTERACTIONS.keyboard,
+		touch: interactions?.touch ?? DEFAULT_GANTT_INTERACTIONS.touch,
+		clipboard: interactions?.clipboard !== false,
+		history: interactions?.history !== false
 	});
 	const resolvedDisplay = $derived({
 		criticalPath: false,
@@ -199,12 +198,37 @@
 		constraints: true,
 		nonWorkingTime: true,
 		workload: false,
-		...display
+		...timeline?.display
 	});
+	const propagation = $derived(schedule?.propagation ?? 'manual');
+	const projectCalendarId = $derived(schedule?.calendarId);
+	const validRange = $derived(schedule?.validRange);
+	const showTodayIndicator = $derived(timeline?.todayIndicator ?? true);
+	const showWeekends = $derived(timeline?.weekends ?? true);
+	const holidays = $derived(timeline?.holidays ?? defaultHolidays);
+	const resourceView = $derived(timeline?.resourceView);
+	const rowHeight = $derived(layout?.rowHeight ?? DEFAULT_ROW_HEIGHT[density]);
+	const scrollMode = $derived(layout?.scrollMode ?? 'contained');
+	const showGrid = $derived(layout?.grid !== false);
+	const columns = $derived(layout?.grid === false ? undefined : layout?.grid?.columns);
+	const showHeader = $derived(render?.header !== false);
+	const header = $derived(render?.header === false ? undefined : render?.header);
+	const createDependency = $derived(
+		interactions?.dependencyCreation === false
+			? undefined
+			: interactions?.dependencyCreation?.create
+	);
+	const getPasteId = $derived(
+		interactions?.clipboard === false ? undefined : interactions?.clipboard?.getId
+	);
+	const historyLimit = $derived(
+		interactions?.history === false ? 0 : (interactions?.history?.limit ?? 50)
+	);
 	const classes = $derived(useGanttChartTheme(theme));
+	const contextualDirection = $derived(useI18nDirection());
+	const directionAttributes = $derived(contextualDirection ? { dir: contextualDirection } : {});
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
-	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
-	const rootAttributes = $derived(filterGanttChartAttributes(remainingProps));
+	const resolvedDirection = $derived(contextualDirection ?? ambientDirection ?? 'ltr');
 	const rootAriaLabel = $derived(
 		typeof rootAttributes['aria-label'] === 'string'
 			? rootAttributes['aria-label']
@@ -278,9 +302,6 @@
 		get validRange() {
 			return validRange;
 		},
-		get initialScrollDate() {
-			return initialScrollDate;
-		},
 		get zoomLevels() {
 			return zoomLevels;
 		},
@@ -294,10 +315,10 @@
 			return disabled;
 		},
 		get autoSchedule() {
-			return autoSchedule;
+			return propagation === 'auto';
 		},
 		get moveDependencies() {
-			return moveDependencies;
+			return propagation === 'move-successors';
 		},
 		get interactions() {
 			return resolvedInteractions;
@@ -309,28 +330,28 @@
 			return resolvedSnapDuration;
 		},
 		get touchActivation() {
-			return resolvedTouchActivation;
+			return DEFAULT_TOUCH_ACTIVATION;
 		},
 		get canUpdateTask() {
-			return canUpdateTask;
+			return mutations?.task?.validate;
 		},
 		get onTaskUpdate() {
-			return onTaskUpdate;
+			return mutations?.task?.resolve;
 		},
 		get canUpdateDependency() {
-			return canUpdateDependency;
+			return mutations?.dependency?.validate;
 		},
 		get onDependencyUpdate() {
-			return onDependencyUpdate;
+			return mutations?.dependency?.resolve;
 		},
 		get canUpdateAssignment() {
-			return canUpdateAssignment;
+			return mutations?.assignment?.validate;
 		},
 		get onAssignmentUpdate() {
-			return onAssignmentUpdate;
+			return mutations?.assignment?.resolve;
 		},
 		get canCreateRange() {
-			return canCreateRange;
+			return mutations?.range?.validate;
 		},
 		get historyLimit() {
 			return historyLimit;
@@ -339,34 +360,34 @@
 			return getPasteId;
 		},
 		get onTasksChange() {
-			return onTasksChange;
+			return mutations?.task?.onChange;
 		},
 		get onDependenciesChange() {
-			return onDependenciesChange;
+			return mutations?.dependency?.onChange;
 		},
 		get onAssignmentsChange() {
-			return onAssignmentsChange;
+			return mutations?.assignment?.onChange;
 		},
 		get onInteractionBlocked() {
-			return onInteractionBlocked;
+			return events?.interactionBlocked;
 		},
 		get onScheduleViolations() {
-			return onScheduleViolations;
+			return events?.scheduleViolations;
 		},
 		get onExpansionChange() {
-			return onExpansionChange;
+			return events?.expansionChange;
 		},
 		get onSelectionChange() {
-			return onSelectionChange;
+			return events?.selectionChange;
 		},
 		get onEmptyRangeSelect() {
-			return onEmptyRangeSelect;
+			return events?.emptyRangeSelect;
 		},
 		get onZoomChange() {
-			return onZoomChange;
+			return events?.zoomChange;
 		},
 		get onVisibleRangeChange() {
-			return onVisibleRangeChange;
+			return events?.visibleRangeChange;
 		}
 	});
 
@@ -407,8 +428,7 @@
 	function handleRootKeydown(
 		event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }
 	): void {
-		const consumerHandler = remainingProps.onkeydown;
-		if (typeof consumerHandler === 'function') consumerHandler(event);
+		if (typeof consumerKeydown === 'function') consumerKeydown(event);
 		if (event.key !== 'Escape' && !event.defaultPrevented) chart.a11y.handleRootKeydown(event);
 	}
 
@@ -577,14 +597,17 @@
 	onMount(() => {
 		if (!ref) throw new Error('GanttChart root did not mount.');
 		const disconnectA11y = chart.a11y.connectRoot(ref);
-		const parentElement = ref?.parentElement;
+		const rootElement = ref;
 		const updateAmbientDirection = () => {
-			if (!parentElement) return;
-			ambientDirection = getComputedStyle(parentElement).direction === 'rtl' ? 'rtl' : 'ltr';
+			ambientDirection = getComputedStyle(rootElement).direction === 'rtl' ? 'rtl' : 'ltr';
 		};
 		updateAmbientDirection();
 		const observer = new MutationObserver(updateAmbientDirection);
-		for (let ancestor = parentElement; ancestor; ancestor = ancestor.parentElement) {
+		for (
+			let ancestor: HTMLElement | null = rootElement;
+			ancestor;
+			ancestor = ancestor.parentElement
+		) {
 			observer.observe(ancestor, {
 				attributes: true,
 				attributeFilter: ['class', 'dir', 'style']
@@ -599,8 +622,8 @@
 
 <div
 	{...rootAttributes}
+	{...directionAttributes}
 	bind:this={ref}
-	dir={resolvedDirection}
 	role="region"
 	aria-label={rootAriaLabel}
 	aria-describedby={chart.a11y.instructionsId}
@@ -608,7 +631,7 @@
 	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
 	data-density={density}
-	data-color={color}
+	data-color="primary"
 	data-direction={resolvedDirection}
 	data-zoom={zoom}
 	data-loading={loading || undefined}
@@ -630,11 +653,11 @@
 			{density}
 			{color}
 			{disabled}
-			{stickyHeader}
+			stickyHeader={scrollMode === 'page'}
 			{scrollMode}
 			{classes}
 			{header}
-			{actions}
+			actions={render?.actions}
 		/>
 	{/if}
 	<GanttChartShell
@@ -648,18 +671,16 @@
 		{disabled}
 		{showGrid}
 		bind:gridWidth
-		{minGridWidth}
-		{maxGridWidth}
+		minGridWidth={DEFAULT_GRID_MIN_WIDTH}
+		maxGridWidth={Math.max(DEFAULT_GRID_MAX_WIDTH, gridWidth)}
 		{rowHeight}
-		{overscan}
+		overscan={DEFAULT_OVERSCAN}
 		{scrollMode}
-		{scrollbars}
 		{columns}
 		interactions={resolvedInteractions}
-		touchActivation={resolvedTouchActivation}
+		touchActivation={DEFAULT_TOUCH_ACTIVATION}
 		{scales}
 		{validRange}
-		{initialScrollDate}
 		{holidays}
 		{showTodayIndicator}
 		{showWeekends}
@@ -669,31 +690,31 @@
 		{timeZone}
 		{classes}
 		snippets={{
-			gridHeader,
-			columnHeader,
-			treeCell,
-			taskRow,
-			timeHeaderUpper,
-			timeHeaderLower,
-			task,
-			summaryTask,
-			milestone,
-			taskLabel,
-			taskTooltip,
-			dependencyTooltip,
-			progress,
-			baseline,
-			deadline,
-			nonWorkingTime,
-			resourceAssignments,
-			workloadCell,
-			dragPreview,
-			empty,
-			loadingContent
+			gridHeader: render?.gridHeader,
+			columnHeader: render?.columnHeader,
+			treeCell: render?.treeCell,
+			taskRow: render?.taskRow,
+			timeHeaderUpper: render?.timeHeader,
+			timeHeaderLower: render?.timeHeader,
+			task: render?.task,
+			summaryTask: render?.task,
+			milestone: render?.task,
+			taskLabel: render?.taskLabel,
+			taskTooltip: render?.taskTooltip,
+			dependencyTooltip: render?.dependencyTooltip,
+			progress: render?.progress,
+			baseline: render?.baseline,
+			deadline: render?.deadline,
+			nonWorkingTime: render?.nonWorkingTime,
+			resourceAssignments: render?.resourceAssignments,
+			workloadCell: render?.workloadCell,
+			dragPreview: render?.dragPreview,
+			empty: render?.empty,
+			loadingContent: render?.loadingContent
 		}}
-		{onTaskClick}
-		{onTaskDoubleClick}
-		{onDependencyClick}
+		onTaskClick={events?.taskClick}
+		onTaskDoubleClick={events?.taskDoubleClick}
+		onDependencyClick={events?.dependencyClick}
 	/>
 	<div
 		id={chart.a11y.liveRegionId}

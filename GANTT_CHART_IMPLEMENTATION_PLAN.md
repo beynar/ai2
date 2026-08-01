@@ -103,31 +103,28 @@ The engine must:
 - Preserve working duration when forwarding successors.
 - Detect every supported constraint violation without fake correction.
 - Compute earliest/latest dates, total/free slack, critical tasks, and critical dependencies.
-- Remain manual when `autoSchedule` is false; `moveDependencies` optionally moves dependent successors in that mode.
+- Apply the selected propagation policy: `manual`, `move-successors`, or `auto`.
 - Calculate capacity-aware resource workload diagnostically without automatic resource leveling.
 
 ## Public props
 
-The frozen props include:
+The frozen public surface keeps controlled state flat and groups configuration by owner:
 
-- Bindable `tasks`, `dependencies`, `assignments`, `expandedTaskIds`, `selection`, and `zoom`.
+- Bindable `tasks`, `dependencies`, `assignments`, `expandedTaskIds`, `selection`, `zoom`, and `gridWidth`.
 - Immutable `resources` and `calendars`.
-- Required `timeZone`; optional locale, i18n, direction, density, semantic color, class, root ref, and per-instance theme.
-- Loading and disabled state, project calendar, and valid range.
-- Built-in hour/day/week/month/quarter/year zoom levels, ordered enabled levels, and typed custom scales with unit, step, minimum column width, and upper/lower formatting.
-- Initial scroll date, today indicator, weekends, holiday/non-working highlighting, snap duration, row height, overscan, contained/page scrolling, custom/native scrollbars, sticky/default headers, grid visibility, and bounded grid width.
-- Built-in WBS/title/start/end/duration/progress/resources columns plus typed custom definitions for visibility, width, alignment, sorting, values, and editing.
-- One interaction-policy object covering move, both resizes, progress, dependency creation, reorder, indent/outdent, empty-range creation, keyboard, touch, clipboard, and history.
-- `autoSchedule` default false and optional `moveDependencies`.
-- Synchronous proposal validators and accept/reject/adjust hooks for tasks, dependencies, assignments, and empty ranges.
-- Immutable change callbacks carrying guarded one-shot revert functions. Persistence failures are never swallowed.
-- Callbacks for selection, expansion, zoom, visible range, clicks, double-click, empty-range selection, blocked interactions, and schedule violations.
-- A consumer ID hook for structurally valid subtree paste and internal-dependency remapping.
-- A synchronous `createDependency(request)` materialization hook for pointer-created links. This
-  approved Phase 6 amendment is required because a generic dependency can contain required consumer
-  fields that GanttChart cannot fabricate. The hook supplies the ID and custom fields; GanttChart
-  preserves the gesture-owned endpoints and type, then runs the normal validation and mutation pipeline.
-- Cohesive display and resource-view configuration for critical-path/baseline/deadline/non-working/workload toggles, resource filtering, and resource grouping.
+- Required `timeZone`; optional per-instance `i18n`, effective `density`, `class`, root `ref`, and `theme`.
+- Standard `loading` and `disabled` state.
+- `schedule` owns the project calendar, valid range, and one non-contradictory propagation value: `manual`, `move-successors`, or `auto`.
+- `timeline` owns the ordered built-in/custom scales, today/weekend/holiday presentation, optional fixed snap duration, scheduling-display toggles, and resource view.
+- `layout` owns row-height override, contained/page scroll mode, and optional tree-grid columns. Density supplies the default row geometry.
+- `interactions` owns move, both resizes, progress, reorder, indent/outdent, range creation, keyboard, touch, dependency materialization, clipboard IDs, and bounded history.
+- `mutations` owns synchronous proposal validation, accept/reject/adjust hooks, and immutable guarded-revert change callbacks for tasks, dependencies, assignments, and empty ranges. Persistence failures are never swallowed.
+- `events` owns selection, expansion, zoom, visible-range, activation, empty-range, blocked-interaction, and schedule-violation notifications.
+- `render` owns semantic Svelte 5 content customization. `render.header: false` removes the default header.
+
+The component infers initial timeline anchoring, zoom-specific snap duration, safe grid bounds, virtualization overscan, sticky behavior, reading direction, and task accent. Svelai I18n is the SSR direction owner; without it, the client reconciles the root's computed DOM direction after mount. It always uses Svelai ScrollArea; there is no native-scrollbar switch. `color`, `locale`, `dir`, `initialScrollDate`, `scrollbars`, `stickyHeader`, `minGridWidth`, `maxGridWidth`, `overscan`, and public touch thresholds do not exist.
+
+A dependency-creation function remains required when dependency creation is enabled because a generic dependency can contain required consumer fields that GanttChart cannot fabricate. The function supplies the ID and custom fields; GanttChart preserves the gesture-owned endpoints and type, then runs the normal validation and mutation pipeline.
 
 `allowOverlap` does not exist.
 
@@ -137,8 +134,8 @@ Every mutation source—pointer, keyboard, inline editor, clipboard, history, an
 
 1. Construct a typed proposal from the latest controlled collections.
 2. Validate structural/domain invariants.
-3. Call the corresponding synchronous `canUpdate…` validator.
-4. Call the corresponding synchronous update hook.
+3. Call the corresponding synchronous `mutations.*.validate` function.
+4. Call the corresponding synchronous `mutations.*.resolve` function.
 5. Reject, accept, or apply the returned typed adjustment.
 6. Revalidate the adjusted proposal.
 7. Publish fresh controlled collections and a typed change record.
@@ -176,8 +173,8 @@ Typed Svelte 5 snippets are frozen for:
 
 - `header`, `actions`
 - `gridHeader`, `columnHeader`, `treeCell`, `taskRow`
-- `timeHeaderUpper`, `timeHeaderLower`
-- `task`, `summaryTask`, `milestone`, `taskLabel`
+- one `timeHeader`, whose payload identifies the upper or lower tier
+- one `task`, whose payload identifies leaf, summary, or milestone tasks, plus `taskLabel`
 - `taskTooltip`, `dependencyTooltip`
 - `progress`, `baseline`, `deadline`, `nonWorkingTime`
 - `resourceAssignments`, `workloadCell`
@@ -236,7 +233,7 @@ The resource hierarchy uses input-order siblings, validates unique non-empty IDs
 4. **Phase 3 — tree/grid.** Hierarchy, columns, editing, selection, synchronized virtual rows, splitter, reorder/indent/outdent, and 5,000-row bounded DOM pass.
 5. **Phase 4 — static timeline.** All scales, horizontal windowing, anchored zoom, project elements, every task shape, connectors, tooltips, RTL and SSR rendering pass.
 6. **Phase 5 — task/hierarchy pointer operations.** Unified validated transactions, previews, snapping, auto-scroll, edge crossing, cancellation, stale/revert safety, and cleanup pass.
-7. **Phase 6 — dependency editing/scheduling.** All link types, lag, selection/deletion, cycle protection, previews, auto-scheduling, and `moveDependencies` pass.
+7. **Phase 6 — dependency editing/scheduling.** All link types, lag, selection/deletion, cycle protection, previews, and every propagation policy pass.
 8. **Phase 7 — scheduling analysis.** Calendars, constraints, completed-task policy, slack, critical path, violations, recomputation, and visualization pass.
 9. **Phase 8 — resources.** Assignment editing/display, resource filter/group, calendar-aware capacity/workload, over-allocation, and aligned bounded panel pass without leveling.
 10. **Phase 9 — input/accessibility.** Keyboard-only operations, virtual focus restoration, touch, clipboard, history, announcements, reduced motion, high contrast, and RTL pass.

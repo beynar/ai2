@@ -33,20 +33,23 @@ export const hierarchyCode = [
 	"  { id: 'progress' }",
 	'];',
 	'',
-	'<GanttChart bind:tasks bind:expandedTaskIds {columns} timeZone="Europe/Paris" />'
+	'<GanttChart',
+	'  bind:tasks bind:expandedTaskIds',
+	'  layout={{ grid: { columns } }}',
+	'  timeZone="Europe/Paris"',
+	'/>'
 ].join('\n');
 
 export const interactionsCode = [
 	'<GanttChart',
 	'  bind:this={chart} bind:tasks bind:dependencies',
-	'  timeZone="Europe/Paris" historyLimit={20}',
-	'  getPasteId={({ kind, sourceId, copyIndex }) =>',
-	'    `${kind}-${sourceId}-copy-${copyIndex}`}',
-	'  onTasksChange={(nextTasks, change) => persist(nextTasks).catch((error) => {',
-	'    change.revert();',
-	'    throw error;',
-	'  })}',
-	'  onEmptyRangeSelect={(range) => openCreateDialog(range)}',
+	'  timeZone="Europe/Paris"',
+	'  interactions={{',
+	'    history: { limit: 20 },',
+	'    clipboard: { getId: createPasteId }',
+	'  }}',
+	'  mutations={{ task: { onChange: persistTasks } }}',
+	'  events={{ emptyRangeSelect: openCreateDialog }}',
 	'  class="h-[36rem]"',
 	'/>'
 ].join('\n');
@@ -54,13 +57,14 @@ export const interactionsCode = [
 export const dependenciesCode = [
 	'<GanttChart',
 	'  bind:tasks bind:dependencies',
-	'  {createDependency}',
-	'  autoSchedule',
-	'  display={{ criticalPath: true, constraints: true, baselines: true, deadlines: true }}',
+	'  interactions={{ dependencyCreation: { create: createDependency } }}',
+	"  schedule={{ calendarId: 'project', propagation: 'auto' }}",
+	'  timeline={{',
+	'    display: { criticalPath: true, constraints: true, baselines: true, deadlines: true }',
+	'  }}',
 	'  calendars={calendars}',
-	'  projectCalendarId="project"',
 	'  timeZone="Europe/Paris"',
-	'  onScheduleViolations={(violations) => showViolations(violations)}',
+	'  events={{ scheduleViolations: showViolations }}',
 	'/>'
 ].join('\n');
 
@@ -68,32 +72,37 @@ export const resourcesCode = [
 	'type ResourceFields = { role: string };',
 	"type AssignmentFields = { booking: 'confirmed' | 'tentative' };",
 	'',
+	'{#snippet assignmentsContent({ assignments, defaultContent })}',
+	'  {@render defaultContent()}',
+	"  {#if assignments.some((assignment) => assignment.booking === 'tentative')}",
+	'    <span>tentative</span>',
+	'  {/if}',
+	'{/snippet}',
+	'',
 	'<GanttChart',
 	'  bind:tasks bind:assignments {resources}',
-	'  display={{ workload: true }}',
-	'  resourceView={{ filterResourceIds, groupByResource: true, workloadHeight: 120 }}',
+	'  timeline={{',
+	'    display: { workload: true },',
+	'    resourceView: { filterResourceIds, groupByResource: true, workloadHeight: 120 }',
+	'  }}',
 	'  calendars={calendars}',
-	'  projectCalendarId="project"',
+	"  schedule={{ calendarId: 'project' }}",
 	'  timeZone="Europe/Paris"',
-	'>',
-	'  {#snippet resourceAssignments({ assignments, defaultContent })}',
-	'    {@render defaultContent()}',
-	"    {#if assignments.some((assignment) => assignment.booking === 'tentative')}",
-	'      <span>tentative</span>',
-	'    {/if}',
-	'  {/snippet}',
-	'</GanttChart>'
+	'  render={{ resourceAssignments: assignmentsContent }}',
+	'/>'
 ].join('\n');
 
 export const customizationCode = [
-	'<GanttChart bind:tasks timeZone="Europe/Paris" onTaskDoubleClick={openEditor}>',
-	'  {#snippet header({ today, fitProject, zoomControl })}',
-	'    {@render today()}{@render fitProject()}{@render zoomControl()}',
-	'  {/snippet}',
-	'  {#snippet task({ node })}',
-	'    <span>{node.task.owner}</span>',
-	'  {/snippet}',
-	'</GanttChart>',
+	'{#snippet taskContent({ node })}',
+	'  <span>{node.task.owner}</span>',
+	'{/snippet}',
+	'',
+	'<GanttChart',
+	'  bind:tasks',
+	'  timeZone="Europe/Paris"',
+	'  events={{ taskDoubleClick: openEditor }}',
+	'  render={{ task: taskContent }}',
+	'/>',
 	'',
 	'<Dialog bind:open={editorOpen} title="Edit task">',
 	'  <TextInput bind:value={draftTitle} label="Task title" />',
@@ -104,15 +113,18 @@ export const customizationCode = [
 ].join('\n');
 
 export const loadingRtlCode = [
-	'<GanttChart',
-	'  bind:tasks {loading}',
-	'  dir="rtl" locale="ar"',
-	'  calendars={newYorkCalendars}',
-	'  projectCalendarId="new-york-project"',
-	'  timeZone="America/New_York"',
-	'  zoom="day"',
-	'  class="h-[34rem]"',
-	'/>'
+	'<I18n locale="ar" manageDocument={false}>',
+	'  <div dir="rtl">',
+	'    <GanttChart',
+	'      bind:tasks {loading}',
+	'      calendars={newYorkCalendars}',
+	"      schedule={{ calendarId: 'new-york-project' }}",
+	'      timeZone="America/New_York"',
+	'      zoom="day"',
+	'      class="h-[34rem]"',
+	'    />',
+	'  </div>',
+	'</I18n>'
 ].join('\n');
 
 export const largeDataCode = [
@@ -126,8 +138,7 @@ export const largeDataCode = [
 	'<GanttChart',
 	'  {tasks}',
 	'  timeZone="UTC"',
-	'  rowHeight={30}',
-	'  overscan={6}',
+	'  density="small"',
 	'  class="h-[34rem]"',
 	'/>'
 ].join('\n');

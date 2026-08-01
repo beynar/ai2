@@ -107,11 +107,10 @@
 		bind:this={chart}
 		bind:tasks
 		bind:expandedTaskIds
-		{columns}
 		calendars={[parisProjectCalendar]}
-		projectCalendarId={parisProjectCalendar.id}
 		timeZone="Europe/Paris"
-		initialScrollDate={new Date('2026-08-06T10:00:00.000Z')}
+		schedule={{ calendarId: parisProjectCalendar.id }}
+		layout={{ grid: { columns } }}
 		class="h-[32rem] w-full"
 	/>
 </div>

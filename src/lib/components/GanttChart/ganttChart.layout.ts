@@ -6,6 +6,7 @@ import {
 } from '$lib/scheduling/civilDate.js';
 import { intersectScheduleRanges } from '$lib/scheduling/scheduleRange.js';
 import { getInstantZonedDay, startOfZonedCivilDay } from '$lib/scheduling/zonedTime.js';
+import type { Density } from '$lib/types/theme.js';
 import { getCalendarWorkingIntervals, type GanttCalendarRuntime } from './ganttChart.calendar.js';
 import { GanttChartError } from './ganttChart.error.js';
 import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
@@ -19,11 +20,21 @@ import type {
 	GanttTaskSegment
 } from './ganttChart.types.js';
 
-const TASK_HEIGHT = 20;
-const SUMMARY_HEIGHT = 8;
-const MILESTONE_SIZE = 16;
-const BASELINE_HEIGHT = 4;
 const CONNECTOR_OFFSET = 14;
+
+const TASK_METRICS: Record<
+	Density,
+	Readonly<{
+		taskHeight: number;
+		summaryHeight: number;
+		milestoneSize: number;
+		baselineHeight: number;
+	}>
+> = {
+	small: { taskHeight: 16, summaryHeight: 6, milestoneSize: 14, baselineHeight: 3 },
+	normal: { taskHeight: 20, summaryHeight: 8, milestoneSize: 16, baselineHeight: 4 },
+	large: { taskHeight: 24, summaryHeight: 10, milestoneSize: 20, baselineHeight: 5 }
+};
 
 export type GanttPositionedSegment = Readonly<{
 	segment: GanttTaskSegment;
@@ -57,18 +68,20 @@ export function positionGanttTask<TTaskFields extends object>(input: {
 	node: GanttResolvedTaskNode<TTaskFields>;
 	rowTop: number;
 	rowHeight: number;
+	density: Density;
 	scale: GanttTimeScale;
 	visibleRange: GanttRange;
 	visiblePixels: Readonly<{ start: number; end: number }>;
 }): GanttPositionedTask<TTaskFields> | null {
 	const { node } = input;
 	if (!node.resolvedStart || !node.resolvedEnd) return null;
+	const metrics = TASK_METRICS[input.density];
 	const taskHeight =
 		node.type === 'milestone'
-			? MILESTONE_SIZE
+			? metrics.milestoneSize
 			: node.type === 'summary'
-				? SUMMARY_HEIGHT
-				: TASK_HEIGHT;
+				? metrics.summaryHeight
+				: metrics.taskHeight;
 	const top = input.rowTop + (input.rowHeight - taskHeight) / 2;
 	const geometry = createTaskGeometry({
 		range: { start: node.resolvedStart, end: node.resolvedEnd },
@@ -93,8 +106,8 @@ export function positionGanttTask<TTaskFields extends object>(input: {
 	const baselineGeometry = node.task.baseline
 		? createTaskGeometry({
 				range: node.task.baseline,
-				top: input.rowTop + input.rowHeight - BASELINE_HEIGHT - 2,
-				height: BASELINE_HEIGHT,
+				top: input.rowTop + input.rowHeight - metrics.baselineHeight - 2,
+				height: metrics.baselineHeight,
 				isMilestone: false,
 				scale: input.scale,
 				visibleRange: input.visibleRange,

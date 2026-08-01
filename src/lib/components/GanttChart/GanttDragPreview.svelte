@@ -72,6 +72,7 @@
 					node: previewNode,
 					rowTop: status.rowTop,
 					rowHeight,
+					density,
 					scale,
 					visibleRange,
 					visiblePixels

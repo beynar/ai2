@@ -270,6 +270,7 @@
 						node,
 						rowTop: virtualRow.start,
 						rowHeight,
+						density,
 						scale,
 						visibleRange,
 						visiblePixels
