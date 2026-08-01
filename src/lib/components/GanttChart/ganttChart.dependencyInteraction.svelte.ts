@@ -14,9 +14,8 @@ import {
 } from './ganttChart.dependencyCreation.js';
 import { GanttChartError } from './ganttChart.error.js';
 import type { GanttChartMutations } from './ganttChart.mutations.js';
-import type { ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
-import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
+import type { GanttChartState } from './ganttChart.state.svelte.js';
 import type {
 	GanttDependencyCreationRequest,
 	GanttDependencyEndpoint,
@@ -44,31 +43,31 @@ type DependencyBoundary<
 	TResourceFields extends object,
 	TAssignmentFields extends object
 > = Readonly<{
-	tasks: GanttChartStateOptions<
+	tasks: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['tasks'];
-	dependencies: GanttChartStateOptions<
+	dependencies: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['dependencies'];
-	resources: GanttChartStateOptions<
+	resources: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['resources'];
-	assignments: GanttChartStateOptions<
+	assignments: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['assignments'];
-	calendars: GanttChartStateOptions<
+	calendars: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
@@ -134,19 +133,13 @@ export class GanttDependencyInteraction<
 	TAssignmentFields extends object
 > {
 	readonly #instanceId = `gantt-chart-dependency-${++nextDependencyInteractionId}`;
-	readonly #options: GanttChartStateOptions<
+	readonly #chart: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>;
 	readonly #mutations: GanttChartMutations<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>;
-	readonly #getSchedule: () => ResolvedGanttSchedule<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
@@ -165,19 +158,8 @@ export class GanttDependencyInteraction<
 	#targetValidation = new Map<string, TargetValidation>();
 
 	constructor(
-		options: GanttChartStateOptions<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>,
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
 		mutations: GanttChartMutations<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>,
-		getSchedule: () => ResolvedGanttSchedule<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
@@ -185,9 +167,8 @@ export class GanttDependencyInteraction<
 		>,
 		canStart: () => boolean
 	) {
-		this.#options = options;
+		this.#chart = chart;
 		this.#mutations = mutations;
-		this.#getSchedule = getSchedule;
 		this.#canStart = canStart;
 	}
 
@@ -240,9 +221,9 @@ export class GanttDependencyInteraction<
 		const attachment: Attachment<HTMLElement> = (element) =>
 			untrack(() => {
 				const touchDrag = createPointerDrag({
-					canStart: (event) => event.pointerType === 'touch' && this.#options.interactions.touch,
+					canStart: (event) => event.pointerType === 'touch' && this.#chart.interactions.touch,
 					disabled: () => !this.canBegin(taskId),
-					activation: () => this.#options.touchActivation,
+					activation: () => this.#chart.touchActivation,
 					frameCoalesced: true,
 					stopPropagation: true,
 					onStart: (payload) => this.beginTouch({ taskId, endpoint }, payload),
@@ -302,9 +283,8 @@ export class GanttDependencyInteraction<
 	}
 
 	canCreateForTask(taskId: string): boolean {
-		if (!this.#options.createDependency || !this.#options.interactions.createDependency)
-			return false;
-		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
+		if (!this.#chart.createDependency || !this.#chart.interactions.createDependency) return false;
+		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
 		return isDependencyEditableTask(task);
 	}
 
@@ -413,8 +393,8 @@ export class GanttDependencyInteraction<
 
 	private canBegin(taskId: string): boolean {
 		return (
-			!this.#options.disabled &&
-			!this.#options.loading &&
+			!this.#chart.disabled &&
+			!this.#chart.loading &&
 			!this.#gesture &&
 			this.#canStart() &&
 			this.canCreateForTask(taskId)
@@ -561,7 +541,7 @@ export class GanttDependencyInteraction<
 		const request = gesture.request;
 		let didCommit = false;
 		try {
-			const createDependency = this.#options.createDependency;
+			const createDependency = this.#chart.createDependency;
 			if (!createDependency) {
 				throw new GanttChartError(
 					'invalid-operation',
@@ -624,7 +604,7 @@ export class GanttDependencyInteraction<
 		const gestureScale = this.#gesture?.scale ?? this.#timeline?.scale;
 		const rowHeight = this.#timeline?.rowHeight;
 		const rowIndex = orderedTaskIds.indexOf(taskId);
-		const task = this.#getSchedule().resolvedTasks.find((node) => node.taskId === taskId);
+		const task = this.#chart.schedule.resolvedTasks.find((node) => node.taskId === taskId);
 		const instant = endpoint === 'start' ? task?.resolvedStart : task?.resolvedEnd;
 		if (!gestureScale || !rowHeight || rowIndex < 0 || !instant) return null;
 		return {
@@ -646,13 +626,13 @@ export class GanttDependencyInteraction<
 		};
 		let validation: TargetValidation;
 		try {
-			const targetTask = this.#options.tasks.find((task) => task.id === target.taskId);
+			const targetTask = this.#chart.tasks.find((task) => task.id === target.taskId);
 			if (!isDependencyEditableTask(targetTask)) {
 				throw new GanttChartError('read-only', 'The target task does not allow dependencies.', {
 					taskId: target.taskId
 				});
 			}
-			validateGanttDependencyCreation(this.#getSchedule().model, request);
+			validateGanttDependencyCreation(this.#chart.schedule.model, request);
 			validation = {
 				request,
 				isValid: true,
@@ -736,11 +716,11 @@ export class GanttDependencyInteraction<
 		TAssignmentFields
 	> {
 		return {
-			tasks: this.#options.tasks,
-			dependencies: this.#options.dependencies,
-			resources: this.#options.resources,
-			assignments: this.#options.assignments,
-			calendars: this.#options.calendars
+			tasks: this.#chart.tasks,
+			dependencies: this.#chart.dependencies,
+			resources: this.#chart.resources,
+			assignments: this.#chart.assignments,
+			calendars: this.#chart.calendars
 		};
 	}
 
@@ -748,16 +728,16 @@ export class GanttDependencyInteraction<
 		boundary: DependencyBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): boolean {
 		return (
-			boundary.tasks === this.#options.tasks &&
-			boundary.dependencies === this.#options.dependencies &&
-			boundary.resources === this.#options.resources &&
-			boundary.assignments === this.#options.assignments &&
-			boundary.calendars === this.#options.calendars
+			boundary.tasks === this.#chart.tasks &&
+			boundary.dependencies === this.#chart.dependencies &&
+			boundary.resources === this.#chart.resources &&
+			boundary.assignments === this.#chart.assignments &&
+			boundary.calendars === this.#chart.calendars
 		);
 	}
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
-		this.#options.onInteractionBlocked?.(info);
+		this.#chart.onInteractionBlocked?.(info);
 	}
 }
 

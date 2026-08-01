@@ -6,7 +6,7 @@ import {
 } from './ganttChart.records.js';
 import { getGanttValueSignature } from './ganttChart.signature.js';
 import { getGanttTaskSubtreeIds } from './ganttChart.subtree.js';
-import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
+import type { GanttChartState } from './ganttChart.state.svelte.js';
 import type {
 	GanttAssignment,
 	GanttDependency,
@@ -50,7 +50,7 @@ export class GanttChartClipboard<
 	#copyIndex = 0;
 
 	constructor(
-		private readonly options: GanttChartStateOptions<
+		private readonly chart: GanttChartState<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
@@ -59,10 +59,10 @@ export class GanttChartClipboard<
 	) {}
 
 	copySelection(): boolean {
-		if (!this.options.interactions.clipboard || this.options.disabled) return false;
-		const selection = this.options.selection;
+		if (!this.chart.interactions.clipboard || this.chart.disabled) return false;
+		const selection = this.chart.selection;
 		if (selection.kind !== 'task' && selection.kind !== 'cell') return false;
-		const rootTask = this.options.tasks.find((task) => task.id === selection.taskId);
+		const rootTask = this.chart.tasks.find((task) => task.id === selection.taskId);
 		if (!rootTask) {
 			throw new GanttChartError(
 				'clipboard-invalid',
@@ -73,17 +73,17 @@ export class GanttChartClipboard<
 			);
 		}
 
-		const taskIds = getGanttTaskSubtreeIds(rootTask.id, this.options.tasks);
-		const tasks = this.options.tasks.filter((task) => taskIds.has(task.id)).map(cloneGanttTask);
-		const dependencies = this.options.dependencies
+		const taskIds = getGanttTaskSubtreeIds(rootTask.id, this.chart.tasks);
+		const tasks = this.chart.tasks.filter((task) => taskIds.has(task.id)).map(cloneGanttTask);
+		const dependencies = this.chart.dependencies
 			.filter(
 				(dependency) => taskIds.has(dependency.fromTaskId) && taskIds.has(dependency.toTaskId)
 			)
 			.map(cloneGanttDependency);
-		const assignments = this.options.assignments
+		const assignments = this.chart.assignments
 			.filter((assignment) => taskIds.has(assignment.taskId))
 			.map(cloneGanttAssignment);
-		const externalDependencyCount = this.options.dependencies.filter(
+		const externalDependencyCount = this.chart.dependencies.filter(
 			(dependency) => taskIds.has(dependency.fromTaskId) !== taskIds.has(dependency.toTaskId)
 		).length;
 		this.#snapshot = {
@@ -99,17 +99,17 @@ export class GanttChartClipboard<
 	}
 
 	preparePaste(): GanttPasteRecords<TTaskFields, TDependencyFields, TAssignmentFields> {
-		if (!this.options.interactions.clipboard) {
+		if (!this.chart.interactions.clipboard) {
 			throw new GanttChartError('clipboard-invalid', 'Clipboard interactions are disabled.');
 		}
-		if (this.options.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
-		if (this.options.loading) {
+		if (this.chart.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
+		if (this.chart.loading) {
 			throw new GanttChartError('invalid-operation', 'GanttChart is loading.');
 		}
 		const snapshot = this.#snapshot;
 		if (!snapshot) throw new GanttChartError('clipboard-invalid', 'The Gantt clipboard is empty.');
 		this.assertSnapshotCurrent(snapshot);
-		const getPasteId = this.options.getPasteId;
+		const getPasteId = this.chart.getPasteId;
 		if (!getPasteId) {
 			throw new GanttChartError(
 				'clipboard-invalid',
@@ -121,21 +121,21 @@ export class GanttChartClipboard<
 		const taskIdMap = createIdMap(
 			'task',
 			snapshot.tasks.map((task) => task.id),
-			new Set(this.options.tasks.map((task) => task.id)),
+			new Set(this.chart.tasks.map((task) => task.id)),
 			copyIndex,
 			getPasteId
 		);
 		const dependencyIdMap = createIdMap(
 			'dependency',
 			snapshot.dependencies.map((dependency) => dependency.id),
-			new Set(this.options.dependencies.map((dependency) => dependency.id)),
+			new Set(this.chart.dependencies.map((dependency) => dependency.id)),
 			copyIndex,
 			getPasteId
 		);
 		const assignmentIdMap = createIdMap(
 			'assignment',
 			snapshot.assignments.map((assignment) => assignment.id),
-			new Set(this.options.assignments.map((assignment) => assignment.id)),
+			new Set(this.chart.assignments.map((assignment) => assignment.id)),
 			copyIndex,
 			getPasteId
 		);
@@ -187,13 +187,13 @@ export class GanttChartClipboard<
 		snapshot: ClipboardSnapshot<TTaskFields, TDependencyFields, TAssignmentFields>
 	): void {
 		const taskIds = new Set(snapshot.tasks.map((task) => task.id));
-		const currentTasks = this.options.tasks.filter((task) => taskIds.has(task.id));
+		const currentTasks = this.chart.tasks.filter((task) => taskIds.has(task.id));
 		const dependencyIds = new Set(snapshot.dependencies.map((dependency) => dependency.id));
-		const currentDependencies = this.options.dependencies.filter((dependency) =>
+		const currentDependencies = this.chart.dependencies.filter((dependency) =>
 			dependencyIds.has(dependency.id)
 		);
 		const assignmentIds = new Set(snapshot.assignments.map((assignment) => assignment.id));
-		const currentAssignments = this.options.assignments.filter((assignment) =>
+		const currentAssignments = this.chart.assignments.filter((assignment) =>
 			assignmentIds.has(assignment.id)
 		);
 		if (

@@ -5,7 +5,7 @@ import {
 	cloneGanttTask
 } from './ganttChart.records.js';
 import { getGanttValueSignature } from './ganttChart.signature.js';
-import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
+import type { GanttChartState } from './ganttChart.state.svelte.js';
 import type {
 	GanttAssignment,
 	GanttAssignmentMutationKind,
@@ -66,7 +66,7 @@ export class GanttChartHistory<
 	#future = $state.raw<HistoryEntry<TTaskFields, TDependencyFields, TAssignmentFields>[]>([]);
 
 	constructor(
-		private readonly options: GanttChartStateOptions<
+		private readonly chart: GanttChartState<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
@@ -82,7 +82,7 @@ export class GanttChartHistory<
 	record(
 		commit: GanttModelCommit<TTaskFields, TDependencyFields, TAssignmentFields>
 	): (() => void) | undefined {
-		if (commit.source === 'history' || !this.options.interactions.history) return undefined;
+		if (commit.source === 'history' || !this.chart.interactions.history) return undefined;
 		const limit = this.getLimit();
 		if (limit === 0) return undefined;
 		const beforeSignature = getModelSignature(commit.before);
@@ -102,13 +102,13 @@ export class GanttChartHistory<
 	}
 
 	canUndo(): boolean {
-		if (!this.options.interactions.history || this.getLimit() === 0) return false;
+		if (!this.chart.interactions.history || this.getLimit() === 0) return false;
 		const entry = this.#past.at(-1);
 		return Boolean(entry && this.isCurrent(entry, entry.afterSignature));
 	}
 
 	canRedo(): boolean {
-		if (!this.options.interactions.history || this.getLimit() === 0) return false;
+		if (!this.chart.interactions.history || this.getLimit() === 0) return false;
 		const entry = this.#future.at(-1);
 		return Boolean(entry && this.isCurrent(entry, entry.beforeSignature));
 	}
@@ -122,9 +122,9 @@ export class GanttChartHistory<
 	}
 
 	private move(direction: GanttHistoryDirection): boolean {
-		if (!this.options.interactions.history || this.getLimit() === 0) return false;
-		if (this.options.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
-		if (this.options.loading) {
+		if (!this.chart.interactions.history || this.getLimit() === 0) return false;
+		if (this.chart.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
+		if (this.chart.loading) {
 			throw new GanttChartError('invalid-operation', 'GanttChart is loading.');
 		}
 		const source = direction === 'undo' ? this.#past : this.#future;
@@ -165,24 +165,24 @@ export class GanttChartHistory<
 		TAssignmentFields
 	> {
 		return {
-			tasks: this.options.tasks,
-			dependencies: this.options.dependencies,
-			assignments: this.options.assignments,
-			selection: this.options.selection
+			tasks: this.chart.tasks,
+			dependencies: this.chart.dependencies,
+			assignments: this.chart.assignments,
+			selection: this.chart.selection
 		};
 	}
 
 	private getContextSignature(): string {
 		return getGanttValueSignature({
-			resources: this.options.resources,
-			calendars: this.options.calendars,
-			projectCalendarId: this.options.projectCalendarId,
-			timeZone: this.options.timeZone
+			resources: this.chart.resources,
+			calendars: this.chart.calendars,
+			projectCalendarId: this.chart.projectCalendarId,
+			timeZone: this.chart.timeZone
 		});
 	}
 
 	private getLimit(): number {
-		const limit = this.options.historyLimit;
+		const limit = this.chart.historyLimit;
 		if (Number.isInteger(limit) && limit >= 0) return limit;
 		throw new GanttChartError('invalid-prop', 'historyLimit must be a non-negative integer.', {
 			historyLimit: limit

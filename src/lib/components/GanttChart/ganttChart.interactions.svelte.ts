@@ -22,7 +22,7 @@ import {
 	getGanttScalePixel,
 	type GanttTimeScale
 } from './ganttChart.scale.js';
-import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
+import type { GanttChartState } from './ganttChart.state.svelte.js';
 import {
 	deriveGanttProgressChange,
 	deriveGanttRangeKeyboardProposal,
@@ -42,7 +42,6 @@ import type {
 	GanttTaskMutationKind,
 	GanttTaskProposal
 } from './ganttChart.types.js';
-import type { ResolvedGanttSchedule } from './ganttChart.schedule.js';
 
 /* eslint-disable svelte/prefer-svelte-reactivity -- attachment registries must not invalidate component rendering */
 
@@ -59,25 +58,25 @@ type GestureBoundary<
 	TAssignmentFields extends object
 > = Readonly<{
 	tasks: readonly GanttTask<TTaskFields>[];
-	dependencies: GanttChartStateOptions<
+	dependencies: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['dependencies'];
-	resources: GanttChartStateOptions<
+	resources: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['resources'];
-	assignments: GanttChartStateOptions<
+	assignments: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['assignments'];
-	calendars: GanttChartStateOptions<
+	calendars: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
@@ -175,19 +174,13 @@ export class GanttChartInteractions<
 	TResourceFields extends object,
 	TAssignmentFields extends object
 > {
-	readonly #options: GanttChartStateOptions<
+	readonly #chart: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>;
 	readonly #mutations: GanttChartMutations<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>;
-	readonly #getSchedule: () => ResolvedGanttSchedule<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
@@ -217,32 +210,19 @@ export class GanttChartInteractions<
 	#rangeDragAttachment: Attachment<HTMLElement> | null = null;
 
 	constructor(
-		options: GanttChartStateOptions<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>,
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
 		mutations: GanttChartMutations<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>,
-		getSchedule: () => ResolvedGanttSchedule<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
 			TAssignmentFields
 		>
 	) {
-		this.#options = options;
+		this.#chart = chart;
 		this.#mutations = mutations;
-		this.#getSchedule = getSchedule;
 		this.dependency = new GanttDependencyInteraction(
-			options,
+			chart,
 			mutations,
-			getSchedule,
 			() => this.#gesture === null
 		);
 	}
@@ -339,13 +319,13 @@ export class GanttChartInteractions<
 
 	beginKeyboardTask(taskId: string, operation: GanttTaskPointerOperation | 'progress'): boolean {
 		const timeline = this.#timeline;
-		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
 		const canBegin =
 			operation === 'progress'
 				? this.canBeginProgressGesture(taskId)
 				: this.canBeginTaskGesture(taskId, operation);
 		if (!timeline || !task || !canBegin || !task.start || !task.end) return false;
-		const calendar = getTaskCalendar(this.#getSchedule().model, task);
+		const calendar = getTaskCalendar(this.#chart.schedule.model, task);
 		const originInstant = operation === 'resize-end' ? task.end : task.start;
 		const pointerCanvasX = getGanttScalePixel(timeline.scale, originInstant);
 		this.#gesture = {
@@ -385,9 +365,9 @@ export class GanttChartInteractions<
 				operation: gesture.initialOperation,
 				stepCount: keyboardStepCount,
 				calendar: gesture.calendar,
-				snapDuration: this.#options.snapDuration
+				snapDuration: this.#chart.snapDuration
 			});
-			validateGanttTaskChange(change.task, this.#options.validRange);
+			validateGanttTaskChange(change.task, this.#chart.validRange);
 			const proposal: GanttTaskProposal<TTaskFields> = {
 				kind: change.kind,
 				source: 'keyboard',
@@ -395,7 +375,7 @@ export class GanttChartInteractions<
 				task: change.task,
 				propagatedTasks: []
 			};
-			const isValid = this.#options.canUpdateTask?.(proposal) !== false;
+			const isValid = this.#chart.canUpdateTask?.(proposal) !== false;
 			this.#gesture = {
 				...gesture,
 				operation: change.kind,
@@ -431,17 +411,17 @@ export class GanttChartInteractions<
 		const timeline = this.#timeline;
 		if (
 			!timeline ||
-			this.#options.disabled ||
-			this.#options.loading ||
+			this.#chart.disabled ||
+			this.#chart.loading ||
 			this.isActive ||
-			!this.#options.interactions.createRange
+			!this.#chart.interactions.createRange
 		) {
 			return false;
 		}
 		this.#gesture = {
 			type: 'range',
 			inputMode: 'keyboard',
-			calendar: getCalendarRuntime(this.#getSchedule().model.projectCalendar),
+			calendar: getCalendarRuntime(this.#chart.schedule.model.projectCalendar),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
 			originInstant: new Date(anchor),
@@ -470,11 +450,11 @@ export class GanttChartInteractions<
 				originInstant: gesture.originInstant,
 				stepCount: resolvedStepCount,
 				calendar: gesture.calendar,
-				snapDuration: this.#options.snapDuration,
+				snapDuration: this.#chart.snapDuration,
 				...(gesture.parentId ? { parentId: gesture.parentId } : {})
 			});
-			validateGanttRangeProposal(change.proposal, this.#options.validRange);
-			const isValid = this.#options.canCreateRange?.(change.proposal) !== false;
+			validateGanttRangeProposal(change.proposal, this.#chart.validRange);
+			const isValid = this.#chart.canCreateRange?.(change.proposal) !== false;
 			this.#gesture = {
 				...gesture,
 				proposal: change.proposal,
@@ -519,10 +499,10 @@ export class GanttChartInteractions<
 		if (current) return current;
 		const pointerDrag = createPointerDrag({
 			canStart: (event) =>
-				(event.pointerType !== 'touch' || this.#options.interactions.touch) &&
+				(event.pointerType !== 'touch' || this.#chart.interactions.touch) &&
 				(operation !== 'move' || isTaskBodyPointerTarget(event.target)),
 			disabled: () => !this.canBeginTaskGesture(taskId, operation),
-			activation: () => this.#options.touchActivation,
+			activation: () => this.#chart.touchActivation,
 			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => {
@@ -560,8 +540,8 @@ export class GanttChartInteractions<
 		if (current) return current;
 		const pointerDrag = createPointerDrag({
 			disabled: () => !this.canBeginProgressGesture(taskId),
-			canStart: (event) => event.pointerType !== 'touch' || this.#options.interactions.touch,
-			activation: () => this.#options.touchActivation,
+			canStart: (event) => event.pointerType !== 'touch' || this.#chart.interactions.touch,
+			activation: () => this.#chart.touchActivation,
 			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) =>
@@ -588,9 +568,9 @@ export class GanttChartInteractions<
 		if (this.#rangeDragAttachment) return this.#rangeDragAttachment;
 		const pointerDrag = createPointerDrag({
 			disabled: () =>
-				this.#options.disabled || this.#options.loading || !this.#options.interactions.createRange,
-			canStart: (event) => event.pointerType !== 'touch' || this.#options.interactions.touch,
-			activation: () => this.#options.touchActivation,
+				this.#chart.disabled || this.#chart.loading || !this.#chart.interactions.createRange,
+			canStart: (event) => event.pointerType !== 'touch' || this.#chart.interactions.touch,
+			activation: () => this.#chart.touchActivation,
 			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => this.beginRangeGesture(payload),
@@ -660,7 +640,7 @@ export class GanttChartInteractions<
 		payload: PointerDragPayload
 	): boolean {
 		const timeline = this.#timeline;
-		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
 		if (!timeline || !task || !this.canBeginTaskGesture(taskId, operation)) return false;
 		const pointer = { clientX: payload.x, clientY: payload.y };
 		const originPointer = { clientX: payload.startX, clientY: payload.startY };
@@ -671,7 +651,7 @@ export class GanttChartInteractions<
 			initialOperation: operation,
 			operation,
 			task,
-			calendar: getTaskCalendar(this.#getSchedule().model, task),
+			calendar: getTaskCalendar(this.#chart.schedule.model, task),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
 			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
@@ -695,7 +675,7 @@ export class GanttChartInteractions<
 		payload: PointerDragPayload
 	): boolean {
 		const timeline = this.#timeline;
-		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
 		if (!timeline || !task || !this.canBeginProgressGesture(taskId)) return false;
 		const pointer = toPointerCoordinates(payload);
 		const originPointer = { clientX: payload.startX, clientY: payload.startY };
@@ -706,7 +686,7 @@ export class GanttChartInteractions<
 			initialOperation: 'progress',
 			operation: 'progress',
 			task,
-			calendar: getTaskCalendar(this.#getSchedule().model, task),
+			calendar: getTaskCalendar(this.#chart.schedule.model, task),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
 			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
@@ -747,7 +727,7 @@ export class GanttChartInteractions<
 		this.#gesture = {
 			type: 'range',
 			inputMode: 'pointer',
-			calendar: getCalendarRuntime(this.#getSchedule().model.projectCalendar),
+			calendar: getCalendarRuntime(this.#chart.schedule.model.projectCalendar),
 			scale: timeline.scale,
 			boundary: this.getBoundary(),
 			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
@@ -837,9 +817,9 @@ export class GanttChartInteractions<
 							originInstant: gesture.originInstant,
 							pointerInstant,
 							calendar: gesture.calendar,
-							snapDuration: this.#options.snapDuration
+							snapDuration: this.#chart.snapDuration
 						});
-			validateGanttTaskChange(change.task, this.#options.validRange);
+			validateGanttTaskChange(change.task, this.#chart.validRange);
 		} catch (error) {
 			if (!(error instanceof GanttChartError)) throw error;
 			this.#gesture = {
@@ -861,8 +841,7 @@ export class GanttChartInteractions<
 			task: change.task,
 			propagatedTasks: []
 		};
-		const invalidReason =
-			this.#options.canUpdateTask?.(proposal) === false ? 'custom-policy' : null;
+		const invalidReason = this.#chart.canUpdateTask?.(proposal) === false ? 'custom-policy' : null;
 		this.#gesture = {
 			...gesture,
 			operation: change.kind,
@@ -920,11 +899,11 @@ export class GanttChartInteractions<
 				originInstant: gesture.originInstant,
 				pointerInstant,
 				calendar: gesture.calendar,
-				snapDuration: this.#options.snapDuration,
+				snapDuration: this.#chart.snapDuration,
 				source: gesture.inputMode,
 				...(gesture.parentId ? { parentId: gesture.parentId } : {})
 			});
-			validateGanttRangeProposal(change.proposal, this.#options.validRange);
+			validateGanttRangeProposal(change.proposal, this.#chart.validRange);
 		} catch (error) {
 			if (!(error instanceof GanttChartError)) throw error;
 			this.#gesture = {
@@ -940,7 +919,7 @@ export class GanttChartInteractions<
 			return;
 		}
 		const invalidReason =
-			this.#options.canCreateRange?.(change.proposal) === false ? 'custom-policy' : null;
+			this.#chart.canCreateRange?.(change.proposal) === false ? 'custom-policy' : null;
 		this.#gesture = {
 			...gesture,
 			pointer,
@@ -1012,7 +991,7 @@ export class GanttChartInteractions<
 			return false;
 		}
 		try {
-			if (this.#options.canCreateRange?.(gesture.proposal) === false) {
+			if (this.#chart.canCreateRange?.(gesture.proposal) === false) {
 				this.reportBlocked({
 					reason: 'custom-policy',
 					source: gesture.inputMode,
@@ -1020,7 +999,7 @@ export class GanttChartInteractions<
 				});
 				return false;
 			}
-			this.#options.onEmptyRangeSelect?.(gesture.proposal);
+			this.#chart.onEmptyRangeSelect?.(gesture.proposal);
 			return true;
 		} finally {
 			this.cancel();
@@ -1028,21 +1007,21 @@ export class GanttChartInteractions<
 	}
 
 	private canBeginTaskGesture(taskId: string, operation: GanttTaskPointerOperation): boolean {
-		if (this.#options.disabled || this.#options.loading || this.isActive) return false;
-		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
+		if (this.#chart.disabled || this.#chart.loading || this.isActive) return false;
+		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
 		if (!task || task.readOnly || !task.start || !task.end) return false;
 		if (operation === 'move') {
-			return this.#options.interactions.moveTask && task.draggable !== false;
+			return this.#chart.interactions.moveTask && task.draggable !== false;
 		}
 		if (task.type === 'milestone' || task.resizable === false) return false;
 		return operation === 'resize-start'
-			? this.#options.interactions.resizeStart
-			: this.#options.interactions.resizeEnd;
+			? this.#chart.interactions.resizeStart
+			: this.#chart.interactions.resizeEnd;
 	}
 
 	private canBeginProgressGesture(taskId: string): boolean {
-		if (this.#options.disabled || this.#options.loading || this.isActive) return false;
-		const task = this.#options.tasks.find((candidate) => candidate.id === taskId);
+		if (this.#chart.disabled || this.#chart.loading || this.isActive) return false;
+		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
 		return Boolean(
 			task &&
 			task.type !== 'summary' &&
@@ -1051,7 +1030,7 @@ export class GanttChartInteractions<
 			task.end &&
 			!task.readOnly &&
 			task.progressEditable !== false &&
-			this.#options.interactions.resizeProgress
+			this.#chart.interactions.resizeProgress
 		);
 	}
 
@@ -1062,11 +1041,11 @@ export class GanttChartInteractions<
 		TAssignmentFields
 	> {
 		return {
-			tasks: this.#options.tasks,
-			dependencies: this.#options.dependencies,
-			resources: this.#options.resources,
-			assignments: this.#options.assignments,
-			calendars: this.#options.calendars
+			tasks: this.#chart.tasks,
+			dependencies: this.#chart.dependencies,
+			resources: this.#chart.resources,
+			assignments: this.#chart.assignments,
+			calendars: this.#chart.calendars
 		};
 	}
 
@@ -1074,11 +1053,11 @@ export class GanttChartInteractions<
 		boundary: GestureBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): boolean {
 		return (
-			boundary.tasks === this.#options.tasks &&
-			boundary.dependencies === this.#options.dependencies &&
-			boundary.resources === this.#options.resources &&
-			boundary.assignments === this.#options.assignments &&
-			boundary.calendars === this.#options.calendars
+			boundary.tasks === this.#chart.tasks &&
+			boundary.dependencies === this.#chart.dependencies &&
+			boundary.resources === this.#chart.resources &&
+			boundary.assignments === this.#chart.assignments &&
+			boundary.calendars === this.#chart.calendars
 		);
 	}
 
@@ -1185,7 +1164,7 @@ export class GanttChartInteractions<
 	}
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
-		this.#options.onInteractionBlocked?.(info);
+		this.#chart.onInteractionBlocked?.(info);
 	}
 }
 

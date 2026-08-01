@@ -1,14 +1,10 @@
 import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-import type {
-	GanttChartInteractionStatus,
-	GanttChartInteractions
-} from './ganttChart.interactions.svelte.js';
+import type { GanttChartInteractionStatus } from './ganttChart.interactions.svelte.js';
 import type { GanttDependencyInteractionStatus } from './ganttChart.dependencyInteraction.svelte.js';
 import { GanttChartError } from './ganttChart.error.js';
 import type { GanttModelCommit } from './ganttChart.history.svelte.js';
-import type { ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import { getGanttValueSignature } from './ganttChart.signature.js';
-import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
+import type { GanttChartState } from './ganttChart.state.svelte.js';
 import type {
 	GanttDependencyEndpoint,
 	GanttInteractionBlockedInfo,
@@ -38,18 +34,6 @@ type KeyboardMode =
 			title: string;
 	  }>;
 
-type A11yActions = Readonly<{
-	select: (selection: GanttSelection) => void;
-	clearSelection: () => void;
-	removeTask: (taskId: string) => boolean;
-	removeDependency: (dependencyId: string) => boolean;
-	copySelection: () => boolean;
-	paste: () => boolean;
-	undo: () => boolean;
-	redo: () => boolean;
-	scrollToTask: (taskId: string) => boolean;
-}>;
-
 export class GanttChartA11y<
 	TTaskFields extends object,
 	TDependencyFields extends object,
@@ -72,28 +56,15 @@ export class GanttChartA11y<
 	#dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(
-		private readonly options: GanttChartStateOptions<
+		private readonly chart: GanttChartState<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
 			TAssignmentFields
-		>,
-		private readonly interaction: GanttChartInteractions<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>,
-		private readonly getSchedule: () => ResolvedGanttSchedule<
-			TTaskFields,
-			TDependencyFields,
-			TResourceFields,
-			TAssignmentFields
-		>,
-		private readonly actions: A11yActions
+		>
 	) {
-		this.liveRegionId = `${options.rootId}-live`;
-		this.instructionsId = `${options.rootId}-instructions`;
+		this.liveRegionId = `${chart.rootId}-live`;
+		this.instructionsId = `${chart.rootId}-instructions`;
 	}
 
 	connectRoot(root: HTMLElement): () => void {
@@ -128,8 +99,8 @@ export class GanttChartA11y<
 
 	setTaskTarget(taskId: string): void {
 		this.activeTarget = { kind: 'task', taskId };
-		if (this.options.selection.kind !== 'task' || this.options.selection.taskId !== taskId) {
-			this.actions.select({
+		if (this.chart.selection.kind !== 'task' || this.chart.selection.taskId !== taskId) {
+			this.chart.select({
 				kind: 'task',
 				taskId,
 				dependencyId: null,
@@ -141,10 +112,10 @@ export class GanttChartA11y<
 	setDependencyTarget(dependencyId: string): void {
 		this.activeTarget = { kind: 'dependency', dependencyId };
 		if (
-			this.options.selection.kind !== 'dependency' ||
-			this.options.selection.dependencyId !== dependencyId
+			this.chart.selection.kind !== 'dependency' ||
+			this.chart.selection.dependencyId !== dependencyId
 		) {
-			this.actions.select({
+			this.chart.select({
 				kind: 'dependency',
 				taskId: null,
 				dependencyId,
@@ -186,20 +157,20 @@ export class GanttChartA11y<
 	focusCell(taskId: string, columnId = this.#columnIds[0] ?? 'title'): boolean {
 		if (!this.#rowTaskIds.includes(taskId) || !this.#columnIds.includes(columnId)) return false;
 		this.setCellTarget(taskId, columnId);
-		const selection = this.options.selection;
+		const selection = this.chart.selection;
 		if (
 			selection.kind !== 'cell' ||
 			selection.taskId !== taskId ||
 			selection.cell.columnId !== columnId
 		) {
-			this.actions.select({
+			this.chart.select({
 				kind: 'cell',
 				taskId,
 				dependencyId: null,
 				cell: { taskId, columnId }
 			});
 		}
-		this.actions.scrollToTask(taskId);
+		this.chart.scrollToTask(taskId);
 		this.scheduleFocus(
 			(element) =>
 				element.dataset.ganttChartPart === 'tree-cell' &&
@@ -212,7 +183,7 @@ export class GanttChartA11y<
 	focusTask(taskId: string): boolean {
 		if (!this.#rowTaskIds.includes(taskId)) return false;
 		this.setTaskTarget(taskId);
-		this.actions.scrollToTask(taskId);
+		this.chart.scrollToTask(taskId);
 		this.scheduleFocus(
 			(element) => isTaskPart(element.dataset.ganttChartPart) && element.dataset.taskId === taskId
 		);
@@ -222,10 +193,10 @@ export class GanttChartA11y<
 	focusDependency(dependencyId: string): boolean {
 		if (!this.#dependencyIds.includes(dependencyId)) return false;
 		this.setDependencyTarget(dependencyId);
-		const dependency = this.getSchedule().analysis.dependencies.find(
+		const dependency = this.chart.schedule.analysis.dependencies.find(
 			(candidate) => candidate.dependency.id === dependencyId
 		);
-		if (dependency) this.actions.scrollToTask(dependency.fromTask.taskId);
+		if (dependency) this.chart.scrollToTask(dependency.fromTask.taskId);
 		this.scheduleFocus(
 			(element) =>
 				element.dataset.ganttChartPart === 'connector-control' &&
@@ -235,7 +206,7 @@ export class GanttChartA11y<
 	}
 
 	handleRootKeydown(event: KeyboardEvent): void {
-		if (!this.options.interactions.keyboard || isEditableTarget(event.target)) return;
+		if (!this.chart.interactions.keyboard || isEditableTarget(event.target)) return;
 		if (this.handleModifierShortcut(event)) return;
 		if (this.keyboardMode) {
 			this.handleModeKeydown(event);
@@ -253,18 +224,18 @@ export class GanttChartA11y<
 	}
 
 	handleRootClick(event: MouseEvent): void {
-		if (this.options.disabled || isGanttInteractivePointerTarget(event.target)) return;
+		if (this.chart.disabled || isGanttInteractivePointerTarget(event.target)) return;
 		this.scheduleDismissFocus();
 	}
 
 	private dismissFocus(): void {
 		const mode = this.keyboardMode;
-		this.interaction.cancel();
+		this.chart.interaction.cancel();
 		this.keyboardMode = null;
-		this.actions.clearSelection();
+		this.chart.clearSelection();
 		this.activeTarget = null;
 		this.cancelFocusFrames();
-		if (mode) this.announce(this.options.messages.ganttChartMutationCancelled(mode.title));
+		if (mode) this.announce(this.chart.messages.ganttChartMutationCancelled(mode.title));
 
 		const root = this.#root;
 		if (!root) return;
@@ -309,7 +280,7 @@ export class GanttChartA11y<
 		this.#lastInteractionKey = key;
 		if (!status.proposal || !status.isValid) {
 			this.announce(
-				this.options.messages.ganttChartInvalidTarget(status.invalidReason ?? 'invalid proposal')
+				this.chart.messages.ganttChartInvalidTarget(status.invalidReason ?? 'invalid proposal')
 			);
 			return;
 		}
@@ -317,14 +288,14 @@ export class GanttChartA11y<
 		if (status.type === 'range') {
 			const proposal = status.proposal;
 			this.announce(
-				`${this.options.messages.ganttChartRangeAction}: ${formatter.format(proposal.start)} – ${formatter.format(proposal.end)}`
+				`${this.chart.messages.ganttChartRangeAction}: ${formatter.format(proposal.start)} – ${formatter.format(proposal.end)}`
 			);
 			return;
 		}
 		const proposal = status.proposal;
 		if (!proposal.task?.start || !proposal.task.end) return;
 		this.announce(
-			this.options.messages.ganttChartProposedSchedule(
+			this.chart.messages.ganttChartProposedSchedule(
 				proposal.task.title,
 				formatter.format(proposal.task.start),
 				formatter.format(proposal.task.end),
@@ -338,20 +309,20 @@ export class GanttChartA11y<
 	): void {
 		this.announce(
 			commit.source === 'history' && commit.historyDirection === 'undo'
-				? this.options.messages.ganttChartMutationReverted(commit.title)
-				: this.options.messages.ganttChartMutationCommitted(commit.title)
+				? this.chart.messages.ganttChartMutationReverted(commit.title)
+				: this.chart.messages.ganttChartMutationCommitted(commit.title)
 		);
 		const propagatedCount = Math.max(
 			0,
 			getChangedTaskCount(commit.before.tasks, commit.after.tasks) - 1
 		);
 		if (propagatedCount > 0) {
-			this.announce(this.options.messages.ganttChartSchedulePropagated(propagatedCount));
+			this.announce(this.chart.messages.ganttChartSchedulePropagated(propagatedCount));
 		}
 	}
 
 	announceRevert(title: string): void {
-		this.announce(this.options.messages.ganttChartMutationReverted(title));
+		this.announce(this.chart.messages.ganttChartMutationReverted(title));
 	}
 
 	announce(message: string): void {
@@ -365,9 +336,9 @@ export class GanttChartA11y<
 	cancelKeyboardMode(): boolean {
 		const mode = this.keyboardMode;
 		if (!mode) return false;
-		this.interaction.cancel();
+		this.chart.interaction.cancel();
 		this.keyboardMode = null;
-		this.announce(this.options.messages.ganttChartMutationCancelled(mode.title));
+		this.announce(this.chart.messages.ganttChartMutationCancelled(mode.title));
 		this.focusTask(mode.taskId);
 		return true;
 	}
@@ -377,11 +348,11 @@ export class GanttChartA11y<
 		const key = event.key.toLowerCase();
 		let handled: boolean;
 		try {
-			if (key === 'c' && !event.shiftKey) handled = this.actions.copySelection();
-			else if (key === 'v' && !event.shiftKey) handled = this.actions.paste();
-			else if (key === 'z' && event.shiftKey) handled = this.actions.redo();
-			else if (key === 'z' && !event.shiftKey) handled = this.actions.undo();
-			else if (key === 'y' && !event.shiftKey) handled = this.actions.redo();
+			if (key === 'c' && !event.shiftKey) handled = this.chart.copySelection();
+			else if (key === 'v' && !event.shiftKey) handled = this.chart.paste();
+			else if (key === 'z' && event.shiftKey) handled = this.chart.redo();
+			else if (key === 'z' && !event.shiftKey) handled = this.chart.undo();
+			else if (key === 'y' && !event.shiftKey) handled = this.chart.redo();
 			else return false;
 		} catch (error) {
 			this.reportKeyboardError(error);
@@ -403,40 +374,40 @@ export class GanttChartA11y<
 			event.preventDefault();
 			const committed =
 				mode.kind === 'task'
-					? this.interaction.commitKeyboardTask()
+					? this.chart.interaction.commitKeyboardTask()
 					: mode.kind === 'range'
-						? this.interaction.commitKeyboardRange()
-						: this.interaction.dependency.commitKeyboard();
+						? this.chart.interaction.commitKeyboardRange()
+						: this.chart.interaction.dependency.commitKeyboard();
 			if (committed) {
 				this.keyboardMode = null;
 				this.focusTask(mode.taskId);
 			}
 			return;
 		}
-		const physicalStep = getPhysicalTimeStep(event.key, this.options.direction);
+		const physicalStep = getPhysicalTimeStep(event.key, this.chart.direction);
 		if (mode.kind === 'task' && physicalStep) {
 			event.preventDefault();
-			this.interaction.adjustKeyboardTask(physicalStep);
+			this.chart.interaction.adjustKeyboardTask(physicalStep);
 			return;
 		}
 		if (mode.kind === 'range' && physicalStep) {
 			event.preventDefault();
-			this.interaction.adjustKeyboardRange(physicalStep);
+			this.chart.interaction.adjustKeyboardRange(physicalStep);
 			return;
 		}
 		if (mode.kind !== 'dependency') return;
 		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
 			event.preventDefault();
-			this.interaction.dependency.moveKeyboardTarget(
+			this.chart.interaction.dependency.moveKeyboardTarget(
 				event.key === 'ArrowUp' ? -1 : 1,
 				this.#rowTaskIds
 			);
 			return;
 		}
-		const endpoint = getPhysicalEndpoint(event.key, this.options.direction);
+		const endpoint = getPhysicalEndpoint(event.key, this.chart.direction);
 		if (!endpoint) return;
 		event.preventDefault();
-		this.interaction.dependency.setKeyboardTargetEndpoint(endpoint, this.#rowTaskIds);
+		this.chart.interaction.dependency.setKeyboardTargetEndpoint(endpoint, this.#rowTaskIds);
 	}
 
 	private handleTaskNavigation(event: KeyboardEvent, taskId: string): void {
@@ -445,7 +416,7 @@ export class GanttChartA11y<
 			this.focusAdjacentTask(taskId, event.key === 'ArrowUp' ? -1 : 1);
 			return;
 		}
-		const inlineStartKey = this.options.direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
+		const inlineStartKey = this.chart.direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
 		if (event.key === inlineStartKey) {
 			event.preventDefault();
 			this.focusCell(taskId, this.#columnIds.at(-1));
@@ -488,7 +459,7 @@ export class GanttChartA11y<
 	}
 
 	private handleDelete(event: KeyboardEvent): void {
-		const selection = this.options.selection;
+		const selection = this.chart.selection;
 		if (selection.kind !== 'task' && selection.kind !== 'cell' && selection.kind !== 'dependency') {
 			return;
 		}
@@ -496,11 +467,11 @@ export class GanttChartA11y<
 		try {
 			const accepted =
 				selection.kind === 'dependency'
-					? this.actions.removeDependency(selection.dependencyId)
-					: this.actions.removeTask(selection.taskId);
+					? this.chart.removeDependencyFromKeyboard(selection.dependencyId)
+					: this.chart.removeTaskFromKeyboard(selection.taskId);
 			if (!accepted) {
 				this.announce(
-					this.options.messages.ganttChartInvalidTarget('consumer policy rejected deletion')
+					this.chart.messages.ganttChartInvalidTarget('consumer policy rejected deletion')
 				);
 			}
 		} catch (error) {
@@ -512,47 +483,52 @@ export class GanttChartA11y<
 		taskId: string,
 		operation: 'move' | 'resize-start' | 'resize-end' | 'progress'
 	): void {
-		const task = this.getSchedule().model.tasksById.get(taskId);
-		if (!task || !this.interaction.beginKeyboardTask(taskId, operation)) {
-			this.announce(this.options.messages.ganttChartInvalidTarget(operation));
+		const task = this.chart.schedule.model.tasksById.get(taskId);
+		if (!task || !this.chart.interaction.beginKeyboardTask(taskId, operation)) {
+			this.announce(this.chart.messages.ganttChartInvalidTarget(operation));
 			return;
 		}
 		this.keyboardMode = { kind: 'task', taskId, title: task.title, operation };
-		this.announce(this.options.messages.ganttChartKeyboardMode(operation, task.title));
+		this.announce(this.chart.messages.ganttChartKeyboardMode(operation, task.title));
 	}
 
 	private beginDependencyMode(taskId: string, endpoint: GanttDependencyEndpoint): void {
-		const task = this.getSchedule().model.tasksById.get(taskId);
-		if (!task || !this.interaction.dependency.beginKeyboard(taskId, endpoint, this.#rowTaskIds)) {
-			this.announce(this.options.messages.ganttChartInvalidTarget('dependency'));
+		const task = this.chart.schedule.model.tasksById.get(taskId);
+		if (
+			!task ||
+			!this.chart.interaction.dependency.beginKeyboard(taskId, endpoint, this.#rowTaskIds)
+		) {
+			this.announce(this.chart.messages.ganttChartInvalidTarget('dependency'));
 			return;
 		}
 		this.keyboardMode = { kind: 'dependency', taskId, title: task.title };
 		this.announce(
-			this.options.messages.ganttChartKeyboardMode(
-				this.options.messages.ganttChartDependencyAction,
+			this.chart.messages.ganttChartKeyboardMode(
+				this.chart.messages.ganttChartDependencyAction,
 				task.title
 			)
 		);
 	}
 
 	private beginRangeMode(taskId: string): void {
-		const task = this.getSchedule().model.tasksById.get(taskId);
+		const task = this.chart.schedule.model.tasksById.get(taskId);
 		if (!task) return;
-		const anchor = task.end ?? task.start ?? this.getSchedule().analysis.projectRange?.start;
+		const anchor = task.end ?? task.start ?? this.chart.schedule.analysis.projectRange?.start;
 		if (!anchor) {
-			this.announce(this.options.messages.ganttChartInvalidTarget('unscheduled task'));
+			this.announce(this.chart.messages.ganttChartInvalidTarget('unscheduled task'));
 			return;
 		}
 		const rowIndex = Math.max(0, this.#rowTaskIds.indexOf(taskId));
-		if (!this.interaction.beginKeyboardRange(anchor, rowIndex * this.#rowHeight, task.parentId)) {
-			this.announce(this.options.messages.ganttChartInvalidTarget('range'));
+		if (
+			!this.chart.interaction.beginKeyboardRange(anchor, rowIndex * this.#rowHeight, task.parentId)
+		) {
+			this.announce(this.chart.messages.ganttChartInvalidTarget('range'));
 			return;
 		}
 		this.keyboardMode = { kind: 'range', taskId, title: task.title };
 		this.announce(
-			this.options.messages.ganttChartKeyboardMode(
-				this.options.messages.ganttChartRangeAction,
+			this.chart.messages.ganttChartKeyboardMode(
+				this.chart.messages.ganttChartRangeAction,
 				task.title
 			)
 		);
@@ -565,16 +541,16 @@ export class GanttChartA11y<
 		if (!status.targetTaskId || !status.targetEndpoint || !status.type) return;
 		if (!status.isValid) {
 			this.announce(
-				this.options.messages.ganttChartInvalidTarget(status.invalidReason ?? 'invalid dependency')
+				this.chart.messages.ganttChartInvalidTarget(status.invalidReason ?? 'invalid dependency')
 			);
 			return;
 		}
-		const schedule = this.getSchedule();
+		const schedule = this.chart.schedule;
 		const from = schedule.model.tasksById.get(status.sourceTaskId);
 		const to = schedule.model.tasksById.get(status.targetTaskId);
 		if (!from || !to) return;
 		this.announce(
-			this.options.messages.ganttChartDependencyDescription(from.title, to.title, status.type)
+			this.chart.messages.ganttChartDependencyDescription(from.title, to.title, status.type)
 		);
 	}
 
@@ -591,7 +567,7 @@ export class GanttChartA11y<
 	): void {
 		const target = this.activeTarget;
 		const controlledTarget = getSelectionTarget(
-			this.options.selection,
+			this.chart.selection,
 			this.#rowTaskIds,
 			this.#columnIds,
 			this.#dependencyIds
@@ -648,8 +624,8 @@ export class GanttChartA11y<
 	}
 
 	private announceFocusRestored(id: string): void {
-		const task = this.getSchedule().model.tasksById.get(id);
-		this.announce(this.options.messages.ganttChartFocusRestored(task?.title ?? id));
+		const task = this.chart.schedule.model.tasksById.get(id);
+		this.announce(this.chart.messages.ganttChartFocusRestored(task?.title ?? id));
 	}
 
 	private scheduleFocus(predicate: (element: HTMLElement) => boolean): void {
@@ -688,7 +664,7 @@ export class GanttChartA11y<
 	}
 
 	private getDateFormatter(): Intl.DateTimeFormat {
-		return getDateTimeFormatter(this.options.locale, this.options.timeZone, {
+		return getDateTimeFormatter(this.chart.locale, this.chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -699,13 +675,13 @@ export class GanttChartA11y<
 
 	private reportKeyboardError(error: unknown): void {
 		if (!(error instanceof GanttChartError)) throw error;
-		this.announce(this.options.messages.ganttChartInvalidTarget(error.message));
+		this.announce(this.chart.messages.ganttChartInvalidTarget(error.message));
 		const info: GanttInteractionBlockedInfo = {
 			reason: getBlockedReason(error),
 			source: 'keyboard',
 			message: error.message
 		};
-		this.options.onInteractionBlocked?.(info);
+		this.chart.onInteractionBlocked?.(info);
 	}
 }
 

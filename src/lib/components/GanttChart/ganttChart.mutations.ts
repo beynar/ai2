@@ -16,7 +16,7 @@ import {
 import { getGanttValueSignature } from './ganttChart.signature.js';
 import { getGanttTaskSubtreeIds } from './ganttChart.subtree.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
-import type { GanttChartStateOptions } from './ganttChart.state.svelte.js';
+import type { GanttChartState } from './ganttChart.state.svelte.js';
 import type {
 	GanttAssignment,
 	GanttAssignmentMutationKind,
@@ -44,14 +44,14 @@ type MutationBoundary<
 > = Readonly<{
 	tasks: GanttTask<TTaskFields>[];
 	dependencies: GanttDependency<TDependencyFields>[];
-	resources: GanttChartStateOptions<
+	resources: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>['resources'];
 	assignments: GanttAssignment<TAssignmentFields>[];
-	calendars: GanttChartStateOptions<
+	calendars: GanttChartState<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
@@ -69,7 +69,7 @@ export class GanttChartMutations<
 	TAssignmentFields extends object
 > {
 	constructor(
-		private readonly options: GanttChartStateOptions<
+		private readonly chart: GanttChartState<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
@@ -88,7 +88,7 @@ export class GanttChartMutations<
 			source,
 			previousTask: null,
 			task: nextTask,
-			candidateTasks: [...this.options.tasks, nextTask]
+			candidateTasks: [...this.chart.tasks, nextTask]
 		});
 	}
 
@@ -100,7 +100,7 @@ export class GanttChartMutations<
 		task: GanttTask<TTaskFields>,
 		kind: Exclude<GanttTaskMutationKind, 'add' | 'remove' | 'paste'>,
 		source: GanttMutationSource,
-		expectedTasks: readonly GanttTask<TTaskFields>[] = this.options.tasks
+		expectedTasks: readonly GanttTask<TTaskFields>[] = this.chart.tasks
 	): boolean {
 		this.assertMutationEnabled();
 		this.assertExpectedTasks(expectedTasks);
@@ -121,18 +121,18 @@ export class GanttChartMutations<
 		this.assertMutationEnabled();
 		const previousTask = this.requireTask(taskId);
 		this.assertTaskWritable(previousTask);
-		const removedTaskIds = getGanttTaskSubtreeIds(taskId, this.options.tasks);
+		const removedTaskIds = getGanttTaskSubtreeIds(taskId, this.chart.tasks);
 		return this.commitModelMutation({
 			source,
-			tasks: this.options.tasks.filter((task) => !removedTaskIds.has(task.id)),
-			dependencies: this.options.dependencies.filter(
+			tasks: this.chart.tasks.filter((task) => !removedTaskIds.has(task.id)),
+			dependencies: this.chart.dependencies.filter(
 				(dependency) =>
 					!removedTaskIds.has(dependency.fromTaskId) && !removedTaskIds.has(dependency.toTaskId)
 			),
-			assignments: this.options.assignments.filter(
+			assignments: this.chart.assignments.filter(
 				(assignment) => !removedTaskIds.has(assignment.taskId)
 			),
-			selection: this.options.selection,
+			selection: this.chart.selection,
 			title: previousTask.title,
 			preferredTaskKind: 'remove',
 			preferredDependencyKind: 'remove',
@@ -151,12 +151,12 @@ export class GanttChartMutations<
 		const previousTask = this.requireTask(taskId);
 		const targetTask = this.requireTask(targetTaskId);
 		this.assertTaskWritable(previousTask);
-		const movedTaskIds = getGanttTaskSubtreeIds(taskId, this.options.tasks);
+		const movedTaskIds = getGanttTaskSubtreeIds(taskId, this.chart.tasks);
 		if (movedTaskIds.has(targetTaskId)) return false;
 		const parentId = resolveGanttDropParentId(targetTask, position);
 		if (parentId && this.requireTask(parentId).readOnly) return false;
 		const task = cloneTaskWithParent(previousTask, parentId ?? undefined);
-		const withoutTask = this.options.tasks.filter((candidate) => candidate.id !== taskId);
+		const withoutTask = this.chart.tasks.filter((candidate) => candidate.id !== taskId);
 		const targetIndex = withoutTask.findIndex((candidate) => candidate.id === targetTaskId);
 		const insertIndex = targetIndex + (position === 'after' ? 1 : 0);
 		const candidateTasks = [...withoutTask];
@@ -191,7 +191,7 @@ export class GanttChartMutations<
 			source,
 			previousTask,
 			task,
-			candidateTasks: replaceById(this.options.tasks, task)
+			candidateTasks: replaceById(this.chart.tasks, task)
 		});
 	}
 
@@ -207,7 +207,7 @@ export class GanttChartMutations<
 			source,
 			previousTask,
 			task,
-			candidateTasks: replaceById(this.options.tasks, task)
+			candidateTasks: replaceById(this.chart.tasks, task)
 		});
 	}
 
@@ -223,7 +223,7 @@ export class GanttChartMutations<
 			source,
 			previousDependency: null,
 			dependency: nextDependency,
-			candidateDependencies: [...this.options.dependencies, nextDependency],
+			candidateDependencies: [...this.chart.dependencies, nextDependency],
 			select
 		});
 	}
@@ -241,7 +241,7 @@ export class GanttChartMutations<
 			source,
 			previousDependency,
 			dependency: nextDependency,
-			candidateDependencies: replaceById(this.options.dependencies, nextDependency)
+			candidateDependencies: replaceById(this.chart.dependencies, nextDependency)
 		});
 	}
 
@@ -254,7 +254,7 @@ export class GanttChartMutations<
 			source,
 			previousDependency,
 			dependency: null,
-			candidateDependencies: this.options.dependencies.filter(
+			candidateDependencies: this.chart.dependencies.filter(
 				(dependency) => dependency.id !== dependencyId
 			)
 		});
@@ -271,7 +271,7 @@ export class GanttChartMutations<
 			source,
 			previousAssignment: null,
 			assignment: nextAssignment,
-			candidateAssignments: [...this.options.assignments, nextAssignment]
+			candidateAssignments: [...this.chart.assignments, nextAssignment]
 		});
 	}
 
@@ -287,7 +287,7 @@ export class GanttChartMutations<
 			source,
 			previousAssignment,
 			assignment: nextAssignment,
-			candidateAssignments: replaceById(this.options.assignments, nextAssignment)
+			candidateAssignments: replaceById(this.chart.assignments, nextAssignment)
 		});
 	}
 
@@ -299,7 +299,7 @@ export class GanttChartMutations<
 			source,
 			previousAssignment,
 			assignment: null,
-			candidateAssignments: this.options.assignments.filter(
+			candidateAssignments: this.chart.assignments.filter(
 				(assignment) => assignment.id !== assignmentId
 			)
 		});
@@ -315,9 +315,9 @@ export class GanttChartMutations<
 		}
 		return this.commitModelMutation({
 			source: 'clipboard',
-			tasks: [...this.options.tasks, ...records.tasks],
-			dependencies: [...this.options.dependencies, ...records.dependencies],
-			assignments: [...this.options.assignments, ...records.assignments],
+			tasks: [...this.chart.tasks, ...records.tasks],
+			dependencies: [...this.chart.dependencies, ...records.dependencies],
+			assignments: [...this.chart.assignments, ...records.assignments],
 			selection: {
 				kind: 'task',
 				taskId: records.rootTaskId,
@@ -367,7 +367,7 @@ export class GanttChartMutations<
 		let candidateTasks = input.tasks.map(cloneGanttTask);
 		let candidateDependencies = input.dependencies.map(cloneGanttDependency);
 		let candidateAssignments = input.assignments.map(cloneGanttAssignment);
-		const shouldAutoSchedule = input.source !== 'history' && this.options.autoSchedule;
+		const shouldAutoSchedule = input.source !== 'history' && this.chart.autoSchedule;
 		const initialSchedule = this.resolveSchedule(
 			candidateTasks,
 			candidateDependencies,
@@ -429,29 +429,29 @@ export class GanttChartMutations<
 		const committedTasks = candidateTasks.map(cloneGanttTask);
 		const committedDependencies = candidateDependencies.map(cloneGanttDependency);
 		const committedAssignments = candidateAssignments.map(cloneGanttAssignment);
-		this.options.tasks = committedTasks;
-		this.options.dependencies = committedDependencies;
-		this.options.assignments = committedAssignments;
-		this.options.selection = nextSelection;
+		this.chart.tasks = committedTasks;
+		this.chart.dependencies = committedDependencies;
+		this.chart.assignments = committedAssignments;
+		this.chart.selection = nextSelection;
 		let wasReverted = false;
 		const committedRevert: { run?: () => void } = {};
 		const revert = createGuardedRevert(
 			() =>
-				this.options.tasks === committedTasks &&
-				this.options.dependencies === committedDependencies &&
-				this.options.assignments === committedAssignments,
+				this.chart.tasks === committedTasks &&
+				this.chart.dependencies === committedDependencies &&
+				this.chart.assignments === committedAssignments,
 			() => {
 				wasReverted = true;
-				this.options.tasks = boundary.tasks;
-				this.options.dependencies = boundary.dependencies;
-				this.options.assignments = boundary.assignments;
-				this.options.selection = previousSelection;
-				this.options.onSelectionChange?.(previousSelection);
+				this.chart.tasks = boundary.tasks;
+				this.chart.dependencies = boundary.dependencies;
+				this.chart.assignments = boundary.assignments;
+				this.chart.selection = previousSelection;
+				this.chart.onSelectionChange?.(previousSelection);
 			},
 			() => committedRevert.run?.()
 		);
 		if (!sameSelection(previousSelection, nextSelection)) {
-			this.options.onSelectionChange?.(nextSelection);
+			this.chart.onSelectionChange?.(nextSelection);
 		}
 		const taskChangeKind = getAggregateTaskKind(
 			boundary.tasks,
@@ -459,7 +459,7 @@ export class GanttChartMutations<
 			input.preferredTaskKind
 		);
 		if (taskIds.length > 0 && taskChangeKind) {
-			this.options.onTasksChange?.(committedTasks, {
+			this.chart.onTasksChange?.(committedTasks, {
 				kind: taskChangeKind,
 				source: input.source,
 				previousTasks: boundary.tasks,
@@ -476,7 +476,7 @@ export class GanttChartMutations<
 			input.preferredDependencyKind
 		);
 		if (dependencyIds.length > 0 && dependencyChangeKind) {
-			this.options.onDependenciesChange?.(committedDependencies, {
+			this.chart.onDependenciesChange?.(committedDependencies, {
 				kind: dependencyChangeKind,
 				source: input.source,
 				previousDependencies: boundary.dependencies,
@@ -492,7 +492,7 @@ export class GanttChartMutations<
 			input.preferredAssignmentKind
 		);
 		if (assignmentIds.length > 0 && assignmentChangeKind) {
-			this.options.onAssignmentsChange?.(committedAssignments, {
+			this.chart.onAssignmentsChange?.(committedAssignments, {
 				kind: assignmentChangeKind,
 				source: input.source,
 				previousAssignments: boundary.assignments,
@@ -503,7 +503,7 @@ export class GanttChartMutations<
 		}
 		if (wasReverted) return false;
 		if (taskIds.length > 0 || dependencyIds.length > 0) {
-			this.options.onScheduleViolations?.(
+			this.chart.onScheduleViolations?.(
 				schedule.analysis.violations,
 				dependencyIds.length > 0 ? 'dependency-change' : 'task-change'
 			);
@@ -556,9 +556,9 @@ export class GanttChartMutations<
 				{ kind, source: input.source, previousTask, task },
 				schedule
 			);
-			if (this.options.canUpdateTask?.(proposal) === false) return null;
+			if (this.chart.canUpdateTask?.(proposal) === false) return null;
 			this.assertBoundary(input.boundary);
-			const decision = this.options.onTaskUpdate?.(proposal);
+			const decision = this.chart.onTaskUpdate?.(proposal);
 			this.assertBoundary(input.boundary);
 			if (decision === false) return null;
 			if (!decision || typeof decision !== 'object') continue;
@@ -582,7 +582,7 @@ export class GanttChartMutations<
 				{ kind, source: input.source, previousTask, task: scheduledTask },
 				schedule
 			);
-			if (this.options.canUpdateTask?.(proposal) === false) {
+			if (this.chart.canUpdateTask?.(proposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
 					'onTaskUpdate returned an adjustment rejected by canUpdateTask.',
@@ -633,9 +633,9 @@ export class GanttChartMutations<
 				previousDependency,
 				dependency
 			});
-			if (this.options.canUpdateDependency?.(proposal) === false) return null;
+			if (this.chart.canUpdateDependency?.(proposal) === false) return null;
 			this.assertBoundary(input.boundary);
-			const decision = this.options.onDependencyUpdate?.(proposal);
+			const decision = this.chart.onDependencyUpdate?.(proposal);
 			this.assertBoundary(input.boundary);
 			if (decision === false) return null;
 			if (!decision || typeof decision !== 'object') continue;
@@ -660,7 +660,7 @@ export class GanttChartMutations<
 				previousDependency,
 				dependency
 			});
-			if (this.options.canUpdateDependency?.(proposal) === false) {
+			if (this.chart.canUpdateDependency?.(proposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
 					'onDependencyUpdate returned an adjustment rejected by canUpdateDependency.',
@@ -708,9 +708,9 @@ export class GanttChartMutations<
 				assignment
 			});
 			if (input.source !== 'history') this.assertAssignmentMutationWritable(proposal);
-			if (this.options.canUpdateAssignment?.(proposal) === false) return null;
+			if (this.chart.canUpdateAssignment?.(proposal) === false) return null;
 			this.assertBoundary(input.boundary);
-			const decision = this.options.onAssignmentUpdate?.(proposal);
+			const decision = this.chart.onAssignmentUpdate?.(proposal);
 			this.assertBoundary(input.boundary);
 			if (decision === false) return null;
 			if (!decision || typeof decision !== 'object') continue;
@@ -735,7 +735,7 @@ export class GanttChartMutations<
 				assignment
 			});
 			if (input.source !== 'history') this.assertAssignmentMutationWritable(proposal);
-			if (this.options.canUpdateAssignment?.(proposal) === false) {
+			if (this.chart.canUpdateAssignment?.(proposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
 					'onAssignmentUpdate returned an adjustment rejected by canUpdateAssignment.',
@@ -760,9 +760,9 @@ export class GanttChartMutations<
 		let candidateTasks = input.candidateTasks;
 		let schedule = this.resolveTaskMutationSchedule(input, candidateTasks, boundary.dependencies);
 		const proposal = this.createTaskProposal(input, schedule);
-		if (this.options.canUpdateTask?.(proposal) === false) return false;
+		if (this.chart.canUpdateTask?.(proposal) === false) return false;
 		this.assertBoundary(boundary);
-		const decision = this.options.onTaskUpdate?.(proposal);
+		const decision = this.chart.onTaskUpdate?.(proposal);
 		this.assertBoundary(boundary);
 		if (decision === false) return false;
 		if (decision && typeof decision === 'object') {
@@ -780,7 +780,7 @@ export class GanttChartMutations<
 				boundary.dependencies
 			);
 			const adjustedProposal = this.createTaskProposal({ ...input, task: adjustedTask }, schedule);
-			if (this.options.canUpdateTask?.(adjustedProposal) === false) {
+			if (this.chart.canUpdateTask?.(adjustedProposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
 					'onTaskUpdate returned an adjustment rejected by canUpdateTask.',
@@ -792,13 +792,13 @@ export class GanttChartMutations<
 		this.assertBoundary(boundary);
 		const publishedTasks = [...schedule.tasks];
 		const previousTasks = boundary.tasks;
-		this.options.tasks = publishedTasks;
-		const committedTasks = this.options.tasks;
+		this.chart.tasks = publishedTasks;
+		const committedTasks = this.chart.tasks;
 		let onCommittedRevert: (() => void) | undefined;
 		const revert = createGuardedRevert(
-			() => this.options.tasks === committedTasks,
+			() => this.chart.tasks === committedTasks,
 			() => {
-				this.options.tasks = previousTasks;
+				this.chart.tasks = previousTasks;
 			},
 			() => onCommittedRevert?.()
 		);
@@ -807,7 +807,7 @@ export class GanttChartMutations<
 			...(input.previousTask ? [input.previousTask.id] : []),
 			...schedule.autoScheduledTaskIds
 		]);
-		this.options.onTasksChange?.(committedTasks, {
+		this.chart.onTasksChange?.(committedTasks, {
 			kind: input.kind,
 			source: input.source,
 			previousTasks,
@@ -816,8 +816,8 @@ export class GanttChartMutations<
 			violations: schedule.analysis.violations,
 			revert
 		});
-		this.options.onScheduleViolations?.(schedule.analysis.violations, 'task-change');
-		if (this.options.tasks === committedTasks) {
+		this.chart.onScheduleViolations?.(schedule.analysis.violations, 'task-change');
+		if (this.chart.tasks === committedTasks) {
 			onCommittedRevert = this.notifyCommit({
 				before: boundary,
 				after: this.getSnapshot(),
@@ -840,9 +840,9 @@ export class GanttChartMutations<
 		const boundary = this.getBoundary();
 		let candidateDependencies = input.candidateDependencies;
 		let proposal = createDependencyProposal(input);
-		if (this.options.canUpdateDependency?.(proposal) === false) return false;
+		if (this.chart.canUpdateDependency?.(proposal) === false) return false;
 		this.assertBoundary(boundary);
-		const decision = this.options.onDependencyUpdate?.(proposal);
+		const decision = this.chart.onDependencyUpdate?.(proposal);
 		this.assertBoundary(boundary);
 		if (decision === false) return false;
 		if (decision && typeof decision === 'object') {
@@ -855,7 +855,7 @@ export class GanttChartMutations<
 			const adjustedDependency = cloneGanttDependency(decision);
 			candidateDependencies = replaceById(candidateDependencies, adjustedDependency);
 			proposal = createDependencyProposal({ ...input, dependency: adjustedDependency });
-			if (this.options.canUpdateDependency?.(proposal) === false) {
+			if (this.chart.canUpdateDependency?.(proposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
 					'onDependencyUpdate returned an adjustment rejected by canUpdateDependency.',
@@ -871,8 +871,8 @@ export class GanttChartMutations<
 		const previousSelection = boundary.selection;
 		const publishedTasks = [...schedule.tasks];
 		const publishedDependencies = [...candidateDependencies];
-		this.options.tasks = publishedTasks;
-		this.options.dependencies = publishedDependencies;
+		this.chart.tasks = publishedTasks;
+		this.chart.dependencies = publishedDependencies;
 		const committedSelection =
 			input.select && proposal.dependency
 				? {
@@ -882,31 +882,30 @@ export class GanttChartMutations<
 						cell: null
 					}
 				: null;
-		if (committedSelection) this.options.selection = committedSelection;
-		const committedTasks = this.options.tasks;
-		const committedDependencies = this.options.dependencies;
+		if (committedSelection) this.chart.selection = committedSelection;
+		const committedTasks = this.chart.tasks;
+		const committedDependencies = this.chart.dependencies;
 		let onCommittedRevert: (() => void) | undefined;
 		const revert = createGuardedRevert(
 			() =>
-				this.options.tasks === committedTasks &&
-				this.options.dependencies === committedDependencies,
+				this.chart.tasks === committedTasks && this.chart.dependencies === committedDependencies,
 			() => {
-				this.options.tasks = previousTasks;
-				this.options.dependencies = previousDependencies;
+				this.chart.tasks = previousTasks;
+				this.chart.dependencies = previousDependencies;
 				if (
 					committedSelection &&
-					this.options.selection.kind === 'dependency' &&
-					this.options.selection.dependencyId === committedSelection.dependencyId
+					this.chart.selection.kind === 'dependency' &&
+					this.chart.selection.dependencyId === committedSelection.dependencyId
 				) {
-					this.options.selection = previousSelection;
-					this.options.onSelectionChange?.(previousSelection);
+					this.chart.selection = previousSelection;
+					this.chart.onSelectionChange?.(previousSelection);
 				}
 			},
 			() => onCommittedRevert?.()
 		);
-		if (committedSelection) this.options.onSelectionChange?.(committedSelection);
+		if (committedSelection) this.chart.onSelectionChange?.(committedSelection);
 		if (schedule.autoScheduledTaskIds.length > 0) {
-			this.options.onTasksChange?.(committedTasks, {
+			this.chart.onTasksChange?.(committedTasks, {
 				kind: 'schedule',
 				source: input.source,
 				previousTasks,
@@ -916,7 +915,7 @@ export class GanttChartMutations<
 				revert
 			});
 		}
-		this.options.onDependenciesChange?.(committedDependencies, {
+		this.chart.onDependenciesChange?.(committedDependencies, {
 			kind: input.kind,
 			source: input.source,
 			previousDependencies,
@@ -927,11 +926,8 @@ export class GanttChartMutations<
 			]),
 			revert
 		});
-		this.options.onScheduleViolations?.(schedule.analysis.violations, 'dependency-change');
-		if (
-			this.options.tasks === committedTasks &&
-			this.options.dependencies === committedDependencies
-		) {
+		this.chart.onScheduleViolations?.(schedule.analysis.violations, 'dependency-change');
+		if (this.chart.tasks === committedTasks && this.chart.dependencies === committedDependencies) {
 			onCommittedRevert = this.notifyCommit({
 				before: boundary,
 				after: this.getSnapshot(),
@@ -956,9 +952,9 @@ export class GanttChartMutations<
 		let proposal = createAssignmentProposal(input);
 		this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
 		this.assertAssignmentMutationWritable(proposal);
-		if (this.options.canUpdateAssignment?.(proposal) === false) return false;
+		if (this.chart.canUpdateAssignment?.(proposal) === false) return false;
 		this.assertBoundary(boundary);
-		const decision = this.options.onAssignmentUpdate?.(proposal);
+		const decision = this.chart.onAssignmentUpdate?.(proposal);
 		this.assertBoundary(boundary);
 		if (decision === false) return false;
 		if (decision && typeof decision === 'object') {
@@ -973,7 +969,7 @@ export class GanttChartMutations<
 			proposal = createAssignmentProposal({ ...input, assignment: adjustedAssignment });
 			this.resolveSchedule(boundary.tasks, boundary.dependencies, candidateAssignments);
 			this.assertAssignmentMutationWritable(proposal);
-			if (this.options.canUpdateAssignment?.(proposal) === false) {
+			if (this.chart.canUpdateAssignment?.(proposal) === false) {
 				throw new GanttChartError(
 					'invalid-adjustment',
 					'onAssignmentUpdate returned an adjustment rejected by canUpdateAssignment.',
@@ -984,17 +980,17 @@ export class GanttChartMutations<
 		}
 		this.assertBoundary(boundary);
 		const previousAssignments = boundary.assignments;
-		this.options.assignments = [...candidateAssignments];
-		const committedAssignments = this.options.assignments;
+		this.chart.assignments = [...candidateAssignments];
+		const committedAssignments = this.chart.assignments;
 		let onCommittedRevert: (() => void) | undefined;
 		const revert = createGuardedRevert(
-			() => this.options.assignments === committedAssignments,
+			() => this.chart.assignments === committedAssignments,
 			() => {
-				this.options.assignments = previousAssignments;
+				this.chart.assignments = previousAssignments;
 			},
 			() => onCommittedRevert?.()
 		);
-		this.options.onAssignmentsChange?.(committedAssignments, {
+		this.chart.onAssignmentsChange?.(committedAssignments, {
 			kind: input.kind,
 			source: input.source,
 			previousAssignments,
@@ -1005,7 +1001,7 @@ export class GanttChartMutations<
 			]),
 			revert
 		});
-		if (this.options.assignments === committedAssignments) {
+		if (this.chart.assignments === committedAssignments) {
 			onCommittedRevert = this.notifyCommit({
 				before: boundary,
 				after: this.getSnapshot(),
@@ -1064,8 +1060,8 @@ export class GanttChartMutations<
 	private resolveSchedule(
 		tasks: readonly GanttTask<TTaskFields>[],
 		dependencies: readonly GanttDependency<TDependencyFields>[],
-		assignments: readonly GanttAssignment<TAssignmentFields>[] = this.options.assignments,
-		autoSchedule = this.options.autoSchedule,
+		assignments: readonly GanttAssignment<TAssignmentFields>[] = this.chart.assignments,
+		autoSchedule = this.chart.autoSchedule,
 		schedulingViolations: ResolvedGanttSchedule<
 			TTaskFields,
 			TDependencyFields,
@@ -1076,12 +1072,12 @@ export class GanttChartMutations<
 		return resolveGanttSchedule({
 			tasks,
 			dependencies,
-			resources: this.options.resources,
+			resources: this.chart.resources,
 			assignments,
-			calendars: this.options.calendars,
-			projectCalendarId: this.options.projectCalendarId,
-			timeZone: this.options.timeZone,
-			expandedTaskIds: this.options.expandedTaskIds.filter((taskId) =>
+			calendars: this.chart.calendars,
+			projectCalendarId: this.chart.projectCalendarId,
+			timeZone: this.chart.timeZone,
+			expandedTaskIds: this.chart.expandedTaskIds.filter((taskId) =>
 				tasks.some((task) => task.id === taskId && task.type === 'summary')
 			),
 			autoSchedule,
@@ -1098,10 +1094,9 @@ export class GanttChartMutations<
 		tasks: readonly GanttTask<TTaskFields>[],
 		dependencies: readonly GanttDependency<TDependencyFields>[]
 	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
-		if (this.options.autoSchedule)
-			return this.resolveSchedule(tasks, dependencies, undefined, true);
+		if (this.chart.autoSchedule) return this.resolveSchedule(tasks, dependencies, undefined, true);
 		if (
-			!this.options.moveDependencies ||
+			!this.chart.moveDependencies ||
 			input.kind !== 'move' ||
 			!input.previousTask?.start ||
 			!input.task?.start
@@ -1148,7 +1143,7 @@ export class GanttChartMutations<
 	private resolveAdjustedSchedule(
 		tasks: readonly GanttTask<TTaskFields>[],
 		dependencies: readonly GanttDependency<TDependencyFields>[],
-		autoSchedule = this.options.autoSchedule
+		autoSchedule = this.chart.autoSchedule
 	): ResolvedGanttSchedule<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
 		try {
 			return this.resolveSchedule(tasks, dependencies, undefined, autoSchedule);
@@ -1181,8 +1176,8 @@ export class GanttChartMutations<
 	}
 
 	private assertMutationEnabled(): void {
-		if (this.options.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
-		if (this.options.loading) {
+		if (this.chart.disabled) throw new GanttChartError('disabled', 'GanttChart is disabled.');
+		if (this.chart.loading) {
 			throw new GanttChartError('invalid-operation', 'GanttChart is loading.');
 		}
 	}
@@ -1194,14 +1189,14 @@ export class GanttChartMutations<
 		TAssignmentFields
 	> {
 		return {
-			tasks: this.options.tasks,
-			dependencies: this.options.dependencies,
-			resources: this.options.resources,
-			assignments: this.options.assignments,
-			calendars: this.options.calendars,
-			timeZone: this.options.timeZone,
-			projectCalendarId: this.options.projectCalendarId,
-			selection: this.options.selection
+			tasks: this.chart.tasks,
+			dependencies: this.chart.dependencies,
+			resources: this.chart.resources,
+			assignments: this.chart.assignments,
+			calendars: this.chart.calendars,
+			timeZone: this.chart.timeZone,
+			projectCalendarId: this.chart.projectCalendarId,
+			selection: this.chart.selection
 		};
 	}
 
@@ -1209,13 +1204,13 @@ export class GanttChartMutations<
 		boundary: MutationBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	): void {
 		if (
-			boundary.tasks === this.options.tasks &&
-			boundary.dependencies === this.options.dependencies &&
-			boundary.resources === this.options.resources &&
-			boundary.assignments === this.options.assignments &&
-			boundary.calendars === this.options.calendars &&
-			boundary.timeZone === this.options.timeZone &&
-			boundary.projectCalendarId === this.options.projectCalendarId
+			boundary.tasks === this.chart.tasks &&
+			boundary.dependencies === this.chart.dependencies &&
+			boundary.resources === this.chart.resources &&
+			boundary.assignments === this.chart.assignments &&
+			boundary.calendars === this.chart.calendars &&
+			boundary.timeZone === this.chart.timeZone &&
+			boundary.projectCalendarId === this.chart.projectCalendarId
 		) {
 			return;
 		}
@@ -1226,7 +1221,7 @@ export class GanttChartMutations<
 	}
 
 	private assertExpectedTasks(expectedTasks: readonly GanttTask<TTaskFields>[]): void {
-		if (expectedTasks === this.options.tasks) return;
+		if (expectedTasks === this.chart.tasks) return;
 		throw new GanttChartError(
 			'stale-transaction',
 			'The controlled task collection changed during the interaction.'
@@ -1234,13 +1229,13 @@ export class GanttChartMutations<
 	}
 
 	private requireTask(taskId: string): GanttTask<TTaskFields> {
-		const task = this.options.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.chart.tasks.find((candidate) => candidate.id === taskId);
 		if (task) return task;
 		throw new GanttChartError('invalid-operation', `Unknown task ${taskId}.`, { taskId });
 	}
 
 	private requireDependency(dependencyId: string): GanttDependency<TDependencyFields> {
-		const dependency = this.options.dependencies.find((candidate) => candidate.id === dependencyId);
+		const dependency = this.chart.dependencies.find((candidate) => candidate.id === dependencyId);
 		if (dependency) return dependency;
 		throw new GanttChartError('invalid-operation', `Unknown dependency ${dependencyId}.`, {
 			dependencyId
@@ -1248,7 +1243,7 @@ export class GanttChartMutations<
 	}
 
 	private requireAssignment(assignmentId: string): GanttAssignment<TAssignmentFields> {
-		const assignment = this.options.assignments.find((candidate) => candidate.id === assignmentId);
+		const assignment = this.chart.assignments.find((candidate) => candidate.id === assignmentId);
 		if (assignment) return assignment;
 		throw new GanttChartError('invalid-operation', `Unknown assignment ${assignmentId}.`, {
 			assignmentId
@@ -1274,7 +1269,7 @@ export class GanttChartMutations<
 			(assignment): assignment is GanttAssignment<TAssignmentFields> => assignment !== null
 		);
 		for (const assignment of assignments) {
-			const resource = this.options.resources.find(
+			const resource = this.chart.resources.find(
 				(candidate) => candidate.id === assignment.resourceId
 			);
 			if (resource?.readOnly) {
@@ -1283,7 +1278,7 @@ export class GanttChartMutations<
 					resourceId: resource.id
 				});
 			}
-			const task = this.options.tasks.find((candidate) => candidate.id === assignment.taskId);
+			const task = this.chart.tasks.find((candidate) => candidate.id === assignment.taskId);
 			if (!task?.readOnly) continue;
 			throw new GanttChartError('read-only', `Task ${task.id} is read-only.`, {
 				assignmentId: assignment.id,
@@ -1294,10 +1289,10 @@ export class GanttChartMutations<
 
 	private getSnapshot(): GanttModelSnapshot<TTaskFields, TDependencyFields, TAssignmentFields> {
 		return {
-			tasks: this.options.tasks,
-			dependencies: this.options.dependencies,
-			assignments: this.options.assignments,
-			selection: cloneGanttSelection(this.options.selection)
+			tasks: this.chart.tasks,
+			dependencies: this.chart.dependencies,
+			assignments: this.chart.assignments,
+			selection: cloneGanttSelection(this.chart.selection)
 		};
 	}
 

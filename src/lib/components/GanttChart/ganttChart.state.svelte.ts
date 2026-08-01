@@ -1,6 +1,7 @@
-/* eslint-disable svelte/prefer-svelte-reactivity -- Dates, Sets, and ranges here are immutable schedule snapshots, not reactive collection owners. */
+/* eslint-disable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unsafe-declaration-merging, svelte/prefer-svelte-reactivity -- Descriptor binding follows the established Svelai state-class pattern; Dates, Sets, and ranges are immutable schedule snapshots. */
 import { assertScheduleInstant, assertScheduleRange } from '$lib/scheduling/scheduleRange.js';
 import type { Messages } from '$lib/i18n/en.js';
+import { bind } from '$lib/utils/state.svelte.js';
 import { applyGanttColumnEdit } from './ganttChart.columns.js';
 import { GanttChartA11y } from './ganttChart.a11y.svelte.js';
 import { calculateGanttWorkload } from './ganttChart.workload.js';
@@ -179,18 +180,24 @@ export type GanttRowNavigation = Readonly<{
 	scrollToTask: (taskId: string, options?: { align?: 'start' | 'center' | 'end' }) => boolean;
 }>;
 
+export interface GanttChartState<
+	TTaskFields extends object,
+	TDependencyFields extends object,
+	TResourceFields extends object,
+	TAssignmentFields extends object
+> extends GanttChartStateOptions<
+	TTaskFields,
+	TDependencyFields,
+	TResourceFields,
+	TAssignmentFields
+> {}
+
 export class GanttChartState<
 	TTaskFields extends object,
 	TDependencyFields extends object,
 	TResourceFields extends object,
 	TAssignmentFields extends object
 > implements GanttChartApi<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
-	#options: GanttChartStateOptions<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>;
 	#visibleRange = $state<GanttRange | null>(null);
 	#timelineNavigation: GanttTimelineNavigation | null = null;
 	#rowNavigation: GanttRowNavigation | null = null;
@@ -223,12 +230,12 @@ export class GanttChartState<
 			TAssignmentFields
 		>
 	) {
-		this.#options = options;
-		this.#history = new GanttChartHistory(options, (target, commit, direction) =>
+		bind(this, options);
+		this.#history = new GanttChartHistory(this, (target, commit, direction) =>
 			this.#mutations.restoreSnapshot(target, commit, direction)
 		);
-		this.#clipboard = new GanttChartClipboard(options);
-		this.#mutations = new GanttChartMutations(options, (commit) => {
+		this.#clipboard = new GanttChartClipboard(this);
+		this.#mutations = new GanttChartMutations(this, (commit) => {
 			const forgetHistory = this.#history.record(commit);
 			this.a11y.announceCommit(commit);
 			return () => {
@@ -236,31 +243,21 @@ export class GanttChartState<
 				this.a11y.announceRevert(commit.title);
 			};
 		});
-		this.interaction = new GanttChartInteractions(options, this.#mutations, () => this.schedule);
-		this.a11y = new GanttChartA11y(options, this.interaction, () => this.schedule, {
-			select: (selection) => this.select(selection),
-			clearSelection: () => this.clearSelection(),
-			removeTask: (taskId) => this.removeTaskFromKeyboard(taskId),
-			removeDependency: (dependencyId) => this.removeDependencyFromKeyboard(dependencyId),
-			copySelection: () => this.copySelection(),
-			paste: () => this.paste(),
-			undo: () => this.undo(),
-			redo: () => this.redo(),
-			scrollToTask: (taskId) => this.scrollToTask(taskId)
-		});
+		this.interaction = new GanttChartInteractions(this, this.#mutations);
+		this.a11y = new GanttChartA11y(this);
 		$effect(() => {
-			void options.tasks;
-			void options.dependencies;
-			void options.resources;
-			void options.assignments;
-			void options.calendars;
+			void this.tasks;
+			void this.dependencies;
+			void this.resources;
+			void this.assignments;
+			void this.calendars;
 			this.interaction.reconcileControlledState();
 		});
 		$effect(() => {
 			this.a11y.syncInteractionStatus(this.interaction.status, this.interaction.dependencyStatus);
 		});
 		$effect(() => {
-			this.a11y.syncSelection(options.selection);
+			this.a11y.syncSelection(this.selection);
 		});
 	}
 
@@ -270,16 +267,15 @@ export class GanttChartState<
 		TResourceFields,
 		TAssignmentFields
 	> = $derived.by(() => {
-		const options = this.#options;
 		return resolveGanttSchedule({
-			tasks: options.tasks,
-			dependencies: options.dependencies,
-			resources: options.resources,
-			assignments: options.assignments,
-			calendars: options.calendars,
-			expandedTaskIds: options.expandedTaskIds,
-			timeZone: options.timeZone,
-			projectCalendarId: options.projectCalendarId,
+			tasks: this.tasks,
+			dependencies: this.dependencies,
+			resources: this.resources,
+			assignments: this.assignments,
+			calendars: this.calendars,
+			expandedTaskIds: this.expandedTaskIds,
+			timeZone: this.timeZone,
+			projectCalendarId: this.projectCalendarId,
 			autoSchedule: false
 		});
 	});
@@ -290,26 +286,25 @@ export class GanttChartState<
 		TResourceFields,
 		TAssignmentFields
 	> = $derived.by(() => {
-		const options = this.#options;
 		return {
-			tasks: options.tasks,
-			dependencies: options.dependencies,
-			resources: options.resources,
-			assignments: options.assignments,
+			tasks: this.tasks,
+			dependencies: this.dependencies,
+			resources: this.resources,
+			assignments: this.assignments,
 			resolvedTasks: this.schedule.resolvedTasks,
-			expandedTaskIds: options.expandedTaskIds,
-			selection: options.selection,
-			zoom: options.zoom,
+			expandedTaskIds: this.expandedTaskIds,
+			selection: this.selection,
+			zoom: this.zoom,
 			visibleRange: this.visibleRange,
-			loading: options.loading,
-			disabled: options.disabled,
+			loading: this.loading,
+			disabled: this.disabled,
 			api: this
 		};
 	});
 
 	get visibleRange(): GanttRange {
 		if (this.#visibleRange) return cloneRange(this.#visibleRange);
-		const validRange = this.#options.validRange;
+		const validRange = this.validRange;
 		if (validRange) {
 			assertRange(validRange, 'validRange');
 			return cloneRange(validRange);
@@ -323,7 +318,7 @@ export class GanttChartState<
 	}
 
 	get enabledZoomLevels(): readonly GanttZoomLevel[] {
-		const zoomLevels = this.#options.zoomLevels;
+		const zoomLevels = this.zoomLevels;
 		if (
 			!Array.isArray(zoomLevels) ||
 			zoomLevels.length === 0 ||
@@ -338,7 +333,7 @@ export class GanttChartState<
 			if (typeof zoom !== 'string' || zoom.length === 0) {
 				throw new GanttChartError('invalid-zoom-level', 'Every zoom level needs a non-empty id.');
 			}
-			if (!BUILT_IN_ZOOM_LEVELS.has(zoom) && !this.#options.customScaleIds.has(zoom)) {
+			if (!BUILT_IN_ZOOM_LEVELS.has(zoom) && !this.customScaleIds.has(zoom)) {
 				throw new GanttChartError(
 					'invalid-zoom-level',
 					`Custom zoom level ${zoom} needs a matching scale definition.`,
@@ -346,11 +341,11 @@ export class GanttChartState<
 				);
 			}
 		}
-		if (!zoomLevels.includes(this.#options.zoom)) {
+		if (!zoomLevels.includes(this.zoom)) {
 			throw new GanttChartError(
 				'invalid-zoom-level',
-				`zoom must be present in zoomLevels: ${this.#options.zoom}.`,
-				{ zoom: this.#options.zoom }
+				`zoom must be present in zoomLevels: ${this.zoom}.`,
+				{ zoom: this.zoom }
 			);
 		}
 		return zoomLevels;
@@ -383,13 +378,13 @@ export class GanttChartState<
 				zoom
 			});
 		}
-		if (zoom === this.#options.zoom) return;
+		if (zoom === this.zoom) return;
 		const currentRange = this.visibleRange;
 		this.#timelineNavigation?.prepareZoom(
 			anchorDate ?? new Date((currentRange.start.getTime() + currentRange.end.getTime()) / 2)
 		);
-		this.#options.zoom = zoom;
-		this.#options.onZoomChange?.(zoom);
+		this.zoom = zoom;
+		this.onZoomChange?.(zoom);
 	}
 
 	scrollToDate(date: Date, options?: { align?: 'start' | 'center' | 'end' }): boolean {
@@ -440,11 +435,11 @@ export class GanttChartState<
 			return;
 		}
 		this.#visibleRange = cloneRange(nextRange);
-		this.#options.onVisibleRangeChange?.({
+		this.onVisibleRangeChange?.({
 			range: cloneRange(nextRange),
 			projectRange: cloneNullableRange(this.schedule.analysis.projectRange),
-			zoom: this.#options.zoom,
-			timeZone: this.#options.timeZone
+			zoom: this.zoom,
+			timeZone: this.timeZone
 		});
 	}
 
@@ -483,7 +478,7 @@ export class GanttChartState<
 	}
 
 	getResources(): readonly GanttResource<TResourceFields>[] {
-		return this.#options.resources;
+		return this.resources;
 	}
 
 	getScheduleAnalysis(): GanttScheduleAnalysis<TTaskFields, TDependencyFields> {
@@ -505,7 +500,7 @@ export class GanttChartState<
 	}
 
 	toggleTask(taskId: string): void {
-		this.#setTaskExpansion(taskId, !this.#options.expandedTaskIds.includes(taskId));
+		this.#setTaskExpansion(taskId, !this.expandedTaskIds.includes(taskId));
 	}
 
 	expandAll(): void {
@@ -525,9 +520,9 @@ export class GanttChartState<
 	select(selection: GanttSelection): void {
 		this.#assertNavigationEnabled();
 		this.#validateSelection(selection);
-		if (sameSelection(selection, this.#options.selection)) return;
-		this.#options.selection = selection;
-		this.#options.onSelectionChange?.(selection);
+		if (sameSelection(selection, this.selection)) return;
+		this.selection = selection;
+		this.onSelectionChange?.(selection);
 	}
 
 	clearSelection(): void {
@@ -547,9 +542,9 @@ export class GanttChartState<
 	}
 
 	removeTaskFromKeyboard(taskId: string): boolean {
-		if (!this.#options.interactions.keyboard) return false;
+		if (!this.interactions.keyboard) return false;
 		const accepted = this.#mutations.removeTask(taskId, 'keyboard');
-		if (accepted && this.#options.selection.kind !== null) this.clearSelection();
+		if (accepted && this.selection.kind !== null) this.clearSelection();
 		return accepted;
 	}
 
@@ -569,9 +564,9 @@ export class GanttChartState<
 	}
 
 	removeDependencyFromKeyboard(dependencyId: string): boolean {
-		if (!this.#options.interactions.keyboard) return false;
+		if (!this.interactions.keyboard) return false;
 		const accepted = this.#mutations.removeDependency(dependencyId, 'keyboard');
-		if (accepted && this.#options.selection.kind === 'dependency') this.clearSelection();
+		if (accepted && this.selection.kind === 'dependency') this.clearSelection();
 		return accepted;
 	}
 
@@ -606,9 +601,9 @@ export class GanttChartState<
 	): boolean {
 		const context = createGanttColumnContext(
 			node,
-			this.#options.dependencies,
-			this.#options.resources,
-			this.#options.assignments
+			this.dependencies,
+			this.resources,
+			this.assignments
 		);
 		const task = applyGanttColumnEdit(column, context, value);
 		return this.#mutations.updateTask(task, 'inline-edit');
@@ -620,7 +615,7 @@ export class GanttChartState<
 		position: 'before' | 'after',
 		source: Extract<GanttMutationSource, 'pointer' | 'keyboard'> = 'pointer'
 	): boolean {
-		if (!this.#options.interactions.reorderRows) return false;
+		if (!this.interactions.reorderRows) return false;
 		return this.#mutations.reorderTask(taskId, targetTaskId, position, source);
 	}
 
@@ -629,17 +624,17 @@ export class GanttChartState<
 		previousTaskId: string | null,
 		source: GanttMutationSource = 'keyboard'
 	): boolean {
-		if (!this.#options.interactions.indent || !previousTaskId) return false;
+		if (!this.interactions.indent || !previousTaskId) return false;
 		return this.#mutations.indentTask(taskId, previousTaskId, source);
 	}
 
 	outdentTask(taskId: string, source: GanttMutationSource = 'keyboard'): boolean {
-		if (!this.#options.interactions.outdent) return false;
+		if (!this.interactions.outdent) return false;
 		return this.#mutations.outdentTask(taskId, source);
 	}
 
 	blockInteraction(info: GanttInteractionBlockedInfo): void {
-		this.#options.onInteractionBlocked?.(info);
+		this.onInteractionBlocked?.(info);
 	}
 
 	copySelection(): boolean {
@@ -647,7 +642,7 @@ export class GanttChartState<
 		const title = this.#clipboard.copiedRootTitle;
 		if (accepted && title) {
 			this.a11y.announce(
-				this.#options.messages.ganttChartCopiedTask(title, this.#clipboard.omittedDependencyCount)
+				this.messages.ganttChartCopiedTask(title, this.#clipboard.omittedDependencyCount)
 			);
 		}
 		return accepted;
@@ -683,7 +678,7 @@ export class GanttChartState<
 	#stepZoom(direction: -1 | 1, anchorDate?: Date): boolean {
 		this.#assertNavigationEnabled();
 		const zoomLevels = this.enabledZoomLevels;
-		const index = zoomLevels.indexOf(this.#options.zoom);
+		const index = zoomLevels.indexOf(this.zoom);
 		const nextIndex = index + direction;
 		if (nextIndex < 0 || nextIndex >= zoomLevels.length) return false;
 		this.setZoom(zoomLevels[nextIndex], anchorDate);
@@ -698,7 +693,7 @@ export class GanttChartState<
 				taskId
 			});
 		}
-		const expandedTaskIds = this.#options.expandedTaskIds;
+		const expandedTaskIds = this.expandedTaskIds;
 		if (expandedTaskIds.includes(taskId) === isExpanded) return;
 		this.#publishExpansion(
 			isExpanded
@@ -708,8 +703,8 @@ export class GanttChartState<
 	}
 
 	#publishExpansion(expandedTaskIds: string[]): void {
-		this.#options.expandedTaskIds = expandedTaskIds;
-		this.#options.onExpansionChange?.(expandedTaskIds);
+		this.expandedTaskIds = expandedTaskIds;
+		this.onExpansionChange?.(expandedTaskIds);
 	}
 
 	#validateSelection(selection: GanttSelection): void {
@@ -733,7 +728,7 @@ export class GanttChartState<
 	}
 
 	#clipRange(range: GanttRange): GanttRange {
-		const validRange = this.#options.validRange;
+		const validRange = this.validRange;
 		if (!validRange) return cloneRange(range);
 		assertRange(validRange, 'validRange');
 		const duration = range.end.getTime() - range.start.getTime();
@@ -755,7 +750,7 @@ export class GanttChartState<
 	}
 
 	#assertNavigationEnabled(): void {
-		if (!this.#options.disabled) return;
+		if (!this.disabled) return;
 		throw new GanttChartError('disabled', 'GanttChart is disabled.');
 	}
 
