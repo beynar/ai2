@@ -1,4 +1,5 @@
 export { default as EventCalendar } from './EventCalendar.svelte';
+export { externalEvent } from './eventCalendar.externalEvent.js';
 export { EventCalendarError, type EventCalendarErrorCode } from './eventCalendar.error.js';
 export type {
 	EventCalendarAgendaDetailsPayload,

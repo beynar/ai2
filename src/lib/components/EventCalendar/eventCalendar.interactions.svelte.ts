@@ -23,6 +23,10 @@ import {
 } from './eventCalendar.date.js';
 import { EventCalendarError } from './eventCalendar.error.js';
 import {
+	readEventCalendarExternalDragSource,
+	type EventCalendarExternalDragSource
+} from './eventCalendar.externalEvent.js';
+import {
 	createEventCalendarRecurrenceMutation,
 	regenerateEventCalendarSeriesMutation,
 	type CreateRecurrenceMutationOptions,
@@ -144,7 +148,8 @@ type EventCalendarSlotGesture = {
 export type EventCalendarGesture<TItemFields extends object> =
 	EventCalendarItemGesture<TItemFields> | EventCalendarSlotGesture | null;
 
-type DragSource = {
+type InternalDragSource = {
+	kind: 'internal';
 	calendarInstanceId: string;
 	occurrenceKey: string;
 	operation: EventCalendarItemOperation;
@@ -157,6 +162,9 @@ type DragSource = {
 	view: EventCalendarView;
 	sourceResourceId?: string;
 };
+
+type DragSource<TItemFields extends object> =
+	InternalDragSource | EventCalendarExternalDragSource<TItemFields>;
 
 type EventCalendarHistoryEntry<TItemFields extends object> = {
 	before: EventCalendarItem<TItemFields>[];
@@ -216,6 +224,7 @@ export class EventCalendarInteractionsController<
 	private historyPast: EventCalendarHistoryEntry<TItemFields>[] = [];
 	private historyFuture: EventCalendarHistoryEntry<TItemFields>[] = [];
 	private historyRevision = $state(0);
+	private externalGestureSequence = 0;
 
 	constructor(
 		readonly instanceId: string,
@@ -268,8 +277,7 @@ export class EventCalendarInteractionsController<
 	mount(): void {
 		if (this.monitorCleanup) return;
 		this.monitorCleanup = monitorForElements({
-			canMonitor: ({ source }) =>
-				this.readSource(source.data)?.calendarInstanceId === this.instanceId,
+			canMonitor: ({ source }) => this.readSource(source.data) !== null,
 			onDragStart: (payload) => this.handleItemDragStart(payload),
 			onDrag: (payload) => this.handleItemDrag(payload),
 			onDropTargetChange: (payload) => this.handleItemDrag(payload),
@@ -831,7 +839,7 @@ export class EventCalendarInteractionsController<
 				const cleanup = dropTargetForElements({
 					element,
 					canDrop: ({ source }) =>
-						this.readSource(source.data)?.calendarInstanceId === this.instanceId &&
+						this.readSource(source.data) !== null &&
 						!this.calendar.disabled &&
 						!this.calendar.loading,
 					getData: () => ({
@@ -1135,33 +1143,42 @@ export class EventCalendarInteractionsController<
 	private handleItemDragStart(payload: ElementEventPayloadMap['onDragStart']): void {
 		const source = this.readSource(payload.source.data);
 		if (!source) return;
-		const occurrence = this.calendar.getOccurrence(source.occurrenceKey);
-		if (!occurrence || !this.canBeginItemGesture(occurrence, source.operation)) return;
+		const isExternal = source.kind === 'external';
+		if (isExternal) this.calendar.validateCandidateItems([source.item]);
+		const occurrence = isExternal
+			? this.createExternalOccurrence(source.item)
+			: this.calendar.getOccurrence(source.occurrenceKey);
+		const operation = isExternal ? 'move' : source.operation;
+		if (!occurrence || (!isExternal && !this.canBeginItemGesture(occurrence, operation))) return;
 		this.resetSinglePointerSlot();
 		this.didNativeCancel = false;
 		this.lastPublishedProposalKey = null;
 		this.gestureBoundary = this.getBoundary();
 		this.gesture = {
-			kind: source.operation,
-			initialKind: source.operation,
-			source: this.operationSource(source.operation),
+			kind: operation,
+			initialKind: operation,
+			source: isExternal ? 'external-drop' : this.operationSource(operation),
 			inputMode: 'pointer',
 			occurrence,
 			proposal: null,
 			targetKey: null,
 			isValid: false,
 			reason: 'invalid-target',
-			grabOffsetMs: source.grabOffsetMs,
-			grabOffsetDays: source.grabOffsetDays,
+			grabOffsetMs: isExternal ? 0 : source.grabOffsetMs,
+			grabOffsetDays: isExternal ? 0 : source.grabOffsetDays,
 			pointerX: payload.location.current.input.clientX,
 			pointerY: payload.location.current.input.clientY,
-			sourceWidth: source.sourceWidth,
-			sourceHeight: source.sourceHeight,
-			sourceMinHeight: source.sourceMinHeight,
-			isOverflowSource: source.isOverflowSource,
-			sourceResourceId: source.sourceResourceId
+			...(isExternal
+				? {}
+				: {
+						sourceWidth: source.sourceWidth,
+						sourceHeight: source.sourceHeight,
+						sourceMinHeight: source.sourceMinHeight,
+						isOverflowSource: source.isOverflowSource,
+						sourceResourceId: source.sourceResourceId
+					})
 		};
-		this.startDragAutoScroll();
+		if (!isExternal) this.startDragAutoScroll();
 		this.updateItemGesture(payload);
 	}
 
@@ -1191,11 +1208,13 @@ export class EventCalendarInteractionsController<
 		if (!active || active.kind === 'slot-create') return;
 		if (this.didNativeCancel) {
 			this.lastPublishedProposalKey = null;
-			this.calendar.onInteractionStatus?.({
-				type: 'cancel',
-				source: active.source,
-				item: active.occurrence.item
-			});
+			if (active.source !== 'external-drop' || active.targetKey) {
+				this.calendar.onInteractionStatus?.({
+					type: 'cancel',
+					source: active.source,
+					item: active.occurrence.item
+				});
+			}
 			this.gesture = null;
 			this.gestureBoundary = null;
 			this.suppressClick(active.occurrence.key);
@@ -1211,11 +1230,13 @@ export class EventCalendarInteractionsController<
 		const proposal = this.gesture?.kind === 'slot-create' ? null : this.gesture?.proposal;
 		const isValid = this.gesture?.isValid ?? false;
 		const reason = this.gesture?.reason ?? 'invalid-target';
+		const targetKey = this.gesture?.targetKey ?? null;
 		this.suppressClick(active.occurrence.key);
 		if (!proposal || !isValid) {
 			this.gesture = null;
 			this.gestureBoundary = null;
 			this.lastPublishedProposalKey = null;
+			if (active.source === 'external-drop' && !targetKey) return;
 			this.reportBlocked({
 				reason,
 				source: active.source,
@@ -1255,6 +1276,10 @@ export class EventCalendarInteractionsController<
 	): void {
 		const active = this.gesture;
 		if (!active || active.kind === 'slot-create') return;
+		if (active.source === 'external-drop') {
+			if (target) this.startDragAutoScroll();
+			else this.stopDragAutoScroll();
+		}
 		if (!target) {
 			this.gesture = {
 				...active,
@@ -1265,7 +1290,7 @@ export class EventCalendarInteractionsController<
 				pointerX,
 				pointerY
 			};
-			this.publishProposal(this.gesture);
+			if (active.source !== 'external-drop') this.publishProposal(this.gesture);
 			return;
 		}
 		const proposal = this.deriveItemProposal(active, target, pointerX, pointerY);
@@ -1301,6 +1326,13 @@ export class EventCalendarInteractionsController<
 			return null;
 		}
 		const placementItem = this.getOccurrencePlacementItem(occurrence);
+		if (
+			gesture.source === 'external-drop' &&
+			sourceItem.recurrence !== undefined &&
+			target.allDay !== occurrence.allDay
+		) {
+			return null;
+		}
 		const isTimedMonthResize =
 			initialKind !== 'move' && target.allDay && target.view === 'month' && !occurrence.allDay;
 		if (initialKind !== 'move' && target.allDay !== occurrence.allDay && !isTimedMonthResize) {
@@ -1350,12 +1382,27 @@ export class EventCalendarInteractionsController<
 			if (isSupportedDateDomainError(error)) return null;
 			throw error;
 		}
+		if (gesture.source === 'external-drop' && target.allDay === occurrence.allDay) {
+			item = replacePlacement(placementItem, {
+				allDay: item.allDay === true,
+				start: item.start,
+				end: item.end
+			});
+		}
 		if (initialKind === 'move') {
-			item = applyTargetResource(item, target, gesture.sourceResourceId);
+			item =
+				gesture.source === 'external-drop' && target.view === 'resource'
+					? setEventCalendarResourceIds(item, target.resourceId ? [target.resourceId] : [])
+					: applyTargetResource(item, target, gesture.sourceResourceId);
 		}
 		return {
 			kind: operation,
-			source: gesture.inputMode === 'pointer' ? this.operationSource(operation) : gesture.source,
+			source:
+				gesture.source === 'external-drop'
+					? gesture.source
+					: gesture.inputMode === 'pointer'
+						? this.operationSource(operation)
+						: gesture.source,
 			occurrence,
 			previousItem: sourceItem,
 			item
@@ -1645,6 +1692,12 @@ export class EventCalendarInteractionsController<
 	): InvalidReason | null {
 		const item = proposal.item;
 		if (this.calendar.disabled || this.calendar.loading) return 'disabled';
+		if (
+			proposal.source === 'external-drop' &&
+			this.calendar.items.some((candidate) => candidate.id === item.id)
+		) {
+			return 'invalid-target';
+		}
 		if (proposal.source !== 'api' && (item.display === 'background' || item.readOnly))
 			return 'read-only';
 		if (
@@ -1694,8 +1747,9 @@ export class EventCalendarInteractionsController<
 		gestureBoundary?: readonly unknown[]
 	): void {
 		if (
-			initialProposal.occurrence?.isRecurring ||
-			initialProposal.occurrence?.item.recurringItemId !== undefined
+			initialProposal.source !== 'external-drop' &&
+			(initialProposal.occurrence?.isRecurring ||
+				initialProposal.occurrence?.item.recurringItemId !== undefined)
 		) {
 			this.commitRecurrenceProposal(
 				initialProposal,
@@ -1776,15 +1830,25 @@ export class EventCalendarInteractionsController<
 			proposal.kind === 'move' ? 'move' : proposal.kind.startsWith('resize') ? 'resize' : 'update';
 		this.commitCollection(
 			candidate.committedItems,
-			(revert) => ({
-				kind,
-				source: proposal.source,
-				item: proposal.item,
-				previousItem: proposal.previousItem,
-				revert
-			}),
+			(revert) =>
+				proposal.source === 'external-drop'
+					? {
+							kind: 'add',
+							source: proposal.source,
+							item: proposal.item,
+							revert
+						}
+					: {
+							kind,
+							source: proposal.source,
+							item: proposal.item,
+							previousItem: proposal.previousItem,
+							revert
+						},
 			undefined,
-			proposal.previousItem.recurrence === undefined ? undefined : proposal.previousItem.id
+			proposal.source === 'external-drop' || proposal.previousItem.recurrence === undefined
+				? undefined
+				: proposal.previousItem.id
 		);
 	}
 
@@ -1978,6 +2042,9 @@ export class EventCalendarInteractionsController<
 		committedItems: EventCalendarItem<TItemFields>[];
 	} | null {
 		const previousItems = this.calendar.items;
+		if (proposal.source === 'external-drop') {
+			return { committedItems: [...previousItems, proposal.item] };
+		}
 		const itemIndex = previousItems.findIndex((item) => item.id === proposal.previousItem.id);
 		if (itemIndex < 0 || previousItems[itemIndex] !== proposal.previousItem) return null;
 		return {
@@ -2024,6 +2091,22 @@ export class EventCalendarInteractionsController<
 				? getZonedDay(occurrence.end, this.calendar.timeZone)
 				: new Date(occurrence.end)
 		});
+	}
+
+	private createExternalOccurrence(
+		item: EventCalendarItem<TItemFields>
+	): EventCalendarOccurrence<TItemFields> {
+		this.externalGestureSequence += 1;
+		return {
+			key: `external:${this.instanceId}:${this.externalGestureSequence}:${item.id}`,
+			item,
+			start:
+				item.allDay === true ? startOfZonedDay(item.start, this.calendar.timeZone) : item.start,
+			end: item.allDay === true ? startOfZonedDay(item.end, this.calendar.timeZone) : item.end,
+			allDay: item.allDay === true,
+			isRecurring: item.recurrence !== undefined,
+			originalStart: item.start instanceof Date ? new Date(item.start) : item.start
+		};
 	}
 
 	private getConversionDurationTimeZone(occurrence: EventCalendarOccurrence<TItemFields>): string {
@@ -2465,7 +2548,9 @@ export class EventCalendarInteractionsController<
 		return operation === 'move' ? 'drag' : operation;
 	}
 
-	private readSource(data: Record<string, unknown>): DragSource | null {
+	private readSource(data: Record<string, unknown>): DragSource<TItemFields> | null {
+		const externalSource = readEventCalendarExternalDragSource<TItemFields>(data);
+		if (externalSource) return externalSource;
 		if (data.mark !== SOURCE_MARK || data.calendarInstanceId !== this.instanceId) return null;
 		if (typeof data.occurrenceKey !== 'string') return null;
 		if (
@@ -2475,6 +2560,7 @@ export class EventCalendarInteractionsController<
 		)
 			return null;
 		return {
+			kind: 'internal',
 			calendarInstanceId: this.instanceId,
 			occurrenceKey: data.occurrenceKey,
 			operation: data.operation,

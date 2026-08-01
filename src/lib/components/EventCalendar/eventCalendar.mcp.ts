@@ -72,6 +72,26 @@ Numeric and time settings are validated and never silently clamped. Hidden weekd
 
 Move, resize-start, resize-end, API updates, and keyboard mode share one proposal/validation/commit pipeline. Empty-slot drag creation and two-click selection produce a selected range; EventCalendar never fabricates a domain item.
 
+'externalEvent(createItem)' is an attachment for draggable elements outside the calendar. 'createItem' runs once at drag start and should return a structurally valid item with a fresh unique id. A valid drop uses the same placement preview, resource assignment, constraints, resolveItemUpdate callback, immutable add transaction, guarded revert, and history pipeline as internal interaction. The resulting EventCalendarChange has kind 'add' and source 'external-drop'. Invalid or cancelled drops do not change 'items'.
+
+~~~svelte
+<script lang="ts">
+	import { externalEvent, type EventCalendarItem } from 'svelai/event-calendar';
+
+	let sequence = 0;
+	const createExternalItem = (): EventCalendarItem => ({
+		id: 'external-' + ++sequence,
+		title: 'Focus block',
+		start: new Date('2026-07-15T08:00:00.000Z'),
+		end: new Date('2026-07-15T09:00:00.000Z')
+	});
+</script>
+
+<div {@attach externalEvent(createExternalItem)}>Focus block</div>
+~~~
+
+A recurring external source can move inside its original timed or all-day domain. Cross-domain conversion is rejected because timed and all-day recurrence identities have different contracts.
+
 - 'interactions': partial policy. Drag, resize, slot selection, keyboard controls, two-click range selection, and clipboard default on. interactions.createActivation controls drag-create and defaults to distancePx 5, touchDelayMs 300, touchTolerancePx 8.
 - 'allowOverlap': boolean or predicate = true.
 - 'validateItemUpdate(proposal)': synchronous live item validation.

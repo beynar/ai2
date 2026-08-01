@@ -2,7 +2,9 @@
 	import { Button } from '$lib/components/Button/index.js';
 	import {
 		EventCalendar,
+		externalEvent,
 		type EventCalendarChange,
+		type EventCalendarItem,
 		type EventCalendarSlot,
 		type EventCalendarSlotSelectInfo
 	} from '$lib/components/EventCalendar/index.js';
@@ -20,6 +22,21 @@
 		canRedo(): boolean;
 	} | null>(null);
 	let status = $state('Focus an item and press M, S, or E to move or resize it.');
+	let externalItemSequence = 0;
+
+	function createExternalItem(): EventCalendarItem<MeetingFields> {
+		externalItemSequence += 1;
+		return {
+			id: `external-focus-${externalItemSequence}`,
+			title: 'External focus block',
+			description: 'Created from a draggable element outside the calendar.',
+			start: new Date('2026-07-15T08:00:00.000Z'),
+			end: new Date('2026-07-15T09:00:00.000Z'),
+			color: 'info',
+			owner: 'You',
+			attendees: 1
+		};
+	}
 
 	function handleItemsChange(
 		_nextItems: typeof items,
@@ -73,6 +90,15 @@
 			<Button size="small" variant="outline" disabled={!lastChange} onClick={revertLastChange}>
 				Revert last change
 			</Button>
+		</div>
+	</div>
+	<div class="flex flex-wrap items-center gap-2 text-sm">
+		<span class="text-neutral/60">Drag into the calendar:</span>
+		<div
+			class="cursor-grab rounded-md border border-info/30 bg-info/10 px-2.5 py-1.5 font-medium text-info active:cursor-grabbing"
+			{@attach externalEvent(createExternalItem)}
+		>
+			External focus block
 		</div>
 	</div>
 	<EventCalendar

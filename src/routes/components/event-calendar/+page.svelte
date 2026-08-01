@@ -44,7 +44,7 @@
 	{#snippet examples()}
 		<ComponentCard
 			title="Validation and reversible mutations"
-			description="Drag an item or focus it and press M, S, or E. Use Mod+C/Mod+V to duplicate the selected occurrence and Mod+Z/Mod+Shift+Z for bounded history. Drag across empty slots to select a create range."
+			description="Drag an item from inside or outside the calendar, or focus it and press M, S, or E. Use Mod+C/Mod+V to duplicate the selected occurrence and Mod+Z/Mod+Shift+Z for bounded history. Drag across empty slots to select a create range."
 			code={interactionCode}
 			class="min-h-0 items-stretch p-3 md:p-5"
 		>

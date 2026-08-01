@@ -13,6 +13,18 @@ export const viewsCode = [
 ].join('\n');
 
 export const interactionCode = [
+	'<script lang="ts">',
+	"  import { EventCalendar, externalEvent, type EventCalendarItem } from 'svelai/event-calendar';",
+	'  let externalId = 0;',
+	'  const createExternalItem = (): EventCalendarItem => ({',
+	"    id: `external-${++externalId}`, title: 'Focus block',",
+	"    start: new Date('2026-07-15T08:00:00.000Z'),",
+	"    end: new Date('2026-07-15T09:00:00.000Z'), color: 'info'",
+	'  });',
+	'</script>',
+	'',
+	'<div {@attach externalEvent(createExternalItem)}>Focus block</div>',
+	'',
 	'<EventCalendar',
 	'  bind:items bind:date view="week"',
 	'  timeZone="Europe/Paris"',

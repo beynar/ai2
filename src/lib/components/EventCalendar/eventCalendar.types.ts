@@ -200,6 +200,7 @@ export type EventCalendarMutationSource =
 	| 'single-pointer'
 	| 'clipboard'
 	| 'history'
+	| 'external-drop'
 	| 'api';
 
 export type EventCalendarProposedUpdate<TItemFields extends object = Record<never, never>> = {

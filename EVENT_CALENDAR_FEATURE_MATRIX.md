@@ -15,7 +15,7 @@ It covers the difficult calendar foundation: month/week/day/N-day/agenda/resourc
 The material gaps are concentrated in three areas:
 
 1. Year and multi-month planning views.
-2. External and cross-calendar drag-and-drop.
+2. Cross-calendar drag-and-drop.
 3. Product adjacencies: built-in editors, print/export, ICS/provider connectors, and capacity/workload tooling.
 
 That puts Svelai roughly at:
@@ -64,7 +64,7 @@ Svelai's ordinary calendar and resource-scheduling view surface is mature. The r
 | Resize from start and end edges                 | ✅                                         | ✅                                       | ✅ add-on                                       | ✅                                                              | ✅                             | ✅                           |
 | Empty-range drag selection                      | ✅                                         | ✅ selection callback                    | ✅ slot selection                               | ✅                                                              | ✅ cell selection              | ✅                           |
 | Direct event creation gesture                   | ◐ emits typed range; consumer creates item | ◐ selection/external-drop callback       | ◐ consumer callback                             | ✅ drag/click creation                                          | ✅ editor/cell workflow        | ✅ double-click creation     |
-| External DOM drag into calendar                 | —                                          | ✅ [external dragging][fc-external]      | ✅ inbound callback [add-on docs][rbc-external] | ✅                                                              | ✅ external drag integration   | ✅ feature/example support   |
+| External DOM drag into calendar                 | ✅ typed attachment and add transaction    | ✅ [external dragging][fc-external]      | ✅ inbound callback [add-on docs][rbc-external] | ✅                                                              | ✅ external drag integration   | ✅ feature/example support   |
 | Drag between calendar instances                 | —                                          | ✅                                       | ◐ consumer-managed outside drop                 | ✅                                                              | ◐ integration code required    | ◐ integration code required  |
 | Touch/long-press interaction                    | ✅                                         | ✅ [touch support][fc-a11y]              | ◐ backend/browser dependent                     | ✅ mouse/touch                                                  | ✅ tap-and-hold                | ✅                           |
 | Keyboard event move and resize                  | ✅                                         | — no documented keyboard mutation        | —                                               | ◐ keyboard navigation; no equivalent mutation contract verified | ◐ keyboard CRUD/navigation     | ◐ keyboard navigation/editor |
@@ -174,9 +174,9 @@ Horizontal task/resource planning is intentionally not an EventCalendar view. A 
 
    Reuse the occurrence index and month segmentation. This is much smaller than timeline work and closes the most visible FullCalendar/Mobiscroll/Syncfusion/Bryntum view gap.
 
-5. **External and cross-calendar drag-and-drop**
+5. **Cross-calendar drag-and-drop**
 
-   Extend the existing Pragmatic DnD protocol with typed external payloads, source ownership, acceptance policy, copy-versus-move semantics, and guarded rollback.
+   External DOM sources now use the typed 'externalEvent' attachment and guarded add transactions. Calendar-to-calendar moves still need source ownership, acceptance policy, copy-versus-move semantics, and coordinated rollback.
 
 6. **Multi-select and bulk mutation**
 
@@ -206,7 +206,7 @@ Keep authentication, caching, sync tokens, retries, and provider errors outside 
 
 Choose based on intended market:
 
-- **General-purpose calendar:** ship year/multi-month plus external drag-and-drop.
+- **General-purpose calendar:** ship year/multi-month plus cross-calendar drag-and-drop.
 - **Serious scheduler:** add capacity/workload semantics and a lazy remote-resource contract without weakening the current mutation pipeline.
 - **Application completeness:** build the companion event/recurrence editor before adding more rendering views.
 
