@@ -1,26 +1,20 @@
-<script lang="ts">
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import type { GanttDependencyInteractionStatus } from './ganttChart.dependencyInteraction.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 
 	let {
+		chart,
 		status,
 		totalWidth,
-		totalHeight,
-		size,
-		density,
-		color,
-		disabled,
-		classes
+		totalHeight
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		status: GanttDependencyInteractionStatus;
 		totalWidth: number;
 		totalHeight: number;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
 	} = $props();
 
 	const middleX = $derived((status.fromX + status.toX) / 2);
@@ -59,11 +53,8 @@
 	</defs>
 	<path
 		d={path}
-		class={classes.connector({
-			size,
-			density,
-			color,
-			disabled,
+		class={chart.classes.connector({
+			...chart.themeVariants,
 			class:
 				'stroke-[color-mix(in_oklab,var(--color)_70%,transparent)] stroke-2 [stroke-dasharray:5_4]'
 		})}

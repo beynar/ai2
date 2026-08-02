@@ -23,7 +23,6 @@ import {
 } from './ganttChart.interactionResolution.js';
 import type { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
-import type { GanttModelBoundary } from './ganttChart.state.svelte.js';
 import type {
 	GanttDependencyCreationRequest,
 	GanttDependencyEndpoint,
@@ -54,19 +53,14 @@ type DependencySource = Readonly<{
 
 type DependencyPoint = Readonly<DependencySource & { point: Point }>;
 
-type DependencyGesture<
-	TTaskFields extends object,
-	TDependencyFields extends object,
-	TResourceFields extends object,
-	TAssignmentFields extends object
-> = Readonly<{
+type DependencyGesture = Readonly<{
 	transport: DependencyTransport;
 	source: DependencyPoint;
 	pointerPoint: Point;
 	target: DependencyPoint | null;
 	resolution: GanttInteractionResolution<GanttDependencyCreationRequest>;
 	scale: GanttTimeScale;
-	boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
+	boundary: object;
 	pointerCapture: Readonly<{ node: HTMLElement; pointerId: number }> | null;
 }>;
 
@@ -95,12 +89,7 @@ export class GanttDependencyInteraction<
 		TResourceFields,
 		TAssignmentFields
 	>;
-	#gesture = $state.raw<DependencyGesture<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	> | null>(null);
+	#gesture = $state.raw<DependencyGesture | null>(null);
 	#timeline: GanttTimelineInteractionContext | null = null;
 	#handlePoints = new Map<string, Point>();
 	#handleAttachments = new Map<string, Attachment<HTMLElement>>();
@@ -131,10 +120,6 @@ export class GanttDependencyInteraction<
 			resolution: gesture.resolution
 		};
 	});
-
-	get isActive(): boolean {
-		return this.#gesture !== null;
-	}
 
 	connectTimeline(context: GanttTimelineInteractionContext): () => void {
 		this.#timeline = context;
@@ -243,9 +228,7 @@ export class GanttDependencyInteraction<
 	}
 
 	canCreateForTask(taskId: string): boolean {
-		if (!this.#owner.chart.createDependency || !this.#owner.chart.interactions.createDependency) {
-			return false;
-		}
+		if (!this.#owner.chart.interactionOptions?.dependencyCreation) return false;
 		const task = this.#owner.chart.schedule.model.tasksById.get(taskId);
 		return isDependencyEditableTask(task);
 	}
@@ -315,7 +298,7 @@ export class GanttDependencyInteraction<
 
 	reconcileControlledState(): void {
 		const gesture = this.#gesture;
-		if (!gesture || this.#owner.chart.isModelBoundaryCurrent(gesture.boundary)) return;
+		if (!gesture || gesture.boundary === this.#owner.chart.modelBoundary) return;
 		this.cancel();
 		this.reportBlocked({
 			reason: 'stale',
@@ -424,7 +407,7 @@ export class GanttDependencyInteraction<
 	): void {
 		const gesture = this.#gesture;
 		if (!gesture) return;
-		if (!this.#owner.chart.isModelBoundaryCurrent(gesture.boundary)) {
+		if (gesture.boundary !== this.#owner.chart.modelBoundary) {
 			this.reconcileControlledState();
 			return;
 		}
@@ -478,11 +461,7 @@ export class GanttDependencyInteraction<
 		try {
 			this.updateFromPointer(source, input, target);
 			if (!this.#gesture) return;
-			if (!target) {
-				this.cancelTransport();
-				return;
-			}
-			if (!canCommitAccepted && this.#gesture.resolution.state === 'accepted') {
+			if (!target || (!canCommitAccepted && this.#gesture.resolution.state === 'accepted')) {
 				this.cancelTransport();
 				return;
 			}
@@ -495,11 +474,7 @@ export class GanttDependencyInteraction<
 
 	private cancelTransport(): void {
 		if (!this.#gesture) return;
-		try {
-			this.#owner.cancelDependencyTransport();
-		} finally {
-			this.cancel();
-		}
+		this.#owner.cancelDependencyTransport();
 	}
 
 	private commitGesture(): boolean {
@@ -521,16 +496,15 @@ export class GanttDependencyInteraction<
 			return false;
 		}
 		const request = gesture.resolution.proposal;
-		let didCommit = false;
 		try {
-			const createDependency = this.#owner.chart.createDependency;
-			if (!createDependency) {
+			const dependencyCreation = this.#owner.chart.interactionOptions?.dependencyCreation;
+			if (!dependencyCreation) {
 				throw new GanttChartError(
 					'invalid-operation',
 					'Dependency creation requires createDependency.'
 				);
 			}
-			const dependency = createDependency(request);
+			const dependency = dependencyCreation.create(request);
 			assertCreatedGanttDependency(request, dependency);
 			const mutationSource = getDependencyMutationSource(gesture.transport);
 			const accepted = this.#owner.commitDependencyCreation(dependency, mutationSource);
@@ -541,7 +515,8 @@ export class GanttDependencyInteraction<
 					dependencyId: dependency.id,
 					message: 'The consumer dependency policy rejected this proposal.'
 				});
-			} else didCommit = true;
+			}
+			return accepted;
 		} catch (error) {
 			if (!isExpectedDependencyRejection(error)) throw error;
 			this.reportBlocked({
@@ -550,10 +525,10 @@ export class GanttDependencyInteraction<
 				taskId: gesture.source.taskId,
 				message: error.message
 			});
+			return false;
 		} finally {
 			this.cancel();
 		}
-		return didCommit;
 	}
 
 	private setKeyboardTarget(
@@ -624,8 +599,15 @@ export class GanttDependencyInteraction<
 	}
 
 	private readSource(data: Record<string, unknown>): DependencySource | null {
+		return this.readMarkedEndpoint(data, DEPENDENCY_SOURCE_MARK);
+	}
+
+	private readMarkedEndpoint(
+		data: Record<string, unknown>,
+		mark: typeof DEPENDENCY_SOURCE_MARK | typeof DEPENDENCY_TARGET_MARK
+	): DependencySource | null {
 		if (
-			data.mark !== DEPENDENCY_SOURCE_MARK ||
+			data.mark !== mark ||
 			data.instanceId !== this.#instanceId ||
 			typeof data.taskId !== 'string' ||
 			(data.endpoint !== 'start' && data.endpoint !== 'end')
@@ -653,15 +635,8 @@ export class GanttDependencyInteraction<
 		dropTargets: readonly { data: Record<string, unknown> }[]
 	): DependencyTarget | null {
 		for (const dropTarget of dropTargets) {
-			const data = dropTarget.data;
-			if (
-				data.mark === DEPENDENCY_TARGET_MARK &&
-				data.instanceId === this.#instanceId &&
-				typeof data.taskId === 'string' &&
-				(data.endpoint === 'start' || data.endpoint === 'end')
-			) {
-				return { taskId: data.taskId, endpoint: data.endpoint };
-			}
+			const target = this.readMarkedEndpoint(dropTarget.data, DEPENDENCY_TARGET_MARK);
+			if (target) return target;
 		}
 		return null;
 	}
@@ -697,7 +672,7 @@ export class GanttDependencyInteraction<
 	}
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
-		this.#owner.chart.onInteractionBlocked?.(info);
+		this.#owner.chart.eventHandlers?.interactionBlocked?.(info);
 	}
 }
 

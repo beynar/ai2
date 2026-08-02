@@ -52,10 +52,7 @@
 		onNavigate: (event: KeyboardEvent, columnIndex: number) => void;
 	} = $props();
 
-	const isSelected = $derived(
-		(chart.selection.kind === 'task' && chart.selection.taskId === node.taskId) ||
-			(chart.selection.kind === 'cell' && chart.selection.taskId === node.taskId)
-	);
+	const isSelected = $derived(chart.selectedRowTaskId === node.taskId);
 	const isFocused = $derived(
 		columns.some((column) => chart.a11y.isCellTabStop(node.taskId, column.id))
 	);

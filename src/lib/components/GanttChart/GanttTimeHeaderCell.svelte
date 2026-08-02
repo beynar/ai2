@@ -1,29 +1,20 @@
-<script lang="ts">
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import type { GanttPositionedScaleCell } from './ganttChart.scale.js';
 	import type { GanttTimeHeaderPayload } from './ganttChart.props.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 
 	let {
+		chart,
 		positioned,
-		level,
-		size,
-		density,
-		color,
-		disabled,
-		classes,
-		snippet
+		level
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		positioned: GanttPositionedScaleCell;
 		level: 'upper' | 'lower';
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
-		snippet?: Snippet<[GanttTimeHeaderPayload]>;
 	} = $props();
 
 	const payload = $derived<GanttTimeHeaderPayload>({
@@ -32,7 +23,9 @@
 		defaultLabel: positioned.label,
 		defaultContent
 	});
-	const partClass = $derived(level === 'upper' ? classes.timeHeaderUpper : classes.timeHeaderLower);
+	const partClass = $derived(
+		level === 'upper' ? chart.classes.timeHeaderUpper : chart.classes.timeHeaderLower
+	);
 </script>
 
 <div
@@ -40,12 +33,12 @@
 	data-cell-index={positioned.cell.index}
 	data-start={positioned.cell.start.toISOString()}
 	data-end={positioned.cell.end.toISOString()}
-	class={partClass({ size, density, color, disabled })}
+	class={partClass(chart.themeVariants)}
 	style:left={`${positioned.left}px`}
 	style:width={`${positioned.width}px`}
 	title={positioned.label}
 >
-	<Slot render={snippet ?? defaultContent} {payload} />
+	<Slot render={chart.renderers?.timeHeader ?? defaultContent} {payload} />
 </div>
 
 {#snippet defaultContent()}

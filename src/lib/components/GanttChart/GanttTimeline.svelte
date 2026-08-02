@@ -15,6 +15,7 @@
 	import {
 		createGanttTimeScale,
 		getGanttScaleInstantAtPixel,
+		getGanttScalePixel,
 		getGanttScrollLeft,
 		getGanttVisibleRange
 	} from './ganttChart.scale.js';
@@ -39,7 +40,6 @@
 	let viewportWidth = $state(0);
 	let scrollLeft = $state(0);
 	let now = $state<Date | null>(null);
-	let isMounted = $state(false);
 	let pendingAnchor = $state<Readonly<{ date: Date; offset: number }> | null>(null);
 	let lastScaleKey = $state('');
 	let lastViewportWidth = $state(0);
@@ -66,7 +66,7 @@
 			range: canvasSourceRange,
 			zoom: chart.zoom,
 			timeZone: chart.timeZone,
-			locale: chart.locale,
+			locale: chart.messages.locale,
 			direction: chart.direction,
 			scales: chart.scales,
 			minimumWidth: fittedProjectRange ? fitProjectWidth : effectiveViewportWidth,
@@ -88,7 +88,7 @@
 			visibleRange,
 			projectCalendar,
 			holidays: chart.holidays,
-			showWeekends: chart.showWeekends,
+			showWeekends: chart.timelineOptions?.weekends ?? true,
 			showNonWorkingTime: chart.display.nonWorkingTime
 		})
 	);
@@ -127,7 +127,7 @@
 
 	$effect(() => {
 		const key = scaleKey;
-		if (!isMounted || !horizontalViewport || key === lastScaleKey) return;
+		if (!horizontalViewport || key === lastScaleKey) return;
 		const anchorRange = untrack(() => lastPublishedRange ?? chart.visibleRange);
 		const anchor = pendingAnchor ?? {
 			date: new Date((anchorRange.start.getTime() + anchorRange.end.getTime()) / 2),
@@ -144,7 +144,7 @@
 
 	$effect(() => {
 		const width = viewportWidth;
-		if (!isMounted || width <= 0) return;
+		if (width <= 0) return;
 		const previousWidth = untrack(() => lastViewportWidth);
 		lastViewportWidth = width;
 		if (previousWidth <= 0) {
@@ -160,7 +160,6 @@
 	});
 
 	onMount(() => {
-		isMounted = true;
 		now = new Date();
 		lastScaleKey = scaleKey;
 		const viewport = horizontalViewport;
@@ -185,7 +184,6 @@
 			scrollToDate(initialAnchor, { align: 'start' });
 		});
 		return () => {
-			isMounted = false;
 			disconnectNavigation();
 			disconnectInteractions();
 			if (visibleRangeFrame !== null) cancelAnimationFrame(visibleRangeFrame);
@@ -279,7 +277,7 @@
 				range,
 				zoom,
 				timeZone: chart.timeZone,
-				locale: chart.locale,
+				locale: chart.messages.locale,
 				direction: chart.direction,
 				scales: chart.scales,
 				minimumWidth: 0,
@@ -292,11 +290,7 @@
 
 	function applyScrollAnchor(anchor: Readonly<{ date: Date; offset: number }> | null): void {
 		if (!anchor || !horizontalViewport) return;
-		const pixel =
-			scale.direction === 'rtl'
-				? scale.totalWidth -
-					(anchor.date.getTime() - scale.canvasRange.start.getTime()) * scale.pixelsPerMillisecond
-				: (anchor.date.getTime() - scale.canvasRange.start.getTime()) * scale.pixelsPerMillisecond;
+		const pixel = getGanttScalePixel(scale, anchor.date);
 		const nextScrollLeft = Math.max(
 			0,
 			Math.min(scale.totalWidth - effectiveViewportWidth, pixel - anchor.offset)
@@ -325,18 +319,7 @@
 			style:width={`${scale.totalWidth}px`}
 			style:transform={`translate3d(${-scrollLeft}px, 0, 0)`}
 		>
-			<GanttTimeHeader
-				{scale}
-				{visiblePixels}
-				{viewportWidth}
-				size={chart.size}
-				density={chart.density}
-				color={chart.color}
-				disabled={chart.disabled}
-				classes={chart.classes}
-				timeHeaderUpper={chart.renderers?.timeHeader}
-				timeHeaderLower={chart.renderers?.timeHeader}
-			/>
+			<GanttTimeHeader {chart} {scale} {visiblePixels} {viewportWidth} />
 		</div>
 	</div>
 	<div
@@ -384,21 +367,12 @@
 				/>
 				{#if workloadPanelHeight > 0}
 					<GanttWorkloadPanel
+						{chart}
 						{resourceView}
-						workload={chart.schedule.workload}
 						{scale}
 						{visiblePixels}
 						{viewportWidth}
 						height={workloadPanelHeight}
-						messages={chart.messages}
-						locale={chart.locale}
-						size={chart.size}
-						density={chart.density}
-						color={chart.color}
-						direction={chart.direction}
-						disabled={chart.disabled}
-						classes={chart.classes}
-						workloadCell={chart.renderers?.workloadCell}
 					/>
 				{/if}
 			</div>

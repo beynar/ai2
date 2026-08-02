@@ -1,76 +1,36 @@
-<script lang="ts" generics="TTaskFields extends object, TDependencyFields extends object">
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import GanttDependencyControl from './GanttDependencyControl.svelte';
 	import { positionGanttDependency } from './ganttChart.layout.js';
 	import type { GanttTimeScale } from './ganttChart.scale.js';
-	import type { GanttDependencyTooltipPayload } from './ganttChart.props.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type { GanttResolvedDependency, GanttSelection } from './ganttChart.types.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
+	import type { GanttResolvedDependency } from './ganttChart.types.js';
 
 	let {
-		dependencies,
+		chart,
 		rowIndexByTaskId,
-		rowHeight,
 		totalHeight,
 		scale,
 		visiblePixels,
-		visibleRows,
-		selection,
-		messages,
-		instructionsId,
-		size,
-		density,
-		color,
-		disabled,
-		showCritical,
-		classes,
-		dependencyTooltip,
-		onSelect,
-		isTabStop,
-		onFocus,
-		onDelete,
-		onUpdate,
-		onDependencyClick
+		visibleRows
 	}: {
-		dependencies: readonly GanttResolvedDependency<TTaskFields, TDependencyFields>[];
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		rowIndexByTaskId: ReadonlyMap<string, number>;
-		rowHeight: number;
 		totalHeight: number;
 		scale: GanttTimeScale;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		visibleRows: Readonly<{ start: number; end: number }>;
-		selection: GanttSelection;
-		messages: Messages;
-		instructionsId: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		showCritical: boolean;
-		classes: GanttChartClasses;
-		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
-		onSelect: (dependencyId: string) => void;
-		isTabStop: (dependencyId: string) => boolean;
-		onFocus: (dependencyId: string) => void;
-		onDelete: (dependencyId: string) => void;
-		onUpdate: (
-			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>['dependency']
-		) => boolean;
-		onDependencyClick?: (
-			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
 
 	const markerId = $props.id();
 	const positionedDependencies = $derived(
-		dependencies.flatMap((dependency) => {
+		chart.schedule.analysis.dependencies.flatMap((dependency) => {
 			const geometry = positionGanttDependency({
 				dependency,
 				rowIndexByTaskId,
-				rowHeight,
+				rowHeight: chart.rowHeight,
 				scale,
 				visiblePixels,
 				visibleRows
@@ -84,15 +44,15 @@
 		event: MouseEvent
 	): void {
 		event.stopPropagation();
-		if (disabled) return;
-		onSelect(dependency.dependency.id);
-		onDependencyClick?.(dependency, event);
+		if (chart.disabled) return;
+		chart.a11y.setDependencyTarget(dependency.dependency.id);
+		chart.eventHandlers?.dependencyClick?.(dependency, event);
 	}
 </script>
 
 <svg
 	data-gantt-chart-part="connector-layer"
-	class={classes.connectorLayer({ size, density, color, disabled })}
+	class={chart.classes.connectorLayer(chart.themeVariants)}
 	width={scale.totalWidth}
 	height={totalHeight}
 	viewBox={`0 0 ${scale.totalWidth} ${totalHeight}`}
@@ -113,20 +73,17 @@
 	</defs>
 	{#each positionedDependencies as positioned (positioned.dependency.dependency.id)}
 		{@const isSelected =
-			selection.kind === 'dependency' &&
-			selection.dependencyId === positioned.dependency.dependency.id}
-		{@const isCritical = showCritical && positioned.dependency.isCritical}
+			chart.selection.kind === 'dependency' &&
+			chart.selection.dependencyId === positioned.dependency.dependency.id}
+		{@const isCritical = chart.display.criticalPath && positioned.dependency.isCritical}
 		<path
 			d={positioned.geometry.path}
 			data-gantt-chart-part="connector"
 			data-dependency-id={positioned.dependency.dependency.id}
 			data-critical={isCritical || undefined}
 			data-selected={isSelected || undefined}
-			class={classes.connector({
-				size,
-				density,
-				color,
-				disabled,
+			class={chart.classes.connector({
+				...chart.themeVariants,
 				critical: isCritical,
 				class: [isCritical ? 'stroke-danger' : undefined, isSelected ? 'stroke-[2.5]' : undefined]
 			})}
@@ -137,7 +94,7 @@
 			d={positioned.geometry.path}
 			data-gantt-chart-part="connector-hit-target"
 			data-dependency-id={positioned.dependency.dependency.id}
-			class={classes.connectorHitTarget({ size, density, color, disabled })}
+			class={chart.classes.connectorHitTarget(chart.themeVariants)}
 			pointer-events="stroke"
 			aria-hidden="true"
 			onclick={(event) => activate(positioned.dependency, event)}
@@ -152,19 +109,10 @@
 >
 	{#each positionedDependencies as positioned (positioned.dependency.dependency.id)}
 		<GanttDependencyControl
+			{chart}
 			dependency={positioned.dependency}
 			geometry={positioned.geometry}
-			{messages}
-			{disabled}
-			isSelected={selection.kind === 'dependency' &&
-				selection.dependencyId === positioned.dependency.dependency.id}
-			isTabStop={isTabStop(positioned.dependency.dependency.id)}
-			{instructionsId}
-			{dependencyTooltip}
 			onActivate={(event) => activate(positioned.dependency, event)}
-			onFocus={() => onFocus(positioned.dependency.dependency.id)}
-			onDelete={() => onDelete(positioned.dependency.dependency.id)}
-			{onUpdate}
 		/>
 	{/each}
 </div>

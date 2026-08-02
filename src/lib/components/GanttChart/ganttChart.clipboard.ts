@@ -109,7 +109,10 @@ export class GanttChartClipboard<
 		const snapshot = this.#snapshot;
 		if (!snapshot) throw new GanttChartError('clipboard-invalid', 'The Gantt clipboard is empty.');
 		this.assertSnapshotCurrent(snapshot);
-		const getPasteId = this.chart.getPasteId;
+		const getPasteId =
+			this.chart.interactionOptions?.clipboard === false
+				? undefined
+				: this.chart.interactionOptions?.clipboard?.getId;
 		if (!getPasteId) {
 			throw new GanttChartError(
 				'clipboard-invalid',

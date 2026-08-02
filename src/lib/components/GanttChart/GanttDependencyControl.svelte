@@ -1,4 +1,7 @@
-<script lang="ts" generics="TTaskFields extends object, TDependencyFields extends object">
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import NumberInput from '$lib/components/Form/NumberInput/NumberInput.svelte';
@@ -6,9 +9,8 @@
 	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
 	import Popover from '$lib/components/Popover/Popover.svelte';
 	import type { PopoverState } from '$lib/components/Popover/popover.state.svelte.js';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Snippet } from 'svelte';
 	import type { GanttDependencyTooltipPayload } from './ganttChart.props.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type {
 		GanttDependency,
 		GanttDependencyGeometry,
@@ -17,36 +19,26 @@
 	} from './ganttChart.types.js';
 
 	let {
+		chart,
 		dependency,
 		geometry,
-		messages,
-		disabled,
-		isSelected,
-		isTabStop,
-		instructionsId,
-		dependencyTooltip,
-		onActivate,
-		onFocus,
-		onDelete,
-		onUpdate
+		onActivate
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>;
 		geometry: GanttDependencyGeometry;
-		messages: Messages;
-		disabled: boolean;
-		isSelected: boolean;
-		isTabStop: boolean;
-		instructionsId: string;
-		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
 		onActivate: (event: MouseEvent) => void;
-		onFocus: () => void;
-		onDelete: () => void;
-		onUpdate: (dependency: GanttDependency<TDependencyFields>) => boolean;
 	} = $props();
 
 	let draftType = $state<GanttDependency['type']>('finish-start');
 	let draftLagValue = $state<number | null>(null);
 	let draftLagUnit = $state<GanttLagUnit>('day');
+	const messages = $derived(chart.messages);
+	const isSelected = $derived(
+		chart.selection.kind === 'dependency' &&
+			chart.selection.dependencyId === dependency.dependency.id
+	);
+	const isTabStop = $derived(chart.a11y.isDependencyTabStop(dependency.dependency.id));
 
 	const dependencyDescription = $derived(
 		messages.ganttChartDependencyDescription(
@@ -91,7 +83,9 @@
 		if (event.key === 'Delete' || event.key === 'Backspace') {
 			event.preventDefault();
 			event.stopPropagation();
-			if (!dependency.dependency.readOnly) onDelete();
+			if (!dependency.dependency.readOnly) {
+				chart.removeDependencyFromKeyboard(dependency.dependency.id);
+			}
 			return;
 		}
 		if (event.key !== 'Enter' || dependency.dependency.readOnly) return;
@@ -140,7 +134,7 @@
 			type: draftType,
 			lag: draftLagValue === null ? undefined : { value: draftLagValue, unit: draftLagUnit }
 		};
-		if (onUpdate(nextDependency)) popover.close();
+		if (chart.updateDependencyFromInline(nextDependency)) popover.close();
 	}
 </script>
 
@@ -166,17 +160,17 @@
 						type="button"
 						aria-label={defaultAccessibleLabel}
 						aria-pressed={isSelected}
-						aria-describedby={instructionsId}
+						aria-describedby={chart.a11y.instructionsId}
 						aria-keyshortcuts="Enter Delete Backspace"
 						aria-haspopup={dependency.dependency.readOnly ? undefined : 'dialog'}
 						aria-expanded={dependency.dependency.readOnly ? undefined : popover.isOpen}
-						{disabled}
-						tabindex={isTabStop && !disabled ? 0 : -1}
+						disabled={chart.disabled}
+						tabindex={isTabStop && !chart.disabled ? 0 : -1}
 						data-gantt-chart-part="connector-control"
 						data-dependency-id={dependency.dependency.id}
 						class="relative size-full rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-color/60"
 						onclick={onActivate}
-						onfocus={onFocus}
+						onfocus={() => chart.a11y.setDependencyTarget(dependency.dependency.id)}
 						ondblclick={(event) => {
 							event.stopPropagation();
 							if (!dependency.dependency.readOnly) openEditor(popover);
@@ -224,7 +218,7 @@
 			</Popover>
 		{/snippet}
 
-		<Slot render={dependencyTooltip ?? defaultTooltip} payload={tooltipPayload} />
+		<Slot render={chart.renderers?.dependencyTooltip ?? defaultTooltip} payload={tooltipPayload} />
 	</HoverCard>
 </div>
 

@@ -1,29 +1,20 @@
-<script lang="ts">
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import type { GanttTimeShade } from './ganttChart.layout.js';
 	import type { GanttNonWorkingTimePayload } from './ganttChart.props.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 
 	let {
+		chart,
 		shades,
-		totalHeight,
-		size,
-		density,
-		color,
-		disabled,
-		classes,
-		nonWorkingTime
+		totalHeight
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		shades: readonly GanttTimeShade[];
 		totalHeight: number;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
-		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
 	} = $props();
 </script>
 
@@ -40,11 +31,8 @@
 		data-gantt-chart-part={shade.kind === 'holiday' ? 'holiday' : 'non-working-time'}
 		data-kind={shade.kind}
 		data-weekend={shade.isWeekend || undefined}
-		class={(shade.kind === 'holiday' ? classes.holiday : classes.nonWorkingTime)({
-			size,
-			density,
-			color,
-			disabled,
+		class={(shade.kind === 'holiday' ? chart.classes.holiday : chart.classes.nonWorkingTime)({
+			...chart.themeVariants,
 			nonWorking: true
 		})}
 		style:left={`${shade.left}px`}
@@ -53,7 +41,7 @@
 		title={shade.holiday?.title}
 		aria-hidden="true"
 	>
-		<Slot render={nonWorkingTime ?? defaultContent} {payload} />
+		<Slot render={chart.renderers?.nonWorkingTime ?? defaultContent} {payload} />
 	</div>
 {/each}
 

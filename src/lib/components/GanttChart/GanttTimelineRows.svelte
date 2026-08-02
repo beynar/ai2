@@ -2,7 +2,6 @@
 	lang="ts"
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
-	import type { Attachment } from 'svelte/attachments';
 	import GanttDependencyLayer from './GanttDependencyLayer.svelte';
 	import GanttDependencyPreview from './GanttDependencyPreview.svelte';
 	import GanttDragPreview from './GanttDragPreview.svelte';
@@ -64,14 +63,9 @@
 	);
 	const emptyResourceIds = new Set<string>();
 	const activeInteraction = $derived(chart.interaction.active);
-	const rangeDrag: Attachment<HTMLElement> = (element) => chart.interaction.rangeDrag()(element);
-
-	function isTaskFocused(taskId: string): boolean {
-		return (
-			(chart.selection.kind === 'task' && chart.selection.taskId === taskId) ||
-			(chart.selection.kind === 'cell' && chart.selection.taskId === taskId)
-		);
-	}
+	// The chart state owner is stable for this mount.
+	// svelte-ignore state_referenced_locally
+	const rangeDrag = chart.interaction.rangeDrag();
 </script>
 
 <div
@@ -86,16 +80,7 @@
 		aria-hidden="true"
 		{@attach rangeDrag}
 	></div>
-	<GanttTimeShadeLayer
-		{shades}
-		{totalHeight}
-		size={chart.size}
-		density={chart.density}
-		color={chart.color}
-		disabled={chart.disabled}
-		classes={chart.classes}
-		nonWorkingTime={chart.renderers?.nonWorkingTime}
-	/>
+	<GanttTimeShadeLayer {chart} {shades} {totalHeight} />
 
 	{#each gridCells as positioned (positioned.cell.index)}
 		<div
@@ -121,7 +106,7 @@
 				class={chart.classes.timelineRow({
 					...chart.themeVariants,
 					class: [
-						isTaskFocused(node.taskId) ? 'bg-color/4' : undefined,
+						chart.selectedRowTaskId === node.taskId ? 'bg-color/4' : undefined,
 						isResourceGroupStart ? 'border-t border-t-neutral/20' : undefined
 					]
 				})}
@@ -151,7 +136,7 @@
 			aria-hidden="true"
 		></div>
 	{/if}
-	{#if chart.showTodayIndicator && todayLeft !== null && todayLeft >= 0 && todayLeft <= scale.totalWidth}
+	{#if (chart.timelineOptions?.todayIndicator ?? true) && todayLeft !== null && todayLeft >= 0 && todayLeft <= scale.totalWidth}
 		<div
 			data-gantt-chart-part="today-indicator"
 			class={chart.classes.todayIndicator({ ...chart.themeVariants, today: true })}
@@ -202,44 +187,22 @@
 			{visibleRange}
 			{visiblePixels}
 			{totalHeight}
-			dragPreview={chart.renderers?.dragPreview}
 		/>
 	{:else if activeInteraction?.kind === 'dependency'}
 		<GanttDependencyPreview
+			{chart}
 			status={activeInteraction}
 			{totalHeight}
 			totalWidth={scale.totalWidth}
-			size={chart.size}
-			density={chart.density}
-			color={chart.color}
-			disabled={chart.disabled}
-			classes={chart.classes}
 		/>
 	{/if}
 
 	<GanttDependencyLayer
-		dependencies={chart.schedule.analysis.dependencies}
+		{chart}
 		rowIndexByTaskId={rowModel.rowIndexByTaskId}
-		rowHeight={chart.rowHeight}
 		{totalHeight}
 		{scale}
 		{visiblePixels}
 		{visibleRows}
-		selection={chart.selection}
-		messages={chart.messages}
-		instructionsId={chart.a11y.instructionsId}
-		size={chart.size}
-		density={chart.density}
-		color={chart.color}
-		disabled={chart.disabled}
-		showCritical={chart.display.criticalPath}
-		classes={chart.classes}
-		dependencyTooltip={chart.renderers?.dependencyTooltip}
-		onSelect={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
-		isTabStop={(dependencyId) => chart.a11y.isDependencyTabStop(dependencyId)}
-		onFocus={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
-		onDelete={(dependencyId) => chart.removeDependencyFromKeyboard(dependencyId)}
-		onUpdate={(dependency) => chart.updateDependencyFromInline(dependency)}
-		onDependencyClick={chart.onDependencyClick}
 	/>
 </div>

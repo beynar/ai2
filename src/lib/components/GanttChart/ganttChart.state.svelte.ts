@@ -12,6 +12,7 @@ import { GanttChartError } from './ganttChart.error.js';
 import { GanttChartHistory } from './ganttChart.history.svelte.js';
 import { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { GanttChartMutations } from './ganttChart.mutations.js';
+import { isSameGanttSelection } from './ganttChart.records.js';
 import type {
 	GanttEventHandlers,
 	GanttDisplayOptions,
@@ -19,7 +20,6 @@ import type {
 	GanttLayoutOptions,
 	GanttMutationPolicy,
 	GanttRenderers,
-	GanttResourceView,
 	GanttScaleOption,
 	GanttScheduleOptions,
 	GanttSnapshot,
@@ -38,7 +38,6 @@ import type {
 	GanttDependency,
 	GanttDuration,
 	GanttInteractionBlockedInfo,
-	GanttInteractions,
 	GanttHoliday,
 	GanttMutationSource,
 	GanttRange,
@@ -69,22 +68,6 @@ export const DEFAULT_GANTT_ZOOM_LEVELS: readonly GanttZoomLevel[] = Object.freez
 	'quarter',
 	'year'
 ]);
-
-export const DEFAULT_GANTT_INTERACTIONS: GanttInteractions = Object.freeze({
-	moveTask: true,
-	resizeStart: true,
-	resizeEnd: true,
-	resizeProgress: true,
-	createDependency: true,
-	reorderRows: true,
-	indent: true,
-	outdent: true,
-	createRange: true,
-	keyboard: true,
-	touch: true,
-	clipboard: true,
-	history: true
-});
 
 const BUILT_IN_ZOOM_LEVELS = new Set(DEFAULT_GANTT_ZOOM_LEVELS);
 const EMPTY_RANGE_ANCHOR = new Date(0);
@@ -123,7 +106,6 @@ export type GanttChartStateBindings<
 	zoom: GanttZoomLevel;
 	gridWidth: number;
 	readonly timeZone: string;
-	readonly locale: string;
 	readonly direction: 'ltr' | 'rtl';
 	readonly messages: Messages;
 	readonly size: Sizes;
@@ -258,14 +240,6 @@ export class GanttChartState<
 			(scale): scale is GanttScaleDefinition => typeof scale !== 'string'
 		)
 	);
-	readonly zoomLevels: readonly GanttZoomLevel[] = $derived(
-		(this.timelineOptions?.scales ?? DEFAULT_GANTT_ZOOM_LEVELS).map((scale: GanttScaleOption) =>
-			typeof scale === 'string' ? scale : scale.id
-		)
-	);
-	readonly customScaleIds: ReadonlySet<GanttZoomLevel> = $derived(
-		new Set(this.scales.map((scale) => scale.id))
-	);
 	readonly snapDuration: GanttDuration = $derived(
 		this.timelineOptions?.snapDuration ?? resolveGanttScaleSnapDuration(this.zoom, this.scales)
 	);
@@ -284,11 +258,6 @@ export class GanttChartState<
 		this.layoutOptions?.rowHeight ?? DEFAULT_GANTT_ROW_HEIGHT[this.density]
 	);
 	readonly scrollMode: GanttScrollMode = $derived(this.layoutOptions?.scrollMode ?? 'contained');
-	readonly showGrid = $derived(this.layoutOptions?.grid !== false);
-	readonly columns = $derived(
-		this.layoutOptions?.grid === false ? undefined : this.layoutOptions?.grid?.columns
-	);
-	readonly showHeader = $derived(this.renderers?.header !== false);
 	readonly resources: readonly GanttResource<TResourceFields>[] = $derived(
 		this.resourceDefinitions.length === 0 ? EMPTY_GANTT_RESOURCES : this.resourceDefinitions
 	);
@@ -299,65 +268,26 @@ export class GanttChartState<
 		...DEFAULT_GANTT_DISPLAY,
 		...this.timelineOptions?.display
 	});
-	readonly showTodayIndicator = $derived(this.timelineOptions?.todayIndicator ?? true);
-	readonly showWeekends = $derived(this.timelineOptions?.weekends ?? true);
 	readonly holidays: readonly GanttHoliday[] = $derived(
 		this.timelineOptions?.holidays ?? EMPTY_GANTT_HOLIDAYS
 	);
-	readonly resourceView: GanttResourceView | undefined = $derived(
-		this.timelineOptions?.resourceView
-	);
-	readonly interactions: GanttInteractions = $derived({
-		moveTask: this.interactionOptions?.moveTask ?? DEFAULT_GANTT_INTERACTIONS.moveTask,
-		resizeStart: this.interactionOptions?.resizeStart ?? DEFAULT_GANTT_INTERACTIONS.resizeStart,
-		resizeEnd: this.interactionOptions?.resizeEnd ?? DEFAULT_GANTT_INTERACTIONS.resizeEnd,
-		resizeProgress:
-			this.interactionOptions?.resizeProgress ?? DEFAULT_GANTT_INTERACTIONS.resizeProgress,
-		createDependency:
-			this.interactionOptions?.dependencyCreation !== false &&
-			!!this.interactionOptions?.dependencyCreation,
-		reorderRows: this.interactionOptions?.reorderRows ?? DEFAULT_GANTT_INTERACTIONS.reorderRows,
-		indent: this.interactionOptions?.indent ?? DEFAULT_GANTT_INTERACTIONS.indent,
-		outdent: this.interactionOptions?.outdent ?? DEFAULT_GANTT_INTERACTIONS.outdent,
-		createRange: this.interactionOptions?.createRange ?? DEFAULT_GANTT_INTERACTIONS.createRange,
-		keyboard: this.interactionOptions?.keyboard ?? DEFAULT_GANTT_INTERACTIONS.keyboard,
-		touch: this.interactionOptions?.touch ?? DEFAULT_GANTT_INTERACTIONS.touch,
+	readonly interactions = $derived({
+		moveTask: this.interactionOptions?.moveTask ?? true,
+		resizeStart: this.interactionOptions?.resizeStart ?? true,
+		resizeEnd: this.interactionOptions?.resizeEnd ?? true,
+		resizeProgress: this.interactionOptions?.resizeProgress ?? true,
+		reorderRows: this.interactionOptions?.reorderRows ?? true,
+		indent: this.interactionOptions?.indent ?? true,
+		outdent: this.interactionOptions?.outdent ?? true,
+		createRange: this.interactionOptions?.createRange ?? true,
+		keyboard: this.interactionOptions?.keyboard ?? true,
+		touch: this.interactionOptions?.touch ?? true,
 		clipboard: this.interactionOptions?.clipboard !== false,
 		history: this.interactionOptions?.history !== false
 	});
-	readonly createDependency = $derived(
-		this.interactionOptions?.dependencyCreation === false
-			? undefined
-			: this.interactionOptions?.dependencyCreation?.create
+	readonly selectedRowTaskId = $derived(
+		this.selection.kind === 'task' || this.selection.kind === 'cell' ? this.selection.taskId : null
 	);
-	readonly getPasteId = $derived(
-		this.interactionOptions?.clipboard === false
-			? undefined
-			: this.interactionOptions?.clipboard?.getId
-	);
-	readonly historyLimit = $derived(
-		this.interactionOptions?.history === false ? 0 : (this.interactionOptions?.history?.limit ?? 50)
-	);
-	readonly canUpdateTask = $derived(this.mutationPolicy?.task?.validate);
-	readonly onTaskUpdate = $derived(this.mutationPolicy?.task?.resolve);
-	readonly canUpdateDependency = $derived(this.mutationPolicy?.dependency?.validate);
-	readonly onDependencyUpdate = $derived(this.mutationPolicy?.dependency?.resolve);
-	readonly canUpdateAssignment = $derived(this.mutationPolicy?.assignment?.validate);
-	readonly onAssignmentUpdate = $derived(this.mutationPolicy?.assignment?.resolve);
-	readonly canCreateRange = $derived(this.mutationPolicy?.range?.validate);
-	readonly onTasksChange = $derived(this.mutationPolicy?.task?.onChange);
-	readonly onDependenciesChange = $derived(this.mutationPolicy?.dependency?.onChange);
-	readonly onAssignmentsChange = $derived(this.mutationPolicy?.assignment?.onChange);
-	readonly onInteractionBlocked = $derived(this.eventHandlers?.interactionBlocked);
-	readonly onScheduleViolations = $derived(this.eventHandlers?.scheduleViolations);
-	readonly onExpansionChange = $derived(this.eventHandlers?.expansionChange);
-	readonly onSelectionChange = $derived(this.eventHandlers?.selectionChange);
-	readonly onEmptyRangeSelect = $derived(this.eventHandlers?.emptyRangeSelect);
-	readonly onZoomChange = $derived(this.eventHandlers?.zoomChange);
-	readonly onVisibleRangeChange = $derived(this.eventHandlers?.visibleRangeChange);
-	readonly onTaskClick = $derived(this.eventHandlers?.taskClick);
-	readonly onTaskDoubleClick = $derived(this.eventHandlers?.taskDoubleClick);
-	readonly onDependencyClick = $derived(this.eventHandlers?.dependencyClick);
 	readonly modelBoundary: GanttModelBoundary<
 		TTaskFields,
 		TDependencyFields,
@@ -370,12 +300,6 @@ export class GanttChartState<
 		assignments: this.assignments,
 		calendars: this.calendars
 	});
-
-	isModelBoundaryCurrent(
-		boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
-	): boolean {
-		return boundary === this.modelBoundary;
-	}
 
 	readonly schedule: ResolvedGanttSchedule<
 		TTaskFields,
@@ -434,7 +358,10 @@ export class GanttChartState<
 	}
 
 	readonly enabledZoomLevels: readonly GanttZoomLevel[] = $derived.by(() => {
-		const zoomLevels = this.zoomLevels;
+		const zoomLevels = (this.timelineOptions?.scales ?? DEFAULT_GANTT_ZOOM_LEVELS).map(
+			(scale: GanttScaleOption) => (typeof scale === 'string' ? scale : scale.id)
+		);
+		const customScaleIds = new Set(this.scales.map((scale) => scale.id));
 		if (
 			!Array.isArray(zoomLevels) ||
 			zoomLevels.length === 0 ||
@@ -449,7 +376,7 @@ export class GanttChartState<
 			if (typeof zoom !== 'string' || zoom.length === 0) {
 				throw new GanttChartError('invalid-zoom-level', 'Every zoom level needs a non-empty id.');
 			}
-			if (!BUILT_IN_ZOOM_LEVELS.has(zoom) && !this.customScaleIds.has(zoom)) {
+			if (!BUILT_IN_ZOOM_LEVELS.has(zoom) && !customScaleIds.has(zoom)) {
 				throw new GanttChartError(
 					'invalid-zoom-level',
 					`Custom zoom level ${zoom} needs a matching scale definition.`,
@@ -500,7 +427,7 @@ export class GanttChartState<
 			anchorDate ?? new Date((currentRange.start.getTime() + currentRange.end.getTime()) / 2)
 		);
 		this.zoom = zoom;
-		this.onZoomChange?.(zoom);
+		this.eventHandlers?.zoomChange?.(zoom);
 	}
 
 	scrollToDate(date: Date, options?: { align?: 'start' | 'center' | 'end' }): boolean {
@@ -551,7 +478,7 @@ export class GanttChartState<
 			return;
 		}
 		this.#visibleRange = cloneRange(nextRange);
-		this.onVisibleRangeChange?.({
+		this.eventHandlers?.visibleRangeChange?.({
 			range: cloneRange(nextRange),
 			projectRange: cloneNullableRange(this.schedule.analysis.projectRange),
 			zoom: this.zoom,
@@ -636,9 +563,9 @@ export class GanttChartState<
 	select(selection: GanttSelection): void {
 		this.#assertNavigationEnabled();
 		this.#validateSelection(selection);
-		if (sameSelection(selection, this.selection)) return;
+		if (isSameGanttSelection(selection, this.selection)) return;
 		this.selection = selection;
-		this.onSelectionChange?.(selection);
+		this.eventHandlers?.selectionChange?.(selection);
 	}
 
 	clearSelection(): void {
@@ -748,7 +675,7 @@ export class GanttChartState<
 	}
 
 	blockInteraction(info: GanttInteractionBlockedInfo): void {
-		this.onInteractionBlocked?.(info);
+		this.eventHandlers?.interactionBlocked?.(info);
 	}
 
 	copySelection(): boolean {
@@ -818,7 +745,7 @@ export class GanttChartState<
 
 	#publishExpansion(expandedTaskIds: string[]): void {
 		this.expandedTaskIds = expandedTaskIds;
-		this.onExpansionChange?.(expandedTaskIds);
+		this.eventHandlers?.expansionChange?.(expandedTaskIds);
 	}
 
 	#validateSelection(selection: GanttSelection): void {
@@ -904,19 +831,4 @@ function cloneRange(range: GanttRange): GanttRange {
 
 function cloneNullableRange(range: GanttRange | null): GanttRange | null {
 	return range ? cloneRange(range) : null;
-}
-
-function sameSelection(left: GanttSelection, right: GanttSelection): boolean {
-	if (left.kind !== right.kind) return false;
-	if (left.kind === null && right.kind === null) return true;
-	if (left.kind === 'task' && right.kind === 'task') return left.taskId === right.taskId;
-	if (left.kind === 'dependency' && right.kind === 'dependency') {
-		return left.dependencyId === right.dependencyId;
-	}
-	return (
-		left.kind === 'cell' &&
-		right.kind === 'cell' &&
-		left.taskId === right.taskId &&
-		left.cell.columnId === right.cell.columnId
-	);
 }

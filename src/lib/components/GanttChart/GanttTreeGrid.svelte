@@ -7,17 +7,9 @@
 	import GanttColumnHeader from './GanttColumnHeader.svelte';
 	import GanttTreeRow from './GanttTreeRow.svelte';
 	import type { GanttGridHeaderPayload } from './ganttChart.props.js';
-	import type { GanttRowDropProposal } from './ganttChart.rowDrop.js';
 	import { GanttRowReorder } from './ganttChart.rowReorder.svelte.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-
-	type RowDropPreview = Readonly<{
-		parentId: string | null;
-		intent: GanttRowDropProposal['intent'];
-		top: number;
-		inlineStart: number;
-	}>;
 
 	let {
 		chart,
@@ -46,7 +38,6 @@
 		(rowIndex) => scrollToRow(rowIndex),
 		gridId
 	);
-	const virtualRowByIndex = $derived(new Map(renderedRows.map((row) => [row.index, row])));
 	const renderedGridRows = $derived.by((): readonly GanttVirtualRow[] => {
 		const taskId = rowReorder.status?.taskId;
 		const sourceIndex = taskId ? rowModel.rowIndexByTaskId.get(taskId) : undefined;
@@ -77,16 +68,31 @@
 		GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ columns: rowModel.visibleColumns, defaultContent: defaultGridHeader });
 
-	const rowDropPreview = $derived(resolveRowDropPreview(rowReorder.preview));
+	const rowDropPreview = $derived.by(() => {
+		const proposal = rowReorder.preview;
+		if (!proposal) return null;
+		const targetIndex = rowModel.rowIndexByTaskId.get(proposal.targetTaskId);
+		if (targetIndex === undefined) return null;
+		let titleOffset = 0;
+		let hasTitle = false;
+		for (const column of rowModel.visibleColumns) {
+			if (column.id === 'title') {
+				hasTitle = true;
+				break;
+			}
+			titleOffset += column.width ?? 160;
+		}
+		return {
+			parentId: proposal.parentId,
+			intent: proposal.intent,
+			top: (targetIndex + (proposal.position === 'after' ? 1 : 0)) * chart.rowHeight,
+			inlineStart: (hasTitle ? titleOffset : 0) + 8 + proposal.depth * 16
+		};
+	});
 	const isRowInteractionInvalid = $derived(rowReorder.isInvalid);
-
-	function focusCell(taskId: string, columnId: string): void {
-		chart.a11y.setCellTarget(taskId, columnId);
-	}
 
 	function navigateCell(event: KeyboardEvent, rowIndex: number, columnIndex: number): void {
 		if (!chart.interactions.keyboard) return;
-		const hierarchyDirection = chart.direction === 'rtl' ? -1 : 1;
 		const node = rowModel.rows[rowIndex];
 		const column = rowModel.visibleColumns[columnIndex];
 		if (!node || !column) return;
@@ -109,8 +115,7 @@
 			const childIndex = rowIndex + 1;
 			const child = rowModel.rows[childIndex];
 			if (child?.parentId === node.taskId) {
-				focusCell(child.taskId, column.id);
-				scrollAndFocusCell(childIndex, columnIndex);
+				chart.a11y.focusCell(child.taskId, column.id);
 			}
 			return;
 		}
@@ -122,27 +127,17 @@
 			}
 			if (node.parentId) {
 				event.preventDefault();
-				const parentIndex = rowModel.rowIndexByTaskId.get(node.parentId);
-				if (parentIndex !== undefined) {
-					focusCell(node.parentId, column.id);
-					scrollAndFocusCell(parentIndex, columnIndex);
-				}
+				chart.a11y.focusCell(node.parentId, column.id);
 				return;
 			}
 		}
-		if (event.altKey && event.shiftKey && event.key === 'ArrowRight') {
+		if (
+			event.altKey &&
+			event.shiftKey &&
+			(event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+		) {
 			event.preventDefault();
-			const logicalIndent = hierarchyDirection === 1;
-			const indentTargetIndex = findIndentTargetRowIndex(rowIndex);
-			const accepted = logicalIndent
-				? chart.indentTask(node.taskId, rowModel.rows[indentTargetIndex]?.taskId ?? null)
-				: chart.outdentTask(node.taskId);
-			if (!accepted) blockHierarchyOperation(node.taskId);
-			return;
-		}
-		if (event.altKey && event.shiftKey && event.key === 'ArrowLeft') {
-			event.preventDefault();
-			const logicalIndent = hierarchyDirection === -1;
+			const logicalIndent = event.key === (chart.direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
 			const indentTargetIndex = findIndentTargetRowIndex(rowIndex);
 			const accepted = logicalIndent
 				? chart.indentTask(node.taskId, rowModel.rows[indentTargetIndex]?.taskId ?? null)
@@ -212,15 +207,7 @@
 		const nextTask = rowModel.rows[nextRow];
 		const nextColumnDefinition = rowModel.visibleColumns[nextColumn];
 		if (!nextTask || !nextColumnDefinition) return;
-		focusCell(nextTask.taskId, nextColumnDefinition.id);
-		scrollAndFocusCell(nextRow, nextColumn);
-	}
-
-	function scrollAndFocusCell(rowIndex: number, columnIndex: number): void {
-		const task = rowModel.rows[rowIndex];
-		const column = rowModel.visibleColumns[columnIndex];
-		if (!task || !column) return;
-		chart.a11y.focusCell(task.taskId, column.id);
+		chart.a11y.focusCell(nextTask.taskId, nextColumnDefinition.id);
 	}
 
 	function findSiblingRowIndex(rowIndex: number, delta: -1 | 1, parentId: string | null): number {
@@ -287,31 +274,6 @@
 		});
 	}
 
-	function resolveRowDropPreview(proposal: GanttRowDropProposal | null): RowDropPreview | null {
-		const targetRowIndex = proposal
-			? rowModel.rowIndexByTaskId.get(proposal.targetTaskId)
-			: undefined;
-		const virtualRow =
-			targetRowIndex === undefined ? undefined : virtualRowByIndex.get(targetRowIndex);
-		if (!proposal || !virtualRow) return null;
-		const titleOffset = getTitleColumnOffset();
-		return {
-			parentId: proposal.parentId,
-			intent: proposal.intent,
-			top: proposal.position === 'before' ? virtualRow.start : virtualRow.end,
-			inlineStart: titleOffset + 8 + proposal.depth * 16
-		};
-	}
-
-	function getTitleColumnOffset(): number {
-		let offset = 0;
-		for (const column of rowModel.visibleColumns) {
-			if (column.id === 'title') return offset;
-			offset += column.width ?? 160;
-		}
-		return 0;
-	}
-
 	function handleHorizontalScroll(): void {
 		if (!horizontalViewport) return;
 		horizontalScrollLeft = horizontalViewport.scrollLeft;
@@ -352,18 +314,7 @@
 					</div>
 				{/if}
 				{#each rowModel.visibleColumns as column, columnIndex (column.id)}
-					<GanttColumnHeader
-						{column}
-						{columnIndex}
-						messages={chart.messages}
-						size={chart.size}
-						density={chart.density}
-						color={chart.color}
-						disabled={chart.disabled}
-						classes={chart.classes}
-						columnHeader={chart.renderers?.columnHeader}
-						{onToggleSort}
-					/>
+					<GanttColumnHeader {chart} {column} {columnIndex} {onToggleSort} />
 				{/each}
 			</div>
 		</div>

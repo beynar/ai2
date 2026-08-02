@@ -182,7 +182,10 @@ export class GanttChartHistory<
 	}
 
 	private getLimit(): number {
-		const limit = this.chart.historyLimit;
+		const limit =
+			this.chart.interactionOptions?.history === false
+				? 0
+				: (this.chart.interactionOptions?.history?.limit ?? 50);
 		if (Number.isInteger(limit) && limit >= 0) return limit;
 		throw new GanttChartError('invalid-prop', 'historyLimit must be a non-negative integer.', {
 			historyLimit: limit

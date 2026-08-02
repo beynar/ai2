@@ -3,26 +3,18 @@
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { getGanttColumnLabel } from './ganttChart.columns.js';
 	import type { GanttColumnHeaderPayload } from './ganttChart.props.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttColumnDefinition } from './ganttChart.types.js';
-	import type { Snippet } from 'svelte';
 
 	let {
+		chart,
 		column,
 		columnIndex,
-		messages,
-		size,
-		density,
-		color,
-		disabled,
-		classes,
-		columnHeader,
 		onToggleSort
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		column: GanttColumnDefinition<
 			TTaskFields,
 			TDependencyFields,
@@ -30,19 +22,10 @@
 			TAssignmentFields
 		>;
 		columnIndex: number;
-		messages: Messages;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
-		columnHeader?: Snippet<
-			[GanttColumnHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
 		onToggleSort: (columnId: string, additive: boolean) => void;
 	} = $props();
 
-	const defaultLabel = $derived(column.title ?? getGanttColumnLabel(column.id, messages));
+	const defaultLabel = $derived(column.title ?? getGanttColumnLabel(column.id, chart.messages));
 	const payload = $derived<
 		GanttColumnHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ column, defaultLabel, defaultContent });
@@ -51,7 +34,7 @@
 <div
 	data-gantt-chart-part="column-header"
 	data-column-id={column.id}
-	class={classes.columnHeader({ size, density, color, disabled })}
+	class={chart.classes.columnHeader(chart.themeVariants)}
 	style:width={`${column.width}px`}
 	style:min-width={`${column.minWidth}px`}
 	style:max-width={`${column.maxWidth}px`}
@@ -69,10 +52,10 @@
 		<button
 			type="button"
 			class="flex min-w-0 flex-1 items-center gap-1 truncate text-start outline-none focus-visible:underline"
-			{disabled}
+			disabled={chart.disabled}
 			onclick={(event) => onToggleSort(column.id, event.shiftKey)}
 		>
-			<Slot render={columnHeader ?? defaultContent} {payload} />
+			<Slot render={chart.renderers?.columnHeader ?? defaultContent} {payload} />
 			<span class="shrink-0 text-[0.625rem]" aria-hidden="true">
 				{column.sortDirection === 'ascending'
 					? '↑'
@@ -82,7 +65,7 @@
 			</span>
 		</button>
 	{:else}
-		<Slot render={columnHeader ?? defaultContent} {payload} />
+		<Slot render={chart.renderers?.columnHeader ?? defaultContent} {payload} />
 	{/if}
 </div>
 

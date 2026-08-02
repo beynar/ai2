@@ -1,20 +1,20 @@
-<script lang="ts" generics="TResourceFields extends object">
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
 	import { get } from 'svelte/store';
-	import type { Snippet } from 'svelte';
 	import GanttWorkloadCell from './GanttWorkloadCell.svelte';
 	import { getGanttTaskColor } from './ganttChart.color.js';
-	import type { GanttWorkloadCellPayload } from './ganttChart.props.js';
 	import type { GanttResolvedResourceView } from './ganttChart.resourceView.js';
 	import {
 		getGanttScaleCells,
 		type GanttPositionedScaleCell,
 		type GanttTimeScale
 	} from './ganttChart.scale.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttResource, GanttWorkloadBucket } from './ganttChart.types.js';
 
 	const WORKLOAD_METRICS: Record<Density, Readonly<{ headerHeight: number; rowHeight: number }>> = {
@@ -24,42 +24,24 @@
 	};
 
 	let {
+		chart,
 		resourceView,
-		workload,
 		scale,
 		visiblePixels,
 		viewportWidth,
-		height,
-		messages,
-		locale,
-		size,
-		density,
-		color,
-		direction,
-		disabled,
-		classes,
-		workloadCell
+		height
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		resourceView: GanttResolvedResourceView<TResourceFields>;
-		workload: readonly GanttWorkloadBucket[];
 		scale: GanttTimeScale;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		viewportWidth: number;
 		height: number;
-		messages: Messages;
-		locale: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		disabled: boolean;
-		classes: GanttChartClasses;
-		workloadCell?: Snippet<[GanttWorkloadCellPayload<TResourceFields>]>;
 	} = $props();
 
 	let verticalViewport = $state<HTMLDivElement | null>(null);
-	const headerHeight = $derived(WORKLOAD_METRICS[density].headerHeight);
-	const resourceRowHeight = $derived(WORKLOAD_METRICS[density].rowHeight);
+	const headerHeight = $derived(WORKLOAD_METRICS[chart.density].headerHeight);
+	const resourceRowHeight = $derived(WORKLOAD_METRICS[chart.density].rowHeight);
 	const effectiveViewportWidth = $derived(Math.max(1, viewportWidth));
 	const frameLeft = $derived(
 		Math.max(0, Math.min(scale.totalWidth - effectiveViewportWidth, visiblePixels.start))
@@ -71,14 +53,16 @@
 	const bucketsByResourceId = $derived.by(() => {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- Rebuilt immutable lookup for one derived snapshot.
 		const index = new Map<string, GanttWorkloadBucket[]>();
-		for (const bucket of workload) {
+		for (const bucket of chart.schedule.workload) {
 			const buckets = index.get(bucket.resourceId) ?? [];
 			buckets.push(bucket);
 			index.set(bucket.resourceId, buckets);
 		}
 		return index;
 	});
-	const numberFormatter = $derived(new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }));
+	const numberFormatter = $derived(
+		new Intl.NumberFormat(chart.messages.locale, { maximumFractionDigits: 2 })
+	);
 	const resourceVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
 		count: 0,
 		getScrollElement: () => null,
@@ -158,17 +142,19 @@
 		const labels = [
 			resource.title,
 			positionedCell.label,
-			messages.ganttChartAssignedUnits(numberFormatter.format(bucket.assignedUnits)),
-			messages.ganttChartCapacity(numberFormatter.format(bucket.capacity))
+			chart.messages.ganttChartAssignedUnits(numberFormatter.format(bucket.assignedUnits)),
+			chart.messages.ganttChartCapacity(numberFormatter.format(bucket.capacity))
 		];
-		if (bucket.isOverAllocated) labels.push(messages.ganttChartOverAllocated(resource.title));
+		if (bucket.isOverAllocated) {
+			labels.push(chart.messages.ganttChartOverAllocated(resource.title));
+		}
 		return labels.join(', ');
 	}
 </script>
 
 <div
 	data-gantt-chart-part="workload-panel"
-	class={classes.workloadPanel({ size, density, color, disabled, class: 'overflow-hidden' })}
+	class={chart.classes.workloadPanel({ ...chart.themeVariants, class: 'overflow-hidden' })}
 	style:width={`${scale.totalWidth}px`}
 	style:height={`${height}px`}
 >
@@ -177,9 +163,9 @@
 		style:left={`${frameLeft}px`}
 		style:width={`${effectiveViewportWidth}px`}
 		style:height={`${height}px`}
-		dir={direction}
+		dir={chart.direction}
 		role="table"
-		aria-label={messages.ganttChartWorkload}
+		aria-label={chart.messages.ganttChartWorkload}
 		aria-rowcount={resourceView.resources.length + 1}
 	>
 		<div
@@ -189,11 +175,8 @@
 		>
 			{#each visibleCells as positionedCell (positionedCell.cell.index)}
 				<div
-					class={classes.workloadCell({
-						size,
-						density,
-						color,
-						disabled,
+					class={chart.classes.workloadCell({
+						...chart.themeVariants,
 						class: 'flex items-center justify-center'
 					})}
 					style:left={`${positionedCell.left - frameLeft}px`}
@@ -206,18 +189,18 @@
 			{/each}
 			<div
 				class="absolute inset-y-0 z-20 flex w-36 items-center border-e border-neutral-muted bg-surface-raised/95 px-2"
-				class:left-0={direction === 'ltr'}
-				class:right-0={direction === 'rtl'}
+				class:left-0={chart.direction === 'ltr'}
+				class:right-0={chart.direction === 'rtl'}
 				role="columnheader"
 			>
-				{messages.ganttChartWorkload}
+				{chart.messages.ganttChartWorkload}
 			</div>
 		</div>
 		<div class="relative" style:height={`${bodyHeight}px`}>
 			<ScrollArea
 				bind:viewportRef={verticalViewport}
 				class="h-full min-w-0"
-				ariaLabel={messages.ganttChartWorkload}
+				ariaLabel={chart.messages.ganttChartWorkload}
 				type="hover"
 			>
 				<div class="relative" style:height={`${totalRowsHeight}px`} role="rowgroup">
@@ -237,31 +220,25 @@
 								{#each visibleCells as positionedCell (positionedCell.cell.index)}
 									{@const bucket = resolveCellBucket(resource, positionedCell)}
 									<GanttWorkloadCell
+										{chart}
 										{resource}
 										{bucket}
 										left={positionedCell.left - frameLeft}
 										width={positionedCell.width}
 										height={resourceRowHeight}
 										accessibleLabel={getCellLabel(resource, positionedCell, bucket)}
-										{locale}
-										{size}
-										{density}
-										{color}
-										{disabled}
-										{classes}
-										{workloadCell}
 									/>
 								{/each}
 								<div
 									class="absolute inset-y-0 z-20 flex w-36 items-center gap-1.5 border-e border-neutral-muted bg-surface/95 px-2"
-									class:left-0={direction === 'ltr'}
-									class:right-0={direction === 'rtl'}
+									class:left-0={chart.direction === 'ltr'}
+									class:right-0={chart.direction === 'rtl'}
 									style:padding-inline-start={`${8 + (resourceView.depthByResourceId.get(resource.id) ?? 0) * 14}px`}
 									role="rowheader"
 								>
 									<span
 										class="size-2 shrink-0 rounded-full"
-										style:background-color={getGanttTaskColor(resource.color, color)}
+										style:background-color={getGanttTaskColor(resource.color, chart.color)}
 									></span>
 									<span class="truncate">{resource.title}</span>
 								</div>

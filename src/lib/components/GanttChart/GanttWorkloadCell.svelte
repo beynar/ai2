@@ -1,42 +1,33 @@
-<script lang="ts" generics="TResourceFields extends object">
+<script
+	lang="ts"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+>
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import type { GanttWorkloadCellPayload } from './ganttChart.props.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttResource, GanttWorkloadBucket } from './ganttChart.types.js';
 
 	let {
+		chart,
 		resource,
 		bucket,
 		left,
 		width,
 		height,
-		accessibleLabel,
-		locale,
-		size,
-		density,
-		color,
-		disabled,
-		classes,
-		workloadCell
+		accessibleLabel
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		resource: GanttResource<TResourceFields>;
 		bucket: GanttWorkloadBucket;
 		left: number;
 		width: number;
 		height: number;
 		accessibleLabel: string;
-		locale: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
-		workloadCell?: Snippet<[GanttWorkloadCellPayload<TResourceFields>]>;
 	} = $props();
 
-	const numberFormatter = $derived(new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }));
+	const numberFormatter = $derived(
+		new Intl.NumberFormat(chart.messages.locale, { maximumFractionDigits: 2 })
+	);
 	const payload = $derived<GanttWorkloadCellPayload<TResourceFields>>({
 		resource,
 		bucket,
@@ -48,11 +39,8 @@
 	data-gantt-chart-part="workload-cell"
 	data-resource-id={resource.id}
 	data-over-allocated={bucket.isOverAllocated || undefined}
-	class={classes.workloadCell({
-		size,
-		density,
-		color,
-		disabled,
+	class={chart.classes.workloadCell({
+		...chart.themeVariants,
 		overAllocated: bucket.isOverAllocated,
 		class: 'flex items-center justify-center overflow-hidden'
 	})}
@@ -62,7 +50,7 @@
 	role="cell"
 	aria-label={accessibleLabel}
 >
-	<Slot render={workloadCell ?? defaultContent} {payload} />
+	<Slot render={chart.renderers?.workloadCell ?? defaultContent} {payload} />
 </div>
 
 {#snippet defaultContent()}

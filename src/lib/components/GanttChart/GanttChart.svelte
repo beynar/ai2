@@ -1,87 +1,3 @@
-<script lang="ts" module>
-	const REMOVED_GANTT_PROP_KEYS = new Set([
-		'color',
-		'dir',
-		'locale',
-		'projectCalendarId',
-		'validRange',
-		'zoomLevels',
-		'scales',
-		'initialScrollDate',
-		'showTodayIndicator',
-		'showWeekends',
-		'holidays',
-		'snapDuration',
-		'touchActivation',
-		'rowHeight',
-		'overscan',
-		'scrollMode',
-		'scrollbars',
-		'stickyHeader',
-		'showHeader',
-		'showGrid',
-		'minGridWidth',
-		'maxGridWidth',
-		'columns',
-		'createDependency',
-		'autoSchedule',
-		'moveDependencies',
-		'display',
-		'resourceView',
-		'header',
-		'actions',
-		'gridHeader',
-		'columnHeader',
-		'treeCell',
-		'taskRow',
-		'timeHeaderUpper',
-		'timeHeaderLower',
-		'task',
-		'summaryTask',
-		'milestone',
-		'taskLabel',
-		'taskTooltip',
-		'dependencyTooltip',
-		'progress',
-		'baseline',
-		'deadline',
-		'nonWorkingTime',
-		'resourceAssignments',
-		'workloadCell',
-		'dragPreview',
-		'empty',
-		'loadingContent',
-		'canUpdateTask',
-		'onTaskUpdate',
-		'canUpdateDependency',
-		'onDependencyUpdate',
-		'canUpdateAssignment',
-		'onAssignmentUpdate',
-		'canCreateRange',
-		'historyLimit',
-		'getPasteId',
-		'onTasksChange',
-		'onDependenciesChange',
-		'onAssignmentsChange',
-		'onSelectionChange',
-		'onExpansionChange',
-		'onZoomChange',
-		'onVisibleRangeChange',
-		'onTaskClick',
-		'onTaskDoubleClick',
-		'onDependencyClick',
-		'onEmptyRangeSelect',
-		'onInteractionBlocked',
-		'onScheduleViolations'
-	]);
-
-	function filterGanttRootAttributes(attributes: Record<string, unknown>): Record<string, unknown> {
-		const rootAttributes: Record<string, unknown> = { ...attributes };
-		for (const key of REMOVED_GANTT_PROP_KEYS) delete rootAttributes[key];
-		return rootAttributes;
-	}
-</script>
-
 <script
 	lang="ts"
 	generics="TTaskFields extends object = Record<never, never>, TDependencyFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>, TAssignmentFields extends object = Record<never, never>"
@@ -96,12 +12,8 @@
 	import type {
 		GanttAssignment,
 		GanttDependency,
-		GanttRange,
-		GanttResource,
-		GanttScheduleAnalysis,
 		GanttSelection,
 		GanttTask,
-		GanttWorkloadBucket,
 		GanttZoomLevel
 	} from './ganttChart.types.js';
 
@@ -138,12 +50,10 @@
 		events,
 		render,
 		onkeydown: consumerKeydown,
-		...unfilteredRootAttributes
+		...rootAttributes
 	}: GanttChartProps<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> = $props();
 
-	const rootAttributes = $derived(filterGanttRootAttributes(unfilteredRootAttributes));
 	const messages = $derived(useI18n(i18n));
-	const resolvedLocale = $derived(messages.locale);
 	const classes = $derived(useGanttChartTheme(theme));
 	const contextualDirection = $derived(useI18nDirection());
 	const directionAttributes = $derived(contextualDirection ? { dir: contextualDirection } : {});
@@ -212,9 +122,6 @@
 		get timeZone() {
 			return timeZone;
 		},
-		get locale() {
-			return resolvedLocale;
-		},
 		get direction() {
 			return resolvedDirection;
 		},
@@ -267,171 +174,44 @@
 		if (event.key !== 'Escape' && !event.defaultPrevented) chart.a11y.handleRootKeydown(event);
 	}
 
-	function handleRootKeydownCapture(event: KeyboardEvent): void {
-		if (event.key === 'Escape') chart.a11y.scheduleDismissFocus();
-	}
-
-	function handleRootClickCapture(event: MouseEvent): void {
-		chart.a11y.handleRootClick(event);
-	}
-
-	export function fitProject(): boolean {
-		return chart.fitProject();
-	}
-
-	export function zoomIn(anchorDate?: Date): boolean {
-		return chart.zoomIn(anchorDate);
-	}
-
-	export function zoomOut(anchorDate?: Date): boolean {
-		return chart.zoomOut(anchorDate);
-	}
-
-	export function setZoom(nextZoom: GanttZoomLevel, anchorDate?: Date): void {
-		chart.setZoom(nextZoom, anchorDate);
-	}
-
-	export function scrollToDate(
-		date: Date,
-		options?: { align?: 'start' | 'center' | 'end' }
-	): boolean {
-		return chart.scrollToDate(date, options);
-	}
-
-	export function scrollToTask(
-		taskId: string,
-		options?: { align?: 'start' | 'center' | 'end' }
-	): boolean {
-		return chart.scrollToTask(taskId, options);
-	}
-
-	export function getVisibleRange(): GanttRange {
-		return chart.getVisibleRange();
-	}
-
-	export function getTask(taskId: string): GanttTask<TTaskFields> | null {
-		return chart.getTask(taskId);
-	}
-
-	export function getResolvedTask(taskId: string) {
-		return chart.getResolvedTask(taskId);
-	}
-
-	export function getVisibleTasks() {
-		return chart.getVisibleTasks();
-	}
-
-	export function getDependency(dependencyId: string): GanttDependency<TDependencyFields> | null {
-		return chart.getDependency(dependencyId);
-	}
-
-	export function getAssignment(assignmentId: string): GanttAssignment<TAssignmentFields> | null {
-		return chart.getAssignment(assignmentId);
-	}
-
-	export function getResources(): readonly GanttResource<TResourceFields>[] {
-		return chart.getResources();
-	}
-
-	export function getScheduleAnalysis(): GanttScheduleAnalysis<TTaskFields, TDependencyFields> {
-		return chart.getScheduleAnalysis();
-	}
-
-	export function getWorkload(range?: GanttRange): readonly GanttWorkloadBucket[] {
-		return chart.getWorkload(range);
-	}
-
-	export function expandTask(taskId: string): void {
-		chart.expandTask(taskId);
-	}
-
-	export function collapseTask(taskId: string): void {
-		chart.collapseTask(taskId);
-	}
-
-	export function toggleTask(taskId: string): void {
-		chart.toggleTask(taskId);
-	}
-
-	export function expandAll(): void {
-		chart.expandAll();
-	}
-
-	export function collapseAll(): void {
-		chart.collapseAll();
-	}
-
-	export function select(nextSelection: GanttSelection): void {
-		chart.select(nextSelection);
-	}
-
-	export function clearSelection(): void {
-		chart.clearSelection();
-	}
-
-	export function addTask(task: GanttTask<TTaskFields>): void {
-		chart.addTask(task);
-	}
-
-	export function updateTask(task: GanttTask<TTaskFields>): void {
-		chart.updateTask(task);
-	}
-
-	export function removeTask(taskId: string): void {
-		chart.removeTask(taskId);
-	}
-
-	export function addDependency(dependency: GanttDependency<TDependencyFields>): void {
-		chart.addDependency(dependency);
-	}
-
-	export function updateDependency(dependency: GanttDependency<TDependencyFields>): void {
-		chart.updateDependency(dependency);
-	}
-
-	export function removeDependency(dependencyId: string): void {
-		chart.removeDependency(dependencyId);
-	}
-
-	export function addAssignment(assignment: GanttAssignment<TAssignmentFields>): void {
-		chart.addAssignment(assignment);
-	}
-
-	export function updateAssignment(assignment: GanttAssignment<TAssignmentFields>): void {
-		chart.updateAssignment(assignment);
-	}
-
-	export function removeAssignment(assignmentId: string): void {
-		chart.removeAssignment(assignmentId);
-	}
-
-	export function copySelection(): boolean {
-		return chart.copySelection();
-	}
-
-	export function paste(): boolean {
-		return chart.paste();
-	}
-
-	export function undo(): boolean {
-		return chart.undo();
-	}
-
-	export function redo(): boolean {
-		return chart.redo();
-	}
-
-	export function canUndo(): boolean {
-		return chart.canUndo();
-	}
-
-	export function canRedo(): boolean {
-		return chart.canRedo();
-	}
-
-	export function cancelInteraction(): void {
-		chart.cancelInteraction();
-	}
+	export const fitProject = chart.fitProject.bind(chart);
+	export const zoomIn = chart.zoomIn.bind(chart);
+	export const zoomOut = chart.zoomOut.bind(chart);
+	export const setZoom = chart.setZoom.bind(chart);
+	export const scrollToDate = chart.scrollToDate.bind(chart);
+	export const scrollToTask = chart.scrollToTask.bind(chart);
+	export const getVisibleRange = chart.getVisibleRange.bind(chart);
+	export const getTask = chart.getTask.bind(chart);
+	export const getResolvedTask = chart.getResolvedTask.bind(chart);
+	export const getVisibleTasks = chart.getVisibleTasks.bind(chart);
+	export const getDependency = chart.getDependency.bind(chart);
+	export const getAssignment = chart.getAssignment.bind(chart);
+	export const getResources = chart.getResources.bind(chart);
+	export const getScheduleAnalysis = chart.getScheduleAnalysis.bind(chart);
+	export const getWorkload = chart.getWorkload.bind(chart);
+	export const expandTask = chart.expandTask.bind(chart);
+	export const collapseTask = chart.collapseTask.bind(chart);
+	export const toggleTask = chart.toggleTask.bind(chart);
+	export const expandAll = chart.expandAll.bind(chart);
+	export const collapseAll = chart.collapseAll.bind(chart);
+	export const select = chart.select.bind(chart);
+	export const clearSelection = chart.clearSelection.bind(chart);
+	export const addTask = chart.addTask.bind(chart);
+	export const updateTask = chart.updateTask.bind(chart);
+	export const removeTask = chart.removeTask.bind(chart);
+	export const addDependency = chart.addDependency.bind(chart);
+	export const updateDependency = chart.updateDependency.bind(chart);
+	export const removeDependency = chart.removeDependency.bind(chart);
+	export const addAssignment = chart.addAssignment.bind(chart);
+	export const updateAssignment = chart.updateAssignment.bind(chart);
+	export const removeAssignment = chart.removeAssignment.bind(chart);
+	export const copySelection = chart.copySelection.bind(chart);
+	export const paste = chart.paste.bind(chart);
+	export const undo = chart.undo.bind(chart);
+	export const redo = chart.redo.bind(chart);
+	export const canUndo = chart.canUndo.bind(chart);
+	export const canRedo = chart.canRedo.bind(chart);
+	export const cancelInteraction = chart.cancelInteraction.bind(chart);
 
 	onMount(() => {
 		if (!ref) throw new Error('GanttChart root did not mount.');
@@ -466,8 +246,10 @@
 	role="region"
 	aria-label={rootAriaLabel}
 	aria-describedby={chart.a11y.instructionsId}
-	onclickcapture={handleRootClickCapture}
-	onkeydowncapture={handleRootKeydownCapture}
+	onclickcapture={(event) => chart.a11y.handleRootClick(event)}
+	onkeydowncapture={(event) => {
+		if (event.key === 'Escape') chart.a11y.scheduleDismissFocus();
+	}}
 	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
 	data-size={chart.size}
@@ -482,7 +264,7 @@
 		class: [chart.scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden', className]
 	})}
 >
-	{#if chart.showHeader}
+	{#if chart.renderers?.header !== false}
 		<GanttChartHeader {chart} />
 	{/if}
 	<GanttChartShell {chart} />

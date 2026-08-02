@@ -53,3 +53,18 @@ export function cloneGanttSelection(selection: GanttSelection): GanttSelection {
 	if (selection.kind !== 'cell') return { ...selection };
 	return { ...selection, cell: { ...selection.cell } };
 }
+
+export function isSameGanttSelection(left: GanttSelection, right: GanttSelection): boolean {
+	if (left.kind !== right.kind) return false;
+	if (left.kind === null && right.kind === null) return true;
+	if (left.kind === 'task' && right.kind === 'task') return left.taskId === right.taskId;
+	if (left.kind === 'dependency' && right.kind === 'dependency') {
+		return left.dependencyId === right.dependencyId;
+	}
+	return (
+		left.kind === 'cell' &&
+		right.kind === 'cell' &&
+		left.taskId === right.taskId &&
+		left.cell.columnId === right.cell.columnId
+	);
+}

@@ -75,23 +75,13 @@
 	} = $props();
 
 	const node = $derived(positioned.node);
-	const resources = $derived(chart.resources);
-	const assignments = $derived(chart.assignments);
 	const messages = $derived(chart.messages);
-	const locale = $derived(chart.locale);
-	const timeZone = $derived(chart.timeZone);
-	const size = $derived(chart.size);
-	const density = $derived(chart.density);
-	const color = $derived(chart.color);
-	const direction = $derived(chart.direction);
-	const disabled = $derived(chart.disabled);
-	const classes = $derived(chart.classes);
-	const renderers = $derived(chart.renderers);
+	const locale = $derived(chart.messages.locale);
 	const isSelected = $derived(
 		chart.selection.kind === 'task' && chart.selection.taskId === node.taskId
 	);
 	const taskAssignments = $derived(
-		assignments.filter((assignment) => assignment.taskId === node.taskId)
+		chart.assignments.filter((assignment) => assignment.taskId === node.taskId)
 	);
 	const assignedResourceIds = $derived(
 		new Set([
@@ -100,7 +90,7 @@
 		])
 	);
 	const assignedResources = $derived(
-		resources.filter((resource) => assignedResourceIds.has(resource.id))
+		chart.resources.filter((resource) => assignedResourceIds.has(resource.id))
 	);
 	const isOverAllocated = $derived(
 		assignedResources.some((resource) => overAllocatedResourceIds.has(resource.id))
@@ -120,8 +110,11 @@
 				)
 			: null
 	);
-	const semanticColor = $derived(isGanttSemanticColor(node.task.color) ? node.task.color : color);
-	const taskColor = $derived(getGanttTaskColor(node.task.color, color));
+	const semanticColor = $derived(
+		isGanttSemanticColor(node.task.color) ? node.task.color : chart.color
+	);
+	const taskColor = $derived(getGanttTaskColor(node.task.color, chart.color));
+	const taskThemeVariants = $derived({ ...chart.themeVariants, color: semanticColor });
 	const controlledProgressValue = $derived(node.progress ?? 0);
 	const activeInteraction = $derived(chart.interaction.active);
 	const taskInteraction = $derived(
@@ -163,18 +156,21 @@
 	const isInteractionActive = $derived(activeInteraction !== null);
 	const isFocusTarget = $derived(chart.a11y.isTaskTabStop(node.taskId));
 	const canMoveTask = $derived(
-		node.type !== 'summary' && !node.task.readOnly && node.task.draggable !== false && !disabled
+		node.type !== 'summary' &&
+			!node.task.readOnly &&
+			node.task.draggable !== false &&
+			!chart.disabled
 	);
 	const taskCursorClass = $derived.by(() => {
-		if (disabled) return undefined;
+		if (chart.disabled) return undefined;
 		if (canMoveTask) return 'cursor-grab active:cursor-grabbing';
 		return 'cursor-default';
 	});
 	const resizeStartHandleLeft = $derived(
-		clampHandleCenter(positioned.startX + (direction === 'rtl' ? 12 : -12), visiblePixels, 12)
+		clampHandleCenter(positioned.startX + (chart.direction === 'rtl' ? 12 : -12), visiblePixels, 12)
 	);
 	const resizeEndHandleLeft = $derived(
-		clampHandleCenter(positioned.endX + (direction === 'rtl' ? -12 : 12), visiblePixels, 12)
+		clampHandleCenter(positioned.endX + (chart.direction === 'rtl' ? -12 : 12), visiblePixels, 12)
 	);
 	const resizeStartVisualOffset = $derived(positioned.startX - resizeStartHandleLeft);
 	const resizeEndVisualOffset = $derived(positioned.endX - resizeEndHandleLeft);
@@ -183,7 +179,7 @@
 	const dependencyStartHandleLeft = $derived(
 		placeDetachedHandle(
 			positioned.startX,
-			positioned.startX + (direction === 'rtl' ? 36 : -36),
+			positioned.startX + (chart.direction === 'rtl' ? 36 : -36),
 			visiblePixels,
 			12
 		)
@@ -191,7 +187,7 @@
 	const dependencyEndHandleLeft = $derived(
 		placeDetachedHandle(
 			positioned.endX,
-			positioned.endX + (direction === 'rtl' ? -36 : 36),
+			positioned.endX + (chart.direction === 'rtl' ? -36 : 36),
 			visiblePixels,
 			12
 		)
@@ -203,7 +199,9 @@
 		getMarkerOffset(positioned.endX, dependencyEndHandleLeft)
 	);
 	const handleTop = $derived(positioned.geometry.top + positioned.geometry.height / 2);
-	const progressMarkerLeft = $derived(getProgressHandleLeft(positioned, progressValue, direction));
+	const progressMarkerLeft = $derived(
+		getProgressHandleLeft(positioned, progressValue, chart.direction)
+	);
 	const taskVisibleStart = $derived(
 		Math.max(Math.min(positioned.startX, positioned.endX), visiblePixels.start)
 	);
@@ -222,9 +220,9 @@
 			const controlledMarkerLeft = getProgressHandleLeft(
 				positioned,
 				controlledProgressValue,
-				direction
+				chart.direction
 			);
-			const chronologicalDirection = direction === 'rtl' ? -1 : 1;
+			const chronologicalDirection = chart.direction === 'rtl' ? -1 : 1;
 			const inwardDirection =
 				controlledProgressValue <= 0 ? chronologicalDirection : -chronologicalDirection;
 			const boundaryInset = Math.min(18, Math.max(0, taskVisibleEnd - taskVisibleStart) / 2);
@@ -250,10 +248,12 @@
 		return taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels);
 	});
 	const canCreateDependency = $derived(
-		chart.interaction.dependency.canCreateForTask(node.taskId) && !isTaskGestureActive && !disabled
+		chart.interaction.dependency.canCreateForTask(node.taskId) &&
+			!isTaskGestureActive &&
+			!chart.disabled
 	);
 	const dateFormatter = $derived(
-		getDateTimeFormatter(locale, timeZone, {
+		getDateTimeFormatter(locale, chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -347,16 +347,16 @@
 		defaultAccessibleLabel,
 		defaultContent: defaultTooltip
 	});
-	const visualSnippet = $derived(renderers?.task);
+	const visualSnippet = $derived(chart.renderers?.task);
 	const visualClass = $derived(
 		node.type === 'summary'
-			? classes.summaryTask
+			? chart.classes.summaryTask
 			: node.type === 'milestone'
-				? classes.milestone
-				: classes.task
+				? chart.classes.milestone
+				: chart.classes.task
 	);
 	const taskLabelLeft = $derived(
-		direction === 'rtl'
+		chart.direction === 'rtl'
 			? Math.min(positioned.startX, positioned.endX) - 6
 			: Math.max(positioned.startX, positioned.endX) + 6
 	);
@@ -371,9 +371,9 @@
 			event.preventDefault();
 			return;
 		}
-		if (disabled) return;
+		if (chart.disabled) return;
 		chart.a11y.setTaskTarget(node.taskId);
-		chart.onTaskClick?.(node, event);
+		chart.eventHandlers?.taskClick?.(node, event);
 	}
 
 	function handleDoubleClick(event: MouseEvent): void {
@@ -382,8 +382,8 @@
 			event.preventDefault();
 			return;
 		}
-		if (disabled) return;
-		chart.onTaskDoubleClick?.(node, event);
+		if (chart.disabled) return;
+		chart.eventHandlers?.taskDoubleClick?.(node, event);
 	}
 
 	function getProgressHandleLeft(
@@ -425,14 +425,14 @@
 		<div
 			data-gantt-chart-part="baseline"
 			data-task-id={node.taskId}
-			class={classes.baseline({ size, density, color: semanticColor, disabled })}
+			class={chart.classes.baseline(taskThemeVariants)}
 			style:left={`${positioned.baselineGeometry.left}px`}
 			style:top={`${positioned.baselineGeometry.top}px`}
 			style:width={`${positioned.baselineGeometry.width}px`}
 			style:height={`${positioned.baselineGeometry.height}px`}
 			aria-hidden="true"
 		>
-			<Slot render={renderers?.baseline ?? defaultBaseline} payload={baselinePayload} />
+			<Slot render={chart.renderers?.baseline ?? defaultBaseline} payload={baselinePayload} />
 		</div>
 	{/if}
 
@@ -446,13 +446,13 @@
 		<div
 			data-gantt-chart-part="deadline"
 			data-task-id={node.taskId}
-			class={classes.deadline({ size, density, color: semanticColor, disabled })}
+			class={chart.classes.deadline(taskThemeVariants)}
 			style:left={`${positioned.deadlineLeft}px`}
 			style:top={`${positioned.geometry.top + positioned.geometry.height / 2 - 6}px`}
 			title={dateFormatter.format(node.task.deadline)}
 			aria-hidden="true"
 		>
-			<Slot render={renderers?.deadline ?? defaultDeadline} payload={deadlinePayload} />
+			<Slot render={chart.renderers?.deadline ?? defaultDeadline} payload={deadlinePayload} />
 		</div>
 	{/if}
 
@@ -462,11 +462,8 @@
 			data-task-id={node.taskId}
 			data-constraint-type={node.task.constraint.type}
 			data-violated={hasConstraintViolation || undefined}
-			class={classes.constraint({
-				size,
-				density,
-				color: semanticColor,
-				disabled,
+			class={chart.classes.constraint({
+				...taskThemeVariants,
 				invalid: hasConstraintViolation
 			})}
 			style:left={`${positioned.constraintLeft}px`}
@@ -492,7 +489,7 @@
 			openOnFocus
 			size="small"
 			density="small"
-			disabled={disabled || isInteractionActive}
+			disabled={chart.disabled || isInteractionActive}
 			triggerClass="pointer-events-auto size-full"
 			popoverClass="pointer-events-none"
 			popoverTheme={TASK_TOOLTIP_POPOVER_THEME}
@@ -506,8 +503,8 @@
 					aria-describedby={chart.a11y.instructionsId}
 					aria-keyshortcuts="M S E P D Shift+D R Delete Backspace"
 					aria-grabbed={chart.a11y.isTaskGrabbed(node.taskId)}
-					{disabled}
-					tabindex={isFocusTarget && !disabled ? 0 : -1}
+					disabled={chart.disabled}
+					tabindex={isFocusTarget && !chart.disabled ? 0 : -1}
 					data-gantt-chart-part={node.type === 'summary'
 						? 'summary-task'
 						: node.type === 'milestone'
@@ -525,10 +522,7 @@
 					data-continues-after={positioned.geometry.continuesAfter || undefined}
 					data-color={semanticColor}
 					class={visualClass({
-						size,
-						density,
-						color: semanticColor,
-						disabled,
+						...taskThemeVariants,
 						selected: isSelected,
 						critical: isCritical,
 						overAllocated: isOverAllocated,
@@ -551,21 +545,18 @@
 				</button>
 			{/snippet}
 
-			<Slot render={renderers?.taskTooltip ?? defaultTooltip} payload={tooltipPayload} />
+			<Slot render={chart.renderers?.taskTooltip ?? defaultTooltip} payload={tooltipPayload} />
 		</HoverCard>
 	</div>
 
-	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled && isStartEdgeVisible}
+	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !chart.disabled && isStartEdgeVisible}
 		<span
 			aria-hidden="true"
 			data-gantt-chart-part="resize-handle"
 			data-edge="start"
 			data-task-id={node.taskId}
-			class={classes.resizeHandle({
-				size,
-				density,
-				color: semanticColor,
-				disabled,
+			class={chart.classes.resizeHandle({
+				...taskThemeVariants,
 				class: isTaskGestureActive ? '!opacity-0' : undefined
 			})}
 			style:left={`${resizeStartHandleLeft}px`}
@@ -578,17 +569,14 @@
 			></span>
 		</span>
 	{/if}
-	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !disabled && isEndEdgeVisible}
+	{#if node.type === 'task' && !node.task.readOnly && node.task.resizable !== false && !chart.disabled && isEndEdgeVisible}
 		<span
 			aria-hidden="true"
 			data-gantt-chart-part="resize-handle"
 			data-edge="end"
 			data-task-id={node.taskId}
-			class={classes.resizeHandle({
-				size,
-				density,
-				color: semanticColor,
-				disabled,
+			class={chart.classes.resizeHandle({
+				...taskThemeVariants,
 				class: isTaskGestureActive ? '!opacity-0' : undefined
 			})}
 			style:left={`${resizeEndHandleLeft}px`}
@@ -602,16 +590,13 @@
 		</span>
 	{/if}
 
-	{#if node.type === 'task' && !node.task.readOnly && node.task.progressEditable !== false && !disabled && showProgressHandle}
+	{#if node.type === 'task' && !node.task.readOnly && node.task.progressEditable !== false && !chart.disabled && showProgressHandle}
 		<span
 			aria-hidden="true"
 			data-gantt-chart-part="progress-handle"
 			data-task-id={node.taskId}
-			class={classes.progressHandle({
-				size,
-				density,
-				color: semanticColor,
-				disabled,
+			class={chart.classes.progressHandle({
+				...taskThemeVariants,
 				class: progressInteraction ? '!z-[35] !opacity-100' : '!z-[35]'
 			})}
 			style:left={`${progressHandleLeft}px`}
@@ -632,7 +617,7 @@
 			data-endpoint="start"
 			data-task-id={node.taskId}
 			data-target={isDependencyStartTarget || undefined}
-			class={classes.dependencyHandle({ size, density, color: semanticColor, disabled })}
+			class={chart.classes.dependencyHandle(taskThemeVariants)}
 			style:left={`${dependencyStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'start', {
@@ -653,7 +638,7 @@
 			data-endpoint="end"
 			data-task-id={node.taskId}
 			data-target={isDependencyEndTarget || undefined}
-			class={classes.dependencyHandle({ size, density, color: semanticColor, disabled })}
+			class={chart.classes.dependencyHandle(taskThemeVariants)}
 			style:left={`${dependencyEndHandleLeft}px`}
 			style:top={`${handleTop}px`}
 			{@attach chart.interaction.dependency.dependencyHandle(node.taskId, 'end', {
@@ -671,26 +656,19 @@
 	<div
 		data-gantt-chart-part="task-label"
 		data-task-id={node.taskId}
-		class={classes.taskLabel({ size, density, color: semanticColor, disabled })}
+		class={chart.classes.taskLabel(taskThemeVariants)}
 		style:left={`${taskLabelLeft}px`}
 		style:top={`${positioned.geometry.top + positioned.geometry.height / 2}px`}
-		style:transform={direction === 'rtl' ? 'translate(-100%, -50%)' : 'translateY(-50%)'}
+		style:transform={chart.direction === 'rtl' ? 'translate(-100%, -50%)' : 'translateY(-50%)'}
 		aria-hidden="true"
 	>
-		<Slot render={renderers?.taskLabel ?? defaultLabel} payload={labelPayload} />
+		<Slot render={chart.renderers?.taskLabel ?? defaultLabel} payload={labelPayload} />
 		<GanttResourceAssignments
+			{chart}
 			{node}
 			resources={assignedResources}
 			assignments={taskAssignments}
 			{overAllocatedResourceIds}
-			{messages}
-			{locale}
-			{size}
-			{density}
-			{color}
-			{disabled}
-			{classes}
-			resourceAssignments={renderers?.resourceAssignments}
 		/>
 	</div>
 </div>
@@ -701,11 +679,8 @@
 			{#each positioned.segments as segment (segment.segment.start.getTime())}
 				<span
 					data-gantt-chart-part="segment"
-					class={classes.segment({
-						size,
-						density,
-						color: semanticColor,
-						disabled,
+					class={chart.classes.segment({
+						...taskThemeVariants,
 						class:
 							'border border-[color-mix(in_oklab,var(--gantt-task-color)_40%,transparent)] bg-[color-mix(in_oklab,var(--gantt-task-color)_18%,var(--color-surface))]'
 					})}
@@ -714,18 +689,18 @@
 				>
 					<span
 						data-gantt-chart-part="expected-progress"
-						class={classes.expectedProgress({ size, density, color: semanticColor, disabled })}
+						class={chart.classes.expectedProgress(taskThemeVariants)}
 						style:width={`${segment.expectedProgressWidth}px`}
 					></span>
 					<span
 						data-gantt-chart-part="progress"
-						class={classes.progress({ size, density, color: semanticColor, disabled })}
+						class={chart.classes.progress(taskThemeVariants)}
 						style:width={`${segment.progressWidth}px`}
 					></span>
 				</span>
 			{/each}
 		{:else}
-			<Slot render={renderers?.progress ?? defaultProgress} payload={progressPayload} />
+			<Slot render={chart.renderers?.progress ?? defaultProgress} payload={progressPayload} />
 		{/if}
 	{:else if node.type === 'summary'}
 		<span
@@ -739,13 +714,13 @@
 	{#if expectedProgressValue !== null}
 		<span
 			data-gantt-chart-part="expected-progress"
-			class={classes.expectedProgress({ size, density, color: semanticColor, disabled })}
+			class={chart.classes.expectedProgress(taskThemeVariants)}
 			style:width={`${expectedProgressValue * 100}%`}
 		></span>
 	{/if}
 	<span
 		data-gantt-chart-part="progress"
-		class={classes.progress({ size, density, color: semanticColor, disabled })}
+		class={chart.classes.progress(taskThemeVariants)}
 		style:width={`${progressValue * 100}%`}
 	></span>
 {/snippet}

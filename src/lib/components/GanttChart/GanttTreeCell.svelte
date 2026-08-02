@@ -81,19 +81,9 @@
 	let isEditing = $state(false);
 	let editValue = $state('');
 	const messages = $derived(chart.messages);
-	const locale = $derived(chart.locale);
+	const locale = $derived(chart.messages.locale);
 	const timeZone = $derived(chart.timeZone);
-	const size = $derived(chart.size);
-	const density = $derived(chart.density);
-	const color = $derived(chart.color);
-	const direction = $derived(chart.direction);
-	const disabled = $derived(chart.disabled);
-	const loading = $derived(chart.loading);
-	const classes = $derived(chart.classes);
-	const isSelected = $derived(
-		(chart.selection.kind === 'task' && chart.selection.taskId === node.taskId) ||
-			(chart.selection.kind === 'cell' && chart.selection.taskId === node.taskId)
-	);
+	const isSelected = $derived(chart.selectedRowTaskId === node.taskId);
 	const isFocused = $derived(chart.a11y.isCellTabStop(node.taskId, column.id));
 	const context = $derived(
 		createGanttColumnContext(
@@ -108,14 +98,14 @@
 		formatGanttColumnValue(column.id, value, locale, timeZone, messages)
 	);
 	const isEditable = $derived(
-		column.editable === true && !disabled && !loading && !node.task.readOnly
+		column.editable === true && !chart.disabled && !chart.loading && !node.task.readOnly
 	);
 	const label = $derived(column.title ?? getGanttColumnLabel(column.id, messages));
 	const payload = $derived<
 		GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ node, column, value, isSelected, isFocused, isEditing, defaultContent });
 	const titlePadding = $derived(
-		TREE_CELL_PADDING[density].base + node.depth * TREE_CELL_PADDING[density].indent
+		TREE_CELL_PADDING[chart.density].base + node.depth * TREE_CELL_PADDING[chart.density].indent
 	);
 
 	function beginEdit(): void {
@@ -154,7 +144,7 @@
 	data-column-id={column.id}
 	data-grid-row={rowIndex}
 	data-grid-column={columnIndex}
-	class={classes.treeCell({ size, density, color, disabled })}
+	class={chart.classes.treeCell(chart.themeVariants)}
 	class:justify-center={column.align === 'center'}
 	class:justify-end={column.align === 'end'}
 	style:width={`${column.width}px`}
@@ -167,7 +157,7 @@
 	aria-label={`${label}: ${formattedValue}`}
 	aria-describedby={chart.a11y.instructionsId}
 	aria-keyshortcuts="Enter F2 Delete Backspace Alt+Shift+ArrowLeft Alt+Shift+ArrowRight Alt+Shift+ArrowUp Alt+Shift+ArrowDown"
-	tabindex={isFocused && !disabled ? 0 : -1}
+	tabindex={isFocused && !chart.disabled ? 0 : -1}
 	onfocus={onFocus}
 	ondblclick={beginEdit}
 	onkeydown={handleKeydown}
@@ -188,12 +178,12 @@
 		{#if node.type === 'summary'}
 			<button
 				type="button"
-				class={classes.expander({ size, density, color, disabled })}
+				class={chart.classes.expander(chart.themeVariants)}
 				aria-label={node.isExpanded
 					? messages.ganttChartCollapseTask(node.task.title)
 					: messages.ganttChartExpandTask(node.task.title)}
 				aria-expanded={node.isExpanded}
-				{disabled}
+				disabled={chart.disabled}
 				tabindex="-1"
 				onclick={(event) => {
 					event.stopPropagation();
@@ -204,11 +194,8 @@
 			</button>
 		{:else}
 			<span
-				class={classes.expander({
-					size,
-					density,
-					color,
-					disabled,
+				class={chart.classes.expander({
+					...chart.themeVariants,
 					class: 'invisible pointer-events-none'
 				})}
 				aria-hidden="true"
@@ -220,9 +207,9 @@
 		<input
 			bind:value={editValue}
 			class="min-w-0 flex-1 rounded border border-color/45 bg-surface px-1 outline-none focus:ring-2 focus:ring-color/35"
-			class:h-5={size === 'small'}
-			class:h-6={size === 'normal'}
-			class:h-7={size === 'large'}
+			class:h-5={chart.size === 'small'}
+			class:h-6={chart.size === 'normal'}
+			class:h-7={chart.size === 'large'}
 			aria-label={`${label}: ${formattedValue}`}
 			onblur={commitEdit}
 			onkeydown={(event) => {
@@ -241,7 +228,7 @@
 			>
 				<span
 					class="size-1.5 shrink-0 rounded-full"
-					style:background-color={getGanttTaskColor(resourceGroup.color, color)}
+					style:background-color={getGanttTaskColor(resourceGroup.color, chart.color)}
 				></span>
 				<span class="truncate">{resourceGroup.title}</span>
 			</span>
@@ -258,7 +245,7 @@
 					onOutdent();
 				}}
 			>
-				{@render (direction === 'rtl' ? arrowLineRightIcon : arrowLineLeftIcon)({ size: 12 })}
+				{@render (chart.direction === 'rtl' ? arrowLineRightIcon : arrowLineLeftIcon)({ size: 12 })}
 			</button>
 		{/if}
 		{#if column.id === 'title' && canIndent}
@@ -272,7 +259,7 @@
 					onIndent();
 				}}
 			>
-				{@render (direction === 'rtl' ? arrowLineLeftIcon : arrowLineRightIcon)({ size: 12 })}
+				{@render (chart.direction === 'rtl' ? arrowLineLeftIcon : arrowLineRightIcon)({ size: 12 })}
 			</button>
 		{/if}
 	{/if}

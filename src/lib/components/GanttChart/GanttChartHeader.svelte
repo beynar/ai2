@@ -37,15 +37,12 @@
 	const zoomItems = $derived(
 		chart.enabledZoomLevels.map((zoom) => ({ value: zoom, label: zoomLabels[zoom] ?? zoom }))
 	);
-	const rangeFormatter = $derived(
-		getDateTimeFormatter(chart.locale, chart.timeZone, {
+	const rangeTitle = $derived(
+		getDateTimeFormatter(chart.messages.locale, chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric'
-		})
-	);
-	const rangeTitle = $derived(
-		rangeFormatter.formatRange(snapshot.visibleRange.start, snapshot.visibleRange.end)
+		}).formatRange(snapshot.visibleRange.start, snapshot.visibleRange.end)
 	);
 	const zoomButtons = $derived([
 		{

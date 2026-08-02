@@ -33,8 +33,7 @@ export type GanttRowInteractionOwner = Readonly<{
 type RowSession<TTaskFields extends object> = {
 	transport: 'native' | 'pointer';
 	taskId: string;
-	boundary: object;
-	rows: readonly GanttResolvedTaskNode<TTaskFields>[];
+	rowModel: GanttRowOrder<TTaskFields>;
 	sourceElement: HTMLElement | null;
 	pointerId: number | null;
 	target: GanttRowDropTarget | null;
@@ -69,25 +68,19 @@ export class GanttRowReorder<
 	#autoScrollFrame: number | null = null;
 	#lastAutoScrollAt = 0;
 	#attachments = new Map<string, Attachment<HTMLElement>>();
-	private readonly chart!: GanttChartState<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>;
-	private readonly getRowModel!: () => GanttRowOrder<TTaskFields>;
-	private readonly scrollToRow!: (rowIndex: number) => void;
 	readonly list: Attachment;
 
 	constructor(
-		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
-		getRowModel: () => GanttRowOrder<TTaskFields>,
-		scrollToRow: (rowIndex: number) => void,
+		private readonly chart: GanttChartState<
+			TTaskFields,
+			TDependencyFields,
+			TResourceFields,
+			TAssignmentFields
+		>,
+		private readonly getRowModel: () => GanttRowOrder<TTaskFields>,
+		private readonly scrollToRow: (rowIndex: number) => void,
 		listId: string
 	) {
-		this.chart = chart;
-		this.getRowModel = getRowModel;
-		this.scrollToRow = scrollToRow;
 		this.#dnd = useDndList({
 			id: listId,
 			items: () => [...this.getRowModel().rows],
@@ -98,15 +91,10 @@ export class GanttRowReorder<
 			canDrag: (node) => this.canBegin(node.taskId),
 			autoScrollAxis: 'vertical',
 			onDragStart: ({ item }) => {
-				if (!this.canBegin(item.taskId)) {
-					this.#dnd.cancel();
-					return;
-				}
 				this.#session = {
 					transport: 'native',
 					taskId: item.taskId,
-					boundary: this.chart.modelBoundary,
-					rows: this.getRowModel().rows,
+					rowModel: this.getRowModel(),
 					sourceElement: null,
 					pointerId: null,
 					target: null,
@@ -141,76 +129,70 @@ export class GanttRowReorder<
 			};
 		});
 		$effect(() => {
-			const boundary = this.chart.modelBoundary;
-			const rows = this.getRowModel().rows;
+			const rowModel = this.getRowModel();
 			untrack(() => {
 				const session = this.#session;
-				if (!session || (session.boundary === boundary && session.rows === rows)) return;
+				if (!session || session.rowModel === rowModel) return;
 				this.cancel();
 				this.block(session.taskId, 'stale');
 			});
 		});
 	}
 
-	readonly canReorder = $derived(
-		this.chart.interactions.reorderRows &&
-			!this.chart.disabled &&
-			!this.chart.loading &&
-			this.getRowModel().isOrderStable
-	);
+	private readonly blockedReason = $derived.by(() => {
+		if (this.chart.disabled) return 'disabled' as const;
+		if (this.chart.loading) return 'loading' as const;
+		if (!this.chart.interactions.reorderRows || !this.getRowModel().isOrderStable) {
+			return 'invalid-target' as const;
+		}
+		return null;
+	});
+
+	readonly canReorder = $derived(this.blockedReason === null);
 
 	readonly status: GanttRowReorderStatus | null = $derived.by(() => {
 		const session = this.#session;
 		if (!session) return null;
-		const status = {
-			kind: 'row' as const,
-			transport: session.transport,
-			taskId: session.taskId
-		};
+		let resolution: GanttInteractionResolution<GanttRowDropProposal> = pendingGanttInteraction;
 		if (!this.isCurrent(session)) {
-			return {
-				...status,
-				resolution: rejectGanttInteraction(
-					'stale',
-					'The controlled task rows changed during row reordering.'
-				)
-			};
+			resolution = rejectGanttInteraction(
+				'stale',
+				'The controlled task rows changed during row reordering.'
+			);
+		} else if (this.blockedReason) {
+			resolution = rejectGanttInteraction(
+				this.blockedReason,
+				this.getBlockedMessage(this.blockedReason)
+			);
+		} else {
+			const over = this.#dnd.over;
+			let target = session.target;
+			if (session.transport === 'native') {
+				target =
+					over?.source.itemId === session.taskId
+						? this.resolveNativeTarget({
+								taskId: session.taskId,
+								targetTaskId: over.targetItemId,
+								targetIndex: over.index,
+								targetEdge: over.targetEdge
+							})
+						: null;
+			}
+			if (target) {
+				const proposal = resolveGanttRowDrop(target, this.chart.schedule.resolvedTasksById);
+				resolution = proposal
+					? acceptGanttInteraction(proposal)
+					: rejectGanttInteraction(
+							'invalid-target',
+							'The row target does not preserve a valid hierarchy.'
+						);
+			}
 		}
-		const unavailableReason = this.getUnavailableReason();
-		if (unavailableReason) {
-			return {
-				...status,
-				resolution: rejectGanttInteraction(
-					unavailableReason,
-					this.getBlockedMessage(unavailableReason)
-				)
-			};
-		}
-		const over = this.#dnd.over;
-		let target = session.target;
-		if (session.transport === 'native') {
-			target =
-				over?.source.itemId === session.taskId
-					? this.resolveNativeTarget({
-							taskId: session.taskId,
-							targetTaskId: over.targetItemId,
-							targetIndex: over.index,
-							targetEdge: over.targetEdge
-						})
-					: null;
-		}
-		if (!target) {
-			return { ...status, resolution: pendingGanttInteraction };
-		}
-		const proposal = resolveGanttRowDrop(target, this.chart.schedule.model);
 		return {
-			...status,
-			resolution: proposal
-				? acceptGanttInteraction(proposal)
-				: rejectGanttInteraction(
-						'invalid-target',
-						'The row target does not preserve a valid hierarchy.'
-					)
+			kind: 'row',
+			transport: session.transport,
+			taskId: session.taskId,
+			resolution
 		};
 	});
 
@@ -278,8 +260,7 @@ export class GanttRowReorder<
 		this.#session = {
 			transport: 'pointer',
 			taskId,
-			boundary: this.chart.modelBoundary,
-			rows: this.getRowModel().rows,
+			rowModel: this.getRowModel(),
 			sourceElement: payload.node,
 			pointerId: payload.pointerId,
 			target: null,
@@ -303,17 +284,6 @@ export class GanttRowReorder<
 		this.updatePointer(payload);
 		const session = this.#session;
 		if (!session || session.transport !== 'pointer') return;
-		if (!this.isCurrent(session)) {
-			this.cancel();
-			this.block(session.taskId, 'stale');
-			return;
-		}
-		const unavailableReason = this.getUnavailableReason();
-		if (unavailableReason) {
-			this.cancel();
-			this.block(session.taskId, unavailableReason);
-			return;
-		}
 		if (!session.target) {
 			this.clearSession();
 			this.block(session.taskId, 'invalid-target');
@@ -371,7 +341,7 @@ export class GanttRowReorder<
 			this.block(session.taskId, 'stale');
 			return false;
 		}
-		const unavailableReason = this.getUnavailableReason();
+		const unavailableReason = this.blockedReason;
 		if (unavailableReason) {
 			this.cancel();
 			this.block(session.taskId, unavailableReason);
@@ -384,18 +354,7 @@ export class GanttRowReorder<
 	}
 
 	private isCurrent(session: RowSession<TTaskFields>): boolean {
-		return (
-			session.boundary === this.chart.modelBoundary && session.rows === this.getRowModel().rows
-		);
-	}
-
-	private getUnavailableReason(): 'disabled' | 'loading' | 'invalid-target' | null {
-		if (this.chart.disabled) return 'disabled';
-		if (this.chart.loading) return 'loading';
-		if (!this.chart.interactions.reorderRows || !this.getRowModel().isOrderStable) {
-			return 'invalid-target';
-		}
-		return null;
+		return session.rowModel === this.getRowModel();
 	}
 
 	private block(taskId: string, reason: 'disabled' | 'loading' | 'invalid-target' | 'stale'): void {

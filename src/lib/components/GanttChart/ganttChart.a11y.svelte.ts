@@ -679,7 +679,7 @@ export class GanttChartA11y<
 	}
 
 	private getDateFormatter(): Intl.DateTimeFormat {
-		return getDateTimeFormatter(this.chart.locale, this.chart.timeZone, {
+		return getDateTimeFormatter(this.chart.messages.locale, this.chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -696,7 +696,7 @@ export class GanttChartA11y<
 			source: 'keyboard',
 			message: error.message
 		};
-		this.chart.onInteractionBlocked?.(info);
+		this.chart.eventHandlers?.interactionBlocked?.(info);
 	}
 }
 

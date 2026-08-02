@@ -333,22 +333,6 @@ export type GanttColumnDefinition<
 	) => boolean;
 }>;
 
-export type GanttInteractions = Readonly<{
-	moveTask: boolean;
-	resizeStart: boolean;
-	resizeEnd: boolean;
-	resizeProgress: boolean;
-	createDependency: boolean;
-	reorderRows: boolean;
-	indent: boolean;
-	outdent: boolean;
-	createRange: boolean;
-	keyboard: boolean;
-	touch: boolean;
-	clipboard: boolean;
-	history: boolean;
-}>;
-
 export type GanttTouchActivation = PointerDragActivation;
 
 export type GanttMutationSource =

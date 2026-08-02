@@ -4,7 +4,6 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-	import type { Snippet } from 'svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
 	import type { GanttTimelineInteractionStatus } from './ganttChart.interactions.svelte.js';
 	import { positionGanttTask } from './ganttChart.layout.js';
@@ -26,8 +25,7 @@
 		scale,
 		visibleRange,
 		visiblePixels,
-		totalHeight,
-		dragPreview
+		totalHeight
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		status: GanttTimelineInteractionStatus<TTaskFields>;
@@ -36,7 +34,6 @@
 		visibleRange: GanttRange;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		totalHeight: number;
-		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	} = $props();
 	let labelWidth = $state(0);
 	let labelHeight = $state(0);
@@ -98,7 +95,7 @@
 	);
 	const taskColor = $derived(getGanttTaskColor(proposedTask?.color, chart.color));
 	const dateFormatter = $derived(
-		getDateTimeFormatter(chart.locale, chart.timeZone, {
+		getDateTimeFormatter(chart.messages.locale, chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -114,13 +111,14 @@
 			: ''
 	);
 	const durationLabel = $derived(
-		`${new Intl.NumberFormat(chart.locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
+		`${new Intl.NumberFormat(chart.messages.locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
 	);
 	const isProgressOperation = $derived(status.kind === 'task' && status.operation === 'progress');
 	const progressLabel = $derived(
-		new Intl.NumberFormat(chart.locale, { style: 'percent', maximumFractionDigits: 0 }).format(
-			proposedTask?.progress ?? 0
-		)
+		new Intl.NumberFormat(chart.messages.locale, {
+			style: 'percent',
+			maximumFractionDigits: 0
+		}).format(proposedTask?.progress ?? 0)
 	);
 	const labelPlacement = $derived.by(() => {
 		const minimumLeft = visiblePixels.start + LABEL_EDGE_INSET;
@@ -211,7 +209,7 @@
 		style:height={`${geometry.height}px`}
 		aria-hidden="true"
 	>
-		<Slot render={dragPreview ?? defaultContent} {payload} />
+		<Slot render={chart.renderers?.dragPreview ?? defaultContent} {payload} />
 	</div>
 	<div
 		bind:offsetWidth={labelWidth}

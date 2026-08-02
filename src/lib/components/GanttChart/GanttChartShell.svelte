@@ -1,56 +1,16 @@
 <script lang="ts" module>
-	function resolveDensityHeaderHeight(density: 'small' | 'normal' | 'large'): number {
-		if (density === 'small') return 40;
-		if (density === 'large') return 56;
-		return 48;
-	}
+	const HEADER_HEIGHT = { small: 40, normal: 48, large: 56 } as const;
 
-	function validateGridMetrics(
-		gridWidth: number,
-		minGridWidth: number,
-		maxGridWidth: number,
-		rowHeight: number,
-		overscan: number
-	): void {
+	function validateGridMetrics(gridWidth: number, rowHeight: number): void {
 		if (
 			Number.isFinite(gridWidth) &&
-			Number.isFinite(minGridWidth) &&
-			Number.isFinite(maxGridWidth) &&
+			gridWidth >= 64 &&
 			Number.isFinite(rowHeight) &&
-			Number.isInteger(overscan) &&
-			minGridWidth > 0 &&
-			gridWidth >= minGridWidth &&
-			maxGridWidth >= gridWidth &&
-			rowHeight >= 24 &&
-			overscan >= 0
+			rowHeight >= 24
 		) {
 			return;
 		}
-		throw new RangeError(
-			'gridWidth must be within positive minGridWidth/maxGridWidth bounds, rowHeight must be at least 24, and overscan must be a non-negative integer.'
-		);
-	}
-
-	function resolvePanelSizes(
-		gridWidth: number,
-		minGridWidth: number,
-		maxGridWidth: number,
-		containerWidth: number
-	): number[] {
-		const minimum = resolveMinimumPercent(minGridWidth, containerWidth);
-		const maximum = resolveMaximumPercent(maxGridWidth, containerWidth);
-		const gridPercent = Math.min(maximum, Math.max(minimum, (gridWidth / containerWidth) * 100));
-		return [gridPercent, 100 - gridPercent];
-	}
-
-	function resolveMinimumPercent(minGridWidth: number, containerWidth: number): number {
-		if (containerWidth <= 0) return 15;
-		return Math.min(85, (minGridWidth / containerWidth) * 100);
-	}
-
-	function resolveMaximumPercent(maxGridWidth: number, containerWidth: number): number {
-		if (containerWidth <= 0) return 85;
-		return Math.max(15, Math.min(85, (maxGridWidth / containerWidth) * 100));
+		throw new RangeError('gridWidth must be at least 64 and rowHeight must be at least 24.');
 	}
 
 	function findPageScrollElement(element: HTMLElement): HTMLElement {
@@ -109,15 +69,27 @@
 	let containerHeight = $state(0);
 	let panelSizes = $state([38, 62]);
 	let viewportRef = $state<HTMLDivElement | null>(null);
+	const minimumPanelPercent = $derived(
+		containerWidth <= 0 ? 15 : Math.min(85, (chart.minGridWidth / containerWidth) * 100)
+	);
+	const maximumPanelPercent = $derived(
+		containerWidth <= 0
+			? 85
+			: Math.max(15, Math.min(85, (chart.maxGridWidth / containerWidth) * 100))
+	);
 	let measuredScheduleHeader = $state<Readonly<{ density: Density; height: number }> | undefined>();
 	const scheduleHeaderHeight = $derived.by(() => {
 		const measuredHeader = measuredScheduleHeader;
 		return measuredHeader?.density === chart.density
 			? measuredHeader.height
-			: resolveDensityHeaderHeight(chart.density);
+			: HEADER_HEIGHT[chart.density];
 	});
 	let sortOverrides = $state<Record<string, GanttSortDirection | null>>({});
-	const baseColumns = $derived(resolveGanttColumns(chart.columns));
+	const baseColumns = $derived(
+		resolveGanttColumns(
+			chart.layoutOptions?.grid === false ? undefined : chart.layoutOptions?.grid?.columns
+		)
+	);
 	const resolvedColumns = $derived(
 		baseColumns.map((column) =>
 			Object.prototype.hasOwnProperty.call(sortOverrides, column.id)
@@ -127,7 +99,7 @@
 	);
 	const resolvedResourceView = $derived(
 		resolveGanttResourceView(
-			chart.resourceView,
+			chart.timelineOptions?.resourceView,
 			chart.schedule.model.resources,
 			chart.schedule.model.resourceHierarchy
 		)
@@ -273,20 +245,13 @@
 	});
 
 	$effect.pre(() => {
-		validateGridMetrics(
-			chart.gridWidth,
-			chart.minGridWidth,
-			chart.maxGridWidth,
-			chart.rowHeight,
-			chart.overscan
-		);
+		validateGridMetrics(chart.gridWidth, chart.rowHeight);
 		if (containerWidth <= 0) return;
-		panelSizes = resolvePanelSizes(
-			chart.gridWidth,
-			chart.minGridWidth,
-			chart.maxGridWidth,
-			containerWidth
+		const gridPercent = Math.min(
+			maximumPanelPercent,
+			Math.max(minimumPanelPercent, (chart.gridWidth / containerWidth) * 100)
 		);
+		panelSizes = [gridPercent, 100 - gridPercent];
 	});
 
 	$effect(() => {
@@ -295,13 +260,6 @@
 		if (entries.length === Object.keys(sortOverrides).length) return;
 		sortOverrides = Object.fromEntries(entries);
 	});
-
-	function publishGridWidth(sizes: number[]): void {
-		if (containerWidth <= 0) return;
-		const nextWidth = Math.round((sizes[0] / 100) * containerWidth);
-		if (nextWidth === chart.gridWidth) return;
-		chart.gridWidth = nextWidth;
-	}
 
 	function toggleSort(columnId: string, additive: boolean): void {
 		const column = resolvedColumns.find((candidate) => candidate.id === columnId);
@@ -388,7 +346,7 @@
 		style:height={`${Math.max(containerHeight, contentHeight + scheduleHeaderHeight + workloadPanelHeight)}px`}
 		style:contain="inline-size"
 	>
-		{#if chart.showGrid}
+		{#if chart.layoutOptions?.grid !== false}
 			<Resizable
 				bind:sizes={panelSizes}
 				orientation="horizontal"
@@ -400,8 +358,8 @@
 						content: gridPane,
 						class: 'overflow-visible',
 						defaultSize: panelSizes[0],
-						minSize: resolveMinimumPercent(chart.minGridWidth, containerWidth),
-						maxSize: resolveMaximumPercent(chart.maxGridWidth, containerWidth)
+						minSize: minimumPanelPercent,
+						maxSize: maximumPanelPercent
 					},
 					{
 						id: 'gantt-timeline',
@@ -415,7 +373,9 @@
 				theme={{ handle: { base: chart.classes.splitter(chart.themeVariants) } }}
 				getHandleAriaLabel={() => chart.messages.ganttChartResizePanels}
 				onLayoutChanged={(sizes, meta) => {
-					if (meta.isUserInteraction) publishGridWidth(sizes);
+					if (!meta.isUserInteraction || containerWidth <= 0) return;
+					const nextWidth = Math.round((sizes[0] / 100) * containerWidth);
+					if (nextWidth !== chart.gridWidth) chart.gridWidth = nextWidth;
 				}}
 			/>
 		{:else}

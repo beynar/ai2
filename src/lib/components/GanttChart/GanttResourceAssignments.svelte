@@ -1,14 +1,11 @@
 <script
 	lang="ts"
-	generics="TTaskFields extends object, TResourceFields extends object, TAssignmentFields extends object"
+	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import { getGanttTaskColor } from './ganttChart.color.js';
 	import type { GanttResourceAssignmentsPayload } from './ganttChart.props.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type {
 		GanttAssignment,
 		GanttResolvedTaskNode,
@@ -16,40 +13,24 @@
 	} from './ganttChart.types.js';
 
 	let {
+		chart,
 		node,
 		resources,
 		assignments,
-		overAllocatedResourceIds,
-		messages,
-		locale,
-		size,
-		density,
-		color,
-		disabled,
-		classes,
-		resourceAssignments
+		overAllocatedResourceIds
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		node: GanttResolvedTaskNode<TTaskFields>;
 		resources: readonly GanttResource<TResourceFields>[];
 		assignments: readonly GanttAssignment<TAssignmentFields>[];
 		overAllocatedResourceIds: ReadonlySet<string>;
-		messages: Messages;
-		locale: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
-		resourceAssignments?: Snippet<
-			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
 	} = $props();
 
 	const isOverAllocated = $derived(
 		resources.some((resource) => overAllocatedResourceIds.has(resource.id))
 	);
 	const percentFormatter = $derived(
-		new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 })
+		new Intl.NumberFormat(chart.messages.locale, { style: 'percent', maximumFractionDigits: 0 })
 	);
 	const assignmentUnitsByResourceId = $derived.by(() => {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- Rebuilt immutable lookup for one derived snapshot.
@@ -67,25 +48,25 @@
 	>({ node, resources, assignments, isOverAllocated, defaultContent });
 </script>
 
-{#if resources.length > 0 || resourceAssignments}
+{#if resources.length > 0 || chart.renderers?.resourceAssignments}
 	<span
 		data-gantt-chart-part="resource-assignments"
 		data-task-id={node.taskId}
 		data-over-allocated={isOverAllocated || undefined}
-		class={classes.resourceAssignments({
-			size,
-			density,
-			color,
-			disabled,
+		class={chart.classes.resourceAssignments({
+			...chart.themeVariants,
 			overAllocated: isOverAllocated
 		})}
 	>
-		<Slot render={resourceAssignments ?? defaultContent} {payload} />
+		<Slot render={chart.renderers?.resourceAssignments ?? defaultContent} {payload} />
 		{#if isOverAllocated}
 			<span
 				data-gantt-chart-part="over-allocation"
-				class={classes.overAllocation({ size, density, color, disabled, overAllocated: true })}
-				title={messages.ganttChartOverAllocated(
+				class={chart.classes.overAllocation({
+					...chart.themeVariants,
+					overAllocated: true
+				})}
+				title={chart.messages.ganttChartOverAllocated(
 					resources
 						.filter((resource) => overAllocatedResourceIds.has(resource.id))
 						.map((resource) => resource.title)
@@ -107,7 +88,7 @@
 		>
 			<span
 				class="size-1.5 shrink-0 rounded-full"
-				style:background-color={getGanttTaskColor(resource.color, color)}
+				style:background-color={getGanttTaskColor(resource.color, chart.color)}
 			></span>
 			<span class="truncate">{resource.title}</span>
 		</span>
