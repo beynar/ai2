@@ -5,7 +5,6 @@ import type {
 	GanttModelCommit,
 	GanttModelSnapshot
 } from './ganttChart.history.svelte.js';
-import { resolveGanttDropParentId } from './ganttChart.hierarchy.js';
 import type { GanttPasteRecords } from './ganttChart.clipboard.js';
 import {
 	cloneGanttAssignment,
@@ -15,6 +14,7 @@ import {
 } from './ganttChart.records.js';
 import { getGanttValueSignature } from './ganttChart.signature.js';
 import { getGanttTaskSubtreeIds } from './ganttChart.subtree.js';
+import { resolveGanttRowDrop, type GanttRowDropTarget } from './ganttChart.rowDrop.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type { GanttChartState, GanttModelBoundary } from './ganttChart.state.svelte.js';
 import type {
@@ -133,26 +133,41 @@ export class GanttChartMutations<
 	}
 
 	reorderTask(
-		taskId: string,
-		targetTaskId: string,
-		position: 'before' | 'after',
+		target: GanttRowDropTarget,
 		source: Extract<GanttMutationSource, 'pointer' | 'keyboard'> = 'pointer'
 	): boolean {
 		this.assertMutationEnabled();
-		if (taskId === targetTaskId) return true;
-		const previousTask = this.requireTask(taskId);
-		const targetTask = this.requireTask(targetTaskId);
+		const previousTask = this.requireTask(target.taskId);
+		this.requireTask(target.targetTaskId);
 		this.assertTaskWritable(previousTask);
-		const movedTaskIds = getGanttTaskSubtreeIds(taskId, this.chart.tasks);
-		if (movedTaskIds.has(targetTaskId)) return false;
-		const parentId = resolveGanttDropParentId(targetTask, position);
-		if (parentId && this.requireTask(parentId).readOnly) return false;
-		const task = cloneTaskWithParent(previousTask, parentId ?? undefined);
-		const withoutTask = this.chart.tasks.filter((candidate) => candidate.id !== taskId);
-		const targetIndex = withoutTask.findIndex((candidate) => candidate.id === targetTaskId);
-		const insertIndex = targetIndex + (position === 'after' ? 1 : 0);
-		const candidateTasks = [...withoutTask];
-		candidateTasks.splice(insertIndex, 0, task);
+		const model = this.chart.schedule.model;
+		const proposal = resolveGanttRowDrop(target, model);
+		if (!proposal) return false;
+		const task = cloneTaskWithParent(previousTask, proposal.parentId ?? undefined);
+		const orderedTasks = model.taskHierarchy.nodes.map((node) => this.requireTask(node.id));
+		const movedTaskIds = getGanttTaskSubtreeIds(target.taskId, orderedTasks);
+		const movedTasks = orderedTasks
+			.filter((candidate) => movedTaskIds.has(candidate.id))
+			.map((candidate) => (candidate.id === task.id ? task : candidate));
+		const remainingTasks = orderedTasks.filter((candidate) => !movedTaskIds.has(candidate.id));
+		const targetIndex = remainingTasks.findIndex(
+			(candidate) => candidate.id === target.targetTaskId
+		);
+		let insertIndex = targetIndex;
+		if (proposal.parentId === target.targetTaskId) {
+			insertIndex += 1;
+		} else if (target.position === 'after') {
+			const targetSubtreeIds = getGanttTaskSubtreeIds(target.targetTaskId, remainingTasks);
+			insertIndex += 1;
+			while (
+				insertIndex < remainingTasks.length &&
+				targetSubtreeIds.has(remainingTasks[insertIndex].id)
+			) {
+				insertIndex += 1;
+			}
+		}
+		const candidateTasks = [...remainingTasks];
+		candidateTasks.splice(insertIndex, 0, ...movedTasks);
 		return this.commitTaskMutation({
 			kind: 'reorder',
 			source,

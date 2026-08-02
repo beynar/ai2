@@ -4,15 +4,6 @@ import { getTaskCalendar, getTaskWorkingMinutes } from './ganttChart.calendar.js
 import type { ValidatedGanttModel } from './ganttChart.validation.js';
 import type { GanttResolvedTaskNode, GanttTask } from './ganttChart.types.js';
 
-export function resolveGanttDropParentId<TTaskFields extends object>(
-	targetTask: GanttTask<TTaskFields>,
-	position: 'before' | 'after'
-): string | null {
-	return (targetTask.type ?? 'task') === 'summary' && position === 'after'
-		? targetTask.id
-		: (targetTask.parentId ?? null);
-}
-
 type ResolvedAccumulator<TTaskFields extends object> = {
 	task: GanttTask<TTaskFields>;
 	resolvedStart: Date | null;

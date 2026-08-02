@@ -48,7 +48,6 @@
 		treeCell,
 		taskRow,
 		rowAttachment,
-		touchRowAttachment,
 		onCellFocus,
 		onIndent,
 		onOutdent,
@@ -88,8 +87,7 @@
 			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
 		>;
 		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
-		rowAttachment: Attachment<HTMLElement> | null;
-		touchRowAttachment: Attachment<HTMLElement> | null;
+		rowAttachment: Attachment<HTMLElement>;
 		onCellFocus: (columnId: string) => void;
 		onIndent: () => void;
 		onOutdent: () => void;
@@ -105,14 +103,6 @@
 		isFocused,
 		defaultContent: defaultRowContent
 	});
-	const combinedRowAttachment: Attachment<HTMLElement> = (element) => {
-		const rowCleanup = rowAttachment?.(element);
-		const touchCleanup = touchRowAttachment?.(element);
-		return () => {
-			touchCleanup?.();
-			rowCleanup?.();
-		};
-	};
 </script>
 
 <div
@@ -135,7 +125,7 @@
 	aria-rowindex={rowIndex + 2}
 	aria-level={node.depth + 1}
 	aria-expanded={node.type === 'summary' ? node.isExpanded : undefined}
-	{@attach combinedRowAttachment}
+	{@attach rowAttachment}
 >
 	{#if taskRow}
 		<div class="pointer-events-none absolute inset-0" aria-hidden="true">

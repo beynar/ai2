@@ -667,12 +667,18 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 				}
 				if (finish === null || finish === from) return;
 				const next = reorder({ list: [...items], startIndex: from, finishIndex: finish });
+				let targetItemId = overAtDrop?.targetItemId ?? null;
+				let targetEdge = overAtDrop?.targetEdge ?? null;
+				if (!overAtDrop && !('container' in targetData)) {
+					targetItemId = targetData.itemId;
+					targetEdge = targetData.edge;
+				}
 				options.onReorder?.(next, {
 					item: items[from],
 					from,
 					to: finish,
-					targetItemId: 'container' in targetData ? null : targetData.itemId,
-					targetEdge: 'container' in targetData ? null : targetData.edge
+					targetItemId,
+					targetEdge
 				});
 			} else {
 				let to: number;

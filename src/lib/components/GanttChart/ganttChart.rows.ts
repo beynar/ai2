@@ -24,9 +24,7 @@ export type GanttRowModel<
 	>[];
 	resourceGroupByTaskId: ReadonlyMap<string, GanttResource<TResourceFields>>;
 	resourceGroupStartTaskIds: ReadonlySet<string>;
-	isFiltered: boolean;
-	isSorted: boolean;
-	isGrouped: boolean;
+	isOrderStable: boolean;
 }>;
 
 export type GanttVirtualRow = Readonly<{
@@ -122,9 +120,11 @@ export function resolveGanttRows<
 		visibleColumns,
 		resourceGroupByTaskId,
 		resourceGroupStartTaskIds,
-		isFiltered: filterColumns.length > 0 || options.resourceView.isFiltered,
-		isSorted: sortColumns.length > 0,
-		isGrouped: options.resourceView.groupByResource
+		isOrderStable:
+			filterColumns.length === 0 &&
+			!options.resourceView.isFiltered &&
+			sortColumns.length === 0 &&
+			!options.resourceView.groupByResource
 	};
 }
 

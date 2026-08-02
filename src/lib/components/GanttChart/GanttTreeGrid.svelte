@@ -4,27 +4,17 @@
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import { useDndList } from '$lib/utils/useDndList.svelte.js';
 	import GanttColumnHeader from './GanttColumnHeader.svelte';
 	import GanttTreeRow from './GanttTreeRow.svelte';
-	import {
-		acceptGanttInteraction,
-		pendingGanttInteraction,
-		rejectGanttInteraction
-	} from './ganttChart.interactionResolution.js';
-	import type {
-		GanttRowInteractionStatus,
-		GanttRowReorderProposal
-	} from './ganttChart.interactions.svelte.js';
 	import type { GanttGridHeaderPayload } from './ganttChart.props.js';
-	import { resolveGanttRowDrop, type GanttRowDropTarget } from './ganttChart.rowDrop.js';
+	import type { GanttRowDropProposal } from './ganttChart.rowDrop.js';
+	import { GanttRowReorder } from './ganttChart.rowReorder.svelte.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import { GanttTouchRowReorder } from './ganttChart.touchRowReorder.svelte.js';
 
 	type RowDropPreview = Readonly<{
 		parentId: string | null;
-		intent: GanttRowReorderProposal['intent'];
+		intent: GanttRowDropProposal['intent'];
 		top: number;
 		inlineStart: number;
 	}>;
@@ -48,154 +38,50 @@
 	let horizontalViewport = $state<HTMLDivElement | null>(null);
 	let horizontalScrollLeft = $state(0);
 	const gridId = $props.id();
-	const nodesByTaskId = $derived(new Map(rowModel.rows.map((node) => [node.taskId, node])));
+	// The chart state owner has stable identity for this component lifetime.
+	// svelte-ignore state_referenced_locally
+	const rowReorder = new GanttRowReorder(
+		chart,
+		() => rowModel,
+		(rowIndex) => scrollToRow(rowIndex),
+		gridId
+	);
 	const rowIndexByTaskId = $derived(
 		new Map(rowModel.rows.map((node, index) => [node.taskId, index]))
 	);
 	const virtualRowByIndex = $derived(new Map(renderedRows.map((row) => [row.index, row])));
+	const renderedGridRows = $derived.by((): readonly GanttVirtualRow[] => {
+		const taskId = rowReorder.status?.taskId;
+		const sourceIndex = taskId ? rowIndexByTaskId.get(taskId) : undefined;
+		if (
+			sourceIndex === undefined ||
+			renderedRows.some((virtualRow) => virtualRow.index === sourceIndex)
+		) {
+			return renderedRows;
+		}
+		const start = sourceIndex * chart.rowHeight;
+		return [
+			...renderedRows,
+			{
+				key: rowModel.rows[sourceIndex]?.taskId ?? sourceIndex,
+				index: sourceIndex,
+				start,
+				end: start + chart.rowHeight,
+				size: chart.rowHeight
+			}
+		].sort((first, second) => first.index - second.index);
+	});
 	const gridWidth = $derived(
 		rowModel.visibleColumns.reduce((total, column) => total + (column.width ?? 160), 0)
 	);
-	const canReorder = $derived(
-		chart.interactions.reorderRows &&
-			!chart.disabled &&
-			!chart.loading &&
-			!rowModel.isFiltered &&
-			!rowModel.isSorted &&
-			!rowModel.isGrouped
-	);
-	const canChangeHierarchy = $derived(
-		!chart.disabled &&
-			!chart.loading &&
-			!rowModel.isFiltered &&
-			!rowModel.isSorted &&
-			!rowModel.isGrouped
-	);
-	const nativeRowCancellation = { taskId: null as string | null };
+	const canReorder = $derived(rowReorder.canReorder);
+	const canChangeHierarchy = $derived(!chart.disabled && !chart.loading && rowModel.isOrderStable);
 	const headerPayload = $derived<
 		GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ columns: rowModel.visibleColumns, defaultContent: defaultGridHeader });
 
-	const dnd = useDndList({
-		id: gridId,
-		items: () => [...rowModel.rows],
-		itemId: (node) => node.taskId,
-		handle: true,
-		indicator: 'custom',
-		disabled: () => !canReorder,
-		canDrag: (node) => !node.task.readOnly && chart.interaction.canBeginRowInteraction(),
-		autoScrollAxis: 'vertical',
-		onDragStart: () => {
-			nativeRowCancellation.taskId = null;
-		},
-		onReorder: (_rows, detail) => {
-			const target = detail.targetItemId
-				? rowModel.rows.find((row) => row.taskId === detail.targetItemId)
-				: rowModel.rows[detail.to];
-			if (!target) return;
-			let position: 'before' | 'after' = detail.to > detail.from ? 'after' : 'before';
-			if (detail.targetEdge === 'top') position = 'before';
-			if (detail.targetEdge === 'bottom') position = 'after';
-			const accepted = chart.reorderTask(detail.item.taskId, target.taskId, position);
-			if (!accepted) blockHierarchyOperation(detail.item.taskId);
-		},
-		onDragEnd: ({ item, dropped }) => {
-			const wasCoordinatorCancelled = nativeRowCancellation.taskId === item.taskId;
-			if (wasCoordinatorCancelled) nativeRowCancellation.taskId = null;
-			if (!dropped && !wasCoordinatorCancelled) {
-				chart.interaction.handleRowTransportCancel(item.taskId, 'native');
-			}
-		}
-	});
-	const touchRowReorder = new GanttTouchRowReorder({
-		getRows: () => rowModel.rows,
-		disabled: () => !canReorder || !chart.interactions.touch,
-		canStart: () => chart.interaction.canBeginRowInteraction(),
-		activation: () => chart.touchActivation,
-		scrollToRow: (rowIndex) => scrollToRow(rowIndex),
-		onReorder: (taskId, targetTaskId, position) =>
-			chart.reorderTask(taskId, targetTaskId, position, 'pointer'),
-		onBlocked: (taskId, reason) => {
-			chart.blockInteraction({
-				reason,
-				source: 'pointer',
-				taskId,
-				message:
-					reason === 'stale'
-						? 'The controlled task rows changed during touch reordering.'
-						: 'Touch reordering requires a compatible sibling target.'
-			});
-		},
-		onCancel: (taskId) => chart.interaction.handleRowTransportCancel(taskId, 'pointer')
-	});
-	const rowInteraction = $derived.by((): GanttRowInteractionStatus | null => {
-		const touchState = touchRowReorder.state;
-		const isTouch = touchState.state === 'dragging';
-		const taskId = isTouch ? touchState.taskId : dnd.dragging;
-		if (!taskId) return null;
-		let target: GanttRowDropTarget | null = isTouch ? touchState.target : null;
-		if (!isTouch) {
-			const over = dnd.over;
-			const targetTaskId = over
-				? (over.targetItemId ?? rowModel.rows[over.index]?.taskId)
-				: undefined;
-			if (over && targetTaskId && targetTaskId !== over.source.itemId) {
-				let position: 'before' | 'after' = over.index > over.source.index ? 'after' : 'before';
-				if (over.targetEdge === 'top') position = 'before';
-				if (over.targetEdge === 'bottom') position = 'after';
-				target = { taskId: over.source.itemId, targetTaskId, position };
-			}
-		}
-		if (!target) {
-			return {
-				kind: 'row',
-				transport: isTouch ? 'pointer' : 'native',
-				taskId,
-				resolution: pendingGanttInteraction
-			};
-		}
-		const resolution = resolveGanttRowDrop(target, nodesByTaskId);
-		if (!resolution) {
-			return {
-				kind: 'row',
-				transport: isTouch ? 'pointer' : 'native',
-				taskId,
-				resolution: rejectGanttInteraction(
-					'invalid-target',
-					'The row target does not preserve a valid hierarchy.'
-				)
-			};
-		}
-		const proposal: GanttRowReorderProposal = {
-			...target,
-			...resolution
-		};
-		return {
-			kind: 'row',
-			transport: isTouch ? 'pointer' : 'native',
-			taskId,
-			resolution: acceptGanttInteraction(proposal)
-		};
-	});
-	const rowDropPreview = $derived(
-		resolveRowDropPreview(
-			rowInteraction?.resolution.state === 'accepted' ? rowInteraction.resolution.proposal : null
-		)
-	);
-	const isRowInteractionInvalid = $derived(rowInteraction?.resolution.state === 'rejected');
-
-	$effect(() =>
-		chart.interaction.connectRowInteraction(
-			() => rowInteraction,
-			() => {
-				if (rowInteraction?.transport === 'native') {
-					nativeRowCancellation.taskId = rowInteraction.taskId;
-				}
-				dnd.cancel();
-				touchRowReorder.cancel();
-			}
-		)
-	);
+	const rowDropPreview = $derived(resolveRowDropPreview(rowReorder.preview));
+	const isRowInteractionInvalid = $derived(rowReorder.isInvalid);
 
 	function isTaskSelected(taskId: string): boolean {
 		return (
@@ -295,9 +181,11 @@
 			const accepted = Boolean(
 				target &&
 				chart.reorderTask(
-					node.taskId,
-					target.taskId,
-					event.key === 'ArrowUp' ? 'before' : 'after',
+					{
+						taskId: node.taskId,
+						targetTaskId: target.taskId,
+						position: event.key === 'ArrowUp' ? 'before' : 'after'
+					},
 					'keyboard'
 				)
 			);
@@ -419,7 +307,7 @@
 		});
 	}
 
-	function resolveRowDropPreview(proposal: GanttRowReorderProposal | null): RowDropPreview | null {
+	function resolveRowDropPreview(proposal: GanttRowDropProposal | null): RowDropPreview | null {
 		const targetRowIndex = proposal ? rowIndexByTaskId.get(proposal.targetTaskId) : undefined;
 		const virtualRow =
 			targetRowIndex === undefined ? undefined : virtualRowByIndex.get(targetRowIndex);
@@ -516,9 +404,9 @@
 					data-gantt-chart-part="rows"
 					class={chart.classes.rows(chart.themeVariants)}
 					style:height={`${totalHeight}px`}
-					{@attach dnd.list}
+					{@attach rowReorder.list}
 				>
-					{#each renderedRows as virtualRow (virtualRow.key)}
+					{#each renderedGridRows as virtualRow (virtualRow.key)}
 						{@const node = rowModel.rows[virtualRow.index]}
 						{#if node}
 							<GanttTreeRow
@@ -550,8 +438,7 @@
 								classes={chart.classes}
 								treeCell={chart.renderers?.treeCell}
 								taskRow={chart.renderers?.taskRow}
-								rowAttachment={dnd.item(node, virtualRow.index)}
-								touchRowAttachment={touchRowReorder.item(node.taskId)}
+								rowAttachment={rowReorder.item(node)}
 								onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
 								onIndent={() => indentRow(virtualRow.index)}
 								onOutdent={() => outdentRow(virtualRow.index)}

@@ -1,5 +1,5 @@
-import { resolveGanttDropParentId } from './ganttChart.hierarchy.js';
-import type { GanttResolvedTaskNode } from './ganttChart.types.js';
+import type { FlatHierarchy, FlatHierarchyNode } from '$lib/scheduling/flatHierarchy.js';
+import type { GanttTask } from './ganttChart.types.js';
 
 export type GanttRowDropTarget = Readonly<{
 	taskId: string;
@@ -7,41 +7,62 @@ export type GanttRowDropTarget = Readonly<{
 	position: 'before' | 'after';
 }>;
 
-export type GanttRowDropResolution = Readonly<{
-	parentId: string | null;
-	depth: number;
-	intent: 'reorder' | 'nest' | 'outdent' | 'reparent';
+export type GanttRowDropProposal = Readonly<
+	GanttRowDropTarget & {
+		parentId: string | null;
+		depth: number;
+		intent: 'reorder' | 'nest' | 'outdent' | 'reparent';
+	}
+>;
+
+type GanttRowDropModel<TTaskFields extends object> = Readonly<{
+	tasksById: ReadonlyMap<string, GanttTask<TTaskFields>>;
+	taskHierarchy: FlatHierarchy;
 }>;
 
 export function resolveGanttRowDrop<TTaskFields extends object>(
-	target: GanttRowDropTarget | null,
-	nodesById: ReadonlyMap<string, GanttResolvedTaskNode<TTaskFields>>
-): GanttRowDropResolution | null {
-	if (!target || target.taskId === target.targetTaskId) return null;
-	const sourceNode = nodesById.get(target.taskId);
-	const targetNode = nodesById.get(target.targetTaskId);
-	if (!sourceNode || !targetNode || isDescendant(targetNode, sourceNode.taskId, nodesById)) {
+	target: GanttRowDropTarget,
+	model: GanttRowDropModel<TTaskFields>
+): GanttRowDropProposal | null {
+	if (target.taskId === target.targetTaskId) return null;
+	const sourceTask = model.tasksById.get(target.taskId);
+	const targetTask = model.tasksById.get(target.targetTaskId);
+	const sourceNode = model.taskHierarchy.nodesById.get(target.taskId);
+	const targetNode = model.taskHierarchy.nodesById.get(target.targetTaskId);
+	if (
+		!sourceTask ||
+		!targetTask ||
+		!sourceNode ||
+		!targetNode ||
+		sourceTask.readOnly ||
+		isDescendant(targetNode, sourceNode.id, model.taskHierarchy.nodesById)
+	) {
 		return null;
 	}
-	const parentId = resolveGanttDropParentId(targetNode.task, target.position);
-	const parentNode = parentId ? nodesById.get(parentId) : null;
-	if (parentId && (!parentNode || parentNode.task.readOnly)) return null;
+	const parentId =
+		(targetTask.type ?? 'task') === 'summary' && target.position === 'after'
+			? targetTask.id
+			: targetNode.parentId;
+	const parentNode = parentId ? model.taskHierarchy.nodesById.get(parentId) : null;
+	const parentTask = parentId ? model.tasksById.get(parentId) : null;
+	if (parentId && (!parentNode || !parentTask || parentTask.readOnly)) return null;
 	const depth = parentNode ? parentNode.depth + 1 : 0;
 	return {
+		...target,
 		parentId,
 		depth,
 		intent: resolveDropIntent(sourceNode.parentId, sourceNode.depth, parentId, depth)
 	};
 }
 
-function isDescendant<TTaskFields extends object>(
-	targetNode: GanttResolvedTaskNode<TTaskFields>,
+function isDescendant(
+	targetNode: FlatHierarchyNode,
 	ancestorTaskId: string,
-	nodesById: ReadonlyMap<string, GanttResolvedTaskNode<TTaskFields>>
+	nodesById: ReadonlyMap<string, FlatHierarchyNode>
 ): boolean {
-	let current: GanttResolvedTaskNode<TTaskFields> | undefined = targetNode;
+	let current: FlatHierarchyNode | undefined = targetNode;
 	while (current) {
-		if (current.taskId === ancestorTaskId) return true;
+		if (current.id === ancestorTaskId) return true;
 		current = current.parentId ? nodesById.get(current.parentId) : undefined;
 	}
 	return false;
@@ -52,7 +73,7 @@ function resolveDropIntent(
 	sourceDepth: number,
 	parentId: string | null,
 	depth: number
-): GanttRowDropResolution['intent'] {
+): GanttRowDropProposal['intent'] {
 	if (sourceParentId === parentId) return 'reorder';
 	if (depth > sourceDepth) return 'nest';
 	if (depth < sourceDepth) return 'outdent';

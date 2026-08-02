@@ -23,7 +23,10 @@ import {
 	type GanttInteractionResolution
 } from './ganttChart.interactionResolution.js';
 import type { GanttChartMutations } from './ganttChart.mutations.js';
-import type { GanttRowDropResolution, GanttRowDropTarget } from './ganttChart.rowDrop.js';
+import type {
+	GanttRowInteractionOwner,
+	GanttRowReorderStatus
+} from './ganttChart.rowReorder.svelte.js';
 import {
 	getGanttScaleInstantAtPixel,
 	getGanttScalePixel,
@@ -135,19 +138,10 @@ export type GanttTimelineInteractionStatus<TTaskFields extends object> =
 			workingDurationMinutes: number;
 	  }>;
 
-export type GanttRowReorderProposal = Readonly<GanttRowDropTarget & GanttRowDropResolution>;
-
-export type GanttRowInteractionStatus = Readonly<{
-	kind: 'row';
-	transport: 'native' | 'pointer';
-	taskId: string;
-	resolution: GanttInteractionResolution<GanttRowReorderProposal>;
-}>;
-
 export type GanttActiveInteraction<TTaskFields extends object> =
 	| GanttTimelineInteractionStatus<TTaskFields>
 	| Readonly<{ kind: 'dependency' } & GanttDependencyInteractionStatus>
-	| GanttRowInteractionStatus;
+	| GanttRowReorderStatus;
 
 export class GanttChartInteractions<
 	TTaskFields extends object,
@@ -187,8 +181,7 @@ export class GanttChartInteractions<
 	#taskRowTops = new Map<string, number>();
 	#taskDragAttachments = new Map<string, Attachment<HTMLElement>>();
 	#rangeDragAttachment: Attachment<HTMLElement> | null = null;
-	#readRowInteraction = $state.raw<(() => GanttRowInteractionStatus | null) | null>(null);
-	#cancelRowInteraction: (() => void) | null = null;
+	#rowInteraction = $state.raw<GanttRowInteractionOwner | null>(null);
 
 	constructor(
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
@@ -204,7 +197,7 @@ export class GanttChartInteractions<
 		this.dependency = new GanttDependencyInteraction(
 			chart,
 			mutations,
-			() => this.#gesture === null && this.#readRowInteraction?.() == null,
+			() => this.#gesture === null && this.#rowInteraction?.status == null,
 			() => {
 				this.cancel(true);
 				this.#chart.a11y.scheduleDismissFocus();
@@ -239,40 +232,14 @@ export class GanttChartInteractions<
 		}
 		const dependency = this.dependency.status;
 		if (dependency) return { kind: 'dependency', ...dependency };
-		return this.#readRowInteraction?.() ?? null;
+		return this.#rowInteraction?.status ?? null;
 	});
 
-	connectRowInteraction(
-		read: () => GanttRowInteractionStatus | null,
-		cancel: () => void
-	): () => void {
-		this.#readRowInteraction = read;
-		this.#cancelRowInteraction = cancel;
+	connectRowInteraction(owner: GanttRowInteractionOwner): () => void {
+		this.#rowInteraction = owner;
 		return () => {
-			if (this.#readRowInteraction !== read) return;
-			this.#readRowInteraction = null;
-			this.#cancelRowInteraction = null;
+			if (this.#rowInteraction === owner) this.#rowInteraction = null;
 		};
-	}
-
-	canBeginRowInteraction(): boolean {
-		return (
-			!this.#chart.disabled &&
-			!this.#chart.loading &&
-			this.#gesture === null &&
-			!this.dependency.isActive &&
-			this.#readRowInteraction?.() == null
-		);
-	}
-
-	handleRowTransportCancel(taskId: string, transport: 'native' | 'pointer'): void {
-		this.#chart.a11y.announceInteractionCancelled({
-			kind: 'row',
-			transport,
-			taskId,
-			resolution: pendingGanttInteraction
-		});
-		this.#chart.a11y.scheduleDismissFocus();
 	}
 
 	shouldSuppressTaskActivation(taskId: string): boolean {
@@ -575,16 +542,6 @@ export class GanttChartInteractions<
 
 	reconcileControlledState(): void {
 		this.dependency.reconcileControlledState();
-		const rowInteraction = this.#readRowInteraction?.();
-		if (rowInteraction) {
-			this.#cancelRowInteraction?.();
-			this.reportBlocked({
-				reason: 'stale',
-				source: 'pointer',
-				taskId: rowInteraction.taskId,
-				message: 'The controlled Gantt collections changed during row reordering.'
-			});
-		}
 		const gesture = this.#gesture;
 		if (!gesture || this.#chart.isModelBoundaryCurrent(gesture.boundary)) return;
 		this.cancel();
@@ -612,8 +569,7 @@ export class GanttChartInteractions<
 	cancel(announce = false): boolean {
 		const active = this.active;
 		const didCancelDependency = this.dependency.cancel();
-		const didCancelRow = this.#readRowInteraction?.() != null;
-		if (didCancelRow) this.#cancelRowInteraction?.();
+		const didCancelRow = this.#rowInteraction?.cancel() ?? false;
 		const gesture = this.#gesture;
 		const pointerCapture = gesture?.pointerCapture;
 		const hasPointerCapture = Boolean(

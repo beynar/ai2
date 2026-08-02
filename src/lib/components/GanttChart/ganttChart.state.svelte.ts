@@ -26,6 +26,7 @@ import type {
 	GanttTimelineOptions
 } from './ganttChart.props.js';
 import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
+import type { GanttRowDropTarget } from './ganttChart.rowDrop.js';
 import { createGanttColumnContext } from './ganttChart.rows.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
 import type { GanttChartClasses } from './ganttChart.theme.js';
@@ -725,13 +726,11 @@ export class GanttChartState<
 	}
 
 	reorderTask(
-		taskId: string,
-		targetTaskId: string,
-		position: 'before' | 'after',
+		target: GanttRowDropTarget,
 		source: Extract<GanttMutationSource, 'pointer' | 'keyboard'> = 'pointer'
 	): boolean {
 		if (!this.interactions.reorderRows) return false;
-		return this.#mutations.reorderTask(taskId, targetTaskId, position, source);
+		return this.#mutations.reorderTask(target, source);
 	}
 
 	indentTask(
