@@ -87,180 +87,39 @@
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import Spinner from '$lib/components/Spinner/Spinner.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
+	import type { Density } from '$lib/types/theme.js';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
 	import { get } from 'svelte/store';
 	import GanttTimeline from './GanttTimeline.svelte';
 	import GanttTreeGrid from './GanttTreeGrid.svelte';
 	import { resolveGanttColumns } from './ganttChart.columns.js';
-	import type {
-		GanttColumnHeaderPayload,
-		GanttEmptyPayload,
-		GanttGridHeaderPayload,
-		GanttLoadingPayload,
-		GanttBaselinePayload,
-		GanttDeadlinePayload,
-		GanttDependencyTooltipPayload,
-		GanttDisplayOptions,
-		GanttDragPreviewPayload,
-		GanttNonWorkingTimePayload,
-		GanttProgressPayload,
-		GanttResourceAssignmentsPayload,
-		GanttResourceView,
-		GanttTaskLabelPayload,
-		GanttTaskPayload,
-		GanttTaskTooltipPayload,
-		GanttTaskRowPayload,
-		GanttTimeHeaderPayload,
-		GanttTreeCellPayload,
-		GanttWorkloadCellPayload
-	} from './ganttChart.props.js';
+	import type { GanttEmptyPayload, GanttLoadingPayload } from './ganttChart.props.js';
 	import { resolveGanttResourceView } from './ganttChart.resourceView.js';
 	import { resolveGanttRows, type GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type {
-		GanttColumnDefinition,
-		GanttHoliday,
-		GanttInteractions,
-		GanttRange,
-		GanttResolvedDependency,
-		GanttResolvedTaskNode,
-		GanttScaleDefinition,
-		GanttScrollMode,
-		GanttSortDirection,
-		GanttTouchActivation
-	} from './ganttChart.types.js';
-	import type { Snippet } from 'svelte';
-
-	type ShellSnippets = {
-		gridHeader?: Snippet<
-			[GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		columnHeader?: Snippet<
-			[GanttColumnHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		treeCell?: Snippet<
-			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
-		timeHeaderUpper?: Snippet<[GanttTimeHeaderPayload]>;
-		timeHeaderLower?: Snippet<[GanttTimeHeaderPayload]>;
-		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		milestone?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		taskLabel?: Snippet<[GanttTaskLabelPayload<TTaskFields>]>;
-		taskTooltip?: Snippet<
-			[GanttTaskTooltipPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
-		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
-		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
-		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
-		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
-		resourceAssignments?: Snippet<
-			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		workloadCell?: Snippet<[GanttWorkloadCellPayload<TResourceFields>]>;
-		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
-		empty?: Snippet<[GanttEmptyPayload]>;
-		loadingContent?: Snippet<[GanttLoadingPayload]>;
-	};
+	import type { GanttSortDirection } from './ganttChart.types.js';
 
 	let {
-		chart,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		direction,
-		loading,
-		disabled,
-		showGrid,
-		gridWidth = $bindable(),
-		minGridWidth,
-		maxGridWidth,
-		rowHeight,
-		overscan,
-		scrollMode,
-		columns,
-		interactions,
-		touchActivation,
-		scales,
-		validRange,
-		holidays,
-		showTodayIndicator,
-		showWeekends,
-		display,
-		resourceView,
-		classes,
-		snippets,
-		onTaskClick,
-		onTaskDoubleClick,
-		onDependencyClick
+		chart
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		loading: boolean;
-		disabled: boolean;
-		showGrid: boolean;
-		gridWidth: number;
-		minGridWidth: number;
-		maxGridWidth: number;
-		rowHeight: number;
-		overscan: number;
-		scrollMode: GanttScrollMode;
-		columns:
-			| readonly GanttColumnDefinition<
-					TTaskFields,
-					TDependencyFields,
-					TResourceFields,
-					TAssignmentFields
-			  >[]
-			| undefined;
-		interactions: GanttInteractions;
-		touchActivation: GanttTouchActivation;
-		scales: readonly GanttScaleDefinition[];
-		validRange: GanttRange | undefined;
-		holidays: readonly GanttHoliday[];
-		showTodayIndicator: boolean;
-		showWeekends: boolean;
-		display: GanttDisplayOptions;
-		resourceView: GanttResourceView | undefined;
-		classes: GanttChartClasses;
-		snippets: ShellSnippets;
-		onTaskClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
-		onTaskDoubleClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
-		onDependencyClick?: (
-			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
 
 	let containerWidth = $state(0);
 	let containerHeight = $state(0);
 	let panelSizes = $state([38, 62]);
-	let lastPublishedGridWidth = $state(gridWidth);
 	let viewportRef = $state<HTMLDivElement | null>(null);
 	let pageScrollElement = $state<HTMLElement | null>(null);
 	let pageScrollMargin = $state(0);
 	let measuredScheduleHeader = $state<Readonly<{ density: Density; height: number }> | undefined>();
-	const scheduleHeaderHeight = $derived(
-		measuredScheduleHeader?.density === density
-			? measuredScheduleHeader.height
-			: resolveDensityHeaderHeight(density)
-	);
+	const scheduleHeaderHeight = $derived.by(() => {
+		const measuredHeader = measuredScheduleHeader;
+		return measuredHeader?.density === chart.density
+			? measuredHeader.height
+			: resolveDensityHeaderHeight(chart.density);
+	});
 	let sortOverrides = $state<Record<string, GanttSortDirection | null>>({});
-	const baseColumns = $derived(resolveGanttColumns(columns));
+	const baseColumns = $derived(resolveGanttColumns(chart.columns));
 	const resolvedColumns = $derived(
 		baseColumns.map((column) =>
 			Object.prototype.hasOwnProperty.call(sortOverrides, column.id)
@@ -270,7 +129,7 @@
 	);
 	const resolvedResourceView = $derived(
 		resolveGanttResourceView(
-			resourceView,
+			chart.resourceView,
 			chart.schedule.model.resources,
 			chart.schedule.model.resourceHierarchy
 		)
@@ -290,7 +149,7 @@
 			rowModel.rows.map((node) => node.taskId),
 			rowModel.visibleColumns.map((column) => column.id),
 			chart.schedule.analysis.dependencies.map((dependency) => dependency.dependency.id),
-			rowHeight
+			chart.rowHeight
 		);
 	});
 	const rowVirtualizerStore = createVirtualizer<HTMLElement, HTMLElement>({
@@ -303,12 +162,12 @@
 	$effect(() => {
 		const rows = rowModel.rows;
 		const viewport = viewportRef;
-		const mode = scrollMode;
+		const mode = chart.scrollMode;
 		const layoutWidth = containerWidth;
 		const layoutHeight = containerHeight;
 		const headerHeight = scheduleHeaderHeight;
-		const estimate = rowHeight;
-		const extra = overscan;
+		const estimate = chart.rowHeight;
+		const extra = chart.overscan;
 		void layoutWidth;
 		void layoutHeight;
 		void headerHeight;
@@ -330,7 +189,7 @@
 	});
 
 	$effect(() => {
-		const mode = scrollMode;
+		const mode = chart.scrollMode;
 		const scrollOwner = mode === 'page' ? pageScrollElement : viewportRef;
 		if (!scrollOwner) return;
 		return chart.interaction.connectVerticalScrollOwner(scrollOwner, mode);
@@ -353,16 +212,18 @@
 	$effect(() => {
 		const viewport = viewportRef;
 		const layoutWidth = containerWidth;
-		const currentDensity = density;
+		const currentDensity = chart.density;
 		void layoutWidth;
 		const header = viewport?.querySelector<HTMLElement>(
 			'[data-gantt-chart-part="grid-header"], [data-gantt-chart-part="time-header"]'
 		);
 		const height = header?.getBoundingClientRect().height;
+		const measuredHeader = measuredScheduleHeader;
 		if (
 			height &&
-			(measuredScheduleHeader?.density !== currentDensity ||
-				measuredScheduleHeader.height !== height)
+			(!measuredHeader ||
+				measuredHeader.density !== currentDensity ||
+				measuredHeader.height !== height)
 		) {
 			measuredScheduleHeader = { density: currentDensity, height };
 		}
@@ -373,14 +234,15 @@
 		Math.min(
 			rowModel.rows.length,
 			Math.ceil(
-				((scrollMode === 'page' ? pageScrollElement?.clientHeight : viewportRef?.clientHeight) ??
-					rowHeight * 10) / rowHeight
-			) + overscan
+				((chart.scrollMode === 'page'
+					? pageScrollElement?.clientHeight
+					: viewportRef?.clientHeight) ?? chart.rowHeight * 10) / chart.rowHeight
+			) + chart.overscan
 		)
 	);
 	const renderedRows = $derived.by((): readonly GanttVirtualRow[] => {
 		if (virtualRows.length > 0) {
-			const offset = scrollMode === 'page' ? pageScrollMargin : 0;
+			const offset = chart.scrollMode === 'page' ? pageScrollMargin : 0;
 			return virtualRows.map((row) => ({
 				...row,
 				start: row.start - offset,
@@ -390,17 +252,17 @@
 		return Array.from({ length: fallbackRowCount }, (_, index) => ({
 			index,
 			key: rowModel.rows[index]?.taskId ?? index,
-			start: index * rowHeight,
-			end: (index + 1) * rowHeight,
-			size: rowHeight
+			start: index * chart.rowHeight,
+			end: (index + 1) * chart.rowHeight,
+			size: chart.rowHeight
 		}));
 	});
 	const totalRowsHeight = $derived(
-		$rowVirtualizerStore.getTotalSize() || rowModel.rows.length * rowHeight
+		$rowVirtualizerStore.getTotalSize() || rowModel.rows.length * chart.rowHeight
 	);
-	const contentHeight = $derived(Math.max(totalRowsHeight, rowHeight * 6));
+	const contentHeight = $derived(Math.max(totalRowsHeight, chart.rowHeight * 6));
 	const workloadPanelHeight = $derived(
-		display.workload && resolvedResourceView.resources.length > 0
+		chart.display.workload && resolvedResourceView.resources.length > 0
 			? resolvedResourceView.workloadHeight
 			: 0
 	);
@@ -416,9 +278,20 @@
 	});
 
 	$effect.pre(() => {
-		validateGridMetrics(gridWidth, minGridWidth, maxGridWidth, rowHeight, overscan);
-		if (containerWidth <= 0 || gridWidth === lastPublishedGridWidth) return;
-		panelSizes = resolvePanelSizes(gridWidth, minGridWidth, maxGridWidth, containerWidth);
+		validateGridMetrics(
+			chart.gridWidth,
+			chart.minGridWidth,
+			chart.maxGridWidth,
+			chart.rowHeight,
+			chart.overscan
+		);
+		if (containerWidth <= 0) return;
+		panelSizes = resolvePanelSizes(
+			chart.gridWidth,
+			chart.minGridWidth,
+			chart.maxGridWidth,
+			containerWidth
+		);
 	});
 
 	$effect(() => {
@@ -431,14 +304,13 @@
 	function publishGridWidth(sizes: number[]): void {
 		if (containerWidth <= 0) return;
 		const nextWidth = Math.round((sizes[0] / 100) * containerWidth);
-		if (nextWidth === gridWidth) return;
-		lastPublishedGridWidth = nextWidth;
-		gridWidth = nextWidth;
+		if (nextWidth === chart.gridWidth) return;
+		chart.gridWidth = nextWidth;
 	}
 
 	function toggleSort(columnId: string, additive: boolean): void {
 		const column = resolvedColumns.find((candidate) => candidate.id === columnId);
-		if (!column?.sortable || disabled) return;
+		if (!column?.sortable || chart.disabled) return;
 		const current = column.sortDirection ?? null;
 		const next = current === null ? 'ascending' : current === 'ascending' ? 'descending' : null;
 		sortOverrides = {
@@ -456,21 +328,21 @@
 	bind:clientWidth={containerWidth}
 	bind:clientHeight={containerHeight}
 	data-gantt-chart-part="content"
-	data-scroll-mode={scrollMode}
+	data-scroll-mode={chart.scrollMode}
 	data-scrollbars="custom"
 	data-empty={rowModel.rows.length === 0 || undefined}
-	data-loading={loading || undefined}
-	aria-busy={loading}
-	class={classes.content({ size, density, color, disabled })}
-	style:--gantt-row-height={`${rowHeight}px`}
-	style:--gantt-min-grid-width={`${minGridWidth}px`}
-	style:--gantt-max-grid-width={`${maxGridWidth}px`}
+	data-loading={chart.loading || undefined}
+	aria-busy={chart.loading}
+	class={chart.classes.content(chart.themeVariants)}
+	style:--gantt-row-height={`${chart.rowHeight}px`}
+	style:--gantt-min-grid-width={`${chart.minGridWidth}px`}
+	style:--gantt-max-grid-width={`${chart.maxGridWidth}px`}
 >
-	{#if scrollMode === 'contained'}
+	{#if chart.scrollMode === 'contained'}
 		<ScrollArea
 			bind:viewportRef
 			class="h-full"
-			ariaLabel={messages.ganttChartScrollableContent}
+			ariaLabel={chart.messages.ganttChartScrollableContent}
 			type="hover"
 		>
 			{@render splitContent()}
@@ -480,7 +352,7 @@
 			bind:this={viewportRef}
 			class="relative min-h-0 overflow-visible"
 			role="group"
-			aria-label={messages.ganttChartScrollableContent}
+			aria-label={chart.messages.ganttChartScrollableContent}
 		>
 			{@render splitContent()}
 		</div>
@@ -489,24 +361,27 @@
 	{#if rowModel.rows.length === 0}
 		<div
 			data-gantt-chart-part="empty"
-			class={classes.empty({ size, density, color, disabled })}
+			class={chart.classes.empty(chart.themeVariants)}
 			role="status"
 			aria-live="polite"
 		>
 			<Empty>
-				<Slot render={snippets.empty ?? defaultEmpty} payload={emptyPayload} />
+				<Slot render={chart.renderers?.empty ?? defaultEmpty} payload={emptyPayload} />
 			</Empty>
 		</div>
 	{/if}
 
-	{#if loading}
+	{#if chart.loading}
 		<div
 			data-gantt-chart-part="loading"
-			class={classes.loading({ size, density, color, disabled, class: 'pointer-events-none' })}
+			class={chart.classes.loading({
+				...chart.themeVariants,
+				class: 'pointer-events-none'
+			})}
 			role="status"
 			aria-live="polite"
 		>
-			<Slot render={snippets.loadingContent ?? defaultLoading} payload={loadingPayload} />
+			<Slot render={chart.renderers?.loadingContent ?? defaultLoading} payload={loadingPayload} />
 		</div>
 	{/if}
 </div>
@@ -518,11 +393,11 @@
 		style:height={`${Math.max(containerHeight, contentHeight + scheduleHeaderHeight + workloadPanelHeight)}px`}
 		style:contain="inline-size"
 	>
-		{#if showGrid}
+		{#if chart.showGrid}
 			<Resizable
 				bind:sizes={panelSizes}
 				orientation="horizontal"
-				dir={direction}
+				dir={chart.direction}
 				showLines
 				panels={[
 					{
@@ -530,8 +405,8 @@
 						content: gridPane,
 						class: 'overflow-visible',
 						defaultSize: panelSizes[0],
-						minSize: resolveMinimumPercent(minGridWidth, containerWidth),
-						maxSize: resolveMaximumPercent(maxGridWidth, containerWidth)
+						minSize: resolveMinimumPercent(chart.minGridWidth, containerWidth),
+						maxSize: resolveMaximumPercent(chart.maxGridWidth, containerWidth)
 					},
 					{
 						id: 'gantt-timeline',
@@ -542,8 +417,8 @@
 					}
 				]}
 				class="min-h-full overflow-visible"
-				theme={{ handle: { base: classes.splitter({ size, density, color, disabled }) } }}
-				getHandleAriaLabel={() => messages.ganttChartResizePanels}
+				theme={{ handle: { base: chart.classes.splitter(chart.themeVariants) } }}
+				getHandleAriaLabel={() => chart.messages.ganttChartResizePanels}
 				onLayoutChanged={(sizes, meta) => {
 					if (meta.isUserInteraction) publishGridWidth(sizes);
 				}}
@@ -560,20 +435,6 @@
 		{rowModel}
 		{renderedRows}
 		totalHeight={contentHeight}
-		selection={chart.selection}
-		{messages}
-		{locale}
-		{timeZone}
-		{size}
-		{density}
-		{color}
-		{direction}
-		{disabled}
-		{loading}
-		{interactions}
-		{touchActivation}
-		{classes}
-		{snippets}
 		onToggleSort={toggleSort}
 		{scrollToRow}
 	/>
@@ -585,36 +446,16 @@
 		{rowModel}
 		{renderedRows}
 		totalHeight={contentHeight}
-		{rowHeight}
-		{scales}
-		{validRange}
-		{holidays}
-		{showTodayIndicator}
-		{showWeekends}
-		{display}
 		resourceView={resolvedResourceView}
-		{messages}
-		{locale}
-		{timeZone}
-		{size}
-		{density}
-		{color}
-		{direction}
-		{disabled}
-		{classes}
-		{snippets}
-		{onTaskClick}
-		{onTaskDoubleClick}
-		{onDependencyClick}
 	/>
 {/snippet}
 
 {#snippet defaultEmpty()}
-	<div class="text-neutral/65">{messages.ganttChartEmpty}</div>
+	<div class="text-neutral/65">{chart.messages.ganttChartEmpty}</div>
 {/snippet}
 
 {#snippet defaultLoading()}
-	<Spinner text={messages.ganttChartLoading} {size} />
+	<Spinner text={chart.messages.ganttChartLoading} size={chart.size} />
 {/snippet}
 
 <style>

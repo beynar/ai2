@@ -4,8 +4,6 @@
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import { useDndList } from '$lib/utils/useDndList.svelte.js';
 	import GanttColumnHeader from './GanttColumnHeader.svelte';
 	import GanttTreeRow from './GanttTreeRow.svelte';
@@ -18,36 +16,11 @@
 		GanttRowInteractionStatus,
 		GanttRowReorderProposal
 	} from './ganttChart.interactions.svelte.js';
-	import type {
-		GanttColumnHeaderPayload,
-		GanttGridHeaderPayload,
-		GanttTaskRowPayload,
-		GanttTreeCellPayload
-	} from './ganttChart.props.js';
+	import type { GanttGridHeaderPayload } from './ganttChart.props.js';
 	import { resolveGanttRowDrop, type GanttRowDropTarget } from './ganttChart.rowDrop.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
 	import { GanttTouchRowReorder } from './ganttChart.touchRowReorder.svelte.js';
-	import type {
-		GanttInteractions,
-		GanttSelection,
-		GanttTouchActivation
-	} from './ganttChart.types.js';
-	import type { Snippet } from 'svelte';
-
-	type GridSnippets = {
-		gridHeader?: Snippet<
-			[GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		columnHeader?: Snippet<
-			[GanttColumnHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		treeCell?: Snippet<
-			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		taskRow?: Snippet<[GanttTaskRowPayload<TTaskFields>]>;
-	};
 
 	type RowDropPreview = Readonly<{
 		parentId: string | null;
@@ -61,20 +34,6 @@
 		rowModel,
 		renderedRows,
 		totalHeight,
-		selection,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		direction,
-		disabled,
-		loading,
-		interactions,
-		touchActivation,
-		classes,
-		snippets,
 		onToggleSort,
 		scrollToRow
 	}: {
@@ -82,20 +41,6 @@
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		renderedRows: readonly GanttVirtualRow[];
 		totalHeight: number;
-		selection: GanttSelection;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		disabled: boolean;
-		loading: boolean;
-		interactions: GanttInteractions;
-		touchActivation: GanttTouchActivation;
-		classes: GanttChartClasses;
-		snippets: GridSnippets;
 		onToggleSort: (columnId: string, additive: boolean) => void;
 		scrollToRow: (rowIndex: number) => void;
 	} = $props();
@@ -112,15 +57,19 @@
 		rowModel.visibleColumns.reduce((total, column) => total + (column.width ?? 160), 0)
 	);
 	const canReorder = $derived(
-		interactions.reorderRows &&
-			!disabled &&
-			!loading &&
+		chart.interactions.reorderRows &&
+			!chart.disabled &&
+			!chart.loading &&
 			!rowModel.isFiltered &&
 			!rowModel.isSorted &&
 			!rowModel.isGrouped
 	);
 	const canChangeHierarchy = $derived(
-		!disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted && !rowModel.isGrouped
+		!chart.disabled &&
+			!chart.loading &&
+			!rowModel.isFiltered &&
+			!rowModel.isSorted &&
+			!rowModel.isGrouped
 	);
 	const nativeRowCancellation = { taskId: null as string | null };
 	const headerPayload = $derived<
@@ -160,9 +109,9 @@
 	});
 	const touchRowReorder = new GanttTouchRowReorder({
 		getRows: () => rowModel.rows,
-		disabled: () => !canReorder || !interactions.touch,
+		disabled: () => !canReorder || !chart.interactions.touch,
 		canStart: () => chart.interaction.canBeginRowInteraction(),
-		activation: () => touchActivation,
+		activation: () => chart.touchActivation,
 		scrollToRow: (rowIndex) => scrollToRow(rowIndex),
 		onReorder: (taskId, targetTaskId, position) =>
 			chart.reorderTask(taskId, targetTaskId, position, 'pointer'),
@@ -250,8 +199,8 @@
 
 	function isTaskSelected(taskId: string): boolean {
 		return (
-			(selection.kind === 'task' && selection.taskId === taskId) ||
-			(selection.kind === 'cell' && selection.taskId === taskId)
+			(chart.selection.kind === 'task' && chart.selection.taskId === taskId) ||
+			(chart.selection.kind === 'cell' && chart.selection.taskId === taskId)
 		);
 	}
 
@@ -266,8 +215,8 @@
 	}
 
 	function navigateCell(event: KeyboardEvent, rowIndex: number, columnIndex: number): void {
-		if (!interactions.keyboard) return;
-		const hierarchyDirection = direction === 'rtl' ? -1 : 1;
+		if (!chart.interactions.keyboard) return;
+		const hierarchyDirection = chart.direction === 'rtl' ? -1 : 1;
 		const node = rowModel.rows[rowIndex];
 		const column = rowModel.visibleColumns[columnIndex];
 		if (!node || !column) return;
@@ -275,12 +224,12 @@
 			column.id === 'title' &&
 			!event.altKey &&
 			!event.shiftKey &&
-			event.key === (direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+			event.key === (chart.direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
 		const isHierarchyBackward =
 			column.id === 'title' &&
 			!event.altKey &&
 			!event.shiftKey &&
-			event.key === (direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft');
+			event.key === (chart.direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft');
 		if (isHierarchyForward && node.type === 'summary') {
 			event.preventDefault();
 			if (!node.isExpanded) {
@@ -365,10 +314,10 @@
 				nextRow += 1;
 				break;
 			case 'ArrowLeft':
-				nextColumn += direction === 'rtl' ? 1 : -1;
+				nextColumn += chart.direction === 'rtl' ? 1 : -1;
 				break;
 			case 'ArrowRight':
-				nextColumn += direction === 'rtl' ? -1 : 1;
+				nextColumn += chart.direction === 'rtl' ? -1 : 1;
 				break;
 			case 'Home':
 				nextColumn = 0;
@@ -384,10 +333,10 @@
 		event.preventDefault();
 		const inlineEndOverflow =
 			(event.key === 'ArrowRight' &&
-				direction === 'ltr' &&
+				chart.direction === 'ltr' &&
 				nextColumn >= rowModel.visibleColumns.length) ||
 			(event.key === 'ArrowLeft' &&
-				direction === 'rtl' &&
+				chart.direction === 'rtl' &&
 				nextColumn >= rowModel.visibleColumns.length);
 		if (inlineEndOverflow && chart.a11y.focusTask(node.taskId)) return;
 		nextRow = Math.max(0, Math.min(rowModel.rows.length - 1, nextRow));
@@ -414,7 +363,7 @@
 	}
 
 	function canIndentRow(rowIndex: number): boolean {
-		if (!canChangeHierarchy || !interactions.indent) return false;
+		if (!canChangeHierarchy || !chart.interactions.indent) return false;
 		const node = rowModel.rows[rowIndex];
 		const previousNode = rowModel.rows[findIndentTargetRowIndex(rowIndex)];
 		return Boolean(
@@ -428,7 +377,7 @@
 	}
 
 	function canOutdentRow(rowIndex: number): boolean {
-		if (!canChangeHierarchy || !interactions.outdent) return false;
+		if (!canChangeHierarchy || !chart.interactions.outdent) return false;
 		const node = rowModel.rows[rowIndex];
 		return Boolean(node && node.parentId && !node.task.readOnly);
 	}
@@ -502,22 +451,19 @@
 <div
 	data-gantt-chart-part="grid-pane"
 	data-interaction-invalid={isRowInteractionInvalid || undefined}
-	class={classes.gridPane({
-		size,
-		density,
-		color,
-		disabled,
+	class={chart.classes.gridPane({
+		...chart.themeVariants,
 		invalid: isRowInteractionInvalid,
 		class: isRowInteractionInvalid ? '[&_[data-dnd-handle]]:!cursor-not-allowed' : undefined
 	})}
 	role="treegrid"
-	aria-label={messages.ganttChartGrid}
+	aria-label={chart.messages.ganttChartGrid}
 	aria-rowcount={rowModel.rows.length + 1}
 	aria-colcount={rowModel.visibleColumns.length}
 >
 	<div
 		class="sticky top-0 z-30 h-[var(--gantt-header-height)] overflow-x-clip bg-surface-raised/95 backdrop-blur"
-		dir={direction}
+		dir={chart.direction}
 	>
 		<div
 			style:width={`${gridWidth}px`}
@@ -526,26 +472,26 @@
 		>
 			<div
 				data-gantt-chart-part="grid-header"
-				class={classes.gridHeader({ size, density, color, disabled })}
+				class={chart.classes.gridHeader(chart.themeVariants)}
 				role="row"
 				aria-rowindex="1"
 			>
-				{#if snippets.gridHeader}
+				{#if chart.renderers?.gridHeader}
 					<div class="pointer-events-none absolute inset-0" aria-hidden="true">
-						<Slot render={snippets.gridHeader} payload={headerPayload} />
+						<Slot render={chart.renderers.gridHeader} payload={headerPayload} />
 					</div>
 				{/if}
 				{#each rowModel.visibleColumns as column, columnIndex (column.id)}
 					<GanttColumnHeader
 						{column}
 						{columnIndex}
-						{messages}
-						{size}
-						{density}
-						{color}
-						{disabled}
-						{classes}
-						columnHeader={snippets.columnHeader}
+						messages={chart.messages}
+						size={chart.size}
+						density={chart.density}
+						color={chart.color}
+						disabled={chart.disabled}
+						classes={chart.classes}
+						columnHeader={chart.renderers?.columnHeader}
 						{onToggleSort}
 					/>
 				{/each}
@@ -561,14 +507,14 @@
 		<ScrollArea
 			bind:viewportRef={horizontalViewport}
 			class="h-full min-w-0"
-			ariaLabel={messages.ganttChartGrid}
+			ariaLabel={chart.messages.ganttChartGrid}
 			type="hover"
 			onScroll={handleHorizontalScroll}
 		>
-			<div style:width={`${gridWidth}px`} style:min-width="100%" dir={direction}>
+			<div style:width={`${gridWidth}px`} style:min-width="100%" dir={chart.direction}>
 				<div
 					data-gantt-chart-part="rows"
-					class={classes.rows({ size, density, color, disabled })}
+					class={chart.classes.rows(chart.themeVariants)}
 					style:height={`${totalHeight}px`}
 					{@attach dnd.list}
 				>
@@ -586,24 +532,24 @@
 								assignments={chart.schedule.model.assignments}
 								resourceGroup={rowModel.resourceGroupByTaskId.get(node.taskId) ?? null}
 								showResourceGroupLabel={rowModel.resourceGroupStartTaskIds.has(node.taskId)}
-								{messages}
-								{locale}
-								{timeZone}
-								{size}
-								{density}
-								{color}
-								{direction}
-								{disabled}
-								{loading}
+								messages={chart.messages}
+								locale={chart.locale}
+								timeZone={chart.timeZone}
+								size={chart.size}
+								density={chart.density}
+								color={chart.color}
+								direction={chart.direction}
+								disabled={chart.disabled}
+								loading={chart.loading}
 								isSelected={isTaskSelected(node.taskId)}
 								isDropParent={rowDropPreview?.parentId === node.taskId &&
 									rowDropPreview.intent !== 'reorder'}
 								showDragHandle={canReorder}
 								canIndent={canIndentRow(virtualRow.index)}
 								canOutdent={canOutdentRow(virtualRow.index)}
-								{classes}
-								treeCell={snippets.treeCell}
-								taskRow={snippets.taskRow}
+								classes={chart.classes}
+								treeCell={chart.renderers?.treeCell}
+								taskRow={chart.renderers?.taskRow}
 								rowAttachment={dnd.item(node, virtualRow.index)}
 								touchRowAttachment={touchRowReorder.item(node.taskId)}
 								onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
@@ -618,7 +564,7 @@
 						<div
 							data-gantt-row-drop-indicator
 							data-gantt-reorder-intent={rowDropPreview.intent}
-							class={classes.rowDropIndicator({ size, density, color, disabled })}
+							class={chart.classes.rowDropIndicator(chart.themeVariants)}
 							style:top={`${rowDropPreview.top}px`}
 							style:inset-inline-start={`${rowDropPreview.inlineStart}px`}
 							aria-hidden="true"

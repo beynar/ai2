@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unsafe-declaration-merging, svelte/prefer-svelte-reactivity -- Descriptor binding follows the established Svelai state-class pattern; Dates, Sets, and ranges are immutable schedule snapshots. */
 import { assertScheduleInstant, assertScheduleRange } from '$lib/scheduling/scheduleRange.js';
 import type { Messages } from '$lib/i18n/en.js';
+import type { Density, Sizes } from '$lib/types/theme.js';
 import { bind } from '$lib/utils/state.svelte.js';
 import { untrack } from 'svelte';
 import { applyGanttColumnEdit } from './ganttChart.columns.js';
@@ -13,8 +14,12 @@ import { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { GanttChartMutations } from './ganttChart.mutations.js';
 import type {
 	GanttEventHandlers,
+	GanttDisplayOptions,
 	GanttInteractionOptions,
+	GanttLayoutOptions,
 	GanttMutationPolicy,
+	GanttRenderers,
+	GanttResourceView,
 	GanttScaleOption,
 	GanttScheduleOptions,
 	GanttSnapshot,
@@ -23,6 +28,7 @@ import type {
 import { resolveGanttScaleSnapDuration } from './ganttChart.scale.js';
 import { createGanttColumnContext } from './ganttChart.rows.js';
 import { resolveGanttSchedule, type ResolvedGanttSchedule } from './ganttChart.schedule.js';
+import type { GanttChartClasses } from './ganttChart.theme.js';
 import type {
 	GanttAssignment,
 	GanttCalendar,
@@ -32,12 +38,14 @@ import type {
 	GanttDuration,
 	GanttInteractionBlockedInfo,
 	GanttInteractions,
+	GanttHoliday,
 	GanttMutationSource,
 	GanttRange,
 	GanttResolvedTaskNode,
 	GanttResource,
 	GanttScaleDefinition,
 	GanttScheduleAnalysis,
+	GanttScrollMode,
 	GanttSelection,
 	GanttTask,
 	GanttTouchActivation,
@@ -85,6 +93,18 @@ const DEFAULT_GANTT_TOUCH_ACTIVATION: GanttTouchActivation = Object.freeze({
 	touchDelayMs: 300,
 	touchTolerancePx: 8
 });
+const DEFAULT_GANTT_ROW_HEIGHT = { small: 28, normal: 32, large: 36 } as const;
+const DEFAULT_GANTT_DISPLAY: GanttDisplayOptions = Object.freeze({
+	criticalPath: false,
+	baselines: true,
+	deadlines: true,
+	constraints: true,
+	nonWorkingTime: true,
+	workload: false
+});
+const EMPTY_GANTT_RESOURCES: readonly never[] = Object.freeze([]);
+const EMPTY_GANTT_CALENDARS: readonly never[] = Object.freeze([]);
+const EMPTY_GANTT_HOLIDAYS: readonly GanttHoliday[] = Object.freeze([]);
 
 export type GanttChartStateBindings<
 	TTaskFields extends object,
@@ -94,25 +114,34 @@ export type GanttChartStateBindings<
 > = {
 	tasks: GanttTask<TTaskFields>[];
 	dependencies: GanttDependency<TDependencyFields>[];
-	readonly resources: readonly GanttResource<TResourceFields>[];
+	readonly resourceDefinitions: readonly GanttResource<TResourceFields>[];
 	assignments: GanttAssignment<TAssignmentFields>[];
-	readonly calendars: readonly GanttCalendar[];
+	readonly calendarDefinitions: readonly GanttCalendar[];
 	expandedTaskIds: string[];
 	selection: GanttSelection;
 	zoom: GanttZoomLevel;
+	gridWidth: number;
 	readonly timeZone: string;
 	readonly locale: string;
 	readonly direction: 'ltr' | 'rtl';
 	readonly messages: Messages;
+	readonly size: Sizes;
+	readonly density: Density;
+	readonly classes: GanttChartClasses;
 	readonly rootId: string;
 	readonly loading: boolean;
 	readonly disabled: boolean;
 	readonly scheduleOptions: GanttScheduleOptions | undefined;
 	readonly timelineOptions: GanttTimelineOptions | undefined;
+	readonly layoutOptions:
+		| GanttLayoutOptions<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
+		| undefined;
 	readonly interactionOptions: GanttInteractionOptions<TDependencyFields> | undefined;
 	readonly mutationPolicy:
 		GanttMutationPolicy<TTaskFields, TDependencyFields, TAssignmentFields> | undefined;
 	readonly eventHandlers: GanttEventHandlers<TTaskFields, TDependencyFields> | undefined;
+	readonly renderers:
+		GanttRenderers<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> | undefined;
 };
 
 export type GanttModelBoundary<
@@ -240,6 +269,43 @@ export class GanttChartState<
 		this.timelineOptions?.snapDuration ?? resolveGanttScaleSnapDuration(this.zoom, this.scales)
 	);
 	readonly touchActivation = DEFAULT_GANTT_TOUCH_ACTIVATION;
+	readonly color = 'primary' as const;
+	readonly themeVariants = $derived({
+		size: this.size,
+		density: this.density,
+		color: this.color,
+		disabled: this.disabled
+	});
+	readonly minGridWidth = 64;
+	readonly maxGridWidth = $derived(Math.max(640, this.gridWidth));
+	readonly overscan = 6;
+	readonly rowHeight = $derived(
+		this.layoutOptions?.rowHeight ?? DEFAULT_GANTT_ROW_HEIGHT[this.density]
+	);
+	readonly scrollMode: GanttScrollMode = $derived(this.layoutOptions?.scrollMode ?? 'contained');
+	readonly showGrid = $derived(this.layoutOptions?.grid !== false);
+	readonly columns = $derived(
+		this.layoutOptions?.grid === false ? undefined : this.layoutOptions?.grid?.columns
+	);
+	readonly showHeader = $derived(this.renderers?.header !== false);
+	readonly resources: readonly GanttResource<TResourceFields>[] = $derived(
+		this.resourceDefinitions.length === 0 ? EMPTY_GANTT_RESOURCES : this.resourceDefinitions
+	);
+	readonly calendars: readonly GanttCalendar[] = $derived(
+		this.calendarDefinitions.length === 0 ? EMPTY_GANTT_CALENDARS : this.calendarDefinitions
+	);
+	readonly display: GanttDisplayOptions = $derived({
+		...DEFAULT_GANTT_DISPLAY,
+		...this.timelineOptions?.display
+	});
+	readonly showTodayIndicator = $derived(this.timelineOptions?.todayIndicator ?? true);
+	readonly showWeekends = $derived(this.timelineOptions?.weekends ?? true);
+	readonly holidays: readonly GanttHoliday[] = $derived(
+		this.timelineOptions?.holidays ?? EMPTY_GANTT_HOLIDAYS
+	);
+	readonly resourceView: GanttResourceView | undefined = $derived(
+		this.timelineOptions?.resourceView
+	);
 	readonly interactions: GanttInteractions = $derived({
 		moveTask: this.interactionOptions?.moveTask ?? DEFAULT_GANTT_INTERACTIONS.moveTask,
 		resizeStart: this.interactionOptions?.resizeStart ?? DEFAULT_GANTT_INTERACTIONS.resizeStart,
@@ -288,6 +354,9 @@ export class GanttChartState<
 	readonly onEmptyRangeSelect = $derived(this.eventHandlers?.emptyRangeSelect);
 	readonly onZoomChange = $derived(this.eventHandlers?.zoomChange);
 	readonly onVisibleRangeChange = $derived(this.eventHandlers?.visibleRangeChange);
+	readonly onTaskClick = $derived(this.eventHandlers?.taskClick);
+	readonly onTaskDoubleClick = $derived(this.eventHandlers?.taskDoubleClick);
+	readonly onDependencyClick = $derived(this.eventHandlers?.dependencyClick);
 	readonly modelBoundary: GanttModelBoundary<
 		TTaskFields,
 		TDependencyFields,
@@ -363,7 +432,7 @@ export class GanttChartState<
 		};
 	}
 
-	get enabledZoomLevels(): readonly GanttZoomLevel[] {
+	readonly enabledZoomLevels: readonly GanttZoomLevel[] = $derived.by(() => {
 		const zoomLevels = this.zoomLevels;
 		if (
 			!Array.isArray(zoomLevels) ||
@@ -395,7 +464,7 @@ export class GanttChartState<
 			);
 		}
 		return zoomLevels;
-	}
+	});
 
 	fitProject(): boolean {
 		this.#assertNavigationEnabled();

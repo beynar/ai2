@@ -107,12 +107,6 @@
 
 	const defaultResources: never[] = [];
 	const defaultCalendars: never[] = [];
-	const defaultHolidays: never[] = [];
-	const DEFAULT_ROW_HEIGHT = { small: 28, normal: 32, large: 36 } as const;
-	const DEFAULT_GRID_MIN_WIDTH = 64;
-	const DEFAULT_GRID_MAX_WIDTH = 640;
-	const DEFAULT_OVERSCAN = 6;
-	const color = 'primary';
 	const rootId = $props.id();
 
 	let {
@@ -150,27 +144,6 @@
 	const rootAttributes = $derived(filterGanttRootAttributes(unfilteredRootAttributes));
 	const messages = $derived(useI18n(i18n));
 	const resolvedLocale = $derived(messages.locale);
-	const resolvedResources = $derived(resources.length === 0 ? defaultResources : resources);
-	const resolvedCalendars = $derived(calendars.length === 0 ? defaultCalendars : calendars);
-	const resolvedDisplay = $derived({
-		criticalPath: false,
-		baselines: true,
-		deadlines: true,
-		constraints: true,
-		nonWorkingTime: true,
-		workload: false,
-		...timeline?.display
-	});
-	const showTodayIndicator = $derived(timeline?.todayIndicator ?? true);
-	const showWeekends = $derived(timeline?.weekends ?? true);
-	const holidays = $derived(timeline?.holidays ?? defaultHolidays);
-	const resourceView = $derived(timeline?.resourceView);
-	const rowHeight = $derived(layout?.rowHeight ?? DEFAULT_ROW_HEIGHT[density]);
-	const scrollMode = $derived(layout?.scrollMode ?? 'contained');
-	const showGrid = $derived(layout?.grid !== false);
-	const columns = $derived(layout?.grid === false ? undefined : layout?.grid?.columns);
-	const showHeader = $derived(render?.header !== false);
-	const header = $derived(render?.header === false ? undefined : render?.header);
 	const classes = $derived(useGanttChartTheme(theme));
 	const contextualDirection = $derived(useI18nDirection());
 	const directionAttributes = $derived(contextualDirection ? { dir: contextualDirection } : {});
@@ -200,8 +173,8 @@
 		set dependencies(value) {
 			dependencies = value;
 		},
-		get resources() {
-			return resolvedResources;
+		get resourceDefinitions() {
+			return resources;
 		},
 		get assignments() {
 			return assignments;
@@ -209,8 +182,8 @@
 		set assignments(value) {
 			assignments = value;
 		},
-		get calendars() {
-			return resolvedCalendars;
+		get calendarDefinitions() {
+			return calendars;
 		},
 		get expandedTaskIds() {
 			return expandedTaskIds;
@@ -230,6 +203,12 @@
 		set zoom(value) {
 			zoom = value;
 		},
+		get gridWidth() {
+			return gridWidth;
+		},
+		set gridWidth(value) {
+			gridWidth = value;
+		},
 		get timeZone() {
 			return timeZone;
 		},
@@ -241,6 +220,15 @@
 		},
 		get messages() {
 			return messages;
+		},
+		get size() {
+			return size;
+		},
+		get density() {
+			return density;
+		},
+		get classes() {
+			return classes;
 		},
 		rootId,
 		get loading() {
@@ -255,6 +243,9 @@
 		get timelineOptions() {
 			return timeline;
 		},
+		get layoutOptions() {
+			return layout;
+		},
 		get interactionOptions() {
 			return interactions;
 		},
@@ -263,10 +254,11 @@
 		},
 		get eventHandlers() {
 			return events;
+		},
+		get renderers() {
+			return render;
 		}
 	});
-
-	const snapshot = $derived(chart.snapshot);
 
 	function handleRootKeydown(
 		event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }
@@ -478,105 +470,32 @@
 	onkeydowncapture={handleRootKeydownCapture}
 	onkeydown={handleRootKeydown}
 	data-gantt-chart-part="root"
-	data-size={size}
-	data-density={density}
-	data-color="primary"
-	data-direction={resolvedDirection}
-	data-zoom={zoom}
-	data-loading={loading || undefined}
-	data-disabled={disabled || undefined}
-	class={classes.root({
-		size,
-		density,
-		color,
-		disabled,
-		class: [scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden', className]
+	data-size={chart.size}
+	data-density={chart.density}
+	data-color={chart.color}
+	data-direction={chart.direction}
+	data-zoom={chart.zoom}
+	data-loading={chart.loading || undefined}
+	data-disabled={chart.disabled || undefined}
+	class={chart.classes.root({
+		...chart.themeVariants,
+		class: [chart.scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden', className]
 	})}
 >
-	{#if showHeader}
-		<GanttChartHeader
-			{chart}
-			{snapshot}
-			{messages}
-			locale={resolvedLocale}
-			{timeZone}
-			{size}
-			{density}
-			{color}
-			{disabled}
-			stickyHeader={scrollMode === 'page'}
-			{scrollMode}
-			{classes}
-			{header}
-			actions={render?.actions}
-		/>
+	{#if chart.showHeader}
+		<GanttChartHeader {chart} />
 	{/if}
-	<GanttChartShell
-		{chart}
-		{messages}
-		{size}
-		{density}
-		{color}
-		direction={resolvedDirection}
-		{loading}
-		{disabled}
-		{showGrid}
-		bind:gridWidth
-		minGridWidth={DEFAULT_GRID_MIN_WIDTH}
-		maxGridWidth={Math.max(DEFAULT_GRID_MAX_WIDTH, gridWidth)}
-		{rowHeight}
-		overscan={DEFAULT_OVERSCAN}
-		{scrollMode}
-		{columns}
-		interactions={chart.interactions}
-		touchActivation={chart.touchActivation}
-		scales={chart.scales}
-		validRange={chart.validRange}
-		{holidays}
-		{showTodayIndicator}
-		{showWeekends}
-		display={resolvedDisplay}
-		{resourceView}
-		locale={resolvedLocale}
-		{timeZone}
-		{classes}
-		snippets={{
-			gridHeader: render?.gridHeader,
-			columnHeader: render?.columnHeader,
-			treeCell: render?.treeCell,
-			taskRow: render?.taskRow,
-			timeHeaderUpper: render?.timeHeader,
-			timeHeaderLower: render?.timeHeader,
-			task: render?.task,
-			summaryTask: render?.task,
-			milestone: render?.task,
-			taskLabel: render?.taskLabel,
-			taskTooltip: render?.taskTooltip,
-			dependencyTooltip: render?.dependencyTooltip,
-			progress: render?.progress,
-			baseline: render?.baseline,
-			deadline: render?.deadline,
-			nonWorkingTime: render?.nonWorkingTime,
-			resourceAssignments: render?.resourceAssignments,
-			workloadCell: render?.workloadCell,
-			dragPreview: render?.dragPreview,
-			empty: render?.empty,
-			loadingContent: render?.loadingContent
-		}}
-		onTaskClick={events?.taskClick}
-		onTaskDoubleClick={events?.taskDoubleClick}
-		onDependencyClick={events?.dependencyClick}
-	/>
+	<GanttChartShell {chart} />
 	<div
 		id={chart.a11y.liveRegionId}
 		data-gantt-chart-part="live-region"
-		class={classes.liveRegion({ size, density, color, disabled })}
+		class={chart.classes.liveRegion(chart.themeVariants)}
 		aria-live="polite"
 		aria-atomic="true"
 	>
 		{chart.a11y.announcement}
 	</div>
 	<div id={chart.a11y.instructionsId} class="sr-only">
-		{messages.ganttChartKeyboardInstructions}
+		{chart.messages.ganttChartKeyboardInstructions}
 	</div>
 </div>

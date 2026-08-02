@@ -3,30 +3,13 @@
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import { onMount, tick, untrack, type Snippet } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import GanttTimeHeader from './GanttTimeHeader.svelte';
 	import GanttTimelineRows from './GanttTimelineRows.svelte';
 	import GanttWorkloadPanel from './GanttWorkloadPanel.svelte';
 	import { getCalendarRuntime } from './ganttChart.calendar.js';
 	import { GanttChartError } from './ganttChart.error.js';
 	import { resolveGanttTimeShades } from './ganttChart.layout.js';
-	import type {
-		GanttDisplayOptions,
-		GanttDragPreviewPayload,
-		GanttTimeHeaderPayload,
-		GanttTaskPayload,
-		GanttTaskLabelPayload,
-		GanttTaskTooltipPayload,
-		GanttDependencyTooltipPayload,
-		GanttProgressPayload,
-		GanttBaselinePayload,
-		GanttDeadlinePayload,
-		GanttNonWorkingTimePayload,
-		GanttResourceAssignmentsPayload,
-		GanttWorkloadCellPayload
-	} from './ganttChart.props.js';
 	import type { GanttResolvedResourceView } from './ganttChart.resourceView.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import {
@@ -36,93 +19,20 @@
 		getGanttVisibleRange
 	} from './ganttChart.scale.js';
 	import type { GanttChartState, GanttTimelineNavigation } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type {
-		GanttHoliday,
-		GanttRange,
-		GanttResolvedDependency,
-		GanttResolvedTaskNode,
-		GanttScaleDefinition,
-		GanttZoomLevel
-	} from './ganttChart.types.js';
-
-	type TimelineSnippets = {
-		timeHeaderUpper?: Snippet<[GanttTimeHeaderPayload]>;
-		timeHeaderLower?: Snippet<[GanttTimeHeaderPayload]>;
-		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		milestone?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		taskLabel?: Snippet<[GanttTaskLabelPayload<TTaskFields>]>;
-		taskTooltip?: Snippet<
-			[GanttTaskTooltipPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
-		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
-		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
-		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
-		resourceAssignments?: Snippet<
-			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		workloadCell?: Snippet<[GanttWorkloadCellPayload<TResourceFields>]>;
-		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
-		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
-	};
+	import type { GanttRange, GanttResolvedDependency, GanttZoomLevel } from './ganttChart.types.js';
 
 	let {
 		chart,
 		rowModel,
 		renderedRows,
 		totalHeight,
-		rowHeight,
-		scales,
-		validRange,
-		holidays,
-		showTodayIndicator,
-		showWeekends,
-		display,
-		resourceView,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		direction,
-		disabled,
-		classes,
-		snippets,
-		onTaskClick,
-		onTaskDoubleClick,
-		onDependencyClick
+		resourceView
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		renderedRows: readonly GanttVirtualRow[];
 		totalHeight: number;
-		rowHeight: number;
-		scales: readonly GanttScaleDefinition[];
-		validRange: GanttRange | undefined;
-		holidays: readonly GanttHoliday[];
-		showTodayIndicator: boolean;
-		showWeekends: boolean;
-		display: GanttDisplayOptions;
 		resourceView: GanttResolvedResourceView<TResourceFields>;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		disabled: boolean;
-		classes: GanttChartClasses;
-		snippets: TimelineSnippets;
-		onTaskClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
-		onTaskDoubleClick?: (task: GanttResolvedTaskNode<TTaskFields>, event: MouseEvent) => void;
-		onDependencyClick?: (
-			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
 
 	let horizontalViewport = $state<HTMLDivElement | null>(null);
@@ -150,17 +60,17 @@
 		untrack(() => (projectRange ? cloneRange(projectRange) : null))
 	);
 	let fittedProjectRange = $state<GanttRange | null>(null);
-	const canvasSourceRange = $derived(validRange ?? projectCanvasRange ?? emptyCanvasRange);
+	const canvasSourceRange = $derived(chart.validRange ?? projectCanvasRange ?? emptyCanvasRange);
 	const scale = $derived(
 		createGanttTimeScale({
 			range: canvasSourceRange,
 			zoom: chart.zoom,
-			timeZone,
-			locale,
-			direction,
-			scales,
+			timeZone: chart.timeZone,
+			locale: chart.locale,
+			direction: chart.direction,
+			scales: chart.scales,
 			minimumWidth: fittedProjectRange ? fitProjectWidth : effectiveViewportWidth,
-			pad: validRange === undefined,
+			pad: chart.validRange === undefined,
 			fitRange: fittedProjectRange ?? undefined
 		})
 	);
@@ -177,9 +87,9 @@
 			scale,
 			visibleRange,
 			projectCalendar,
-			holidays,
-			showWeekends,
-			showNonWorkingTime: display.nonWorkingTime
+			holidays: chart.holidays,
+			showWeekends: chart.showWeekends,
+			showNonWorkingTime: chart.display.nonWorkingTime
 		})
 	);
 	const resolvedDependencies = $derived(
@@ -189,11 +99,16 @@
 		>[]
 	);
 	const scaleKey = $derived(
-		`${chart.zoom}:${scale.canvasRange.start.getTime()}:${scale.canvasRange.end.getTime()}:${scale.totalWidth}:${direction}`
+		`${chart.zoom}:${scale.canvasRange.start.getTime()}:${scale.canvasRange.end.getTime()}:${scale.totalWidth}:${chart.direction}`
 	);
 	const workloadPanelHeight = $derived(
-		display.workload && resourceView.resources.length > 0 ? resourceView.workloadHeight : 0
+		chart.display.workload && resourceView.resources.length > 0 ? resourceView.workloadHeight : 0
 	);
+	const timelineRenderers = $derived({
+		...chart.renderers,
+		summaryTask: chart.renderers?.task,
+		milestone: chart.renderers?.task
+	});
 	const activeInteraction = $derived(chart.interaction.active);
 	const isInteractionInvalid = $derived(
 		activeInteraction?.kind !== 'row' && activeInteraction?.resolution.state === 'rejected'
@@ -206,7 +121,7 @@
 	};
 
 	$effect(() => {
-		if (validRange || !projectRange) return;
+		if (chart.validRange || !projectRange) return;
 		if (!projectCanvasRange) {
 			projectCanvasRange = cloneRange(projectRange);
 			return;
@@ -273,7 +188,7 @@
 			},
 			viewport,
 			get rowHeight() {
-				return rowHeight;
+				return chart.rowHeight;
 			}
 		});
 		const initialAnchor = projectRange?.start ?? chart.visibleRange.start;
@@ -296,7 +211,7 @@
 	}
 
 	function handleWheel(event: WheelEvent): void {
-		if (!horizontalViewport || disabled) return;
+		if (!horizontalViewport || chart.disabled) return;
 		if (activeInteraction) return;
 		if (event.ctrlKey || event.metaKey) {
 			event.preventDefault();
@@ -359,7 +274,7 @@
 		const zoom = resolveFitZoom(projectRange);
 		const isZoomChange = zoom !== chart.zoom;
 		pendingAnchor = { date: center, offset: effectiveViewportWidth / 2 };
-		if (!validRange) {
+		if (!chart.validRange) {
 			projectCanvasRange = cloneRange(projectRange);
 		}
 		if (isZoomChange) chart.setZoom(zoom, center);
@@ -374,10 +289,10 @@
 			const candidate = createGanttTimeScale({
 				range,
 				zoom,
-				timeZone,
-				locale,
-				direction,
-				scales,
+				timeZone: chart.timeZone,
+				locale: chart.locale,
+				direction: chart.direction,
+				scales: chart.scales,
 				minimumWidth: 0,
 				pad: false
 			});
@@ -409,13 +324,13 @@
 
 <div
 	data-gantt-chart-part="timeline-pane"
-	class={classes.timelinePane({ size, density, color, disabled })}
+	class={chart.classes.timelinePane(chart.themeVariants)}
 	role="group"
-	aria-label={messages.ganttChartTimeline}
+	aria-label={chart.messages.ganttChartTimeline}
 >
 	<div
 		class="sticky top-0 z-30 h-[var(--gantt-header-height)] overflow-x-clip bg-surface-raised/95 backdrop-blur"
-		dir={direction}
+		dir={chart.direction}
 	>
 		<div
 			style:width={`${scale.totalWidth}px`}
@@ -425,13 +340,13 @@
 				{scale}
 				{visiblePixels}
 				{viewportWidth}
-				{size}
-				{density}
-				{color}
-				{disabled}
-				{classes}
-				timeHeaderUpper={snippets.timeHeaderUpper}
-				timeHeaderLower={snippets.timeHeaderLower}
+				size={chart.size}
+				density={chart.density}
+				color={chart.color}
+				disabled={chart.disabled}
+				classes={chart.classes}
+				timeHeaderUpper={chart.renderers?.timeHeader}
+				timeHeaderLower={chart.renderers?.timeHeader}
 			/>
 		</div>
 	</div>
@@ -444,11 +359,8 @@
 		data-interaction-invalid={isInteractionInvalid || undefined}
 		data-visible-start={visibleRange.start.toISOString()}
 		data-visible-end={visibleRange.end.toISOString()}
-		class={classes.viewport({
-			size,
-			density,
-			color,
-			disabled,
+		class={chart.classes.viewport({
+			...chart.themeVariants,
 			invalid: isInteractionInvalid,
 			class: 'h-auto'
 		})}
@@ -458,7 +370,7 @@
 		<ScrollArea
 			bind:viewportRef={horizontalViewport}
 			class="h-full min-w-0"
-			ariaLabel={messages.ganttChartTimeline}
+			ariaLabel={chart.messages.ganttChartTimeline}
 			type="hover"
 			onScroll={handleScroll}
 		>
@@ -466,7 +378,7 @@
 				class="relative overflow-x-clip"
 				style:width={`${scale.totalWidth}px`}
 				style:height={`${totalHeight + workloadPanelHeight}px`}
-				dir={direction}
+				dir={chart.direction}
 			>
 				<GanttTimelineRows
 					{chart}
@@ -482,28 +394,28 @@
 					{visiblePixels}
 					{viewportWidth}
 					{totalHeight}
-					{rowHeight}
+					rowHeight={chart.rowHeight}
 					{shades}
 					{projectRange}
 					{now}
-					{showTodayIndicator}
-					showCritical={display.criticalPath}
-					showBaselines={display.baselines}
-					showDeadlines={display.deadlines}
-					showConstraints={display.constraints}
-					{messages}
-					{locale}
-					{timeZone}
-					{size}
-					{density}
-					{color}
-					{direction}
-					{disabled}
-					{classes}
-					{snippets}
-					{onTaskClick}
-					{onTaskDoubleClick}
-					{onDependencyClick}
+					showTodayIndicator={chart.showTodayIndicator}
+					showCritical={chart.display.criticalPath}
+					showBaselines={chart.display.baselines}
+					showDeadlines={chart.display.deadlines}
+					showConstraints={chart.display.constraints}
+					messages={chart.messages}
+					locale={chart.locale}
+					timeZone={chart.timeZone}
+					size={chart.size}
+					density={chart.density}
+					color={chart.color}
+					direction={chart.direction}
+					disabled={chart.disabled}
+					classes={chart.classes}
+					snippets={timelineRenderers}
+					onTaskClick={chart.onTaskClick}
+					onTaskDoubleClick={chart.onTaskDoubleClick}
+					onDependencyClick={chart.onDependencyClick}
 				/>
 				{#if workloadPanelHeight > 0}
 					<GanttWorkloadPanel
@@ -513,15 +425,15 @@
 						{visiblePixels}
 						{viewportWidth}
 						height={workloadPanelHeight}
-						{messages}
-						{locale}
-						{size}
-						{density}
-						{color}
-						{direction}
-						{disabled}
-						{classes}
-						workloadCell={snippets.workloadCell}
+						messages={chart.messages}
+						locale={chart.locale}
+						size={chart.size}
+						density={chart.density}
+						color={chart.color}
+						direction={chart.direction}
+						disabled={chart.disabled}
+						classes={chart.classes}
+						workloadCell={chart.renderers?.workloadCell}
 					/>
 				{/if}
 			</div>

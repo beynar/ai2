@@ -11,49 +11,20 @@
 	import { plusIcon } from '$lib/components/Icons/plus.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
-	import type { GanttHeaderPayload, GanttSnapshot } from './ganttChart.props.js';
+	import type { GanttHeaderPayload } from './ganttChart.props.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type { GanttScrollMode, GanttZoomLevel } from './ganttChart.types.js';
+	import type { GanttZoomLevel } from './ganttChart.types.js';
 
 	let {
-		chart,
-		snapshot,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		disabled,
-		stickyHeader,
-		scrollMode,
-		classes,
-		header,
-		actions
+		chart
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-		snapshot: GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		stickyHeader: boolean;
-		scrollMode: GanttScrollMode;
-		classes: GanttChartClasses;
-		header?: Snippet<
-			[GanttHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
-		actions?: Snippet<
-			[GanttSnapshot<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
 	} = $props();
+
+	const snapshot = $derived(chart.snapshot);
+	const messages = $derived(chart.messages);
+	const header = $derived(chart.renderers?.header || undefined);
+	const actions = $derived(chart.renderers?.actions);
 
 	const zoomLabels = $derived<Record<string, string>>({
 		hour: messages.ganttChartHourZoom,
@@ -67,7 +38,7 @@
 		chart.enabledZoomLevels.map((zoom) => ({ value: zoom, label: zoomLabels[zoom] ?? zoom }))
 	);
 	const rangeFormatter = $derived(
-		getDateTimeFormatter(locale, timeZone, {
+		getDateTimeFormatter(chart.locale, chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric'
@@ -94,12 +65,9 @@
 
 <div
 	data-gantt-chart-part="header"
-	class={classes.header({
-		size,
-		density,
-		color,
-		disabled,
-		class: stickyHeader && scrollMode === 'page' ? 'sticky top-0 z-40' : undefined
+	class={chart.classes.header({
+		...chart.themeVariants,
+		class: chart.scrollMode === 'page' ? 'sticky top-0 z-40' : undefined
 	})}
 >
 	{#if header}
@@ -119,16 +87,13 @@
 		>}
 		<Slot render={header} {payload} />
 	{:else}
-		<div
-			data-gantt-chart-part="navigation"
-			class={classes.navigation({ size, density, color, disabled })}
-		>
+		<div data-gantt-chart-part="navigation" class={chart.classes.navigation(chart.themeVariants)}>
 			{@render todayPart()}
 			{@render fitProjectPart()}
 		</div>
 		<div
 			data-gantt-chart-part="title"
-			class={classes.title({ size, density, color, disabled })}
+			class={chart.classes.title(chart.themeVariants)}
 			role="status"
 			aria-live="polite"
 		>
@@ -143,12 +108,12 @@
 	<Button
 		type="button"
 		squared
-		{size}
+		size={chart.size}
 		variant="ghost"
 		color="neutral"
 		prefix={minusIcon}
 		label={messages.ganttChartZoomOut}
-		{disabled}
+		disabled={chart.disabled}
 		onClick={() => chart.zoomOut()}
 	/>
 {/snippet}
@@ -157,12 +122,12 @@
 	<Button
 		type="button"
 		squared
-		{size}
+		size={chart.size}
 		variant="ghost"
 		color="neutral"
 		prefix={plusIcon}
 		label={messages.ganttChartZoomIn}
-		{disabled}
+		disabled={chart.disabled}
 		onClick={() => chart.zoomIn()}
 	/>
 {/snippet}
@@ -171,12 +136,12 @@
 	<Button
 		type="button"
 		squared
-		{size}
+		size={chart.size}
 		variant="ghost"
 		color="neutral"
 		prefix={arrowsInIcon}
 		label={messages.ganttChartFitProject}
-		{disabled}
+		disabled={chart.disabled}
 		onClick={() => chart.fitProject()}
 	/>
 {/snippet}
@@ -184,11 +149,11 @@
 {#snippet todayPart()}
 	<Button
 		type="button"
-		{size}
+		size={chart.size}
 		variant="outline"
-		{color}
+		color={chart.color}
 		prefix={calendarIcon}
-		{disabled}
+		disabled={chart.disabled}
 		onClick={() => chart.scrollToDate(new Date())}
 	>
 		{messages.ganttChartToday}
@@ -196,17 +161,20 @@
 {/snippet}
 
 {#snippet zoomControlPart()}
-	<div
-		data-gantt-chart-part="zoom-control"
-		class={classes.zoomControl({ size, density, color, disabled })}
-	>
-		<ButtonGroup items={zoomButtons} {size} variant="ghost" color="neutral" {disabled} />
+	<div data-gantt-chart-part="zoom-control" class={chart.classes.zoomControl(chart.themeVariants)}>
+		<ButtonGroup
+			items={zoomButtons}
+			size={chart.size}
+			variant="ghost"
+			color="neutral"
+			disabled={chart.disabled}
+		/>
 		<Select
 			items={zoomItems}
 			value={snapshot.zoom}
-			{size}
-			{density}
-			{disabled}
+			size={chart.size}
+			density={chart.density}
+			disabled={chart.disabled}
 			attrs={{ 'aria-label': messages.ganttChartZoomLevel }}
 			onChange={(zoom) => chart.setZoom(zoom as GanttZoomLevel)}
 		/>
@@ -215,10 +183,7 @@
 
 {#snippet actionsPart()}
 	{#if actions}
-		<div
-			data-gantt-chart-part="actions"
-			class={classes.actions({ size, density, color, disabled })}
-		>
+		<div data-gantt-chart-part="actions" class={chart.classes.actions(chart.themeVariants)}>
 			<Slot render={actions} payload={snapshot} />
 		</div>
 	{/if}
