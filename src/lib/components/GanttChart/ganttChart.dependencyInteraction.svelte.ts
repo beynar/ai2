@@ -176,9 +176,7 @@ export class GanttDependencyInteraction<
 					onStart: (payload) => this.beginTouch({ taskId, endpoint }, payload),
 					onMove: (payload) => this.updateTouch({ taskId, endpoint }, payload),
 					onEnd: (payload) => this.finishTouch({ taskId, endpoint }, payload),
-					onCancel: () => {
-						if (this.#gesture) this.#onTransportCancel();
-					}
+					onCancel: () => this.cancelTransport()
 				});
 				const touchCleanup = touchDrag(element);
 				const draggableCleanup = draggable({
@@ -200,7 +198,7 @@ export class GanttDependencyInteraction<
 				const dropTargetCleanup = dropTargetForElements({
 					element,
 					canDrop: ({ source }) => {
-						const dependencySource = this.readSource(source.data);
+						const dependencySource = this.readActiveNativeSource(source.data);
 						return Boolean(
 							dependencySource &&
 							this.validateTarget(dependencySource, { taskId, endpoint }).state === 'accepted'
@@ -241,7 +239,7 @@ export class GanttDependencyInteraction<
 	}
 
 	isDragSource(data: Record<string, unknown>): boolean {
-		return this.readSource(data) !== null;
+		return this.readActiveNativeSource(data) !== null;
 	}
 
 	beginKeyboard(
@@ -392,7 +390,7 @@ export class GanttDependencyInteraction<
 	private update(
 		payload: ElementEventPayloadMap['onDrag'] | ElementEventPayloadMap['onDrop']
 	): void {
-		const source = this.readSource(payload.source.data);
+		const source = this.readActiveNativeSource(payload.source.data);
 		if (!source) return;
 		const input = payload.location.current.input;
 		this.updateFromPointer(
@@ -441,26 +439,55 @@ export class GanttDependencyInteraction<
 	}
 
 	private finish(payload: ElementEventPayloadMap['onDrop']): void {
-		const gesture = this.#gesture;
-		if (!gesture) return;
-		const source = this.readSource(payload.source.data);
-		const target = this.readCurrentTarget(payload.location.current.dropTargets);
-		if (!source || !target) {
-			if (gesture.resolution.state === 'rejected' && gesture.target) {
-				this.commitGesture();
-			} else {
-				this.#onTransportCancel();
-			}
+		if (this.#gesture?.transport !== 'native') return;
+		const source = this.readActiveNativeSource(payload.source.data);
+		if (!source) {
+			this.cancelTransport();
 			return;
 		}
-		this.updateFromPointer(source, payload.location.current.input, target);
-		this.commitGesture();
+		const input = payload.location.current.input;
+		const dropTarget = this.readCurrentTarget(payload.location.current.dropTargets);
+		const pointerTarget = dropTarget ?? this.readPointerTarget(input);
+		this.finishFromPointer(source, input, pointerTarget, dropTarget !== null);
 	}
 
 	private finishTouch(source: DependencySource, payload: PointerDragPayload): void {
+		if (this.#gesture?.transport !== 'pointer') return;
+		const input = { clientX: payload.x, clientY: payload.y };
+		this.finishFromPointer(source, input, this.readPointerTarget(input));
+	}
+
+	private finishFromPointer(
+		source: DependencySource,
+		input: Readonly<{ clientX: number; clientY: number }>,
+		target: DependencyTarget | null,
+		canCommitAccepted = true
+	): void {
+		try {
+			this.updateFromPointer(source, input, target);
+			if (!this.#gesture) return;
+			if (!target) {
+				this.cancelTransport();
+				return;
+			}
+			if (!canCommitAccepted && this.#gesture.resolution.state === 'accepted') {
+				this.cancelTransport();
+				return;
+			}
+			this.commitGesture();
+		} catch (error) {
+			this.cancel();
+			throw error;
+		}
+	}
+
+	private cancelTransport(): void {
 		if (!this.#gesture) return;
-		this.updateTouch(source, payload);
-		this.commitGesture();
+		try {
+			this.#onTransportCancel();
+		} finally {
+			this.cancel();
+		}
 	}
 
 	private commitGesture(): boolean {
@@ -596,6 +623,20 @@ export class GanttDependencyInteraction<
 		return { taskId: data.taskId, endpoint: data.endpoint };
 	}
 
+	private readActiveNativeSource(data: Record<string, unknown>): DependencySource | null {
+		const source = this.readSource(data);
+		const gesture = this.#gesture;
+		if (
+			!source ||
+			gesture?.transport !== 'native' ||
+			gesture.source.taskId !== source.taskId ||
+			gesture.source.endpoint !== source.endpoint
+		) {
+			return null;
+		}
+		return source;
+	}
+
 	private readCurrentTarget(
 		dropTargets: readonly { data: Record<string, unknown> }[]
 	): DependencyTarget | null {
@@ -616,11 +657,13 @@ export class GanttDependencyInteraction<
 	private readPointerTarget(
 		input: Readonly<{ clientX: number; clientY: number }>
 	): DependencyTarget | null {
+		const timeline = this.#timeline;
 		const element = document
 			.elementFromPoint(input.clientX, input.clientY)
 			?.closest<HTMLElement>('[data-gantt-chart-part="dependency-handle"]');
-		const taskId = element?.dataset.taskId;
-		const endpoint = element?.dataset.endpoint;
+		if (!element || !timeline?.viewport.contains(element)) return null;
+		const taskId = element.dataset.taskId;
+		const endpoint = element.dataset.endpoint;
 		if (!taskId || (endpoint !== 'start' && endpoint !== 'end')) return null;
 		return { taskId, endpoint };
 	}
