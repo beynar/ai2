@@ -126,24 +126,89 @@ export type DndOver = {
 // Marks data as belonging to this utility. Symbol.for keeps the mark stable
 // across HMR module re-evaluations.
 const DND_MARK = Symbol.for('svelai-dnd');
+const DND_OWNER = Symbol.for('svelai-dnd-owner');
 
-type DragCancellation = { isCancelled: boolean; hasEnded: boolean };
-type DragData = DndSource & {
-	[DND_MARK]: true;
-	instance: symbol;
-	autoScrollAxis: DndAutoScrollAxis;
-	cancellation?: DragCancellation;
+type DragLifecycle = {
+	isCancelled: boolean;
+	hasEnded: boolean;
+	hasResolvedDrop: boolean;
+	onEnd: (dropped: boolean) => void;
 };
-type TargetData = DragData & { edge: DndEdge; physicalEdge: DndEdge };
-type ContainerData = { [DND_MARK]: true; instance: symbol; listId: string; container: true };
+type ListDropOwner = {
+	getOver: () => DndOver | null;
+	clearDropState: () => void;
+	applyDrop: (
+		source: DragData,
+		target: TargetData | ContainerData,
+		overAtDrop: DndOver | null
+	) => void;
+};
+type ItemData = DndSource & {
+	[DND_MARK]: true;
+	[DND_OWNER]: ListDropOwner;
+	instance: symbol;
+};
+type DragData = ItemData & {
+	autoScrollAxis: DndAutoScrollAxis;
+	lifecycle: DragLifecycle;
+};
+type TargetData = ItemData & {
+	edge: DndEdge;
+	physicalEdge: DndEdge;
+};
+type ContainerData = {
+	[DND_MARK]: true;
+	[DND_OWNER]: ListDropOwner;
+	instance: symbol;
+	listId: string;
+	container: true;
+};
 type DragCancellationSignal = Readonly<{
 	instance: symbol;
 	itemId: string;
-	cancellation: DragCancellation;
+	lifecycle: DragLifecycle;
 }>;
 
 const isMine = (data: Record<string | symbol, unknown>): boolean => data[DND_MARK] === true;
-const isCancelled = (data: DragData): boolean => data.cancellation?.isCancelled === true;
+const isCancelled = (data: DragData): boolean => data.lifecycle.isCancelled;
+
+const endDrag = (lifecycle: DragLifecycle, dropped: boolean): void => {
+	if (lifecycle.hasEnded) return;
+	lifecycle.hasEnded = true;
+	lifecycle.onEnd(dropped);
+};
+
+const runDropSteps = (steps: ReadonlyArray<() => void>): void => {
+	const errors: unknown[] = [];
+	for (const step of steps) {
+		try {
+			step();
+		} catch (error) {
+			errors.push(error);
+		}
+	}
+	if (errors.length === 1) throw errors[0];
+	if (errors.length > 1) {
+		throw new AggregateError(errors, 'Multiple drag-and-drop steps failed.');
+	}
+};
+
+const executeCrossListDrop = (source: DragData, target: TargetData | ContainerData): void => {
+	const lifecycle = source.lifecycle;
+	if (lifecycle.hasResolvedDrop) return;
+	lifecycle.hasResolvedDrop = true;
+
+	const sourceOwner = source[DND_OWNER];
+	const targetOwner = target[DND_OWNER];
+	const destinationOver = targetOwner.getOver();
+	runDropSteps([
+		sourceOwner.clearDropState,
+		targetOwner.clearDropState,
+		() => sourceOwner.applyDrop(source, target, null),
+		() => targetOwner.applyDrop(source, target, destinationOver),
+		() => endDrag(lifecycle, true)
+	]);
+};
 
 // getComputedStyle is a forced style resolution and this runs per dragover in
 // the closest-edge hot path, so the answer is cached per element. Stale only
@@ -434,7 +499,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	let activeDrag = $state.raw<Readonly<{
 		id: string;
 		item: T;
-		cancellation: DragCancellation;
+		lifecycle: DragLifecycle;
 		element: Element;
 	}> | null>(null);
 	let isOver = $state(false);
@@ -443,7 +508,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	// Prospective drop position, kept fresh by the same handlers that draw the
 	// indicator. Drop resolution reads it too, so a preview built from `over`
 	// can never disagree with where the item actually lands.
-	let over = $state<DndOver | null>(null);
+	let over = $state.raw<DndOver | null>(null);
 	const getIndicatorMode = (): DndIndicatorMode =>
 		typeof options.indicator === 'function' ? options.indicator() : (options.indicator ?? true);
 	const usesIndicatorFeedback = () => getIndicatorMode() !== false;
@@ -475,22 +540,13 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	let monitorRefs = 0;
 	let monitorCleanup: (() => void) | null = null;
 	let nativeScrollUnlock: (() => void) | null = null;
-	const notifyDragEnd = (
-		cancellation: DragCancellation | undefined,
-		item: T,
-		dropped: boolean
-	): void => {
-		if (cancellation?.hasEnded) return;
-		if (cancellation) cancellation.hasEnded = true;
-		options.onDragEnd?.({ item, dropped });
-	};
 	const clearCancelledHover = (signal: DragCancellationSignal): void => {
 		const source = over?.source as DragData | undefined;
 		if (
 			!source ||
 			source.instance !== signal.instance ||
 			source.itemId !== signal.itemId ||
-			(source.cancellation !== undefined && source.cancellation !== signal.cancellation)
+			source.lifecycle !== signal.lifecycle
 		) {
 			return;
 		}
@@ -502,6 +558,15 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	const unlockNativeScroll = () => {
 		nativeScrollUnlock?.();
 		nativeScrollUnlock = null;
+	};
+	const clearDropState = () => {
+		hideIndicator();
+		unlockNativeScroll();
+		isOver = false;
+		over = null;
+		activeDrag?.element.removeAttribute('data-dnd-dragging');
+		activeDrag = null;
+		for (const element of listElements) element.removeAttribute('data-dnd-over');
 	};
 
 	const canAccept = (data: Record<string | symbol, unknown>): boolean => {
@@ -524,9 +589,9 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	const freshIndex = (items: T[], itemId: string): number =>
 		items.findIndex((candidate) => getId(candidate) === itemId);
 
-	// Central drop resolution. Each instance's monitor only acts on the part
-	// that concerns it (by token), so a cross-list drop resolves as onReceive
-	// (destination) + onRemove (source).
+	// Each monitor can see the whole private source/target ownership pair. The
+	// first one resolves an external move as one transaction; later monitors
+	// observe the completed lifecycle and do nothing.
 	const handleDrop = ({
 		source,
 		location
@@ -534,43 +599,50 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		source: { data: Record<string | symbol, unknown> };
 		location: { current: { dropTargets: Array<{ data: Record<string | symbol, unknown> }> } };
 	}) => {
-		hideIndicator();
-		unlockNativeScroll();
-		isOver = false;
-		const overAtDrop = over;
-		over = null;
 		if (!isMine(source.data)) return;
 		const src = source.data as DragData;
 		if (isCancelled(src)) {
 			if (src.instance === token) {
-				activeDrag = null;
-				notifyDragEnd(src.cancellation, src.item as T, false);
+				clearDropState();
+				endDrag(src.lifecycle, false);
 			}
 			return;
 		}
-		// The draggable's own onDrop resets this, but not when the dragged row
-		// was unmounted mid-drag — the monitor always survives.
-		if (src.instance === token) activeDrag = null;
 
 		const target = location.current.dropTargets.find((t) => isMine(t.data));
+		const targetData = target?.data as TargetData | ContainerData | undefined;
+		if (targetData && src[DND_OWNER] !== targetData[DND_OWNER]) {
+			executeCrossListDrop(src, targetData);
+			return;
+		}
+		if (src.instance !== token) return;
+
+		const overAtDrop = over;
+		runDropSteps([
+			clearDropState,
+			() => {
+				if (targetData) applyDrop(src, targetData, overAtDrop);
+			},
+			() => endDrag(src.lifecycle, targetData !== undefined)
+		]);
+	};
+	const handleMonitorDrop: typeof handleDrop = (event) => {
 		try {
-			applyDrop(src, target, overAtDrop);
-		} finally {
-			// After the state callbacks, on every path — the source list owns
-			// the lifecycle notification.
-			if (src.instance === token) {
-				notifyDragEnd(src.cancellation, src.item as T, !!target);
-			}
+			handleDrop(event);
+		} catch (error) {
+			// Pragmatic DnD must finish its synchronous lifecycle before a
+			// consumer callback error returns to the host environment.
+			queueMicrotask(() => {
+				throw error;
+			});
 		}
 	};
 
 	const applyDrop = (
 		src: DragData,
-		target: { data: Record<string | symbol, unknown> } | undefined,
+		targetData: TargetData | ContainerData,
 		overAtDrop: DndOver | null
 	) => {
-		if (!target) return;
-		const targetData = target.data as TargetData | ContainerData;
 		if (src.instance !== token && targetData.instance !== token) return;
 
 		const items = options.items();
@@ -625,6 +697,12 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 			if (index === -1) return;
 			options.onRemove?.({ item: items[index], index, to: { listId: targetData.listId } });
 		}
+	};
+
+	const owner: ListDropOwner = {
+		getOver: () => over,
+		clearDropState,
+		applyDrop
 	};
 
 	/** Attachment for the list container (drop zone + central monitor). */
@@ -695,7 +773,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		if (monitorRefs === 0) {
 			monitorCleanup = monitorForElements({
 				canMonitor: ({ source }) => isMine(source.data),
-				onDrop: handleDrop
+				onDrop: handleMonitorDrop
 			});
 			dragCancellationListeners.add(clearCancelledHover);
 		}
@@ -715,6 +793,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 				getIsSticky: () => true,
 				getData: (): ContainerData => ({
 					[DND_MARK]: true,
+					[DND_OWNER]: owner,
 					instance: token,
 					listId,
 					container: true
@@ -770,18 +849,26 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	const item = (itemData: T, _index?: number): Attachment => {
 		return (element) => {
 			const id = getId(itemData);
-			const cancellation: DragCancellation = { isCancelled: false, hasEnded: false };
 			element.setAttribute('data-dnd-item', id);
 
-			const payload = (): DragData => ({
+			const itemPayload = (): ItemData => ({
 				[DND_MARK]: true,
+				[DND_OWNER]: owner,
 				instance: token,
-				autoScrollAxis: autoScrollAxis(),
-				cancellation,
 				listId,
 				itemId: id,
 				index: freshIndex(options.items(), id),
 				item: itemData
+			});
+			const dragPayload = (): DragData => ({
+				...itemPayload(),
+				autoScrollAxis: autoScrollAxis(),
+				lifecycle: {
+					isCancelled: false,
+					hasEnded: false,
+					hasResolvedDrop: false,
+					onEnd: (dropped) => options.onDragEnd?.({ item: itemData, dropped })
+				}
 			});
 
 			const drawItemIndicator = ({
@@ -924,7 +1011,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 						const grabbed = document.elementFromPoint(input.clientX, input.clientY);
 						return !!handle && !!grabbed && handle.contains(grabbed);
 					},
-					getInitialData: () => payload(),
+					getInitialData: () => dragPayload(),
 					onGenerateDragPreview: ({ nativeSetDragImage }) => {
 						// A compact clone pushed in front of the pointer: the default
 						// snapshot sits centered under the cursor and hides the drop
@@ -952,10 +1039,9 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 							}
 						});
 					},
-					onDragStart: () => {
-						cancellation.isCancelled = false;
-						cancellation.hasEnded = false;
-						activeDrag = { id, item: itemData, cancellation, element };
+					onDragStart: ({ source }) => {
+						const dragData = source.data as DragData;
+						activeDrag = { id, item: itemData, lifecycle: dragData.lifecycle, element };
 						unlockNativeScroll();
 						nativeScrollUnlock = lockNativeScrollAxis(element, autoScrollAxis());
 						clippingAncestorsCache.delete(element);
@@ -963,7 +1049,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 						// preview renders unchanged in the same flush (no flash of
 						// the row collapsing before the placeholder appears).
 						const from = freshIndex(options.items(), id);
-						if (from !== -1) setOver(from, payload());
+						if (from !== -1) setOver(from, dragData);
 						element.setAttribute('data-dnd-dragging', 'true');
 						options.onDragStart?.({ item: itemData, index: from });
 					},
@@ -980,7 +1066,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 					getData: ({ input }): TargetData => {
 						const physical = physicalClosestEdge(element, input, axis());
 						return {
-							...payload(),
+							...itemPayload(),
 							edge: toLogicalEdge(physical, element, axis()),
 							physicalEdge: physical
 						};
@@ -1011,10 +1097,11 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 	const cancelActiveDrag = (finalize: boolean): boolean => {
 		const drag = activeDrag;
 		if (!drag) return false;
-		const wasCancelled = drag.cancellation.isCancelled;
+		const wasCancelled = drag.lifecycle.isCancelled;
 		if (!wasCancelled) {
-			drag.cancellation.isCancelled = true;
-			notifyDragCancelled({ instance: token, itemId: drag.id, cancellation: drag.cancellation });
+			drag.lifecycle.isCancelled = true;
+			notifyDragCancelled({ instance: token, itemId: drag.id, lifecycle: drag.lifecycle });
+			activeDrag = { ...drag };
 		}
 		drag.element.removeAttribute('data-dnd-dragging');
 		drag.element.closest('[data-dnd-list]')?.removeAttribute('data-dnd-over');
@@ -1024,7 +1111,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		unlockNativeScroll();
 		if (finalize) {
 			activeDrag = null;
-			notifyDragEnd(drag.cancellation, drag.item, false);
+			endDrag(drag.lifecycle, false);
 		}
 		return !wasCancelled || finalize;
 	};
@@ -1039,7 +1126,7 @@ export const useDndList = <T>(options: UseDndListOptions<T>) => {
 		cancel,
 		/** Id of the item currently dragged from this list, or null. */
 		get dragging() {
-			return activeDrag && !activeDrag.cancellation.isCancelled ? activeDrag.id : null;
+			return activeDrag && !activeDrag.lifecycle.isCancelled ? activeDrag.id : null;
 		},
 		/** True while an accepted drag hovers this list. */
 		get isOver() {
