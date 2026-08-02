@@ -6,48 +6,58 @@ import {
 import type { Attachment } from 'svelte/attachments';
 import type { GanttTouchActivation } from './ganttChart.types.js';
 
+/* eslint-disable svelte/prefer-svelte-reactivity -- attachment registry changes must not invalidate rendering */
+
 type TouchRow = Readonly<{
 	taskId: string;
-	parentId: string | null;
 	task: Readonly<{ readOnly?: boolean }>;
 }>;
 
 type TouchRowReorderOptions = Readonly<{
 	getRows: () => readonly TouchRow[];
 	disabled: () => boolean;
+	canStart: () => boolean;
 	activation: () => GanttTouchActivation;
 	scrollToRow: (rowIndex: number) => void;
-	onTargetChange: (
-		target: Readonly<{
-			taskId: string;
-			targetTaskId: string;
-			position: 'before' | 'after';
-		}> | null
-	) => void;
 	onReorder: (taskId: string, targetTaskId: string, position: 'before' | 'after') => boolean;
 	onBlocked: (taskId: string, reason: 'invalid-target' | 'stale') => void;
+	onCancel: (taskId: string) => void;
 }>;
 
-type TouchReorderSession = {
+type TouchReorderSession = Readonly<{
 	taskId: string;
 	rows: readonly TouchRow[];
 	sourceElement: HTMLElement;
-	targetTaskId: string | null;
-	position: 'before' | 'after' | null;
+	pointerId: number;
+	target: Readonly<{ taskId: string; position: 'before' | 'after' }> | null;
 	pointerX: number;
 	pointerY: number;
-	lastAutoScrollAt: number;
-};
+}>;
 
 const AUTO_SCROLL_EDGE_PX = 40;
 const AUTO_SCROLL_INTERVAL_MS = 90;
+const IDLE_STATE = { state: 'idle' } as const;
 
 export class GanttTouchRowReorder {
-	#session: TouchReorderSession | null = null;
+	#session = $state.raw<TouchReorderSession | null>(null);
 	#autoScrollFrame: number | null = null;
+	#lastAutoScrollAt = 0;
 	#attachments = new Map<string, Attachment<HTMLElement>>();
 
 	constructor(private readonly options: TouchRowReorderOptions) {}
+
+	readonly state = $derived.by(() => {
+		const session = this.#session;
+		if (!session) return IDLE_STATE;
+		const target = session.target
+			? {
+					taskId: session.taskId,
+					targetTaskId: session.target.taskId,
+					position: session.target.position
+				}
+			: null;
+		return { state: 'dragging' as const, taskId: session.taskId, target };
+	});
 
 	item(taskId: string): Attachment<HTMLElement> {
 		const current = this.#attachments.get(taskId);
@@ -57,14 +67,21 @@ export class GanttTouchRowReorder {
 				event.pointerType === 'touch' &&
 				event.target instanceof Element &&
 				Boolean(event.target.closest('[data-dnd-handle]')),
-			disabled: () => this.options.disabled() || !this.canDrag(taskId),
+			disabled: () =>
+				this.options.disabled() ||
+				(!this.#session && !this.options.canStart()) ||
+				!this.canDrag(taskId),
 			activation: this.options.activation,
 			frameCoalesced: true,
 			stopPropagation: true,
 			onStart: (payload) => this.begin(taskId, payload),
 			onMove: (payload) => this.update(payload),
 			onEnd: (payload) => this.finish(payload),
-			onCancel: () => this.cancel()
+			onCancel: () => {
+				const activeTaskId = this.#session?.taskId;
+				this.cancel();
+				if (activeTaskId) this.options.onCancel(activeTaskId);
+			}
 		};
 		const pointerDrag = createPointerDrag(pointerOptions);
 		const attachment: Attachment<HTMLElement> = (element) => {
@@ -79,23 +96,25 @@ export class GanttTouchRowReorder {
 		return attachment;
 	}
 
-	private canDrag(taskId: string): boolean {
-		return this.options.getRows().some((row) => row.taskId === taskId && !row.task.readOnly);
+	private canDrag(taskId: string, rows = this.options.getRows()): boolean {
+		return rows.some((row) => row.taskId === taskId && !row.task.readOnly);
 	}
 
 	private begin(taskId: string, payload: PointerDragPayload<HTMLElement>): boolean {
 		const rows = this.options.getRows();
-		if (this.options.disabled() || !rows.some((row) => row.taskId === taskId)) return false;
+		if (this.options.disabled() || !this.options.canStart() || !this.canDrag(taskId, rows)) {
+			return false;
+		}
 		this.#session = {
 			taskId,
 			rows,
 			sourceElement: payload.node,
-			targetTaskId: null,
-			position: null,
+			pointerId: payload.pointerId,
+			target: null,
 			pointerX: payload.x,
-			pointerY: payload.y,
-			lastAutoScrollAt: 0
+			pointerY: payload.y
 		};
+		this.#lastAutoScrollAt = 0;
 		payload.node.dataset.ganttTouchReordering = 'true';
 		this.updateTarget(payload.x, payload.y);
 		this.startAutoScroll();
@@ -103,34 +122,31 @@ export class GanttTouchRowReorder {
 	}
 
 	private update(payload: PointerDragPayload<HTMLElement>): void {
-		const session = this.#session;
-		if (!session) return;
-		session.pointerX = payload.x;
-		session.pointerY = payload.y;
+		if (!this.#session) return;
 		this.updateTarget(payload.x, payload.y);
 		this.startAutoScroll();
 	}
 
 	private finish(payload: PointerDragPayload<HTMLElement>): void {
-		const session = this.#session;
-		if (!session) return;
-		this.update(payload);
-		const targetTaskId = session.targetTaskId;
-		const position = session.position;
-		if (session.rows !== this.options.getRows()) {
-			this.options.onBlocked(session.taskId, 'stale');
+		if (!this.#session) return;
+		try {
+			this.update(payload);
+			const session = this.#session;
+			if (!session) return;
+			if (session.rows !== this.options.getRows()) {
+				this.options.onBlocked(session.taskId, 'stale');
+				return;
+			}
+			if (!session.target) {
+				this.options.onBlocked(session.taskId, 'invalid-target');
+				return;
+			}
+			if (!this.options.onReorder(session.taskId, session.target.taskId, session.target.position)) {
+				this.options.onBlocked(session.taskId, 'invalid-target');
+			}
+		} finally {
 			this.cancel();
-			return;
 		}
-		if (!targetTaskId || !position) {
-			this.options.onBlocked(session.taskId, 'invalid-target');
-			this.cancel();
-			return;
-		}
-		if (!this.options.onReorder(session.taskId, targetTaskId, position)) {
-			this.options.onBlocked(session.taskId, 'invalid-target');
-		}
-		this.cancel();
 	}
 
 	private updateTarget(pointerX: number, pointerY: number): void {
@@ -140,32 +156,29 @@ export class GanttTouchRowReorder {
 			.elementFromPoint(pointerX, pointerY)
 			?.closest<HTMLElement>('[data-gantt-chart-part="row"]');
 		const targetTaskId = targetElement?.dataset.taskId;
-		const source = session.rows.find((row) => row.taskId === session.taskId);
 		const target = session.rows.find((row) => row.taskId === targetTaskId);
 		if (
-			!source ||
 			!target ||
 			!targetElement ||
-			target.taskId === source.taskId ||
+			target.taskId === session.taskId ||
 			!session.sourceElement.parentElement?.contains(targetElement)
 		) {
-			if (session.targetTaskId) this.options.onTargetChange(null);
-			session.targetTaskId = null;
-			session.position = null;
+			this.#session = {
+				...session,
+				pointerX,
+				pointerY,
+				target: null
+			};
 			return;
 		}
 		const bounds = targetElement.getBoundingClientRect();
 		const position = pointerY < bounds.top + bounds.height / 2 ? 'before' : 'after';
-		const hasChanged = session.targetTaskId !== target.taskId || session.position !== position;
-		session.targetTaskId = target.taskId;
-		session.position = position;
-		if (hasChanged) {
-			this.options.onTargetChange({
-				taskId: session.taskId,
-				targetTaskId: target.taskId,
-				position
-			});
-		}
+		this.#session = {
+			...session,
+			pointerX,
+			pointerY,
+			target: { taskId: target.taskId, position }
+		};
 	}
 
 	private startAutoScroll(): void {
@@ -186,15 +199,15 @@ export class GanttTouchRowReorder {
 						? 1
 						: 0;
 			if (direction === 0) return;
-			if (time - session.lastAutoScrollAt < AUTO_SCROLL_INTERVAL_MS) {
+			if (time - this.#lastAutoScrollAt < AUTO_SCROLL_INTERVAL_MS) {
 				this.#autoScrollFrame = requestAnimationFrame(update);
 				return;
 			}
-			const currentTaskId = session.targetTaskId ?? session.taskId;
+			const currentTaskId = session.target?.taskId ?? session.taskId;
 			const currentIndex = session.rows.findIndex((row) => row.taskId === currentTaskId);
 			const nextIndex = Math.max(0, Math.min(session.rows.length - 1, currentIndex + direction));
 			if (nextIndex === currentIndex) return;
-			session.lastAutoScrollAt = time;
+			this.#lastAutoScrollAt = time;
 			this.options.scrollToRow(nextIndex);
 			requestAnimationFrame(() => this.updateTarget(session.pointerX, session.pointerY));
 			this.#autoScrollFrame = requestAnimationFrame(update);
@@ -202,13 +215,15 @@ export class GanttTouchRowReorder {
 		this.#autoScrollFrame = requestAnimationFrame(update);
 	}
 
-	private cancel(): void {
+	cancel(): void {
 		const session = this.#session;
+		this.#session = null;
 		if (session) {
 			delete session.sourceElement.dataset.ganttTouchReordering;
-			if (session.targetTaskId) this.options.onTargetChange(null);
+			if (session.sourceElement.hasPointerCapture(session.pointerId)) {
+				session.sourceElement.releasePointerCapture(session.pointerId);
+			}
 		}
-		this.#session = null;
 		if (this.#autoScrollFrame !== null) cancelAnimationFrame(this.#autoScrollFrame);
 		this.#autoScrollFrame = null;
 	}

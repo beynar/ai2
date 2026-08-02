@@ -2,6 +2,7 @@
 import { assertScheduleInstant, assertScheduleRange } from '$lib/scheduling/scheduleRange.js';
 import type { Messages } from '$lib/i18n/en.js';
 import { bind } from '$lib/utils/state.svelte.js';
+import { untrack } from 'svelte';
 import { applyGanttColumnEdit } from './ganttChart.columns.js';
 import { GanttChartA11y } from './ganttChart.a11y.svelte.js';
 import { calculateGanttWorkload } from './ganttChart.workload.js';
@@ -208,10 +209,10 @@ export class GanttChartState<
 			void this.resources;
 			void this.assignments;
 			void this.calendars;
-			this.interaction.reconcileControlledState();
+			untrack(() => this.interaction.reconcileControlledState());
 		});
 		$effect(() => {
-			this.a11y.syncInteractionStatus(this.interaction.status, this.interaction.dependencyStatus);
+			this.a11y.syncInteractionStatus(this.interaction.active);
 		});
 		$effect(() => {
 			this.a11y.syncSelection(this.selection);
@@ -717,7 +718,7 @@ export class GanttChartState<
 	}
 
 	cancelInteraction(): void {
-		if (!this.a11y.cancelKeyboardMode()) this.interaction.cancel();
+		if (!this.a11y.cancelKeyboardMode()) this.interaction.cancel(true);
 	}
 
 	#stepZoom(direction: -1 | 1, anchorDate?: Date): boolean {

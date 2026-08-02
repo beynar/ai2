@@ -7,7 +7,7 @@
 	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
-	import type { GanttChartInteractionStatus } from './ganttChart.interactions.svelte.js';
+	import type { GanttTimelineInteractionStatus } from './ganttChart.interactions.svelte.js';
 	import { positionGanttTask } from './ganttChart.layout.js';
 	import type { GanttDragPreviewPayload } from './ganttChart.props.js';
 	import type { GanttRowModel } from './ganttChart.rows.js';
@@ -37,7 +37,7 @@
 		classes,
 		dragPreview
 	}: {
-		status: GanttChartInteractionStatus<TTaskFields>;
+		status: GanttTimelineInteractionStatus<TTaskFields>;
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		scale: GanttTimeScale;
 		visibleRange: GanttRange;
@@ -58,10 +58,26 @@
 	const LABEL_GAP = 8;
 	const LABEL_EDGE_INSET = 8;
 
-	const taskProposal = $derived(status.type === 'task' ? status.proposal : null);
+	const proposal = $derived(
+		status.resolution.state === 'pending' ? null : status.resolution.proposal
+	);
+	const taskProposal = $derived(
+		status.kind === 'task' && status.resolution.state !== 'pending'
+			? status.resolution.proposal
+			: null
+	);
+	const rangeProposal = $derived(
+		status.kind === 'range' && status.resolution.state !== 'pending'
+			? status.resolution.proposal
+			: null
+	);
+	const isValid = $derived(status.resolution.state === 'accepted');
+	const invalidReason = $derived(
+		status.resolution.state === 'rejected' ? status.resolution.reason : null
+	);
 	const proposedTask = $derived(taskProposal?.task ?? null);
 	const sourceNode = $derived(
-		status.type === 'task'
+		status.kind === 'task'
 			? (rowModel.rows.find((node) => node.taskId === status.taskId) ?? null)
 			: null
 	);
@@ -82,17 +98,15 @@
 			: null
 	);
 	const rangeGeometry = $derived(
-		status.type === 'range' && status.proposal
-			? createRangeGeometry(status.proposal, status.rowTop, rowHeight, scale, visiblePixels)
+		rangeProposal
+			? createRangeGeometry(rangeProposal, status.rowTop, rowHeight, scale, visiblePixels)
 			: null
 	);
 	const geometry = $derived(positioned?.geometry ?? rangeGeometry);
 	const range = $derived(
 		proposedTask?.start && proposedTask.end
 			? { start: proposedTask.start, end: proposedTask.end }
-			: status.type === 'range'
-				? status.proposal
-				: null
+			: rangeProposal
 	);
 	const semanticColor = $derived(
 		proposedTask && isGanttSemanticColor(proposedTask.color) ? proposedTask.color : color
@@ -117,7 +131,7 @@
 	const durationLabel = $derived(
 		`${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
 	);
-	const isProgressOperation = $derived(status.type === 'task' && status.operation === 'progress');
+	const isProgressOperation = $derived(status.kind === 'task' && status.operation === 'progress');
 	const progressLabel = $derived(
 		new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(
 			proposedTask?.progress ?? 0
@@ -143,12 +157,12 @@
 		};
 	});
 	const payload = $derived(
-		status.proposal && geometry
+		proposal && geometry
 			? ({
-					proposal: status.proposal,
+					proposal,
 					geometry,
-					isValid: status.isValid,
-					invalidReason: status.invalidReason,
+					isValid,
+					invalidReason,
 					defaultContent
 				} satisfies GanttDragPreviewPayload<TTaskFields>)
 			: null
@@ -193,11 +207,11 @@
 	}
 </script>
 
-{#if status.isValid && status.proposal && geometry && payload && range}
+{#if isValid && proposal && geometry && payload && range}
 	<div
-		data-gantt-chart-part={status.type === 'range' ? 'range-selection' : 'drag-preview'}
-		data-operation={status.operation}
-		class={(status.type === 'range' ? classes.rangeSelection : classes.dragPreview)({
+		data-gantt-chart-part={status.kind === 'range' ? 'range-selection' : 'drag-preview'}
+		data-operation={status.kind === 'task' ? status.operation : 'range'}
+		class={(status.kind === 'range' ? classes.rangeSelection : classes.dragPreview)({
 			size,
 			density,
 			color: semanticColor,

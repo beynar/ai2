@@ -24,6 +24,10 @@
 	} = $props();
 
 	const middleX = $derived((status.fromX + status.toX) / 2);
+	const isValid = $derived(status.resolution.state === 'accepted');
+	const dependencyType = $derived(
+		status.resolution.state === 'pending' ? null : status.resolution.proposal?.type
+	);
 	const markerId = $props.id();
 	const path = $derived(
 		`M ${status.fromX} ${status.fromY} C ${middleX} ${status.fromY}, ${middleX} ${status.toY}, ${status.toX} ${status.toY}`
@@ -32,8 +36,8 @@
 
 <svg
 	data-gantt-chart-part="dependency-preview"
-	data-dependency-type={status.type ?? undefined}
-	data-valid={status.isValid || undefined}
+	data-dependency-type={dependencyType ?? undefined}
+	data-valid={isValid || undefined}
 	class="pointer-events-none absolute inset-0 z-40 overflow-visible"
 	width={totalWidth}
 	height={totalHeight}
@@ -65,7 +69,7 @@
 		})}
 		marker-end={`url(#${markerId})`}
 	></path>
-	{#if status.isValid && status.targetTaskId}
+	{#if isValid}
 		<circle
 			cx={status.toX}
 			cy={status.toY}

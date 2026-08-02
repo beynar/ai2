@@ -194,6 +194,10 @@
 	const workloadPanelHeight = $derived(
 		display.workload && resourceView.resources.length > 0 ? resourceView.workloadHeight : 0
 	);
+	const activeInteraction = $derived(chart.interaction.active);
+	const isInteractionInvalid = $derived(
+		activeInteraction?.kind !== 'row' && activeInteraction?.resolution.state === 'rejected'
+	);
 
 	const navigation: GanttTimelineNavigation = {
 		fitProject: fitProjectInViewport,
@@ -293,7 +297,7 @@
 
 	function handleWheel(event: WheelEvent): void {
 		if (!horizontalViewport || disabled) return;
-		if (chart.interaction.isActive) return;
+		if (activeInteraction) return;
 		if (event.ctrlKey || event.metaKey) {
 			event.preventDefault();
 			if (event.deltaY === 0) return;
@@ -437,7 +441,7 @@
 		data-gantt-chart-part="timeline-viewport"
 		data-scrollbars="custom"
 		data-compressed={scale.isCompressed || undefined}
-		data-interaction-invalid={chart.interaction.isInvalid || undefined}
+		data-interaction-invalid={isInteractionInvalid || undefined}
 		data-visible-start={visibleRange.start.toISOString()}
 		data-visible-end={visibleRange.end.toISOString()}
 		class={classes.viewport({
@@ -445,7 +449,7 @@
 			density,
 			color,
 			disabled,
-			invalid: chart.interaction.isInvalid,
+			invalid: isInteractionInvalid,
 			class: 'h-auto'
 		})}
 		style:height={`${totalHeight + workloadPanelHeight}px`}

@@ -16,7 +16,14 @@ import {
 	type GanttTimelineInteractionContext
 } from './ganttChart.dependencyInteraction.svelte.js';
 import { GanttChartError } from './ganttChart.error.js';
+import {
+	acceptGanttInteraction,
+	pendingGanttInteraction,
+	rejectGanttInteraction,
+	type GanttInteractionResolution
+} from './ganttChart.interactionResolution.js';
 import type { GanttChartMutations } from './ganttChart.mutations.js';
+import type { GanttRowDropResolution, GanttRowDropTarget } from './ganttChart.rowDrop.js';
 import {
 	getGanttScaleInstantAtPixel,
 	getGanttScalePixel,
@@ -39,7 +46,6 @@ import type {
 	GanttRangeProposal,
 	GanttScrollMode,
 	GanttTask,
-	GanttTaskMutationKind,
 	GanttTaskProposal
 } from './ganttChart.types.js';
 
@@ -50,6 +56,7 @@ const POINTER_MAX_SCROLL = 18;
 const TASK_ACTIVATION_SUPPRESSION_MS = 700;
 
 type PointerCoordinates = Readonly<{ clientX: number; clientY: number }>;
+type TaskGestureOperation = GanttTaskPointerOperation | 'progress';
 
 type TaskGesture<
 	TTaskFields extends object,
@@ -59,8 +66,8 @@ type TaskGesture<
 > = {
 	type: 'task';
 	inputMode: 'pointer' | 'keyboard';
-	initialOperation: GanttTaskPointerOperation | 'progress';
-	operation: GanttTaskPointerOperation | 'progress';
+	initialOperation: TaskGestureOperation;
+	operation: TaskGestureOperation;
 	task: GanttTask<TTaskFields>;
 	calendar: GanttCalendarRuntime;
 	scale: GanttTimeScale;
@@ -69,12 +76,10 @@ type TaskGesture<
 	rowTop: number;
 	pointer: PointerCoordinates;
 	pointerCanvasX: number;
-	proposal: GanttTaskProposal<TTaskFields> | null;
-	isValid: boolean;
-	invalidReason: GanttInteractionBlockedInfo['reason'] | null;
-	invalidMessage: string | null;
+	resolution: GanttInteractionResolution<GanttUpdateTaskProposal<TTaskFields>>;
 	workingDurationMinutes: number;
 	keyboardStepCount: number;
+	pointerCapture: Readonly<{ node: HTMLElement; pointerId: number }> | null;
 };
 
 type RangeGesture<
@@ -92,13 +97,12 @@ type RangeGesture<
 	rowTop: number;
 	pointer: PointerCoordinates;
 	pointerCanvasX: number;
-	proposal: GanttRangeProposal | null;
-	isValid: boolean;
-	invalidReason: GanttInteractionBlockedInfo['reason'] | null;
-	invalidMessage: string | null;
+	resolution: GanttInteractionResolution<GanttRangeProposal>;
 	workingDurationMinutes: number;
 	keyboardStepCount: number;
+	keyboardTaskId: string | null;
 	parentId: string | undefined;
+	pointerCapture: Readonly<{ node: HTMLElement; pointerId: number }> | null;
 };
 
 type Gesture<
@@ -110,30 +114,40 @@ type Gesture<
 	| TaskGesture<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	| RangeGesture<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 
-export type GanttChartInteractionStatus<TTaskFields extends object> =
+export type GanttTimelineInteractionStatus<TTaskFields extends object> =
 	| Readonly<{
-			type: 'task';
-			source: 'pointer' | 'keyboard';
+			kind: 'task';
+			inputMode: 'pointer' | 'keyboard';
 			operation: GanttTaskPointerOperation | 'progress';
 			taskId: string;
-			proposal: GanttTaskProposal<TTaskFields> | null;
+			resolution: GanttInteractionResolution<GanttTaskProposal<TTaskFields>>;
 			rowTop: number;
 			pointerCanvasX: number;
 			workingDurationMinutes: number;
-			isValid: boolean;
-			invalidReason: string | null;
 	  }>
 	| Readonly<{
-			type: 'range';
-			source: 'pointer' | 'keyboard';
-			operation: 'range';
-			proposal: GanttRangeProposal | null;
+			kind: 'range';
+			inputMode: 'pointer' | 'keyboard';
+			keyboardTaskId: string | null;
+			resolution: GanttInteractionResolution<GanttRangeProposal>;
 			rowTop: number;
 			pointerCanvasX: number;
 			workingDurationMinutes: number;
-			isValid: boolean;
-			invalidReason: string | null;
 	  }>;
+
+export type GanttRowReorderProposal = Readonly<GanttRowDropTarget & GanttRowDropResolution>;
+
+export type GanttRowInteractionStatus = Readonly<{
+	kind: 'row';
+	transport: 'native' | 'pointer';
+	taskId: string;
+	resolution: GanttInteractionResolution<GanttRowReorderProposal>;
+}>;
+
+export type GanttActiveInteraction<TTaskFields extends object> =
+	| GanttTimelineInteractionStatus<TTaskFields>
+	| Readonly<{ kind: 'dependency' } & GanttDependencyInteractionStatus>
+	| GanttRowInteractionStatus;
 
 export class GanttChartInteractions<
 	TTaskFields extends object,
@@ -167,14 +181,14 @@ export class GanttChartInteractions<
 	> | null>(null);
 	#timeline: GanttTimelineInteractionContext | null = null;
 	#pointerAutoScrollFrame: number | null = null;
-	#pointerCapture: Readonly<{ node: HTMLElement; pointerId: number }> | null = null;
 	#suppressedTaskClickId: string | null = null;
 	#suppressedTaskClickTimer: ReturnType<typeof setTimeout> | null = null;
 	#suppressedTaskClickPointerCleanup: (() => void) | null = null;
 	#taskRowTops = new Map<string, number>();
 	#taskDragAttachments = new Map<string, Attachment<HTMLElement>>();
-	#progressDragAttachments = new Map<string, Attachment<HTMLElement>>();
 	#rangeDragAttachment: Attachment<HTMLElement> | null = null;
+	#readRowInteraction = $state.raw<(() => GanttRowInteractionStatus | null) | null>(null);
+	#cancelRowInteraction: (() => void) | null = null;
 
 	constructor(
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
@@ -190,54 +204,75 @@ export class GanttChartInteractions<
 		this.dependency = new GanttDependencyInteraction(
 			chart,
 			mutations,
-			() => this.#gesture === null
+			() => this.#gesture === null && this.#readRowInteraction?.() == null,
+			() => {
+				this.cancel(true);
+				this.#chart.a11y.scheduleDismissFocus();
+			}
 		);
 	}
 
-	readonly status: GanttChartInteractionStatus<TTaskFields> | null = $derived.by(() => {
+	readonly active: GanttActiveInteraction<TTaskFields> | null = $derived.by(() => {
 		const gesture = this.#gesture;
-		if (!gesture) return null;
-		if (gesture.type === 'range') {
+		if (gesture?.type === 'range') {
 			return {
-				type: 'range',
-				source: gesture.inputMode,
-				operation: 'range',
-				proposal: gesture.proposal,
+				kind: 'range',
+				inputMode: gesture.inputMode,
+				keyboardTaskId: gesture.keyboardTaskId,
+				resolution: gesture.resolution,
 				rowTop: gesture.rowTop,
 				pointerCanvasX: gesture.pointerCanvasX,
-				workingDurationMinutes: gesture.workingDurationMinutes,
-				isValid: gesture.isValid,
-				invalidReason: gesture.invalidReason
+				workingDurationMinutes: gesture.workingDurationMinutes
 			};
 		}
-		return {
-			type: 'task',
-			source: gesture.inputMode,
-			operation: gesture.operation,
-			taskId: gesture.task.id,
-			proposal: gesture.proposal,
-			rowTop: gesture.rowTop,
-			pointerCanvasX: gesture.pointerCanvasX,
-			workingDurationMinutes: gesture.workingDurationMinutes,
-			isValid: gesture.isValid,
-			invalidReason: gesture.invalidReason
-		};
+		if (gesture?.type === 'task') {
+			return {
+				kind: 'task',
+				inputMode: gesture.inputMode,
+				operation: gesture.operation,
+				taskId: gesture.task.id,
+				resolution: gesture.resolution,
+				rowTop: gesture.rowTop,
+				pointerCanvasX: gesture.pointerCanvasX,
+				workingDurationMinutes: gesture.workingDurationMinutes
+			};
+		}
+		const dependency = this.dependency.status;
+		if (dependency) return { kind: 'dependency', ...dependency };
+		return this.#readRowInteraction?.() ?? null;
 	});
 
-	get isActive(): boolean {
-		return this.#gesture !== null || this.dependency.isActive;
+	connectRowInteraction(
+		read: () => GanttRowInteractionStatus | null,
+		cancel: () => void
+	): () => void {
+		this.#readRowInteraction = read;
+		this.#cancelRowInteraction = cancel;
+		return () => {
+			if (this.#readRowInteraction !== read) return;
+			this.#readRowInteraction = null;
+			this.#cancelRowInteraction = null;
+		};
 	}
 
-	get isInvalid(): boolean {
-		return (this.#gesture !== null && !this.#gesture.isValid) || this.dependency.isInvalid;
+	canBeginRowInteraction(): boolean {
+		return (
+			!this.#chart.disabled &&
+			!this.#chart.loading &&
+			this.#gesture === null &&
+			!this.dependency.isActive &&
+			this.#readRowInteraction?.() == null
+		);
 	}
 
-	get dependencyStatus(): GanttDependencyInteractionStatus | null {
-		return this.dependency.status;
-	}
-
-	isTaskActive(taskId: string): boolean {
-		return this.#gesture?.type === 'task' && this.#gesture.task.id === taskId;
+	handleRowTransportCancel(taskId: string, transport: 'native' | 'pointer'): void {
+		this.#chart.a11y.announceInteractionCancelled({
+			kind: 'row',
+			transport,
+			taskId,
+			resolution: pendingGanttInteraction
+		});
+		this.#chart.a11y.scheduleDismissFocus();
 	}
 
 	shouldSuppressTaskActivation(taskId: string): boolean {
@@ -253,9 +288,17 @@ export class GanttChartInteractions<
 			getAllowedAxis: () => 'horizontal'
 		});
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key !== 'Escape' || !this.isActive) return;
+			const active = this.active;
+			if (event.key !== 'Escape' || !active) return;
+			if (
+				(active.kind === 'row' || active.kind === 'dependency') &&
+				active.transport === 'native'
+			) {
+				return;
+			}
 			event.preventDefault();
-			this.cancel();
+			this.cancel(true);
+			this.#chart.a11y.scheduleDismissFocus();
 		};
 		window.addEventListener('keydown', handleKeyDown, true);
 		return () => {
@@ -284,14 +327,18 @@ export class GanttChartInteractions<
 		});
 	}
 
-	beginKeyboardTask(taskId: string, operation: GanttTaskPointerOperation | 'progress'): boolean {
+	beginKeyboardTask(taskId: string, operation: TaskGestureOperation): boolean {
 		const timeline = this.#timeline;
 		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
-		const canBegin =
-			operation === 'progress'
-				? this.canBeginProgressGesture(taskId)
-				: this.canBeginTaskGesture(taskId, operation);
-		if (!timeline || !task || !canBegin || !task.start || !task.end) return false;
+		if (
+			!timeline ||
+			!task ||
+			!task.start ||
+			!task.end ||
+			!this.canBeginTaskGesture(taskId, operation)
+		) {
+			return false;
+		}
 		const calendar = getTaskCalendar(this.#chart.schedule.model, task);
 		const originInstant = operation === 'resize-end' ? task.end : task.start;
 		const pointerCanvasX = getGanttScalePixel(timeline.scale, originInstant);
@@ -303,17 +350,15 @@ export class GanttChartInteractions<
 			task,
 			calendar,
 			scale: timeline.scale,
-			boundary: this.getBoundary(),
+			boundary: this.#chart.modelBoundary,
 			originInstant,
 			rowTop: this.#taskRowTops.get(taskId) ?? 0,
 			pointer: { clientX: 0, clientY: 0 },
 			pointerCanvasX,
-			proposal: null,
-			isValid: false,
-			invalidReason: 'invalid-target',
-			invalidMessage: 'Use an arrow key to create a keyboard task proposal.',
+			resolution: pendingGanttInteraction,
 			workingDurationMinutes: 0,
-			keyboardStepCount: 0
+			keyboardStepCount: 0,
+			pointerCapture: null
 		};
 		return true;
 	}
@@ -321,7 +366,7 @@ export class GanttChartInteractions<
 	adjustKeyboardTask(stepDelta: -1 | 1): boolean {
 		const gesture = this.#gesture;
 		if (!gesture || gesture.type !== 'task' || gesture.inputMode !== 'keyboard') return false;
-		if (!this.isBoundaryCurrent(gesture.boundary)) {
+		if (!this.#chart.isModelBoundaryCurrent(gesture.boundary)) {
 			this.reconcileControlledState();
 			return false;
 		}
@@ -335,7 +380,7 @@ export class GanttChartInteractions<
 				snapDuration: this.#chart.snapDuration
 			});
 			validateGanttTaskChange(change.task, this.#chart.validRange);
-			const proposal: GanttTaskProposal<TTaskFields> = {
+			const proposal: GanttUpdateTaskProposal<TTaskFields> = {
 				kind: change.kind,
 				source: 'keyboard',
 				previousTask: gesture.task,
@@ -346,11 +391,14 @@ export class GanttChartInteractions<
 			this.#gesture = {
 				...gesture,
 				operation: change.kind,
-				proposal,
 				pointerCanvasX: getKeyboardTaskPointerX(change.task, change.kind, gesture.scale),
-				isValid,
-				invalidReason: isValid ? null : 'custom-policy',
-				invalidMessage: isValid ? null : 'The consumer task policy rejected this proposal.',
+				resolution: isValid
+					? acceptGanttInteraction(proposal)
+					: rejectGanttInteraction(
+							'custom-policy',
+							'The consumer task policy rejected this proposal.',
+							proposal
+						),
 				workingDurationMinutes: change.workingDurationMinutes,
 				keyboardStepCount
 			};
@@ -359,10 +407,10 @@ export class GanttChartInteractions<
 			if (!(error instanceof GanttChartError)) throw error;
 			this.#gesture = {
 				...gesture,
-				proposal: null,
-				isValid: false,
-				invalidReason: getBlockedReason(error),
-				invalidMessage: error.message,
+				resolution: rejectGanttInteraction<GanttUpdateTaskProposal<TTaskFields>>(
+					getBlockedReason(error),
+					error.message
+				),
 				keyboardStepCount
 			};
 			return false;
@@ -374,34 +422,30 @@ export class GanttChartInteractions<
 		return this.commitTaskGesture();
 	}
 
-	beginKeyboardRange(anchor: Date, rowTop: number, parentId?: string): boolean {
+	beginKeyboardRange(
+		anchor: Date,
+		rowTop: number,
+		keyboardTaskId: string,
+		parentId?: string
+	): boolean {
 		const timeline = this.#timeline;
-		if (
-			!timeline ||
-			this.#chart.disabled ||
-			this.#chart.loading ||
-			this.isActive ||
-			!this.#chart.interactions.createRange
-		) {
-			return false;
-		}
+		if (!timeline || !this.canBeginRangeGesture()) return false;
 		this.#gesture = {
 			type: 'range',
 			inputMode: 'keyboard',
 			calendar: getCalendarRuntime(this.#chart.schedule.model.projectCalendar),
 			scale: timeline.scale,
-			boundary: this.getBoundary(),
+			boundary: this.#chart.modelBoundary,
 			originInstant: new Date(anchor),
 			rowTop,
 			pointer: { clientX: 0, clientY: 0 },
 			pointerCanvasX: getGanttScalePixel(timeline.scale, anchor),
-			proposal: null,
-			isValid: false,
-			invalidReason: 'invalid-target',
-			invalidMessage: 'Use an arrow key to create a keyboard range proposal.',
+			resolution: pendingGanttInteraction,
 			workingDurationMinutes: 0,
 			keyboardStepCount: 0,
-			parentId
+			keyboardTaskId,
+			parentId,
+			pointerCapture: null
 		};
 		this.adjustKeyboardRange(1);
 		return true;
@@ -424,14 +468,17 @@ export class GanttChartInteractions<
 			const isValid = this.#chart.canCreateRange?.(change.proposal) !== false;
 			this.#gesture = {
 				...gesture,
-				proposal: change.proposal,
 				pointerCanvasX: getGanttScalePixel(
 					gesture.scale,
 					resolvedStepCount > 0 ? change.proposal.end : change.proposal.start
 				),
-				isValid,
-				invalidReason: isValid ? null : 'custom-policy',
-				invalidMessage: isValid ? null : 'The consumer range policy rejected this proposal.',
+				resolution: isValid
+					? acceptGanttInteraction(change.proposal)
+					: rejectGanttInteraction(
+							'custom-policy',
+							'The consumer range policy rejected this proposal.',
+							change.proposal
+						),
 				workingDurationMinutes: change.workingDurationMinutes,
 				keyboardStepCount: resolvedStepCount
 			};
@@ -440,10 +487,10 @@ export class GanttChartInteractions<
 			if (!(error instanceof GanttChartError)) throw error;
 			this.#gesture = {
 				...gesture,
-				proposal: null,
-				isValid: false,
-				invalidReason: getBlockedReason(error),
-				invalidMessage: error.message,
+				resolution: rejectGanttInteraction<GanttRangeProposal>(
+					getBlockedReason(error),
+					error.message
+				),
 				keyboardStepCount: resolvedStepCount
 			};
 			return false;
@@ -457,7 +504,7 @@ export class GanttChartInteractions<
 
 	taskDrag(
 		taskId: string,
-		operation: GanttTaskPointerOperation,
+		operation: TaskGestureOperation,
 		rowTop: number
 	): Attachment<HTMLElement> {
 		this.#taskRowTops.set(taskId, rowTop);
@@ -484,7 +531,7 @@ export class GanttChartInteractions<
 			},
 			onMove: (payload) => this.updatePointerDrag(payload),
 			onEnd: (payload) => this.finishPointerGesture(payload),
-			onCancel: () => this.cancel()
+			onCancel: () => this.cancel(true)
 		});
 		const attachment: Attachment<HTMLElement> = (element) =>
 			untrack(() => {
@@ -501,41 +548,10 @@ export class GanttChartInteractions<
 		return attachment;
 	}
 
-	progressDrag(taskId: string, rowTop: number): Attachment<HTMLElement> {
-		this.#taskRowTops.set(taskId, rowTop);
-		const current = this.#progressDragAttachments.get(taskId);
-		if (current) return current;
-		const pointerDrag = createPointerDrag({
-			disabled: () => !this.canBeginProgressGesture(taskId),
-			canStart: (event) => event.pointerType !== 'touch' || this.#chart.interactions.touch,
-			activation: () => this.#chart.touchActivation,
-			frameCoalesced: true,
-			stopPropagation: true,
-			onStart: (payload) =>
-				this.beginProgressGesture(taskId, this.#taskRowTops.get(taskId) ?? rowTop, payload),
-			onMove: (payload) => this.updatePointerDrag(payload),
-			onEnd: (payload) => this.finishPointerGesture(payload),
-			onCancel: () => this.cancel()
-		});
-		const attachment: Attachment<HTMLElement> = (element) =>
-			untrack(() => {
-				const cleanup = pointerDrag(element);
-				return () => {
-					cleanup?.();
-					if (this.#progressDragAttachments.get(taskId) === attachment) {
-						this.#progressDragAttachments.delete(taskId);
-					}
-				};
-			});
-		this.#progressDragAttachments.set(taskId, attachment);
-		return attachment;
-	}
-
 	rangeDrag(): Attachment<HTMLElement> {
 		if (this.#rangeDragAttachment) return this.#rangeDragAttachment;
 		const pointerDrag = createPointerDrag({
-			disabled: () =>
-				this.#chart.disabled || this.#chart.loading || !this.#chart.interactions.createRange,
+			disabled: () => !this.canBeginRangeGesture(),
 			canStart: (event) => event.pointerType !== 'touch' || this.#chart.interactions.touch,
 			activation: () => this.#chart.touchActivation,
 			frameCoalesced: true,
@@ -543,7 +559,7 @@ export class GanttChartInteractions<
 			onStart: (payload) => this.beginRangeGesture(payload),
 			onMove: (payload) => this.updatePointerDrag(payload),
 			onEnd: (payload) => this.finishPointerGesture(payload),
-			onCancel: () => this.cancel()
+			onCancel: () => this.cancel(true)
 		});
 		const attachment: Attachment<HTMLElement> = (element) =>
 			untrack(() => {
@@ -559,32 +575,47 @@ export class GanttChartInteractions<
 
 	reconcileControlledState(): void {
 		this.dependency.reconcileControlledState();
-		if (!this.#gesture || this.isBoundaryCurrent(this.#gesture.boundary)) return;
+		const rowInteraction = this.#readRowInteraction?.();
+		if (rowInteraction) {
+			this.#cancelRowInteraction?.();
+			this.reportBlocked({
+				reason: 'stale',
+				source: 'pointer',
+				taskId: rowInteraction.taskId,
+				message: 'The controlled Gantt collections changed during row reordering.'
+			});
+		}
+		const gesture = this.#gesture;
+		if (!gesture || this.#chart.isModelBoundaryCurrent(gesture.boundary)) return;
+		this.cancel();
 		this.reportBlocked({
 			reason: 'stale',
-			source: this.#gesture.inputMode,
-			...(this.#gesture.type === 'task' ? { taskId: this.#gesture.task.id } : {}),
+			source: gesture.inputMode,
+			...(gesture.type === 'task' ? { taskId: gesture.task.id } : {}),
 			message: 'The controlled Gantt collections changed during the interaction.'
 		});
-		this.cancel();
 	}
 
 	reconcileScale(scale: GanttTimeScale): void {
 		this.dependency.reconcileScale(scale);
-		if (!this.#gesture || isSameInteractionScale(this.#gesture.scale, scale)) return;
+		const gesture = this.#gesture;
+		if (!gesture || isSameInteractionScale(gesture.scale, scale)) return;
+		this.cancel();
 		this.reportBlocked({
 			reason: 'stale',
-			source: this.#gesture.inputMode,
-			...(this.#gesture.type === 'task' ? { taskId: this.#gesture.task.id } : {}),
+			source: gesture.inputMode,
+			...(gesture.type === 'task' ? { taskId: gesture.task.id } : {}),
 			message: 'The timeline scale changed during the interaction.'
 		});
-		this.cancel();
 	}
 
-	cancel(): boolean {
+	cancel(announce = false): boolean {
+		const active = this.active;
 		const didCancelDependency = this.dependency.cancel();
+		const didCancelRow = this.#readRowInteraction?.() != null;
+		if (didCancelRow) this.#cancelRowInteraction?.();
 		const gesture = this.#gesture;
-		const pointerCapture = this.#pointerCapture;
+		const pointerCapture = gesture?.pointerCapture;
 		const hasPointerCapture = Boolean(
 			pointerCapture?.node.hasPointerCapture(pointerCapture.pointerId)
 		);
@@ -592,17 +623,18 @@ export class GanttChartInteractions<
 			this.armTaskClickSuppression(gesture.task.id, pointerCapture.pointerId, hasPointerCapture);
 		}
 		this.#gesture = null;
-		this.#pointerCapture = null;
 		this.stopPointerAutoScroll();
 		if (hasPointerCapture && pointerCapture) {
 			pointerCapture.node.releasePointerCapture(pointerCapture.pointerId);
 		}
-		return gesture !== null || didCancelDependency;
+		const didCancel = gesture !== null || didCancelDependency || didCancelRow;
+		if (didCancel && announce && active) this.#chart.a11y.announceInteractionCancelled(active);
+		return didCancel;
 	}
 
 	private beginTaskPointerGesture(
 		taskId: string,
-		operation: GanttTaskPointerOperation,
+		operation: TaskGestureOperation,
 		rowTop: number,
 		payload: PointerDragPayload
 	): boolean {
@@ -611,7 +643,6 @@ export class GanttChartInteractions<
 		if (!timeline || !task || !this.canBeginTaskGesture(taskId, operation)) return false;
 		const pointer = { clientX: payload.x, clientY: payload.y };
 		const originPointer = { clientX: payload.startX, clientY: payload.startY };
-		this.#pointerCapture = { node: payload.node, pointerId: payload.pointerId };
 		this.#gesture = {
 			type: 'task',
 			inputMode: 'pointer',
@@ -620,55 +651,17 @@ export class GanttChartInteractions<
 			task,
 			calendar: getTaskCalendar(this.#chart.schedule.model, task),
 			scale: timeline.scale,
-			boundary: this.getBoundary(),
+			boundary: this.#chart.modelBoundary,
 			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
 			rowTop,
 			pointer,
 			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
-			proposal: null,
-			isValid: false,
-			invalidReason: 'invalid-target',
-			invalidMessage: 'The task has no valid pointer proposal.',
+			resolution: pendingGanttInteraction,
 			workingDurationMinutes: 0,
-			keyboardStepCount: 0
+			keyboardStepCount: 0,
+			pointerCapture: { node: payload.node, pointerId: payload.pointerId }
 		};
 		this.updatePointerGesture(pointer);
-		return true;
-	}
-
-	private beginProgressGesture(
-		taskId: string,
-		rowTop: number,
-		payload: PointerDragPayload
-	): boolean {
-		const timeline = this.#timeline;
-		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
-		if (!timeline || !task || !this.canBeginProgressGesture(taskId)) return false;
-		const pointer = toPointerCoordinates(payload);
-		const originPointer = { clientX: payload.startX, clientY: payload.startY };
-		this.#pointerCapture = { node: payload.node, pointerId: payload.pointerId };
-		this.#gesture = {
-			type: 'task',
-			inputMode: 'pointer',
-			initialOperation: 'progress',
-			operation: 'progress',
-			task,
-			calendar: getTaskCalendar(this.#chart.schedule.model, task),
-			scale: timeline.scale,
-			boundary: this.getBoundary(),
-			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
-			rowTop,
-			pointer,
-			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
-			proposal: null,
-			isValid: false,
-			invalidReason: 'invalid-target',
-			invalidMessage: 'The task has no valid progress proposal.',
-			workingDurationMinutes: 0,
-			keyboardStepCount: 0
-		};
-		this.updatePointerGesture(pointer);
-		this.startPointerAutoScroll();
 		return true;
 	}
 
@@ -677,6 +670,7 @@ export class GanttChartInteractions<
 		const startTarget = payload.startTarget;
 		if (
 			!timeline ||
+			!this.canBeginRangeGesture() ||
 			(startTarget instanceof Element &&
 				startTarget.closest(
 					'[data-gantt-chart-part="task"], [data-gantt-chart-part="summary-task"], [data-gantt-chart-part="milestone"], [data-gantt-chart-part="connector-control"], [data-gantt-chart-part="resize-handle"], [data-gantt-chart-part="progress-handle"], [data-gantt-chart-part="dependency-handle"]'
@@ -690,24 +684,22 @@ export class GanttChartInteractions<
 		const rowTop =
 			Math.max(0, Math.floor((originPointer.clientY - canvasBounds.top) / timeline.rowHeight)) *
 			timeline.rowHeight;
-		this.#pointerCapture = { node: payload.node, pointerId: payload.pointerId };
 		this.#gesture = {
 			type: 'range',
 			inputMode: 'pointer',
 			calendar: getCalendarRuntime(this.#chart.schedule.model.projectCalendar),
 			scale: timeline.scale,
-			boundary: this.getBoundary(),
+			boundary: this.#chart.modelBoundary,
 			originInstant: this.getPointerInstant(originPointer, timeline.scale, timeline.viewport),
 			rowTop,
 			pointer,
 			pointerCanvasX: this.getPointerCanvasX(pointer, timeline.viewport),
-			proposal: null,
-			isValid: false,
-			invalidReason: 'invalid-target',
-			invalidMessage: 'The range has no valid proposal.',
+			resolution: pendingGanttInteraction,
 			workingDurationMinutes: 0,
 			keyboardStepCount: 0,
-			parentId: undefined
+			keyboardTaskId: null,
+			parentId: undefined,
+			pointerCapture: { node: payload.node, pointerId: payload.pointerId }
 		};
 		this.updatePointerGesture(pointer);
 		this.startPointerAutoScroll();
@@ -729,7 +721,7 @@ export class GanttChartInteractions<
 		const gesture = this.#gesture;
 		const timeline = this.#timeline;
 		if (!gesture || !timeline) return;
-		if (!this.isBoundaryCurrent(gesture.boundary)) {
+		if (!this.#chart.isModelBoundaryCurrent(gesture.boundary)) {
 			this.reconcileControlledState();
 			return;
 		}
@@ -745,14 +737,29 @@ export class GanttChartInteractions<
 			pointer.clientY <= bounds.bottom;
 		const pointerCanvasX = this.getPointerCanvasX(pointer, timeline.viewport);
 		if (!isInside) {
-			this.#gesture = {
-				...gesture,
-				pointer,
-				pointerCanvasX,
-				isValid: false,
-				invalidReason: 'invalid-target',
-				invalidMessage: 'The pointer is outside the timeline viewport.'
-			};
+			if (gesture.type === 'range') {
+				this.#gesture = {
+					...gesture,
+					pointer,
+					pointerCanvasX,
+					resolution: rejectGanttInteraction(
+						'invalid-target',
+						'The pointer is outside the timeline viewport.',
+						gesture.resolution.state === 'pending' ? null : gesture.resolution.proposal
+					)
+				};
+			} else {
+				this.#gesture = {
+					...gesture,
+					pointer,
+					pointerCanvasX,
+					resolution: rejectGanttInteraction(
+						'invalid-target',
+						'The pointer is outside the timeline viewport.',
+						gesture.resolution.state === 'pending' ? null : gesture.resolution.proposal
+					)
+				};
+			}
 			return;
 		}
 		const pointerInstant = this.getPointerInstant(pointer, gesture.scale, timeline.viewport);
@@ -793,15 +800,15 @@ export class GanttChartInteractions<
 				...gesture,
 				pointer,
 				pointerCanvasX,
-				proposal: null,
-				isValid: false,
-				invalidReason: getBlockedReason(error),
-				invalidMessage: error.message,
+				resolution: rejectGanttInteraction<GanttUpdateTaskProposal<TTaskFields>>(
+					getBlockedReason(error),
+					error.message
+				),
 				workingDurationMinutes: 0
 			};
 			return;
 		}
-		const proposal: GanttTaskProposal<TTaskFields> = {
+		const proposal: GanttUpdateTaskProposal<TTaskFields> = {
 			kind: change.kind,
 			source: gesture.inputMode,
 			previousTask: gesture.task,
@@ -814,11 +821,14 @@ export class GanttChartInteractions<
 			operation: change.kind,
 			pointer,
 			pointerCanvasX,
-			proposal,
-			isValid: invalidReason === null,
-			invalidReason,
-			invalidMessage:
-				invalidReason === null ? null : 'The consumer task policy rejected this proposal.',
+			resolution:
+				invalidReason === null
+					? acceptGanttInteraction(proposal)
+					: rejectGanttInteraction(
+							invalidReason,
+							'The consumer task policy rejected this proposal.',
+							proposal
+						),
 			workingDurationMinutes: change.workingDurationMinutes
 		};
 	}
@@ -877,10 +887,10 @@ export class GanttChartInteractions<
 				...gesture,
 				pointer,
 				pointerCanvasX,
-				proposal: null,
-				isValid: false,
-				invalidReason: getBlockedReason(error),
-				invalidMessage: error.message,
+				resolution: rejectGanttInteraction<GanttRangeProposal>(
+					getBlockedReason(error),
+					error.message
+				),
 				workingDurationMinutes: 0
 			};
 			return;
@@ -891,11 +901,14 @@ export class GanttChartInteractions<
 			...gesture,
 			pointer,
 			pointerCanvasX,
-			proposal: change.proposal,
-			isValid: invalidReason === null,
-			invalidReason,
-			invalidMessage:
-				invalidReason === null ? null : 'The consumer range policy rejected this proposal.',
+			resolution:
+				invalidReason === null
+					? acceptGanttInteraction(change.proposal)
+					: rejectGanttInteraction(
+							invalidReason,
+							'The consumer range policy rejected this proposal.',
+							change.proposal
+						),
 			workingDurationMinutes: change.workingDurationMinutes
 		};
 	}
@@ -903,18 +916,13 @@ export class GanttChartInteractions<
 	private commitTaskGesture(): boolean {
 		const gesture = this.#gesture;
 		if (!gesture || gesture.type !== 'task') return false;
-		if (!gesture.proposal || !gesture.isValid) {
-			this.reportGestureBlocked(gesture);
+		if (gesture.resolution.state !== 'accepted') {
+			const blocked = this.getGestureBlockedInfo(gesture);
 			this.cancel();
+			this.reportBlocked(blocked);
 			return false;
 		}
-		const proposal = gesture.proposal;
-		if (!isTaskChangeProposal(proposal)) {
-			throw new GanttChartError(
-				'invalid-operation',
-				'Pointer interaction produced a non-update task proposal.'
-			);
-		}
+		const proposal = gesture.resolution.proposal;
 		if (isNoopTaskProposal(proposal)) {
 			this.cancel();
 			return true;
@@ -952,13 +960,14 @@ export class GanttChartInteractions<
 	private commitRangeGesture(): boolean {
 		const gesture = this.#gesture;
 		if (!gesture || gesture.type !== 'range') return false;
-		if (!gesture.proposal || !gesture.isValid) {
-			this.reportGestureBlocked(gesture);
+		if (gesture.resolution.state !== 'accepted') {
+			const blocked = this.getGestureBlockedInfo(gesture);
 			this.cancel();
+			this.reportBlocked(blocked);
 			return false;
 		}
 		try {
-			if (this.#chart.canCreateRange?.(gesture.proposal) === false) {
+			if (this.#chart.canCreateRange?.(gesture.resolution.proposal) === false) {
 				this.reportBlocked({
 					reason: 'custom-policy',
 					source: gesture.inputMode,
@@ -966,17 +975,28 @@ export class GanttChartInteractions<
 				});
 				return false;
 			}
-			this.#chart.onEmptyRangeSelect?.(gesture.proposal);
+			this.#chart.onEmptyRangeSelect?.(gesture.resolution.proposal);
 			return true;
 		} finally {
 			this.cancel();
 		}
 	}
 
-	private canBeginTaskGesture(taskId: string, operation: GanttTaskPointerOperation): boolean {
-		if (this.#chart.disabled || this.#chart.loading || this.isActive) return false;
+	private canBeginTaskGesture(taskId: string, operation: TaskGestureOperation): boolean {
+		if (this.#chart.disabled || this.#chart.loading || this.active) return false;
 		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
-		if (!task || task.readOnly || !task.start || !task.end) return false;
+		if (!task || task.readOnly) return false;
+		if (operation === 'progress') {
+			return Boolean(
+				task.type !== 'summary' &&
+				task.type !== 'milestone' &&
+				task.start &&
+				task.end &&
+				task.progressEditable !== false &&
+				this.#chart.interactions.resizeProgress
+			);
+		}
+		if (!task.start || !task.end) return false;
 		if (operation === 'move') {
 			return this.#chart.interactions.moveTask && task.draggable !== false;
 		}
@@ -986,34 +1006,13 @@ export class GanttChartInteractions<
 			: this.#chart.interactions.resizeEnd;
 	}
 
-	private canBeginProgressGesture(taskId: string): boolean {
-		if (this.#chart.disabled || this.#chart.loading || this.isActive) return false;
-		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
-		return Boolean(
-			task &&
-			task.type !== 'summary' &&
-			task.type !== 'milestone' &&
-			task.start &&
-			task.end &&
-			!task.readOnly &&
-			task.progressEditable !== false &&
-			this.#chart.interactions.resizeProgress
+	private canBeginRangeGesture(): boolean {
+		return (
+			!this.#chart.disabled &&
+			!this.#chart.loading &&
+			!this.active &&
+			this.#chart.interactions.createRange
 		);
-	}
-
-	private getBoundary(): GanttModelBoundary<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	> {
-		return this.#chart.modelBoundary;
-	}
-
-	private isBoundaryCurrent(
-		boundary: GanttModelBoundary<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
-	): boolean {
-		return this.#chart.isModelBoundaryCurrent(boundary);
 	}
 
 	private getPointerInstant(
@@ -1107,15 +1106,27 @@ export class GanttChartInteractions<
 		this.#suppressedTaskClickId = null;
 	}
 
-	private reportGestureBlocked(
+	private getGestureBlockedInfo(
 		gesture: Gesture<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
-	): void {
-		this.reportBlocked({
-			reason: gesture.invalidReason ?? 'invalid-target',
+	): GanttInteractionBlockedInfo {
+		const resolution = gesture.resolution;
+		let pendingMessage = 'The task has no valid pointer proposal.';
+		if (gesture.type === 'range') {
+			pendingMessage =
+				gesture.inputMode === 'keyboard'
+					? 'Use an arrow key to create a keyboard range proposal.'
+					: 'The range has no valid proposal.';
+		} else if (gesture.inputMode === 'keyboard') {
+			pendingMessage = 'Use an arrow key to create a keyboard task proposal.';
+		} else if (gesture.operation === 'progress') {
+			pendingMessage = 'The task has no valid progress proposal.';
+		}
+		return {
+			reason: resolution.state === 'rejected' ? resolution.reason : 'invalid-target',
 			source: gesture.inputMode,
 			...(gesture.type === 'task' ? { taskId: gesture.task.id } : {}),
-			message: gesture.invalidMessage ?? 'The interaction proposal is invalid.'
-		});
+			message: resolution.state === 'rejected' ? resolution.message : pendingMessage
+		};
 	}
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
@@ -1143,27 +1154,14 @@ function getBlockedReason(error: GanttChartError): GanttInteractionBlockedInfo['
 
 type GanttUpdateTaskProposal<TTaskFields extends object> = GanttTaskProposal<TTaskFields> &
 	Readonly<{
-		kind: Exclude<GanttTaskMutationKind, 'add' | 'remove' | 'paste'>;
+		kind: GanttDerivedTaskChange<TTaskFields>['kind'];
 		previousTask: GanttTask<TTaskFields>;
 		task: GanttTask<TTaskFields>;
 	}>;
 
-function isTaskChangeProposal<TTaskFields extends object>(
-	proposal: GanttTaskProposal<TTaskFields>
-): proposal is GanttUpdateTaskProposal<TTaskFields> {
-	return (
-		proposal.kind !== 'add' &&
-		proposal.kind !== 'remove' &&
-		proposal.kind !== 'paste' &&
-		proposal.previousTask !== null &&
-		proposal.task !== null
-	);
-}
-
 function isNoopTaskProposal<TTaskFields extends object>(
-	proposal: GanttTaskProposal<TTaskFields>
+	proposal: GanttUpdateTaskProposal<TTaskFields>
 ): boolean {
-	if (!proposal.previousTask || !proposal.task) return false;
 	const previous = proposal.previousTask;
 	const task = proposal.task;
 	if (proposal.kind === 'progress') return previous.progress === task.progress;
@@ -1190,7 +1188,7 @@ function segmentsEqual(
 
 function getKeyboardTaskPointerX<TTaskFields extends object>(
 	task: GanttTask<TTaskFields>,
-	kind: GanttTaskMutationKind,
+	kind: GanttDerivedTaskChange<TTaskFields>['kind'],
 	scale: GanttTimeScale
 ): number {
 	if (!task.start || !task.end) return 0;

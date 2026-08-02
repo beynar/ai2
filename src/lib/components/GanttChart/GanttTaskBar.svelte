@@ -168,38 +168,44 @@
 	const semanticColor = $derived(isGanttSemanticColor(node.task.color) ? node.task.color : color);
 	const taskColor = $derived(getGanttTaskColor(node.task.color, color));
 	const controlledProgressValue = $derived(node.progress ?? 0);
-	const progressInteraction = $derived.by(() => {
-		const status = chart.interaction.status;
-		if (
-			status?.type !== 'task' ||
-			status.taskId !== node.taskId ||
-			status.operation !== 'progress'
-		) {
-			return null;
-		}
-		return status;
-	});
-	const progressValue = $derived(
-		progressInteraction?.proposal?.task?.progress ?? controlledProgressValue
+	const activeInteraction = $derived(chart.interaction.active);
+	const taskInteraction = $derived(
+		activeInteraction?.kind === 'task' && activeInteraction.taskId === node.taskId
+			? activeInteraction
+			: null
 	);
-	const isTaskTransformActive = $derived.by(() => {
-		const status = chart.interaction.status;
-		return (
-			status?.type === 'task' &&
-			(status.operation === 'move' ||
-				status.operation === 'resize-start' ||
-				status.operation === 'resize-end')
-		);
-	});
-	const isProgressInteractionActive = $derived.by(() => {
-		const status = chart.interaction.status;
-		return status?.type === 'task' && status.operation === 'progress';
-	});
+	const progressInteraction = $derived(
+		taskInteraction?.operation === 'progress' ? taskInteraction : null
+	);
+	const progressProposal = $derived(
+		progressInteraction && progressInteraction.resolution.state !== 'pending'
+			? progressInteraction.resolution.proposal
+			: null
+	);
+	const progressValue = $derived(progressProposal?.task?.progress ?? controlledProgressValue);
+	const isTaskTransformActive = $derived(
+		activeInteraction?.kind === 'task' &&
+			(activeInteraction.operation === 'move' ||
+				activeInteraction.operation === 'resize-start' ||
+				activeInteraction.operation === 'resize-end')
+	);
+	const isTaskGestureActive = $derived(activeInteraction?.kind === 'task');
+	const dependencyProposal = $derived(
+		activeInteraction?.kind === 'dependency' && activeInteraction.resolution.state === 'accepted'
+			? activeInteraction.resolution.proposal
+			: null
+	);
+	const isDependencyStartTarget = $derived(
+		dependencyProposal?.toTaskId === node.taskId && dependencyProposal.toEndpoint === 'start'
+	);
+	const isDependencyEndTarget = $derived(
+		dependencyProposal?.toTaskId === node.taskId && dependencyProposal.toEndpoint === 'end'
+	);
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
 	const isCritical = $derived(showCritical && node.isCritical);
-	const isDragging = $derived(chart.interaction.isTaskActive(node.taskId));
+	const isDragging = $derived(taskInteraction !== null);
 	let isHoverCardOpen = $state(false);
-	const isInteractionActive = $derived(chart.interaction.isActive);
+	const isInteractionActive = $derived(activeInteraction !== null);
 	const isFocusTarget = $derived(chart.a11y.isTaskTabStop(node.taskId));
 	const canMoveTask = $derived(
 		node.type !== 'summary' && !node.task.readOnly && node.task.draggable !== false && !disabled
@@ -250,10 +256,10 @@
 		Math.min(Math.max(positioned.startX, positioned.endX), visiblePixels.end)
 	);
 	const progressHandleLeft = $derived.by(() => {
-		if (progressInteraction?.proposal) {
+		if (progressProposal) {
 			const liveThumbLeft = Math.max(
 				taskVisibleStart,
-				Math.min(taskVisibleEnd, progressInteraction.pointerCanvasX)
+				Math.min(taskVisibleEnd, progressInteraction?.pointerCanvasX ?? progressMarkerLeft)
 			);
 			return clampHandleCenter(liveThumbLeft, visiblePixels, 14);
 		}
@@ -280,19 +286,16 @@
 		);
 	});
 	const progressVisualOffset = $derived(
-		progressInteraction?.proposal ? 0 : progressMarkerLeft - progressHandleLeft
+		progressProposal ? 0 : progressMarkerLeft - progressHandleLeft
 	);
 	const progressHandleTop = $derived(positioned.geometry.top - 4);
 	const showProgressHandle = $derived.by(() => {
 		if (isTaskTransformActive) return false;
-		if (progressInteraction?.proposal) return taskVisibleEnd >= taskVisibleStart;
+		if (progressProposal) return taskVisibleEnd >= taskVisibleStart;
 		return taskVisibleEnd >= taskVisibleStart && isPixelVisible(progressMarkerLeft, visiblePixels);
 	});
 	const canCreateDependency = $derived(
-		chart.interaction.dependency.canCreateForTask(node.taskId) &&
-			!isTaskTransformActive &&
-			!isProgressInteractionActive &&
-			!disabled
+		chart.interaction.dependency.canCreateForTask(node.taskId) && !isTaskGestureActive && !disabled
 	);
 	const dateFormatter = $derived(
 		getDateTimeFormatter(locale, timeZone, {
@@ -614,7 +617,7 @@
 				density,
 				color: semanticColor,
 				disabled,
-				class: isTaskTransformActive ? '!opacity-0' : undefined
+				class: isTaskGestureActive ? '!opacity-0' : undefined
 			})}
 			style:left={`${resizeStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
@@ -637,7 +640,7 @@
 				density,
 				color: semanticColor,
 				disabled,
-				class: isTaskTransformActive ? '!opacity-0' : undefined
+				class: isTaskGestureActive ? '!opacity-0' : undefined
 			})}
 			style:left={`${resizeEndHandleLeft}px`}
 			style:top={`${handleTop}px`}
@@ -664,7 +667,7 @@
 			})}
 			style:left={`${progressHandleLeft}px`}
 			style:top={`${progressHandleTop}px`}
-			{@attach chart.interaction.progressDrag(node.taskId, rowTop)}
+			{@attach chart.interaction.taskDrag(node.taskId, 'progress', rowTop)}
 		>
 			<span
 				class="pointer-events-none h-3 w-1 rounded-full bg-[var(--gantt-task-color)] shadow-sm"
@@ -679,7 +682,7 @@
 			data-gantt-chart-part="dependency-handle"
 			data-endpoint="start"
 			data-task-id={node.taskId}
-			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'start') || undefined}
+			data-target={isDependencyStartTarget || undefined}
 			class={classes.dependencyHandle({ size, density, color: semanticColor, disabled })}
 			style:left={`${dependencyStartHandleLeft}px`}
 			style:top={`${handleTop}px`}
@@ -700,7 +703,7 @@
 			data-gantt-chart-part="dependency-handle"
 			data-endpoint="end"
 			data-task-id={node.taskId}
-			data-target={chart.interaction.dependency.isValidTarget(node.taskId, 'end') || undefined}
+			data-target={isDependencyEndTarget || undefined}
 			class={classes.dependencyHandle({ size, density, color: semanticColor, disabled })}
 			style:left={`${dependencyEndHandleLeft}px`}
 			style:top={`${handleTop}px`}

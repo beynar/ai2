@@ -9,21 +9,26 @@
 	import { useDndList } from '$lib/utils/useDndList.svelte.js';
 	import GanttColumnHeader from './GanttColumnHeader.svelte';
 	import GanttTreeRow from './GanttTreeRow.svelte';
+	import {
+		acceptGanttInteraction,
+		pendingGanttInteraction,
+		rejectGanttInteraction
+	} from './ganttChart.interactionResolution.js';
+	import type {
+		GanttRowInteractionStatus,
+		GanttRowReorderProposal
+	} from './ganttChart.interactions.svelte.js';
 	import type {
 		GanttColumnHeaderPayload,
 		GanttGridHeaderPayload,
 		GanttTaskRowPayload,
 		GanttTreeCellPayload
 	} from './ganttChart.props.js';
-	import {
-		resolveGanttRowDrop,
-		type GanttRowDropResolution,
-		type GanttRowDropTarget
-	} from './ganttChart.rowDrop.js';
+	import { resolveGanttRowDrop, type GanttRowDropTarget } from './ganttChart.rowDrop.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import { GanttTouchRowReorder } from './ganttChart.touchRowReorder.js';
+	import { GanttTouchRowReorder } from './ganttChart.touchRowReorder.svelte.js';
 	import type {
 		GanttInteractions,
 		GanttSelection,
@@ -46,7 +51,7 @@
 
 	type RowDropPreview = Readonly<{
 		parentId: string | null;
-		intent: GanttRowDropResolution['intent'];
+		intent: GanttRowReorderProposal['intent'];
 		top: number;
 		inlineStart: number;
 	}>;
@@ -97,7 +102,6 @@
 
 	let horizontalViewport = $state<HTMLDivElement | null>(null);
 	let horizontalScrollLeft = $state(0);
-	let touchDropTarget = $state<GanttRowDropTarget | null>(null);
 	const gridId = $props.id();
 	const nodesByTaskId = $derived(new Map(rowModel.rows.map((node) => [node.taskId, node])));
 	const rowIndexByTaskId = $derived(
@@ -118,6 +122,7 @@
 	const canChangeHierarchy = $derived(
 		!disabled && !loading && !rowModel.isFiltered && !rowModel.isSorted && !rowModel.isGrouped
 	);
+	const nativeRowCancellation = { taskId: null as string | null };
 	const headerPayload = $derived<
 		GanttGridHeaderPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>
 	>({ columns: rowModel.visibleColumns, defaultContent: defaultGridHeader });
@@ -129,8 +134,11 @@
 		handle: true,
 		indicator: 'custom',
 		disabled: () => !canReorder,
-		canDrag: (node) => !node.task.readOnly,
+		canDrag: (node) => !node.task.readOnly && chart.interaction.canBeginRowInteraction(),
 		autoScrollAxis: 'vertical',
+		onDragStart: () => {
+			nativeRowCancellation.taskId = null;
+		},
 		onReorder: (_rows, detail) => {
 			const target = detail.targetItemId
 				? rowModel.rows.find((row) => row.taskId === detail.targetItemId)
@@ -141,14 +149,21 @@
 			if (detail.targetEdge === 'bottom') position = 'after';
 			const accepted = chart.reorderTask(detail.item.taskId, target.taskId, position);
 			if (!accepted) blockHierarchyOperation(detail.item.taskId);
+		},
+		onDragEnd: ({ item, dropped }) => {
+			const wasCoordinatorCancelled = nativeRowCancellation.taskId === item.taskId;
+			if (wasCoordinatorCancelled) nativeRowCancellation.taskId = null;
+			if (!dropped && !wasCoordinatorCancelled) {
+				chart.interaction.handleRowTransportCancel(item.taskId, 'native');
+			}
 		}
 	});
 	const touchRowReorder = new GanttTouchRowReorder({
 		getRows: () => rowModel.rows,
 		disabled: () => !canReorder || !interactions.touch,
+		canStart: () => chart.interaction.canBeginRowInteraction(),
 		activation: () => touchActivation,
 		scrollToRow: (rowIndex) => scrollToRow(rowIndex),
-		onTargetChange: (target) => (touchDropTarget = target),
 		onReorder: (taskId, targetTaskId, position) =>
 			chart.reorderTask(taskId, targetTaskId, position, 'pointer'),
 		onBlocked: (taskId, reason) => {
@@ -161,19 +176,77 @@
 						? 'The controlled task rows changed during touch reordering.'
 						: 'Touch reordering requires a compatible sibling target.'
 			});
+		},
+		onCancel: (taskId) => chart.interaction.handleRowTransportCancel(taskId, 'pointer')
+	});
+	const rowInteraction = $derived.by((): GanttRowInteractionStatus | null => {
+		const touchState = touchRowReorder.state;
+		const isTouch = touchState.state === 'dragging';
+		const taskId = isTouch ? touchState.taskId : dnd.dragging;
+		if (!taskId) return null;
+		let target: GanttRowDropTarget | null = isTouch ? touchState.target : null;
+		if (!isTouch) {
+			const over = dnd.over;
+			const targetTaskId = over
+				? (over.targetItemId ?? rowModel.rows[over.index]?.taskId)
+				: undefined;
+			if (over && targetTaskId && targetTaskId !== over.source.itemId) {
+				let position: 'before' | 'after' = over.index > over.source.index ? 'after' : 'before';
+				if (over.targetEdge === 'top') position = 'before';
+				if (over.targetEdge === 'bottom') position = 'after';
+				target = { taskId: over.source.itemId, targetTaskId, position };
+			}
 		}
+		if (!target) {
+			return {
+				kind: 'row',
+				transport: isTouch ? 'pointer' : 'native',
+				taskId,
+				resolution: pendingGanttInteraction
+			};
+		}
+		const resolution = resolveGanttRowDrop(target, nodesByTaskId);
+		if (!resolution) {
+			return {
+				kind: 'row',
+				transport: isTouch ? 'pointer' : 'native',
+				taskId,
+				resolution: rejectGanttInteraction(
+					'invalid-target',
+					'The row target does not preserve a valid hierarchy.'
+				)
+			};
+		}
+		const proposal: GanttRowReorderProposal = {
+			...target,
+			...resolution
+		};
+		return {
+			kind: 'row',
+			transport: isTouch ? 'pointer' : 'native',
+			taskId,
+			resolution: acceptGanttInteraction(proposal)
+		};
 	});
-	const nativeDropTarget = $derived.by((): GanttRowDropTarget | null => {
-		const over = dnd.over;
-		if (!over || !dnd.dragging) return null;
-		const targetTaskId = over.targetItemId ?? rowModel.rows[over.index]?.taskId;
-		if (!targetTaskId || targetTaskId === over.source.itemId) return null;
-		let position: 'before' | 'after' = over.index > over.source.index ? 'after' : 'before';
-		if (over.targetEdge === 'top') position = 'before';
-		if (over.targetEdge === 'bottom') position = 'after';
-		return { taskId: over.source.itemId, targetTaskId, position };
-	});
-	const rowDropPreview = $derived(resolveRowDropPreview(touchDropTarget ?? nativeDropTarget));
+	const rowDropPreview = $derived(
+		resolveRowDropPreview(
+			rowInteraction?.resolution.state === 'accepted' ? rowInteraction.resolution.proposal : null
+		)
+	);
+	const isRowInteractionInvalid = $derived(rowInteraction?.resolution.state === 'rejected');
+
+	$effect(() =>
+		chart.interaction.connectRowInteraction(
+			() => rowInteraction,
+			() => {
+				if (rowInteraction?.transport === 'native') {
+					nativeRowCancellation.taskId = rowInteraction.taskId;
+				}
+				dnd.cancel();
+				touchRowReorder.cancel();
+			}
+		)
+	);
 
 	function isTaskSelected(taskId: string): boolean {
 		return (
@@ -397,18 +470,17 @@
 		});
 	}
 
-	function resolveRowDropPreview(target: GanttRowDropTarget | null): RowDropPreview | null {
-		const resolution = resolveGanttRowDrop(target, nodesByTaskId);
-		const targetRowIndex = target ? rowIndexByTaskId.get(target.targetTaskId) : undefined;
+	function resolveRowDropPreview(proposal: GanttRowReorderProposal | null): RowDropPreview | null {
+		const targetRowIndex = proposal ? rowIndexByTaskId.get(proposal.targetTaskId) : undefined;
 		const virtualRow =
 			targetRowIndex === undefined ? undefined : virtualRowByIndex.get(targetRowIndex);
-		if (!resolution || !target || !virtualRow) return null;
+		if (!proposal || !virtualRow) return null;
 		const titleOffset = getTitleColumnOffset();
 		return {
-			parentId: resolution.parentId,
-			intent: resolution.intent,
-			top: target.position === 'before' ? virtualRow.start : virtualRow.end,
-			inlineStart: titleOffset + 8 + resolution.depth * 16
+			parentId: proposal.parentId,
+			intent: proposal.intent,
+			top: proposal.position === 'before' ? virtualRow.start : virtualRow.end,
+			inlineStart: titleOffset + 8 + proposal.depth * 16
 		};
 	}
 
@@ -429,7 +501,15 @@
 
 <div
 	data-gantt-chart-part="grid-pane"
-	class={classes.gridPane({ size, density, color, disabled })}
+	data-interaction-invalid={isRowInteractionInvalid || undefined}
+	class={classes.gridPane({
+		size,
+		density,
+		color,
+		disabled,
+		invalid: isRowInteractionInvalid,
+		class: isRowInteractionInvalid ? '[&_[data-dnd-handle]]:!cursor-not-allowed' : undefined
+	})}
 	role="treegrid"
 	aria-label={messages.ganttChartGrid}
 	aria-rowcount={rowModel.rows.length + 1}

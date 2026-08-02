@@ -157,6 +157,7 @@
 	const todayLeft = $derived(now ? getGanttScalePixel(scale, now) : null);
 	const overAllocatedResourceIdsByTaskId = $derived(indexGanttOverAllocations(workload));
 	const emptyResourceIds = new Set<string>();
+	const activeInteraction = $derived(chart.interaction.active);
 	const rangeDrag: Attachment<HTMLElement> = (element) => chart.interaction.rangeDrag()(element);
 
 	function isTaskSelected(taskId: string): boolean {
@@ -312,9 +313,9 @@
 		{/each}
 	</div>
 
-	{#if chart.interaction.status}
+	{#if activeInteraction?.kind === 'task' || activeInteraction?.kind === 'range'}
 		<GanttDragPreview
-			status={chart.interaction.status}
+			status={activeInteraction}
 			{rowModel}
 			{scale}
 			{visibleRange}
@@ -330,11 +331,9 @@
 			{classes}
 			dragPreview={snippets.dragPreview}
 		/>
-	{/if}
-
-	{#if chart.interaction.dependencyStatus}
+	{:else if activeInteraction?.kind === 'dependency'}
 		<GanttDependencyPreview
-			status={chart.interaction.dependencyStatus}
+			status={activeInteraction}
 			{totalHeight}
 			totalWidth={scale.totalWidth}
 			{size}
