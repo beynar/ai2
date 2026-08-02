@@ -1,4 +1,6 @@
 import {
+	autoScrollForElements,
+	autoScrollWindowForElements,
 	disableNativeDragPreview,
 	draggable,
 	dropTargetForElements,
@@ -26,6 +28,7 @@ import type {
 	GanttDependencyCreationRequest,
 	GanttDependencyEndpoint,
 	GanttInteractionBlockedInfo,
+	GanttScrollMode,
 	GanttTask
 } from './ganttChart.types.js';
 
@@ -149,11 +152,31 @@ export class GanttDependencyInteraction<
 
 	connectTimeline(context: GanttTimelineInteractionContext): () => void {
 		this.#timeline = context;
+		const autoScrollCleanup = autoScrollForElements({
+			element: context.viewport,
+			canScroll: ({ source }) => this.isDragSource(source.data),
+			getAllowedAxis: () => 'horizontal'
+		});
 		return () => {
+			autoScrollCleanup();
 			if (this.#timeline !== context) return;
 			this.cancel();
 			this.#timeline = null;
 		};
+	}
+
+	connectVerticalScrollOwner(element: HTMLElement, mode: GanttScrollMode): () => void {
+		if (mode === 'page' && element === document.documentElement) {
+			return autoScrollWindowForElements({
+				canScroll: ({ source }) => this.isDragSource(source.data),
+				getAllowedAxis: () => 'vertical'
+			});
+		}
+		return autoScrollForElements({
+			element,
+			canScroll: ({ source }) => this.isDragSource(source.data),
+			getAllowedAxis: () => 'vertical'
+		});
 	}
 
 	dependencyHandle(

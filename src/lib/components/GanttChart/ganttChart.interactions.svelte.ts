@@ -1,7 +1,3 @@
-import {
-	autoScrollForElements,
-	autoScrollWindowForElements
-} from '$lib/utils/pragmaticDragAndDrop.js';
 import { createPointerDrag, type PointerDragPayload } from '$lib/utils/pointerDrag.js';
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
@@ -47,7 +43,6 @@ import {
 import type {
 	GanttInteractionBlockedInfo,
 	GanttRangeProposal,
-	GanttScrollMode,
 	GanttTask,
 	GanttTaskProposal
 } from './ganttChart.types.js';
@@ -176,11 +171,9 @@ export class GanttChartInteractions<
 	#timeline: GanttTimelineInteractionContext | null = null;
 	#pointerAutoScrollFrame: number | null = null;
 	#suppressedTaskClickId: string | null = null;
-	#suppressedTaskClickTimer: ReturnType<typeof setTimeout> | null = null;
-	#suppressedTaskClickPointerCleanup: (() => void) | null = null;
+	#taskClickSuppressionCleanup: (() => void) | null = null;
 	#taskRowTops = new Map<string, number>();
 	#taskDragAttachments = new Map<string, Attachment<HTMLElement>>();
-	#rangeDragAttachment: Attachment<HTMLElement> | null = null;
 	#rowInteraction = $state.raw<GanttRowInteractionOwner | null>(null);
 
 	constructor(
@@ -249,11 +242,6 @@ export class GanttChartInteractions<
 	connectTimeline(context: GanttTimelineInteractionContext): () => void {
 		this.#timeline = context;
 		const dependencyCleanup = this.dependency.connectTimeline(context);
-		const horizontalAutoScrollCleanup = autoScrollForElements({
-			element: context.viewport,
-			canScroll: ({ source }) => this.dependency.isDragSource(source.data),
-			getAllowedAxis: () => 'horizontal'
-		});
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const active = this.active;
 			if (event.key !== 'Escape' || !active) return;
@@ -270,7 +258,6 @@ export class GanttChartInteractions<
 		window.addEventListener('keydown', handleKeyDown, true);
 		return () => {
 			dependencyCleanup();
-			horizontalAutoScrollCleanup();
 			window.removeEventListener('keydown', handleKeyDown, true);
 			if (this.#timeline === context) {
 				this.cancel();
@@ -278,20 +265,6 @@ export class GanttChartInteractions<
 				this.#timeline = null;
 			}
 		};
-	}
-
-	connectVerticalScrollOwner(element: HTMLElement, mode: GanttScrollMode): () => void {
-		if (mode === 'page' && element === document.documentElement) {
-			return autoScrollWindowForElements({
-				canScroll: ({ source }) => this.dependency.isDragSource(source.data),
-				getAllowedAxis: () => 'vertical'
-			});
-		}
-		return autoScrollForElements({
-			element,
-			canScroll: ({ source }) => this.dependency.isDragSource(source.data),
-			getAllowedAxis: () => 'vertical'
-		});
 	}
 
 	beginKeyboardTask(taskId: string, operation: TaskGestureOperation): boolean {
@@ -330,7 +303,21 @@ export class GanttChartInteractions<
 		return true;
 	}
 
-	adjustKeyboardTask(stepDelta: -1 | 1): boolean {
+	adjustKeyboard(stepDelta: -1 | 1): boolean {
+		const gesture = this.#gesture;
+		if (!gesture || gesture.inputMode !== 'keyboard') return false;
+		return gesture.type === 'task'
+			? this.adjustKeyboardTask(stepDelta)
+			: this.adjustKeyboardRange(stepDelta);
+	}
+
+	commitKeyboard(): boolean {
+		const gesture = this.#gesture;
+		if (!gesture || gesture.inputMode !== 'keyboard') return false;
+		return gesture.type === 'task' ? this.commitTaskGesture() : this.commitRangeGesture();
+	}
+
+	private adjustKeyboardTask(stepDelta: -1 | 1): boolean {
 		const gesture = this.#gesture;
 		if (!gesture || gesture.type !== 'task' || gesture.inputMode !== 'keyboard') return false;
 		if (!this.#chart.isModelBoundaryCurrent(gesture.boundary)) {
@@ -384,11 +371,6 @@ export class GanttChartInteractions<
 		}
 	}
 
-	commitKeyboardTask(): boolean {
-		if (this.#gesture?.type !== 'task' || this.#gesture.inputMode !== 'keyboard') return false;
-		return this.commitTaskGesture();
-	}
-
 	beginKeyboardRange(
 		anchor: Date,
 		rowTop: number,
@@ -418,7 +400,7 @@ export class GanttChartInteractions<
 		return true;
 	}
 
-	adjustKeyboardRange(stepDelta: -1 | 1): boolean {
+	private adjustKeyboardRange(stepDelta: -1 | 1): boolean {
 		const gesture = this.#gesture;
 		if (!gesture || gesture.type !== 'range' || gesture.inputMode !== 'keyboard') return false;
 		const keyboardStepCount = gesture.keyboardStepCount + stepDelta;
@@ -462,11 +444,6 @@ export class GanttChartInteractions<
 			};
 			return false;
 		}
-	}
-
-	commitKeyboardRange(): boolean {
-		if (this.#gesture?.type !== 'range' || this.#gesture.inputMode !== 'keyboard') return false;
-		return this.commitRangeGesture();
 	}
 
 	taskDrag(
@@ -516,8 +493,7 @@ export class GanttChartInteractions<
 	}
 
 	rangeDrag(): Attachment<HTMLElement> {
-		if (this.#rangeDragAttachment) return this.#rangeDragAttachment;
-		const pointerDrag = createPointerDrag({
+		return createPointerDrag({
 			disabled: () => !this.canBeginRangeGesture(),
 			canStart: (event) => event.pointerType !== 'touch' || this.#chart.interactions.touch,
 			activation: () => this.#chart.touchActivation,
@@ -528,16 +504,6 @@ export class GanttChartInteractions<
 			onEnd: (payload) => this.finishPointerGesture(payload),
 			onCancel: () => this.cancel(true)
 		});
-		const attachment: Attachment<HTMLElement> = (element) =>
-			untrack(() => {
-				const cleanup = pointerDrag(element);
-				return () => {
-					cleanup?.();
-					if (this.#rangeDragAttachment === attachment) this.#rangeDragAttachment = null;
-				};
-			});
-		this.#rangeDragAttachment = attachment;
-		return attachment;
 	}
 
 	reconcileControlledState(): void {
@@ -1030,12 +996,11 @@ export class GanttChartInteractions<
 		this.clearTaskClickSuppression();
 		this.#suppressedTaskClickId = taskId;
 		const scheduleClear = () => {
-			this.#suppressedTaskClickPointerCleanup?.();
-			this.#suppressedTaskClickPointerCleanup = null;
-			this.#suppressedTaskClickTimer = setTimeout(() => {
-				this.#suppressedTaskClickTimer = null;
+			this.#taskClickSuppressionCleanup?.();
+			const timer = setTimeout(() => {
 				this.clearTaskClickSuppression();
 			}, TASK_ACTIVATION_SUPPRESSION_MS);
+			this.#taskClickSuppressionCleanup = () => clearTimeout(timer);
 		};
 		if (!waitForPointerUp) {
 			scheduleClear();
@@ -1046,19 +1011,15 @@ export class GanttChartInteractions<
 		};
 		window.addEventListener('pointerup', handlePointerFinish, true);
 		window.addEventListener('pointercancel', handlePointerFinish, true);
-		this.#suppressedTaskClickPointerCleanup = () => {
+		this.#taskClickSuppressionCleanup = () => {
 			window.removeEventListener('pointerup', handlePointerFinish, true);
 			window.removeEventListener('pointercancel', handlePointerFinish, true);
 		};
 	}
 
 	private clearTaskClickSuppression(): void {
-		if (this.#suppressedTaskClickTimer !== null) {
-			clearTimeout(this.#suppressedTaskClickTimer);
-			this.#suppressedTaskClickTimer = null;
-		}
-		this.#suppressedTaskClickPointerCleanup?.();
-		this.#suppressedTaskClickPointerCleanup = null;
+		this.#taskClickSuppressionCleanup?.();
+		this.#taskClickSuppressionCleanup = null;
 		this.#suppressedTaskClickId = null;
 	}
 

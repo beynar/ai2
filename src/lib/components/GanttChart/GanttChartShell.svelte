@@ -190,7 +190,7 @@
 		const mode = chart.scrollMode;
 		const scrollOwner = scrollContext.element;
 		if (!scrollOwner) return;
-		return chart.interaction.connectVerticalScrollOwner(scrollOwner, mode);
+		return chart.interaction.dependency.connectVerticalScrollOwner(scrollOwner, mode);
 	});
 
 	$effect(() => {

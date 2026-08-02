@@ -399,23 +399,18 @@ export class GanttChartA11y<
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			try {
-				if (mode.kind === 'task') this.chart.interaction.commitKeyboardTask();
-				else if (mode.kind === 'range') this.chart.interaction.commitKeyboardRange();
-				else this.chart.interaction.dependency.commitKeyboard();
+				if (mode.kind === 'task' || mode.kind === 'range') {
+					this.chart.interaction.commitKeyboard();
+				} else this.chart.interaction.dependency.commitKeyboard();
 			} finally {
 				this.focusTask(mode.taskId);
 			}
 			return;
 		}
 		const physicalStep = getPhysicalTimeStep(event.key, this.chart.direction);
-		if (mode.kind === 'task' && physicalStep) {
+		if ((mode.kind === 'task' || mode.kind === 'range') && physicalStep) {
 			event.preventDefault();
-			this.chart.interaction.adjustKeyboardTask(physicalStep);
-			return;
-		}
-		if (mode.kind === 'range' && physicalStep) {
-			event.preventDefault();
-			this.chart.interaction.adjustKeyboardRange(physicalStep);
+			this.chart.interaction.adjustKeyboard(physicalStep);
 			return;
 		}
 		if (mode.kind !== 'dependency') return;
