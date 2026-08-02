@@ -80,21 +80,8 @@
 	const rowDropPreview = $derived(resolveRowDropPreview(rowReorder.preview));
 	const isRowInteractionInvalid = $derived(rowReorder.isInvalid);
 
-	function isTaskSelected(taskId: string): boolean {
-		return (
-			(chart.selection.kind === 'task' && chart.selection.taskId === taskId) ||
-			(chart.selection.kind === 'cell' && chart.selection.taskId === taskId)
-		);
-	}
-
 	function focusCell(taskId: string, columnId: string): void {
 		chart.a11y.setCellTarget(taskId, columnId);
-		chart.select({
-			kind: 'cell',
-			taskId,
-			dependencyId: null,
-			cell: { taskId, columnId }
-		});
 	}
 
 	function navigateCell(event: KeyboardEvent, rowIndex: number, columnIndex: number): void {
@@ -410,31 +397,14 @@
 								rowIndex={virtualRow.index}
 								start={virtualRow.start}
 								columns={rowModel.visibleColumns}
-								dependencies={chart.schedule.model.dependencies}
-								resources={chart.schedule.model.resources}
-								assignments={chart.schedule.model.assignments}
 								resourceGroup={rowModel.resourceGroupByTaskId.get(node.taskId) ?? null}
 								showResourceGroupLabel={rowModel.resourceGroupStartTaskIds.has(node.taskId)}
-								messages={chart.messages}
-								locale={chart.locale}
-								timeZone={chart.timeZone}
-								size={chart.size}
-								density={chart.density}
-								color={chart.color}
-								direction={chart.direction}
-								disabled={chart.disabled}
-								loading={chart.loading}
-								isSelected={isTaskSelected(node.taskId)}
 								isDropParent={rowDropPreview?.parentId === node.taskId &&
 									rowDropPreview.intent !== 'reorder'}
 								showDragHandle={canReorder}
 								canIndent={canIndentRow(virtualRow.index)}
 								canOutdent={canOutdentRow(virtualRow.index)}
-								classes={chart.classes}
-								treeCell={chart.renderers?.treeCell}
-								taskRow={chart.renderers?.taskRow}
 								rowAttachment={rowReorder.item(node)}
-								onCellFocus={(columnId) => focusCell(node.taskId, columnId)}
 								onIndent={() => indentRow(virtualRow.index)}
 								onOutdent={() => outdentRow(virtualRow.index)}
 								onNavigate={(event, columnIndex) =>

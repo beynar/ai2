@@ -26,8 +26,6 @@
 	import { arrowLineRightIcon } from '$lib/components/Icons/arrowLineRight.js';
 	import { dotsSixVerticalIcon } from '$lib/components/Icons/dotsSixVertical.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import {
 		formatGanttColumnValue,
 		getGanttColumnLabel,
@@ -37,15 +35,11 @@
 	import type { GanttTreeCellPayload } from './ganttChart.props.js';
 	import { createGanttColumnContext } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
 	import type {
-		GanttAssignment,
 		GanttColumnDefinition,
-		GanttDependency,
 		GanttResolvedTaskNode,
 		GanttResource
 	} from './ganttChart.types.js';
-	import type { Snippet } from 'svelte';
 
 	let {
 		chart,
@@ -53,27 +47,11 @@
 		column,
 		rowIndex,
 		columnIndex,
-		dependencies,
-		resources,
-		assignments,
 		resourceGroup,
 		showResourceGroupLabel,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		direction,
-		disabled,
-		loading,
-		isSelected,
-		isFocused,
 		showDragHandle,
 		canIndent,
 		canOutdent,
-		classes,
-		treeCell,
 		onFocus,
 		onIndent,
 		onOutdent,
@@ -89,29 +67,11 @@
 		>;
 		rowIndex: number;
 		columnIndex: number;
-		dependencies: readonly GanttDependency<TDependencyFields>[];
-		resources: readonly GanttResource<TResourceFields>[];
-		assignments: readonly GanttAssignment<TAssignmentFields>[];
 		resourceGroup: GanttResource<TResourceFields> | null;
 		showResourceGroupLabel: boolean;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		disabled: boolean;
-		loading: boolean;
-		isSelected: boolean;
-		isFocused: boolean;
 		showDragHandle: boolean;
 		canIndent: boolean;
 		canOutdent: boolean;
-		classes: GanttChartClasses;
-		treeCell?: Snippet<
-			[GanttTreeCellPayload<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>]
-		>;
 		onFocus: () => void;
 		onIndent: () => void;
 		onOutdent: () => void;
@@ -120,7 +80,29 @@
 
 	let isEditing = $state(false);
 	let editValue = $state('');
-	const context = $derived(createGanttColumnContext(node, dependencies, resources, assignments));
+	const messages = $derived(chart.messages);
+	const locale = $derived(chart.locale);
+	const timeZone = $derived(chart.timeZone);
+	const size = $derived(chart.size);
+	const density = $derived(chart.density);
+	const color = $derived(chart.color);
+	const direction = $derived(chart.direction);
+	const disabled = $derived(chart.disabled);
+	const loading = $derived(chart.loading);
+	const classes = $derived(chart.classes);
+	const isSelected = $derived(
+		(chart.selection.kind === 'task' && chart.selection.taskId === node.taskId) ||
+			(chart.selection.kind === 'cell' && chart.selection.taskId === node.taskId)
+	);
+	const isFocused = $derived(chart.a11y.isCellTabStop(node.taskId, column.id));
+	const context = $derived(
+		createGanttColumnContext(
+			node,
+			chart.schedule.model.dependencies,
+			chart.schedule.model.resources,
+			chart.schedule.model.assignments
+		)
+	);
 	const value = $derived(getGanttColumnValue(column, context));
 	const formattedValue = $derived(
 		formatGanttColumnValue(column.id, value, locale, timeZone, messages)
@@ -264,7 +246,7 @@
 				<span class="truncate">{resourceGroup.title}</span>
 			</span>
 		{/if}
-		<Slot render={treeCell ?? defaultContent} {payload} />
+		<Slot render={chart.renderers?.treeCell ?? defaultContent} {payload} />
 		{#if column.id === 'title' && canOutdent}
 			<button
 				type="button"

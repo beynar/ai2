@@ -120,6 +120,20 @@ export class GanttChartA11y<
 
 	setCellTarget(taskId: string, columnId: string): void {
 		this.activeTarget = { kind: 'cell', taskId, columnId };
+		const selection = this.chart.selection;
+		if (
+			selection.kind === 'cell' &&
+			selection.taskId === taskId &&
+			selection.cell.columnId === columnId
+		) {
+			return;
+		}
+		this.chart.select({
+			kind: 'cell',
+			taskId,
+			dependencyId: null,
+			cell: { taskId, columnId }
+		});
 	}
 
 	setTaskTarget(taskId: string): void {
@@ -182,19 +196,6 @@ export class GanttChartA11y<
 	focusCell(taskId: string, columnId = this.#columnIds[0] ?? 'title'): boolean {
 		if (!this.#rowTaskIds.includes(taskId) || !this.#columnIds.includes(columnId)) return false;
 		this.setCellTarget(taskId, columnId);
-		const selection = this.chart.selection;
-		if (
-			selection.kind !== 'cell' ||
-			selection.taskId !== taskId ||
-			selection.cell.columnId !== columnId
-		) {
-			this.chart.select({
-				kind: 'cell',
-				taskId,
-				dependencyId: null,
-				cell: { taskId, columnId }
-			});
-		}
 		this.chart.scrollToTask(taskId);
 		this.scheduleFocus(
 			(element) =>

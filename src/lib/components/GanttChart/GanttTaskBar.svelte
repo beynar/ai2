@@ -42,10 +42,7 @@
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
 	import type { PopoverThemeProps } from '$lib/components/Popover/index.js';
-	import type { Messages } from '$lib/i18n/en.js';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import GanttResourceAssignments from './GanttResourceAssignments.svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
 	import type { GanttPositionedTask } from './ganttChart.layout.js';
@@ -53,88 +50,46 @@
 		GanttBaselinePayload,
 		GanttDeadlinePayload,
 		GanttProgressPayload,
-		GanttResourceAssignmentsPayload,
 		GanttTaskLabelPayload,
 		GanttTaskPayload,
 		GanttTaskTooltipPayload
 	} from './ganttChart.props.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type { GanttAssignment, GanttResource } from './ganttChart.types.js';
 
 	const TASK_TOOLTIP_POPOVER_THEME = {
 		root: { base: 'pointer-events-none' }
 	} satisfies PopoverThemeProps;
-
-	type TaskSnippets = {
-		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		milestone?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		taskLabel?: Snippet<[GanttTaskLabelPayload<TTaskFields>]>;
-		taskTooltip?: Snippet<
-			[GanttTaskTooltipPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
-		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
-		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
-		resourceAssignments?: Snippet<
-			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-	};
 
 	let {
 		positioned,
 		visiblePixels,
 		rowTop,
 		chart,
-		resources,
-		assignments,
-		overAllocatedResourceIds,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		direction,
-		disabled,
-		showBaseline,
-		showDeadline,
-		showConstraint,
-		showCritical,
-		isSelected,
-		classes,
-		snippets,
-		onTaskClick,
-		onTaskDoubleClick
+		overAllocatedResourceIds
 	}: {
 		positioned: GanttPositionedTask<TTaskFields>;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		rowTop: number;
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-		resources: readonly GanttResource<TResourceFields>[];
-		assignments: readonly GanttAssignment<TAssignmentFields>[];
 		overAllocatedResourceIds: ReadonlySet<string>;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		disabled: boolean;
-		showBaseline: boolean;
-		showDeadline: boolean;
-		showConstraint: boolean;
-		showCritical: boolean;
-		isSelected: boolean;
-		classes: GanttChartClasses;
-		snippets: TaskSnippets;
-		onTaskClick?: (task: typeof positioned.node, event: MouseEvent) => void;
-		onTaskDoubleClick?: (task: typeof positioned.node, event: MouseEvent) => void;
 	} = $props();
 
 	const node = $derived(positioned.node);
+	const resources = $derived(chart.resources);
+	const assignments = $derived(chart.assignments);
+	const messages = $derived(chart.messages);
+	const locale = $derived(chart.locale);
+	const timeZone = $derived(chart.timeZone);
+	const size = $derived(chart.size);
+	const density = $derived(chart.density);
+	const color = $derived(chart.color);
+	const direction = $derived(chart.direction);
+	const disabled = $derived(chart.disabled);
+	const classes = $derived(chart.classes);
+	const renderers = $derived(chart.renderers);
+	const isSelected = $derived(
+		chart.selection.kind === 'task' && chart.selection.taskId === node.taskId
+	);
 	const taskAssignments = $derived(
 		assignments.filter((assignment) => assignment.taskId === node.taskId)
 	);
@@ -202,7 +157,7 @@
 		dependencyProposal?.toTaskId === node.taskId && dependencyProposal.toEndpoint === 'end'
 	);
 	const expectedProgressValue = $derived(node.task.expectedProgress ?? null);
-	const isCritical = $derived(showCritical && node.isCritical);
+	const isCritical = $derived(chart.display.criticalPath && node.isCritical);
 	const isDragging = $derived(taskInteraction !== null);
 	let isHoverCardOpen = $state(false);
 	const isInteractionActive = $derived(activeInteraction !== null);
@@ -392,13 +347,7 @@
 		defaultAccessibleLabel,
 		defaultContent: defaultTooltip
 	});
-	const visualSnippet = $derived(
-		node.type === 'summary'
-			? snippets.summaryTask
-			: node.type === 'milestone'
-				? snippets.milestone
-				: snippets.task
-	);
+	const visualSnippet = $derived(renderers?.task);
 	const visualClass = $derived(
 		node.type === 'summary'
 			? classes.summaryTask
@@ -424,7 +373,7 @@
 		}
 		if (disabled) return;
 		chart.a11y.setTaskTarget(node.taskId);
-		onTaskClick?.(node, event);
+		chart.onTaskClick?.(node, event);
 	}
 
 	function handleDoubleClick(event: MouseEvent): void {
@@ -434,7 +383,7 @@
 			return;
 		}
 		if (disabled) return;
-		onTaskDoubleClick?.(node, event);
+		chart.onTaskDoubleClick?.(node, event);
 	}
 
 	function getProgressHandleLeft(
@@ -466,7 +415,7 @@
 	data-gantt-task-group={node.taskId}
 	style:--gantt-task-color={taskColor}
 >
-	{#if showBaseline && positioned.baselineGeometry && node.task.baseline}
+	{#if chart.display.baselines && positioned.baselineGeometry && node.task.baseline}
 		{@const baselinePayload = {
 			node,
 			range: node.task.baseline,
@@ -483,11 +432,11 @@
 			style:height={`${positioned.baselineGeometry.height}px`}
 			aria-hidden="true"
 		>
-			<Slot render={snippets.baseline ?? defaultBaseline} payload={baselinePayload} />
+			<Slot render={renderers?.baseline ?? defaultBaseline} payload={baselinePayload} />
 		</div>
 	{/if}
 
-	{#if showDeadline && positioned.deadlineLeft !== null && node.task.deadline}
+	{#if chart.display.deadlines && positioned.deadlineLeft !== null && node.task.deadline}
 		{@const deadlinePayload = {
 			node,
 			deadline: node.task.deadline,
@@ -503,11 +452,11 @@
 			title={dateFormatter.format(node.task.deadline)}
 			aria-hidden="true"
 		>
-			<Slot render={snippets.deadline ?? defaultDeadline} payload={deadlinePayload} />
+			<Slot render={renderers?.deadline ?? defaultDeadline} payload={deadlinePayload} />
 		</div>
 	{/if}
 
-	{#if showConstraint && positioned.constraintLeft !== null && node.task.constraint && node.task.constraint.type !== 'as-soon-as-possible'}
+	{#if chart.display.constraints && positioned.constraintLeft !== null && node.task.constraint && node.task.constraint.type !== 'as-soon-as-possible'}
 		<div
 			data-gantt-chart-part="constraint"
 			data-task-id={node.taskId}
@@ -602,7 +551,7 @@
 				</button>
 			{/snippet}
 
-			<Slot render={snippets.taskTooltip ?? defaultTooltip} payload={tooltipPayload} />
+			<Slot render={renderers?.taskTooltip ?? defaultTooltip} payload={tooltipPayload} />
 		</HoverCard>
 	</div>
 
@@ -728,7 +677,7 @@
 		style:transform={direction === 'rtl' ? 'translate(-100%, -50%)' : 'translateY(-50%)'}
 		aria-hidden="true"
 	>
-		<Slot render={snippets.taskLabel ?? defaultLabel} payload={labelPayload} />
+		<Slot render={renderers?.taskLabel ?? defaultLabel} payload={labelPayload} />
 		<GanttResourceAssignments
 			{node}
 			resources={assignedResources}
@@ -741,7 +690,7 @@
 			{color}
 			{disabled}
 			{classes}
-			resourceAssignments={snippets.resourceAssignments}
+			resourceAssignments={renderers?.resourceAssignments}
 		/>
 	</div>
 </div>
@@ -776,7 +725,7 @@
 				</span>
 			{/each}
 		{:else}
-			<Slot render={snippets.progress ?? defaultProgress} payload={progressPayload} />
+			<Slot render={renderers?.progress ?? defaultProgress} payload={progressPayload} />
 		{/if}
 	{:else if node.type === 'summary'}
 		<span

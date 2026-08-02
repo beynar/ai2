@@ -21,9 +21,9 @@ import {
 	rejectGanttInteraction,
 	type GanttInteractionResolution
 } from './ganttChart.interactionResolution.js';
-import type { GanttChartMutations } from './ganttChart.mutations.js';
+import type { GanttChartInteractions } from './ganttChart.interactions.svelte.js';
 import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
-import type { GanttChartState, GanttModelBoundary } from './ganttChart.state.svelte.js';
+import type { GanttModelBoundary } from './ganttChart.state.svelte.js';
 import type {
 	GanttDependencyCreationRequest,
 	GanttDependencyEndpoint,
@@ -89,20 +89,12 @@ export class GanttDependencyInteraction<
 	TAssignmentFields extends object
 > {
 	readonly #instanceId = `gantt-chart-dependency-${++nextDependencyInteractionId}`;
-	readonly #chart: GanttChartState<
+	readonly #owner: GanttChartInteractions<
 		TTaskFields,
 		TDependencyFields,
 		TResourceFields,
 		TAssignmentFields
 	>;
-	readonly #mutations: GanttChartMutations<
-		TTaskFields,
-		TDependencyFields,
-		TResourceFields,
-		TAssignmentFields
-	>;
-	readonly #canStart: () => boolean;
-	readonly #onTransportCancel: () => void;
 	#gesture = $state.raw<DependencyGesture<
 		TTaskFields,
 		TDependencyFields,
@@ -115,20 +107,14 @@ export class GanttDependencyInteraction<
 	#targetValidation = new Map<string, GanttInteractionResolution<GanttDependencyCreationRequest>>();
 
 	constructor(
-		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
-		mutations: GanttChartMutations<
+		owner: GanttChartInteractions<
 			TTaskFields,
 			TDependencyFields,
 			TResourceFields,
 			TAssignmentFields
-		>,
-		canStart: () => boolean,
-		onTransportCancel: () => void
+		>
 	) {
-		this.#chart = chart;
-		this.#mutations = mutations;
-		this.#canStart = canStart;
-		this.#onTransportCancel = onTransportCancel;
+		this.#owner = owner;
 	}
 
 	readonly status: GanttDependencyInteractionStatus | null = $derived.by(() => {
@@ -191,9 +177,10 @@ export class GanttDependencyInteraction<
 		const attachment: Attachment<HTMLElement> = (element) =>
 			untrack(() => {
 				const touchDrag = createPointerDrag({
-					canStart: (event) => event.pointerType === 'touch' && this.#chart.interactions.touch,
+					canStart: (event) =>
+						event.pointerType === 'touch' && this.#owner.chart.interactions.touch,
 					disabled: () => !this.canBegin(taskId),
-					activation: () => this.#chart.touchActivation,
+					activation: () => this.#owner.chart.touchActivation,
 					frameCoalesced: true,
 					stopPropagation: true,
 					onStart: (payload) => this.beginTouch({ taskId, endpoint }, payload),
@@ -256,8 +243,10 @@ export class GanttDependencyInteraction<
 	}
 
 	canCreateForTask(taskId: string): boolean {
-		if (!this.#chart.createDependency || !this.#chart.interactions.createDependency) return false;
-		const task = this.#chart.schedule.model.tasksById.get(taskId);
+		if (!this.#owner.chart.createDependency || !this.#owner.chart.interactions.createDependency) {
+			return false;
+		}
+		const task = this.#owner.chart.schedule.model.tasksById.get(taskId);
 		return isDependencyEditableTask(task);
 	}
 
@@ -282,7 +271,7 @@ export class GanttDependencyInteraction<
 			target: null,
 			resolution: pendingGanttInteraction,
 			scale: timeline.scale,
-			boundary: this.#chart.modelBoundary,
+			boundary: this.#owner.chart.modelBoundary,
 			pointerCapture: null
 		};
 		if (this.moveKeyboardTarget(1, orderedTaskIds)) return true;
@@ -326,7 +315,7 @@ export class GanttDependencyInteraction<
 
 	reconcileControlledState(): void {
 		const gesture = this.#gesture;
-		if (!gesture || this.#chart.isModelBoundaryCurrent(gesture.boundary)) return;
+		if (!gesture || this.#owner.chart.isModelBoundaryCurrent(gesture.boundary)) return;
 		this.cancel();
 		this.reportBlocked({
 			reason: 'stale',
@@ -362,10 +351,10 @@ export class GanttDependencyInteraction<
 
 	private canBegin(taskId: string): boolean {
 		return (
-			!this.#chart.disabled &&
-			!this.#chart.loading &&
+			!this.#owner.chart.disabled &&
+			!this.#owner.chart.loading &&
 			!this.#gesture &&
-			this.#canStart() &&
+			this.#owner.canBeginDependency() &&
 			this.canCreateForTask(taskId)
 		);
 	}
@@ -384,7 +373,7 @@ export class GanttDependencyInteraction<
 			target: null,
 			resolution: pendingGanttInteraction,
 			scale: timeline.scale,
-			boundary: this.#chart.modelBoundary,
+			boundary: this.#owner.chart.modelBoundary,
 			pointerCapture: null
 		};
 		this.update(payload);
@@ -402,7 +391,7 @@ export class GanttDependencyInteraction<
 			target: null,
 			resolution: pendingGanttInteraction,
 			scale: timeline.scale,
-			boundary: this.#chart.modelBoundary,
+			boundary: this.#owner.chart.modelBoundary,
 			pointerCapture: { node: payload.node, pointerId: payload.pointerId }
 		};
 		const input = { clientX: payload.x, clientY: payload.y };
@@ -435,7 +424,7 @@ export class GanttDependencyInteraction<
 	): void {
 		const gesture = this.#gesture;
 		if (!gesture) return;
-		if (!this.#chart.isModelBoundaryCurrent(gesture.boundary)) {
+		if (!this.#owner.chart.isModelBoundaryCurrent(gesture.boundary)) {
 			this.reconcileControlledState();
 			return;
 		}
@@ -507,7 +496,7 @@ export class GanttDependencyInteraction<
 	private cancelTransport(): void {
 		if (!this.#gesture) return;
 		try {
-			this.#onTransportCancel();
+			this.#owner.cancelDependencyTransport();
 		} finally {
 			this.cancel();
 		}
@@ -534,7 +523,7 @@ export class GanttDependencyInteraction<
 		const request = gesture.resolution.proposal;
 		let didCommit = false;
 		try {
-			const createDependency = this.#chart.createDependency;
+			const createDependency = this.#owner.chart.createDependency;
 			if (!createDependency) {
 				throw new GanttChartError(
 					'invalid-operation',
@@ -544,7 +533,7 @@ export class GanttDependencyInteraction<
 			const dependency = createDependency(request);
 			assertCreatedGanttDependency(request, dependency);
 			const mutationSource = getDependencyMutationSource(gesture.transport);
-			const accepted = this.#mutations.addDependency(dependency, mutationSource);
+			const accepted = this.#owner.commitDependencyCreation(dependency, mutationSource);
 			if (!accepted) {
 				this.reportBlocked({
 					reason: 'custom-policy',
@@ -593,7 +582,7 @@ export class GanttDependencyInteraction<
 		const gestureScale = this.#gesture?.scale ?? this.#timeline?.scale;
 		const rowHeight = this.#timeline?.rowHeight;
 		const rowIndex = orderedTaskIds.indexOf(taskId);
-		const task = this.#chart.schedule.resolvedTasksById.get(taskId);
+		const task = this.#owner.chart.schedule.resolvedTasksById.get(taskId);
 		const instant = endpoint === 'start' ? task?.resolvedStart : task?.resolvedEnd;
 		if (!gestureScale || !rowHeight || rowIndex < 0 || !instant) return null;
 		return {
@@ -618,13 +607,13 @@ export class GanttDependencyInteraction<
 		};
 		let resolution: GanttInteractionResolution<GanttDependencyCreationRequest>;
 		try {
-			const targetTask = this.#chart.schedule.model.tasksById.get(target.taskId);
+			const targetTask = this.#owner.chart.schedule.model.tasksById.get(target.taskId);
 			if (!isDependencyEditableTask(targetTask)) {
 				throw new GanttChartError('read-only', 'The target task does not allow dependencies.', {
 					taskId: target.taskId
 				});
 			}
-			validateGanttDependencyCreation(this.#chart.schedule.model, request);
+			validateGanttDependencyCreation(this.#owner.chart.schedule.model, request);
 			resolution = acceptGanttInteraction(request);
 		} catch (error) {
 			if (!(error instanceof GanttChartError)) throw error;
@@ -708,7 +697,7 @@ export class GanttDependencyInteraction<
 	}
 
 	private reportBlocked(info: GanttInteractionBlockedInfo): void {
-		this.#chart.onInteractionBlocked?.(info);
+		this.#owner.chart.onInteractionBlocked?.(info);
 	}
 }
 

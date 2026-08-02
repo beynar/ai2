@@ -41,7 +41,9 @@ import {
 	type GanttTaskPointerOperation
 } from './ganttChart.taskInteraction.js';
 import type {
+	GanttDependency,
 	GanttInteractionBlockedInfo,
+	GanttMutationSource,
 	GanttRangeProposal,
 	GanttTask,
 	GanttTaskProposal
@@ -187,15 +189,27 @@ export class GanttChartInteractions<
 	) {
 		this.#chart = chart;
 		this.#mutations = mutations;
-		this.dependency = new GanttDependencyInteraction(
-			chart,
-			mutations,
-			() => this.#gesture === null && this.#rowInteraction?.status == null,
-			() => {
-				this.cancel(true);
-				this.#chart.a11y.scheduleDismissFocus();
-			}
-		);
+		this.dependency = new GanttDependencyInteraction(this);
+	}
+
+	get chart(): GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields> {
+		return this.#chart;
+	}
+
+	canBeginDependency(): boolean {
+		return this.#gesture === null && this.#rowInteraction?.status == null;
+	}
+
+	commitDependencyCreation(
+		dependency: GanttDependency<TDependencyFields>,
+		source: Extract<GanttMutationSource, 'pointer' | 'keyboard'>
+	): boolean {
+		return this.#mutations.addDependency(dependency, source);
+	}
+
+	cancelDependencyTransport(): void {
+		this.cancel(true);
+		this.#chart.a11y.scheduleDismissFocus();
 	}
 
 	readonly active: GanttActiveInteraction<TTaskFields> | null = $derived.by(() => {

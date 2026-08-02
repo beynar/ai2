@@ -98,11 +98,6 @@
 	const workloadPanelHeight = $derived(
 		chart.display.workload && resourceView.resources.length > 0 ? resourceView.workloadHeight : 0
 	);
-	const timelineRenderers = $derived({
-		...chart.renderers,
-		summaryTask: chart.renderers?.task,
-		milestone: chart.renderers?.task
-	});
 	const activeInteraction = $derived(chart.interaction.active);
 	const isInteractionInvalid = $derived(
 		activeInteraction?.kind !== 'row' && activeInteraction?.resolution.state === 'rejected'
@@ -386,7 +381,6 @@
 					{shades}
 					{projectRange}
 					{now}
-					snippets={timelineRenderers}
 				/>
 				{#if workloadPanelHeight > 0}
 					<GanttWorkloadPanel

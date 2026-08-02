@@ -2,7 +2,6 @@
 	lang="ts"
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
-	import type { Snippet } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import GanttDependencyLayer from './GanttDependencyLayer.svelte';
 	import GanttDependencyPreview from './GanttDependencyPreview.svelte';
@@ -16,40 +15,9 @@
 		getGanttScalePixel,
 		type GanttTimeScale
 	} from './ganttChart.scale.js';
-	import type {
-		GanttBaselinePayload,
-		GanttDeadlinePayload,
-		GanttDependencyTooltipPayload,
-		GanttDragPreviewPayload,
-		GanttNonWorkingTimePayload,
-		GanttProgressPayload,
-		GanttResourceAssignmentsPayload,
-		GanttTaskLabelPayload,
-		GanttTaskPayload,
-		GanttTaskTooltipPayload
-	} from './ganttChart.props.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type { GanttRange } from './ganttChart.types.js';
-
-	type TimelineSnippets = {
-		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		summaryTask?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		milestone?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
-		taskLabel?: Snippet<[GanttTaskLabelPayload<TTaskFields>]>;
-		taskTooltip?: Snippet<
-			[GanttTaskTooltipPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		dependencyTooltip?: Snippet<[GanttDependencyTooltipPayload<TTaskFields, TDependencyFields>]>;
-		progress?: Snippet<[GanttProgressPayload<TTaskFields>]>;
-		baseline?: Snippet<[GanttBaselinePayload<TTaskFields>]>;
-		deadline?: Snippet<[GanttDeadlinePayload<TTaskFields>]>;
-		resourceAssignments?: Snippet<
-			[GanttResourceAssignmentsPayload<TTaskFields, TResourceFields, TAssignmentFields>]
-		>;
-		nonWorkingTime?: Snippet<[GanttNonWorkingTimePayload]>;
-		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
-	};
 
 	let {
 		chart,
@@ -62,8 +30,7 @@
 		totalHeight,
 		shades,
 		projectRange,
-		now,
-		snippets
+		now
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
@@ -76,7 +43,6 @@
 		shades: readonly GanttTimeShade[];
 		projectRange: GanttRange | null;
 		now: Date | null;
-		snippets: TimelineSnippets;
 	} = $props();
 
 	const gridCells = $derived(
@@ -99,10 +65,6 @@
 	const emptyResourceIds = new Set<string>();
 	const activeInteraction = $derived(chart.interaction.active);
 	const rangeDrag: Attachment<HTMLElement> = (element) => chart.interaction.rangeDrag()(element);
-
-	function isTaskSelected(taskId: string): boolean {
-		return chart.selection.kind === 'task' && chart.selection.taskId === taskId;
-	}
 
 	function isTaskFocused(taskId: string): boolean {
 		return (
@@ -132,7 +94,7 @@
 		color={chart.color}
 		disabled={chart.disabled}
 		classes={chart.classes}
-		nonWorkingTime={snippets.nonWorkingTime}
+		nonWorkingTime={chart.renderers?.nonWorkingTime}
 	/>
 
 	{#each gridCells as positioned (positioned.cell.index)}
@@ -224,27 +186,8 @@
 					{visiblePixels}
 					rowTop={virtualRow.start}
 					{chart}
-					resources={chart.resources}
-					assignments={chart.assignments}
 					overAllocatedResourceIds={overAllocatedResourceIdsByTaskId.get(positioned.node.taskId) ??
 						emptyResourceIds}
-					messages={chart.messages}
-					locale={chart.locale}
-					timeZone={chart.timeZone}
-					size={chart.size}
-					density={chart.density}
-					color={chart.color}
-					direction={chart.direction}
-					disabled={chart.disabled}
-					showBaseline={chart.display.baselines}
-					showDeadline={chart.display.deadlines}
-					showConstraint={chart.display.constraints}
-					showCritical={chart.display.criticalPath}
-					isSelected={isTaskSelected(positioned.node.taskId)}
-					classes={chart.classes}
-					{snippets}
-					onTaskClick={chart.onTaskClick}
-					onTaskDoubleClick={chart.onTaskDoubleClick}
 				/>
 			{/if}
 		{/each}
@@ -259,7 +202,7 @@
 			{visibleRange}
 			{visiblePixels}
 			{totalHeight}
-			dragPreview={snippets.dragPreview}
+			dragPreview={chart.renderers?.dragPreview}
 		/>
 	{:else if activeInteraction?.kind === 'dependency'}
 		<GanttDependencyPreview
@@ -291,7 +234,7 @@
 		disabled={chart.disabled}
 		showCritical={chart.display.criticalPath}
 		classes={chart.classes}
-		dependencyTooltip={snippets.dependencyTooltip}
+		dependencyTooltip={chart.renderers?.dependencyTooltip}
 		onSelect={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
 		isTabStop={(dependencyId) => chart.a11y.isDependencyTabStop(dependencyId)}
 		onFocus={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
