@@ -19,7 +19,7 @@
 		getGanttVisibleRange
 	} from './ganttChart.scale.js';
 	import type { GanttChartState, GanttTimelineNavigation } from './ganttChart.state.svelte.js';
-	import type { GanttRange, GanttResolvedDependency, GanttZoomLevel } from './ganttChart.types.js';
+	import type { GanttRange, GanttZoomLevel } from './ganttChart.types.js';
 
 	let {
 		chart,
@@ -91,12 +91,6 @@
 			showWeekends: chart.showWeekends,
 			showNonWorkingTime: chart.display.nonWorkingTime
 		})
-	);
-	const resolvedDependencies = $derived(
-		chart.schedule.analysis.dependencies as readonly GanttResolvedDependency<
-			TTaskFields,
-			TDependencyFields
-		>[]
 	);
 	const scaleKey = $derived(
 		`${chart.zoom}:${scale.canvasRange.start.getTime()}:${scale.canvasRange.end.getTime()}:${scale.totalWidth}:${chart.direction}`
@@ -384,38 +378,15 @@
 					{chart}
 					{rowModel}
 					{renderedRows}
-					{resolvedDependencies}
-					resources={chart.resources}
-					assignments={chart.assignments}
-					workload={chart.schedule.workload}
-					selection={chart.selection}
 					{scale}
 					{visibleRange}
 					{visiblePixels}
 					{viewportWidth}
 					{totalHeight}
-					rowHeight={chart.rowHeight}
 					{shades}
 					{projectRange}
 					{now}
-					showTodayIndicator={chart.showTodayIndicator}
-					showCritical={chart.display.criticalPath}
-					showBaselines={chart.display.baselines}
-					showDeadlines={chart.display.deadlines}
-					showConstraints={chart.display.constraints}
-					messages={chart.messages}
-					locale={chart.locale}
-					timeZone={chart.timeZone}
-					size={chart.size}
-					density={chart.density}
-					color={chart.color}
-					direction={chart.direction}
-					disabled={chart.disabled}
-					classes={chart.classes}
 					snippets={timelineRenderers}
-					onTaskClick={chart.onTaskClick}
-					onTaskDoubleClick={chart.onTaskDoubleClick}
-					onDependencyClick={chart.onDependencyClick}
 				/>
 				{#if workloadPanelHeight > 0}
 					<GanttWorkloadPanel

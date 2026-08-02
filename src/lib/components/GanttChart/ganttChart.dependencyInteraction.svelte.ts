@@ -234,7 +234,7 @@ export class GanttDependencyInteraction<
 
 	canCreateForTask(taskId: string): boolean {
 		if (!this.#chart.createDependency || !this.#chart.interactions.createDependency) return false;
-		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.schedule.model.tasksById.get(taskId);
 		return isDependencyEditableTask(task);
 	}
 
@@ -570,7 +570,7 @@ export class GanttDependencyInteraction<
 		const gestureScale = this.#gesture?.scale ?? this.#timeline?.scale;
 		const rowHeight = this.#timeline?.rowHeight;
 		const rowIndex = orderedTaskIds.indexOf(taskId);
-		const task = this.#chart.schedule.resolvedTasks.find((node) => node.taskId === taskId);
+		const task = this.#chart.schedule.resolvedTasksById.get(taskId);
 		const instant = endpoint === 'start' ? task?.resolvedStart : task?.resolvedEnd;
 		if (!gestureScale || !rowHeight || rowIndex < 0 || !instant) return null;
 		return {
@@ -595,7 +595,7 @@ export class GanttDependencyInteraction<
 		};
 		let resolution: GanttInteractionResolution<GanttDependencyCreationRequest>;
 		try {
-			const targetTask = this.#chart.tasks.find((task) => task.id === target.taskId);
+			const targetTask = this.#chart.schedule.model.tasksById.get(target.taskId);
 			if (!isDependencyEditableTask(targetTask)) {
 				throw new GanttChartError('read-only', 'The target task does not allow dependencies.', {
 					taskId: target.taskId

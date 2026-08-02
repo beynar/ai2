@@ -51,6 +51,7 @@ type NativeTargetLocation = Readonly<{
 
 type GanttRowOrder<TTaskFields extends object> = Readonly<{
 	rows: readonly GanttResolvedTaskNode<TTaskFields>[];
+	rowIndexByTaskId: ReadonlyMap<string, number>;
 	isOrderStable: boolean;
 }>;
 
@@ -322,11 +323,12 @@ export class GanttRowReorder<
 	}
 
 	private resolveNativeTarget(location: NativeTargetLocation): GanttRowDropTarget | null {
-		const rows = this.getRowModel().rows;
-		const sourceIndex = rows.findIndex((row) => row.taskId === location.taskId);
+		const rowModel = this.getRowModel();
+		const rows = rowModel.rows;
+		const sourceIndex = rowModel.rowIndexByTaskId.get(location.taskId);
 		const targetTaskId =
 			location.targetTaskId ?? rows[Math.min(location.targetIndex, rows.length - 1)]?.taskId;
-		if (sourceIndex < 0 || !targetTaskId || targetTaskId === location.taskId) return null;
+		if (sourceIndex === undefined || !targetTaskId || targetTaskId === location.taskId) return null;
 		let position: GanttRowDropTarget['position'] =
 			location.targetIndex > sourceIndex ? 'after' : 'before';
 		if (location.targetEdge === 'top') position = 'before';
@@ -451,9 +453,10 @@ export class GanttRowReorder<
 				this.#autoScrollFrame = requestAnimationFrame(update);
 				return;
 			}
-			const rows = this.getRowModel().rows;
+			const rowModel = this.getRowModel();
+			const rows = rowModel.rows;
 			const currentTaskId = session.target?.targetTaskId ?? session.taskId;
-			const currentIndex = rows.findIndex((row) => row.taskId === currentTaskId);
+			const currentIndex = rowModel.rowIndexByTaskId.get(currentTaskId) ?? -1;
 			const nextIndex = Math.max(0, Math.min(rows.length - 1, currentIndex + direction));
 			if (nextIndex === currentIndex) return;
 			this.#lastAutoScrollAt = time;

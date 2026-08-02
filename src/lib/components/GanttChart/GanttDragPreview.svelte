@@ -4,7 +4,6 @@
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
 	import { getDateTimeFormatter } from '$lib/scheduling/zonedTime.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import { getGanttTaskColor, isGanttSemanticColor } from './ganttChart.color.js';
 	import type { GanttTimelineInteractionStatus } from './ganttChart.interactions.svelte.js';
@@ -12,7 +11,7 @@
 	import type { GanttDragPreviewPayload } from './ganttChart.props.js';
 	import type { GanttRowModel } from './ganttChart.rows.js';
 	import { getGanttScalePixel, type GanttTimeScale } from './ganttChart.scale.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
+	import type { GanttChartState } from './ganttChart.state.svelte.js';
 	import type {
 		GanttRange,
 		GanttResolvedTaskNode,
@@ -21,36 +20,22 @@
 	} from './ganttChart.types.js';
 
 	let {
+		chart,
 		status,
 		rowModel,
 		scale,
 		visibleRange,
 		visiblePixels,
 		totalHeight,
-		rowHeight,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		disabled,
-		classes,
 		dragPreview
 	}: {
+		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		status: GanttTimelineInteractionStatus<TTaskFields>;
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		scale: GanttTimeScale;
 		visibleRange: GanttRange;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		totalHeight: number;
-		rowHeight: number;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		disabled: boolean;
-		classes: GanttChartClasses;
 		dragPreview?: Snippet<[GanttDragPreviewPayload<TTaskFields>]>;
 	} = $props();
 	let labelWidth = $state(0);
@@ -76,11 +61,11 @@
 		status.resolution.state === 'rejected' ? status.resolution.reason : null
 	);
 	const proposedTask = $derived(taskProposal?.task ?? null);
-	const sourceNode = $derived(
-		status.kind === 'task'
-			? (rowModel.rows.find((node) => node.taskId === status.taskId) ?? null)
-			: null
-	);
+	const sourceNode = $derived.by(() => {
+		if (status.kind !== 'task') return null;
+		const rowIndex = rowModel.rowIndexByTaskId.get(status.taskId);
+		return rowIndex === undefined ? null : (rowModel.rows[rowIndex] ?? null);
+	});
 	const previewNode = $derived(
 		proposedTask && sourceNode ? createPreviewNode(sourceNode, proposedTask) : null
 	);
@@ -89,8 +74,8 @@
 			? positionGanttTask({
 					node: previewNode,
 					rowTop: status.rowTop,
-					rowHeight,
-					size,
+					rowHeight: chart.rowHeight,
+					size: chart.size,
 					scale,
 					visibleRange,
 					visiblePixels
@@ -99,7 +84,7 @@
 	);
 	const rangeGeometry = $derived(
 		rangeProposal
-			? createRangeGeometry(rangeProposal, status.rowTop, rowHeight, scale, visiblePixels)
+			? createRangeGeometry(rangeProposal, status.rowTop, chart.rowHeight, scale, visiblePixels)
 			: null
 	);
 	const geometry = $derived(positioned?.geometry ?? rangeGeometry);
@@ -109,11 +94,11 @@
 			: rangeProposal
 	);
 	const semanticColor = $derived(
-		proposedTask && isGanttSemanticColor(proposedTask.color) ? proposedTask.color : color
+		proposedTask && isGanttSemanticColor(proposedTask.color) ? proposedTask.color : chart.color
 	);
-	const taskColor = $derived(getGanttTaskColor(proposedTask?.color, color));
+	const taskColor = $derived(getGanttTaskColor(proposedTask?.color, chart.color));
 	const dateFormatter = $derived(
-		getDateTimeFormatter(locale, timeZone, {
+		getDateTimeFormatter(chart.locale, chart.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -129,11 +114,11 @@
 			: ''
 	);
 	const durationLabel = $derived(
-		`${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
+		`${new Intl.NumberFormat(chart.locale, { maximumFractionDigits: 2 }).format(status.workingDurationMinutes)} min`
 	);
 	const isProgressOperation = $derived(status.kind === 'task' && status.operation === 'progress');
 	const progressLabel = $derived(
-		new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(
+		new Intl.NumberFormat(chart.locale, { style: 'percent', maximumFractionDigits: 0 }).format(
 			proposedTask?.progress ?? 0
 		)
 	);
@@ -145,7 +130,9 @@
 			Math.min(maximumLeft, status.pointerCanvasX - labelWidth / 2)
 		);
 		const previewTop = geometry?.top ?? status.rowTop;
-		const previewBottom = geometry ? geometry.top + geometry.height : status.rowTop + rowHeight;
+		const previewBottom = geometry
+			? geometry.top + geometry.height
+			: status.rowTop + chart.rowHeight;
 		const above = previewTop - labelHeight - LABEL_GAP;
 		const below = previewBottom + LABEL_GAP;
 		const maximumTop = Math.max(LABEL_EDGE_INSET, totalHeight - labelHeight - LABEL_EDGE_INSET);
@@ -211,11 +198,11 @@
 	<div
 		data-gantt-chart-part={status.kind === 'range' ? 'range-selection' : 'drag-preview'}
 		data-operation={status.kind === 'task' ? status.operation : 'range'}
-		class={(status.kind === 'range' ? classes.rangeSelection : classes.dragPreview)({
-			size,
-			density,
+		class={(status.kind === 'range' ? chart.classes.rangeSelection : chart.classes.dragPreview)({
+			size: chart.size,
+			density: chart.density,
 			color: semanticColor,
-			disabled
+			disabled: chart.disabled
 		})}
 		style:--gantt-task-color={taskColor}
 		style:left={`${geometry.left}px`}

@@ -109,8 +109,6 @@
 	let containerHeight = $state(0);
 	let panelSizes = $state([38, 62]);
 	let viewportRef = $state<HTMLDivElement | null>(null);
-	let pageScrollElement = $state<HTMLElement | null>(null);
-	let pageScrollMargin = $state(0);
 	let measuredScheduleHeader = $state<Readonly<{ density: Density; height: number }> | undefined>();
 	const scheduleHeaderHeight = $derived.by(() => {
 		const measuredHeader = measuredScheduleHeader;
@@ -136,7 +134,7 @@
 	);
 	const rowModel = $derived(
 		resolveGanttRows({
-			nodes: chart.schedule.resolvedTasks,
+			nodes: chart.schedule.analysis.tasks,
 			columns: resolvedColumns,
 			dependencies: chart.dependencies,
 			resources: chart.resources,
@@ -144,6 +142,19 @@
 			resourceView: resolvedResourceView
 		})
 	);
+	const scrollContext = $derived.by(() => {
+		const viewport = viewportRef;
+		const mode = chart.scrollMode;
+		void containerWidth;
+		void containerHeight;
+		void scheduleHeaderHeight;
+		if (!viewport) return { element: null, margin: 0 } as const;
+		const element = mode === 'page' ? findPageScrollElement(viewport) : viewport;
+		return {
+			element,
+			margin: mode === 'page' ? getPageScrollMargin(viewport, element) : 0
+		};
+	});
 	$effect(() => {
 		chart.a11y.setNavigationModel(
 			rowModel.rows.map((node) => node.taskId),
@@ -161,23 +172,10 @@
 
 	$effect(() => {
 		const rows = rowModel.rows;
-		const viewport = viewportRef;
-		const mode = chart.scrollMode;
-		const layoutWidth = containerWidth;
-		const layoutHeight = containerHeight;
-		const headerHeight = scheduleHeaderHeight;
 		const estimate = chart.rowHeight;
 		const extra = chart.overscan;
-		void layoutWidth;
-		void layoutHeight;
-		void headerHeight;
-		const scrollElement = mode === 'page' && viewport ? findPageScrollElement(viewport) : viewport;
-		const scrollMargin =
-			mode === 'page' && viewport && scrollElement
-				? getPageScrollMargin(viewport, scrollElement)
-				: 0;
-		pageScrollElement = mode === 'page' ? scrollElement : null;
-		pageScrollMargin = scrollMargin;
+		const scrollElement = scrollContext.element;
+		const scrollMargin = scrollContext.margin;
 		get(rowVirtualizerStore).setOptions({
 			count: rows.length,
 			getScrollElement: () => scrollElement,
@@ -190,17 +188,17 @@
 
 	$effect(() => {
 		const mode = chart.scrollMode;
-		const scrollOwner = mode === 'page' ? pageScrollElement : viewportRef;
+		const scrollOwner = scrollContext.element;
 		if (!scrollOwner) return;
 		return chart.interaction.connectVerticalScrollOwner(scrollOwner, mode);
 	});
 
 	$effect(() => {
-		const rows = rowModel.rows;
+		const rowIndexByTaskId = rowModel.rowIndexByTaskId;
 		return chart.connectRowNavigation({
 			scrollToTask(taskId, options) {
-				const rowIndex = rows.findIndex((row) => row.taskId === taskId);
-				if (rowIndex < 0) return false;
+				const rowIndex = rowIndexByTaskId.get(taskId);
+				if (rowIndex === undefined) return false;
 				get(rowVirtualizerStore).scrollToIndex(rowIndex, {
 					align: options?.align ?? 'auto'
 				});
@@ -233,16 +231,13 @@
 	const fallbackRowCount = $derived(
 		Math.min(
 			rowModel.rows.length,
-			Math.ceil(
-				((chart.scrollMode === 'page'
-					? pageScrollElement?.clientHeight
-					: viewportRef?.clientHeight) ?? chart.rowHeight * 10) / chart.rowHeight
-			) + chart.overscan
+			Math.ceil((scrollContext.element?.clientHeight ?? chart.rowHeight * 10) / chart.rowHeight) +
+				chart.overscan
 		)
 	);
 	const renderedRows = $derived.by((): readonly GanttVirtualRow[] => {
 		if (virtualRows.length > 0) {
-			const offset = chart.scrollMode === 'page' ? pageScrollMargin : 0;
+			const offset = scrollContext.margin;
 			return virtualRows.map((row) => ({
 				...row,
 				start: row.start - offset,

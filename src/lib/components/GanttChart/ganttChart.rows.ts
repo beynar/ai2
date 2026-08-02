@@ -16,6 +16,7 @@ export type GanttRowModel<
 	TAssignmentFields extends object
 > = Readonly<{
 	rows: readonly GanttResolvedTaskNode<TTaskFields>[];
+	rowIndexByTaskId: ReadonlyMap<string, number>;
 	visibleColumns: readonly GanttColumnDefinition<
 		TTaskFields,
 		TDependencyFields,
@@ -105,6 +106,10 @@ export function resolveGanttRows<
 		isVisible: true,
 		visibleIndex
 	}));
+	const rowIndexByTaskId = new Map<string, number>();
+	for (const [index, node] of resolvedRows.entries()) {
+		rowIndexByTaskId.set(node.taskId, index);
+	}
 	const resourcesById = new Map(options.resources.map((resource) => [resource.id, resource]));
 	const resourceGroupByTaskId = new Map<string, GanttResource<TResourceFields>>();
 	for (const [taskId, resourceId] of resourceGroupIdByTaskId) {
@@ -117,6 +122,7 @@ export function resolveGanttRows<
 
 	return {
 		rows: resolvedRows,
+		rowIndexByTaskId,
 		visibleColumns,
 		resourceGroupByTaskId,
 		resourceGroupStartTaskIds,

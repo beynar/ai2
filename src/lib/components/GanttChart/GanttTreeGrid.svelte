@@ -46,13 +46,10 @@
 		(rowIndex) => scrollToRow(rowIndex),
 		gridId
 	);
-	const rowIndexByTaskId = $derived(
-		new Map(rowModel.rows.map((node, index) => [node.taskId, index]))
-	);
 	const virtualRowByIndex = $derived(new Map(renderedRows.map((row) => [row.index, row])));
 	const renderedGridRows = $derived.by((): readonly GanttVirtualRow[] => {
 		const taskId = rowReorder.status?.taskId;
-		const sourceIndex = taskId ? rowIndexByTaskId.get(taskId) : undefined;
+		const sourceIndex = taskId ? rowModel.rowIndexByTaskId.get(taskId) : undefined;
 		if (
 			sourceIndex === undefined ||
 			renderedRows.some((virtualRow) => virtualRow.index === sourceIndex)
@@ -122,11 +119,9 @@
 				chart.expandTask(node.taskId);
 				return;
 			}
-			const childIndex = rowModel.rows.findIndex(
-				(candidate, index) => index > rowIndex && candidate.parentId === node.taskId
-			);
+			const childIndex = rowIndex + 1;
 			const child = rowModel.rows[childIndex];
-			if (child) {
+			if (child?.parentId === node.taskId) {
 				focusCell(child.taskId, column.id);
 				scrollAndFocusCell(childIndex, columnIndex);
 			}
@@ -140,10 +135,8 @@
 			}
 			if (node.parentId) {
 				event.preventDefault();
-				const parentIndex = rowModel.rows.findIndex(
-					(candidate) => candidate.taskId === node.parentId
-				);
-				if (parentIndex >= 0) {
+				const parentIndex = rowModel.rowIndexByTaskId.get(node.parentId);
+				if (parentIndex !== undefined) {
 					focusCell(node.parentId, column.id);
 					scrollAndFocusCell(parentIndex, columnIndex);
 				}
@@ -308,7 +301,9 @@
 	}
 
 	function resolveRowDropPreview(proposal: GanttRowDropProposal | null): RowDropPreview | null {
-		const targetRowIndex = proposal ? rowIndexByTaskId.get(proposal.targetTaskId) : undefined;
+		const targetRowIndex = proposal
+			? rowModel.rowIndexByTaskId.get(proposal.targetTaskId)
+			: undefined;
 		const virtualRow =
 			targetRowIndex === undefined ? undefined : virtualRowByIndex.get(targetRowIndex);
 		if (!proposal || !virtualRow) return null;

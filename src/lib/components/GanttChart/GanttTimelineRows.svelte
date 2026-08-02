@@ -2,8 +2,6 @@
 	lang="ts"
 	generics="TTaskFields extends object, TDependencyFields extends object, TResourceFields extends object, TAssignmentFields extends object"
 >
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 	import type { Snippet } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import GanttDependencyLayer from './GanttDependencyLayer.svelte';
@@ -32,15 +30,7 @@
 	} from './ganttChart.props.js';
 	import type { GanttRowModel, GanttVirtualRow } from './ganttChart.rows.js';
 	import type { GanttChartState } from './ganttChart.state.svelte.js';
-	import type { GanttChartClasses } from './ganttChart.theme.js';
-	import type {
-		GanttAssignment,
-		GanttRange,
-		GanttResolvedDependency,
-		GanttResource,
-		GanttSelection,
-		GanttWorkloadBucket
-	} from './ganttChart.types.js';
+	import type { GanttRange } from './ganttChart.types.js';
 
 	type TimelineSnippets = {
 		task?: Snippet<[GanttTaskPayload<TTaskFields, TAssignmentFields>]>;
@@ -65,88 +55,36 @@
 		chart,
 		rowModel,
 		renderedRows,
-		resolvedDependencies,
-		resources,
-		assignments,
-		workload,
-		selection,
 		scale,
 		visibleRange,
 		visiblePixels,
 		viewportWidth,
 		totalHeight,
-		rowHeight,
 		shades,
 		projectRange,
 		now,
-		showTodayIndicator,
-		showCritical,
-		showBaselines,
-		showDeadlines,
-		showConstraints,
-		messages,
-		locale,
-		timeZone,
-		size,
-		density,
-		color,
-		direction,
-		disabled,
-		classes,
-		snippets,
-		onTaskClick,
-		onTaskDoubleClick,
-		onDependencyClick
+		snippets
 	}: {
 		chart: GanttChartState<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		rowModel: GanttRowModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
 		renderedRows: readonly GanttVirtualRow[];
-		resolvedDependencies: readonly GanttResolvedDependency<TTaskFields, TDependencyFields>[];
-		resources: readonly GanttResource<TResourceFields>[];
-		assignments: readonly GanttAssignment<TAssignmentFields>[];
-		workload: readonly GanttWorkloadBucket[];
-		selection: GanttSelection;
 		scale: GanttTimeScale;
 		visibleRange: GanttRange;
 		visiblePixels: Readonly<{ start: number; end: number }>;
 		viewportWidth: number;
 		totalHeight: number;
-		rowHeight: number;
 		shades: readonly GanttTimeShade[];
 		projectRange: GanttRange | null;
 		now: Date | null;
-		showTodayIndicator: boolean;
-		showCritical: boolean;
-		showBaselines: boolean;
-		showDeadlines: boolean;
-		showConstraints: boolean;
-		messages: Messages;
-		locale: string;
-		timeZone: string;
-		size: Sizes;
-		density: Density;
-		color: Colors;
-		direction: 'ltr' | 'rtl';
-		disabled: boolean;
-		classes: GanttChartClasses;
 		snippets: TimelineSnippets;
-		onTaskClick?: (task: (typeof rowModel.rows)[number], event: MouseEvent) => void;
-		onTaskDoubleClick?: (task: (typeof rowModel.rows)[number], event: MouseEvent) => void;
-		onDependencyClick?: (
-			dependency: GanttResolvedDependency<TTaskFields, TDependencyFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
 
 	const gridCells = $derived(
 		getGanttScaleCells(scale, 'lower', visiblePixels, Math.max(160, viewportWidth / 2))
 	);
-	const rowIndexByTaskId = $derived(
-		new Map(rowModel.rows.map((node, index) => [node.taskId, index]))
-	);
 	const visibleRows = $derived({
 		start: renderedRows[0]?.start ?? 0,
-		end: renderedRows.at(-1)?.end ?? Math.min(totalHeight, rowHeight * 10)
+		end: renderedRows.at(-1)?.end ?? Math.min(totalHeight, chart.rowHeight * 10)
 	});
 	const projectStartLeft = $derived(
 		projectRange ? getGanttScalePixel(scale, projectRange.start) : null
@@ -155,26 +93,28 @@
 		projectRange ? getGanttScalePixel(scale, projectRange.end) : null
 	);
 	const todayLeft = $derived(now ? getGanttScalePixel(scale, now) : null);
-	const overAllocatedResourceIdsByTaskId = $derived(indexGanttOverAllocations(workload));
+	const overAllocatedResourceIdsByTaskId = $derived(
+		indexGanttOverAllocations(chart.schedule.workload)
+	);
 	const emptyResourceIds = new Set<string>();
 	const activeInteraction = $derived(chart.interaction.active);
 	const rangeDrag: Attachment<HTMLElement> = (element) => chart.interaction.rangeDrag()(element);
 
 	function isTaskSelected(taskId: string): boolean {
-		return selection.kind === 'task' && selection.taskId === taskId;
+		return chart.selection.kind === 'task' && chart.selection.taskId === taskId;
 	}
 
 	function isTaskFocused(taskId: string): boolean {
 		return (
-			(selection.kind === 'task' && selection.taskId === taskId) ||
-			(selection.kind === 'cell' && selection.taskId === taskId)
+			(chart.selection.kind === 'task' && chart.selection.taskId === taskId) ||
+			(chart.selection.kind === 'cell' && chart.selection.taskId === taskId)
 		);
 	}
 </script>
 
 <div
 	data-gantt-chart-part="timeline-rows"
-	class={classes.timelineRows({ size, density, color, disabled })}
+	class={chart.classes.timelineRows(chart.themeVariants)}
 	style:width={`${scale.totalWidth}px`}
 	style:height={`${totalHeight}px`}
 >
@@ -187,18 +127,18 @@
 	<GanttTimeShadeLayer
 		{shades}
 		{totalHeight}
-		{size}
-		{density}
-		{color}
-		{disabled}
-		{classes}
+		size={chart.size}
+		density={chart.density}
+		color={chart.color}
+		disabled={chart.disabled}
+		classes={chart.classes}
 		nonWorkingTime={snippets.nonWorkingTime}
 	/>
 
 	{#each gridCells as positioned (positioned.cell.index)}
 		<div
 			data-gantt-chart-part="grid-line"
-			class={classes.gridLine({ size, density, color, disabled })}
+			class={chart.classes.gridLine(chart.themeVariants)}
 			style:left={`${positioned.left}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -216,11 +156,8 @@
 				data-index={virtualRow.index}
 				data-resource-group={resourceGroup?.id}
 				data-resource-group-start={isResourceGroupStart || undefined}
-				class={classes.timelineRow({
-					size,
-					density,
-					color,
-					disabled,
+				class={chart.classes.timelineRow({
+					...chart.themeVariants,
 					class: [
 						isTaskFocused(node.taskId) ? 'bg-color/4' : undefined,
 						isResourceGroupStart ? 'border-t border-t-neutral/20' : undefined
@@ -236,7 +173,7 @@
 		<div
 			data-gantt-chart-part="project-line"
 			data-edge="start"
-			class={classes.projectLine({ size, density, color, disabled })}
+			class={chart.classes.projectLine(chart.themeVariants)}
 			style:left={`${projectStartLeft}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -246,16 +183,16 @@
 		<div
 			data-gantt-chart-part="project-line"
 			data-edge="end"
-			class={classes.projectLine({ size, density, color, disabled })}
+			class={chart.classes.projectLine(chart.themeVariants)}
 			style:left={`${projectEndLeft}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
 		></div>
 	{/if}
-	{#if showTodayIndicator && todayLeft !== null && todayLeft >= 0 && todayLeft <= scale.totalWidth}
+	{#if chart.showTodayIndicator && todayLeft !== null && todayLeft >= 0 && todayLeft <= scale.totalWidth}
 		<div
 			data-gantt-chart-part="today-indicator"
-			class={classes.todayIndicator({ size, density, color, disabled, today: true })}
+			class={chart.classes.todayIndicator({ ...chart.themeVariants, today: true })}
 			style:left={`${todayLeft}px`}
 			style:height={`${totalHeight}px`}
 			aria-hidden="true"
@@ -264,7 +201,7 @@
 
 	<div
 		data-gantt-chart-part="task-layer"
-		class={classes.taskLayer({ size, density, color, disabled })}
+		class={chart.classes.taskLayer(chart.themeVariants)}
 		style:width={`${scale.totalWidth}px`}
 		style:height={`${totalHeight}px`}
 	>
@@ -274,8 +211,8 @@
 				? positionGanttTask({
 						node,
 						rowTop: virtualRow.start,
-						rowHeight,
-						size,
+						rowHeight: chart.rowHeight,
+						size: chart.size,
 						scale,
 						visibleRange,
 						visiblePixels
@@ -287,27 +224,27 @@
 					{visiblePixels}
 					rowTop={virtualRow.start}
 					{chart}
-					{resources}
-					{assignments}
+					resources={chart.resources}
+					assignments={chart.assignments}
 					overAllocatedResourceIds={overAllocatedResourceIdsByTaskId.get(positioned.node.taskId) ??
 						emptyResourceIds}
-					{messages}
-					{locale}
-					{timeZone}
-					{size}
-					{density}
-					{color}
-					{direction}
-					{disabled}
-					showBaseline={showBaselines}
-					showDeadline={showDeadlines}
-					showConstraint={showConstraints}
-					{showCritical}
+					messages={chart.messages}
+					locale={chart.locale}
+					timeZone={chart.timeZone}
+					size={chart.size}
+					density={chart.density}
+					color={chart.color}
+					direction={chart.direction}
+					disabled={chart.disabled}
+					showBaseline={chart.display.baselines}
+					showDeadline={chart.display.deadlines}
+					showConstraint={chart.display.constraints}
+					showCritical={chart.display.criticalPath}
 					isSelected={isTaskSelected(positioned.node.taskId)}
-					{classes}
+					classes={chart.classes}
 					{snippets}
-					{onTaskClick}
-					{onTaskDoubleClick}
+					onTaskClick={chart.onTaskClick}
+					onTaskDoubleClick={chart.onTaskDoubleClick}
 				/>
 			{/if}
 		{/each}
@@ -315,20 +252,13 @@
 
 	{#if activeInteraction?.kind === 'task' || activeInteraction?.kind === 'range'}
 		<GanttDragPreview
+			{chart}
 			status={activeInteraction}
 			{rowModel}
 			{scale}
 			{visibleRange}
 			{visiblePixels}
 			{totalHeight}
-			{rowHeight}
-			{locale}
-			{timeZone}
-			{size}
-			{density}
-			{color}
-			{disabled}
-			{classes}
 			dragPreview={snippets.dragPreview}
 		/>
 	{:else if activeInteraction?.kind === 'dependency'}
@@ -336,37 +266,37 @@
 			status={activeInteraction}
 			{totalHeight}
 			totalWidth={scale.totalWidth}
-			{size}
-			{density}
-			{color}
-			{disabled}
-			{classes}
+			size={chart.size}
+			density={chart.density}
+			color={chart.color}
+			disabled={chart.disabled}
+			classes={chart.classes}
 		/>
 	{/if}
 
 	<GanttDependencyLayer
-		dependencies={resolvedDependencies}
-		{rowIndexByTaskId}
-		{rowHeight}
+		dependencies={chart.schedule.analysis.dependencies}
+		rowIndexByTaskId={rowModel.rowIndexByTaskId}
+		rowHeight={chart.rowHeight}
 		{totalHeight}
 		{scale}
 		{visiblePixels}
 		{visibleRows}
-		{selection}
-		{messages}
+		selection={chart.selection}
+		messages={chart.messages}
 		instructionsId={chart.a11y.instructionsId}
-		{size}
-		{density}
-		{color}
-		{disabled}
-		{showCritical}
-		{classes}
+		size={chart.size}
+		density={chart.density}
+		color={chart.color}
+		disabled={chart.disabled}
+		showCritical={chart.display.criticalPath}
+		classes={chart.classes}
 		dependencyTooltip={snippets.dependencyTooltip}
 		onSelect={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
 		isTabStop={(dependencyId) => chart.a11y.isDependencyTabStop(dependencyId)}
 		onFocus={(dependencyId) => chart.a11y.setDependencyTarget(dependencyId)}
 		onDelete={(dependencyId) => chart.removeDependencyFromKeyboard(dependencyId)}
 		onUpdate={(dependency) => chart.updateDependencyFromInline(dependency)}
-		{onDependencyClick}
+		onDependencyClick={chart.onDependencyClick}
 	/>
 </div>

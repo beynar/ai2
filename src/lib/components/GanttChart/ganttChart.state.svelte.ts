@@ -407,7 +407,7 @@ export class GanttChartState<
 			dependencies: this.dependencies,
 			resources: this.resources,
 			assignments: this.assignments,
-			resolvedTasks: this.schedule.resolvedTasks,
+			resolvedTasks: this.schedule.analysis.tasks,
 			expandedTaskIds: this.expandedTaskIds,
 			selection: this.selection,
 			zoom: this.zoom,
@@ -578,7 +578,7 @@ export class GanttChartState<
 	}
 
 	getResolvedTask(taskId: string): GanttResolvedTaskNode<TTaskFields> | null {
-		return this.schedule.resolvedTasks.find((task) => task.taskId === taskId) ?? null;
+		return this.schedule.resolvedTasksById.get(taskId) ?? null;
 	}
 
 	getVisibleTasks(): readonly GanttResolvedTaskNode<TTaskFields>[] {
@@ -604,7 +604,7 @@ export class GanttChartState<
 	getWorkload(range?: GanttRange): readonly GanttWorkloadBucket[] {
 		if (!range) return this.schedule.workload;
 		assertRange(range, 'range');
-		return calculateGanttWorkload(this.schedule.model, this.schedule.resolvedTasks, range);
+		return calculateGanttWorkload(this.schedule.model, this.schedule.resolvedTasksById, range);
 	}
 
 	expandTask(taskId: string): void {
@@ -622,7 +622,7 @@ export class GanttChartState<
 	expandAll(): void {
 		this.#assertNavigationEnabled();
 		this.#publishExpansion(
-			this.schedule.resolvedTasks
+			this.schedule.analysis.tasks
 				.filter((node) => node.type === 'summary')
 				.map((node) => node.taskId)
 		);

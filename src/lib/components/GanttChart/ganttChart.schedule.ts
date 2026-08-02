@@ -40,8 +40,7 @@ export type ResolvedGanttSchedule<
 	TAssignmentFields extends object
 > = Readonly<{
 	model: ValidatedGanttModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>;
-	tasks: readonly GanttTask<TTaskFields>[];
-	resolvedTasks: readonly GanttResolvedTaskNode<TTaskFields>[];
+	resolvedTasksById: ReadonlyMap<string, GanttResolvedTaskNode<TTaskFields>>;
 	visibleTasks: readonly GanttResolvedTaskNode<TTaskFields>[];
 	analysis: GanttScheduleAnalysis<TTaskFields, TDependencyFields>;
 	workload: readonly GanttWorkloadBucket[];
@@ -98,13 +97,13 @@ export function resolveGanttSchedule<
 	}
 
 	const analysis = calculateGanttCriticalPath(model, resolvedTasks, schedulingViolations);
+	const resolvedTasksById = new Map(analysis.tasks.map((task) => [task.taskId, task]));
 	const workload = analysis.projectRange
-		? calculateGanttWorkload(model, analysis.tasks, analysis.projectRange)
+		? calculateGanttWorkload(model, resolvedTasksById, analysis.projectRange)
 		: [];
 	return {
 		model,
-		tasks: model.tasks,
-		resolvedTasks: analysis.tasks,
+		resolvedTasksById,
 		visibleTasks: analysis.tasks.filter((node) => node.isVisible),
 		analysis,
 		workload,

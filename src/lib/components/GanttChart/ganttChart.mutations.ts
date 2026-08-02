@@ -33,7 +33,7 @@ import type {
 
 type Schedule<TTaskFields extends object, TDependencyFields extends object> = Pick<
 	ResolvedGanttSchedule<TTaskFields, TDependencyFields, object, object>,
-	'tasks' | 'autoScheduledTaskIds' | 'analysis'
+	'model' | 'autoScheduledTaskIds' | 'analysis'
 >;
 
 type MutationBoundary<
@@ -401,7 +401,7 @@ export class GanttChartMutations<
 		});
 		if (!dependencyPolicy) return false;
 		candidateDependencies = dependencyPolicy.dependencies;
-		candidateTasks = dependencyPolicy.schedule.tasks.map(cloneGanttTask);
+		candidateTasks = dependencyPolicy.schedule.model.tasks.map(cloneGanttTask);
 
 		const assignmentPolicy = this.applyAssignmentPolicies({
 			before: boundary.assignments,
@@ -416,7 +416,7 @@ export class GanttChartMutations<
 		if (!assignmentPolicy) return false;
 		candidateAssignments = assignmentPolicy.assignments;
 		const schedule = assignmentPolicy.schedule;
-		candidateTasks = schedule.tasks.map(cloneGanttTask);
+		candidateTasks = schedule.model.tasks.map(cloneGanttTask);
 
 		this.assertBoundary(boundary);
 		const taskIds = getChangedRecordIds(boundary.tasks, candidateTasks);
@@ -548,7 +548,7 @@ export class GanttChartMutations<
 			input.assignments,
 			input.autoSchedule
 		);
-		tasks = schedule.tasks.map(cloneGanttTask);
+		tasks = schedule.model.tasks.map(cloneGanttTask);
 		for (const taskId of getChangedRecordIds(input.before, tasks)) {
 			const previousTask = input.before.find((task) => task.id === taskId) ?? null;
 			let task = tasks.find((candidate) => candidate.id === taskId) ?? null;
@@ -578,7 +578,7 @@ export class GanttChartMutations<
 				input.assignments,
 				input.autoSchedule
 			);
-			tasks = schedule.tasks.map(cloneGanttTask);
+			tasks = schedule.model.tasks.map(cloneGanttTask);
 			const scheduledTask = tasks.find((candidate) => candidate.id === taskId) ?? task;
 			proposal = this.createTaskProposal(
 				{ kind, source: input.source, previousTask, task: scheduledTask },
@@ -621,7 +621,7 @@ export class GanttChartMutations<
 	}> | null {
 		let dependencies = input.after.map(cloneGanttDependency);
 		let schedule = input.schedule;
-		let tasks = schedule.tasks.map(cloneGanttTask);
+		let tasks = schedule.model.tasks.map(cloneGanttTask);
 		for (const dependencyId of getChangedRecordIds(input.before, dependencies)) {
 			const previousDependency =
 				input.before.find((dependency) => dependency.id === dependencyId) ?? null;
@@ -656,7 +656,7 @@ export class GanttChartMutations<
 				input.assignments,
 				input.autoSchedule
 			);
-			tasks = schedule.tasks.map(cloneGanttTask);
+			tasks = schedule.model.tasks.map(cloneGanttTask);
 			proposal = createDependencyProposal({
 				kind,
 				source: input.source,
@@ -794,7 +794,7 @@ export class GanttChartMutations<
 			this.assertBoundary(boundary);
 		}
 		this.assertBoundary(boundary);
-		const publishedTasks = [...schedule.tasks];
+		const publishedTasks = [...schedule.model.tasks];
 		const previousTasks = boundary.tasks;
 		this.chart.tasks = publishedTasks;
 		const committedTasks = this.chart.tasks;
@@ -873,7 +873,7 @@ export class GanttChartMutations<
 		const previousTasks = boundary.tasks;
 		const previousDependencies = boundary.dependencies;
 		const previousSelection = boundary.selection;
-		const publishedTasks = [...schedule.tasks];
+		const publishedTasks = [...schedule.model.tasks];
 		const publishedDependencies = [...candidateDependencies];
 		this.chart.tasks = publishedTasks;
 		this.chart.dependencies = publishedDependencies;
@@ -1027,7 +1027,7 @@ export class GanttChartMutations<
 		schedule: Schedule<TTaskFields, TDependencyFields>
 	): GanttTaskProposal<TTaskFields> {
 		const propagatedTasks = schedule.autoScheduledTaskIds
-			.map((taskId) => schedule.tasks.find((task) => task.id === taskId))
+			.map((taskId) => schedule.model.tasksById.get(taskId))
 			.filter((task): task is GanttTask<TTaskFields> => !!task);
 		if (input.kind === 'add' || input.kind === 'paste') {
 			if (!input.task) throw new Error('Add task proposal lost its task.');
@@ -1226,13 +1226,13 @@ export class GanttChartMutations<
 	}
 
 	private requireTask(taskId: string): GanttTask<TTaskFields> {
-		const task = this.chart.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.chart.schedule.model.tasksById.get(taskId);
 		if (task) return task;
 		throw new GanttChartError('invalid-operation', `Unknown task ${taskId}.`, { taskId });
 	}
 
 	private requireDependency(dependencyId: string): GanttDependency<TDependencyFields> {
-		const dependency = this.chart.dependencies.find((candidate) => candidate.id === dependencyId);
+		const dependency = this.chart.schedule.model.dependenciesById.get(dependencyId);
 		if (dependency) return dependency;
 		throw new GanttChartError('invalid-operation', `Unknown dependency ${dependencyId}.`, {
 			dependencyId
@@ -1240,7 +1240,7 @@ export class GanttChartMutations<
 	}
 
 	private requireAssignment(assignmentId: string): GanttAssignment<TAssignmentFields> {
-		const assignment = this.chart.assignments.find((candidate) => candidate.id === assignmentId);
+		const assignment = this.chart.schedule.model.assignmentsById.get(assignmentId);
 		if (assignment) return assignment;
 		throw new GanttChartError('invalid-operation', `Unknown assignment ${assignmentId}.`, {
 			assignmentId
@@ -1265,17 +1265,16 @@ export class GanttChartMutations<
 		const assignments = [proposal.previousAssignment, proposal.assignment].filter(
 			(assignment): assignment is GanttAssignment<TAssignmentFields> => assignment !== null
 		);
+		const model = this.chart.schedule.model;
 		for (const assignment of assignments) {
-			const resource = this.chart.resources.find(
-				(candidate) => candidate.id === assignment.resourceId
-			);
+			const resource = model.resourcesById.get(assignment.resourceId);
 			if (resource?.readOnly) {
 				throw new GanttChartError('read-only', `Resource ${resource.id} is read-only.`, {
 					assignmentId: assignment.id,
 					resourceId: resource.id
 				});
 			}
-			const task = this.chart.tasks.find((candidate) => candidate.id === assignment.taskId);
+			const task = model.tasksById.get(assignment.taskId);
 			if (!task?.readOnly) continue;
 			throw new GanttChartError('read-only', `Task ${task.id} is read-only.`, {
 				assignmentId: assignment.id,

@@ -36,12 +36,11 @@ export function calculateGanttWorkload<
 	TAssignmentFields extends object
 >(
 	model: ValidatedGanttModel<TTaskFields, TDependencyFields, TResourceFields, TAssignmentFields>,
-	resolvedTasks: readonly GanttResolvedTaskNode<TTaskFields>[],
+	resolvedTasksById: ReadonlyMap<string, GanttResolvedTaskNode<TTaskFields>>,
 	range: GanttRange
 ): readonly GanttWorkloadBucket[] {
 	assertScheduleRange(range, 'workloadRange');
 	if (range.end.getTime() === range.start.getTime()) return [];
-	const resolvedById = new Map(resolvedTasks.map((node) => [node.taskId, node]));
 	const assignmentsByResource = new Map<string, GanttAssignmentList<TAssignmentFields>>();
 	for (const resource of model.resources) {
 		assignmentsByResource.set(resource.id, []);
@@ -64,7 +63,7 @@ export function calculateGanttWorkload<
 				const events: WorkloadEvent[] = [];
 				const resourceIntervals = getCalendarWorkingIntervals(bucketRange, resourceCalendar);
 				for (const assignment of assignments) {
-					const node = resolvedById.get(assignment.taskId);
+					const node = resolvedTasksById.get(assignment.taskId);
 					if (!node?.resolvedStart || !node.resolvedEnd || node.type === 'milestone') continue;
 					const taskCalendar = getTaskCalendar(model, node.task);
 					const taskIntervals = getTaskActiveIntervals(node, bucketRange);

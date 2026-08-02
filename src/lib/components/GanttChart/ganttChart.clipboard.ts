@@ -62,7 +62,7 @@ export class GanttChartClipboard<
 		if (!this.chart.interactions.clipboard || this.chart.disabled) return false;
 		const selection = this.chart.selection;
 		if (selection.kind !== 'task' && selection.kind !== 'cell') return false;
-		const rootTask = this.chart.tasks.find((task) => task.id === selection.taskId);
+		const rootTask = this.chart.schedule.model.tasksById.get(selection.taskId);
 		if (!rootTask) {
 			throw new GanttChartError(
 				'clipboard-invalid',

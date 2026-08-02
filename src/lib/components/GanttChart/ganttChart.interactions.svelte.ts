@@ -296,7 +296,7 @@ export class GanttChartInteractions<
 
 	beginKeyboardTask(taskId: string, operation: TaskGestureOperation): boolean {
 		const timeline = this.#timeline;
-		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.schedule.model.tasksById.get(taskId);
 		if (
 			!timeline ||
 			!task ||
@@ -595,7 +595,7 @@ export class GanttChartInteractions<
 		payload: PointerDragPayload
 	): boolean {
 		const timeline = this.#timeline;
-		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.schedule.model.tasksById.get(taskId);
 		if (!timeline || !task || !this.canBeginTaskGesture(taskId, operation)) return false;
 		const pointer = { clientX: payload.x, clientY: payload.y };
 		const originPointer = { clientX: payload.startX, clientY: payload.startY };
@@ -940,7 +940,7 @@ export class GanttChartInteractions<
 
 	private canBeginTaskGesture(taskId: string, operation: TaskGestureOperation): boolean {
 		if (this.#chart.disabled || this.#chart.loading || this.active) return false;
-		const task = this.#chart.tasks.find((candidate) => candidate.id === taskId);
+		const task = this.#chart.schedule.model.tasksById.get(taskId);
 		if (!task || task.readOnly) return false;
 		if (operation === 'progress') {
 			return Boolean(

@@ -218,10 +218,8 @@ export class GanttChartA11y<
 	focusDependency(dependencyId: string): boolean {
 		if (!this.#dependencyIds.includes(dependencyId)) return false;
 		this.setDependencyTarget(dependencyId);
-		const dependency = this.chart.schedule.analysis.dependencies.find(
-			(candidate) => candidate.dependency.id === dependencyId
-		);
-		if (dependency) this.chart.scrollToTask(dependency.fromTask.taskId);
+		const dependency = this.chart.schedule.model.dependenciesById.get(dependencyId);
+		if (dependency) this.chart.scrollToTask(dependency.fromTaskId);
 		this.scheduleFocus(
 			(element) =>
 				element.dataset.ganttChartPart === 'connector-control' &&
