@@ -73,12 +73,8 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
 	import { useResizeObserver } from '$lib/utils/useResizeObserver.svelte.js';
-	import type { Snippet } from 'svelte';
 	import EventCalendarMonthWeek from './EventCalendarMonthWeek.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import {
 		addCivilDays,
 		generateVisibleDays,
@@ -90,87 +86,26 @@
 		startOfZonedDay
 	} from './eventCalendar.date.js';
 	import { createEventCalendarAllDayPreviewLayout } from './eventCalendar.allDayInsertion.js';
-	import type {
-		EventCalendarDayHeaderPayload,
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
-		EventCalendarMonthCellPayload,
-		EventCalendarOverflowContentPayload,
-		EventCalendarOverflowPayload,
-		EventCalendarSnapshot
-	} from './eventCalendar.props.js';
+	import type { EventCalendarDayHeaderPayload } from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOccurrence,
-		EventCalendarOffDaysConfig
-	} from './eventCalendar.types.js';
+	import type { EventCalendarDateOnly } from './eventCalendar.types.js';
 
 	let {
-		calendar,
-		snapshot,
-		a11y,
-		messages,
-		direction,
-		density,
-		classes,
-		disabled,
-		showWeekNumbers,
-		maxItemsPerCell,
-		offDays,
-		showItemTooltip,
-		monthCell,
-		dayHeader,
-		item,
-		itemTooltip,
-		overflow,
-		overflowContent,
-		onItemClick,
-		onItemDoubleClick,
-		onSlotClick,
-		onMoreClick
+		calendar
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
-		direction: 'ltr' | 'rtl';
-		density: Density;
-		classes: EventCalendarClasses;
-		disabled: boolean;
-		showWeekNumbers: boolean;
-		maxItemsPerCell: number | 'auto';
-		offDays: boolean | EventCalendarOffDaysConfig;
-		showItemTooltip: boolean;
-		monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
-		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
-		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
-		overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
-		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
-		onSlotClick?: (
-			slot: {
-				view: 'month';
-				allDay: true;
-				start: EventCalendarDateOnly;
-				end: EventCalendarDateOnly;
-			},
-			event: MouseEvent
-		) => void;
-		onMoreClick?: (
-			day: EventCalendarDateOnly,
-			occurrences: readonly EventCalendarOccurrence<TItemFields>[],
-			event: MouseEvent
-		) => false | void;
 	} = $props();
 
 	let monthHeight = $state(0);
+	const a11y = $derived(calendar.a11y);
+	const messages = $derived(calendar.messages);
+	const direction = $derived(calendar.direction);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const showWeekNumbers = $derived(calendar.showWeekNumbers);
+	const maxItemsPerCell = $derived(calendar.maxItemsPerCell);
+	const dayHeader = $derived(calendar.renderers.dayHeader);
 	const monthResizeObserver = useResizeObserver({
 		isActive: () => maxItemsPerCell === 'auto',
 		callback: (entry) => {
@@ -379,9 +314,6 @@
 		{#each weekLayouts as weekLayout, weekIndex (`${weekLayout.days[0]}:${weekLayout.days.at(-1)}`)}
 			<EventCalendarMonthWeek
 				{calendar}
-				{snapshot}
-				{a11y}
-				{messages}
 				days={weekLayout.days}
 				layout={weekLayout.layout}
 				visibleLaneCount={weekLayout.visibleLaneCount}
@@ -396,21 +328,6 @@
 				{currentStartDay}
 				{currentEndDay}
 				{todayDay}
-				{showWeekNumbers}
-				{density}
-				{classes}
-				{disabled}
-				{offDays}
-				{showItemTooltip}
-				{monthCell}
-				{item}
-				{itemTooltip}
-				{overflow}
-				{overflowContent}
-				{onItemClick}
-				{onItemDoubleClick}
-				{onSlotClick}
-				{onMoreClick}
 			/>
 		{/each}
 	</div>

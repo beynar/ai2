@@ -3,78 +3,50 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { getEventCalendarItemColor } from './eventCalendar.color.js';
 	import { startOfZonedDay } from './eventCalendar.date.js';
 	import { serializeEventCalendarTarget } from './eventCalendar.interactions.svelte.js';
 	import type {
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
 		EventCalendarNowIndicatorPayload,
-		EventCalendarSnapshot,
 		EventCalendarTimeGutterPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
 	import {
 		getEventCalendarElapsedMinutes,
 		type EventCalendarTimeGridDayGeometry,
 		type EventCalendarTimeSlot
 	} from './eventCalendar.timeGrid.js';
-	import type { EventCalendarOccurrence, EventCalendarSegment } from './eventCalendar.types.js';
+	import type { EventCalendarSegment } from './eventCalendar.types.js';
 
 	type EventCalendarTimeGutterLabel = Omit<EventCalendarTimeGutterPayload, 'defaultContent'>;
 
 	let {
 		view,
 		calendar,
-		snapshot,
-		a11y,
 		geometry,
 		columnLabel,
-		density,
-		classes,
-		disabled,
 		isOffDay,
-		showItemTooltip,
 		selectionKey,
 		longDayFormatter,
 		accessibleTimeFormatter,
 		localTimeLabels,
-		timeGutter,
 		nowPayload,
-		nowIndicatorContent,
-		item,
-		itemTooltip,
 		registerTimeTarget,
 		handleTargetKeydown,
 		handleTimedSlotClick,
-		handleItemActivate,
-		onItemDoubleClick
+		handleItemActivate
 	}: {
 		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		geometry: EventCalendarTimeGridDayGeometry<TItemFields>;
 		columnLabel: string;
-		density: Density;
-		classes: EventCalendarClasses;
-		disabled: boolean;
 		isOffDay: boolean;
-		showItemTooltip: boolean;
 		selectionKey: string | null;
 		longDayFormatter: Intl.DateTimeFormat;
 		accessibleTimeFormatter: Intl.DateTimeFormat;
 		localTimeLabels?: readonly EventCalendarTimeGutterLabel[];
-		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
 		nowPayload: EventCalendarNowIndicatorPayload | null;
-		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		registerTimeTarget: (targetKey: string) => (node: HTMLElement) => () => void;
 		handleTargetKeydown: (event: KeyboardEvent, targetKey: string, activate?: boolean) => void;
 		handleTimedSlotClick: (
@@ -83,11 +55,16 @@
 			resourceId?: string
 		) => void;
 		handleItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
+
+	const snapshot = $derived(calendar.snapshot);
+	const a11y = $derived(calendar.a11y);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const timeGutter = $derived(calendar.renderers.timeGutter);
+	const nowIndicatorContent = $derived(calendar.renderers.nowIndicator || undefined);
+	const onItemDoubleClick = $derived(calendar.eventHandlers.onItemDoubleClick);
 
 	function isTimedSlotSelected(slot: EventCalendarTimeSlot): boolean {
 		return (
@@ -285,21 +262,12 @@
 		{@const targetKey = `time-item:${segment.key}`}
 		<div class="absolute z-10 min-w-0 px-px" style={getTimedPlacementStyle(placement)}>
 			<EventCalendarItem
+				{calendar}
 				{segment}
-				{a11y}
 				{view}
-				locale={calendar.locale}
-				timeZone={calendar.timeZone}
-				{density}
-				{classes}
-				interaction={calendar.interaction}
 				projectionResourceId={geometry.resourceId}
 				isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 				isSelected={selectionKey === segment.occurrence.key}
-				{disabled}
-				{showItemTooltip}
-				{item}
-				{itemTooltip}
 				class="h-full min-h-0"
 				compactContent
 				tabindex={disabled ? -1 : a11y.getTimeTargetTabIndex(targetKey)}

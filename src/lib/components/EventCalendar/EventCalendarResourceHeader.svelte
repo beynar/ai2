@@ -3,46 +3,38 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { startOfZonedDay } from './eventCalendar.date.js';
 	import { EventCalendarError } from './eventCalendar.error.js';
 	import type { EventCalendarResourceHeaderPayload } from './eventCalendar.props.js';
 	import type { EventCalendarResourceModel } from './eventCalendar.resources.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
+	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarTimeGridDayGeometry } from './eventCalendar.timeGrid.js';
 	import type { EventCalendarDateOnly } from './eventCalendar.types.js';
 
 	let {
+		calendar,
 		resourceModel,
 		dayGeometries,
-		a11y,
-		timeZone,
 		longDayFormatter,
-		density,
-		classes,
-		disabled,
-		resourceHeader,
-		unassignedResourceLabel,
 		registerTimeTarget,
 		handleTargetKeydown,
 		handleAllDayClick
 	}: {
+		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		resourceModel: EventCalendarResourceModel<TResourceFields>;
 		dayGeometries: readonly EventCalendarTimeGridDayGeometry<TItemFields>[];
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		timeZone: string;
 		longDayFormatter: Intl.DateTimeFormat;
-		density: Density;
-		classes: EventCalendarClasses;
-		disabled: boolean;
-		resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
-		unassignedResourceLabel: string;
 		registerTimeTarget: (targetKey: string) => (node: HTMLElement) => () => void;
 		handleTargetKeydown: (event: KeyboardEvent, targetKey: string, activate?: boolean) => void;
 		handleAllDayClick: (day: EventCalendarDateOnly, event: MouseEvent, resourceId?: string) => void;
 	} = $props();
+
+	const a11y = $derived(calendar.a11y);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const resourceHeader = $derived(calendar.renderers.resourceHeader);
+	const unassignedResourceLabel = $derived(calendar.messages.eventCalendarUnassignedResource);
 
 	function getGeometry(column: number): EventCalendarTimeGridDayGeometry<TItemFields> {
 		const geometry = dayGeometries[column];
@@ -69,7 +61,7 @@
 		<button
 			type="button"
 			tabindex={disabled ? -1 : a11y.getTimeTargetTabIndex(targetKey)}
-			aria-label={`${defaultLabel}, ${longDayFormatter.format(startOfZonedDay(geometry.day, timeZone))}`}
+			aria-label={`${defaultLabel}, ${longDayFormatter.format(startOfZonedDay(geometry.day, calendar.timeZone))}`}
 			{disabled}
 			data-event-calendar-part="resource-header"
 			data-resource-id={cell.resourceId}

@@ -3,57 +3,27 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import { untrack, type Snippet } from 'svelte';
+	import { untrack } from 'svelte';
 	import EventCalendarAgendaItem from './EventCalendarAgendaItem.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { createEventCalendarAgendaGroups } from './eventCalendar.agenda.js';
 	import { getCachedDateTimeFormatter, startOfZonedDay } from './eventCalendar.date.js';
-	import type {
-		EventCalendarAgendaDetailsPayload,
-		EventCalendarItemPayload,
-		EventCalendarSnapshot
-	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOccurrence,
-		EventCalendarScrollMode
-	} from './eventCalendar.types.js';
+	import type { EventCalendarDateOnly, EventCalendarOccurrence } from './eventCalendar.types.js';
 
 	let {
-		calendar,
-		snapshot,
-		a11y,
-		messages,
-		density,
-		disabled,
-		scrollMode,
-		classes,
-		item,
-		agendaDetails,
-		onItemClick,
-		onItemDoubleClick
+		calendar
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
-		density: Density;
-		disabled: boolean;
-		scrollMode: EventCalendarScrollMode;
-		classes: EventCalendarClasses;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
-		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
 
+	const snapshot = $derived(calendar.snapshot);
+	const a11y = $derived(calendar.a11y);
+	const messages = $derived(calendar.messages);
+	const density = $derived(calendar.density);
+	const disabled = $derived(calendar.disabled);
+	const scrollMode = $derived(calendar.scrollMode);
+	const classes = $derived(calendar.classes);
+	const onItemClick = $derived(calendar.eventHandlers.onItemClick);
 	const profile = $derived(calendar.dateProfile);
 	const groups = $derived(createEventCalendarAgendaGroups(profile.visibleDays, calendar.itemIndex));
 	const selectedItemKey = $derived(
@@ -177,21 +147,14 @@
 					<ol>
 						{#each group.entries as entry (`${group.day}:${entry.occurrence.key}`)}
 							<EventCalendarAgendaItem
+								{calendar}
 								{entry}
-								{a11y}
-								{messages}
 								{timeFormatter}
 								{accessibleDateTimeFormatter}
 								{zonedTimeFormatter}
 								{accessibleDateFormatter}
-								{density}
-								{classes}
 								isSelected={selectedItemKey === entry.occurrence.key}
-								{disabled}
-								{item}
-								{agendaDetails}
 								onActivate={handleItemActivate}
-								onDoubleClick={onItemDoubleClick}
 							/>
 						{/each}
 					</ol>

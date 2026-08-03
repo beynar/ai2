@@ -5,121 +5,32 @@
 	import Empty from '$lib/components/Empty/Empty.svelte';
 	import Spinner from '$lib/components/Spinner/Spinner.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
+	import { onMount } from 'svelte';
 	import EventCalendarAgendaView from './EventCalendarAgendaView.svelte';
 	import EventCalendarMonthView from './EventCalendarMonthView.svelte';
-	import EventCalendarResourceView from './EventCalendarResourceView.svelte';
 	import EventCalendarTimeGrid from './EventCalendarTimeGrid.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
-		EventCalendarAgendaDetailsPayload,
-		EventCalendarAllDayPayload,
-		EventCalendarDayHeaderPayload,
 		EventCalendarEmptyPayload,
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
 		EventCalendarLoadingPayload,
-		EventCalendarMonthCellPayload,
-		EventCalendarOverflowContentPayload,
-		EventCalendarOverflowPayload,
-		EventCalendarResourceHeaderPayload,
-		EventCalendarSnapshot,
-		EventCalendarViewPayload,
-		EventCalendarTimeGutterPayload,
-		EventCalendarNowIndicatorPayload
+		EventCalendarViewPayload
 	} from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOccurrence,
-		EventCalendarOffDaysConfig,
-		EventCalendarScrollMode,
-		EventCalendarSlot
-	} from './eventCalendar.types.js';
 
 	let {
-		calendar,
-		snapshot,
-		a11y,
-		messages,
-		direction,
-		density,
-		loading,
-		disabled,
-		scrollMode,
-		classes,
-		nowIndicator,
-		showWeekNumbers,
-		maxItemsPerCell,
-		offDays,
-		showItemTooltip,
-		monthCell,
-		dayHeader,
-		timeGutter,
-		allDay,
-		nowIndicatorContent,
-		agendaDetails,
-		resourceHeader,
-		item,
-		itemTooltip,
-		overflow,
-		overflowContent,
-		empty,
-		loadingContent,
-		onItemClick,
-		onItemDoubleClick,
-		onSlotClick,
-		onMoreClick
+		calendar
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
-		direction: 'ltr' | 'rtl';
-		density: Density;
-		loading: boolean;
-		disabled: boolean;
-		scrollMode: EventCalendarScrollMode;
-		classes: EventCalendarClasses;
-		nowIndicator: boolean;
-		showWeekNumbers: boolean;
-		maxItemsPerCell: number | 'auto';
-		offDays: boolean | EventCalendarOffDaysConfig;
-		showItemTooltip: boolean;
-		monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
-		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
-		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
-		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
-		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
-		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
-		resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
-		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
-		overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
-		empty?: Snippet<[EventCalendarEmptyPayload]>;
-		loadingContent?: Snippet<[EventCalendarLoadingPayload]>;
-		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
-		onSlotClick?: (slot: EventCalendarSlot, event: MouseEvent) => void;
-		onMoreClick?: (
-			day: EventCalendarDateOnly,
-			occurrences: readonly EventCalendarOccurrence<TItemFields>[],
-			event: MouseEvent
-		) => false | void;
 	} = $props();
 
 	let timeGrid = $state<{ scrollToTime(dateOrMinutes: Date | number): boolean } | null>(null);
+	const navigation = {
+		scrollToTime(dateOrMinutes: Date | number): boolean {
+			return timeGrid?.scrollToTime(dateOrMinutes) ?? false;
+		}
+	};
+	const snapshot = $derived(calendar.snapshot);
 
-	export function scrollToTime(dateOrMinutes: Date | number): boolean {
-		return timeGrid?.scrollToTime(dateOrMinutes) ?? false;
-	}
+	onMount(() => calendar.connectContentNavigation(navigation));
 
 	const viewPayload = $derived<EventCalendarViewPayload>({
 		view: snapshot.view,
@@ -147,14 +58,14 @@
 <div
 	data-event-calendar-part="content"
 	data-view={snapshot.view}
-	data-loading={loading || undefined}
+	data-loading={calendar.loading || undefined}
 	data-empty={hasProvableEmptyRange || undefined}
-	aria-busy={loading}
-	class={classes.content({
-		density,
+	aria-busy={calendar.loading}
+	class={calendar.classes.content({
+		density: calendar.density,
 		view: snapshot.view,
-		disabled,
-		class: scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden'
+		disabled: calendar.disabled,
+		class: calendar.scrollMode === 'page' ? 'overflow-visible' : 'overflow-hidden'
 	})}
 >
 	{#if snapshot.view === 'agenda' && hasProvableEmptyRange}
@@ -164,111 +75,39 @@
 			aria-atomic="true"
 			data-event-calendar-part="empty"
 			data-empty-mode="agenda-replacement"
-			inert={loading ? true : undefined}
-			class={classes.empty({ density, view: snapshot.view, disabled })}
+			inert={calendar.loading ? true : undefined}
+			class={calendar.classes.empty({
+				density: calendar.density,
+				view: snapshot.view,
+				disabled: calendar.disabled
+			})}
 		>
 			<Empty>
-				<Slot render={empty ?? emptyPayload.defaultContent} payload={emptyPayload} />
+				<Slot
+					render={calendar.renderers.empty ?? emptyPayload.defaultContent}
+					payload={emptyPayload}
+				/>
 			</Empty>
 		</div>
 	{:else}
 		<div
 			data-event-calendar-part="viewport"
 			data-view={snapshot.view}
-			inert={loading ? true : undefined}
-			class={classes.viewport({ density, view: snapshot.view, disabled })}
+			inert={calendar.loading ? true : undefined}
+			class={calendar.classes.viewport({
+				density: calendar.density,
+				view: snapshot.view,
+				disabled: calendar.disabled
+			})}
 		>
 			{#if snapshot.view === 'month'}
-				<EventCalendarMonthView
-					{calendar}
-					{snapshot}
-					{a11y}
-					{messages}
-					{direction}
-					{density}
-					{classes}
-					{disabled}
-					{showWeekNumbers}
-					{maxItemsPerCell}
-					{offDays}
-					{showItemTooltip}
-					{monthCell}
-					{dayHeader}
-					{item}
-					{itemTooltip}
-					{overflow}
-					{overflowContent}
-					{onItemClick}
-					{onItemDoubleClick}
-					{onSlotClick}
-					{onMoreClick}
-				/>
+				<EventCalendarMonthView {calendar} />
 			{:else if snapshot.view === 'week' || snapshot.view === 'day' || snapshot.view === 'days'}
-				<EventCalendarTimeGrid
-					bind:this={timeGrid}
-					view={snapshot.view}
-					{calendar}
-					{snapshot}
-					{a11y}
-					{messages}
-					{direction}
-					{density}
-					{classes}
-					{disabled}
-					{offDays}
-					{scrollMode}
-					{nowIndicator}
-					{showItemTooltip}
-					{dayHeader}
-					{timeGutter}
-					{allDay}
-					{nowIndicatorContent}
-					{item}
-					{itemTooltip}
-					{onItemClick}
-					{onItemDoubleClick}
-					{onSlotClick}
-				/>
+				<EventCalendarTimeGrid bind:this={timeGrid} view={snapshot.view} {calendar} />
 			{:else if snapshot.view === 'agenda'}
-				<EventCalendarAgendaView
-					{calendar}
-					{snapshot}
-					{a11y}
-					{messages}
-					{density}
-					{disabled}
-					{scrollMode}
-					{classes}
-					{item}
-					{agendaDetails}
-					{onItemClick}
-					{onItemDoubleClick}
-				/>
+				<EventCalendarAgendaView {calendar} />
 			{:else if snapshot.view === 'resource'}
-				<EventCalendarResourceView
-					bind:this={timeGrid}
-					{calendar}
-					{snapshot}
-					{a11y}
-					{messages}
-					{direction}
-					{density}
-					{classes}
-					{disabled}
-					{offDays}
-					{scrollMode}
-					{nowIndicator}
-					{showItemTooltip}
-					{timeGutter}
-					{allDay}
-					{resourceHeader}
-					{nowIndicatorContent}
-					{item}
-					{itemTooltip}
-					{onItemClick}
-					{onItemDoubleClick}
-					{onSlotClick}
-				/>
+				<EventCalendarTimeGrid bind:this={timeGrid} view="resource" {calendar} />
 			{/if}
 		</div>
 		{#if hasProvableEmptyRange}
@@ -278,32 +117,42 @@
 				aria-atomic="true"
 				data-event-calendar-part="empty"
 				data-empty-mode="grid-status"
-				inert={loading ? true : undefined}
-				class={classes.empty({ density, view: snapshot.view, disabled })}
+				inert={calendar.loading ? true : undefined}
+				class={calendar.classes.empty({
+					density: calendar.density,
+					view: snapshot.view,
+					disabled: calendar.disabled
+				})}
 			>
-				<Slot render={empty ?? emptyPayload.defaultContent} payload={emptyPayload} />
+				<Slot
+					render={calendar.renderers.empty ?? emptyPayload.defaultContent}
+					payload={emptyPayload}
+				/>
 			</div>
 		{/if}
 	{/if}
 
-	{#if loading}
+	{#if calendar.loading}
 		<div
 			data-event-calendar-part="loading"
-			class={classes.loading({ density, view: snapshot.view })}
+			class={calendar.classes.loading({ density: calendar.density, view: snapshot.view })}
 		>
-			<Slot render={loadingContent ?? loadingPayload.defaultContent} payload={loadingPayload} />
+			<Slot
+				render={calendar.renderers.loadingContent ?? loadingPayload.defaultContent}
+				payload={loadingPayload}
+			/>
 		</div>
 	{/if}
 </div>
 
 {#snippet defaultEmpty()}
-	{messages.eventCalendarEmpty}
+	{calendar.messages.eventCalendarEmpty}
 {/snippet}
 
 {#snippet defaultLoading()}
 	<Spinner
-		label={messages.eventCalendarLoading}
-		text={messages.eventCalendarLoading}
+		label={calendar.messages.eventCalendarLoading}
+		text={calendar.messages.eventCalendarLoading}
 		theme={{ label: { base: 'text-neutral/75' } }}
 	/>
 {/snippet}

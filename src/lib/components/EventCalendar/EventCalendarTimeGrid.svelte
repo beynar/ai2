@@ -4,14 +4,12 @@
 >
 	import ScrollArea from '$lib/components/ScrollArea/ScrollArea.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import { tick, untrack, type Snippet } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import EventCalendarResourceHeader from './EventCalendarResourceHeader.svelte';
 	import EventCalendarTimeGridAllDay from './EventCalendarTimeGridAllDay.svelte';
 	import EventCalendarTimeGridDayColumn from './EventCalendarTimeGridDayColumn.svelte';
-	import type { EventCalendarA11y, EventCalendarTimeTarget } from './eventCalendar.a11y.svelte.js';
+	import type { EventCalendarTimeTarget } from './eventCalendar.a11y.svelte.js';
 	import { createEventCalendarAllDayPreviewLayout } from './eventCalendar.allDayInsertion.js';
 	import {
 		addCivilDays,
@@ -28,19 +26,11 @@
 	import type {
 		EventCalendarAllDayPayload,
 		EventCalendarDayHeaderPayload,
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
 		EventCalendarNowIndicatorPayload,
-		EventCalendarResourceHeaderPayload,
-		EventCalendarSnapshot,
 		EventCalendarTimeGutterPayload
 	} from './eventCalendar.props.js';
-	import {
-		filterEventCalendarBucketByResource,
-		type EventCalendarResourceModel
-	} from './eventCalendar.resources.js';
+	import { filterEventCalendarBucketByResource } from './eventCalendar.resources.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
 	import {
 		createEventCalendarTimeGridDayGeometry,
 		EVENT_CALENDAR_MINUTE_MS,
@@ -48,70 +38,14 @@
 		type EventCalendarTimeGridDayGeometry,
 		type EventCalendarTimeSlot
 	} from './eventCalendar.timeGrid.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOffDaysConfig,
-		EventCalendarOccurrence,
-		EventCalendarScrollMode,
-		EventCalendarSegment,
-		EventCalendarSlot
-	} from './eventCalendar.types.js';
+	import type { EventCalendarDateOnly, EventCalendarSegment } from './eventCalendar.types.js';
 
 	let {
 		view,
-		calendar,
-		snapshot,
-		a11y,
-		messages,
-		direction,
-		density,
-		classes,
-		disabled,
-		offDays,
-		scrollMode,
-		nowIndicator,
-		showItemTooltip,
-		dayHeader,
-		timeGutter,
-		allDay,
-		nowIndicatorContent,
-		item,
-		itemTooltip,
-		resourceModel,
-		resourceHeader,
-		unassignedResourceLabel,
-		onItemClick,
-		onItemDoubleClick,
-		onSlotClick
+		calendar
 	}: {
 		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
-		direction: 'ltr' | 'rtl';
-		density: Density;
-		classes: EventCalendarClasses;
-		disabled: boolean;
-		offDays: boolean | EventCalendarOffDaysConfig;
-		scrollMode: EventCalendarScrollMode;
-		nowIndicator: boolean;
-		showItemTooltip: boolean;
-		dayHeader?: Snippet<[EventCalendarDayHeaderPayload]>;
-		timeGutter?: Snippet<[EventCalendarTimeGutterPayload]>;
-		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
-		nowIndicatorContent?: Snippet<[EventCalendarNowIndicatorPayload]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
-		resourceModel?: EventCalendarResourceModel<TResourceFields>;
-		resourceHeader?: Snippet<[EventCalendarResourceHeaderPayload<TResourceFields>]>;
-		unassignedResourceLabel?: string;
-		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
-		onSlotClick?: (slot: EventCalendarSlot, event: MouseEvent) => void;
 	} = $props();
 
 	let rootElement = $state<HTMLDivElement | null>(null);
@@ -119,6 +53,21 @@
 	let scrollViewport = $state<HTMLDivElement | null>(null);
 	let timeBody = $state<HTMLDivElement | null>(null);
 	let initialScrollVersion = 0;
+	const snapshot = $derived(calendar.snapshot);
+	const a11y = $derived(calendar.a11y);
+	const messages = $derived(calendar.messages);
+	const direction = $derived(calendar.direction);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const offDays = $derived(calendar.offDays);
+	const scrollMode = $derived(calendar.scrollMode);
+	const nowIndicator = $derived(calendar.renderers.nowIndicator !== false);
+	const dayHeader = $derived(calendar.renderers.dayHeader);
+	const timeGutter = $derived(calendar.renderers.timeGutter);
+	const resourceModel = $derived(view === 'resource' ? calendar.resourceModel : undefined);
+	const onItemClick = $derived(calendar.eventHandlers.onItemClick);
+	const onSlotClick = $derived(calendar.eventHandlers.onSlotClick);
 	const profile = $derived(calendar.dateProfile);
 	const itemIndex = $derived(calendar.itemIndex);
 	const visibleDays = $derived(profile.visibleDays);
@@ -424,7 +373,6 @@
 				if (view !== 'resource' || !resourceModel) return [geometry.key, dayLabel] as const;
 				const resourceLabel =
 					resourceModel.resolveLeaf(geometry.resourceId)?.title ??
-					unassignedResourceLabel ??
 					messages.eventCalendarUnassignedResource;
 				return [geometry.key, `${resourceLabel}, ${dayLabel}`] as const;
 			})
@@ -656,16 +604,10 @@
 				></div>
 				{#if view === 'resource' && resourceModel}
 					<EventCalendarResourceHeader
+						{calendar}
 						{resourceModel}
 						{dayGeometries}
-						{a11y}
-						timeZone={calendar.timeZone}
 						{longDayFormatter}
-						{density}
-						{classes}
-						{disabled}
-						{resourceHeader}
-						unassignedResourceLabel={unassignedResourceLabel ?? 'Unassigned'}
 						{registerTimeTarget}
 						{handleTargetKeydown}
 						{handleAllDayClick}
@@ -717,8 +659,6 @@
 			<EventCalendarTimeGridAllDay
 				{view}
 				{calendar}
-				{snapshot}
-				{a11y}
 				{dayGeometries}
 				{allDayBackgroundSegments}
 				{allDayLayout}
@@ -728,22 +668,13 @@
 				{gridTemplateColumns}
 				{allDayPayload}
 				{offDaysByDay}
-				{messages}
 				{longDayFormatter}
 				{columnLabels}
-				{density}
-				{classes}
-				{disabled}
-				{showItemTooltip}
 				{selectionKey}
-				{allDay}
-				{item}
-				{itemTooltip}
 				{registerTimeTarget}
 				{handleTargetKeydown}
 				{handleAllDayClick}
 				{handleItemActivate}
-				{onItemDoubleClick}
 			/>
 		</div>
 
@@ -778,29 +709,18 @@
 				<EventCalendarTimeGridDayColumn
 					{view}
 					{calendar}
-					{snapshot}
-					{a11y}
 					{geometry}
 					columnLabel={columnLabels.get(geometry.key) ?? geometry.day}
-					{density}
-					{classes}
-					{disabled}
 					isOffDay={offDaysByDay.get(geometry.day) ?? false}
-					{showItemTooltip}
 					{selectionKey}
 					{longDayFormatter}
 					{accessibleTimeFormatter}
 					localTimeLabels={localTimeLabelsByKey.get(geometry.key)}
-					{timeGutter}
 					{nowPayload}
-					{nowIndicatorContent}
-					{item}
-					{itemTooltip}
 					{registerTimeTarget}
 					{handleTargetKeydown}
 					{handleTimedSlotClick}
 					{handleItemActivate}
-					{onItemDoubleClick}
 				/>
 			{/each}
 		</div>

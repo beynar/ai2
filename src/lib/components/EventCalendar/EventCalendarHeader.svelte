@@ -13,9 +13,6 @@
 	import PopupMenu from '$lib/components/PopupMenu/PopupMenu.svelte';
 	import SegmentedControl from '$lib/components/SegmentedControl/SegmentedControl.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import {
 		fromDateJumpDate,
 		getDateJumpBounds,
@@ -29,41 +26,29 @@
 		getZonedDay,
 		parseDateOnly
 	} from './eventCalendar.date.js';
-	import type { EventCalendarHeaderPayload, EventCalendarSnapshot } from './eventCalendar.props.js';
+	import type { EventCalendarHeaderPayload } from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type { EventCalendarScrollMode, EventCalendarView } from './eventCalendar.types.js';
+	import type { EventCalendarView } from './eventCalendar.types.js';
 
 	let {
-		calendar,
-		snapshot,
-		messages,
-		direction,
-		showDatePicker,
-		density,
-		disabled,
-		stickyHeader,
-		scrollMode,
-		classes,
-		header,
-		actions
+		calendar
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		messages: Messages;
-		direction: 'ltr' | 'rtl';
-		showDatePicker: boolean;
-		density: Density;
-		disabled: boolean;
-		stickyHeader: boolean;
-		scrollMode: EventCalendarScrollMode;
-		classes: EventCalendarClasses;
-		header?: Snippet<[EventCalendarHeaderPayload<TItemFields, TResourceFields>]>;
-		actions?: Snippet<[EventCalendarSnapshot<TItemFields, TResourceFields>]>;
 	} = $props();
 
 	let pickerYear = $state(1970);
 	let pickerMonth = $state(0);
+	const snapshot = $derived(calendar.snapshot);
+	const messages = $derived(calendar.messages);
+	const direction = $derived(calendar.direction);
+	const showDatePicker = $derived(calendar.showDatePicker);
+	const density = $derived(calendar.density);
+	const disabled = $derived(calendar.disabled);
+	const stickyHeader = $derived(calendar.stickyHeader);
+	const scrollMode = $derived(calendar.scrollMode);
+	const classes = $derived(calendar.classes);
+	const header = $derived(calendar.renderers.header || undefined);
+	const actions = $derived(calendar.renderers.actions);
 
 	$effect.pre(() => {
 		const anchorDay = parseDateOnly(getZonedDay(calendar.date, calendar.timeZone));

@@ -39,9 +39,12 @@ import {
 import type {
 	EventCalendarAllDayConversionOptions,
 	EventCalendarAvailabilityOptions,
+	EventCalendarCallbackProps,
 	EventCalendarInteractionOptions,
 	EventCalendarMonthOptions,
 	EventCalendarRecurrenceOptions,
+	EventCalendarSnapshot,
+	EventCalendarSnippetProps,
 	EventCalendarTimeGridOptions
 } from './eventCalendar.props.js';
 import {
@@ -51,12 +54,11 @@ import {
 import type { EventCalendarTheme } from './eventCalendar.theme.js';
 import type {
 	EventCalendarBusinessHours,
-	EventCalendarChange,
+	EventCalendarApi,
 	EventCalendarCreateActivation,
 	EventCalendarDateOnly,
 	EventCalendarItem,
 	EventCalendarOccurrence,
-	EventCalendarInteractionBlockedInfo,
 	EventCalendarInteractions,
 	EventCalendarOffDaysConfig,
 	EventCalendarRange,
@@ -64,8 +66,8 @@ import type {
 	EventCalendarRecurrenceExpander,
 	EventCalendarResource,
 	EventCalendarSelection,
+	EventCalendarScrollMode,
 	EventCalendarSlot,
-	EventCalendarSlotSelectInfo,
 	EventCalendarProposedUpdate,
 	EventCalendarUpdateAdjustment,
 	EventCalendarUpdateResult,
@@ -151,17 +153,11 @@ export type EventCalendarStateOptions<
 	canSelectSlot?: (slot: EventCalendarSlot) => boolean;
 	recurrenceOptions?: EventCalendarRecurrenceOptions<TItemFields>;
 	historyLimit: number;
-	onItemsChange?: (
-		items: EventCalendarItem<TItemFields>[],
-		change: EventCalendarChange<TItemFields>
-	) => void;
-	onSlotSelect?: (slot: EventCalendarSlot, info: EventCalendarSlotSelectInfo) => void;
-	onInteractionBlocked?: (info: EventCalendarInteractionBlockedInfo<TItemFields>) => void;
-	onRangeChange?: (info: EventCalendarRangeChangeInfo) => void;
-	onViewChange?: (view: EventCalendarView) => void;
-	onDateChange?: (date: Date) => void;
-	onDayCountChange?: (dayCount: number) => void;
-	onSelectionChange?: (selection: EventCalendarSelection) => void;
+	renderers: EventCalendarSnippetProps<TItemFields, TResourceFields>;
+	eventHandlers: EventCalendarCallbackProps<TItemFields>;
+	scrollMode: EventCalendarScrollMode;
+	stickyHeader: boolean;
+	showDatePicker: boolean;
 };
 
 export interface EventCalendarState<
@@ -187,7 +183,7 @@ export type EventCalendarModel<
 export class EventCalendarState<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
-> {
+> implements EventCalendarApi<TItemFields> {
 	readonly mutations: EventCalendarMutations<TItemFields, TResourceFields>;
 	readonly interaction: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 	readonly a11y: EventCalendarA11y<TItemFields, TResourceFields>;
@@ -199,6 +195,9 @@ export class EventCalendarState<
 	private pendingSelectionChange: EventCalendarSelection | null = null;
 	private pendingMissingSelectionKey: string | null = null;
 	private lastRangeSignature: string | null = null;
+	private contentNavigation: {
+		scrollToTime(dateOrMinutes: Date | number): boolean;
+	} | null = null;
 
 	readonly locale = $derived(this.localeOption ?? this.messages.locale);
 	readonly weekStartsOn = $derived(this.weekStartsOnOption ?? getLocaleWeekStartsOn(this.locale));
@@ -263,6 +262,17 @@ export class EventCalendarState<
 			})
 		};
 	});
+	readonly snapshot: EventCalendarSnapshot<TItemFields, TResourceFields> = $derived.by(() => ({
+		items: this.items,
+		resources: this.resources,
+		view: this.view,
+		date: this.date,
+		range: this.dateProfile,
+		selection: this.selection,
+		loading: this.loading,
+		disabled: this.disabled,
+		api: this
+	}));
 	private readonly validatedProjection = $derived.by(() => {
 		validateConfiguration(this);
 		validateSelection(this.selection);
@@ -361,9 +371,9 @@ export class EventCalendarState<
 		this.nowInstant = new Date(now);
 		this.isMounted = true;
 
-		if (pendingViewChange) this.onViewChange?.(pendingViewChange);
-		if (pendingDateChange) this.onDateChange?.(new Date(pendingDateChange));
-		if (pendingSelectionChange) this.onSelectionChange?.(pendingSelectionChange);
+		if (pendingViewChange) this.eventHandlers.onViewChange?.(pendingViewChange);
+		if (pendingDateChange) this.eventHandlers.onDateChange?.(new Date(pendingDateChange));
+		if (pendingSelectionChange) this.eventHandlers.onSelectionChange?.(pendingSelectionChange);
 		if (pendingMissingSelectionKey) {
 			this.a11y.restoreFocusAfterOccurrenceRemoval(pendingMissingSelectionKey);
 		}
@@ -373,6 +383,7 @@ export class EventCalendarState<
 	unmount(): void {
 		this.interaction.destroy();
 		this.a11y.destroy();
+		this.contentNavigation = null;
 		this.isMounted = false;
 		this.todayInstant = null;
 		this.nowInstant = null;
@@ -496,6 +507,24 @@ export class EventCalendarState<
 		return this.mutations.canRedo();
 	}
 
+	cancelInteraction(): void {
+		this.interaction.cancel();
+	}
+
+	connectContentNavigation(navigation: {
+		scrollToTime(dateOrMinutes: Date | number): boolean;
+	}): () => void {
+		this.contentNavigation = navigation;
+		return () => {
+			if (this.contentNavigation === navigation) this.contentNavigation = null;
+		};
+	}
+
+	scrollToTime(dateOrMinutes: Date | number): boolean {
+		if (this.view === 'month' || this.view === 'agenda') return false;
+		return this.contentNavigation?.scrollToTime(dateOrMinutes) ?? false;
+	}
+
 	refreshNow(now = new Date()): void {
 		assertValidInstant(now, 'now');
 		if (!this.isMounted) return;
@@ -550,9 +579,9 @@ export class EventCalendarState<
 		if (didDayCountChange) this.dayCount = nextDayCount;
 		if (didViewChange) this.view = view;
 		if (didDateChange) this.date = new Date(nextDate);
-		if (didDayCountChange) this.onDayCountChange?.(nextDayCount);
-		if (didViewChange) this.onViewChange?.(view);
-		if (didDateChange) this.onDateChange?.(new Date(nextDate));
+		if (didDayCountChange) this.eventHandlers.onDayCountChange?.(nextDayCount);
+		if (didViewChange) this.eventHandlers.onViewChange?.(view);
+		if (didDateChange) this.eventHandlers.onDateChange?.(new Date(nextDate));
 	}
 
 	setDayCount(dayCount: number): void {
@@ -560,7 +589,7 @@ export class EventCalendarState<
 		if (this.dayCount === dayCount) return;
 		this.createProfile(this.view, this.date, dayCount);
 		this.dayCount = dayCount;
-		this.onDayCountChange?.(dayCount);
+		this.eventHandlers.onDayCountChange?.(dayCount);
 	}
 
 	select(selection: EventCalendarSelection): void {
@@ -568,7 +597,7 @@ export class EventCalendarState<
 		validateSelection(selection);
 		if (selectionsEqual(this.selection, selection)) return;
 		this.selection = selection;
-		this.onSelectionChange?.(selection);
+		this.eventHandlers.onSelectionChange?.(selection);
 	}
 
 	hasSelection(selection: EventCalendarSelection): boolean {
@@ -636,11 +665,11 @@ export class EventCalendarState<
 		if (remap) this.a11y.remapOccurrenceKeys(remap);
 		if (!selectionTransaction) return;
 		this.selection = selectionTransaction.previousSelection;
-		this.onSelectionChange?.(selectionTransaction.previousSelection);
+		this.eventHandlers.onSelectionChange?.(selectionTransaction.previousSelection);
 	}
 
 	notifySelectionChange(selection: EventCalendarSelection): void {
-		this.onSelectionChange?.(selection);
+		this.eventHandlers.onSelectionChange?.(selection);
 	}
 
 	getVisibleRange(): EventCalendarRange {
@@ -730,9 +759,10 @@ export class EventCalendarState<
 		if (didDateChange) this.date = new Date(nextDate);
 		if (didSelectionChange) this.selection = EMPTY_EVENT_CALENDAR_SELECTION;
 		if (notify) {
-			if (didViewChange) this.onViewChange?.(nextView);
-			if (didDateChange) this.onDateChange?.(new Date(nextDate));
-			if (didSelectionChange) this.onSelectionChange?.(EMPTY_EVENT_CALENDAR_SELECTION);
+			if (didViewChange) this.eventHandlers.onViewChange?.(nextView);
+			if (didDateChange) this.eventHandlers.onDateChange?.(new Date(nextDate));
+			if (didSelectionChange)
+				this.eventHandlers.onSelectionChange?.(EMPTY_EVENT_CALENDAR_SELECTION);
 			if (missingSelectionKey) this.a11y.restoreFocusAfterOccurrenceRemoval(missingSelectionKey);
 			return;
 		}
@@ -778,14 +808,14 @@ export class EventCalendarState<
 		if (date.getTime() === this.date.getTime()) return;
 		this.createProfile(this.view, date, this.dayCount);
 		this.date = new Date(date);
-		if (notify) this.onDateChange?.(new Date(date));
+		if (notify) this.eventHandlers.onDateChange?.(new Date(date));
 	}
 
 	private publishRange(profile: EventCalendarDateProfile): void {
 		const signature = getRangeSignature(profile);
 		if (signature === this.lastRangeSignature) return;
 		this.lastRangeSignature = signature;
-		this.onRangeChange?.(cloneProfile(profile));
+		this.eventHandlers.onRangeChange?.(cloneProfile(profile));
 	}
 }
 

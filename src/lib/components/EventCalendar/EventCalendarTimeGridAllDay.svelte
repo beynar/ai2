@@ -20,11 +20,7 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Density } from '$lib/types/theme.js';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import {
 		getEventCalendarItemColor,
 		isEventCalendarSemanticColor
@@ -33,26 +29,14 @@
 	import type { EventCalendarAllDayRowInsertion } from './eventCalendar.allDayInsertion.js';
 	import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
 	import { serializeEventCalendarTarget } from './eventCalendar.interactions.svelte.js';
-	import type {
-		EventCalendarAllDayPayload,
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
-		EventCalendarSnapshot
-	} from './eventCalendar.props.js';
+	import type { EventCalendarAllDayPayload } from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
 	import type { EventCalendarTimeGridDayGeometry } from './eventCalendar.timeGrid.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOccurrence,
-		EventCalendarSegment
-	} from './eventCalendar.types.js';
+	import type { EventCalendarDateOnly, EventCalendarSegment } from './eventCalendar.types.js';
 
 	let {
 		view,
 		calendar,
-		snapshot,
-		a11y,
 		dayGeometries,
 		allDayBackgroundSegments,
 		allDayLayout,
@@ -62,27 +46,16 @@
 		gridTemplateColumns,
 		allDayPayload,
 		offDaysByDay,
-		messages,
 		longDayFormatter,
 		columnLabels,
-		density,
-		classes,
-		disabled,
-		showItemTooltip,
 		selectionKey,
-		allDay,
-		item,
-		itemTooltip,
 		registerTimeTarget,
 		handleTargetKeydown,
 		handleAllDayClick,
-		handleItemActivate,
-		onItemDoubleClick
+		handleItemActivate
 	}: {
 		view: 'week' | 'day' | 'days' | 'resource';
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 		dayGeometries: readonly EventCalendarTimeGridDayGeometry<TItemFields>[];
 		allDayBackgroundSegments: ReadonlyMap<string, readonly EventCalendarSegment<TItemFields>[]>;
 		allDayLayout: EventCalendarLaneLayout<TItemFields>;
@@ -92,26 +65,23 @@
 		gridTemplateColumns: string;
 		allDayPayload: EventCalendarAllDayPayload<TItemFields>;
 		offDaysByDay: ReadonlyMap<EventCalendarDateOnly, boolean>;
-		messages: Messages;
 		longDayFormatter: Intl.DateTimeFormat;
 		columnLabels: ReadonlyMap<string, string>;
-		density: Density;
-		classes: EventCalendarClasses;
-		disabled: boolean;
-		showItemTooltip: boolean;
 		selectionKey: string | null;
-		allDay?: Snippet<[EventCalendarAllDayPayload<TItemFields>]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		registerTimeTarget: (targetKey: string) => (node: HTMLElement) => () => void;
 		handleTargetKeydown: (event: KeyboardEvent, targetKey: string, activate?: boolean) => void;
 		handleAllDayClick: (day: EventCalendarDateOnly, event: MouseEvent, resourceId?: string) => void;
 		handleItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
 	} = $props();
+
+	const snapshot = $derived(calendar.snapshot);
+	const a11y = $derived(calendar.a11y);
+	const messages = $derived(calendar.messages);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const allDay = $derived(calendar.renderers.allDay);
+	const onItemDoubleClick = $derived(calendar.eventHandlers.onItemDoubleClick);
 </script>
 
 <div
@@ -240,21 +210,12 @@
 					style:width={getAllDayBarWidth(placement.startIndex, placement.endIndex)}
 				>
 					<EventCalendarItem
+						{calendar}
 						{segment}
-						{a11y}
 						{view}
-						locale={calendar.locale}
-						timeZone={calendar.timeZone}
-						{density}
-						{classes}
-						interaction={calendar.interaction}
 						projectionResourceId={geometry.resourceId}
 						isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 						isSelected={selectionKey === placement.occurrence.key}
-						{disabled}
-						{showItemTooltip}
-						{item}
-						{itemTooltip}
 						tabindex={disabled ? -1 : a11y.getTimeTargetTabIndex(itemTargetKey)}
 						registerControl={disabled ? undefined : registerTimeTarget(itemTargetKey)}
 						onControlFocus={() => a11y.handleTimeTargetFocus(itemTargetKey)}

@@ -403,7 +403,7 @@ export class EventCalendarInteractionsController<
 			return true;
 		}
 		this.calendar.select({ kind: 'slot', itemKey: null, slot });
-		this.calendar.onSlotSelect?.(slot, { source: 'keyboard' });
+		this.calendar.eventHandlers.onSlotSelect?.(slot, { source: 'keyboard' });
 		this.calendar.notifyInteractionStatus({ type: 'commit', source: 'keyboard' });
 		return true;
 	}
@@ -446,7 +446,7 @@ export class EventCalendarInteractionsController<
 			return true;
 		}
 		this.calendar.select({ kind: 'slot', itemKey: null, slot: range });
-		this.calendar.onSlotSelect?.(range, { source: 'single-pointer' });
+		this.calendar.eventHandlers.onSlotSelect?.(range, { source: 'single-pointer' });
 		return true;
 	}
 
@@ -1496,7 +1496,7 @@ export class EventCalendarInteractionsController<
 			return;
 		}
 		this.calendar.select({ kind: 'slot', itemKey: null, slot });
-		this.calendar.onSlotSelect?.(slot, { source: 'drag-create' });
+		this.calendar.eventHandlers.onSlotSelect?.(slot, { source: 'drag-create' });
 	}
 
 	private slotFromDropTarget(target: EventCalendarDropTarget): EventCalendarSlot {
@@ -1949,7 +1949,7 @@ export class EventCalendarInteractionsController<
 	}
 
 	private reportBlocked(info: EventCalendarInteractionBlockedInfo<TItemFields>): void {
-		this.calendar.onInteractionBlocked?.(info);
+		this.calendar.eventHandlers.onInteractionBlocked?.(info);
 		this.calendar.notifyInteractionStatus({
 			type: 'invalid',
 			source: info.source,

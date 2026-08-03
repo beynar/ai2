@@ -3,11 +3,8 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import { untrack, type Snippet } from 'svelte';
+	import { untrack } from 'svelte';
 	import type { EventCalendarAgendaEntry } from './eventCalendar.agenda.js';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import {
 		getEventCalendarItemColor,
 		isEventCalendarSemanticColor
@@ -16,43 +13,37 @@
 		EventCalendarAgendaDetailsPayload,
 		EventCalendarItemPayload
 	} from './eventCalendar.props.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
+	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarOccurrence } from './eventCalendar.types.js';
 
 	let {
+		calendar,
 		entry,
-		a11y,
-		messages,
 		timeFormatter,
 		accessibleDateTimeFormatter,
 		zonedTimeFormatter,
 		accessibleDateFormatter,
-		density,
-		classes,
 		isSelected,
-		disabled,
-		item,
-		agendaDetails,
-		onActivate,
-		onDoubleClick
+		onActivate
 	}: {
+		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		entry: EventCalendarAgendaEntry<TItemFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
 		timeFormatter: Intl.DateTimeFormat;
 		accessibleDateTimeFormatter: Intl.DateTimeFormat;
 		zonedTimeFormatter: Intl.DateTimeFormat;
 		accessibleDateFormatter: Intl.DateTimeFormat;
-		density: Density;
-		classes: EventCalendarClasses;
 		isSelected: boolean;
-		disabled: boolean;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		agendaDetails?: Snippet<[EventCalendarAgendaDetailsPayload<TItemFields>]>;
 		onActivate: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
-		onDoubleClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
 	} = $props();
 
+	const a11y = $derived(calendar.a11y);
+	const messages = $derived(calendar.messages);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const item = $derived(calendar.renderers.item);
+	const agendaDetails = $derived(calendar.renderers.agendaDetails);
+	const onDoubleClick = $derived(calendar.eventHandlers.onItemDoubleClick);
 	const occurrence = $derived(entry.occurrence);
 	const semanticColor = $derived(
 		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : 'neutral'

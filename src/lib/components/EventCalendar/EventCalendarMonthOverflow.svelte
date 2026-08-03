@@ -4,73 +4,39 @@
 >
 	import Popover from '$lib/components/Popover/Popover.svelte';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import type { Snippet } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
 		EventCalendarOverflowContentPayload,
 		EventCalendarOverflowPayload
 	} from './eventCalendar.props.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type { EventCalendarInteractionsController } from './eventCalendar.interactions.svelte.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOccurrence,
-		EventCalendarSegment
-	} from './eventCalendar.types.js';
+	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
+	import type { EventCalendarDateOnly, EventCalendarSegment } from './eventCalendar.types.js';
 
 	let {
+		calendar,
 		day,
 		dayLabel,
 		hiddenSegments,
-		messages,
-		a11y,
-		locale,
-		timeZone,
-		density,
-		classes,
-		interaction,
-		disabled,
 		selectionKey,
-		showItemTooltip,
-		overflow,
-		overflowContent,
-		item,
-		itemTooltip,
-		onMoreClick,
 		onItemActivate,
 		onItemDoubleClick
 	}: {
+		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		day: EventCalendarDateOnly;
 		dayLabel: string;
 		hiddenSegments: readonly EventCalendarSegment<TItemFields>[];
-		messages: Messages;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		locale: string;
-		timeZone: string;
-		density: Density;
-		classes: EventCalendarClasses;
-		interaction: EventCalendarInteractionsController<TItemFields, TResourceFields>;
-		disabled: boolean;
 		selectionKey: string | null;
-		showItemTooltip: boolean;
-		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
-		overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
-		onMoreClick?: (
-			day: EventCalendarDateOnly,
-			occurrences: readonly EventCalendarOccurrence<TItemFields>[],
-			event: MouseEvent
-		) => false | void;
 		onItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
 		onItemDoubleClick: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
 	} = $props();
 
+	const messages = $derived(calendar.messages);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const overflow = $derived(calendar.renderers.overflow);
+	const overflowContent = $derived(calendar.renderers.overflowContent);
+	const onMoreClick = $derived(calendar.eventHandlers.onMoreClick);
 	let triggerElement = $state<HTMLButtonElement | null>(null);
 	const hiddenOccurrences = $derived(hiddenSegments.map((segment) => segment.occurrence));
 	const overflowPayload = $derived<EventCalendarOverflowPayload<TItemFields>>({
@@ -130,21 +96,12 @@
 		<div class="mb-1 font-medium">{dayLabel}</div>
 		{#each hiddenSegments as segment (segment.occurrence.key)}
 			<EventCalendarItem
+				{calendar}
 				{segment}
-				{a11y}
 				view="month"
-				{locale}
-				{timeZone}
-				{density}
-				{classes}
-				{interaction}
-				isDragging={interaction.isDragging(segment.occurrence.key)}
+				isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 				allowResize={false}
 				isSelected={selectionKey === segment.occurrence.key}
-				{disabled}
-				{showItemTooltip}
-				{item}
-				{itemTooltip}
 				onActivate={(event) => onItemActivate(segment, event)}
 				onDoubleClick={(event) => onItemDoubleClick(segment, event)}
 			/>

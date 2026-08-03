@@ -21,12 +21,9 @@
 	generics="TItemFields extends object = Record<never, never>, TResourceFields extends object = Record<never, never>"
 >
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Messages } from '$lib/i18n/en.js';
-	import type { Density } from '$lib/types/theme.js';
-	import { untrack, type Snippet } from 'svelte';
+	import { untrack } from 'svelte';
 	import EventCalendarItem from './EventCalendarItem.svelte';
 	import EventCalendarMonthOverflow from './EventCalendarMonthOverflow.svelte';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import {
 		getEventCalendarItemColor,
 		isEventCalendarSemanticColor
@@ -40,28 +37,12 @@
 	} from './eventCalendar.date.js';
 	import type { EventCalendarLaneLayout } from './eventCalendar.layout.js';
 	import { serializeEventCalendarTarget } from './eventCalendar.interactions.svelte.js';
-	import type {
-		EventCalendarItemPayload,
-		EventCalendarItemTooltipPayload,
-		EventCalendarMonthCellPayload,
-		EventCalendarOverflowContentPayload,
-		EventCalendarOverflowPayload,
-		EventCalendarSnapshot
-	} from './eventCalendar.props.js';
+	import type { EventCalendarMonthCellPayload } from './eventCalendar.props.js';
 	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type {
-		EventCalendarDateOnly,
-		EventCalendarOccurrence,
-		EventCalendarOffDaysConfig,
-		EventCalendarSegment
-	} from './eventCalendar.types.js';
+	import type { EventCalendarDateOnly, EventCalendarSegment } from './eventCalendar.types.js';
 
 	let {
 		calendar,
-		snapshot,
-		a11y,
-		messages,
 		days,
 		layout,
 		visibleLaneCount,
@@ -75,27 +56,9 @@
 		enabledDays,
 		currentStartDay,
 		currentEndDay,
-		todayDay,
-		showWeekNumbers,
-		density,
-		classes,
-		disabled,
-		offDays,
-		showItemTooltip,
-		monthCell,
-		item,
-		itemTooltip,
-		overflow,
-		overflowContent,
-		onItemClick,
-		onItemDoubleClick,
-		onSlotClick,
-		onMoreClick
+		todayDay
 	}: {
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
-		snapshot: EventCalendarSnapshot<TItemFields, TResourceFields>;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		messages: Messages;
 		days: readonly EventCalendarDateOnly[];
 		layout: EventCalendarLaneLayout<TItemFields>;
 		visibleLaneCount: number;
@@ -110,38 +73,20 @@
 		currentStartDay: EventCalendarDateOnly;
 		currentEndDay: EventCalendarDateOnly;
 		todayDay: EventCalendarDateOnly | null;
-		showWeekNumbers: boolean;
-		density: Density;
-		classes: EventCalendarClasses;
-		disabled: boolean;
-		offDays: boolean | EventCalendarOffDaysConfig;
-		showItemTooltip: boolean;
-		monthCell?: Snippet<[EventCalendarMonthCellPayload<TItemFields>]>;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
-		overflow?: Snippet<[EventCalendarOverflowPayload<TItemFields>]>;
-		overflowContent?: Snippet<[EventCalendarOverflowContentPayload<TItemFields>]>;
-		onItemClick?: (occurrence: EventCalendarOccurrence<TItemFields>, event: MouseEvent) => void;
-		onItemDoubleClick?: (
-			occurrence: EventCalendarOccurrence<TItemFields>,
-			event: MouseEvent
-		) => void;
-		onSlotClick?: (
-			slot: {
-				view: 'month';
-				allDay: true;
-				start: EventCalendarDateOnly;
-				end: EventCalendarDateOnly;
-			},
-			event: MouseEvent
-		) => void;
-		onMoreClick?: (
-			day: EventCalendarDateOnly,
-			occurrences: readonly EventCalendarOccurrence<TItemFields>[],
-			event: MouseEvent
-		) => false | void;
 	} = $props();
 
+	const snapshot = $derived(calendar.snapshot);
+	const a11y = $derived(calendar.a11y);
+	const messages = $derived(calendar.messages);
+	const showWeekNumbers = $derived(calendar.showWeekNumbers);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const disabled = $derived(calendar.disabled);
+	const offDays = $derived(calendar.offDays);
+	const monthCell = $derived(calendar.renderers.monthCell);
+	const onItemClick = $derived(calendar.eventHandlers.onItemClick);
+	const onItemDoubleClick = $derived(calendar.eventHandlers.onItemDoubleClick);
+	const onSlotClick = $derived(calendar.eventHandlers.onSlotClick);
 	const itemIndex = $derived(calendar.itemIndex);
 	const selectionKey = $derived(
 		snapshot.selection.kind === 'item' ? snapshot.selection.itemKey : null
@@ -399,21 +344,12 @@
 						style:width={getMonthBarWidth(placement.startIndex, placement.endIndex)}
 					>
 						<EventCalendarItem
+							{calendar}
 							{segment}
-							{a11y}
 							view="month"
-							locale={calendar.locale}
-							timeZone={calendar.timeZone}
-							{density}
-							{classes}
-							interaction={calendar.interaction}
 							isDragging={calendar.interaction.isDragging(segment.occurrence.key)}
 							allowResize={segment.occurrence.allDay}
 							isSelected={selectionKey === placement.occurrence.key}
-							{disabled}
-							{showItemTooltip}
-							{item}
-							{itemTooltip}
 							class="h-full min-h-0"
 							onActivate={(event) => handleItemActivate(segment, event)}
 							onDoubleClick={(event) => handleItemDoubleClick(segment, event)}
@@ -424,24 +360,11 @@
 				{#if hiddenSegments.length > 0}
 					<div class="absolute inset-x-1 bottom-1 z-20">
 						<EventCalendarMonthOverflow
+							{calendar}
 							{day}
-							{a11y}
 							dayLabel={getDayLabel(day)}
 							{hiddenSegments}
-							{messages}
-							locale={calendar.locale}
-							timeZone={calendar.timeZone}
-							{density}
-							{classes}
-							interaction={calendar.interaction}
-							{disabled}
 							{selectionKey}
-							{showItemTooltip}
-							{overflow}
-							{overflowContent}
-							{item}
-							{itemTooltip}
-							{onMoreClick}
 							onItemActivate={handleItemActivate}
 							onItemDoubleClick={handleItemDoubleClick}
 						/>

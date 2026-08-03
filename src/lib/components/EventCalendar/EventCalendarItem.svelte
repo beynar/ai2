@@ -6,36 +6,24 @@
 	import HoverCard from '$lib/components/HoverCard/HoverCard.svelte';
 	import type { HoverCardPayload } from '$lib/components/HoverCard/index.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import type { Density } from '$lib/types/theme.js';
 	import { untrack, type Snippet } from 'svelte';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
 	import { getCachedDateTimeFormatter } from './eventCalendar.date.js';
-	import type { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import type {
 		EventCalendarItemPayload,
 		EventCalendarItemTooltipPayload
 	} from './eventCalendar.props.js';
-	import type { EventCalendarClasses } from './eventCalendar.theme.js';
-	import type { EventCalendarInteractionsController } from './eventCalendar.interactions.svelte.js';
+	import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 	import type { EventCalendarSegment, EventCalendarView } from './eventCalendar.types.js';
 
 	let {
+		calendar,
 		segment,
 		view,
-		locale,
-		timeZone,
-		density,
-		classes,
-		a11y,
-		interaction,
 		isSelected,
 		isDragging = false,
 		allowResize = true,
 		projectionResourceId,
-		disabled = false,
-		showItemTooltip = false,
-		item,
-		itemTooltip,
 		class: className,
 		compactContent = false,
 		tabindex,
@@ -47,22 +35,13 @@
 		onActivate,
 		onDoubleClick
 	}: {
+		calendar: EventCalendarState<TItemFields, TResourceFields>;
 		segment: EventCalendarSegment<TItemFields>;
 		view: EventCalendarView;
-		locale: string;
-		timeZone: string;
-		density: Density;
-		classes: EventCalendarClasses;
-		a11y: EventCalendarA11y<TItemFields, TResourceFields>;
-		interaction?: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 		isSelected: boolean;
 		isDragging?: boolean;
 		allowResize?: boolean;
 		projectionResourceId?: string;
-		disabled?: boolean;
-		showItemTooltip?: boolean;
-		item?: Snippet<[EventCalendarItemPayload<TItemFields>]>;
-		itemTooltip?: Snippet<[EventCalendarItemTooltipPayload<TItemFields>]>;
 		class?: string;
 		compactContent?: boolean;
 		tabindex?: 0 | -1;
@@ -75,6 +54,16 @@
 		onDoubleClick?: (event: MouseEvent) => void;
 	} = $props();
 
+	const locale = $derived(calendar.locale);
+	const timeZone = $derived(calendar.timeZone);
+	const density = $derived(calendar.density);
+	const classes = $derived(calendar.classes);
+	const a11y = $derived(calendar.a11y);
+	const interaction = $derived(calendar.interaction);
+	const disabled = $derived(calendar.disabled);
+	const showItemTooltip = $derived(calendar.renderers.itemTooltip !== false);
+	const item = $derived(calendar.renderers.item);
+	const itemTooltip = $derived(calendar.renderers.itemTooltip || undefined);
 	const occurrence = $derived(segment.occurrence);
 	const semanticColor = $derived(
 		isEventCalendarSemanticColor(occurrence.item.color) ? occurrence.item.color : 'neutral'

@@ -13,20 +13,19 @@
 		getCachedDateTimeFormatter,
 		startOfZonedDay
 	} from './eventCalendar.date.js';
-	import type { EventCalendarProps, EventCalendarSnapshot } from './eventCalendar.props.js';
+	import type {
+		EventCalendarCallbackProps,
+		EventCalendarProps,
+		EventCalendarSnippetProps
+	} from './eventCalendar.props.js';
 	import {
 		EMPTY_EVENT_CALENDAR_SELECTION,
 		EventCalendarState
 	} from './eventCalendar.state.svelte.js';
 	import { useEventCalendarTheme } from './eventCalendar.theme.js';
 	import type {
-		EventCalendarApi,
-		EventCalendarDateOnly,
 		EventCalendarItem,
-		EventCalendarOccurrence,
-		EventCalendarRange,
 		EventCalendarSelection,
-		EventCalendarUpdateAdjustment,
 		EventCalendarView
 	} from './eventCalendar.types.js';
 
@@ -103,18 +102,41 @@
 
 	const messages = $derived(useI18n(i18n));
 	const componentId = $props.id();
-	const showHeader = $derived(header !== false);
-	const resolvedHeader = $derived(header === false ? undefined : header);
-	const showItemTooltip = $derived(itemTooltip !== false);
-	const resolvedItemTooltip = $derived(itemTooltip === false ? undefined : itemTooltip);
-	const showNowIndicator = $derived(nowIndicator !== false);
-	const resolvedNowIndicator = $derived(nowIndicator === false ? undefined : nowIndicator);
 	let ambientDirection = $state<'ltr' | 'rtl' | null>(null);
 	const resolvedDirection = $derived(dir ?? ambientDirection ?? 'ltr');
 	const classes = $derived(useEventCalendarTheme(theme));
-	let contentComponent = $state<{
-		scrollToTime(dateOrMinutes: Date | number): boolean;
-	} | null>(null);
+	const renderers = $derived<EventCalendarSnippetProps<TItemFields, TResourceFields>>({
+		header,
+		actions,
+		item,
+		itemTooltip,
+		monthCell,
+		dayHeader,
+		timeGutter,
+		allDay,
+		overflow,
+		overflowContent,
+		agendaDetails,
+		resourceHeader,
+		nowIndicator,
+		dragPreview,
+		empty,
+		loadingContent
+	});
+	const eventHandlers = $derived<EventCalendarCallbackProps<TItemFields>>({
+		onRangeChange,
+		onItemsChange,
+		onViewChange,
+		onDateChange,
+		onDayCountChange,
+		onSelectionChange,
+		onItemClick,
+		onItemDoubleClick,
+		onSlotClick,
+		onSlotSelect,
+		onMoreClick,
+		onInteractionBlocked
+	});
 	const calendar = new EventCalendarState<TItemFields, TResourceFields>(componentId, {
 		get items() {
 			return items;
@@ -224,29 +246,20 @@
 		get historyLimit() {
 			return historyLimit;
 		},
-		get onItemsChange() {
-			return onItemsChange;
+		get renderers() {
+			return renderers;
 		},
-		get onSlotSelect() {
-			return onSlotSelect;
+		get eventHandlers() {
+			return eventHandlers;
 		},
-		get onInteractionBlocked() {
-			return onInteractionBlocked;
+		get scrollMode() {
+			return scrollMode;
 		},
-		get onRangeChange() {
-			return onRangeChange;
+		get stickyHeader() {
+			return stickyHeader;
 		},
-		get onViewChange() {
-			return onViewChange;
-		},
-		get onDateChange() {
-			return onDateChange;
-		},
-		get onDayCountChange() {
-			return onDayCountChange;
-		},
-		get onSelectionChange() {
-			return onSelectionChange;
+		get showDatePicker() {
+			return showDatePicker;
 		}
 	});
 	const a11y = calendar.a11y;
@@ -267,142 +280,31 @@
 		})
 	);
 
-	export function next(): void {
-		calendar.next();
-	}
-
-	export function previous(): void {
-		calendar.previous();
-	}
-
-	export function today(): void {
-		calendar.today();
-	}
-
-	export function goTo(value: Date | EventCalendarDateOnly): void {
-		calendar.goTo(value);
-	}
-
-	export function setView(nextView: EventCalendarView, options?: { dayCount?: number }): void {
-		calendar.setView(nextView, options);
-	}
-
-	export function scrollToTime(dateOrMinutes: Date | number): boolean {
-		if (calendar.view === 'month' || calendar.view === 'agenda') return false;
-		return contentComponent?.scrollToTime(dateOrMinutes) ?? false;
-	}
-
-	export function getVisibleRange(): EventCalendarRange {
-		return calendar.getVisibleRange();
-	}
-
-	export function getActiveRange(): EventCalendarRange {
-		return calendar.getActiveRange();
-	}
-
-	export function getVisibleDays(): readonly EventCalendarDateOnly[] {
-		return calendar.getVisibleDays();
-	}
-
-	export function getOccurrence(key: string): EventCalendarOccurrence<TItemFields> | null {
-		return calendar.getOccurrence(key);
-	}
-
-	export function getOccurrences(
-		range?: EventCalendarRange
-	): readonly EventCalendarOccurrence<TItemFields>[] {
-		return calendar.getOccurrences(range);
-	}
-
-	export function getOccurrencesForDay(
-		day: EventCalendarDateOnly
-	): readonly EventCalendarOccurrence<TItemFields>[] {
-		return calendar.getOccurrencesForDay(day);
-	}
-
-	export function select(nextSelection: EventCalendarSelection): void {
-		calendar.select(nextSelection);
-	}
-
-	export function clearSelection(): void {
-		calendar.clearSelection();
-	}
-
-	export function addItem(item: EventCalendarItem<TItemFields>): void {
-		calendar.addItem(item);
-	}
-
-	export function updateItem(item: EventCalendarItem<TItemFields>): void {
-		calendar.updateItem(item);
-	}
-
-	export function updateOccurrence(
-		key: string,
-		adjustment: EventCalendarUpdateAdjustment,
-		options?: { scope?: 'occurrence' | 'series' }
-	): void {
-		calendar.updateOccurrence(key, adjustment, options);
-	}
-
-	export function removeItem(id: string): void {
-		calendar.removeItem(id);
-	}
-
-	export function copySelection(): boolean {
-		return calendar.copySelection();
-	}
-
-	export function paste(): boolean {
-		return calendar.paste();
-	}
-
-	export function undo(): boolean {
-		return calendar.undo();
-	}
-
-	export function redo(): boolean {
-		return calendar.redo();
-	}
-
-	export function canUndo(): boolean {
-		return calendar.canUndo();
-	}
-
-	export function canRedo(): boolean {
-		return calendar.canRedo();
-	}
-
-	export function cancelInteraction(): void {
-		calendar.interaction.cancel();
-	}
-
-	const api: EventCalendarApi<TItemFields> = {
-		next,
-		previous,
-		today,
-		goTo,
-		setView,
-		scrollToTime,
-		getVisibleRange,
-		getActiveRange,
-		getVisibleDays,
-		getOccurrence,
-		getOccurrences,
-		getOccurrencesForDay,
-		addItem,
-		updateItem,
-		updateOccurrence,
-		removeItem,
-		copySelection,
-		paste,
-		undo,
-		redo,
-		canUndo,
-		canRedo,
-		select,
-		clearSelection,
-		cancelInteraction
-	};
+	export const next = calendar.next.bind(calendar);
+	export const previous = calendar.previous.bind(calendar);
+	export const today = calendar.today.bind(calendar);
+	export const goTo = calendar.goTo.bind(calendar);
+	export const setView = calendar.setView.bind(calendar);
+	export const scrollToTime = calendar.scrollToTime.bind(calendar);
+	export const getVisibleRange = calendar.getVisibleRange.bind(calendar);
+	export const getActiveRange = calendar.getActiveRange.bind(calendar);
+	export const getVisibleDays = calendar.getVisibleDays.bind(calendar);
+	export const getOccurrence = calendar.getOccurrence.bind(calendar);
+	export const getOccurrences = calendar.getOccurrences.bind(calendar);
+	export const getOccurrencesForDay = calendar.getOccurrencesForDay.bind(calendar);
+	export const select = calendar.select.bind(calendar);
+	export const clearSelection = calendar.clearSelection.bind(calendar);
+	export const addItem = calendar.addItem.bind(calendar);
+	export const updateItem = calendar.updateItem.bind(calendar);
+	export const updateOccurrence = calendar.updateOccurrence.bind(calendar);
+	export const removeItem = calendar.removeItem.bind(calendar);
+	export const copySelection = calendar.copySelection.bind(calendar);
+	export const paste = calendar.paste.bind(calendar);
+	export const undo = calendar.undo.bind(calendar);
+	export const redo = calendar.redo.bind(calendar);
+	export const canUndo = calendar.canUndo.bind(calendar);
+	export const canRedo = calendar.canRedo.bind(calendar);
+	export const cancelInteraction = calendar.cancelInteraction.bind(calendar);
 
 	function handleRootKeydown(
 		event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }
@@ -426,18 +328,6 @@
 		else if (key === 'y' && !event.shiftKey) handled = redo();
 		if (handled) event.preventDefault();
 	}
-
-	const snapshot = $derived<EventCalendarSnapshot<TItemFields, TResourceFields>>({
-		items,
-		resources,
-		view: calendar.view,
-		date: calendar.date,
-		range: calendar.dateProfile,
-		selection: calendar.selection,
-		loading,
-		disabled,
-		api
-	});
 
 	onMount(() => {
 		calendar.mount();
@@ -464,7 +354,7 @@
 	});
 
 	$effect(() => {
-		if (!calendar.isMounted || !showNowIndicator) return;
+		if (!calendar.isMounted || calendar.renderers.nowIndicator === false) return;
 		const refreshInterval = calendar.nowIndicatorInterval;
 		let timer: number | null = null;
 
@@ -521,57 +411,10 @@
 	})}
 	{@attach scrollMode === 'page' ? calendar.interaction.autoScroll('page') : null}
 >
-	{#if showHeader}
-		<EventCalendarHeader
-			{calendar}
-			{snapshot}
-			{messages}
-			direction={resolvedDirection}
-			{showDatePicker}
-			{density}
-			{disabled}
-			{classes}
-			header={resolvedHeader}
-			{actions}
-			{stickyHeader}
-			{scrollMode}
-		/>
+	{#if calendar.renderers.header !== false}
+		<EventCalendarHeader {calendar} />
 	{/if}
-	<EventCalendarContent
-		bind:this={contentComponent}
-		{calendar}
-		{snapshot}
-		{a11y}
-		{messages}
-		direction={resolvedDirection}
-		{density}
-		{loading}
-		{disabled}
-		{scrollMode}
-		{classes}
-		nowIndicator={showNowIndicator}
-		showWeekNumbers={calendar.showWeekNumbers}
-		maxItemsPerCell={calendar.maxItemsPerCell}
-		offDays={calendar.offDays}
-		{showItemTooltip}
-		{monthCell}
-		{dayHeader}
-		{timeGutter}
-		{allDay}
-		nowIndicatorContent={resolvedNowIndicator}
-		{agendaDetails}
-		{resourceHeader}
-		{item}
-		itemTooltip={resolvedItemTooltip}
-		{overflow}
-		{overflowContent}
-		{empty}
-		{loadingContent}
-		{onItemClick}
-		{onItemDoubleClick}
-		{onSlotClick}
-		{onMoreClick}
-	/>
+	<EventCalendarContent {calendar} />
 	{#if calendar.interaction.proposal && calendar.interaction.gesture?.inputMode === 'pointer'}
 		{@const proposal = calendar.interaction.proposal}
 		{@const previewPayload = {
@@ -592,7 +435,10 @@
 			style:left={`${calendar.interaction.gesture?.pointerX ?? 0}px`}
 			style:top={`${calendar.interaction.gesture?.pointerY ?? 0}px`}
 		>
-			<Slot render={dragPreview ?? defaultDragPreview} payload={previewPayload} />
+			<Slot
+				render={calendar.renderers.dragPreview ?? defaultDragPreview}
+				payload={previewPayload}
+			/>
 		</div>
 	{/if}
 	{#if calendar.interaction.proposal && calendar.interaction.gesture?.inputMode === 'pointer'}
