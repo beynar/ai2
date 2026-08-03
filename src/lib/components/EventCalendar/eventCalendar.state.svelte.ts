@@ -29,6 +29,7 @@ import {
 	EventCalendarInteractionsController,
 	type EventCalendarInteractionStatus
 } from './eventCalendar.interactions.svelte.js';
+import { EventCalendarMutations } from './eventCalendar.mutations.svelte.js';
 import {
 	createEventCalendarItemIndex,
 	createRecurringOccurrenceKey,
@@ -168,12 +169,9 @@ export interface EventCalendarState<
 	TResourceFields extends object
 > extends EventCalendarStateOptions<TItemFields, TResourceFields> {}
 
-export type EventCalendarModelBoundary<
-	TItemFields extends object,
-	TResourceFields extends object
-> = Readonly<{
+export type EventCalendarModelBoundary<TItemFields extends object> = Readonly<{
 	items: EventCalendarItem<TItemFields>[];
-	resources: EventCalendarResource<TResourceFields>[];
+	resources: readonly unknown[];
 }>;
 
 export type EventCalendarModel<
@@ -190,6 +188,7 @@ export class EventCalendarState<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
 > {
+	readonly mutations: EventCalendarMutations<TItemFields, TResourceFields>;
 	readonly interaction: EventCalendarInteractionsController<TItemFields, TResourceFields>;
 	readonly a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 	isMounted = $state(false);
@@ -246,9 +245,10 @@ export class EventCalendarState<
 		maintainDurationOnAllDayChange: this.allDayConversionOptions?.preserveDuration ?? false
 	});
 	readonly clipboard = $derived(this.interactions.clipboard);
-	readonly modelBoundary: EventCalendarModelBoundary<TItemFields, TResourceFields> = $derived.by(
-		() => ({ items: this.items, resources: this.resources })
-	);
+	readonly modelBoundary: EventCalendarModelBoundary<TItemFields> = $derived.by(() => ({
+		items: this.items,
+		resources: this.resources
+	}));
 	readonly model: EventCalendarModel<TItemFields, TResourceFields> = $derived.by(() => {
 		const dateProfile = this.createProfile(this.view, this.date, this.dayCount);
 		return {
@@ -285,9 +285,7 @@ export class EventCalendarState<
 		return this.model.itemIndex;
 	}
 
-	isModelBoundaryCurrent(
-		boundary: EventCalendarModelBoundary<TItemFields, TResourceFields>
-	): boolean {
+	isModelBoundaryCurrent(boundary: EventCalendarModelBoundary<TItemFields>): boolean {
 		return boundary === this.modelBoundary;
 	}
 
@@ -317,6 +315,7 @@ export class EventCalendarState<
 		options: EventCalendarStateOptions<TItemFields, TResourceFields>
 	) {
 		bind(this, options);
+		this.mutations = new EventCalendarMutations(this);
 		this.interaction = new EventCalendarInteractionsController(this);
 		this.a11y = new EventCalendarA11y(this);
 		this.synchronize(false, this.validatedProjection);
@@ -454,11 +453,11 @@ export class EventCalendarState<
 	}
 
 	addItem(item: EventCalendarItem<TItemFields>): void {
-		this.interaction.addItem(item);
+		this.mutations.addItem(item);
 	}
 
 	updateItem(item: EventCalendarItem<TItemFields>): void {
-		this.interaction.updateItem(item);
+		this.mutations.updateItem(item);
 	}
 
 	updateOccurrence(
@@ -466,35 +465,35 @@ export class EventCalendarState<
 		adjustment: EventCalendarUpdateAdjustment,
 		options?: { scope?: 'occurrence' | 'series' }
 	): void {
-		this.interaction.updateOccurrence(key, adjustment, options);
+		this.mutations.updateOccurrence(key, adjustment, options);
 	}
 
 	removeItem(id: string): void {
-		this.interaction.removeItem(id);
+		this.mutations.removeItem(id);
 	}
 
 	copySelection(): boolean {
-		return this.interaction.copySelection();
+		return this.mutations.copySelection();
 	}
 
 	paste(): boolean {
-		return this.interaction.paste();
+		return this.mutations.paste();
 	}
 
 	undo(): boolean {
-		return this.interaction.undo();
+		return this.mutations.undo();
 	}
 
 	redo(): boolean {
-		return this.interaction.redo();
+		return this.mutations.redo();
 	}
 
 	canUndo(): boolean {
-		return this.interaction.canUndo();
+		return this.mutations.canUndo();
 	}
 
 	canRedo(): boolean {
-		return this.interaction.canRedo();
+		return this.mutations.canRedo();
 	}
 
 	refreshNow(now = new Date()): void {
