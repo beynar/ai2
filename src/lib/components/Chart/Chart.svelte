@@ -1,9 +1,6 @@
 <script lang="ts" generics="TRow extends object">
-	import { createChartAdapter } from '@tanstack/charts/adapter';
-	import { onMount, untrack } from 'svelte';
-	import { createChartOptions } from './chart.adapter.js';
 	import type { ChartProps } from './chart.props.js';
-	import { useChartTheme } from './chart.theme.js';
+	import { ChartState } from './chart.state.svelte.js';
 
 	let {
 		data,
@@ -12,9 +9,11 @@
 		y,
 		guides,
 		clip,
+		frame,
 		margin,
 		palette,
 		tooltip,
+		viewport,
 		ariaLabel,
 		ariaDescription,
 		initialDimensions,
@@ -26,54 +25,118 @@
 
 	const generatedId = $props.id();
 	const idPrefix = `svelai-chart-${generatedId.replaceAll(/[^a-zA-Z0-9_-]/g, '')}`;
-	const classes = $derived(useChartTheme(theme));
-
-	function getChartOptions() {
-		return createChartOptions({
-			data,
-			marks,
-			x,
-			y,
-			guides,
-			clip,
-			margin,
-			palette,
-			tooltip,
-			ariaLabel,
-			ariaDescription,
-			idPrefix,
-			initialDimensions,
-			tooltipClassName: classes.tooltip()
-		});
-	}
-
-	const options = $derived(getChartOptions());
-	const rootStyle = $derived(
-		initialDimensions
-			? `position:relative;width:100%;aspect-ratio:${initialDimensions.width}/${initialDimensions.height}`
-			: 'position:relative;width:100%;height:320px'
-	);
-
-	const adapter = untrack(() => createChartAdapter(getChartOptions()));
-	const initialMarkup = untrack(() => (initialDimensions ? adapter.prerender() : ''));
-	let container!: HTMLDivElement;
-
-	$effect(() => adapter.update(options));
-
-	onMount(() => {
-		adapter.mount(container);
-		return () => adapter.destroy();
+	const chart = new ChartState<TRow>({
+		get data() {
+			return data;
+		},
+		get marks() {
+			return marks;
+		},
+		get x() {
+			return x;
+		},
+		get y() {
+			return y;
+		},
+		get guides() {
+			return guides;
+		},
+		get clip() {
+			return clip;
+		},
+		get frame() {
+			return frame;
+		},
+		get margin() {
+			return margin;
+		},
+		get palette() {
+			return palette;
+		},
+		get tooltip() {
+			return tooltip;
+		},
+		get viewport() {
+			return viewport;
+		},
+		get ariaLabel() {
+			return ariaLabel;
+		},
+		get ariaDescription() {
+			return ariaDescription;
+		},
+		get initialDimensions() {
+			return initialDimensions;
+		},
+		get theme() {
+			return theme;
+		},
+		get className() {
+			return className;
+		},
+		get idPrefix() {
+			return idPrefix;
+		}
 	});
 </script>
 
 <div
 	bind:this={ref}
 	data-slot="chart"
-	class={classes.root({ className })}
-	style={rootStyle}
+	data-chart-viewport-axis={chart.viewportState.axis}
+	class={chart.rootClass}
+	style={chart.rootStyle}
 	{...attachments}
 >
-	<div bind:this={container} data-chart-host class={classes.plot()} style="width:100%;height:100%">
-		{@html initialMarkup}
+	<div {@attach chart.host} data-chart-host class={chart.plotClass} style="width:100%;height:100%">
+		{@html chart.initialMarkup}
 	</div>
+	<div
+		{@attach chart.interactionSurface}
+		data-chart-interaction-surface
+		aria-hidden="true"
+		class="absolute inset-0 z-10"
+	></div>
+	{#if chart.viewportState.brushStyle}
+		<div
+			data-chart-brush
+			aria-hidden="true"
+			class="border-primary bg-primary/15 pointer-events-none absolute z-20 rounded-sm border shadow-sm"
+			style={chart.viewportState.brushStyle}
+		></div>
+	{/if}
+	{#if chart.viewportState.showReset}
+		<button
+			type="button"
+			data-chart-viewport-reset
+			class="border-neutral-muted bg-surface-floating text-neutral hover:bg-surface-muted focus-visible:ring-primary absolute top-2 right-2 z-30 rounded-md border px-2.5 py-1.5 text-xs font-medium shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+			onclick={chart.viewportState.reset}
+		>
+			Reset zoom
+		</button>
+	{/if}
+	<span class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+		{chart.viewportState.status}
+	</span>
 </div>
+
+<style>
+	[data-slot='chart'] :global(svg.ts-chart) {
+		outline: none;
+	}
+
+	[data-slot='chart'][data-chart-viewport-axis='x'] [data-chart-interaction-surface] {
+		cursor: crosshair;
+		touch-action: pan-y;
+	}
+
+	[data-slot='chart'][data-chart-viewport-axis='y'] [data-chart-interaction-surface] {
+		cursor: crosshair;
+		touch-action: pan-x;
+	}
+
+	[data-slot='chart'][data-chart-viewport-axis='both'] [data-chart-interaction-surface] {
+		cursor: crosshair;
+		touch-action: none;
+	}
+</style>

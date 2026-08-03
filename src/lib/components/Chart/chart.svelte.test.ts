@@ -9,7 +9,7 @@ import type { ChartProps } from './chart.props.js';
 
 type ChartConfiguration<TRow extends object> = Pick<
 	ChartProps<TRow>,
-	'marks' | 'x' | 'y' | 'guides' | 'clip' | 'margin' | 'palette' | 'tooltip'
+	'marks' | 'x' | 'y' | 'guides' | 'clip' | 'frame' | 'margin' | 'palette' | 'tooltip'
 >;
 
 type Revenue = {
@@ -38,7 +38,7 @@ const groupedDefinition = {
 	y: { scale: { type: 'linear' }, axis: { label: 'Revenue' } },
 	marks: [
 		{
-			type: 'line',
+			type: 'series',
 			x: 'month',
 			y: 'actual',
 			colorBy: 'product',
@@ -51,7 +51,7 @@ const groupedDefinition = {
 const definition = {
 	x: { scale: { type: 'point' } },
 	y: { scale: { type: 'linear' } },
-	marks: [{ type: 'line', x: 'month', y: 'actual', points: true }],
+	marks: [{ type: 'series', x: 'month', y: 'actual', points: true }],
 	tooltip: true
 } satisfies ChartConfiguration<Revenue>;
 
@@ -118,7 +118,7 @@ describe('Chart in the browser', () => {
 
 		const pointDefinition = {
 			...definition,
-			marks: [{ type: 'point', shape: 'circle', x: 'month', y: 'actual' }]
+			marks: [{ type: 'series', line: false, points: true, x: 'month', y: 'actual' }]
 		} satisfies ChartConfiguration<Revenue>;
 		await rerender({
 			data,
@@ -218,8 +218,8 @@ describe('Chart in the browser', () => {
 					strokeWidth: point.getAttribute('stroke-width')
 				}))
 			).toEqual([
-				{ radius: '5', stroke: 'var(--color-surface)', strokeWidth: '1.5' },
-				{ radius: '5', stroke: 'var(--color-surface)', strokeWidth: '1.5' }
+				{ radius: '5', stroke: null, strokeWidth: null },
+				{ radius: '5', stroke: null, strokeWidth: null }
 			]);
 			expect(points.filter((point) => point.getAttribute('opacity') === '0.3')).toHaveLength(2);
 			const focusBands = Array.from(

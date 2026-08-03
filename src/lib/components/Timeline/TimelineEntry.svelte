@@ -18,6 +18,8 @@
 		variant,
 		size,
 		density,
+		showConnectors,
+		loadingLabel,
 		classes,
 		itemRenderer,
 		markerRenderer,
@@ -28,6 +30,8 @@
 		variant: TimelineVariant;
 		size: Sizes;
 		density: Density;
+		showConnectors: boolean;
+		loadingLabel: string;
 		classes: TimelineClasses;
 		itemRenderer?: Snippet<[TimelineItemPayload<Item>]>;
 		markerRenderer?: Snippet<[TimelineItemPayload<Item>]>;
@@ -64,6 +68,7 @@
 		orientation: entry.orientation,
 		placement,
 		side: entry.side,
+		variant,
 		density,
 		isLast: entry.isLast
 	})}
@@ -92,12 +97,13 @@
 			placement,
 			variant,
 			density,
+			hasDate: Boolean(entry.item.date),
 			isLast: entry.isLast
 		})}
 		aria-hidden="true"
 		inert
 	>
-		{#if !entry.isLast}
+		{#if showConnectors && !entry.isLast}
 			<span
 				data-slot="timeline-connector"
 				data-color={entry.connectorColor}
@@ -128,6 +134,11 @@
 		<Slot render={itemRenderer} {payload}>
 			{@render defaultContent()}
 		</Slot>
+		{#if entry.item.loading}
+			<span data-slot="timeline-loading-status" class="sr-only" role="status" aria-live="polite">
+				{loadingLabel}
+			</span>
+		{/if}
 	</div>
 </li>
 
@@ -154,13 +165,8 @@
 		{@render dateContent()}
 	{/if}
 
-	<div data-slot="timeline-title-row" class={classes.titleRow({ density })}>
+	<div data-slot="timeline-title-row" class={classes.titleRow()}>
 		<Slot as="div" render={entry.item.title} class={classes.title({ size, variant })} />
-		{#if entry.item.loading}
-			<span data-slot="timeline-loading" class={classes.loading({ size })}>
-				<Spinner color={entry.color} {size} />
-			</span>
-		{/if}
 	</div>
 
 	{#if entry.item.description}
@@ -178,7 +184,11 @@
 		data-color={entry.color}
 		class={classes.marker({ size, color: entry.color })}
 	>
-		{#if entry.item.icon}
+		{#if entry.item.loading}
+			<span data-slot="timeline-loading" class={classes.loading({ size })}>
+				<Spinner color={entry.color} {size} decorative />
+			</span>
+		{:else if entry.item.icon}
 			<Slot render={entry.item.icon} />
 		{:else}
 			<span data-slot="timeline-dot"></span>

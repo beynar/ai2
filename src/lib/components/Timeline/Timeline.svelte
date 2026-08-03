@@ -1,5 +1,6 @@
 <script lang="ts" generics="Item extends TimelineItem = TimelineItem">
 	import TimelineEntry from './TimelineEntry.svelte';
+	import { useI18n } from '$lib/i18n/context.svelte.js';
 	import { resolveTimelineItems } from './timeline.items.js';
 	import type { TimelineItem, TimelineProps } from './timeline.props.js';
 	import { useTimelineTheme } from './timeline.theme.js';
@@ -14,7 +15,9 @@
 		density = 'normal',
 		color = 'neutral',
 		connectorColor = 'neutral',
+		showConnectors = true,
 		scrollFade = true,
+		i18n,
 		item: itemRenderer,
 		marker: markerRenderer,
 		opposite: oppositeRenderer,
@@ -24,6 +27,7 @@
 		...rootAttributes
 	}: TimelineProps<Item> = $props();
 
+	const messages = $derived(useI18n(i18n));
 	const classes = $derived(useTimelineTheme(theme));
 	const resolvedItems = $derived(
 		resolveTimelineItems(items, orientation, placement, color, connectorColor)
@@ -87,6 +91,7 @@
 	data-variant={variant}
 	data-size={size}
 	data-density={density}
+	data-connectors={showConnectors ? 'true' : 'false'}
 	data-overflowing={isOverflowing ? 'true' : undefined}
 	data-scroll-fade={scrollFadeAxis === 'none' ? undefined : scrollFadeAxis}
 	class={classes.root({
@@ -104,6 +109,8 @@
 			{variant}
 			{size}
 			{density}
+			{showConnectors}
+			loadingLabel={messages.loading}
 			{classes}
 			{itemRenderer}
 			{markerRenderer}

@@ -44,7 +44,9 @@ The default configuration is a vertical timeline with all content on the logical
 - **density**: \`'small' | 'normal' | 'large'\` (default: \`'normal'\`) — item gaps, surface padding, connector spacing, and horizontal item minimum width.
 - **color**: Svelai semantic color (default: \`'neutral'\`) — default marker and outline or soft surface accent.
 - **connectorColor**: Svelai semantic color (default: \`'neutral'\`) — default outgoing connector color.
+- **showConnectors**: \`boolean\` (default: \`true\`) — shows connector segments between markers.
 - **scrollFade**: \`boolean\` (default: \`true\`) — applies the shared logical horizontal scroll fade only while a horizontal timeline actually overflows.
+- **i18n**: \`Partial<Messages>\` — per-instance translations merged over the global i18n catalog.
 
 ### Custom rendering
 
@@ -80,7 +82,7 @@ type TimelineItem = {
 - \`id\` is optional. Use a stable explicit ID when entries can reorder; otherwise Timeline uses the array index as identity.
 - \`datetime\` adds the machine-readable value to a default \`<time>\` element when \`date\` is present.
 - \`icon\` replaces the default dot inside the default marker.
-- \`loading\` adds a color- and size-aware Spinner at the trailing edge of the default title row.
+- \`loading\` replaces the default marker visual with a color- and size-aware Spinner.
 - \`color\` overrides the root color for this marker and its outline or soft surface.
 - \`connectorColor\` overrides the root color for this item's outgoing connector. It has no effect on the final item.
 - \`side\` overrides alternate parity for one item. It is not valid with fixed placement.
@@ -143,7 +145,7 @@ type TimelineItemPayload<Item extends TimelineItem> = Readonly<{
 }>;
 \`\`\`
 
-Call \`defaultContent()\`, \`defaultMarker()\`, or \`defaultOpposite()\` to wrap or extend the matching default renderer. A custom \`item\` snippet that does not call \`defaultContent()\` owns its complete content, including any loading presentation. Timeline still owns the \`<ol>\`, each \`<li>\`, axis and connector geometry, marker anchor, opposite track, and variant surface.
+Call \`defaultContent()\`, \`defaultMarker()\`, or \`defaultOpposite()\` to wrap or extend the matching default renderer. A custom \`marker\` snippet that does not call \`defaultMarker()\` owns its complete marker visual, including loading presentation. Timeline still owns the \`<ol>\`, each \`<li>\`, axis and connector geometry, marker anchor, opposite track, and variant surface.
 
 ## Responsive alternate layout
 
@@ -175,7 +177,7 @@ The ID check preserves number and string identity, so \`1\` and \`'1'\` are diff
 
 - The root is an ordered list and every event is a list item.
 - Axis anchors, markers, and connectors are decorative and hidden from assistive technology. Do not use marker color or shape as the only status signal.
-- A default loading Spinner exposes polite status semantics.
+- A default loading marker has a localized polite status announcement outside the decorative axis.
 - A default date with \`datetime\` renders as a semantic \`<time>\` element.
 - An overflowing horizontal timeline becomes a native keyboard scroll region; a non-overflowing timeline adds no tab stop.
 

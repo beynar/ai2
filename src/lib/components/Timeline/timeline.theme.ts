@@ -21,12 +21,12 @@ const defaultRoot = cva({
 		orientation: {
 			vertical: 'grid w-full overflow-visible',
 			horizontal:
-				'grid w-full max-w-full grid-flow-col grid-rows-[auto_var(--timeline-marker-size)_auto] overflow-x-auto overflow-y-hidden overscroll-x-contain p-1 scrollbar-none'
+				'grid w-full max-w-full auto-cols-[minmax(var(--timeline-item-min-width),1fr)] grid-flow-col grid-rows-[auto_var(--timeline-marker-size)_auto] overflow-x-auto overflow-y-hidden overscroll-x-contain p-1 scrollbar-none'
 		},
 		size: {
-			small: '[--timeline-marker-size:0.875rem]',
-			normal: '[--timeline-marker-size:1.125rem]',
-			large: '[--timeline-marker-size:1.375rem]'
+			small: '[--timeline-marker-size:0.875rem] [--timeline-title-center-offset:0.171875rem]',
+			normal: '[--timeline-marker-size:1.125rem] [--timeline-title-center-offset:0.140625rem]',
+			large: '[--timeline-marker-size:1.375rem] [--timeline-title-center-offset:0.109375rem]'
 		},
 		density: {
 			small:
@@ -41,23 +41,6 @@ const defaultRoot = cva({
 			x: 'scroll-fade-x'
 		}
 	},
-	compoundVariants: [
-		{
-			orientation: 'horizontal',
-			density: 'small',
-			class: 'auto-cols-[minmax(12rem,1fr)]'
-		},
-		{
-			orientation: 'horizontal',
-			density: 'normal',
-			class: 'auto-cols-[minmax(16rem,1fr)]'
-		},
-		{
-			orientation: 'horizontal',
-			density: 'large',
-			class: 'auto-cols-[minmax(20rem,1fr)]'
-		}
-	],
 	defaultVariants: {
 		orientation: 'vertical',
 		size: 'normal',
@@ -67,7 +50,7 @@ const defaultRoot = cva({
 });
 
 const defaultItem = cva({
-	base: 'relative isolate min-w-0',
+	base: 'relative isolate min-w-0 [--timeline-surface-offset:0rem]',
 	variants: {
 		orientation: {
 			vertical: 'grid items-start',
@@ -81,6 +64,12 @@ const defaultItem = cva({
 		side: {
 			start: '',
 			end: ''
+		},
+		variant: {
+			ghost: '',
+			card: '',
+			outline: '',
+			soft: ''
 		},
 		density: {
 			small: '',
@@ -111,6 +100,30 @@ const defaultItem = cva({
 		},
 		{
 			orientation: 'vertical',
+			variant: ['card', 'outline', 'soft'],
+			density: 'small',
+			class: '[--timeline-surface-offset:0.375rem]'
+		},
+		{
+			orientation: 'vertical',
+			variant: ['card', 'outline', 'soft'],
+			density: 'normal',
+			class: '[--timeline-surface-offset:0.5rem]'
+		},
+		{
+			orientation: 'vertical',
+			variant: ['card', 'outline', 'soft'],
+			density: 'large',
+			class: '[--timeline-surface-offset:0.625rem]'
+		},
+		{
+			orientation: 'vertical',
+			placement: 'alternate',
+			variant: ['card', 'outline', 'soft'],
+			class: '@max-[40rem]:[--timeline-surface-offset:0rem]'
+		},
+		{
+			orientation: 'vertical',
 			isLast: false,
 			class: 'pb-[var(--timeline-item-gap)]'
 		}
@@ -119,6 +132,7 @@ const defaultItem = cva({
 		orientation: 'vertical',
 		placement: 'end',
 		side: 'end',
+		variant: 'ghost',
 		density: 'normal',
 		isLast: false
 	}
@@ -128,7 +142,8 @@ const defaultOpposite = cva({
 	base: 'z-10 min-w-0 self-start text-neutral/60 tabular-nums',
 	variants: {
 		orientation: {
-			vertical: '',
+			vertical:
+				'grid min-h-[var(--timeline-marker-size)] translate-y-[var(--timeline-surface-offset)] items-center [&_[data-slot=timeline-date]]:leading-none',
 			horizontal: 'col-start-1'
 		},
 		side: {
@@ -155,17 +170,17 @@ const defaultOpposite = cva({
 		{
 			orientation: 'vertical',
 			density: 'small',
-			class: '@max-[40rem]:pb-1.5'
+			class: '@max-[40rem]:min-h-[calc(var(--timeline-marker-size)+0.375rem)] @max-[40rem]:pb-1.5'
 		},
 		{
 			orientation: 'vertical',
 			density: 'normal',
-			class: '@max-[40rem]:pb-2'
+			class: '@max-[40rem]:min-h-[calc(var(--timeline-marker-size)+0.5rem)] @max-[40rem]:pb-2'
 		},
 		{
 			orientation: 'vertical',
 			density: 'large',
-			class: '@max-[40rem]:pb-3'
+			class: '@max-[40rem]:min-h-[calc(var(--timeline-marker-size)+0.75rem)] @max-[40rem]:pb-3'
 		},
 		{
 			orientation: 'horizontal',
@@ -189,7 +204,8 @@ const defaultAxis = cva({
 	base: 'relative z-10 flex shrink-0',
 	variants: {
 		orientation: {
-			vertical: 'row-start-1 h-full w-[var(--timeline-marker-size)] items-start justify-center',
+			vertical:
+				'row-start-1 h-full w-[var(--timeline-marker-size)] translate-y-[var(--timeline-surface-offset)] items-start justify-center',
 			horizontal:
 				'col-start-1 row-start-2 h-[var(--timeline-marker-size)] w-full items-center justify-start'
 		},
@@ -209,6 +225,10 @@ const defaultAxis = cva({
 			normal: '',
 			large: ''
 		},
+		hasDate: {
+			true: '',
+			false: ''
+		},
 		isLast: {
 			true: '',
 			false: ''
@@ -224,24 +244,9 @@ const defaultAxis = cva({
 		},
 		{
 			orientation: 'vertical',
-			placement: ['start', 'end'],
-			variant: ['card', 'outline', 'soft'],
-			density: 'small',
-			class: 'translate-y-3'
-		},
-		{
-			orientation: 'vertical',
-			placement: ['start', 'end'],
-			variant: ['card', 'outline', 'soft'],
-			density: 'normal',
-			class: 'translate-y-4'
-		},
-		{
-			orientation: 'vertical',
-			placement: ['start', 'end'],
-			variant: ['card', 'outline', 'soft'],
-			density: 'large',
-			class: 'translate-y-5'
+			variant: 'ghost',
+			hasDate: false,
+			class: 'top-[var(--timeline-title-center-offset)]'
 		},
 		{
 			orientation: 'vertical',
@@ -254,6 +259,7 @@ const defaultAxis = cva({
 		placement: 'end',
 		variant: 'ghost',
 		density: 'normal',
+		hasDate: true,
 		isLast: false
 	}
 });
@@ -408,17 +414,7 @@ const defaultDate = cva({
 });
 
 const defaultTitleRow = cva({
-	base: 'flex min-w-0 items-start justify-between',
-	variants: {
-		density: {
-			small: 'gap-1.5',
-			normal: 'gap-2',
-			large: 'gap-3'
-		}
-	},
-	defaultVariants: {
-		density: 'normal'
-	}
+	base: 'flex min-w-0 items-start'
 });
 
 const defaultTitle = cva({
@@ -470,7 +466,7 @@ const defaultDescription = cva({
 });
 
 const defaultLoading = cva({
-	base: 'shrink-0',
+	base: 'grid shrink-0 place-items-center',
 	variants: {
 		size: {
 			small: '[&_[data-slot=spinner-indicator]]:[--spinner-size:0.875rem]',

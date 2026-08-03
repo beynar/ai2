@@ -1,25 +1,17 @@
-import type { SelectItems } from '$lib/components/Form/Select/index.js';
-
 export const chartUsageTypes = [
-	'line',
-	'area',
-	'bars',
+	'series',
+	'bar',
 	'scatter',
-	'range',
-	'cell-matrix',
-	'connections',
-	'vector-field',
-	'facets',
-	'radar',
-	'donut',
-	'map',
-	'layers'
+	'distribution',
+	'matrix',
+	'facet',
+	'polar',
+	'proportion',
+	'relation'
 ] as const;
 
 export type ChartUsageType = (typeof chartUsageTypes)[number];
-export type MetricChartUsageType =
-	'line' | 'area' | 'bars' | 'scatter' | 'cell-matrix' | 'facets' | 'radar';
-export type GeometryChartUsageType = 'range' | 'connections' | 'vector-field' | 'layers';
+export type MetricChartUsageType = 'series' | 'bar' | 'facet';
 
 type ChartUsageMetadata = {
 	label: string;
@@ -28,126 +20,152 @@ type ChartUsageMetadata = {
 };
 
 export const chartUsageMetadata = {
-	line: {
-		label: 'Line',
-		description: 'Multiple series share one point scale, with visible points enabled on each line.',
-		ariaLabel: 'Quarterly revenue line chart'
+	series: {
+		label: 'Series',
+		description:
+			'A series switches between area and interval while composing line and point layers.',
+		ariaLabel: 'Quarterly revenue series chart'
 	},
-	area: {
-		label: 'Area',
-		description: 'Stacked areas compare the contribution of each product over time.',
-		ariaLabel: 'Quarterly revenue area chart'
-	},
-	bars: {
-		label: 'Bars',
-		description: 'Grouped bars place each product beside its peers for every quarter.',
+	bar: {
+		label: 'Bar',
+		description: 'One bar mark switches between grouped and stacked layouts.',
 		ariaLabel: 'Quarterly revenue bar chart'
 	},
 	scatter: {
-		label: 'Scatter / bubble',
-		description: 'Points use a data channel for position and another channel for their radius.',
+		label: 'Scatter',
+		description:
+			'The same numeric observations switch between points and responsive hexagonal bins with rectangular x/y brush zoom.',
 		ariaLabel: 'Quarterly revenue bubble chart'
 	},
-	range: {
-		label: 'Range',
-		description: 'Rectangles use explicit endpoints to show two-dimensional ranges.',
-		ariaLabel: 'Explicit range chart'
-	},
-	'cell-matrix': {
-		label: 'Cell matrix',
-		description: 'Two band scales form a categorical matrix, with color identifying each series.',
-		ariaLabel: 'Quarterly revenue cell matrix'
-	},
-	connections: {
-		label: 'Connections',
+	distribution: {
+		label: 'Distribution',
 		description:
-			'Links and arrows render explicit relationships without assuming a network layout.',
-		ariaLabel: 'Connection link and arrow chart'
+			'Grouped raw samples switch between summaries, frequency, density, and cumulative rank.',
+		ariaLabel: 'Response time distribution chart'
 	},
-	'vector-field': {
-		label: 'Vector field',
-		description: 'Each datum controls the origin, length, and rotation of one vector.',
-		ariaLabel: 'Vector field chart'
+	matrix: {
+		label: 'Matrix',
+		description:
+			'A matrix uses explicit grid channels or derives a contribution calendar from dates.',
+		ariaLabel: 'Contribution calendar heatmap'
 	},
-	facets: {
-		label: 'Facets',
-		description: 'The same line mark repeats over data subsets selected by a facet channel.',
+	facet: {
+		label: 'Facet',
+		description: 'A facet mark repeats the same nested series over data subsets.',
 		ariaLabel: 'Quarterly revenue faceted chart'
 	},
-	radar: {
-		label: 'Radar',
-		description: 'Polar area and line marks compare several series on shared radial guides.',
-		ariaLabel: 'Quarterly revenue radar chart'
+	polar: {
+		label: 'Polar',
+		description:
+			'Polar variants share angle and radius channels, with boolean path layers where relevant.',
+		ariaLabel: 'Quarterly revenue polar chart'
 	},
-	donut: {
-		label: 'Donut',
-		description: 'Polar arcs receive explicit start and end angles, with no hidden pie transform.',
-		ariaLabel: 'Revenue share donut chart'
+	proportion: {
+		label: 'Proportion',
+		description: 'The same category values switch between pie, donut, and waffle layouts.',
+		ariaLabel: 'Revenue share proportion chart'
 	},
-	map: {
-		label: 'Map',
-		description: 'Structural GeoJSON features render through local projection options.',
-		ariaLabel: 'Regional map chart'
-	},
-	layers: {
-		label: 'Annotation layers',
-		description: 'Bands, rules, ticks, text, and a frame compose as ordered annotation layers.',
-		ariaLabel: 'Annotated coordinate chart'
+	relation: {
+		label: 'Relation',
+		description: 'The same node rows switch between tree, force-network, and Sankey layouts.',
+		ariaLabel: 'Business relation chart'
 	}
 } satisfies Record<ChartUsageType, ChartUsageMetadata>;
 
-function chartUsageOption(type: ChartUsageType) {
-	return { value: type, label: chartUsageMetadata[type].label };
-}
+export const chartUsageItems = chartUsageTypes.map((type) => ({
+	value: type,
+	label: chartUsageMetadata[type].label
+}));
 
-export const chartUsageItems: SelectItems = [
-	{
-		label: 'Cartesian',
-		items: [
-			chartUsageOption('line'),
-			chartUsageOption('area'),
-			chartUsageOption('bars'),
-			chartUsageOption('scatter'),
-			chartUsageOption('range'),
-			chartUsageOption('cell-matrix')
-		]
-	},
-	{
-		label: 'Composition',
-		items: [
-			chartUsageOption('connections'),
-			chartUsageOption('vector-field'),
-			chartUsageOption('facets'),
-			chartUsageOption('layers')
-		]
-	},
-	{
-		label: 'Polar and geographic',
-		items: [chartUsageOption('radar'), chartUsageOption('donut'), chartUsageOption('map')]
-	}
-];
+export const barVariantItems = [
+	{ value: 'group', label: 'Group' },
+	{ value: 'stack', label: 'Stack' }
+] as const;
+
+export const scatterSizeScaleItems = [
+	{ value: 'linear', label: 'Linear' },
+	{ value: 'sqrt', label: 'Sqrt' },
+	{ value: 'log', label: 'Log' },
+	{ value: 'exp', label: 'Exp (log⁻¹)' }
+] as const;
+
+export const scatterVariantItems = [
+	{ value: 'points', label: 'Points' },
+	{ value: 'hexbin', label: 'Hexbin' }
+] as const;
+
+export const seriesAnalysisItems = [
+	{ value: 'none', label: 'None' },
+	{ value: 'median', label: 'Median' },
+	{ value: 'rolling-mean', label: 'Rolling mean' },
+	{ value: 'rolling-median', label: 'Rolling median' }
+] as const;
+
+export const barAnalysisItems = [
+	{ value: 'none', label: 'None' },
+	{ value: 'mean', label: 'Mean' },
+	{ value: 'median', label: 'Median' }
+] as const;
+
+export const scatterAnalysisItems = [
+	{ value: 'none', label: 'None' },
+	{ value: 'regression', label: 'Regression' },
+	{ value: 'confidence', label: 'Confidence' },
+	{ value: 'prediction', label: 'Prediction' },
+	{ value: 'median', label: 'Median' }
+] as const;
+
+export const distributionAnalysisItems = [
+	{ value: 'none', label: 'None' },
+	{ value: 'mean', label: 'Mean' },
+	{ value: 'median', label: 'Median' },
+	{ value: 'p90', label: 'P90' },
+	{ value: 'deviation', label: '±1 SD' }
+] as const;
+
+export type SeriesAnalysisUsage = (typeof seriesAnalysisItems)[number]['value'];
+export type BarAnalysisUsage = (typeof barAnalysisItems)[number]['value'];
+export type ScatterAnalysisUsage = (typeof scatterAnalysisItems)[number]['value'];
+export type DistributionAnalysisUsage = (typeof distributionAnalysisItems)[number]['value'];
+
+export const distributionVariantItems = [
+	{ value: 'violin', label: 'Violin' },
+	{ value: 'box', label: 'Box' },
+	{ value: 'error-bar', label: 'Error bar' },
+	{ value: 'histogram', label: 'Histogram' },
+	{ value: 'density', label: 'Density' },
+	{ value: 'ecdf', label: 'ECDF' }
+] as const;
+
+export const matrixVariantItems = [
+	{ value: 'grid', label: 'Grid' },
+	{ value: 'calendar', label: 'Calendar' }
+] as const;
+
+export const proportionVariantItems = [
+	{ value: 'pie', label: 'Pie' },
+	{ value: 'donut', label: 'Donut' },
+	{ value: 'waffle', label: 'Waffle' }
+] as const;
+
+export const polarVariantItems = [
+	{ value: 'radar', label: 'Radar' },
+	{ value: 'circular', label: 'Circular' },
+	{ value: 'radial-bar', label: 'Radial bar' },
+	{ value: 'rose', label: 'Rose' }
+] as const;
+
+export const relationVariantItems = [
+	{ value: 'tree', label: 'Tree' },
+	{ value: 'network', label: 'Network' },
+	{ value: 'sankey', label: 'Sankey' }
+] as const;
 
 export function isMetricChartUsageType(type: ChartUsageType): type is MetricChartUsageType {
 	switch (type) {
-		case 'line':
-		case 'area':
-		case 'bars':
-		case 'scatter':
-		case 'cell-matrix':
-		case 'facets':
-		case 'radar':
-			return true;
-		default:
-			return false;
-	}
-}
-
-export function isGeometryChartUsageType(type: ChartUsageType): type is GeometryChartUsageType {
-	switch (type) {
-		case 'range':
-		case 'connections':
-		case 'vector-field':
-		case 'layers':
+		case 'series':
+		case 'bar':
+		case 'facet':
 			return true;
 		default:
 			return false;

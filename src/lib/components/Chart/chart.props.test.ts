@@ -1,15 +1,14 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type {
-	ChartGeoFeature,
-	ChartLineMark,
 	ChartMark,
 	ChartProps,
+	ChartSeriesMark,
 	ChartTooltipField
 } from './chart.props.js';
 
 type ChartConfiguration<TRow extends object> = Pick<
 	ChartProps<TRow>,
-	'marks' | 'x' | 'y' | 'guides' | 'clip' | 'margin' | 'palette' | 'tooltip'
+	'marks' | 'x' | 'y' | 'guides' | 'clip' | 'frame' | 'margin' | 'palette' | 'tooltip'
 >;
 
 type Revenue = {
@@ -25,15 +24,14 @@ const definition = {
 	y: { scale: { type: 'linear' }, grid: true },
 	marks: [
 		{
-			type: 'area',
-			direction: 'vertical',
+			type: 'series',
+			area: true,
 			x: 'month',
 			y: 'forecast',
 			series: 'series',
 			fill: 'primary'
 		},
-		{ type: 'line', x: 'month', y: 'actual', stroke: 'primary' },
-		{ type: 'point', shape: 'circle', x: 'month', y: 'actual', fill: 'primary' }
+		{ type: 'series', x: 'month', y: 'actual', stroke: 'primary', points: true }
 	],
 	tooltip: {
 		groupBy: 'x',
@@ -52,12 +50,12 @@ const invalidTooltipField = {
 } satisfies ChartTooltipField<Revenue>;
 
 const invalidNullableKey = {
-	type: 'line',
+	type: 'series',
 	x: 'month',
 	y: 'actual',
 	// @ts-expect-error Stable keys cannot use a nullable channel.
 	key: 'forecast'
-} satisfies ChartLineMark<Revenue>;
+} satisfies ChartSeriesMark<Revenue>;
 
 const invalidCategoricalNice = {
 	x: {
@@ -66,7 +64,7 @@ const invalidCategoricalNice = {
 		nice: true
 	},
 	y: { scale: { type: 'linear' } },
-	marks: [{ type: 'line', x: 'series', y: 'actual' }]
+	marks: [{ type: 'series', x: 'series', y: 'actual' }]
 } satisfies ChartConfiguration<Revenue>;
 
 const invalidGroupedBar = {
@@ -76,26 +74,9 @@ const invalidGroupedBar = {
 		// @ts-expect-error Grouped bars require a non-null series or color channel.
 		{
 			type: 'bar',
-			direction: 'vertical',
+			variant: 'group',
 			x: 'series',
-			y: 'actual',
-			layout: { type: 'group' }
-		}
-	]
-} satisfies ChartConfiguration<Revenue>;
-
-const invalidStackedEndpoints = {
-	x: { scale: { type: 'band' } },
-	y: { scale: { type: 'linear' } },
-	marks: [
-		{
-			type: 'bar',
-			direction: 'vertical',
-			x: 'series',
-			y1: 0,
-			y2: 'actual',
-			// @ts-expect-error Explicit endpoints and stacking are mutually exclusive.
-			layout: { type: 'stack' }
+			y: 'actual'
 		}
 	]
 } satisfies ChartConfiguration<Revenue>;
@@ -104,13 +85,10 @@ const compactPolar = {
 	marks: [
 		{
 			type: 'polar',
+			variant: 'radar',
 			angle: 'series',
 			radius: 'actual',
-			domain: [0, 100],
-			area: true,
-			line: true,
-			points: true,
-			color: 'secondary'
+			domain: [0, 100]
 		}
 	]
 } satisfies ChartConfiguration<Revenue>;
@@ -119,12 +97,11 @@ void invalidTooltipField;
 void invalidNullableKey;
 void invalidCategoricalNice;
 void invalidGroupedBar;
-void invalidStackedEndpoints;
 void compactPolar;
 
 describe('Chart public type contract', () => {
 	it('accepts Svelai-native layered definitions', () => {
-		expect(definition.marks.map((mark) => mark.type)).toEqual(['area', 'line', 'point']);
+		expect(definition.marks.map((mark) => mark.type)).toEqual(['series', 'series']);
 	});
 
 	it('keeps scalar tooltip formatters field-aware', () => {
@@ -134,56 +111,16 @@ describe('Chart public type contract', () => {
 	});
 
 	it('contains every public mark discriminant', () => {
-		type Discriminant = ChartMark<ChartGeoFeature>['type'];
+		type Discriminant = ChartMark<Revenue>['type'];
 		expectTypeOf<Discriminant>().toEqualTypeOf<
-			| 'line'
-			| 'area'
+			| 'series'
 			| 'bar'
-			| 'band'
-			| 'rect'
-			| 'cell'
-			| 'point'
-			| 'rule'
-			| 'link'
-			| 'arrow'
-			| 'vector'
-			| 'tick'
-			| 'text'
-			| 'frame'
-			| 'facet'
+			| 'distribution'
+			| 'proportion'
 			| 'polar'
-			| 'geo-shape'
+			| 'range'
+			| 'matrix'
+			| 'facet'
 		>();
-	});
-
-	it('accepts structural GeoJSON without external types', () => {
-		const feature = {
-			type: 'Feature',
-			geometry: { type: 'Point', coordinates: [2.35, 48.85] },
-			properties: { city: 'Paris' }
-		} satisfies ChartGeoFeature;
-
-		expect(feature.properties.city).toBe('Paris');
-	});
-
-	it('accepts standard mutable GeoJSON positions and nullable properties', () => {
-		type StandardFeature = {
-			type: 'Feature';
-			bbox?: number[];
-			geometry: { type: 'Point'; coordinates: number[] };
-			properties: null;
-		};
-		const feature: StandardFeature = {
-			type: 'Feature',
-			bbox: [2.3, 48.8, 2.4, 48.9],
-			geometry: { type: 'Point', coordinates: [2.35, 48.85] },
-			properties: null
-		};
-		const geoDefinition = {
-			marks: [{ type: 'geo-shape', projection: { type: 'mercator' } }]
-		} satisfies ChartConfiguration<StandardFeature>;
-
-		expect(geoDefinition.marks[0].type).toBe('geo-shape');
-		expect(feature.geometry.coordinates).toEqual([2.35, 48.85]);
 	});
 });

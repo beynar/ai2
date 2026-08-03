@@ -33,24 +33,23 @@
 	const groupedMarks = [
 		{
 			type: 'bar',
-			direction: 'vertical',
+			variant: 'group',
 			x: 'quarter',
 			y: 'revenue',
 			series: 'product',
 			colorBy: 'product',
-			layout: { type: 'group', padding: 0.12 }
+			padding: 0.12
 		}
 	] as const;
 
 	const stackedMarks = [
 		{
 			type: 'bar',
-			direction: 'vertical',
+			variant: 'stack',
 			x: 'quarter',
 			y: 'revenue',
 			series: 'product',
-			colorBy: 'product',
-			layout: { type: 'stack' }
+			colorBy: 'product'
 		}
 	] as const;
 </script>

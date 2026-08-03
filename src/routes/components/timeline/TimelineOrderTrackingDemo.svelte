@@ -15,8 +15,10 @@
 		orientation = 'vertical',
 		placement = 'end',
 		variant = 'ghost',
-		size = 'large',
-		density = 'large',
+		size = 'normal',
+		density = 'normal',
+		showDateTime = true,
+		showConnectors = true,
 		loading = false
 	}: {
 		orientation?: TimelineOrientation;
@@ -24,6 +26,8 @@
 		variant?: TimelineVariant;
 		size?: Sizes;
 		density?: Density;
+		showDateTime?: boolean;
+		showConnectors?: boolean;
 		loading?: boolean;
 	} = $props();
 
@@ -84,17 +88,34 @@
 	];
 
 	const timelineItems = $derived(
-		orderEvents.map((orderEvent) =>
-			orderEvent.status === 'current' ? { ...orderEvent, loading } : orderEvent
-		)
+		orderEvents.map((orderEvent) => ({
+			...orderEvent,
+			date: showDateTime ? orderEvent.date : undefined,
+			datetime: showDateTime ? orderEvent.datetime : undefined,
+			loading: orderEvent.status === 'current' ? loading : orderEvent.loading
+		}))
 	);
 	const eventTimeSizeClass = $derived(
+		(placement === 'alternate'
+			? {
+					small: 'text-[0.5625rem]',
+					normal: 'text-[0.625rem]',
+					large: 'text-[0.6875rem]'
+				}
+			: {
+					small: 'text-[0.6875rem]',
+					normal: 'text-[0.8125rem]',
+					large: 'text-[0.9375rem]'
+				})[size]
+	);
+	const alternateDateSizeClass = $derived(
 		{
-			small: 'text-[0.6875rem]',
-			normal: 'text-[0.8125rem]',
-			large: 'text-[0.9375rem]'
+			small: '[&_[data-slot=timeline-date]]:text-[0.5625rem]',
+			normal: '[&_[data-slot=timeline-date]]:text-[0.625rem]',
+			large: '[&_[data-slot=timeline-date]]:text-[0.6875rem]'
 		}[size]
 	);
+	const isHorizontalFixed = $derived(orientation === 'horizontal' && placement !== 'alternate');
 </script>
 
 {#snippet eventTime(item: OrderEvent, isDateRow: boolean)}
@@ -114,20 +135,26 @@
 {#snippet orderItem({ item, defaultContent }: TimelineItemPayload<OrderEvent>)}
 	<div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4">
 		<div
-			class:col-span-2={orientation === 'horizontal' && placement !== 'alternate'}
+			class:col-span-2={!showDateTime || isHorizontalFixed}
+			class:grid={showDateTime && isHorizontalFixed}
 			class:opacity-55={item.status === 'upcoming'}
-			class="min-w-0"
+			class="min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 [&>[data-slot=timeline-title-row]]:col-span-2"
 		>
 			{@render defaultContent()}
+			{#if showDateTime && isHorizontalFixed}
+				{@render eventTime(item, true)}
+			{/if}
 		</div>
-		{#if orientation !== 'horizontal' || placement !== 'alternate'}
+		{#if showDateTime && !isHorizontalFixed && (orientation !== 'horizontal' || placement !== 'alternate')}
 			{@render eventTime(item, orientation === 'horizontal')}
 		{/if}
 	</div>
 {/snippet}
 
 {#snippet orderMarker({ item, color, defaultMarker }: TimelineItemPayload<OrderEvent>)}
-	{#if item.status === 'current'}
+	{#if item.loading}
+		{@render defaultMarker()}
+	{:else if item.status === 'current'}
 		<span
 			data-color={color}
 			class="relative z-10 grid size-[var(--timeline-marker-size)] shrink-0 place-items-center rounded-full bg-color text-color-contrast shadow-[0_0_0_4px_var(--color-surface)] [&>svg]:size-[58%]"
@@ -140,18 +167,25 @@
 {/snippet}
 
 {#snippet orderOpposite({ item, defaultOpposite }: TimelineItemPayload<OrderEvent>)}
-	{#if orientation === 'horizontal'}
-		<div class="flex items-baseline gap-2 whitespace-nowrap">
+	{#if showDateTime}
+		<div
+			class:flex={orientation === 'horizontal'}
+			class:items-baseline={orientation === 'horizontal'}
+			class:gap-2={orientation === 'horizontal'}
+			class="{alternateDateSizeClass} whitespace-nowrap"
+		>
 			{@render defaultOpposite()}
-			{@render eventTime(item, false)}
+			{#if orientation === 'horizontal'}
+				{@render eventTime(item, false)}
+			{/if}
 		</div>
-	{:else}
-		{@render defaultOpposite()}
 	{/if}
 {/snippet}
 
 <div class="w-full max-w-5xl rounded-2xl bg-surface p-4 sm:p-7">
-	<p class="mb-7 text-lg font-semibold text-neutral">Arriving on Tuesday, 28 July</p>
+	<p class="mb-7 text-lg font-semibold text-neutral">
+		{showDateTime ? 'Arriving on Tuesday, 28 July' : 'Order progress'}
+	</p>
 
 	{#if placement === 'alternate'}
 		<Timeline
@@ -161,6 +195,7 @@
 			{variant}
 			{size}
 			{density}
+			{showConnectors}
 			item={orderItem}
 			marker={orderMarker}
 			opposite={orderOpposite}
@@ -174,6 +209,7 @@
 			{variant}
 			{size}
 			{density}
+			{showConnectors}
 			item={orderItem}
 			marker={orderMarker}
 			aria-label="Order progress"

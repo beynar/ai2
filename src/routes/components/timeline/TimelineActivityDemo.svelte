@@ -61,7 +61,9 @@
 		{/snippet}
 
 		{#snippet marker({ item, color, defaultMarker })}
-			{#if item.activityIcon}
+			{#if item.loading}
+				{@render defaultMarker()}
+			{:else if item.activityIcon}
 				<span
 					data-color={color}
 					class="relative z-10 grid size-7 shrink-0 place-items-center rounded-full bg-color-muted text-color-muted-readable shadow-[0_0_0_3px_var(--color-surface)] [&>svg]:size-4"

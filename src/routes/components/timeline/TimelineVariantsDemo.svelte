@@ -18,7 +18,7 @@
 			id: 'review',
 			date: '10:15',
 			title: 'Review in progress',
-			description: 'The loading state stays inside the title row.',
+			description: 'The loading state replaces the marker icon.',
 			loading: true,
 			color: 'info'
 		}

@@ -43,16 +43,18 @@
 			name: 'size',
 			type: 'segmented',
 			label: 'Size',
-			value: 'large',
+			value: 'normal',
 			options: ['small', 'normal', 'large']
 		},
 		{
 			name: 'density',
 			type: 'segmented',
 			label: 'Density',
-			value: 'large',
+			value: 'normal',
 			options: ['small', 'normal', 'large']
 		},
+		{ name: 'showDateTime', type: 'switch', label: 'Date & time', value: true },
+		{ name: 'showConnectors', type: 'switch', label: 'Connectors', value: true },
 		{ name: 'loading', type: 'switch', label: 'Loading', value: false }
 	]);
 
@@ -63,6 +65,8 @@
 			variant: controls.value.variant,
 			size: controls.value.size,
 			density: controls.value.density,
+			showDateTime: controls.value.showDateTime,
+			showConnectors: controls.value.showConnectors,
 			loading: controls.value.loading
 		})
 	);
@@ -94,6 +98,8 @@
 			variant={controls.value.variant}
 			size={controls.value.size}
 			density={controls.value.density}
+			showDateTime={controls.value.showDateTime}
+			showConnectors={controls.value.showConnectors}
 			loading={controls.value.loading}
 		/>
 	</ComponentCard>
@@ -119,7 +125,7 @@
 
 		<ComponentCard
 			title="Activity feed and loading"
-			description="A typed activity feed adds relative times and optional marker icons. The final item uses the built-in loading indicator through defaultContent."
+			description="A typed activity feed adds relative times and optional marker icons. The final item delegates to the built-in loading marker."
 			code={activityCode}
 			class="!min-h-0 !items-stretch !justify-start p-3 sm:p-6"
 		>
@@ -128,7 +134,7 @@
 
 		<ComponentCard
 			title="Variants"
-			description="Ghost, card, outline, and soft change only the item surface. Size, density, color, loading, markers, and connectors keep the same contract."
+			description="Ghost, card, outline, and soft change only the item surface. Loading replaces the default marker visual with a Spinner."
 			code={variantsCode}
 			class="!min-h-0 !items-stretch !justify-start p-3 sm:p-6"
 		>

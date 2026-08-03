@@ -1,23 +1,4 @@
 import type { ChartAxisOptions, ChartScale } from '@tanstack/charts';
-import type { GeoProjectionDescriptor } from '@tanstack/charts/geo';
-import {
-	geoAlbers,
-	geoAlbersUsa,
-	geoAzimuthalEqualArea,
-	geoAzimuthalEquidistant,
-	geoConicConformal,
-	geoConicEqualArea,
-	geoConicEquidistant,
-	geoEqualEarth,
-	geoEquirectangular,
-	geoGnomonic,
-	geoIdentity,
-	geoMercator,
-	geoNaturalEarth1,
-	geoOrthographic,
-	geoStereographic,
-	geoTransverseMercator
-} from 'd3-geo';
 import {
 	scaleBand,
 	scaleLinear,
@@ -48,8 +29,8 @@ import {
 } from 'd3-shape';
 import type {
 	ChartCurve,
-	ChartGeoProjection,
 	ChartScaleDefinition,
+	ChartScatterSizeScale,
 	ChartValue
 } from './chart.props.js';
 
@@ -65,30 +46,19 @@ function configuredScale<TDomain, TScale extends { domain(values: Iterable<TDoma
 export function compileChartScale(definition: ChartScaleDefinition, path: string): CompiledScale {
 	switch (definition.type) {
 		case 'linear':
-			return configuredScale(definition.domain, () =>
-				scaleLinear().clamp(definition.clamp ?? false)
-			);
+			return configuredScale(definition.domain, () => createLinearScale(definition));
 		case 'sqrt':
-			return configuredScale(definition.domain, () => scaleSqrt().clamp(definition.clamp ?? false));
+			return configuredScale(definition.domain, () => createSqrtScale(definition));
 		case 'pow':
-			return configuredScale(definition.domain, () => {
-				const scale = scalePow().clamp(definition.clamp ?? false);
-				return definition.exponent === undefined ? scale : scale.exponent(definition.exponent);
-			});
+			return configuredScale(definition.domain, () => createPowerScale(definition));
 		case 'log':
-			return configuredScale(definition.domain, () => {
-				const scale = scaleLog().clamp(definition.clamp ?? false);
-				return definition.base === undefined ? scale : scale.base(definition.base);
-			});
+			return configuredScale(definition.domain, () => createLogScale(definition));
 		case 'symlog':
-			return configuredScale(definition.domain, () => {
-				const scale = scaleSymlog().clamp(definition.clamp ?? false);
-				return definition.constant === undefined ? scale : scale.constant(definition.constant);
-			});
+			return configuredScale(definition.domain, () => createSymlogScale(definition));
 		case 'time':
-			return configuredScale(definition.domain, () => scaleTime().clamp(definition.clamp ?? false));
+			return configuredScale(definition.domain, () => createTimeScale(definition));
 		case 'utc':
-			return configuredScale(definition.domain, () => scaleUtc().clamp(definition.clamp ?? false));
+			return configuredScale(definition.domain, () => createUtcScale(definition));
 		case 'band':
 			return configuredScale<ChartValue, ReturnType<typeof scaleBand<ChartValue>>>(
 				definition.domain,
@@ -114,6 +84,112 @@ export function compileChartScale(definition: ChartScaleDefinition, path: string
 		default:
 			return unsupportedScale(definition, path);
 	}
+}
+
+export function invertChartContinuousScale(
+	definition: Exclude<
+		ChartScaleDefinition,
+		Extract<ChartScaleDefinition, { type: 'band' | 'point' }>
+	>,
+	domain: readonly ChartValue[],
+	range: readonly [number, number],
+	coordinate: number,
+	path: string
+): number | Date {
+	switch (definition.type) {
+		case 'linear':
+			return createLinearScale(definition)
+				.domain(numericDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+		case 'sqrt':
+			return createSqrtScale(definition)
+				.domain(numericDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+		case 'pow':
+			return createPowerScale(definition)
+				.domain(numericDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+		case 'log':
+			return createLogScale(definition)
+				.domain(numericDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+		case 'symlog':
+			return createSymlogScale(definition)
+				.domain(numericDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+		case 'time':
+			return createTimeScale(definition)
+				.domain(dateDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+		case 'utc':
+			return createUtcScale(definition)
+				.domain(dateDomain(domain, path))
+				.range(range)
+				.invert(coordinate);
+	}
+}
+
+function createLinearScale(definition: Extract<ChartScaleDefinition, { type: 'linear' }>) {
+	return scaleLinear().clamp(definition.clamp ?? false);
+}
+
+function createSqrtScale(definition: Extract<ChartScaleDefinition, { type: 'sqrt' }>) {
+	return scaleSqrt().clamp(definition.clamp ?? false);
+}
+
+function createPowerScale(definition: Extract<ChartScaleDefinition, { type: 'pow' }>) {
+	const scale = scalePow().clamp(definition.clamp ?? false);
+	return definition.exponent === undefined ? scale : scale.exponent(definition.exponent);
+}
+
+function createLogScale(definition: Extract<ChartScaleDefinition, { type: 'log' }>) {
+	const scale = scaleLog().clamp(definition.clamp ?? false);
+	return definition.base === undefined ? scale : scale.base(definition.base);
+}
+
+function createSymlogScale(definition: Extract<ChartScaleDefinition, { type: 'symlog' }>) {
+	const scale = scaleSymlog().clamp(definition.clamp ?? false);
+	return definition.constant === undefined ? scale : scale.constant(definition.constant);
+}
+
+function createTimeScale(definition: Extract<ChartScaleDefinition, { type: 'time' }>) {
+	return scaleTime().clamp(definition.clamp ?? false);
+}
+
+function createUtcScale(definition: Extract<ChartScaleDefinition, { type: 'utc' }>) {
+	return scaleUtc().clamp(definition.clamp ?? false);
+}
+
+function numericDomain(values: readonly ChartValue[], path: string): readonly [number, number] {
+	if (
+		values.length === 2 &&
+		typeof values[0] === 'number' &&
+		Number.isFinite(values[0]) &&
+		typeof values[1] === 'number' &&
+		Number.isFinite(values[1])
+	) {
+		return [values[0], values[1]];
+	}
+	throw new TypeError(`[Chart] ${path} must resolve to two finite numbers.`);
+}
+
+function dateDomain(values: readonly ChartValue[], path: string): readonly [Date, Date] {
+	if (
+		values.length === 2 &&
+		values[0] instanceof Date &&
+		Number.isFinite(values[0].getTime()) &&
+		values[1] instanceof Date &&
+		Number.isFinite(values[1].getTime())
+	) {
+		return [values[0], values[1]];
+	}
+	throw new TypeError(`[Chart] ${path} must resolve to two valid dates.`);
 }
 
 export function compileChartCurve(curve: ChartCurve, path: string): CurveFactory {
@@ -151,46 +227,184 @@ export function compileChartCurve(curve: ChartCurve, path: string): CurveFactory
 	}
 }
 
-export function compileChartProjection(
-	projection: ChartGeoProjection,
+const DEFAULT_SCATTER_SIZE_RANGE = [3, 18] as const;
+
+type NumericChannelAccessor<TRow> = (
+	row: TRow,
+	index: number,
+	rows: readonly TRow[]
+) => number | null | undefined;
+
+type ResolvedScatterSizeScale = Exclude<ChartScatterSizeScale, string>;
+
+export function compileChartSizeChannel<TRow>(
+	channel: NumericChannelAccessor<TRow>,
+	definition: ChartScatterSizeScale = 'sqrt',
+	path = 'sizeScale'
+): NumericChannelAccessor<TRow> {
+	const resolved = resolveScatterSizeScale(definition, path);
+	let cachedRows: readonly TRow[] | undefined;
+	let cachedRadii: readonly (number | null | undefined)[] = [];
+
+	return (_row, index, rows) => {
+		if (rows !== cachedRows) {
+			const values = rows.map((row, rowIndex) => channel(row, rowIndex, rows));
+			cachedRadii = mapScatterSizes(values, resolved, path);
+			cachedRows = rows;
+		}
+		return cachedRadii[index];
+	};
+}
+
+function resolveScatterSizeScale(
+	definition: ChartScatterSizeScale,
 	path: string
-): GeoProjectionDescriptor['type'] {
-	switch (projection) {
-		case 'albers':
-			return geoAlbers;
-		case 'albers-usa':
-			return geoAlbersUsa;
-		case 'azimuthal-equal-area':
-			return geoAzimuthalEqualArea;
-		case 'azimuthal-equidistant':
-			return geoAzimuthalEquidistant;
-		case 'conic-conformal':
-			return geoConicConformal;
-		case 'conic-equal-area':
-			return geoConicEqualArea;
-		case 'conic-equidistant':
-			return geoConicEquidistant;
-		case 'equal-earth':
-			return geoEqualEarth;
-		case 'equirectangular':
-			return geoEquirectangular;
-		case 'gnomonic':
-			return geoGnomonic;
-		case 'identity':
-			return geoIdentity;
-		case 'mercator':
-			return geoMercator;
-		case 'natural-earth-1':
-			return geoNaturalEarth1;
-		case 'orthographic':
-			return geoOrthographic;
-		case 'stereographic':
-			return geoStereographic;
-		case 'transverse-mercator':
-			return geoTransverseMercator;
-		default:
-			return unsupportedProjection(projection, path);
+): ResolvedScatterSizeScale {
+	if (typeof definition === 'string') {
+		switch (definition) {
+			case 'linear':
+			case 'sqrt':
+			case 'log':
+			case 'exp':
+				return { type: definition };
+			default:
+				throw new TypeError(`[Chart] ${path} "${definition}" is not supported.`);
+		}
 	}
+	if (typeof definition !== 'object' || definition === null) {
+		throw new TypeError(`[Chart] ${path} must be a shortcut or scale definition.`);
+	}
+	validateScatterSizeScale(definition, path);
+	return definition;
+}
+
+function mapScatterSizes(
+	values: readonly (number | null | undefined)[],
+	definition: ResolvedScatterSizeScale,
+	path: string
+): readonly (number | null | undefined)[] {
+	const observed = values.filter(
+		(value): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0
+	);
+	const mapRadius = createScatterSizeMapper(definition, observed, path);
+
+	return values.map((value) => {
+		if (value === null || value === undefined) return value;
+		if (!Number.isFinite(value) || value < 0) return undefined;
+		if (definition.type === 'log' && value === 0) return 0;
+		const radius = mapRadius(value);
+		return Number.isFinite(radius) && radius >= 0 ? radius : undefined;
+	});
+}
+
+function createScatterSizeMapper(
+	definition: ResolvedScatterSizeScale,
+	values: readonly number[],
+	path: string
+): (value: number) => number {
+	const domain = definition.domain ?? inferScatterSizeDomain(definition.type, values);
+	const range = definition.range ?? DEFAULT_SCATTER_SIZE_RANGE;
+	validateScatterSizeDomain(domain, definition.type, `${path}.domain`);
+
+	switch (definition.type) {
+		case 'linear':
+			return scaleLinear().domain(domain).range(range);
+		case 'sqrt':
+			return scaleSqrt().domain(domain).range(range);
+		case 'log':
+			return scaleLog()
+				.base(definition.base ?? 10)
+				.domain(domain)
+				.range(range);
+		case 'exp':
+			return createExponentialSizeMapper(domain, range, definition.base ?? Math.E);
+	}
+}
+
+function inferScatterSizeDomain(
+	type: ResolvedScatterSizeScale['type'],
+	values: readonly number[]
+): readonly [number, number] {
+	if (type === 'log') {
+		const positiveValues = values.filter((value) => value > 0);
+		if (positiveValues.length === 0) return [1, 10];
+		const minimum = Math.min(...positiveValues);
+		const maximum = Math.max(...positiveValues);
+		return minimum === maximum ? [minimum, minimum * 10] : [minimum, maximum];
+	}
+
+	const maximum = values.length === 0 ? 1 : Math.max(...values);
+	return [0, maximum === 0 ? 1 : maximum];
+}
+
+function createExponentialSizeMapper(
+	domain: readonly [number, number],
+	range: readonly [number, number],
+	base: number
+): (value: number) => number {
+	const [domainMinimum, domainMaximum] = domain;
+	const [rangeMinimum, rangeMaximum] = range;
+	if (domainMinimum === domainMaximum) {
+		const midpoint = (rangeMinimum + rangeMaximum) / 2;
+		return () => midpoint;
+	}
+	const logarithm = Math.log(base);
+	const denominator = Math.expm1(logarithm);
+	return (value) => {
+		const position = (value - domainMinimum) / (domainMaximum - domainMinimum);
+		const transformed = Math.expm1(logarithm * position) / denominator;
+		return rangeMinimum + transformed * (rangeMaximum - rangeMinimum);
+	};
+}
+
+function validateScatterSizeScale(definition: ResolvedScatterSizeScale, path: string): void {
+	if (
+		definition.type !== 'linear' &&
+		definition.type !== 'sqrt' &&
+		definition.type !== 'log' &&
+		definition.type !== 'exp'
+	) {
+		throw new TypeError(`[Chart] ${path}.type "${String(definition.type)}" is not supported.`);
+	}
+	if (definition.domain) {
+		validateScatterSizeDomain(definition.domain, definition.type, `${path}.domain`);
+	}
+	if (definition.range) validateFinitePair(definition.range, `${path}.range`, true);
+	if ('base' in definition && definition.base !== undefined) {
+		if (!Number.isFinite(definition.base) || definition.base <= 1) {
+			throw new TypeError(`[Chart] ${path}.base must be a finite number greater than 1.`);
+		}
+	}
+}
+
+function validateScatterSizeDomain(
+	values: readonly [number, number],
+	type: ResolvedScatterSizeScale['type'],
+	path: string
+): void {
+	validateFinitePair(values, path, true);
+	if (values[0] > values[1]) {
+		throw new TypeError(`[Chart] ${path} minimum must not exceed its maximum.`);
+	}
+	if (type === 'log' && values.some((value) => value <= 0)) {
+		throw new TypeError(`[Chart] ${path} must contain two positive numbers for a log scale.`);
+	}
+}
+
+function validateFinitePair(
+	values: readonly [number, number],
+	path: string,
+	requireNonnegative: boolean
+): void {
+	if (
+		Array.isArray(values) &&
+		values.length === 2 &&
+		values.every((value) => Number.isFinite(value) && (!requireNonnegative || value >= 0))
+	) {
+		return;
+	}
+	const requirement = requireNonnegative ? 'finite non-negative numbers' : 'finite numbers';
+	throw new TypeError(`[Chart] ${path} must contain two ${requirement}.`);
 }
 
 function unsupportedScale(definition: never, path: string): never {
@@ -201,10 +415,6 @@ function unsupportedScale(definition: never, path: string): never {
 
 function unsupportedCurve(curve: never, path: string): never {
 	throw new TypeError(`[Chart] ${path} "${String(curve)}" is not supported.`);
-}
-
-function unsupportedProjection(projection: never, path: string): never {
-	throw new TypeError(`[Chart] ${path} "${String(projection)}" is not supported.`);
 }
 
 function readDiscriminant(value: unknown): unknown {

@@ -27,7 +27,7 @@
 	} as const;
 	const marks = [
 		{
-			type: 'line',
+			type: 'series',
 			x: 'minute',
 			y: 'milliseconds',
 			curve: 'monotone-x',

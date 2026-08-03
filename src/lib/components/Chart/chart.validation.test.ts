@@ -6,19 +6,14 @@ import type { ChartProps } from './chart.props.js';
 
 type ChartConfiguration<TRow extends object> = Pick<
 	ChartProps<TRow>,
-	'marks' | 'x' | 'y' | 'guides' | 'clip' | 'margin' | 'palette' | 'tooltip'
+	'marks' | 'x' | 'y' | 'guides' | 'clip' | 'frame' | 'margin' | 'palette' | 'tooltip'
 >;
 
-type Row = {
-	category: string;
-	group: string;
-	value: number;
-	end: number;
-};
+type Row = { id: string; category: string; group: string; value: number };
 
 const rows: readonly Row[] = [
-	{ category: 'A', group: 'First', value: 2, end: 4 },
-	{ category: 'B', group: 'Second', value: 3, end: 5 }
+	{ id: 'a', category: 'A', group: 'First', value: 2 },
+	{ id: 'b', category: 'B', group: 'Second', value: 3 }
 ];
 
 const RowChart = Chart as Component<ChartProps<Row>>;
@@ -52,7 +47,7 @@ describe('Chart configuration errors', () => {
 			'missing axis',
 			{
 				x: { scale: { type: 'band' } },
-				marks: [{ type: 'bar', direction: 'vertical', x: 'category', y: 'value' }]
+				marks: [{ type: 'bar', x: 'category', y: 'value' }]
 			},
 			'[Chart] y is required by marks[0].'
 		],
@@ -60,22 +55,26 @@ describe('Chart configuration errors', () => {
 			'duplicate IDs',
 			{
 				marks: [
-					{ type: 'frame', id: 'plot' },
-					{ type: 'frame', id: 'plot' }
+					{ type: 'polar', variant: 'radar', id: 'plot', angle: 'category', radius: 'value' },
+					{ type: 'polar', variant: 'radar', id: 'plot', angle: 'category', radius: 'value' }
 				]
 			},
 			'[Chart] marks[1].id duplicates marks[0].id "plot".'
 		],
 		[
 			'empty palette',
-			{ marks: [{ type: 'frame' }], palette: [] },
+			{
+				marks: [{ type: 'polar', variant: 'radar', angle: 'category', radius: 'value' }],
+				palette: []
+			},
 			'[Chart] palette must contain at least one color.'
 		],
 		[
 			'categorical nicening',
 			{
 				x: { scale: { type: 'band' }, nice: true },
-				marks: [{ type: 'band', axis: 'x', value: 'category' }]
+				y: { scale: { type: 'linear' } },
+				marks: [{ type: 'bar', x: 'category', y: 'value' }]
 			},
 			'[Chart] x.nice is not supported by the "band" scale.'
 		],
@@ -87,32 +86,29 @@ describe('Chart configuration errors', () => {
 				marks: [
 					{
 						type: 'bar',
-						direction: 'vertical',
+						variant: 'group',
 						x: 'category',
-						y: 'value',
-						layout: { type: 'group' }
+						y: 'value'
 					}
 				]
 			},
-			'[Chart] marks[0].layout with type "group" requires marks[0].series or marks[0].colorBy.'
+			'[Chart] marks[0].variant "group" requires marks[0].series or marks[0].colorBy.'
 		],
 		[
-			'endpoints with a layout',
+			'annotation without parent key',
 			{
 				x: { scale: { type: 'band' } },
 				y: { scale: { type: 'linear' } },
 				marks: [
 					{
 						type: 'bar',
-						direction: 'vertical',
 						x: 'category',
-						y1: 'value',
-						y2: 'end',
-						layout: { type: 'stack' }
+						y: 'value',
+						annotations: [{ type: 'marker', target: { key: 'a' } }]
 					}
 				]
 			},
-			'[Chart] marks[0].layout cannot be combined with explicit y-axis endpoints.'
+			'[Chart] marks[0].annotations[0].target.key requires the parent mark to define key.'
 		]
 	] as const)('rejects %s', (_name, definition, message) => {
 		const error = compileInvalidDefinition(definition);
@@ -120,28 +116,13 @@ describe('Chart configuration errors', () => {
 		expect((error as Error).message).toBe(message);
 	});
 
-	test.each([
-		[
-			'centered rect',
-			{
-				x: { scale: { type: 'linear' } },
-				y: { scale: { type: 'band' } },
-				marks: [{ type: 'rect', x: 'value', y: 'group' }]
-			},
-			'[Chart] marks[0].x requires x.scale.type to be "band".'
-		],
-		[
-			'cell',
-			{
-				x: { scale: { type: 'band' } },
-				y: { scale: { type: 'point' } },
-				marks: [{ type: 'cell', x: 'category', y: 'group' }]
-			},
-			'[Chart] marks[0].y requires y.scale.type to be "band".'
-		]
-	] as const)('rejects an invisible %s configuration', (_name, definition, message) => {
-		const error = compileInvalidDefinition(definition);
+	test('rejects a matrix without two band scales', () => {
+		const error = compileInvalidDefinition({
+			x: { scale: { type: 'band' } },
+			y: { scale: { type: 'point' } },
+			marks: [{ type: 'matrix', x: 'category', y: 'group' }]
+		});
 		expect(error).toBeInstanceOf(TypeError);
-		expect((error as Error).message).toBe(message);
+		expect((error as Error).message).toBe('[Chart] marks[0].y requires y.scale.type to be "band".');
 	});
 });

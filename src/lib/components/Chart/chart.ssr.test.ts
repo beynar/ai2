@@ -18,7 +18,7 @@ const data: readonly Revenue[] = [
 const chart = {
 	x: { scale: { type: 'utc' } },
 	y: { scale: { type: 'linear' } },
-	marks: [{ type: 'line', x: 'month', y: 'value' }]
+	marks: [{ type: 'series', x: 'month', y: 'value' }]
 } satisfies Pick<ChartProps<Revenue>, 'marks' | 'x' | 'y'>;
 
 const RevenueChart = Chart as Component<ChartProps<Revenue>>;

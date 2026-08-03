@@ -1,4 +1,5 @@
 import type { Slot } from '$lib/components/Slot/slot.js';
+import type { Messages } from '$lib/i18n/en.js';
 import type { WithAttachments } from '$lib/types/props.js';
 import type { Colors, Density, Sizes } from '$lib/types/theme.js';
 import type { Snippet } from 'svelte';
@@ -23,7 +24,7 @@ export type TimelineItem = {
 	description?: Slot;
 	/** Replaces the default dot inside the axis marker. */
 	icon?: Slot;
-	/** Shows a Spinner at the trailing edge of the default title row. */
+	/** Replaces the default marker visual with a Spinner. */
 	loading?: boolean;
 	/** Marker and outline or soft surface accent. */
 	color?: Colors;
@@ -83,8 +84,12 @@ export type TimelineProps<Item extends TimelineItem = TimelineItem> = WithAttach
 			color?: Colors;
 			/** Default outgoing connector accent. */
 			connectorColor?: Colors;
+			/** Shows connector segments between markers. */
+			showConnectors?: boolean;
 			/** Applies the shared inline scroll fade while a horizontal timeline overflows. */
 			scrollFade?: boolean;
+			/** Per-instance translations merged over the global i18n catalog. */
+			i18n?: Partial<Messages>;
 			/** Replaces content inside the module-owned item surface. */
 			item?: Snippet<[TimelineItemPayload<Item>]>;
 			/** Replaces the marker visual, but not its axis anchor. */

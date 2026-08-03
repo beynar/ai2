@@ -32,13 +32,14 @@ export function resolveTimelineItems<Item extends TimelineItem>(
 	const explicitIds = new Set<string | number>();
 
 	return items.map((timelineItem, index) => {
-		if (timelineItem.id !== undefined) {
-			if (explicitIds.has(timelineItem.id)) {
-				throw new TypeError(
-					`Timeline item IDs must be unique. Duplicate ID ${formatTimelineId(timelineItem.id)} at index ${index}.`
-				);
-			}
-			explicitIds.add(timelineItem.id);
+		const explicitId = timelineItem.id;
+		if (explicitId !== undefined && explicitIds.has(explicitId)) {
+			throw new TypeError(
+				`Timeline item IDs must be unique. Duplicate ID ${formatTimelineId(explicitId)} at index ${index}.`
+			);
+		}
+		if (explicitId !== undefined) {
+			explicitIds.add(explicitId);
 		}
 
 		if (placement !== 'alternate' && timelineItem.side !== undefined) {
@@ -47,14 +48,15 @@ export function resolveTimelineItems<Item extends TimelineItem>(
 			);
 		}
 
-		const side =
-			placement === 'alternate'
-				? (timelineItem.side ?? (index % 2 === 0 ? 'end' : 'start'))
-				: placement;
-		const key =
-			timelineItem.id === undefined
-				? `index:${index}`
-				: `id:${typeof timelineItem.id}:${timelineItem.id}`;
+		let side: TimelineSide = placement;
+		if (placement === 'alternate') {
+			side = timelineItem.side ?? (index % 2 === 0 ? 'end' : 'start');
+		}
+
+		let key = `index:${index}`;
+		if (explicitId !== undefined) {
+			key = `id:${typeof explicitId}:${explicitId}`;
+		}
 
 		return {
 			key,

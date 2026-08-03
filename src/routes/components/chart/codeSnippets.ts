@@ -5,23 +5,30 @@ export const usageCode = `<script lang="ts">
     quarter: string;
     product: string;
     value: number;
+    low: number;
+    high: number;
   };
 
   const revenue: readonly Revenue[] = [
-    { quarter: 'Q1', product: 'Platform', value: 42 },
-    { quarter: 'Q2', product: 'Platform', value: 51 },
-    { quarter: 'Q1', product: 'Services', value: 29 },
-    { quarter: 'Q2', product: 'Services', value: 34 }
+    { quarter: 'Q1', product: 'Platform', value: 42, low: 37, high: 47 },
+    { quarter: 'Q2', product: 'Platform', value: 51, low: 46, high: 56 },
+    { quarter: 'Q1', product: 'Services', value: 29, low: 24, high: 34 },
+    { quarter: 'Q2', product: 'Services', value: 34, low: 29, high: 39 }
   ];
 
   const x = { scale: { type: 'point' }, axis: { label: 'Quarter' } } as const;
   const y = { scale: { type: 'linear' }, grid: true } as const;
   const marks = [{
-      type: 'line',
+      type: 'series',
       x: 'quarter',
       y: 'value',
       series: 'product',
       colorBy: 'product',
+      interval: { lower: 'low', upper: 'high' },
+      analysis: [
+        { type: 'reference', statistic: 'median' },
+        { type: 'rolling', statistic: 'mean', window: 2 }
+      ],
       points: true
     }] as const;
 </script>
@@ -32,6 +39,7 @@ export const usageCode = `<script lang="ts">
   {y}
   {marks}
   tooltip
+  viewport
   ariaLabel="Quarterly revenue line chart"
   initialDimensions={{ width: 960, height: 480 }}
 />`;
@@ -43,12 +51,14 @@ export const layeredCode = `<script lang="ts">
     month: Date;
     actual: number;
     forecast: number;
+    forecastLow: number;
+    forecastHigh: number;
   };
 
   const revenue: readonly Revenue[] = [
-    { month: new Date('2026-01-01'), actual: 42, forecast: 40 },
-    { month: new Date('2026-02-01'), actual: 48, forecast: 45 },
-    { month: new Date('2026-03-01'), actual: 46, forecast: 52 }
+    { month: new Date('2026-01-01'), actual: 42, forecast: 40, forecastLow: 35, forecastHigh: 45 },
+    { month: new Date('2026-02-01'), actual: 48, forecast: 45, forecastLow: 39, forecastHigh: 51 },
+    { month: new Date('2026-03-01'), actual: 46, forecast: 52, forecastLow: 45, forecastHigh: 59 }
   ];
 
   const x = { scale: { type: 'utc' }, axis: { label: 'Month' } } as const;
@@ -59,15 +69,21 @@ export const layeredCode = `<script lang="ts">
     } as const;
   const marks = [
       {
-        type: 'area',
-        direction: 'vertical',
+        type: 'series',
+        id: 'Forecast',
         x: 'month',
         y: 'forecast',
-        fill: 'primary',
-        fillOpacity: 0.14
+        stroke: 'secondary',
+        interval: {
+          lower: 'forecastLow',
+          upper: 'forecastHigh',
+          fill: 'secondary',
+          fillOpacity: 0.18
+        }
       },
       {
-        type: 'line',
+        type: 'series',
+        id: 'Actual',
         x: 'month',
         y: 'actual',
         stroke: 'primary',
@@ -110,22 +126,21 @@ export const barsCode = `<script lang="ts">
 
   const groupedMarks = [{
       type: 'bar',
-      direction: 'vertical',
+      variant: 'group',
       x: 'quarter',
       y: 'revenue',
       series: 'product',
       colorBy: 'product',
-      layout: { type: 'group', padding: 0.12 }
+      padding: 0.12
     }] as const;
 
   const stackedMarks = [{
       type: 'bar',
-      direction: 'vertical',
+      variant: 'stack',
       x: 'quarter',
       y: 'revenue',
       series: 'product',
-      colorBy: 'product',
-      layout: { type: 'stack' }
+      colorBy: 'product'
     }] as const;
 </script>
 
@@ -165,6 +180,7 @@ export const polarCode = `<script lang="ts">
 
   const marks = [{
       type: 'polar',
+      variant: 'radar',
       angle: 'name',
       radius: 'score',
       domain: [0, 100],
@@ -200,7 +216,7 @@ export const clientOnlyCode = `<script lang="ts">
       grid: true
     } as const;
   const marks = [{
-      type: 'line',
+      type: 'series',
       x: 'minute',
       y: 'milliseconds',
       curve: 'monotone-x',

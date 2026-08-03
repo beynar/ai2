@@ -17,6 +17,7 @@
 	const marks = [
 		{
 			type: 'polar',
+			variant: 'radar',
 			angle: 'name',
 			radius: 'score',
 			domain: [0, 100],
