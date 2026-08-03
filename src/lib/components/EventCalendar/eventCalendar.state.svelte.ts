@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unsafe-declaration-merging -- Descriptor binding follows the established Svelai state-class pattern. */
 /* eslint-disable svelte/prefer-svelte-reactivity -- Dates are immutable snapshots; Maps and Sets are non-reactive local validation indexes. */
 import { untrack } from 'svelte';
+import type { Messages } from '$lib/i18n/en.js';
+import type { Density } from '$lib/types/theme.js';
 import { bind } from '$lib/utils/state.svelte.js';
 import {
 	addCivilDays,
@@ -21,7 +23,9 @@ import {
 	reconcileAnchorDay,
 	startOfZonedDay
 } from './eventCalendar.date.js';
+import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
 import { EventCalendarError } from './eventCalendar.error.js';
+import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 import {
 	EventCalendarInteractionsController,
 	type EventCalendarInteractionStatus
@@ -32,10 +36,19 @@ import {
 	decodeRecurringOccurrenceKey,
 	type EventCalendarItemIndex
 } from './eventCalendar.items.js';
+import type {
+	EventCalendarAllDayConversionOptions,
+	EventCalendarAvailabilityOptions,
+	EventCalendarInteractionOptions,
+	EventCalendarMonthOptions,
+	EventCalendarRecurrenceOptions,
+	EventCalendarTimeGridOptions
+} from './eventCalendar.props.js';
 import {
 	EventCalendarResourceIndex,
 	type EventCalendarResourceModel
 } from './eventCalendar.resources.js';
+import type { EventCalendarTheme } from './eventCalendar.theme.js';
 import type {
 	EventCalendarBusinessHours,
 	EventCalendarChange,
@@ -70,6 +83,23 @@ const EVENT_CALENDAR_VIEWS: readonly EventCalendarView[] = [
 	'resource'
 ];
 const VIEW_SET = new Set<EventCalendarView>(EVENT_CALENDAR_VIEWS);
+
+const DEFAULT_CREATE_ACTIVATION: EventCalendarCreateActivation = Object.freeze({
+	distancePx: 5,
+	touchDelayMs: 300,
+	touchTolerancePx: 8
+});
+
+const DEFAULT_INTERACTIONS: EventCalendarInteractions = Object.freeze({
+	drag: true,
+	resize: true,
+	selectSlot: true,
+	keyboard: true,
+	singlePointer: true,
+	clipboard: true
+});
+
+const EMPTY_BUSINESS_HOURS: readonly never[] = Object.freeze([]);
 
 type EventCalendarRuntimeInteractions = EventCalendarInteractions & {
 	maintainDurationOnAllDayChange: boolean;
@@ -122,46 +152,29 @@ export type EventCalendarStateOptions<
 	set selection(value: EventCalendarSelection);
 	resources: EventCalendarResource<TResourceFields>[];
 	timeZone: string;
-	locale: string;
-	weekStartsOn: EventCalendarWeekday;
-	fixedWeeks: boolean;
-	showOutsideDays: boolean;
+	messages: Messages;
+	density: Density;
+	classes: EventCalendarTheme;
+	localeOption?: string;
+	weekStartsOnOption?: EventCalendarWeekday;
+	monthOptions?: EventCalendarMonthOptions;
 	showWeekends: boolean;
 	weekendDays: EventCalendarWeekday[];
 	agendaDayCount: number;
 	validRange?: EventCalendarRange;
-	dayStartHour: number;
-	dayEndHour: number;
-	interval: number;
-	slotDuration: number;
-	snapDuration: number;
-	defaultTimedItemDuration: number;
-	defaultAllDayItemDuration: number;
-	scrollToHour: number;
-	nowIndicatorInterval: number;
-	maxItemsPerCell: number | 'auto';
-	createActivation: EventCalendarCreateActivation;
-	businessHours: EventCalendarBusinessHours[];
-	offDays: boolean | EventCalendarOffDaysConfig;
+	timeGridOptions?: EventCalendarTimeGridOptions;
+	allDayConversionOptions?: EventCalendarAllDayConversionOptions;
+	availabilityOptions?: EventCalendarAvailabilityOptions;
 	disabled: boolean;
 	loading: boolean;
 	direction: 'ltr' | 'rtl';
-	interactions: EventCalendarRuntimeInteractions;
+	interactionOptions?: EventCalendarInteractionOptions;
 	allowOverlap: boolean | EventCalendarOverlapPredicate<TItemFields>;
-	constrainToBusinessHours: boolean;
 	canUpdateItem?: (proposal: EventCalendarProposedUpdate<TItemFields>) => boolean;
 	onItemUpdate?: (proposal: EventCalendarProposedUpdate<TItemFields>) => EventCalendarUpdateResult;
 	canSelectSlot?: (slot: EventCalendarSlot) => boolean;
-	recurrenceEditScope: 'occurrence' | 'series' | 'disabled';
-	clipboard: boolean;
+	recurrenceOptions?: EventCalendarRecurrenceOptions<TItemFields>;
 	historyLimit: number;
-	getOccurrenceExceptionId?: (
-		seriesItem: EventCalendarItem<TItemFields>,
-		occurrence: EventCalendarOccurrence<TItemFields>
-	) => string;
-	expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
-	onOccurrenceKeysRemap?: (remap: (key: string) => string) => void;
-	onInteractionStatus?: (status: EventCalendarInteractionStatus<TItemFields>) => void;
 	onItemsChange?: (
 		items: EventCalendarItem<TItemFields>[],
 		change: EventCalendarChange<TItemFields>
@@ -173,7 +186,6 @@ export type EventCalendarStateOptions<
 	onDateChange?: (date: Date) => void;
 	onDayCountChange?: (dayCount: number) => void;
 	onSelectionChange?: (selection: EventCalendarSelection) => void;
-	onMissingSelection?: (occurrenceKey: string) => void;
 };
 
 export interface EventCalendarState<
@@ -181,12 +193,13 @@ export interface EventCalendarState<
 	TResourceFields extends object
 > extends EventCalendarStateOptions<TItemFields, TResourceFields> {}
 
-/** Bindable calendar coordinator. It is deliberately free of DOM and layout access. */
+/** Bindable calendar owner. Child owners keep DOM and interaction details out of this coordinator. */
 export class EventCalendarState<
 	TItemFields extends object = Record<never, never>,
 	TResourceFields extends object = Record<never, never>
 > {
 	readonly interaction: EventCalendarInteractionsController<TItemFields, TResourceFields>;
+	readonly a11y: EventCalendarA11y<TItemFields, TResourceFields>;
 	isMounted = $state(false);
 	todayInstant = $state<Date | null>(null);
 	nowInstant = $state<Date | null>(null);
@@ -198,8 +211,52 @@ export class EventCalendarState<
 	private readonly resourceIndex = new EventCalendarResourceIndex<TResourceFields>();
 	private validatedItems: readonly EventCalendarItem<TItemFields>[] | null = null;
 	private validatedRecurrenceExpander?: EventCalendarRecurrenceExpander<TItemFields>;
-	private cachedDateProfile: EventCalendarDateProfile | null = null;
-	private cachedDateProfileInputs: readonly unknown[] | null = null;
+
+	readonly locale = $derived(this.localeOption ?? this.messages.locale);
+	readonly weekStartsOn = $derived(this.weekStartsOnOption ?? getLocaleWeekStartsOn(this.locale));
+	readonly fixedWeeks = $derived(this.monthOptions?.fixedWeeks ?? true);
+	readonly showOutsideDays = $derived(this.monthOptions?.showOutsideDays ?? true);
+	readonly showWeekNumbers = $derived(this.monthOptions?.showWeekNumbers ?? false);
+	readonly maxItemsPerCell = $derived(this.monthOptions?.maxItemsPerCell ?? 'auto');
+	readonly dayStartHour = $derived(this.timeGridOptions?.startHour ?? 0);
+	readonly dayEndHour = $derived(this.timeGridOptions?.endHour ?? 24);
+	readonly interval = $derived(this.timeGridOptions?.labelIntervalMinutes ?? 60);
+	readonly slotDuration = $derived(this.timeGridOptions?.slotClickDurationMinutes ?? 30);
+	readonly snapDuration = $derived(this.timeGridOptions?.snapDurationMinutes ?? 15);
+	readonly scrollToHour = $derived(this.timeGridOptions?.scrollToHour ?? 7);
+	readonly nowIndicatorInterval = $derived(this.timeGridOptions?.nowIndicatorRefreshMs ?? 30_000);
+	readonly defaultTimedItemDuration = $derived(
+		this.allDayConversionOptions?.timedDurationMinutes ?? 60
+	);
+	readonly defaultAllDayItemDuration = $derived(
+		this.allDayConversionOptions?.allDayDurationDays ?? 1
+	);
+	readonly offDays = $derived(this.availabilityOptions?.offDays ?? false);
+	readonly businessHours: readonly EventCalendarBusinessHours[] = $derived(
+		this.availabilityOptions?.businessHours ?? EMPTY_BUSINESS_HOURS
+	);
+	readonly constrainToBusinessHours = $derived(
+		this.availabilityOptions?.constrainMutations ?? false
+	);
+	readonly recurrenceEditScope = $derived(this.recurrenceOptions?.editScope ?? 'occurrence');
+	readonly getOccurrenceExceptionId = $derived(this.recurrenceOptions?.getExceptionId);
+	readonly expandRecurrence: EventCalendarRecurrenceExpander<TItemFields> | undefined = $derived(
+		this.recurrenceOptions?.expand
+	);
+	readonly createActivation: EventCalendarCreateActivation = $derived({
+		...DEFAULT_CREATE_ACTIVATION,
+		...this.interactionOptions?.createActivation
+	});
+	readonly interactions: EventCalendarRuntimeInteractions = $derived({
+		drag: this.interactionOptions?.drag ?? DEFAULT_INTERACTIONS.drag,
+		resize: this.interactionOptions?.resize ?? DEFAULT_INTERACTIONS.resize,
+		selectSlot: this.interactionOptions?.selectSlot ?? DEFAULT_INTERACTIONS.selectSlot,
+		keyboard: this.interactionOptions?.keyboard ?? DEFAULT_INTERACTIONS.keyboard,
+		singlePointer: this.interactionOptions?.singlePointer ?? DEFAULT_INTERACTIONS.singlePointer,
+		clipboard: this.interactionOptions?.clipboard ?? DEFAULT_INTERACTIONS.clipboard,
+		maintainDurationOnAllDayChange: this.allDayConversionOptions?.preserveDuration ?? false
+	});
+	readonly clipboard = $derived(this.interactions.clipboard);
 
 	get enabledViews(): readonly EventCalendarView[] {
 		return getEnabledViews(this.views, this.validateResourceCollection() > 0);
@@ -210,34 +267,12 @@ export class EventCalendarState<
 	}
 
 	get dateProfile(): EventCalendarDateProfile {
-		const inputs = this.getDateProfileInputs();
-		if (
-			this.cachedDateProfile &&
-			this.cachedDateProfileInputs?.every((value, index) => value === inputs[index])
-		) {
-			return this.cachedDateProfile;
-		}
-		this.cachedDateProfile = this.createProfile(this.view, this.date, this.dayCount);
-		this.cachedDateProfileInputs = inputs;
-		return this.cachedDateProfile;
+		return this.derivedDateProfile;
 	}
 
-	private getDateProfileInputs(): readonly unknown[] {
-		return [
-			this.view,
-			this.date,
-			this.dayCount,
-			this.timeZone,
-			this.locale,
-			this.weekStartsOn,
-			this.fixedWeeks,
-			this.showOutsideDays,
-			this.showWeekends,
-			this.weekendDays,
-			this.agendaDayCount,
-			this.validRange
-		];
-	}
+	private readonly derivedDateProfile = $derived.by(() =>
+		this.createProfile(this.view, this.date, this.dayCount)
+	);
 
 	get itemIndex(): EventCalendarItemIndex<TItemFields> {
 		const profile = this.dateProfile;
@@ -273,11 +308,12 @@ export class EventCalendarState<
 	}
 
 	constructor(
-		instanceId: string,
+		readonly instanceId: string,
 		options: EventCalendarStateOptions<TItemFields, TResourceFields>
 	) {
 		bind(this, options);
-		this.interaction = new EventCalendarInteractionsController(instanceId, this);
+		this.interaction = new EventCalendarInteractionsController(this);
+		this.a11y = new EventCalendarA11y(this);
 		this.synchronize(false);
 
 		$effect.pre(() => {
@@ -291,6 +327,16 @@ export class EventCalendarState<
 			untrack(() => {
 				if (isMounted) this.publishRange(profile);
 			});
+		});
+
+		$effect.pre(() => {
+			this.a11y.configureView(this.view);
+		});
+
+		$effect(() => {
+			const focusContext = `${this.view}:${this.date.getTime()}:${this.dayCount}`;
+			const itemIndex = this.itemIndex;
+			untrack(() => this.a11y.reconcileControlledFocus(focusContext, itemIndex));
 		});
 	}
 
@@ -313,16 +359,23 @@ export class EventCalendarState<
 		if (pendingViewChange) this.onViewChange?.(pendingViewChange);
 		if (pendingDateChange) this.onDateChange?.(new Date(pendingDateChange));
 		if (pendingSelectionChange) this.onSelectionChange?.(pendingSelectionChange);
-		if (pendingMissingSelectionKey) this.onMissingSelection?.(pendingMissingSelectionKey);
+		if (pendingMissingSelectionKey) {
+			this.a11y.restoreFocusAfterOccurrenceRemoval(pendingMissingSelectionKey);
+		}
 		this.publishRange(this.dateProfile);
 	}
 
 	unmount(): void {
 		this.interaction.destroy();
+		this.a11y.destroy();
 		this.isMounted = false;
 		this.todayInstant = null;
 		this.nowInstant = null;
 		this.lastRangeSignature = null;
+	}
+
+	notifyInteractionStatus(status: EventCalendarInteractionStatus<TItemFields>): void {
+		this.a11y.syncInteractionStatus(status);
 	}
 
 	validateCandidateItems(items: EventCalendarItem<TItemFields>[]): void {
@@ -528,7 +581,7 @@ export class EventCalendarState<
 		previousSelection: EventCalendarSelection;
 		committedSelection: EventCalendarSelection;
 	} | null {
-		this.onOccurrenceKeysRemap?.(remap);
+		this.a11y.remapOccurrenceKeys(remap);
 		if (this.selection.kind !== 'item') return null;
 		const itemKey = remap(this.selection.itemKey);
 		if (itemKey === this.selection.itemKey) return null;
@@ -578,7 +631,7 @@ export class EventCalendarState<
 				'The EventCalendar selection changed after its recurrence transaction.'
 			);
 		}
-		if (remap) this.onOccurrenceKeysRemap?.(remap);
+		if (remap) this.a11y.remapOccurrenceKeys(remap);
 		if (!selectionTransaction) return;
 		this.selection = selectionTransaction.previousSelection;
 		this.onSelectionChange?.(selectionTransaction.previousSelection);
@@ -682,7 +735,7 @@ export class EventCalendarState<
 			if (didViewChange) this.onViewChange?.(nextView);
 			if (didDateChange) this.onDateChange?.(new Date(nextDate));
 			if (didSelectionChange) this.onSelectionChange?.(EMPTY_EVENT_CALENDAR_SELECTION);
-			if (missingSelectionKey) this.onMissingSelection?.(missingSelectionKey);
+			if (missingSelectionKey) this.a11y.restoreFocusAfterOccurrenceRemoval(missingSelectionKey);
 			return;
 		}
 		if (didViewChange) this.pendingViewChange = nextView;

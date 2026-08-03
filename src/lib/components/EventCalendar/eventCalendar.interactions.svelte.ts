@@ -226,10 +226,7 @@ export class EventCalendarInteractionsController<
 	private historyRevision = $state(0);
 	private externalGestureSequence = 0;
 
-	constructor(
-		readonly instanceId: string,
-		private readonly calendar: EventCalendarState<TItemFields, TResourceFields>
-	) {
+	constructor(private readonly calendar: EventCalendarState<TItemFields, TResourceFields>) {
 		$effect.pre(() => {
 			const nextBoundary = this.getBoundary();
 			untrack(() => {
@@ -247,6 +244,10 @@ export class EventCalendarInteractionsController<
 				}
 			});
 		});
+	}
+
+	get instanceId(): string {
+		return this.calendar.instanceId;
 	}
 
 	get proposal(): EventCalendarProposedUpdate<TItemFields> | null {
@@ -319,7 +320,7 @@ export class EventCalendarInteractionsController<
 		this.stopDragAutoScroll();
 		if (!active) return;
 		if (!reason) {
-			this.calendar.onInteractionStatus?.({
+			this.calendar.notifyInteractionStatus({
 				type: 'cancel',
 				source: active.source,
 				item: active.kind === 'slot-create' ? undefined : active.occurrence.item
@@ -413,7 +414,7 @@ export class EventCalendarInteractionsController<
 		}
 		this.calendar.select({ kind: 'slot', itemKey: null, slot: active.slot });
 		this.calendar.onSlotSelect?.(active.slot, { source: 'keyboard' });
-		this.calendar.onInteractionStatus?.({ type: 'commit', source: 'keyboard' });
+		this.calendar.notifyInteractionStatus({ type: 'commit', source: 'keyboard' });
 		return true;
 	}
 
@@ -540,7 +541,7 @@ export class EventCalendarInteractionsController<
 			pointerY: 0,
 			sourceResourceId
 		};
-		this.calendar.onInteractionStatus?.({
+		this.calendar.notifyInteractionStatus({
 			type: 'mode',
 			source,
 			operation,
@@ -1225,7 +1226,7 @@ export class EventCalendarInteractionsController<
 		if (this.didNativeCancel) {
 			this.lastPublishedProposalKey = null;
 			if (active.source !== 'external-drop' || active.targetKey) {
-				this.calendar.onInteractionStatus?.({
+				this.calendar.notifyInteractionStatus({
 					type: 'cancel',
 					source: active.source,
 					item: active.occurrence.item
@@ -2271,7 +2272,7 @@ export class EventCalendarInteractionsController<
 						this.historyRevision += 1;
 					}
 				}
-				this.calendar.onInteractionStatus?.({
+				this.calendar.notifyInteractionStatus({
 					type: 'revert',
 					...committedStatus
 				});
@@ -2286,7 +2287,7 @@ export class EventCalendarInteractionsController<
 		this.calendar.onItemsChange?.(publishedItems, change);
 		if (!wasReverted) {
 			historyEntry = this.recordHistory(previousItems, publishedItems);
-			this.calendar.onInteractionStatus?.({
+			this.calendar.notifyInteractionStatus({
 				type: 'commit',
 				source: change.source,
 				item: statusItem
@@ -2339,11 +2340,11 @@ export class EventCalendarInteractionsController<
 				this.historyFuture.push(entry);
 			}
 			this.historyRevision += 1;
-			this.calendar.onInteractionStatus?.({ type: 'revert', source: 'history' });
+			this.calendar.notifyInteractionStatus({ type: 'revert', source: 'history' });
 		});
 		this.calendar.onItemsChange?.(to, { kind: 'history', source: 'history', direction, revert });
 		if (wasReverted) return false;
-		this.calendar.onInteractionStatus?.({ type: 'commit', source: 'history' });
+		this.calendar.notifyInteractionStatus({ type: 'commit', source: 'history' });
 		return true;
 	}
 
@@ -2578,7 +2579,7 @@ export class EventCalendarInteractionsController<
 		if (statusKey === this.lastPublishedProposalKey) return;
 		this.lastPublishedProposalKey = statusKey;
 		if (!gesture.proposal || !gesture.isValid) {
-			this.calendar.onInteractionStatus?.({
+			this.calendar.notifyInteractionStatus({
 				type: 'invalid',
 				source: gesture.source,
 				reason: gesture.reason ?? 'invalid-target',
@@ -2586,7 +2587,7 @@ export class EventCalendarInteractionsController<
 			});
 			return;
 		}
-		this.calendar.onInteractionStatus?.({
+		this.calendar.notifyInteractionStatus({
 			type: 'proposal',
 			source: gesture.source,
 			operation: gesture.kind,
@@ -2884,7 +2885,7 @@ export class EventCalendarInteractionsController<
 
 	private reportBlocked(info: EventCalendarInteractionBlockedInfo<TItemFields>): void {
 		this.calendar.onInteractionBlocked?.(info);
-		this.calendar.onInteractionStatus?.({
+		this.calendar.notifyInteractionStatus({
 			type: 'invalid',
 			source: info.source,
 			reason: info.reason,

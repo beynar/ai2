@@ -1,14 +1,22 @@
 /* eslint-disable svelte/prefer-svelte-reactivity -- DOM registries and immutable configuration snapshots are not reactive state. */
 import { tick } from 'svelte';
-import { addCivilMonths, isSupportedDateDomainError, parseDateOnly } from './eventCalendar.date.js';
+import {
+	addCivilMonths,
+	getCachedDateTimeFormatter,
+	isSupportedDateDomainError,
+	parseDateOnly
+} from './eventCalendar.date.js';
+import type { EventCalendarItemIndex } from './eventCalendar.items.js';
+import type { EventCalendarState } from './eventCalendar.state.svelte.js';
 import type {
 	EventCalendarDateOnly,
+	EventCalendarItem,
 	EventCalendarOccurrence,
 	EventCalendarView
 } from './eventCalendar.types.js';
 import type {
 	EventCalendarDropTarget,
-	EventCalendarInteractionsController,
+	EventCalendarInteractionStatus,
 	EventCalendarItemOperation
 } from './eventCalendar.interactions.svelte.js';
 
@@ -40,13 +48,6 @@ type TimeGridConfiguration = {
 
 type AgendaConfiguration = {
 	days: readonly EventCalendarDateOnly[];
-};
-
-type MutationConfiguration<TItemFields extends object, TResourceFields extends object> = {
-	controller: EventCalendarInteractionsController<TItemFields, TResourceFields>;
-	view: EventCalendarView;
-	direction: 'ltr' | 'rtl';
-	snapDuration: number;
 };
 
 /** Calendar-owned roving focus and live announcements. Later views extend this same owner. */
@@ -81,15 +82,12 @@ export class EventCalendarA11y<
 	private focusedOccurrenceKey: string | null = null;
 	private pendingOccurrenceKey: string | null = null;
 	private activeView: EventCalendarView | null = null;
-	private mutationController: EventCalendarInteractionsController<
-		TItemFields,
-		TResourceFields
-	> | null = null;
-	private mutationView: EventCalendarView = 'month';
-	private mutationSnapDuration = 15;
+	private previousFocusContext = '';
+	private announcedResourceTarget = '';
 
-	constructor(liveRegionId: string) {
-		this.liveRegionId = liveRegionId;
+	constructor(private readonly calendar: EventCalendarState<TItemFields, TResourceFields>) {
+		this.liveRegionId = `${calendar.instanceId}-status`;
+		$effect(() => this.syncResourceTargetAnnouncement());
 	}
 
 	configureView(view: EventCalendarView): void {
@@ -110,19 +108,12 @@ export class EventCalendarA11y<
 		this.pendingOccurrenceKey = this.focusedOccurrenceKey;
 	}
 
-	configureMutations(configuration: MutationConfiguration<TItemFields, TResourceFields>): void {
-		this.mutationController = configuration.controller;
-		this.mutationView = configuration.view;
-		this.direction = configuration.direction;
-		this.mutationSnapDuration = configuration.snapDuration;
-	}
-
 	canStartItemMutation(
 		occurrence: EventCalendarOccurrence<TItemFields>,
 		operation: EventCalendarItemOperation,
 		source: 'keyboard' | 'single-pointer'
 	): boolean {
-		return this.mutationController?.canBeginAssistedItem(occurrence, operation, source) ?? false;
+		return this.calendar.interaction.canBeginAssistedItem(occurrence, operation, source);
 	}
 
 	startItemMutation(
@@ -132,7 +123,7 @@ export class EventCalendarA11y<
 		sourceResourceId?: string
 	): boolean {
 		if (
-			!this.mutationController?.beginAssistedItem(occurrence, operation, source, sourceResourceId)
+			!this.calendar.interaction.beginAssistedItem(occurrence, operation, source, sourceResourceId)
 		)
 			return false;
 		this.mutationOccurrenceKey = occurrence.key;
@@ -142,17 +133,17 @@ export class EventCalendarA11y<
 	}
 
 	cancelItemMutation(): boolean {
-		if (!this.mutationOccurrenceKey || !this.mutationController) return false;
+		if (!this.mutationOccurrenceKey) return false;
 		const occurrenceKey = this.mutationOccurrenceKey;
-		this.mutationController.cancel();
+		this.calendar.interaction.cancel();
 		this.clearMutation();
 		this.restoreOccurrenceFocus(occurrenceKey);
 		return true;
 	}
 
 	activateMutationTarget(target: EventCalendarDropTarget): boolean {
-		if (!this.mutationController?.activateAssistedTarget(target)) return false;
-		if (!this.mutationController.gesture) {
+		if (!this.calendar.interaction.activateAssistedTarget(target)) return false;
+		if (!this.calendar.interaction.gesture) {
 			const occurrenceKey = this.mutationOccurrenceKey;
 			this.clearMutation();
 			if (occurrenceKey) this.restoreOccurrenceFocus(occurrenceKey);
@@ -180,7 +171,7 @@ export class EventCalendarA11y<
 			event.preventDefault();
 			return true;
 		}
-		if (this.mutationOccurrenceKey !== occurrence.key || !this.mutationController) return false;
+		if (this.mutationOccurrenceKey !== occurrence.key) return false;
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			this.cancelItemMutation();
@@ -189,42 +180,42 @@ export class EventCalendarA11y<
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			const occurrenceKey = this.mutationOccurrenceKey;
-			this.mutationController.commitAssistedItem();
-			if (!this.mutationController.gesture) {
+			this.calendar.interaction.commitAssistedItem();
+			if (!this.calendar.interaction.gesture) {
 				this.clearMutation();
 				this.restoreOccurrenceFocus(occurrenceKey);
 			}
 			return true;
 		}
 		if (!event.key.startsWith('Arrow')) return false;
-		const proposal = this.mutationController.proposal;
+		const proposal = this.calendar.interaction.proposal;
 		event.preventDefault();
 		const isAllDay = proposal ? proposal.item.allDay === true : occurrence.allDay;
 		if (
-			this.mutationView === 'resource' &&
+			this.calendar.view === 'resource' &&
 			this.mutationOperation === 'move' &&
 			(event.key === 'ArrowLeft' || event.key === 'ArrowRight')
 		) {
-			this.mutationController.stepAssistedItem({
-				resourceDirection: getArrowDirection(event.key, this.direction)
+			this.calendar.interaction.stepAssistedItem({
+				resourceDirection: getArrowDirection(event.key, this.calendar.direction)
 			});
 			return true;
 		}
 		if (isAllDay) {
-			this.mutationController.stepAssistedItem({
-				dayDelta: getArrowDirection(event.key, this.direction)
+			this.calendar.interaction.stepAssistedItem({
+				dayDelta: getArrowDirection(event.key, this.calendar.direction)
 			});
 			return true;
 		}
 		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-			this.mutationController.stepAssistedItem({
+			this.calendar.interaction.stepAssistedItem({
 				minuteDelta:
-					event.key === 'ArrowDown' ? this.mutationSnapDuration : -this.mutationSnapDuration
+					event.key === 'ArrowDown' ? this.calendar.snapDuration : -this.calendar.snapDuration
 			});
 			return true;
 		}
-		const direction = getArrowDirection(event.key, this.direction);
-		this.mutationController.stepAssistedItem({ dayDelta: direction });
+		const direction = getArrowDirection(event.key, this.calendar.direction);
+		this.calendar.interaction.stepAssistedItem({ dayDelta: direction });
 		return true;
 	}
 
@@ -345,19 +336,19 @@ export class EventCalendarA11y<
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		const current = this.timeTargetByKey.get(targetKey);
 		if (!current) return false;
-		if (event.key === 'Escape' && !this.mutationController?.isKeyboardSlotActive) {
+		if (event.key === 'Escape' && !this.calendar.interaction.isKeyboardSlotActive) {
 			event.preventDefault();
-			this.mutationController?.clearFocusedSelection();
+			this.calendar.interaction.clearFocusedSelection();
 			this.timeElements.get(targetKey)?.blur();
 			return true;
 		}
-		if (this.mutationController?.isKeyboardSlotActive && event.key === 'Enter') {
+		if (this.calendar.interaction.isKeyboardSlotActive && event.key === 'Enter') {
 			event.preventDefault();
-			return this.mutationController.commitKeyboardSlot();
+			return this.calendar.interaction.commitKeyboardSlot();
 		}
 		if (event.key === ' ' && current.dropTarget) {
 			event.preventDefault();
-			return this.mutationController?.beginKeyboardSlot(current.dropTarget) ?? false;
+			return this.calendar.interaction.beginKeyboardSlot(current.dropTarget);
 		}
 
 		let target: EventCalendarTimeTarget | undefined;
@@ -383,14 +374,14 @@ export class EventCalendarA11y<
 		event.preventDefault();
 		if (target) {
 			this.focusTimeTarget(target);
-			if (this.mutationController?.isKeyboardSlotActive && target.dropTarget) {
-				this.mutationController.updateKeyboardSlot(target.dropTarget);
+			if (this.calendar.interaction.isKeyboardSlotActive && target.dropTarget) {
+				this.calendar.interaction.updateKeyboardSlot(target.dropTarget);
 			} else if (target.dropTarget) {
-				this.mutationController?.syncFocusedSlotSelection(target.dropTarget);
+				this.calendar.interaction.syncFocusedSlotSelection(target.dropTarget);
 			} else if (target.itemKey) {
-				this.mutationController?.syncFocusedItemSelection(target.itemKey);
+				this.calendar.interaction.syncFocusedItemSelection(target.itemKey);
 			} else {
-				this.mutationController?.clearFocusedSelection();
+				this.calendar.interaction.clearFocusedSelection();
 			}
 		}
 		return true;
@@ -424,20 +415,20 @@ export class EventCalendarA11y<
 		if (event.altKey || event.ctrlKey || event.metaKey) return false;
 		const dayIndex = this.days.indexOf(day);
 		if (dayIndex < 0) return false;
-		if (event.key === 'Escape' && !this.mutationController?.isKeyboardSlotActive) {
+		if (event.key === 'Escape' && !this.calendar.interaction.isKeyboardSlotActive) {
 			event.preventDefault();
-			this.mutationController?.clearFocusedSelection();
+			this.calendar.interaction.clearFocusedSelection();
 			this.dayElements.get(day)?.blur();
 			return true;
 		}
-		if (this.mutationController?.isKeyboardSlotActive && event.key === 'Enter') {
+		if (this.calendar.interaction.isKeyboardSlotActive && event.key === 'Enter') {
 			event.preventDefault();
-			return this.mutationController.commitKeyboardSlot();
+			return this.calendar.interaction.commitKeyboardSlot();
 		}
 		if (event.key === ' ') {
 			event.preventDefault();
 			return (
-				this.mutationController?.beginKeyboardSlot({
+				this.calendar.interaction.beginKeyboardSlot({
 					key: `month:${day}`,
 					view: 'month',
 					allDay: true,
@@ -481,15 +472,15 @@ export class EventCalendarA11y<
 		if (!target) return true;
 		event.preventDefault();
 		this.focusDay(target);
-		if (this.mutationController?.isKeyboardSlotActive) {
-			this.mutationController.updateKeyboardSlot({
+		if (this.calendar.interaction.isKeyboardSlotActive) {
+			this.calendar.interaction.updateKeyboardSlot({
 				key: `month:${target}`,
 				view: 'month',
 				allDay: true,
 				day: target
 			});
 		} else {
-			this.mutationController?.syncFocusedSlotSelection({
+			this.calendar.interaction.syncFocusedSlotSelection({
 				key: `month:${target}`,
 				view: 'month',
 				allDay: true,
@@ -535,6 +526,88 @@ export class EventCalendarA11y<
 		});
 	}
 
+	reconcileControlledFocus(
+		focusContext: string,
+		itemIndex: EventCalendarItemIndex<TItemFields>
+	): void {
+		const occurrenceKey = this.focusedOccurrenceKey;
+		if (this.previousFocusContext && this.previousFocusContext !== focusContext && occurrenceKey) {
+			const occurrence = itemIndex.getOccurrence(occurrenceKey);
+			if (occurrence) {
+				this.restoreOccurrenceFocus(occurrence.key);
+				this.announce(this.calendar.messages.eventCalendarFocusRestored(occurrence.item.title));
+			} else {
+				this.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
+			}
+		}
+		this.previousFocusContext = focusContext;
+		if (occurrenceKey && !itemIndex.getOccurrence(occurrenceKey)) {
+			this.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
+		}
+	}
+
+	syncInteractionStatus(status: EventCalendarInteractionStatus<TItemFields>): void {
+		const messages = this.calendar.messages;
+		if (status.type === 'mode') {
+			const operation = this.getOperationLabel(status.operation);
+			this.announce(
+				status.source === 'keyboard'
+					? messages.eventCalendarKeyboardMode(operation, status.occurrence.item.title)
+					: messages.eventCalendarPointerMode(operation, status.occurrence.item.title)
+			);
+			return;
+		}
+		if (status.type === 'proposal') {
+			this.announce(
+				messages.eventCalendarProposedPlacement(this.getPlacementLabel(status.proposal.item))
+			);
+			return;
+		}
+		if (status.type === 'invalid') {
+			this.announce(messages.eventCalendarMutationInvalid());
+			return;
+		}
+		const title = status.item?.title ?? messages.eventCalendarLabel;
+		if (status.type === 'commit') {
+			this.finishItemMutation();
+			this.announce(messages.eventCalendarMutationCommitted(title));
+			return;
+		}
+		if (status.type === 'revert') {
+			this.announce(messages.eventCalendarMutationReverted(title));
+			return;
+		}
+		this.finishItemMutation();
+		this.announce(messages.eventCalendarMutationCancelled(title));
+	}
+
+	get interactionStatus(): string {
+		const gesture = this.calendar.interaction.gesture;
+		if (!gesture) return '';
+		const messages = this.calendar.messages;
+		let gestureLabel = messages.eventCalendarSelectRangeGesture;
+		if (gesture.kind === 'move') gestureLabel = messages.eventCalendarMoveGesture;
+		if (gesture.kind === 'resize-start') gestureLabel = messages.eventCalendarResizeStartGesture;
+		if (gesture.kind === 'resize-end') gestureLabel = messages.eventCalendarResizeEndGesture;
+		const labels = [
+			gestureLabel,
+			gesture.isValid ? messages.eventCalendarValidTarget : messages.eventCalendarInvalidTarget,
+			messages.eventCalendarTimeZone(this.calendar.timeZone)
+		];
+		if (this.calendar.interaction.proposal?.occurrence?.isRecurring) {
+			labels.unshift(messages.eventCalendarRecurringEvent);
+		}
+		if (
+			this.calendar.view === 'resource' &&
+			gesture.kind === 'move' &&
+			gesture.isValid &&
+			this.calendar.interaction.proposal
+		) {
+			labels.push(this.getResourceMoveAnnouncement(this.calendar.interaction.proposal.item));
+		}
+		return labels.join('. ');
+	}
+
 	destroy(): void {
 		this.lifecycleVersion += 1;
 		this.restoreVersion += 1;
@@ -553,8 +626,70 @@ export class EventCalendarA11y<
 		this.focusedOccurrenceKey = null;
 		this.pendingOccurrenceKey = null;
 		this.activeView = null;
-		this.mutationController = null;
+		this.previousFocusContext = '';
+		this.announcedResourceTarget = '';
 		this.clearMutation();
+	}
+
+	private syncResourceTargetAnnouncement(): void {
+		const gesture = this.calendar.interaction.gesture;
+		const proposal = this.calendar.interaction.proposal;
+		if (
+			this.calendar.view !== 'resource' ||
+			!gesture ||
+			gesture.kind !== 'move' ||
+			!gesture.isValid ||
+			!proposal
+		) {
+			this.announcedResourceTarget = '';
+			return;
+		}
+		const resourceTarget =
+			this.calendar.resourceModel.resolveItemLeafIds(proposal.item).join(',') || 'unassigned';
+		if (resourceTarget === this.announcedResourceTarget) return;
+		this.announcedResourceTarget = resourceTarget;
+		this.announce(this.getResourceMoveAnnouncement(proposal.item));
+	}
+
+	private getOperationLabel(operation: EventCalendarItemOperation): string {
+		const messages = this.calendar.messages;
+		if (operation === 'move') return messages.eventCalendarMoveAction;
+		if (operation === 'resize-start') return messages.eventCalendarResizeStartAction;
+		return messages.eventCalendarResizeEndAction;
+	}
+
+	private getPlacementLabel(item: EventCalendarItem<TItemFields>): string {
+		const formatter = getCachedDateTimeFormatter(this.calendar.locale, this.calendar.timeZone, {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+			timeZoneName: 'shortOffset'
+		});
+		const placement =
+			item.allDay === true
+				? `${item.start} – ${item.end}`
+				: formatter.formatRange(item.start, item.end);
+		const resourceTitles = this.calendar.resourceModel
+			.resolveItemLeafIds(item)
+			.map((resourceId) => this.calendar.resourceModel.resolveLeaf(resourceId)?.title)
+			.filter((title): title is string => Boolean(title));
+		if (resourceTitles.length > 0) return `${placement}, ${resourceTitles.join(', ')}`;
+		return this.calendar.view === 'resource'
+			? `${placement}, ${this.calendar.messages.eventCalendarUnassignedResource}`
+			: placement;
+	}
+
+	private getResourceMoveAnnouncement(item: EventCalendarItem<TItemFields>): string {
+		const resources = this.calendar.resourceModel
+			.resolveItemLeafIds(item)
+			.map((resourceId) => this.calendar.resourceModel.resolveLeaf(resourceId)?.title)
+			.filter((title): title is string => Boolean(title));
+		return this.calendar.messages.eventCalendarResourceMoveAnnouncement(
+			resources.join(', ') || this.calendar.messages.eventCalendarUnassignedResource
+		);
 	}
 
 	private clearMutation(): void {

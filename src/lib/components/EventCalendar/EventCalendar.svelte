@@ -7,15 +7,12 @@
 	import { onMount } from 'svelte';
 	import EventCalendarContent from './EventCalendarContent.svelte';
 	import EventCalendarHeader from './EventCalendarHeader.svelte';
-	import { EventCalendarA11y } from './eventCalendar.a11y.svelte.js';
 	import { isEventCalendarSemanticColor } from './eventCalendar.color.js';
-	import type { EventCalendarInteractionStatus } from './eventCalendar.interactions.svelte.js';
 	import {
 		addCivilDays,
 		getCachedDateTimeFormatter,
 		startOfZonedDay
 	} from './eventCalendar.date.js';
-	import { getLocaleWeekStartsOn } from './eventCalendar.dateJump.js';
 	import type { EventCalendarProps, EventCalendarSnapshot } from './eventCalendar.props.js';
 	import {
 		EMPTY_EVENT_CALENDAR_SELECTION,
@@ -24,10 +21,8 @@
 	import { useEventCalendarTheme } from './eventCalendar.theme.js';
 	import type {
 		EventCalendarApi,
-		EventCalendarCreateActivation,
 		EventCalendarDateOnly,
 		EventCalendarItem,
-		EventCalendarInteractions,
 		EventCalendarOccurrence,
 		EventCalendarRange,
 		EventCalendarSelection,
@@ -36,19 +31,6 @@
 	} from './eventCalendar.types.js';
 
 	const DEFAULT_VIEWS: EventCalendarView[] = ['month', 'week', 'day', 'days', 'agenda', 'resource'];
-	const DEFAULT_CREATE_ACTIVATION: EventCalendarCreateActivation = {
-		distancePx: 5,
-		touchDelayMs: 300,
-		touchTolerancePx: 8
-	};
-	const DEFAULT_INTERACTIONS: EventCalendarInteractions = {
-		drag: true,
-		resize: true,
-		selectSlot: true,
-		keyboard: true,
-		singlePointer: true,
-		clipboard: true
-	};
 
 	let {
 		items = $bindable<EventCalendarItem<TItemFields>[]>([]),
@@ -121,41 +103,6 @@
 
 	const messages = $derived(useI18n(i18n));
 	const componentId = $props.id();
-	const a11y = new EventCalendarA11y<TItemFields, TResourceFields>(`${componentId}-status`);
-	const resolvedLocale = $derived(locale ?? messages.locale);
-	const resolvedWeekStartsOn = $derived(weekStartsOn ?? getLocaleWeekStartsOn(resolvedLocale));
-	const fixedWeeks = $derived(month?.fixedWeeks ?? true);
-	const showOutsideDays = $derived(month?.showOutsideDays ?? true);
-	const showWeekNumbers = $derived(month?.showWeekNumbers ?? false);
-	const maxItemsPerCell = $derived(month?.maxItemsPerCell ?? 'auto');
-	const dayStartHour = $derived(timeGrid?.startHour ?? 0);
-	const dayEndHour = $derived(timeGrid?.endHour ?? 24);
-	const interval = $derived(timeGrid?.labelIntervalMinutes ?? 60);
-	const slotDuration = $derived(timeGrid?.slotClickDurationMinutes ?? 30);
-	const snapDuration = $derived(timeGrid?.snapDurationMinutes ?? 15);
-	const scrollToHour = $derived(timeGrid?.scrollToHour ?? 7);
-	const nowIndicatorInterval = $derived(timeGrid?.nowIndicatorRefreshMs ?? 30000);
-	const defaultTimedItemDuration = $derived(allDayConversion?.timedDurationMinutes ?? 60);
-	const defaultAllDayItemDuration = $derived(allDayConversion?.allDayDurationDays ?? 1);
-	const offDays = $derived(availability?.offDays ?? false);
-	const businessHours = $derived(availability?.businessHours ?? []);
-	const constrainToBusinessHours = $derived(availability?.constrainMutations ?? false);
-	const recurrenceEditScope = $derived(recurrence?.editScope ?? 'occurrence');
-	const getOccurrenceExceptionId = $derived(recurrence?.getExceptionId);
-	const expandRecurrence = $derived(recurrence?.expand);
-	const resolvedCreateActivation = $derived({
-		...DEFAULT_CREATE_ACTIVATION,
-		...interactions?.createActivation
-	});
-	const resolvedInteractions = $derived({
-		drag: interactions?.drag ?? DEFAULT_INTERACTIONS.drag,
-		resize: interactions?.resize ?? DEFAULT_INTERACTIONS.resize,
-		selectSlot: interactions?.selectSlot ?? DEFAULT_INTERACTIONS.selectSlot,
-		keyboard: interactions?.keyboard ?? DEFAULT_INTERACTIONS.keyboard,
-		singlePointer: interactions?.singlePointer ?? DEFAULT_INTERACTIONS.singlePointer,
-		clipboard: interactions?.clipboard ?? DEFAULT_INTERACTIONS.clipboard,
-		maintainDurationOnAllDayChange: allDayConversion?.preserveDuration ?? false
-	});
 	const showHeader = $derived(header !== false);
 	const resolvedHeader = $derived(header === false ? undefined : header);
 	const showItemTooltip = $derived(itemTooltip !== false);
@@ -208,17 +155,23 @@
 		get timeZone() {
 			return timeZone;
 		},
-		get locale() {
-			return resolvedLocale;
+		get messages() {
+			return messages;
 		},
-		get weekStartsOn() {
-			return resolvedWeekStartsOn;
+		get density() {
+			return density;
 		},
-		get fixedWeeks() {
-			return fixedWeeks;
+		get classes() {
+			return classes;
 		},
-		get showOutsideDays() {
-			return showOutsideDays;
+		get localeOption() {
+			return locale;
+		},
+		get weekStartsOnOption() {
+			return weekStartsOn;
+		},
+		get monthOptions() {
+			return month;
 		},
 		get showWeekends() {
 			return showWeekends;
@@ -232,44 +185,14 @@
 		get validRange() {
 			return validRange;
 		},
-		get dayStartHour() {
-			return dayStartHour;
+		get timeGridOptions() {
+			return timeGrid;
 		},
-		get dayEndHour() {
-			return dayEndHour;
+		get allDayConversionOptions() {
+			return allDayConversion;
 		},
-		get interval() {
-			return interval;
-		},
-		get slotDuration() {
-			return slotDuration;
-		},
-		get snapDuration() {
-			return snapDuration;
-		},
-		get defaultTimedItemDuration() {
-			return defaultTimedItemDuration;
-		},
-		get defaultAllDayItemDuration() {
-			return defaultAllDayItemDuration;
-		},
-		get scrollToHour() {
-			return scrollToHour;
-		},
-		get nowIndicatorInterval() {
-			return nowIndicatorInterval;
-		},
-		get maxItemsPerCell() {
-			return maxItemsPerCell;
-		},
-		get createActivation() {
-			return resolvedCreateActivation;
-		},
-		get businessHours() {
-			return businessHours;
-		},
-		get offDays() {
-			return offDays;
+		get availabilityOptions() {
+			return availability;
 		},
 		get disabled() {
 			return disabled;
@@ -280,14 +203,11 @@
 		get direction() {
 			return resolvedDirection;
 		},
-		get interactions() {
-			return resolvedInteractions;
+		get interactionOptions() {
+			return interactions;
 		},
 		get allowOverlap() {
 			return allowOverlap;
-		},
-		get constrainToBusinessHours() {
-			return constrainToBusinessHours;
 		},
 		get canUpdateItem() {
 			return validateItemUpdate;
@@ -298,23 +218,12 @@
 		get canSelectSlot() {
 			return validateSlotSelection;
 		},
-		get recurrenceEditScope() {
-			return recurrenceEditScope;
-		},
-		get clipboard() {
-			return resolvedInteractions.clipboard;
+		get recurrenceOptions() {
+			return recurrence;
 		},
 		get historyLimit() {
 			return historyLimit;
 		},
-		get getOccurrenceExceptionId() {
-			return getOccurrenceExceptionId;
-		},
-		get expandRecurrence() {
-			return expandRecurrence;
-		},
-		onOccurrenceKeysRemap: (remap) => a11y.remapOccurrenceKeys(remap),
-		onInteractionStatus: (status) => handleInteractionStatus(status),
 		get onItemsChange() {
 			return onItemsChange;
 		},
@@ -338,58 +247,11 @@
 		},
 		get onSelectionChange() {
 			return onSelectionChange;
-		},
-		onMissingSelection(occurrenceKey) {
-			a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
 		}
 	});
-	$effect.pre(() => {
-		a11y.configureView(calendar.view);
-	});
-	$effect(() => {
-		a11y.configureMutations({
-			controller: calendar.interaction,
-			view: calendar.view,
-			direction: resolvedDirection,
-			snapDuration: calendar.snapDuration
-		});
-	});
-	let previousFocusContext = '';
-	$effect(() => {
-		const focusContext = `${calendar.view}:${calendar.date.getTime()}:${calendar.dayCount}`;
-		if (previousFocusContext && previousFocusContext !== focusContext) {
-			const occurrenceKey = a11y.getFocusedOccurrenceKey();
-			const occurrence = occurrenceKey ? calendar.getOccurrence(occurrenceKey) : null;
-			if (occurrence) {
-				a11y.restoreOccurrenceFocus(occurrence.key);
-				a11y.announce(messages.eventCalendarFocusRestored(occurrence.item.title));
-			} else if (occurrenceKey) {
-				a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
-			}
-		}
-		previousFocusContext = focusContext;
-	});
-	$effect(() => {
-		const hasItems = items.length > 0;
-		const occurrenceKey = a11y.getFocusedOccurrenceKey();
-		if (!occurrenceKey) return;
-		if (!hasItems || !calendar.getOccurrence(occurrenceKey)) {
-			a11y.restoreFocusAfterOccurrenceRemoval(occurrenceKey);
-		}
-	});
-	const statusDateFormatter = $derived(
-		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit',
-			timeZoneName: 'shortOffset'
-		})
-	);
+	const a11y = calendar.a11y;
 	const dragPreviewDateTimeFormatter = $derived(
-		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -398,126 +260,12 @@
 		})
 	);
 	const dragPreviewDateFormatter = $derived(
-		getCachedDateTimeFormatter(resolvedLocale, calendar.timeZone, {
+		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric'
 		})
 	);
-
-	function handleInteractionStatus(status: EventCalendarInteractionStatus<TItemFields>): void {
-		if (status.type === 'mode') {
-			const operation = getOperationLabel(status.operation);
-			a11y.announce(
-				status.source === 'keyboard'
-					? messages.eventCalendarKeyboardMode(operation, status.occurrence.item.title)
-					: messages.eventCalendarPointerMode(operation, status.occurrence.item.title)
-			);
-			return;
-		}
-		if (status.type === 'proposal') {
-			a11y.announce(
-				messages.eventCalendarProposedPlacement(getPlacementLabel(status.proposal.item))
-			);
-			return;
-		}
-		if (status.type === 'invalid') {
-			a11y.announce(messages.eventCalendarMutationInvalid());
-			return;
-		}
-		const title = status.item?.title ?? messages.eventCalendarLabel;
-		if (status.type === 'commit') {
-			a11y.finishItemMutation();
-			a11y.announce(messages.eventCalendarMutationCommitted(title));
-			return;
-		}
-		if (status.type === 'revert') {
-			a11y.announce(messages.eventCalendarMutationReverted(title));
-			return;
-		}
-		a11y.finishItemMutation();
-		a11y.announce(messages.eventCalendarMutationCancelled(title));
-	}
-
-	function getOperationLabel(operation: 'move' | 'resize-start' | 'resize-end'): string {
-		if (operation === 'move') return messages.eventCalendarMoveAction;
-		if (operation === 'resize-start') return messages.eventCalendarResizeStartAction;
-		return messages.eventCalendarResizeEndAction;
-	}
-
-	function getPlacementLabel(item: EventCalendarItem<TItemFields>): string {
-		let placement: string;
-		if (item.allDay === true) {
-			placement = `${item.start} – ${item.end}`;
-		} else {
-			placement = statusDateFormatter.formatRange(item.start, item.end);
-		}
-		const resourceTitles = calendar.resourceModel
-			.resolveItemLeafIds(item)
-			.map((resourceId) => calendar.resourceModel.resolveLeaf(resourceId)?.title)
-			.filter((title): title is string => Boolean(title));
-		if (resourceTitles.length > 0) return `${placement}, ${resourceTitles.join(', ')}`;
-		return calendar.view === 'resource'
-			? `${placement}, ${messages.eventCalendarUnassignedResource}`
-			: placement;
-	}
-	const localizedInteractionStatus = $derived.by(() => {
-		const gesture = calendar.interaction.gesture;
-		if (!gesture) return '';
-		let gestureLabel = messages.eventCalendarSelectRangeGesture;
-		if (gesture.kind === 'move') gestureLabel = messages.eventCalendarMoveGesture;
-		if (gesture.kind === 'resize-start') {
-			gestureLabel = messages.eventCalendarResizeStartGesture;
-		}
-		if (gesture.kind === 'resize-end') gestureLabel = messages.eventCalendarResizeEndGesture;
-		const labels = [
-			gestureLabel,
-			gesture.isValid ? messages.eventCalendarValidTarget : messages.eventCalendarInvalidTarget,
-			messages.eventCalendarTimeZone(calendar.timeZone)
-		];
-		if (calendar.interaction.proposal?.occurrence?.isRecurring) {
-			labels.unshift(messages.eventCalendarRecurringEvent);
-		}
-		if (
-			calendar.view === 'resource' &&
-			gesture.kind === 'move' &&
-			gesture.isValid &&
-			calendar.interaction.proposal
-		) {
-			labels.push(getResourceMoveAnnouncement(calendar.interaction.proposal.item));
-		}
-		return labels.join('. ');
-	});
-	let announcedResourceTarget = '';
-	$effect(() => {
-		const gesture = calendar.interaction.gesture;
-		const proposal = calendar.interaction.proposal;
-		if (
-			calendar.view !== 'resource' ||
-			!gesture ||
-			gesture.kind !== 'move' ||
-			!gesture.isValid ||
-			!proposal
-		) {
-			announcedResourceTarget = '';
-			return;
-		}
-		const resourceTarget =
-			calendar.resourceModel.resolveItemLeafIds(proposal.item).join(',') || 'unassigned';
-		if (resourceTarget === announcedResourceTarget) return;
-		announcedResourceTarget = resourceTarget;
-		a11y.announce(getResourceMoveAnnouncement(proposal.item));
-	});
-
-	function getResourceMoveAnnouncement(item: EventCalendarItem<TItemFields>): string {
-		const resources = calendar.resourceModel
-			.resolveItemLeafIds(item)
-			.map((resourceId) => calendar.resourceModel.resolveLeaf(resourceId)?.title)
-			.filter((title): title is string => Boolean(title));
-		return messages.eventCalendarResourceMoveAnnouncement(
-			resources.join(', ') || messages.eventCalendarUnassignedResource
-		);
-	}
 
 	export function next(): void {
 		calendar.next();
@@ -712,13 +460,12 @@
 		return () => {
 			observer.disconnect();
 			calendar.unmount();
-			a11y.destroy();
 		};
 	});
 
 	$effect(() => {
 		if (!calendar.isMounted || !showNowIndicator) return;
-		const refreshInterval = nowIndicatorInterval;
+		const refreshInterval = calendar.nowIndicatorInterval;
 		let timer: number | null = null;
 
 		const stopTimer = () => {
@@ -803,9 +550,9 @@
 		{scrollMode}
 		{classes}
 		nowIndicator={showNowIndicator}
-		{showWeekNumbers}
-		{maxItemsPerCell}
-		{offDays}
+		showWeekNumbers={calendar.showWeekNumbers}
+		maxItemsPerCell={calendar.maxItemsPerCell}
+		offDays={calendar.offDays}
 		{showItemTooltip}
 		{monthCell}
 		{dayHeader}
@@ -884,7 +631,7 @@
 	<span id={`${a11y.liveRegionId}-instructions`} class="sr-only">
 		{messages.eventCalendarKeyboardInstructions}
 	</span>
-	<span class="sr-only" data-event-calendar-interaction-status>{localizedInteractionStatus}</span>
+	<span class="sr-only" data-event-calendar-interaction-status>{a11y.interactionStatus}</span>
 </div>
 
 {#snippet defaultDragPreview()}
