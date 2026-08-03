@@ -591,7 +591,9 @@ export class EventCalendarA11y<
 		if (gesture.kind === 'resize-end') gestureLabel = messages.eventCalendarResizeEndGesture;
 		const labels = [
 			gestureLabel,
-			gesture.isValid ? messages.eventCalendarValidTarget : messages.eventCalendarInvalidTarget,
+			this.calendar.interaction.isValid === true
+				? messages.eventCalendarValidTarget
+				: messages.eventCalendarInvalidTarget,
 			messages.eventCalendarTimeZone(this.calendar.timeZone)
 		];
 		if (this.calendar.interaction.proposal?.occurrence?.isRecurring) {
@@ -600,7 +602,7 @@ export class EventCalendarA11y<
 		if (
 			this.calendar.view === 'resource' &&
 			gesture.kind === 'move' &&
-			gesture.isValid &&
+			this.calendar.interaction.isValid === true &&
 			this.calendar.interaction.proposal
 		) {
 			labels.push(this.getResourceMoveAnnouncement(this.calendar.interaction.proposal.item));
@@ -638,7 +640,7 @@ export class EventCalendarA11y<
 			this.calendar.view !== 'resource' ||
 			!gesture ||
 			gesture.kind !== 'move' ||
-			!gesture.isValid ||
+			this.calendar.interaction.isValid !== true ||
 			!proposal
 		) {
 			this.announcedResourceTarget = '';

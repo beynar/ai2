@@ -75,7 +75,7 @@ function createEventCalendarPart(base: string, density: DensityClasses = density
 }
 
 const root = createEventCalendarPart(
-	'relative isolate flex min-w-0 flex-col rounded-lg border border-neutral-muted/80 bg-surface text-neutral motion-reduce:scroll-auto motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none data-[interaction-input=pointer]:[&_[data-event-calendar-part=resize-handle]]:!opacity-0 [container-type:inline-size] [--event-calendar-slot-height:3rem] [--event-calendar-time-gutter-width:4rem] [--event-calendar-day-min-width:8rem] [--event-calendar-month-day-min-width:4.5rem] [--event-calendar-resource-min-width:10rem] [--event-calendar-item-min-height:1.5rem] [--event-calendar-sticky-offset:0px] [--event-calendar-item-color:var(--color)]',
+	'relative isolate flex min-w-0 flex-col rounded-lg border border-neutral-muted/80 bg-surface text-neutral motion-reduce:scroll-auto motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none data-[interaction-kind]:[&_[data-event-calendar-part=resize-handle]]:!opacity-0 [container-type:inline-size] [--event-calendar-slot-height:3rem] [--event-calendar-time-gutter-width:4rem] [--event-calendar-day-min-width:8rem] [--event-calendar-month-day-min-width:4.5rem] [--event-calendar-resource-min-width:10rem] [--event-calendar-item-min-height:1.5rem] [--event-calendar-sticky-offset:0px] [--event-calendar-item-color:var(--color)]',
 	{
 		small:
 			'[--event-calendar-slot-height:2.5rem] [--event-calendar-time-gutter-width:3.5rem] [--event-calendar-item-min-height:1.5rem]',

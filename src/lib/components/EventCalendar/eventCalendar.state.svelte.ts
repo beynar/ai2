@@ -246,10 +246,9 @@ export class EventCalendarState<
 		maintainDurationOnAllDayChange: this.allDayConversionOptions?.preserveDuration ?? false
 	});
 	readonly clipboard = $derived(this.interactions.clipboard);
-	readonly modelBoundary: EventCalendarModelBoundary<TItemFields, TResourceFields> = $derived({
-		items: this.items,
-		resources: this.resources
-	});
+	readonly modelBoundary: EventCalendarModelBoundary<TItemFields, TResourceFields> = $derived.by(
+		() => ({ items: this.items, resources: this.resources })
+	);
 	readonly model: EventCalendarModel<TItemFields, TResourceFields> = $derived.by(() => {
 		const dateProfile = this.createProfile(this.view, this.date, this.dayCount);
 		return {
