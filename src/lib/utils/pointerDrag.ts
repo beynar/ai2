@@ -243,6 +243,14 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 			const offPointerUp = on(node, 'pointerup', end);
 			const offPointerCancel = on(node, 'pointercancel', abort);
 			const offLostPointerCapture = on(node, 'lostpointercapture', abort);
+			const offTouchMove = on(
+				node,
+				'touchmove',
+				(event) => {
+					if (session?.node === node && session.isActive) event.preventDefault();
+				},
+				{ passive: false }
+			);
 
 			return () => {
 				cleanup();
@@ -251,6 +259,7 @@ export const createPointerDrag = <Node extends HTMLElement = HTMLElement>(
 				offPointerUp();
 				offPointerCancel();
 				offLostPointerCapture();
+				offTouchMove();
 			};
 		});
 };
