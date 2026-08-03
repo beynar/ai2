@@ -75,7 +75,6 @@
 		todayDay: EventCalendarDateOnly | null;
 	} = $props();
 
-	const snapshot = $derived(calendar.snapshot);
 	const a11y = $derived(calendar.a11y);
 	const messages = $derived(calendar.messages);
 	const showWeekNumbers = $derived(calendar.showWeekNumbers);
@@ -89,7 +88,7 @@
 	const onSlotClick = $derived(calendar.eventHandlers.onSlotClick);
 	const itemIndex = $derived(calendar.itemIndex);
 	const selectionKey = $derived(
-		snapshot.selection.kind === 'item' ? snapshot.selection.itemKey : null
+		calendar.selection.kind === 'item' ? calendar.selection.itemKey : null
 	);
 	const fullDayFormatter = $derived(
 		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
@@ -216,9 +215,9 @@
 		{@const segments = isRenderedDay ? getDaySegments(day) : []}
 		{@const hiddenSegments = isRenderedDay ? getHiddenSegments(day, gridDayIndex) : []}
 		{@const isSlotSelected =
-			snapshot.selection.kind === 'slot' &&
-			snapshot.selection.slot.allDay &&
-			snapshot.selection.slot.start === day}
+			calendar.selection.kind === 'slot' &&
+			calendar.selection.slot.allDay &&
+			calendar.selection.slot.start === day}
 		{@const cellPayload = {
 			day,
 			segments,

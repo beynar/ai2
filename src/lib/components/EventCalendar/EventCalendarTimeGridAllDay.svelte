@@ -74,7 +74,6 @@
 		handleItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
 	} = $props();
 
-	const snapshot = $derived(calendar.snapshot);
 	const a11y = $derived(calendar.a11y);
 	const messages = $derived(calendar.messages);
 	const density = $derived(calendar.density);
@@ -96,10 +95,10 @@
 		{@const isOff = offDaysByDay.get(geometry.day) ?? false}
 		{@const targetKey = `all-day:${geometry.key}`}
 		{@const isSelected =
-			snapshot.selection.kind === 'slot' &&
-			snapshot.selection.slot.allDay &&
-			snapshot.selection.slot.start === geometry.day &&
-			snapshot.selection.slot.resourceId === geometry.resourceId}
+			calendar.selection.kind === 'slot' &&
+			calendar.selection.slot.allDay &&
+			calendar.selection.slot.start === geometry.day &&
+			calendar.selection.slot.resourceId === geometry.resourceId}
 		{@const dropTarget = {
 			key: `${view}:all-day:${geometry.key}`,
 			view,

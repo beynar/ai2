@@ -57,7 +57,6 @@
 		handleItemActivate: (segment: EventCalendarSegment<TItemFields>, event: MouseEvent) => void;
 	} = $props();
 
-	const snapshot = $derived(calendar.snapshot);
 	const a11y = $derived(calendar.a11y);
 	const density = $derived(calendar.density);
 	const classes = $derived(calendar.classes);
@@ -68,10 +67,10 @@
 
 	function isTimedSlotSelected(slot: EventCalendarTimeSlot): boolean {
 		return (
-			snapshot.selection.kind === 'slot' &&
-			!snapshot.selection.slot.allDay &&
-			snapshot.selection.slot.start.getTime() === slot.start.getTime() &&
-			snapshot.selection.slot.resourceId === geometry.resourceId
+			calendar.selection.kind === 'slot' &&
+			!calendar.selection.slot.allDay &&
+			calendar.selection.slot.start.getTime() === slot.start.getTime() &&
+			calendar.selection.slot.resourceId === geometry.resourceId
 		);
 	}
 

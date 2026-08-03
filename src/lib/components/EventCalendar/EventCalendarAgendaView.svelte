@@ -16,7 +16,6 @@
 		calendar: EventCalendarState<TItemFields, TResourceFields>;
 	} = $props();
 
-	const snapshot = $derived(calendar.snapshot);
 	const a11y = $derived(calendar.a11y);
 	const messages = $derived(calendar.messages);
 	const density = $derived(calendar.density);
@@ -27,7 +26,7 @@
 	const profile = $derived(calendar.dateProfile);
 	const groups = $derived(createEventCalendarAgendaGroups(profile.visibleDays, calendar.itemIndex));
 	const selectedItemKey = $derived(
-		snapshot.selection.kind === 'item' ? snapshot.selection.itemKey : null
+		calendar.selection.kind === 'item' ? calendar.selection.itemKey : null
 	);
 	const dayLabelFormatter = $derived(
 		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {

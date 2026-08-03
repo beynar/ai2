@@ -53,7 +53,6 @@
 	let scrollViewport = $state<HTMLDivElement | null>(null);
 	let timeBody = $state<HTMLDivElement | null>(null);
 	let initialScrollVersion = 0;
-	const snapshot = $derived(calendar.snapshot);
 	const a11y = $derived(calendar.a11y);
 	const messages = $derived(calendar.messages);
 	const direction = $derived(calendar.direction);
@@ -82,7 +81,7 @@
 	const dayStartMinutes = $derived(calendar.dayStartHour * 60);
 	const dayEndMinutes = $derived(calendar.dayEndHour * 60);
 	const selectionKey = $derived(
-		snapshot.selection.kind === 'item' ? snapshot.selection.itemKey : null
+		calendar.selection.kind === 'item' ? calendar.selection.itemKey : null
 	);
 	const dayFormatter = $derived(
 		getCachedDateTimeFormatter(calendar.locale, calendar.timeZone, {
