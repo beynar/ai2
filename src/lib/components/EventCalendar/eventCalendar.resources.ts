@@ -55,93 +55,72 @@ export type EventCalendarResourceModel<TResourceFields extends object> = Readonl
 	isReadOnly(resourceId?: string): boolean;
 }>;
 
-/**
- * Reuses hierarchy metadata while rebuilding the current-object map for every new controlled array.
- * Consumer-only field replacements therefore reach snippets without invalidating stable structure.
- */
-export class EventCalendarResourceIndex<TResourceFields extends object> {
-	private resources: readonly EventCalendarResource<TResourceFields>[] | null = null;
-	private structure: EventCalendarResourceStructure | null = null;
-	private model: EventCalendarResourceModel<TResourceFields> | null = null;
+export function createEventCalendarResourceModel<TResourceFields extends object>(
+	resources: readonly EventCalendarResource<TResourceFields>[]
+): EventCalendarResourceModel<TResourceFields> {
+	const resourcesById = validateResourceDefinitions(resources);
+	const signature = JSON.stringify(
+		resources.map((resource) => [resource.id, resource.parentId ?? null])
+	);
+	const structure = buildResourceStructure(resources, signature);
+	const leafIds = new Set(structure.leaves.map((leaf) => leaf.id));
+	const columns: EventCalendarResourceColumn<TResourceFields>[] = structure.leaves.map((leaf) => ({
+		key: `resource:${leaf.id}`,
+		resourceId: leaf.id,
+		resource: getRequiredResource(resourcesById, leaf.id),
+		depth: leaf.depth,
+		isUnassigned: false
+	}));
+	columns.push({
+		key: 'resource:unassigned',
+		resource: null,
+		depth: 0,
+		isUnassigned: true
+	});
 
-	get(
-		resources: readonly EventCalendarResource<TResourceFields>[]
-	): EventCalendarResourceModel<TResourceFields> {
-		if (this.resources === resources && this.model) return this.model;
+	const headerCells: EventCalendarResourceHeaderCell<TResourceFields>[] = structure.nodes.map(
+		(node) => ({
+			key: `resource-header:${node.id}`,
+			resourceId: node.id,
+			resource: getRequiredResource(resourcesById, node.id),
+			depth: node.depth,
+			isLeaf: node.isLeaf,
+			isUnassigned: false,
+			columnStart: node.leafStart,
+			columnSpan: node.leafSpan,
+			rowSpan: node.isLeaf ? structure.maxDepth - node.depth + 1 : 1
+		})
+	);
+	headerCells.push({
+		key: 'resource-header:unassigned',
+		resource: null,
+		depth: 0,
+		isLeaf: true,
+		isUnassigned: true,
+		columnStart: structure.leaves.length,
+		columnSpan: 1,
+		rowSpan: structure.maxDepth + 1
+	});
 
-		const resourcesById = validateResourceDefinitions(resources);
-		const signature = JSON.stringify(
-			resources.map((resource) => [resource.id, resource.parentId ?? null])
-		);
-		if (this.structure?.signature !== signature) {
-			this.structure = buildResourceStructure(resources, signature);
-		}
-
-		const structure = this.structure;
-		const leafIds = new Set(structure.leaves.map((leaf) => leaf.id));
-		const columns: EventCalendarResourceColumn<TResourceFields>[] = structure.leaves.map(
-			(leaf) => ({
-				key: `resource:${leaf.id}`,
-				resourceId: leaf.id,
-				resource: getRequiredResource(resourcesById, leaf.id),
-				depth: leaf.depth,
-				isUnassigned: false
-			})
-		);
-		columns.push({
-			key: 'resource:unassigned',
-			resource: null,
-			depth: 0,
-			isUnassigned: true
-		});
-
-		const headerCells: EventCalendarResourceHeaderCell<TResourceFields>[] = structure.nodes.map(
-			(node) => ({
-				key: `resource-header:${node.id}`,
-				resourceId: node.id,
-				resource: getRequiredResource(resourcesById, node.id),
-				depth: node.depth,
-				isLeaf: node.isLeaf,
-				isUnassigned: false,
-				columnStart: node.leafStart,
-				columnSpan: node.leafSpan,
-				rowSpan: node.isLeaf ? structure.maxDepth - node.depth + 1 : 1
-			})
-		);
-		headerCells.push({
-			key: 'resource-header:unassigned',
-			resource: null,
-			depth: 0,
-			isLeaf: true,
-			isUnassigned: true,
-			columnStart: structure.leaves.length,
-			columnSpan: 1,
-			rowSpan: structure.maxDepth + 1
-		});
-
-		this.resources = resources;
-		this.model = {
-			structure,
-			columns,
-			headerCells,
-			leafIds,
-			resolveLeaf: (resourceId) =>
-				resourceId && leafIds.has(resourceId) ? (resourcesById.get(resourceId) ?? null) : null,
-			resolveLeafId: (resourceId) =>
-				resourceId && leafIds.has(resourceId) ? resourceId : undefined,
-			resolveItemLeafIds: (item) =>
-				getEventCalendarResourceIds(item).flatMap((resourceId) =>
-					leafIds.has(resourceId) ? [resourceId] : []
-				),
-			getBusinessHours: (resourceId) =>
-				resourceId && leafIds.has(resourceId)
-					? (resourcesById.get(resourceId)?.businessHours ?? null)
-					: null,
-			isReadOnly: (resourceId) =>
-				Boolean(resourceId && leafIds.has(resourceId) && resourcesById.get(resourceId)?.readOnly)
-		};
-		return this.model;
-	}
+	return {
+		structure,
+		columns,
+		headerCells,
+		leafIds,
+		resolveLeaf: (resourceId) =>
+			resourceId && leafIds.has(resourceId) ? (resourcesById.get(resourceId) ?? null) : null,
+		resolveLeafId: (resourceId) => (resourceId && leafIds.has(resourceId) ? resourceId : undefined),
+		resolveItemLeafIds: (item) =>
+			getEventCalendarResourceIds(item).flatMap((resourceId) =>
+				leafIds.has(resourceId) ? [resourceId] : []
+			),
+		getBusinessHours: (resourceId) =>
+			resourceId && leafIds.has(resourceId)
+				? (resourcesById.get(resourceId)?.businessHours ?? null)
+				: null,
+		isReadOnly: (resourceId) =>
+			Boolean(resourceId && leafIds.has(resourceId) && resourcesById.get(resourceId)?.readOnly)
+	};
 }
 
 export function filterEventCalendarBucketByResource<TItemFields extends object>(

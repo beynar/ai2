@@ -39,7 +39,6 @@ export type EventCalendarItemIndex<TItemFields extends object> = {
 	segments: readonly EventCalendarSegment<TItemFields>[];
 	segmentsByDay: ReadonlyMap<EventCalendarDateOnly, EventCalendarDayBucket<TItemFields>>;
 	occurrencesByKey: ReadonlyMap<string, EventCalendarOccurrence<TItemFields>>;
-	scheduleIdentity: object;
 	getOccurrence(key: string): EventCalendarOccurrence<TItemFields> | null;
 	getOccurrences(range?: EventCalendarRange): readonly EventCalendarOccurrence<TItemFields>[];
 	getOccurrencesForDay(day: EventCalendarDateOnly): readonly EventCalendarOccurrence<TItemFields>[];
@@ -49,24 +48,8 @@ export type CreateEventCalendarItemIndexOptions<TItemFields extends object> = {
 	items: readonly EventCalendarItem<TItemFields>[];
 	range: EventCalendarRange;
 	displayTimeZone: string;
-	profileKey: string;
 	visibleDays?: readonly EventCalendarDateOnly[];
 	expandRecurrence?: EventCalendarRecurrenceExpander<TItemFields>;
-};
-
-type ItemSchedule = {
-	id: string;
-	resourceId?: string;
-	resourceIds?: readonly string[];
-	allDay: boolean;
-	start: Date | EventCalendarDateOnly;
-	end: Date | EventCalendarDateOnly;
-	display: 'auto' | 'background';
-	priority: number;
-	recurrence?: EventCalendarItem['recurrence'];
-	recurrenceTimeZone?: string;
-	recurringItemId?: string;
-	originalStart?: Date | EventCalendarDateOnly;
 };
 
 type RuntimeRecurrenceIdentity = {
@@ -100,21 +83,10 @@ type SegmentSchedule = {
 	continuesAfter: boolean;
 };
 
-type CachedSchedule = {
-	identity: object;
+type EventCalendarScheduleProjection = {
 	occurrences: readonly OccurrenceSchedule[];
 	segments: readonly SegmentSchedule[];
 };
-
-const exactIndexCache = new WeakMap<
-	readonly object[],
-	Map<string, EventCalendarItemIndex<object>>
->();
-const sharedScheduleCache = new Map<string, CachedSchedule>();
-const functionIdentities = new WeakMap<object, number>();
-let nextFunctionIdentity = 1;
-const MAX_EXACT_INDEX_CACHE_ENTRIES_PER_COLLECTION = 8;
-const MAX_SHARED_SCHEDULE_CACHE_ENTRIES = 32;
 
 /**
  * Creates the active occurrence index. Collections are controlled immutable snapshots; in-place
@@ -124,37 +96,8 @@ export function createEventCalendarItemIndex<TItemFields extends object>(
 	options: CreateEventCalendarItemIndexOptions<TItemFields>
 ): EventCalendarItemIndex<TItemFields> {
 	validateIndexOptions(options);
-	const exactKey = getQueryKey(options);
-	const collectionCache = exactIndexCache.get(options.items as readonly object[]);
-	const exact = collectionCache?.get(exactKey);
-	if (exact) {
-		collectionCache?.delete(exactKey);
-		collectionCache?.set(exactKey, exact);
-		return exact as EventCalendarItemIndex<TItemFields>;
-	}
-
 	const itemsById = validateItems(options.items, options.expandRecurrence !== undefined);
-	const scheduleSignature = getScheduleSignature(options);
-	let schedule = sharedScheduleCache.get(scheduleSignature);
-	if (!schedule) {
-		schedule = buildSchedule(options, itemsById);
-		sharedScheduleCache.set(scheduleSignature, schedule);
-		trimSharedScheduleCache();
-	} else {
-		sharedScheduleCache.delete(scheduleSignature);
-		sharedScheduleCache.set(scheduleSignature, schedule);
-	}
-	const index = hydrateIndex(schedule, itemsById, options.visibleDays);
-	const nextCollectionCache = collectionCache ?? new Map<string, EventCalendarItemIndex<object>>();
-	nextCollectionCache.set(exactKey, index as EventCalendarItemIndex<object>);
-	while (nextCollectionCache.size > MAX_EXACT_INDEX_CACHE_ENTRIES_PER_COLLECTION) {
-		const oldestKey = nextCollectionCache.keys().next().value;
-		if (oldestKey === undefined) break;
-		nextCollectionCache.delete(oldestKey);
-	}
-	if (!collectionCache)
-		exactIndexCache.set(options.items as readonly object[], nextCollectionCache);
-	return index;
+	return hydrateIndex(buildSchedule(options, itemsById), itemsById, options.visibleDays);
 }
 
 export function createRecurringOccurrenceKey(
@@ -224,9 +167,6 @@ function validateIndexOptions<TItemFields extends object>(
 	}
 	assertValidRange(options.range, 'item index range');
 	assertValidTimeZone(options.displayTimeZone);
-	if (typeof options.profileKey !== 'string' || options.profileKey.length === 0) {
-		throw new EventCalendarError('invalid-prop', 'profileKey must be a non-empty string.');
-	}
 	if (options.visibleDays) {
 		if (!Array.isArray(options.visibleDays)) {
 			throw new EventCalendarError('invalid-prop', 'visibleDays must be an array.');
@@ -280,6 +220,13 @@ function validateItemDisplayFields<TItemFields extends object>(
 			id: item.id
 		});
 	}
+	if (item.description !== undefined && typeof item.description !== 'string') {
+		throw new EventCalendarError(
+			'invalid-item',
+			`Item ${item.id} description must be a string when provided.`,
+			{ id: item.id }
+		);
+	}
 	if (item.priority !== undefined && !Number.isFinite(item.priority)) {
 		throw new EventCalendarError('invalid-item', `Item ${item.id} priority must be finite.`, {
 			id: item.id
@@ -322,6 +269,11 @@ function validateItemDisplayFields<TItemFields extends object>(
 function validateItemPlacement<TItemFields extends object>(
 	item: EventCalendarItem<TItemFields>
 ): void {
+	if (item.allDay !== undefined && typeof item.allDay !== 'boolean') {
+		throw new EventCalendarError('invalid-item', `Item ${item.id} has an invalid allDay value.`, {
+			id: item.id
+		});
+	}
 	if (item.allDay === true) {
 		try {
 			assertRenderableDateOnly(item.start, 'item.start');
@@ -473,7 +425,7 @@ function throwOriginRepresentationError(itemId: string, sourceId: string): never
 function buildSchedule<TItemFields extends object>(
 	options: CreateEventCalendarItemIndexOptions<TItemFields>,
 	itemsById: ReadonlyMap<string, EventCalendarItem<TItemFields>>
-): CachedSchedule {
+): EventCalendarScheduleProjection {
 	const exceptionOrigins = validateExceptionOrigins(options, itemsById);
 	const occurrences: OccurrenceSchedule[] = [];
 
@@ -529,7 +481,7 @@ function buildSchedule<TItemFields extends object>(
 		options.range,
 		null
 	);
-	return { identity: {}, occurrences, segments };
+	return { occurrences, segments };
 }
 
 function validateExceptionOrigins<TItemFields extends object>(
@@ -738,7 +690,7 @@ function getFinalOccurrenceDay(
 }
 
 function hydrateIndex<TItemFields extends object>(
-	schedule: CachedSchedule,
+	schedule: EventCalendarScheduleProjection,
 	itemsById: ReadonlyMap<string, EventCalendarItem<TItemFields>>,
 	visibleDays: readonly EventCalendarDateOnly[] | undefined
 ): EventCalendarItemIndex<TItemFields> {
@@ -780,7 +732,6 @@ function hydrateIndex<TItemFields extends object>(
 		segments,
 		segmentsByDay,
 		occurrencesByKey,
-		scheduleIdentity: schedule.identity,
 		getOccurrence: (key) => occurrencesByKey.get(key) ?? null,
 		getOccurrences: (range) => {
 			if (!range) return occurrences;
@@ -851,75 +802,6 @@ function bucketSegments<TItemFields extends object>(
 		else bucket.timed.push(segment);
 	}
 	return buckets;
-}
-
-function getScheduleSignature<TItemFields extends object>(
-	options: CreateEventCalendarItemIndexOptions<TItemFields>
-): string {
-	const schedules = options.items.map(getItemSchedule);
-	const expanderIdentity = options.expandRecurrence
-		? getFunctionIdentity(options.expandRecurrence)
-		: 0;
-	return stableSerialize([
-		options.profileKey,
-		options.range.start.getTime(),
-		options.range.end.getTime(),
-		options.displayTimeZone,
-		expanderIdentity,
-		schedules
-	]);
-}
-
-function getItemSchedule<TItemFields extends object>(
-	item: EventCalendarItem<TItemFields>
-): ItemSchedule {
-	return {
-		id: item.id,
-		resourceId: item.resourceId,
-		resourceIds: item.resourceIds,
-		allDay: item.allDay === true,
-		start: cloneOrigin(item.start),
-		end: cloneOrigin(item.end),
-		display: item.display ?? 'auto',
-		priority: item.priority ?? 0,
-		recurrence: item.recurrence,
-		recurrenceTimeZone: item.recurrenceTimeZone,
-		recurringItemId: item.recurringItemId,
-		originalStart: item.originalStart ? cloneOrigin(item.originalStart) : undefined
-	};
-}
-
-function getQueryKey<TItemFields extends object>(
-	options: CreateEventCalendarItemIndexOptions<TItemFields>
-): string {
-	const expanderIdentity = options.expandRecurrence
-		? getFunctionIdentity(options.expandRecurrence)
-		: 0;
-	return JSON.stringify([
-		options.profileKey,
-		options.range.start.getTime(),
-		options.range.end.getTime(),
-		options.displayTimeZone,
-		options.visibleDays ?? null,
-		expanderIdentity
-	]);
-}
-
-function getFunctionIdentity(callback: object): number {
-	let identity = functionIdentities.get(callback);
-	if (identity) return identity;
-	identity = nextFunctionIdentity;
-	nextFunctionIdentity += 1;
-	functionIdentities.set(callback, identity);
-	return identity;
-}
-
-function trimSharedScheduleCache(): void {
-	while (sharedScheduleCache.size > MAX_SHARED_SCHEDULE_CACHE_ENTRIES) {
-		const oldest = sharedScheduleCache.keys().next().value;
-		if (oldest === undefined) return;
-		sharedScheduleCache.delete(oldest);
-	}
 }
 
 function occurrenceIntersects(start: number, end: number, range: EventCalendarRange): boolean {
@@ -1020,18 +902,4 @@ function civilSerial(day: EventCalendarDateOnly): number {
 		Math.floor(yearOfEra / 100) +
 		dayOfYear
 	);
-}
-
-function stableSerialize(value: unknown): string {
-	if (value instanceof Date) return `date:${value.getTime()}`;
-	if (Array.isArray(value)) return `[${value.map(stableSerialize).join(',')}]`;
-	if (value && typeof value === 'object') {
-		const entries = Object.entries(value)
-			.filter(([, entry]) => entry !== undefined)
-			.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
-		return `{${entries
-			.map(([key, entry]) => `${JSON.stringify(key)}:${stableSerialize(entry)}`)
-			.join(',')}}`;
-	}
-	return JSON.stringify(value);
 }

@@ -16,7 +16,6 @@ import {
 	getNavigationDate,
 	getZonedDay,
 	isSupportedDateDomainError,
-	isDateOnly,
 	MAX_EVENT_CALENDAR_DAY,
 	normalizeLocale,
 	parseDateOnly,
@@ -45,7 +44,7 @@ import type {
 	EventCalendarTimeGridOptions
 } from './eventCalendar.props.js';
 import {
-	EventCalendarResourceIndex,
+	createEventCalendarResourceModel,
 	type EventCalendarResourceModel
 } from './eventCalendar.resources.js';
 import type { EventCalendarTheme } from './eventCalendar.theme.js';
@@ -103,30 +102,6 @@ const EMPTY_BUSINESS_HOURS: readonly never[] = Object.freeze([]);
 
 type EventCalendarRuntimeInteractions = EventCalendarInteractions & {
 	maintainDurationOnAllDayChange: boolean;
-};
-
-type EventCalendarRuntimeItem = {
-	id: string;
-	title: string;
-	description?: unknown;
-	resourceId?: string;
-	resourceIds?: unknown;
-	start: unknown;
-	end: unknown;
-	allDay?: unknown;
-	recurrence?: unknown;
-	recurrenceTimeZone?: unknown;
-	recurringItemId?: unknown;
-	originalStart?: unknown;
-};
-
-type EventCalendarRuntimeRecurrenceRule = {
-	freq: unknown;
-	interval?: unknown;
-	count?: unknown;
-	until?: unknown;
-	exDates?: unknown;
-	rDates?: unknown;
 };
 
 export const EMPTY_EVENT_CALENDAR_SELECTION: EventCalendarSelection = Object.freeze({
@@ -193,6 +168,23 @@ export interface EventCalendarState<
 	TResourceFields extends object
 > extends EventCalendarStateOptions<TItemFields, TResourceFields> {}
 
+export type EventCalendarModelBoundary<
+	TItemFields extends object,
+	TResourceFields extends object
+> = Readonly<{
+	items: EventCalendarItem<TItemFields>[];
+	resources: EventCalendarResource<TResourceFields>[];
+}>;
+
+export type EventCalendarModel<
+	TItemFields extends object,
+	TResourceFields extends object
+> = Readonly<{
+	dateProfile: EventCalendarDateProfile;
+	itemIndex: EventCalendarItemIndex<TItemFields>;
+	resourceModel: EventCalendarResourceModel<TResourceFields>;
+}>;
+
 /** Bindable calendar owner. Child owners keep DOM and interaction details out of this coordinator. */
 export class EventCalendarState<
 	TItemFields extends object = Record<never, never>,
@@ -208,9 +200,6 @@ export class EventCalendarState<
 	private pendingSelectionChange: EventCalendarSelection | null = null;
 	private pendingMissingSelectionKey: string | null = null;
 	private lastRangeSignature: string | null = null;
-	private readonly resourceIndex = new EventCalendarResourceIndex<TResourceFields>();
-	private validatedItems: readonly EventCalendarItem<TItemFields>[] | null = null;
-	private validatedRecurrenceExpander?: EventCalendarRecurrenceExpander<TItemFields>;
 
 	readonly locale = $derived(this.localeOption ?? this.messages.locale);
 	readonly weekStartsOn = $derived(this.weekStartsOnOption ?? getLocaleWeekStartsOn(this.locale));
@@ -257,33 +246,50 @@ export class EventCalendarState<
 		maintainDurationOnAllDayChange: this.allDayConversionOptions?.preserveDuration ?? false
 	});
 	readonly clipboard = $derived(this.interactions.clipboard);
+	readonly modelBoundary: EventCalendarModelBoundary<TItemFields, TResourceFields> = $derived({
+		items: this.items,
+		resources: this.resources
+	});
+	readonly model: EventCalendarModel<TItemFields, TResourceFields> = $derived.by(() => {
+		const dateProfile = this.createProfile(this.view, this.date, this.dayCount);
+		return {
+			dateProfile,
+			resourceModel: createEventCalendarResourceModel(this.resources),
+			itemIndex: createEventCalendarItemIndex({
+				items: this.items,
+				range: dateProfile.activeRange,
+				displayTimeZone: this.timeZone,
+				visibleDays: dateProfile.visibleDays,
+				expandRecurrence: this.expandRecurrence
+			})
+		};
+	});
+	private readonly validatedProjection = $derived.by(() => {
+		validateConfiguration(this);
+		validateSelection(this.selection);
+		return this.model;
+	});
 
 	get enabledViews(): readonly EventCalendarView[] {
-		return getEnabledViews(this.views, this.validateResourceCollection() > 0);
+		return getEnabledViews(this.views, this.resourceModel.structure.leaves.length > 0);
 	}
 
 	get resourceModel(): EventCalendarResourceModel<TResourceFields> {
-		return this.resourceIndex.get(this.resources);
+		return this.model.resourceModel;
 	}
 
 	get dateProfile(): EventCalendarDateProfile {
-		return this.derivedDateProfile;
+		return this.model.dateProfile;
 	}
 
-	private readonly derivedDateProfile = $derived.by(() =>
-		this.createProfile(this.view, this.date, this.dayCount)
-	);
-
 	get itemIndex(): EventCalendarItemIndex<TItemFields> {
-		const profile = this.dateProfile;
-		return createEventCalendarItemIndex({
-			items: this.items,
-			range: profile.activeRange,
-			displayTimeZone: this.timeZone,
-			profileKey: getItemProfileKey(profile),
-			visibleDays: profile.visibleDays,
-			expandRecurrence: this.expandRecurrence
-		});
+		return this.model.itemIndex;
+	}
+
+	isModelBoundaryCurrent(
+		boundary: EventCalendarModelBoundary<TItemFields, TResourceFields>
+	): boolean {
+		return boundary === this.modelBoundary;
 	}
 
 	private createProfile(
@@ -314,11 +320,12 @@ export class EventCalendarState<
 		bind(this, options);
 		this.interaction = new EventCalendarInteractionsController(this);
 		this.a11y = new EventCalendarA11y(this);
-		this.synchronize(false);
+		this.synchronize(false, this.validatedProjection);
 
 		$effect.pre(() => {
-			this.trackBoundaryInputs();
-			untrack(() => this.synchronize(this.isMounted));
+			const projection = this.validatedProjection;
+			const isMounted = this.isMounted;
+			untrack(() => this.synchronize(isMounted, projection));
 		});
 
 		$effect(() => {
@@ -379,7 +386,6 @@ export class EventCalendarState<
 	}
 
 	validateCandidateItems(items: EventCalendarItem<TItemFields>[]): void {
-		validateItems(items);
 		void this.getCandidateOccurrences(items);
 	}
 
@@ -391,7 +397,6 @@ export class EventCalendarState<
 			items,
 			range: profile.activeRange,
 			displayTimeZone: this.timeZone,
-			profileKey: `${getItemProfileKey(profile)}:candidate`,
 			visibleDays: profile.visibleDays,
 			expandRecurrence: this.expandRecurrence
 		}).occurrences;
@@ -439,7 +444,6 @@ export class EventCalendarState<
 				items,
 				range,
 				displayTimeZone: this.timeZone,
-				profileKey: `selection:${key}`,
 				expandRecurrence: this.expandRecurrence
 			}).getOccurrence(key) !== null
 		);
@@ -664,7 +668,6 @@ export class EventCalendarState<
 			items: this.items,
 			range,
 			displayTimeZone: this.timeZone,
-			profileKey: `query:${range.start.getTime()}:${range.end.getTime()}`,
 			expandRecurrence: this.expandRecurrence
 		}).occurrences;
 	}
@@ -690,7 +693,6 @@ export class EventCalendarState<
 			items: this.items,
 			range,
 			displayTimeZone: this.timeZone,
-			profileKey: `day-query:${day}`,
 			expandRecurrence: this.expandRecurrence
 		}).occurrences;
 	}
@@ -708,23 +710,21 @@ export class EventCalendarState<
 		}
 	}
 
-	private synchronize(notify: boolean): void {
-		const didItemCollectionChange =
-			this.validatedItems !== this.items ||
-			this.validatedRecurrenceExpander !== this.expandRecurrence;
-		validateConfiguration(this);
-		const resourceLeafCount = this.validateCollections();
-		validateSelection(this.selection);
-		const enabledViews = getEnabledViews(this.views, resourceLeafCount > 0);
+	private synchronize(
+		notify: boolean,
+		projection: EventCalendarModel<TItemFields, TResourceFields>
+	): void {
+		const enabledViews = getEnabledViews(
+			this.views,
+			projection.resourceModel.structure.leaves.length > 0
+		);
 		const nextView = enabledViews.includes(this.view) ? this.view : enabledViews[0];
 		const nextDate = this.reconcileDateFor(this.date, nextView);
 		this.createProfile(nextView, nextDate, this.dayCount);
 		const didViewChange = nextView !== this.view;
 		const didDateChange = nextDate.getTime() !== this.date.getTime();
 		const didSelectionChange =
-			didItemCollectionChange &&
-			this.selection.kind === 'item' &&
-			!this.hasItemSelection(this.items, this.selection.itemKey);
+			this.selection.kind === 'item' && !this.hasItemSelection(this.items, this.selection.itemKey);
 		if (!didViewChange && !didDateChange && !didSelectionChange) return;
 		const missingSelectionKey = didSelectionChange ? this.selection.itemKey : null;
 
@@ -755,24 +755,6 @@ export class EventCalendarState<
 		}
 		const recurring = decodeRecurringOccurrenceKey(key);
 		return recurring ? this.hasRecurringOccurrence(items, key, recurring.seriesId) : false;
-	}
-
-	private validateResourceCollection(): number {
-		return this.resourceModel.structure.leaves.length;
-	}
-
-	private validateCollections(): number {
-		const resourceLeafCount = this.validateResourceCollection();
-		if (
-			this.validatedItems !== this.items ||
-			this.validatedRecurrenceExpander !== this.expandRecurrence
-		) {
-			validateItems(this.items);
-			void this.itemIndex;
-			this.validatedItems = this.items;
-			this.validatedRecurrenceExpander = this.expandRecurrence;
-		}
-		return resourceLeafCount;
 	}
 
 	private reconcileDateFor(date: Date, view: EventCalendarView): Date {
@@ -807,59 +789,6 @@ export class EventCalendarState<
 		this.lastRangeSignature = signature;
 		this.onRangeChange?.(cloneProfile(profile));
 	}
-
-	private trackBoundaryInputs(): void {
-		void this.items;
-		void this.resources;
-		void this.view;
-		void this.views;
-		void this.date;
-		void this.dayCount;
-		void this.selection;
-		void this.timeZone;
-		void this.locale;
-		void this.weekStartsOn;
-		void this.fixedWeeks;
-		void this.showOutsideDays;
-		void this.showWeekends;
-		void this.weekendDays;
-		void this.agendaDayCount;
-		void this.validRange;
-		void this.dayStartHour;
-		void this.dayEndHour;
-		void this.interval;
-		void this.slotDuration;
-		void this.snapDuration;
-		void this.defaultTimedItemDuration;
-		void this.defaultAllDayItemDuration;
-		void this.scrollToHour;
-		void this.nowIndicatorInterval;
-		void this.maxItemsPerCell;
-		void this.createActivation;
-		void this.loading;
-		void this.direction;
-		void this.interactions;
-		void this.allowOverlap;
-		void this.constrainToBusinessHours;
-		void this.canUpdateItem;
-		void this.onItemUpdate;
-		void this.canSelectSlot;
-		void this.recurrenceEditScope;
-		void this.clipboard;
-		void this.historyLimit;
-		void this.getOccurrenceExceptionId;
-		void this.businessHours;
-		void this.offDays;
-		void this.expandRecurrence;
-	}
-}
-
-function getItemProfileKey(profile: EventCalendarDateProfile): string {
-	return JSON.stringify([
-		profile.view,
-		profile.activeRange.start.getTime(),
-		profile.activeRange.end.getTime()
-	]);
 }
 
 function validateConfiguration<TItemFields extends object, TResourceFields extends object>(
@@ -923,257 +852,6 @@ function getEnabledViews(
 		);
 	}
 	return enabled;
-}
-
-function validateItems<TItemFields extends object>(
-	items: readonly EventCalendarItem<TItemFields>[]
-): void {
-	if (!Array.isArray(items)) {
-		throw new EventCalendarError('invalid-item', 'items must be an array.');
-	}
-	const itemsById = new Map<string, EventCalendarRuntimeItem>();
-	for (const item of items) {
-		if (!item || typeof item !== 'object') {
-			throw new EventCalendarError('invalid-item', 'Every item must be an object.');
-		}
-		if (typeof item.id !== 'string' || item.id.length === 0) {
-			throw new EventCalendarError('invalid-item', 'Every item must have a non-empty string id.');
-		}
-		if (itemsById.has(item.id)) {
-			throw new EventCalendarError('duplicate-item-id', `Duplicate item id: ${item.id}.`, {
-				id: item.id
-			});
-		}
-		if (typeof item.title !== 'string') {
-			throw new EventCalendarError('invalid-item', `Item ${item.id} must have a string title.`, {
-				id: item.id
-			});
-		}
-		if (item.description !== undefined && typeof item.description !== 'string') {
-			throw new EventCalendarError(
-				'invalid-item',
-				`Item ${item.id} description must be a string when provided.`,
-				{ id: item.id }
-			);
-		}
-		validateItemPlacement(item);
-		itemsById.set(item.id, item);
-	}
-
-	const exceptionOrigins = new Set<string>();
-	for (const item of items) validateItemIdentity(item, itemsById, exceptionOrigins);
-}
-
-function validateItemPlacement(item: EventCalendarRuntimeItem): void {
-	if (item.allDay === true) {
-		assertItemDateOnly(item.start, item.id, 'start');
-		assertItemDateOnly(item.end, item.id, 'end');
-		if (item.end <= item.start) {
-			throw new EventCalendarError(
-				'invalid-item',
-				`All-day item ${item.id} must have a positive half-open range.`,
-				{ id: item.id }
-			);
-		}
-		return;
-	}
-	if (item.allDay !== undefined && item.allDay !== false) {
-		throw new EventCalendarError('invalid-item', `Item ${item.id} has an invalid allDay value.`, {
-			id: item.id
-		});
-	}
-	assertItemInstant(item.start, item.id, 'start');
-	assertItemInstant(item.end, item.id, 'end');
-	if (item.end.getTime() < item.start.getTime()) {
-		throw new EventCalendarError('invalid-item', `Timed item ${item.id} ends before it starts.`, {
-			id: item.id
-		});
-	}
-}
-
-function validateItemIdentity(
-	item: EventCalendarRuntimeItem,
-	itemsById: ReadonlyMap<string, EventCalendarRuntimeItem>,
-	exceptionOrigins: Set<string>
-): void {
-	const recurrence = item.recurrence;
-	const recurrenceTimeZone = item.recurrenceTimeZone;
-	const recurringItemId = item.recurringItemId;
-	const originalStart = item.originalStart;
-	const isException = recurringItemId !== undefined || originalStart !== undefined;
-
-	if (isException) {
-		if (
-			typeof recurringItemId !== 'string' ||
-			recurringItemId.length === 0 ||
-			originalStart === undefined
-		) {
-			throw new EventCalendarError(
-				'invalid-recurrence',
-				`Exception item ${item.id} requires recurringItemId and originalStart.`,
-				{ id: item.id }
-			);
-		}
-		if (recurrence !== undefined || recurrenceTimeZone !== undefined) {
-			throw new EventCalendarError(
-				'invalid-recurrence',
-				`Exception item ${item.id} cannot define recurrence fields.`,
-				{ id: item.id }
-			);
-		}
-		const source = itemsById.get(recurringItemId);
-		if (
-			!source ||
-			source.id === item.id ||
-			source.recurringItemId !== undefined ||
-			source.recurrence === undefined
-		) {
-			throw new EventCalendarError(
-				'invalid-recurrence',
-				`Exception item ${item.id} must reference a recurring source in the same collection.`,
-				{ id: item.id, recurringItemId }
-			);
-		}
-		validateExceptionOrigin(item.id, source, originalStart);
-		const originKey = `${recurringItemId}\u0000${canonicalOrigin(originalStart)}`;
-		if (exceptionOrigins.has(originKey)) {
-			throw new EventCalendarError(
-				'invalid-recurrence',
-				`Multiple exceptions target the same origin in series ${recurringItemId}.`,
-				{ recurringItemId, originalStart: canonicalOrigin(originalStart) }
-			);
-		}
-		exceptionOrigins.add(originKey);
-		return;
-	}
-
-	if (recurrence === undefined) {
-		if (recurrenceTimeZone !== undefined) {
-			throw new EventCalendarError(
-				'invalid-recurrence',
-				`Item ${item.id} cannot define recurrenceTimeZone without recurrence.`,
-				{ id: item.id }
-			);
-		}
-		return;
-	}
-
-	validateRecurrenceRule(recurrence, item.allDay === true, item.id);
-	if (item.allDay === true) {
-		if (recurrenceTimeZone !== undefined) {
-			throw new EventCalendarError(
-				'invalid-recurrence',
-				`All-day recurring item ${item.id} cannot define recurrenceTimeZone.`,
-				{ id: item.id }
-			);
-		}
-		return;
-	}
-	if (typeof recurrenceTimeZone !== 'string') {
-		throw new EventCalendarError(
-			'invalid-recurrence',
-			`Timed recurring item ${item.id} requires recurrenceTimeZone.`,
-			{ id: item.id }
-		);
-	}
-	try {
-		assertValidTimeZone(recurrenceTimeZone);
-	} catch (error) {
-		if (!(error instanceof EventCalendarError)) throw error;
-		throw new EventCalendarError(
-			'invalid-recurrence',
-			`Timed recurring item ${item.id} has an invalid recurrenceTimeZone.`,
-			{ id: item.id, recurrenceTimeZone }
-		);
-	}
-}
-
-function validateRecurrenceRule(rule: unknown, isAllDay: boolean, itemId: string): void {
-	if (typeof rule === 'string') {
-		if (rule.trim().length > 0) return;
-		throw new EventCalendarError(
-			'invalid-recurrence',
-			`Item ${itemId} has an empty recurrence rule.`,
-			{
-				id: itemId
-			}
-		);
-	}
-	if (!isRecurrenceRule(rule)) {
-		throw new EventCalendarError(
-			'invalid-recurrence',
-			`Item ${itemId} has an invalid recurrence rule.`,
-			{
-				id: itemId
-			}
-		);
-	}
-	if (
-		typeof rule.freq !== 'string' ||
-		!['daily', 'weekly', 'monthly', 'yearly'].includes(rule.freq)
-	) {
-		throw new EventCalendarError('invalid-recurrence', `Item ${itemId} has an invalid frequency.`, {
-			id: itemId
-		});
-	}
-	if (rule.interval !== undefined)
-		assertRecurrencePositiveInteger(rule.interval, itemId, 'interval');
-	if (rule.count !== undefined) assertRecurrencePositiveInteger(rule.count, itemId, 'count');
-	if (rule.until !== undefined) validateRecurrenceDate(rule.until, isAllDay, itemId, 'until');
-	validateRecurrenceDateList(rule.exDates, isAllDay, itemId, 'exDates');
-	validateRecurrenceDateList(rule.rDates, isAllDay, itemId, 'rDates');
-}
-
-function validateRecurrenceDate(
-	date: unknown,
-	isAllDay: boolean,
-	itemId: string,
-	field: string
-): void {
-	if (isAllDay && isDateOnly(date)) return;
-	if (!isAllDay && date instanceof Date && Number.isFinite(date.getTime())) return;
-	throw new EventCalendarError(
-		'invalid-recurrence',
-		`Recurring item ${itemId} has a ${field} value with the wrong representation.`,
-		{ id: itemId, field }
-	);
-}
-
-function validateRecurrenceDateList(
-	dates: unknown,
-	isAllDay: boolean,
-	itemId: string,
-	field: string
-): void {
-	if (dates === undefined) return;
-	if (!Array.isArray(dates)) {
-		throw new EventCalendarError(
-			'invalid-recurrence',
-			`Recurring item ${itemId} requires ${field} to be an array.`,
-			{ id: itemId, field }
-		);
-	}
-	for (const date of dates) validateRecurrenceDate(date, isAllDay, itemId, field);
-}
-
-function validateExceptionOrigin(
-	itemId: string,
-	source: EventCalendarRuntimeItem,
-	originalStart: unknown
-): asserts originalStart is Date | EventCalendarDateOnly {
-	if (source.allDay === true && isDateOnly(originalStart)) return;
-	if (
-		source.allDay !== true &&
-		originalStart instanceof Date &&
-		Number.isFinite(originalStart.getTime())
-	) {
-		return;
-	}
-	throw new EventCalendarError(
-		'invalid-recurrence',
-		`Exception item ${itemId} has an origin representation that does not match its source.`,
-		{ id: itemId, recurringItemId: source.id }
-	);
 }
 
 function validateSelection(selection: EventCalendarSelection): void {
@@ -1403,44 +1081,6 @@ function parseWallMinutes(value: unknown, allowEnd: boolean, name: string): numb
 	return hour * 60 + minute;
 }
 
-function assertItemInstant(
-	value: unknown,
-	itemId: string,
-	field: 'start' | 'end'
-): asserts value is Date {
-	try {
-		if (!(value instanceof Date)) throw new EventCalendarError('invalid-item', 'Invalid instant.');
-		assertValidInstant(value, `items[${itemId}].${field}`);
-	} catch (error) {
-		if (!(error instanceof EventCalendarError)) throw error;
-		throw new EventCalendarError(
-			'invalid-item',
-			`Item ${itemId} has an invalid ${field} instant.`,
-			{
-				id: itemId,
-				field
-			}
-		);
-	}
-}
-
-function assertItemDateOnly(
-	value: unknown,
-	itemId: string,
-	field: 'start' | 'end'
-): asserts value is EventCalendarDateOnly {
-	try {
-		assertDateOnly(value, `items[${itemId}].${field}`);
-	} catch (error) {
-		if (!(error instanceof EventCalendarError)) throw error;
-		throw new EventCalendarError(
-			'invalid-item',
-			`Item ${itemId} has an invalid ${field} civil date.`,
-			{ id: itemId, field }
-		);
-	}
-}
-
 function assertView(value: EventCalendarView): void {
 	if (VIEW_SET.has(value)) return;
 	throw new EventCalendarError('invalid-view', `Unsupported calendar view: ${String(value)}.`, {
@@ -1470,23 +1110,6 @@ function assertNonNegativeInteger(value: number, name: string): void {
 		prop: name,
 		value
 	});
-}
-
-function assertRecurrencePositiveInteger(value: unknown, itemId: string, field: string): void {
-	if (typeof value === 'number' && Number.isInteger(value) && value > 0) return;
-	throw new EventCalendarError(
-		'invalid-recurrence',
-		`Recurring item ${itemId} requires a positive ${field}.`,
-		{ id: itemId, field, value }
-	);
-}
-
-function isRecurrenceRule(value: unknown): value is EventCalendarRuntimeRecurrenceRule {
-	return typeof value === 'object' && value !== null && 'freq' in value;
-}
-
-function canonicalOrigin(value: Date | EventCalendarDateOnly): string {
-	return value instanceof Date ? value.toISOString() : value;
 }
 
 function selectionsEqual(left: EventCalendarSelection, right: EventCalendarSelection): boolean {

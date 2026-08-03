@@ -36,7 +36,10 @@ import {
 	replaceEventCalendarResourceAssignment,
 	setEventCalendarResourceIds
 } from './eventCalendar.resources.js';
-import type { EventCalendarState } from './eventCalendar.state.svelte.js';
+import type {
+	EventCalendarModelBoundary,
+	EventCalendarState
+} from './eventCalendar.state.svelte.js';
 import type {
 	EventCalendarChange,
 	EventCalendarBusinessHours,
@@ -210,9 +213,10 @@ export class EventCalendarInteractionsController<
 	private suppressedClickKey: string | null = null;
 	private isSlotClickSuppressed = false;
 	private singlePointerAnchor: EventCalendarSlot | null = null;
-	private singlePointerBoundary: readonly unknown[] | null = null;
+	private singlePointerBoundary: EventCalendarModelBoundary<TItemFields, TResourceFields> | null =
+		null;
 	private targetElements = new Map<string, HTMLElement>();
-	private gestureBoundary: readonly unknown[] | null = null;
+	private gestureBoundary: EventCalendarModelBoundary<TItemFields, TResourceFields> | null = null;
 	private itemDragFrame: number | null = null;
 	private lastPublishedProposalKey: string | null = null;
 	private pendingItemDrag: {
@@ -1811,7 +1815,7 @@ export class EventCalendarInteractionsController<
 
 	private commitProposal(
 		initialProposal: EventCalendarProposedUpdate<TItemFields>,
-		gestureBoundary?: readonly unknown[]
+		gestureBoundary?: EventCalendarModelBoundary<TItemFields, TResourceFields>
 	): void {
 		if (
 			initialProposal.source !== 'external-drop' &&
@@ -1922,7 +1926,7 @@ export class EventCalendarInteractionsController<
 	private commitRecurrenceProposal(
 		initialProposal: EventCalendarProposedUpdate<TItemFields>,
 		scope: 'occurrence' | 'series' | 'disabled',
-		gestureBoundary?: readonly unknown[]
+		gestureBoundary?: EventCalendarModelBoundary<TItemFields, TResourceFields>
 	): void {
 		if (scope === 'disabled') {
 			this.reportBlocked({
@@ -2821,55 +2825,24 @@ export class EventCalendarInteractionsController<
 		return null;
 	}
 
-	private getBoundary(): readonly unknown[] {
-		return [
-			this.calendar.items,
-			this.calendar.resources,
-			this.calendar.view,
-			this.calendar.date,
-			this.calendar.dayCount,
-			this.calendar.timeZone,
-			this.calendar.locale,
-			this.calendar.weekStartsOn,
-			this.calendar.fixedWeeks,
-			this.calendar.showOutsideDays,
-			this.calendar.showWeekends,
-			this.calendar.weekendDays,
-			this.calendar.agendaDayCount,
-			this.calendar.validRange,
-			this.calendar.dayStartHour,
-			this.calendar.dayEndHour,
-			this.calendar.interval,
-			this.calendar.slotDuration,
-			this.calendar.snapDuration,
-			this.calendar.defaultTimedItemDuration,
-			this.calendar.defaultAllDayItemDuration,
-			this.calendar.createActivation,
-			this.calendar.businessHours,
-			this.calendar.loading,
-			this.calendar.disabled,
-			this.calendar.interactions,
-			this.calendar.allowOverlap,
-			this.calendar.constrainToBusinessHours,
-			this.calendar.canUpdateItem,
-			this.calendar.canSelectSlot,
-			this.calendar.onItemUpdate,
-			this.calendar.recurrenceEditScope,
-			this.calendar.getOccurrenceExceptionId,
-			this.calendar.expandRecurrence,
-			this.calendar.direction
-		];
+	private getBoundary(): EventCalendarModelBoundary<TItemFields, TResourceFields> {
+		return this.calendar.modelBoundary;
 	}
 
-	private hasBoundaryChanged(boundary: readonly unknown[], next = this.getBoundary()): boolean {
-		return boundary.some((value, index) => value !== next[index]);
+	private hasBoundaryChanged(
+		boundary: EventCalendarModelBoundary<TItemFields, TResourceFields>,
+		next = this.getBoundary()
+	): boolean {
+		return boundary !== next;
 	}
 
 	private isGestureStale(): boolean {
 		return this.gestureBoundary !== null && this.hasBoundaryChanged(this.gestureBoundary);
 	}
 
-	private cancelStaleGesture(boundary: readonly unknown[]): boolean {
+	private cancelStaleGesture(
+		boundary: EventCalendarModelBoundary<TItemFields, TResourceFields>
+	): boolean {
 		if (!this.hasBoundaryChanged(boundary)) return false;
 		if (this.gesture && this.gestureBoundary === boundary) this.cancel('stale');
 		return true;
@@ -2877,7 +2850,7 @@ export class EventCalendarInteractionsController<
 
 	private reportStaleProposal(
 		proposal: EventCalendarProposedUpdate<TItemFields>,
-		gestureBoundary?: readonly unknown[]
+		gestureBoundary?: EventCalendarModelBoundary<TItemFields, TResourceFields>
 	): void {
 		if (gestureBoundary && this.cancelStaleGesture(gestureBoundary)) return;
 		this.reportBlocked({ reason: 'stale', source: proposal.source, proposal });
