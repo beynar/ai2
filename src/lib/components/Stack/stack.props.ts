@@ -4,8 +4,9 @@ import type { LayoutRootAttributes } from '../Layout/layoutAttributes.js';
 import type { LayoutSpacing } from '../Layout/layoutSpacing.js';
 import type { StackThemeProps } from './stack.theme.js';
 
-export type StackMainAlignment = 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
-export type StackCrossAlignment = 'start' | 'center' | 'end' | 'stretch';
+export type StackOrientation = 'horizontal' | 'vertical';
+export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
+export type StackJustify = 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
 export type StackWrap = 'nowrap' | 'wrap' | 'wrap-reverse';
 export type StackElement =
 	| 'div'
@@ -24,7 +25,7 @@ export type StackElement =
 	| 'li';
 export type StackSizeValue = number | string;
 
-export type StackBase = WithAttachments<
+export type StackProps = WithAttachments<
 	WithSlot<
 		LayoutRootAttributes & {
 			/** Bindable reference to the root element. */
@@ -33,6 +34,12 @@ export type StackBase = WithAttachments<
 			class?: string;
 			/** Semantic container element rendered by the stack. */
 			as?: StackElement;
+			/** Flex direction. `'horizontal'` renders `flex-row`, `'vertical'` renders `flex-col`. */
+			orientation?: StackOrientation;
+			/** Cross-axis alignment (`items-*`). */
+			align?: StackAlign;
+			/** Main-axis alignment (`justify-*`). */
+			justify?: StackJustify;
 			/** Spacing between children on the active theme spacing scale. */
 			gap?: LayoutSpacing;
 			/** Padding on both axes. Axis-specific values take precedence. */
@@ -53,7 +60,7 @@ export type StackBase = WithAttachments<
 			maxWidth?: StackSizeValue;
 			/** Minimum height. Numbers are interpreted as pixels. */
 			minHeight?: StackSizeValue;
-			/** Theme overrides shared by both stack directions. */
+			/** Theme overrides. */
 			theme?: StackThemeProps;
 		},
 		'children'

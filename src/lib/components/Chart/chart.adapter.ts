@@ -199,7 +199,8 @@ function compileChartPlot<TRow extends object>(
 		configuration.tooltip,
 		tooltipClassName,
 		hexbinMark ? undefined : resolveChartTooltipGroupBy(configuration),
-		resolveTooltipSpecialization(distributionMark, proportionMark, hexbinMark)
+		resolveTooltipSpecialization(distributionMark, proportionMark, hexbinMark),
+		configuration
 	);
 	const areaGradients = configuration.marks.some((mark) => mark.type === 'series' && mark.area)
 		? compileAreaGradients(configuration.palette, path)

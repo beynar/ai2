@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack, type Snippet } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
+	import { BROWSER } from 'esm-env';
 	import type { DiffLineAnnotation, FileDiffOptions } from '@pierre/diffs';
 	import type { DiffProps } from './diff.props.js';
 	import type { DiffInput, PreloadedDiffRenderItem } from './diff-input.js';
@@ -51,7 +52,7 @@
 
 	// --- SSR: render the diff HTML on the server as declarative shadow DOM so it is
 	// visible before hydration (requires `compilerOptions.experimental.async`). ---
-	const serverPreloaded = import.meta.env.SSR ? await preloadServerDiff() : undefined;
+	const serverPreloaded = !BROWSER ? await preloadServerDiff() : undefined;
 	const serverMarkup = createPreloadedMarkup(
 		serverPreloaded,
 		untrack(() => fileWrapperClass)

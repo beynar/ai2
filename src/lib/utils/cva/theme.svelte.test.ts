@@ -83,29 +83,26 @@ describe('useComponentTheme', () => {
 		expect(result).toBe('text-sm rounded-lg');
 	});
 
-	it('reuses one composed theme for every consumer of the same context theme', () => {
+	it('produces identical classes for every consumer of the same context theme', () => {
 		const defaultTheme = makeTheme();
-		const themes: unknown[] = [];
+		const results: string[] = [];
 		inComponent(() => {
 			setComponentTheme('btnShared')({ button: { base: 'ring-1' } });
 			const use = useComponentTheme('btnShared', defaultTheme);
-			themes.push(use(), use(), use());
+			results.push(use().button({ size: 'sm' }), use().button({ size: 'sm' }));
 		});
-		expect(themes[0]).not.toBe(defaultTheme);
-		expect(themes[1]).toBe(themes[0]);
-		expect(themes[2]).toBe(themes[0]);
+		expect(results[0]).toBe('rounded text-sm ring-1');
+		expect(results[1]).toBe(results[0]);
 	});
 
-	it('memoises by the original theme argument identity', () => {
+	it('applies the instance class after theme overrides', () => {
 		const defaultTheme = makeTheme();
-		const localTheme = { button: { base: 'shadow' } };
-		let first: unknown, second: unknown;
+		let result: string | undefined;
 		inComponent(() => {
-			const use = useComponentTheme('btnLocalMemo', defaultTheme);
-			first = use(localTheme);
-			second = use(localTheme);
+			const use = useComponentTheme('btnInstance', defaultTheme);
+			result = use({ button: { base: 'px-4' } }).button({ size: 'sm', class: 'px-8' });
 		});
-		expect(second).toBe(first);
+		expect(result).toBe('rounded text-sm px-8');
 	});
 
 	it('returns the shared default instance on the fast path', () => {
@@ -117,6 +114,46 @@ describe('useComponentTheme', () => {
 		});
 		expect(a).toBe(defaultTheme);
 		expect(b).toBe(defaultTheme);
+	});
+
+	it('applies overrides keyed by boolean and numeric variant values', () => {
+		const defaultTheme = {
+			button: cva({
+				base: 'rounded',
+				variants: { loading: { true: 'opacity-50', false: '' }, depth: { 0: 'z-0', 1: 'z-10' } }
+			})
+		};
+		let result: string | undefined;
+		inComponent(() => {
+			const use = useComponentTheme('btnBool', defaultTheme);
+			const theme = use({ button: { loading: { true: 'grayscale' }, depth: { 0: 'shadow' } } });
+			result = theme.button({ loading: true, depth: 0 });
+		});
+		expect(result).toBe('rounded opacity-50 z-0 grayscale shadow');
+	});
+
+	it('override only replaces the slots it mentions', () => {
+		const defaultTheme = { ...makeTheme(), icon: cva({ base: 'size-4' }) };
+		let root: string | undefined, icon: string | undefined;
+		inComponent(() => {
+			const use = useComponentTheme('btnSlots', defaultTheme);
+			const theme = use({ override: true, button: { base: 'shadow' } });
+			root = theme.button({ size: 'sm' });
+			icon = theme.icon({});
+		});
+		expect(root).toBe('shadow');
+		expect(icon).toBe('size-4');
+	});
+
+	it('lets a local variant class beat the context one on conflicts', () => {
+		const defaultTheme = makeTheme();
+		let result: string | undefined;
+		inComponent(() => {
+			setComponentTheme('btnVariantOrder')({ button: { size: { sm: 'p-2' } } });
+			const use = useComponentTheme('btnVariantOrder', defaultTheme);
+			result = use({ button: { size: { sm: 'p-4' } } }).button({ size: 'sm' });
+		});
+		expect(result).toBe('rounded text-sm p-4');
 	});
 
 	it('reads a theme from its exact component context', () => {

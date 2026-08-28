@@ -3,7 +3,6 @@
 @plugin './lib/tailwind/theme' {
 	name: light;
 	default: true;
-	spacing: normal;
 	colorscheme: light;
 	surface: #f7fafa;
 	neutral: #1b1d29;
@@ -15,7 +14,6 @@
 }
 @plugin './lib/tailwind/theme' {
 	name: dark;
-	spacing: normal;
 	colorscheme: dark;
 	surface: #15161c;
 	surface-floating: #27282f;

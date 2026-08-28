@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
-	import { HStack, VStack } from '$lib/components/Stack/index.js';
+	import { Stack } from '$lib/components/Stack/index.js';
 	import Chip from '$lib/components/Chip/Chip.svelte';
 	import { bellSimpleIcon } from '$lib/components/Icons/bellSimple.js';
 	import { clockIcon } from '$lib/components/Icons/clock.js';
@@ -11,10 +11,11 @@
 </script>
 
 <DocPage
-	title="HStack"
-	subtitle="Arranges content horizontally with theme-aware spacing and axis-safe alignment."
-	component="HStack"
+	title="Stack"
+	subtitle="Arranges content along a single flex axis with theme-aware spacing and alignment."
+	component="Stack"
 	features={[
+		'Horizontal and vertical orientation',
 		'Main and cross-axis alignment',
 		'Numeric theme spacing',
 		'Wrapping and native scrolling',
@@ -25,7 +26,8 @@
 	<ComponentCard
 		description="A complete notification row composed from horizontal and vertical stacks."
 		class="min-h-[360px]"
-		code={`<HStack
+		code={`<Stack
+	orientation="horizontal"
 	gap={3}
 	align="center"
 	padding={4}
@@ -33,14 +35,15 @@
 	class="rounded-lg border"
 >
 	<div class="icon">...</div>
-	<VStack gap={0.5}>
+	<Stack gap={0.5}>
 		<strong>Deployment complete</strong>
 		<span>Production is running version 2.4.0.</span>
-	</VStack>
+	</Stack>
 	<Chip color="success" variant="soft">Live</Chip>
-</HStack>`}
+</Stack>`}
 	>
-		<HStack
+		<Stack
+			orientation="horizontal"
 			gap={3}
 			align="center"
 			padding={4}
@@ -53,14 +56,12 @@
 			>
 				{@render bellSimpleIcon({ class: 'size-5' })}
 			</div>
-			<VStack gap={0.5} class="min-w-0 flex-1">
+			<Stack gap={0.5} class="min-w-0 flex-1">
 				<strong class="text-neutral text-sm">Deployment complete</strong>
-				<span class="text-neutral/60 truncate text-xs">
-					Production is running version 2.4.0.
-				</span>
-			</VStack>
+				<span class="text-neutral/60 truncate text-xs"> Production is running version 2.4.0. </span>
+			</Stack>
 			<Chip color="success" variant="soft">Live</Chip>
-		</HStack>
+		</Stack>
 	</ComponentCard>
 
 	{#snippet examples()}
@@ -68,17 +69,18 @@
 			title="Main-axis alignment"
 			description="Use justify as the readable alias for horizontal alignment."
 			code={`{#each ['start', 'center', 'end', 'between'] as alignment}
-	<HStack justify={alignment} gap={2} width="100%">
+	<Stack orientation="horizontal" justify={alignment} gap={2} width="100%">
 		<span>Alpha</span>
 		<span>Beta</span>
-	</HStack>
+	</Stack>
 {/each}`}
 		>
-			<VStack gap={3} width="100%" maxWidth={720}>
+			<Stack gap={3} width="100%" maxWidth={720}>
 				{#each alignments as alignment (alignment)}
-					<VStack gap={1}>
+					<Stack gap={1}>
 						<span class="text-neutral/60 font-mono text-[11px]">{alignment}</span>
-						<HStack
+						<Stack
+							orientation="horizontal"
 							justify={alignment}
 							gap={2}
 							padding={2}
@@ -87,40 +89,41 @@
 						>
 							<span class="bg-primary/15 text-primary rounded px-2 py-1 text-xs">Alpha</span>
 							<span class="bg-success/15 text-success rounded px-2 py-1 text-xs">Beta</span>
-						</HStack>
-					</VStack>
+						</Stack>
+					</Stack>
 				{/each}
-			</VStack>
+			</Stack>
 		</ComponentCard>
 
 		<ComponentCard
 			title="Wrapping"
-			description="A wrapped HStack keeps spacing consistent as available width changes."
-			code={`<HStack gap={2} wrap="wrap">
+			description="A wrapped horizontal Stack keeps spacing consistent as available width changes."
+			code={`<Stack orientation="horizontal" gap={2} wrap="wrap">
 	{#each filters as filter}
 		<Chip variant="soft">{filter}</Chip>
 	{/each}
-</HStack>`}
+</Stack>`}
 		>
-			<HStack gap={2} wrap="wrap" width="100%" maxWidth={480}>
+			<Stack orientation="horizontal" gap={2} wrap="wrap" width="100%" maxWidth={480}>
 				{#each filters as filter (filter)}
 					<Chip variant="soft" color={filter === 'Research' ? 'secondary' : 'neutral'}>
 						{filter}
 					</Chip>
 				{/each}
-			</HStack>
+			</Stack>
 		</ComponentCard>
 
 		<ComponentCard
 			title="Semantic navigation"
 			description="Change the root element without rebuilding the flex layout."
-			code={`<HStack as="nav" gap={4} align="center" aria-label="Project navigation">
+			code={`<Stack orientation="horizontal" as="nav" gap={4} align="center" aria-label="Project navigation">
 	<a href="/overview">Overview</a>
 	<a href="/activity">Activity</a>
 	<a href="/settings">Settings</a>
-</HStack>`}
+</Stack>`}
 		>
-			<HStack
+			<Stack
+				orientation="horizontal"
 				as="nav"
 				gap={5}
 				align="center"
@@ -133,7 +136,7 @@
 				<span class="text-neutral/60 ml-2 inline-flex items-center gap-1 text-xs">
 					{@render clockIcon({ class: 'size-3.5' })} Updated now
 				</span>
-			</HStack>
+			</Stack>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

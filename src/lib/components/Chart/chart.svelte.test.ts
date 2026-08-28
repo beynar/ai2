@@ -244,8 +244,7 @@ describe('Chart in the browser', () => {
 						format: (value: number) => `€${value}`
 					}
 				],
-				placement: 'top',
-				sticky: true
+				placement: 'top'
 			}
 		} satisfies ChartConfiguration<Revenue>;
 		const { container } = render(RevenueChart, {
@@ -263,7 +262,7 @@ describe('Chart in the browser', () => {
 		await waitFor(() => {
 			const tooltip = document.querySelector('[role="status"]');
 			expect(tooltip).toHaveAttribute('aria-label', 'Revenue: €12');
-			expect(tooltip).toHaveAttribute('data-sticky', 'true');
+			expect(tooltip).toHaveAttribute('data-sticky', 'false');
 		});
 	});
 

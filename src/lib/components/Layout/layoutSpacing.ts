@@ -16,7 +16,7 @@ const spacingValues = {
 		columnGap: 'gap-x-0.5',
 		paddingInline: 'px-0.5',
 		paddingBlock: 'py-0.5',
-		css: 'var(--ui-spacing-0_5)'
+		css: 'calc(var(--spacing) * 0.5)'
 	},
 	'1': {
 		gap: 'gap-1',
@@ -24,7 +24,7 @@ const spacingValues = {
 		columnGap: 'gap-x-1',
 		paddingInline: 'px-1',
 		paddingBlock: 'py-1',
-		css: 'var(--ui-spacing-1)'
+		css: 'var(--spacing)'
 	},
 	'1.5': {
 		gap: 'gap-1.5',
@@ -32,7 +32,7 @@ const spacingValues = {
 		columnGap: 'gap-x-1.5',
 		paddingInline: 'px-1.5',
 		paddingBlock: 'py-1.5',
-		css: 'var(--ui-spacing-1_5)'
+		css: 'calc(var(--spacing) * 1.5)'
 	},
 	'2': {
 		gap: 'gap-2',
@@ -40,7 +40,7 @@ const spacingValues = {
 		columnGap: 'gap-x-2',
 		paddingInline: 'px-2',
 		paddingBlock: 'py-2',
-		css: 'var(--ui-spacing-2)'
+		css: 'calc(var(--spacing) * 2)'
 	},
 	'3': {
 		gap: 'gap-3',
@@ -48,7 +48,7 @@ const spacingValues = {
 		columnGap: 'gap-x-3',
 		paddingInline: 'px-3',
 		paddingBlock: 'py-3',
-		css: 'var(--ui-spacing-3)'
+		css: 'calc(var(--spacing) * 3)'
 	},
 	'4': {
 		gap: 'gap-4',
@@ -56,7 +56,7 @@ const spacingValues = {
 		columnGap: 'gap-x-4',
 		paddingInline: 'px-4',
 		paddingBlock: 'py-4',
-		css: 'var(--ui-spacing-4)'
+		css: 'calc(var(--spacing) * 4)'
 	},
 	'5': {
 		gap: 'gap-5',
@@ -64,7 +64,7 @@ const spacingValues = {
 		columnGap: 'gap-x-5',
 		paddingInline: 'px-5',
 		paddingBlock: 'py-5',
-		css: 'var(--ui-spacing-5)'
+		css: 'calc(var(--spacing) * 5)'
 	},
 	'6': {
 		gap: 'gap-6',
@@ -72,7 +72,7 @@ const spacingValues = {
 		columnGap: 'gap-x-6',
 		paddingInline: 'px-6',
 		paddingBlock: 'py-6',
-		css: 'var(--ui-spacing-6)'
+		css: 'calc(var(--spacing) * 6)'
 	},
 	'8': {
 		gap: 'gap-8',
@@ -80,7 +80,7 @@ const spacingValues = {
 		columnGap: 'gap-x-8',
 		paddingInline: 'px-8',
 		paddingBlock: 'py-8',
-		css: 'var(--ui-spacing-8)'
+		css: 'calc(var(--spacing) * 8)'
 	},
 	'10': {
 		gap: 'gap-10',
@@ -88,7 +88,7 @@ const spacingValues = {
 		columnGap: 'gap-x-10',
 		paddingInline: 'px-10',
 		paddingBlock: 'py-10',
-		css: 'var(--ui-spacing-10)'
+		css: 'calc(var(--spacing) * 10)'
 	}
 } as const satisfies Record<
 	LayoutSpacingKey,

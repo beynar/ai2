@@ -297,7 +297,7 @@ export const tailwindColors = {
 		'950': '#500724'
 	},
 	rose: {
-		'50': '#fafafa1f2',
+		'50': '#fff1f2',
 		'100': '#ffe4e6',
 		'200': '#fecdd3',
 		'300': '#fda4af',
@@ -518,8 +518,8 @@ export const generateColorPalette = (opts: ColorThemeOption) => {
 	};
 
 	const surfaceLightness = isDark
-		? { DEFAULT: 0.18, recessed: 0.12, canvas: 0.15, raised: 0.22, floating: 0.28 }
-		: { DEFAULT: 0.98, recessed: 0.93, canvas: 0.965, raised: 0.99, floating: 1 };
+		? { DEFAULT: 0.18, recessed: 0.14, canvas: 0.16, raised: 0.2, floating: 0.24 }
+		: { DEFAULT: 0.985, recessed: 0.966, canvas: 0.976, raised: 0.993, floating: 1 };
 
 	const setPerceptualLightness = (color: string, lightness: number) => {
 		const { c, h } = hex2oklch(toHex(color));

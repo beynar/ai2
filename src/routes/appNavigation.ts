@@ -53,11 +53,11 @@ const sidebarSections: Array<{ label: string; links: AppNavigationLink[] }> = [
 			{ href: '/components/grid', text: 'Grid' },
 			{ href: '/components/grid-span', text: 'Grid span' },
 			{ href: '/components/heading', text: 'Heading' },
-			{ href: '/components/h-stack', text: 'HStack' },
+			{ href: '/components/h-stack', text: 'Stack' },
 			{ href: '/components/resizable', text: 'Resizable' },
 			{ href: '/components/scroll-area', text: 'Scroll area' },
 			{ href: '/components/separator', text: 'Separator' },
-			{ href: '/components/v-stack', text: 'VStack' }
+			{ href: '/components/v-stack', text: 'Stack — Vertical' }
 		]
 	},
 	{

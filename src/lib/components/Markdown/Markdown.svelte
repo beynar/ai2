@@ -6,7 +6,7 @@
 	import { Grid, GridSpan } from '../Grid/index.js';
 	import Mermaid from '../Mermaid/Mermaid.svelte';
 	import Stat from '../Stat/Stat.svelte';
-	import { HStack, VStack } from '../Stack/index.js';
+	import { Stack } from '../Stack/index.js';
 	import type { MarkdownProps } from './markdown.props.js';
 	import {
 		buildStreamdownTheme,
@@ -42,7 +42,7 @@
 		props: Record<string, MdxAttribute>;
 	};
 
-	const builtInMdxComponents = { Card, Grid, GridSpan, HStack, Stat, VStack } as const;
+	const builtInMdxComponents = { Card, Grid, GridSpan, Stack, Stat } as const;
 	const blockedMdxProps = new Set([
 		'children',
 		'class',

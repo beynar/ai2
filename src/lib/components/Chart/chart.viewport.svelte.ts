@@ -62,9 +62,10 @@ export class ChartViewportState<TRow extends object> {
 	);
 
 	#pending: PendingBrush<TRow> | undefined;
-	#surface: HTMLDivElement | undefined;
-	#getChartHost: (() => HTMLDivElement | undefined) | undefined;
+	#host: HTMLDivElement | undefined;
 	#window: Window | undefined;
+	#isTransitioning = false;
+	#transitionTimer: number | undefined;
 
 	constructor(chart: ChartState<TRow>) {
 		bind(this, {
@@ -81,27 +82,38 @@ export class ChartViewportState<TRow extends object> {
 		});
 	}
 
-	attachment = (surface: HTMLDivElement, getChartHost: () => HTMLDivElement | undefined) => {
-		this.#surface = surface;
-		this.#getChartHost = getChartHost;
-		this.#window = surface.ownerDocument.defaultView ?? undefined;
-		surface.addEventListener('pointerdown', this.#handlePointerDown, true);
+	attachment = (node: HTMLDivElement) => {
+		this.#host = node;
+		this.#window = node.ownerDocument.defaultView ?? undefined;
+		node.addEventListener('pointerdown', this.#handlePointerDown, true);
+		node.addEventListener('click', this.#handleClick, true);
 		this.#window?.addEventListener('pointermove', this.#handlePointerMove, true);
 		this.#window?.addEventListener('pointerup', this.#handlePointerUp, true);
 		this.#window?.addEventListener('pointercancel', this.#handlePointerCancel, true);
 		return () => {
-			surface.removeEventListener('pointerdown', this.#handlePointerDown, true);
+			node.removeEventListener('pointerdown', this.#handlePointerDown, true);
+			node.removeEventListener('click', this.#handleClick, true);
 			this.#window?.removeEventListener('pointermove', this.#handlePointerMove, true);
 			this.#window?.removeEventListener('pointerup', this.#handlePointerUp, true);
 			this.#window?.removeEventListener('pointercancel', this.#handlePointerCancel, true);
 			this.#cancelBrush();
-			this.#surface = undefined;
-			this.#getChartHost = undefined;
+			this.#stopTransition();
+			this.#host = undefined;
 			this.#window = undefined;
 		};
 	};
 
+	#handleClick = (event: MouseEvent) => {
+		this.chart.clearPointerFocus();
+		event.preventDefault();
+		event.stopImmediatePropagation();
+	};
+
 	reset = () => {
+		if (this.isZoomed) {
+			this.chart.clearPointerFocus();
+			this.#startTransition();
+		}
 		this.xDomain = undefined;
 		this.yDomain = undefined;
 		this.#cancelBrush();
@@ -111,9 +123,10 @@ export class ChartViewportState<TRow extends object> {
 		if (!this.configuration || event.button !== 0 || !event.isPrimary) return;
 		const scene = this.chart.getScene();
 		const point = scene
-			? clientToScene(this.#getChartHost?.(), scene, event.clientX, event.clientY)
+			? clientToScene(this.#host, scene, event.clientX, event.clientY)
 			: undefined;
 		if (!scene || !point || !contains(scene, point)) return;
+		this.chart.clearPointerFocus();
 		this.#pending = {
 			pointerId: event.pointerId,
 			client: { x: event.clientX, y: event.clientY },
@@ -123,14 +136,14 @@ export class ChartViewportState<TRow extends object> {
 	};
 
 	#handlePointerMove = (event: PointerEvent) => {
+		if (this.#isTransitioning && this.#isChartTarget(event.target)) {
+			event.stopImmediatePropagation();
+			return;
+		}
 		const pending = this.#pending;
 		if (!pending || pending.pointerId !== event.pointerId) return;
-		const current = clientToScene(
-			this.#getChartHost?.(),
-			pending.scene,
-			event.clientX,
-			event.clientY
-		);
+		if (this.#isChartTarget(event.target)) event.stopImmediatePropagation();
+		const current = clientToScene(this.#host, pending.scene, event.clientX, event.clientY);
 		if (!current) return;
 		if (!this.brushStart) {
 			const distance = Math.hypot(
@@ -138,7 +151,7 @@ export class ChartViewportState<TRow extends object> {
 				event.clientY - pending.client.y
 			);
 			if (distance < BRUSH_THRESHOLD) return;
-			this.#surface?.setPointerCapture(event.pointerId);
+			this.#host?.setPointerCapture(event.pointerId);
 			this.brushScene = pending.scene;
 			this.brushStart = pending.start;
 		}
@@ -169,6 +182,8 @@ export class ChartViewportState<TRow extends object> {
 	#commitBrush(scene: ChartScene<TRow>) {
 		if (!this.configuration || !this.brushStart || !this.brushCurrent) return;
 		const { axis } = this.configuration;
+		let nextXDomain = this.xDomain;
+		let nextYDomain = this.yDomain;
 		if (axis === 'x' || axis === 'both') {
 			const selected = resolveChartViewportDomain(
 				this.chart.x,
@@ -178,7 +193,7 @@ export class ChartViewportState<TRow extends object> {
 				'viewport.x'
 			);
 			if (selected && !sameChartViewportDomain(selected, scene.scales.x?.domain)) {
-				this.xDomain = selected;
+				nextXDomain = selected;
 			}
 		}
 		if (axis === 'y' || axis === 'both') {
@@ -190,13 +205,18 @@ export class ChartViewportState<TRow extends object> {
 				'viewport.y'
 			);
 			if (selected && !sameChartViewportDomain(selected, scene.scales.y?.domain)) {
-				this.yDomain = selected;
+				nextYDomain = selected;
 			}
 		}
+		if (nextXDomain === this.xDomain && nextYDomain === this.yDomain) return;
+		this.chart.clearPointerFocus();
+		this.#startTransition();
+		this.xDomain = nextXDomain;
+		this.yDomain = nextYDomain;
 	}
 
 	#releasePointer(pointerId: number) {
-		if (this.#surface?.hasPointerCapture(pointerId)) this.#surface.releasePointerCapture(pointerId);
+		if (this.#host?.hasPointerCapture(pointerId)) this.#host.releasePointerCapture(pointerId);
 	}
 
 	#cancelBrush() {
@@ -205,6 +225,39 @@ export class ChartViewportState<TRow extends object> {
 		this.brushStart = undefined;
 		this.brushCurrent = undefined;
 	}
+
+	#startTransition() {
+		this.#stopTransition();
+		const animation = this.animation;
+		const duration = animation === false ? 0 : (animation?.duration ?? 0);
+		if (!this.#window || duration <= 0) return;
+		if (
+			animation !== false &&
+			animation?.respectReducedMotion !== false &&
+			this.#window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		) {
+			return;
+		}
+		this.#isTransitioning = true;
+		this.#transitionTimer = this.#window.setTimeout(() => {
+			this.#isTransitioning = false;
+			this.#transitionTimer = undefined;
+		}, duration + 34);
+	}
+
+	#stopTransition() {
+		if (this.#transitionTimer !== undefined) this.#window?.clearTimeout(this.#transitionTimer);
+		this.#transitionTimer = undefined;
+		this.#isTransitioning = false;
+	}
+
+	#isChartTarget(target: EventTarget | null): boolean {
+		return Boolean(this.#host && isDomNode(target) && this.#host.contains(target));
+	}
+}
+
+function isDomNode(target: EventTarget | null): target is Node {
+	return target !== null && 'nodeType' in target;
 }
 
 function clientToScene<TRow extends object>(

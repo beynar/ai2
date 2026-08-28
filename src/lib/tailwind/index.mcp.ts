@@ -1,23 +1,14 @@
 export const tailwindPluginDescription = `
-# Main Tailwind Plugin - Configuration Keys
+# Main Tailwind plugin
 
 \`@plugin './lib/tailwind/index'\`
 
-## Configuration Options
+This palette-agnostic plugin registers shared utilities, variants, keyframes, and spinner CSS.
+Use it when colors are defined separately instead of through the theme plugin.
 
-### \`raised-with-border\`
-- **Type**: \`boolean\`
-- **Default**: \`false\`
-- **Description**: Controls whether raised elements show a border in light mode. Dark mode always shows border regardless of this setting.
+## Configuration
 
-**Example:**
-\`\`\`css
-@plugin './lib/tailwind/index' {
-  raised-with-border: true;
-}
-\`\`\`
-
-### \`spinner\`
+\`spinner\`
 - **Type**: \`Spinner\` object
 - **Default**: Auto-generated
 - **Description**: Custom spinner configuration for the \`.ui-spinner\` class
@@ -29,4 +20,7 @@ export const tailwindPluginDescription = `
 - Composites \`currentColor\` at \`--state-pressed-opacity\` on \`:active\`
 - Does not activate for disabled, \`data-disabled\`, or \`aria-disabled="true"\` elements
 - Theme plugin defaults the opacities to 5% and 10% in light themes, and 16% and 32% in dark themes
+
+Configure spacing, radius, typography scale, and raised borders at runtime through
+\`Theme.designTokens\`.
 `;

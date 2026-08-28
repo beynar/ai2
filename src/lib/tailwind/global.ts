@@ -2,7 +2,7 @@ import type { PluginAPI } from 'tailwindcss/plugin';
 import { colors, variants } from './colors.js';
 import { addScrollFadeUtilities, scrollFadeKeyframes } from './scrollFade.js';
 import { addShimmerUtilities, shimmerKeyframes } from './shimmer.js';
-import { getSpinner } from './spinnner.js';
+import { getSpinner } from './spinner.js';
 import type { ThemeOptions } from './theme.js';
 
 const dataColors = colors.reduce(
@@ -179,7 +179,8 @@ export const applyGlobalEngine = (api: PluginAPI, options?: ThemeOptions) => {
 				if (value !== 'none') {
 					const valueWithoutRgb = value.replace(/rgb\((.*?)\)/g, 'var(--tw-shadow-color)');
 					return {
-						border: 'var(--raised-border)',
+						border:
+							'var(--raised-border, 1px solid var(--current-border, var(--color-neutral-muted)))',
 						'--tw-shadow': value as string,
 						'--tw-shadow-colored': valueWithoutRgb as string,
 						'box-shadow':

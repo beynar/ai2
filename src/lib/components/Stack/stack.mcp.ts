@@ -1,47 +1,41 @@
 export const stackDescription = `
-# HStack and VStack
+# Stack
 
-HStack and VStack arrange arbitrary content along one flex axis. They share spacing, wrapping,
-sizing, scrolling, and theming behavior while exposing axis-aware alignment props.
+Stack arranges arbitrary content along one flex axis. Use the \`orientation\` prop to switch
+between horizontal and vertical layout, and \`align\` / \`justify\` for cross-axis and main-axis
+alignment.
 
 ## Import
 
 \`\`\`svelte
 <script lang="ts">
-  import { HStack, VStack } from 'svelai/stack';
+  import { Stack } from 'svelai/stack';
 </script>
 \`\`\`
 
 ## Usage
 
 \`\`\`svelte
-<VStack gap={4} padding={4}>
+<Stack gap={4} padding={4}>
   <h2>Account</h2>
-  <HStack gap={2} align="center" wrap="wrap">
+  <Stack orientation="horizontal" align="center" gap={2} wrap="wrap">
     <span>Profile</span>
     <span>Security</span>
-  </HStack>
-</VStack>
+  </Stack>
+</Stack>
 \`\`\`
 
-## Alignment
+## Props
 
-- HStack: \`hAlign\` is the main axis and \`vAlign\` is the cross axis.
-- VStack: \`vAlign\` is the main axis and \`hAlign\` is the cross axis.
-- \`justify\` aliases the main axis and \`align\` aliases the cross axis.
-- Explicit \`hAlign\` / \`vAlign\` values take precedence over their aliases.
-
-Main-axis values: \`start | center | end | between | around | evenly\`.
-Cross-axis values: \`start | center | end | stretch\`.
-
-## Layout props
-
-- \`gap\`, \`padding\`, \`paddingInline\`, and \`paddingBlock\` use the numeric Svelai spacing scale.
+- \`orientation\`: \`'horizontal' | 'vertical'\` — flex direction (default: \`'vertical'\`).
+- \`align\`: cross-axis alignment — \`start | center | end | stretch\` (default: \`'stretch'\`).
+- \`justify\`: main-axis alignment — \`start | center | end | between | around | evenly\` (default: \`'start'\`).
+- \`gap\`, \`padding\`, \`paddingInline\`, \`paddingBlock\` use the numeric Svelai spacing scale.
 - \`paddingInline\` and \`paddingBlock\` override \`padding\` on their axis.
 - \`width\`, \`height\`, \`maxWidth\`, and \`minHeight\` accept CSS strings or pixel numbers.
 - \`wrap\` accepts \`nowrap | wrap | wrap-reverse\`.
 - \`isScrollable\` enables native \`overflow: auto\`.
 - \`as\` changes the semantic HTML element without changing layout behavior.
 
-Both components forward common semantic HTML attributes and Svelte attachments to the root element.
+Stack forwards common semantic HTML attributes and Svelte attachments to the root element.
 `;

@@ -2,7 +2,7 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 	import { Grid, GridSpan } from '$lib/components/Grid/index.js';
-	import { HStack, VStack } from '$lib/components/Stack/index.js';
+	import { Stack } from '$lib/components/Stack/index.js';
 	import { chartBarIcon } from '$lib/components/Icons/chartBar.js';
 	import { checksIcon } from '$lib/components/Icons/checks.js';
 	import { usersThreeIcon } from '$lib/components/Icons/usersThree.js';
@@ -38,51 +38,54 @@
 			maxWidth={860}
 		>
 			<GridSpan columns={2} rows={3}>
-				<VStack
+				<Stack
 					justify="between"
 					padding={4}
 					class="bg-primary/12 border-primary/25 h-full rounded-lg border"
 				>
-					<HStack justify="between" align="center">
+					<Stack orientation="horizontal" justify="between" align="center">
 						<span class="text-primary text-xs font-semibold">Overview</span>
 						<span class="text-primary">{@render chartBarIcon({ class: 'size-5' })}</span>
-					</HStack>
-					<VStack gap={1}>
+					</Stack>
+					<Stack gap={1}>
 						<strong class="text-neutral text-3xl">74%</strong>
 						<span class="text-neutral/60 text-xs">Quarterly target</span>
-					</VStack>
-				</VStack>
+					</Stack>
+				</Stack>
 			</GridSpan>
 			<GridSpan columns={2}>
-				<HStack
+				<Stack
+					orientation="horizontal"
 					gap={3}
 					align="center"
 					padding={3}
 					class="bg-success/12 border-success/25 h-full rounded-lg border"
 				>
 					<span class="text-success">{@render usersThreeIcon({ class: 'size-5' })}</span>
-					<VStack gap={0.5}>
+					<Stack gap={0.5}>
 						<strong class="text-neutral text-sm">18 members</strong>
 						<span class="text-neutral/60 text-xs">3 online now</span>
-					</VStack>
-				</HStack>
+					</Stack>
+				</Stack>
 			</GridSpan>
 			<GridSpan columns={2} rows={2}>
-				<HStack
+				<Stack
+					orientation="horizontal"
 					gap={3}
 					align="center"
 					padding={3}
 					class="bg-warning/12 border-warning/25 h-full rounded-lg border"
 				>
 					<span class="text-warning">{@render checksIcon({ class: 'size-5' })}</span>
-					<VStack gap={0.5}>
+					<Stack gap={0.5}>
 						<strong class="text-neutral text-sm">32 completed</strong>
 						<span class="text-neutral/60 text-xs">8 remaining</span>
-					</VStack>
-				</HStack>
+					</Stack>
+				</Stack>
 			</GridSpan>
 			<GridSpan columns="full">
-				<HStack
+				<Stack
+					orientation="horizontal"
 					justify="between"
 					align="center"
 					paddingInline={3}
@@ -90,7 +93,7 @@
 				>
 					<span class="text-neutral text-xs font-medium">Systems operational</span>
 					<span class="bg-success size-2 rounded-full"></span>
-				</HStack>
+				</Stack>
 			</GridSpan>
 		</Grid>
 	</ComponentCard>
@@ -111,12 +114,8 @@
 						Two columns
 					</div>
 				</GridSpan>
-				<div class="bg-surface-raised text-neutral rounded-md p-5 text-center text-sm">
-					One
-				</div>
-				<div class="bg-surface-raised text-neutral rounded-md p-5 text-center text-sm">
-					One
-				</div>
+				<div class="bg-surface-raised text-neutral rounded-md p-5 text-center text-sm">One</div>
+				<div class="bg-surface-raised text-neutral rounded-md p-5 text-center text-sm">One</div>
 			</Grid>
 		</ComponentCard>
 
@@ -137,9 +136,7 @@
 					</div>
 				</GridSpan>
 				{#each ['Design', 'Build', 'Ship'] as phase (phase)}
-					<div
-						class="border-neutral-muted bg-surface rounded-md border p-4 text-center text-sm"
-					>
+					<div class="border-neutral-muted bg-surface rounded-md border p-4 text-center text-sm">
 						{phase}
 					</div>
 				{/each}

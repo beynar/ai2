@@ -2,7 +2,7 @@
 
 import type { Breakpoint } from '$lib/components/Theme/theme.js';
 
-// import type { Spinner } from '$lib/plugin/spinnner.js';
+// import type { Spinner } from '$lib/plugin/spinner.js';
 export type Colors =
 	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral';
 export type FontSize = `fontSize.${

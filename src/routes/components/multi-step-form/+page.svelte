@@ -106,7 +106,7 @@
 				}}
 			/>
 			<pre
-				class="bg-surface-sunken text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
+				class="bg-surface-recessed text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
 					{ value, submitted: submission },
 					null,
 					2

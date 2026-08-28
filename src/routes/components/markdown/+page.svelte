@@ -71,13 +71,13 @@ Use \`Markdown\` inline like any other component.`;
 		'<Grid columns={2} gap={3}>',
 		'<GridSpan columns="full">',
 		'<Card title="Release readiness" description="The current production candidate." variant="outline">',
-		'<VStack gap={3}>',
-		'<HStack gap={3} align="center" wrap="wrap">',
+		'<Stack gap={3}>',
+		'<Stack orientation="horizontal" gap={3} align="center" wrap="wrap">',
 		'<Stat label="Checks" value="24 / 24" trend="Passing" trendDirection="up" color="success" variant="soft" />',
 		'<Stat label="Reviewers" value="6" trend="2 active" color="info" variant="soft" />',
-		'</HStack>',
+		'</Stack>',
 		'Everything is **ready for review**.',
-		'</VStack>',
+		'</Stack>',
 		'</Card>',
 		'</GridSpan>',
 		'<Stat label="Coverage" value="94%" trend="+3.2%" trendDirection="up" color="primary" variant="soft" />',
@@ -187,7 +187,7 @@ Use \`Markdown\` inline like any other component.`;
 
 		<ComponentCard
 			title="Built-in MDX components"
-			description="Card, Stat, HStack, VStack, Grid, and GridSpan are available directly in Markdown content without a component map."
+			description="Card, Stat, Stack, Grid, and GridSpan are available directly in Markdown content without a component map."
 			class="!min-h-fit !items-stretch !justify-start"
 			code={`<Markdown content={mdxLayout} />`}
 		>

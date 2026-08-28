@@ -5,7 +5,7 @@ Renders Markdown as themed HTML, built for streaming LLM output. Wraps the user'
 
 Fenced code blocks render through svelai's own Code component (syntax highlighting + copy button), and \\\`mermaid\\\` fences render through svelai's Mermaid component (pan/zoom, brand theming, and errorForgiving so a diagram being streamed in doesn't flash errors between chunks).
 
-Card, Stat, HStack, VStack, Grid, and GridSpan are also available as built-in MDX components. They can be used directly inside the Markdown source without passing an MDX component map.
+Card, Stat, Stack, Grid, and GridSpan are also available as built-in MDX components. They can be used directly inside the Markdown source without passing an MDX component map.
 
 ## Basic Usage
 
@@ -40,14 +40,14 @@ Card, Stat, HStack, VStack, Grid, and GridSpan are also available as built-in MD
 
 ## Built-in MDX components
 
-The built-in tags are **Card**, **Stat**, **HStack**, **VStack**, **Grid**, and **GridSpan**:
+The built-in tags are **Card**, **Stat**, **Stack**, **Grid**, and **GridSpan**:
 
 ~~~svelte
 const content = [
   '<Grid columns={2} gap={3}>',
   '<GridSpan columns="full">',
   '<Card title="Release readiness" variant="outline">',
-  '<VStack gap={2}>Everything is **ready**.</VStack>',
+  '<Stack gap={2}>Everything is **ready**.</Stack>',
   '</Card>',
   '</GridSpan>',
   '<Stat label="Coverage" value="94%" trend="+3.2%" trendDirection="up" />',

@@ -57,18 +57,19 @@ export class ChartState<TRow extends object> {
 	host = (node: HTMLDivElement) => {
 		this.#host = node;
 		this.#adapter.mount(node);
+		const destroyViewport = this.viewportState.attachment(node);
 		return () => {
+			destroyViewport();
 			this.#adapter.destroy();
 			this.#host = undefined;
 		};
 	};
 
-	interactionSurface = (node: HTMLDivElement) => {
-		const MouseEventConstructor = node.ownerDocument.defaultView?.MouseEvent;
+	clearPointerFocus = () => {
+		const MouseEventConstructor = this.#host?.ownerDocument.defaultView?.MouseEvent;
 		if (this.#host && MouseEventConstructor) {
 			this.#host.dispatchEvent(new MouseEventConstructor('mouseleave'));
 		}
-		return this.viewportState.attachment(node, () => this.#host);
 	};
 
 	getScene = () => this.#adapter.getScene();

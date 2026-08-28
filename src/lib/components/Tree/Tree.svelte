@@ -2,6 +2,7 @@
 	import type { FileTree } from '@pierre/trees';
 	import type { Attachment } from 'svelte/attachments';
 	import { fromAction } from 'svelte/attachments';
+	import { BROWSER } from 'esm-env';
 	import type { TreeAttachmentParams, TreeProps, TreePropValues } from './tree.props.js';
 	import { TreeRenderer } from './TreeRenderer.js';
 	import { TreeSnippetRenderer } from './TreeSnippetRenderer.js';
@@ -149,7 +150,7 @@
 		try {
 			return preloadInitialTree().markup;
 		} catch (error) {
-			if (import.meta.env.SSR) throw error;
+			if (!BROWSER) throw error;
 			errorMessage = getErrorMessage(error);
 			return '';
 		}

@@ -53,7 +53,6 @@ export type ChartTooltipDefinition<TRow> = {
 	groupBy?: 'x' | 'y' | false;
 	placement?: ChartTooltipPlacement;
 	offset?: number;
-	sticky?: boolean;
 };
 
 export type ChartProps<TRow extends object> = WithAttachments<{

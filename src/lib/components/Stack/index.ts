@@ -1,14 +1,13 @@
-export { default as HStack } from './HStack.svelte';
-export { default as VStack } from './VStack.svelte';
-export type { HStackProps } from './hStack.props.js';
-export type { VStackProps } from './vStack.props.js';
+export { default as Stack } from './Stack.svelte';
+export type { StackProps } from './stack.props.js';
 export type {
-	StackCrossAlignment,
+	StackAlign,
 	StackElement,
-	StackMainAlignment,
+	StackJustify,
+	StackOrientation,
 	StackSizeValue,
 	StackWrap
-} from './stack.types.js';
+} from './stack.props.js';
 export type { LayoutSpacing } from '../Layout/layoutSpacing.js';
 export {
 	stackTheme,

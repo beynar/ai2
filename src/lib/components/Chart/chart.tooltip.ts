@@ -1,4 +1,5 @@
 import type {
+	ChartFocusMode,
 	ChartPoint,
 	ChartTooltipContent,
 	ChartTooltipContentContext,
@@ -7,7 +8,6 @@ import type {
 	ChartTooltipRow
 } from '@tanstack/charts';
 import { tooltip } from '@tanstack/charts/tooltip';
-import { portal } from '@tanstack/charts/tooltip/portal';
 import type { DistributionEmpiricalDatum } from './chart.distribution.empirical.js';
 import { isDistributionSummary, type DistributionSummary } from './chart.distribution.js';
 import { isHexbinDatum, type ChartHexbinDatum } from './chart.hexbin.js';
@@ -18,6 +18,7 @@ import type {
 	ChartTooltipDefinition,
 	ChartTooltipField
 } from './chart.props.js';
+import { compileVisibleTooltipFocus, type ChartTooltipPositions } from './chart.tooltip.focus.js';
 
 const GROUPED_TOOLTIP_PLACEMENTS = ['top', 'right', 'left', 'bottom'] as const;
 const PROPORTION_VALUE_FORMAT = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
@@ -36,10 +37,11 @@ export function compileChartTooltip<TRow extends object>(
 	definition: boolean | ChartTooltipDefinition<TRow> | undefined,
 	className: string | undefined,
 	groupBy: 'x' | 'y' | undefined,
-	specialization?: ChartTooltipSpecialization
+	specialization?: ChartTooltipSpecialization,
+	positions?: ChartTooltipPositions
 ): {
 	input: false | ChartTooltipInput<TRow>;
-	focus?: 'group-x' | 'group-y';
+	focus?: ChartFocusMode<TRow>;
 } {
 	if (!definition) return { input: false };
 	let distributionGroupBy: 'x' | 'y' | undefined;
@@ -59,7 +61,9 @@ export function compileChartTooltip<TRow extends object>(
 		definition.groupBy !== undefined &&
 		definition.groupBy !== false
 	) {
-		throw new TypeError(`[Chart] tooltip.groupBy cannot be used with a ${specialization.type} mark.`);
+		throw new TypeError(
+			`[Chart] tooltip.groupBy cannot be used with a ${specialization.type} mark.`
+		);
 	}
 	if (
 		distributionGroupBy &&
@@ -81,7 +85,10 @@ export function compileChartTooltip<TRow extends object>(
 		configuredGroupBy =
 			definition === true ? groupBy : resolveConfiguredGroupBy(definition, groupBy);
 	}
-	const focus = configuredGroupBy ? (`group-${configuredGroupBy}` as const) : undefined;
+	const isGrouped = configuredGroupBy !== undefined;
+	const focus =
+		compileVisibleTooltipFocus<TRow>(configuredGroupBy, positions) ??
+		(configuredGroupBy ? (`group-${configuredGroupBy}` as const) : undefined);
 	const placement = definition === true ? undefined : definition.placement;
 	let content:
 		| ((
@@ -98,15 +105,14 @@ export function compileChartTooltip<TRow extends object>(
 		focus,
 		input: {
 			use: tooltip,
-			portal,
 			className,
-			anchor: focus ? 'group-center' : 'point',
-			placement: placement ?? (focus ? GROUPED_TOOLTIP_PLACEMENTS : 'auto'),
+			anchor: isGrouped ? 'group-center' : 'point',
+			placement: placement ?? (isGrouped ? GROUPED_TOOLTIP_PLACEMENTS : 'auto'),
 			sort: 'color-domain',
 			items: definition === true ? undefined : definition.fields?.map(compileTooltipField),
 			content,
 			offset: definition === true ? undefined : definition.offset,
-			sticky: definition === true ? undefined : definition.sticky
+			sticky: false
 		}
 	};
 }
@@ -126,7 +132,13 @@ function compileRelationTooltip<TRow extends object>(
 			rows:
 				relation.value === undefined
 					? []
-					: [{ label: 'Value', value: PROPORTION_VALUE_FORMAT.format(relation.value), color: point.color }]
+					: [
+							{
+								label: 'Value',
+								value: PROPORTION_VALUE_FORMAT.format(relation.value),
+								color: point.color
+							}
+						]
 		};
 	}
 	const rows: ChartTooltipRow[] = [];

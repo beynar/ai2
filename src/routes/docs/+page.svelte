@@ -42,24 +42,6 @@
 			desc: 'Shift color saturation across the palette.'
 		},
 		{
-			name: 'radius',
-			type: "'none' | 'subtile' | 'small' | 'normal' | 'large' | 'round' | number",
-			def: 'normal',
-			desc: 'Multiplier applied to the native Tailwind radius scale (rounded-sm … rounded-4xl). normal = 1×.'
-		},
-		{
-			name: 'spacing',
-			type: "'small' | 'normal' | 'large' | number",
-			def: 'normal',
-			desc: 'Multiplier applied to the native Tailwind spacing scale (p-*, gap-*, m-*, size-* …). normal = 1×, small = 0.8×, large = 1.2×.'
-		},
-		{
-			name: 'raised-with-border',
-			type: 'boolean',
-			def: 'true',
-			desc: 'Add a border to raised-* elements in light mode.'
-		},
-		{
 			name: 'state-hover-opacity',
 			type: 'number',
 			def: '0.05 light / 0.16 dark',
@@ -96,16 +78,12 @@
 	name: light;
 	default: true;
 	colorscheme: light;
-	radius: normal;
-	spacing: normal;
 }
 
 /* Dark theme — applied via html[data-theme="dark"] or .dark */
 @plugin './lib/tailwind/theme' {
 	name: dark;
 	colorscheme: dark;
-	radius: normal;
-	spacing: normal;
 }`;
 
 	const brandCode = `@plugin './lib/tailwind/theme' {
@@ -149,6 +127,35 @@
 	const themeToggleCode = `<html data-theme="dark">
 	<!-- or toggle the \`.dark\` class -->
 </html>`;
+
+	const runtimeThemeCode = `<script lang="ts">
+	import { Theme, type ThemeDesignTokenMap } from 'svelai/theme';
+
+	let spacing = $state<'small' | 'normal' | 'large'>('normal');
+	const designTokens = $derived({
+		light: {
+			spacing,
+			radius: 'normal',
+			typeScale: 'default',
+			raisedWithBorder: true
+		},
+		dark: {
+			spacing,
+			radius: 'small',
+			typeScale: 'compact',
+			raisedWithBorder: false
+		}
+	} satisfies ThemeDesignTokenMap<readonly ['light', 'dark']>);
+</${'script'}>
+
+<Theme {designTokens}>
+	{#snippet children(theme)}
+		<button onclick={() => (spacing = spacing === 'small' ? 'large' : 'small')}>
+			Change density
+		</button>
+		<!-- app -->
+	{/snippet}
+</Theme>`;
 </script>
 
 {#snippet ic(text: string)}<code class="bg-neutral-muted rounded px-1 py-0.5 text-sm">{text}</code
@@ -158,8 +165,8 @@
 	<header class="grid gap-2">
 		<h1 class="text-3xl font-semibold">Getting started</h1>
 		<p class="text-neutral/60 text-balance">
-			This library is a set of Svelte components on top of a small Tailwind CSS theme engine,
-			configured entirely from your {@render ic('app.css')} — no JavaScript config file needed.
+			This library combines a Tailwind color engine with runtime design tokens managed by the
+			{@render ic('<Theme>')} component.
 		</p>
 	</header>
 
@@ -171,14 +178,14 @@
 	<p class="text-neutral/60">
 		Then wire up the theme in your {@render ic('src/app.css')}. Declare the {@render ic(
 			"@plugin './lib/tailwind/theme'"
-		)} block once per theme — each generates a scoped color palette and design tokens. The block marked
+		)} block once per theme — each generates a scoped color palette. The block marked
 		{@render ic('default: true')} also registers the shared utilities, variants and {@render ic(
 			'.ui-spinner'
 		)} component, so a single plugin is all you need.
 	</p>
 	<Code language="css" code={cssSetupCode} />
 
-	<Separator class="my-2" children="Theme options" />
+	<Separator class="my-2" children="Build-time color options" />
 
 	<p class="text-neutral/60">
 		Every key below is passed inside the {@render ic("@plugin './lib/tailwind/theme'")} block.
@@ -208,6 +215,21 @@
 		)}, {@render ic('-contrast')}) are derived automatically but can be overridden individually.
 	</p>
 	<Code language="css" code={brandCode} />
+
+	<Separator class="my-2" children="Runtime design tokens" />
+
+	<p class="text-neutral/60">
+		Pass {@render ic('designTokens')} to {@render ic('<Theme>')} to control spacing, radius, fluid typography
+		and raised borders for each logical theme. The object is reactive: changing a value updates existing
+		{@render ic('p-*')}, {@render ic('gap-*')}, {@render ic('rounded-*')} and
+		{@render ic('text-*')} utilities without rebuilding Tailwind.
+	</p>
+	<Code language="svelte" code={runtimeThemeCode} />
+	<p class="text-neutral/60">
+		This replaces the former {@render ic('spacing')}, {@render ic('radius')}, {@render ic('scale')}
+		and {@render ic('raised-with-border')} plugin options. Component density variants remain local choices;
+		their spacing utilities inherit the active runtime spacing scale.
+	</p>
 
 	<Separator class="my-2" children="Color tokens" />
 

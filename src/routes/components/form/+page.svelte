@@ -321,7 +321,7 @@ ${controls.value.showHeader ? '\ttitle="Profile"\n\tdescription="Update the prof
 				}}
 			/>
 			<pre
-				class="bg-surface-sunken text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
+				class="bg-surface-recessed text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
 					{ value: profileValue, submitted: profileSubmission },
 					null,
 					2
@@ -398,7 +398,7 @@ let submission = $state<InferFormValue<Inputs> | null>(null);
 					}}
 				/>
 				<pre
-					class="bg-surface-sunken text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
+					class="bg-surface-recessed text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
 						{ value: multiStepValue, submitted: multiStepSubmission },
 						null,
 						2
@@ -435,7 +435,7 @@ async function editProfile() {
 					<p role="alert" class="text-danger text-sm">{askError}</p>
 				{/if}
 				<pre
-					class="bg-surface-sunken text-neutral min-h-20 overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
+					class="bg-surface-recessed text-neutral min-h-20 overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
 						askOutcome,
 						null,
 						2
@@ -470,7 +470,7 @@ async function editProfile() {
 					{/snippet}
 				</Form>
 				<pre
-					class="bg-surface-sunken text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
+					class="bg-surface-recessed text-neutral overflow-auto rounded-lg p-3 text-xs">{JSON.stringify(
 						{ value: contactValue, submitted: contactSubmission },
 						null,
 						2

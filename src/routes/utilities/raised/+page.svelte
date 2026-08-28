@@ -12,18 +12,21 @@
 <div class="raised-lg">Large elevation</div>
 <div class="raised-none">No elevation</div>`;
 
-	const configCode = `@plugin './lib/tailwind/theme' {
-	name: light;
-	default: true;
-	raised-with-border: true;
-}`;
+	const configCode = `<Theme designTokens={{
+	light: { raisedWithBorder: true },
+	dark: { raisedWithBorder: false }
+}}>
+	{#snippet children()}
+		<!-- app -->
+	{/snippet}
+</Theme>`;
 
 	const utilityRows = [
 		['raised', 'Applies the default theme shadow and optional raised border.'],
 		['raised-sm | raised-md | raised-lg', 'Uses the matching Tailwind shadow scale.'],
 		['raised-xl | raised-2xl', 'Applies stronger elevation for prominent surfaces.'],
 		['raised-none', 'Removes the raised shadow and border.'],
-		['raised-with-border', 'Theme option that controls the light-mode border.']
+		['raisedWithBorder', 'Runtime design token that controls the border.']
 	];
 </script>
 
@@ -83,11 +86,11 @@
 		</div>
 	</ComponentCard>
 
-	<Separator class="my-2" children="Theme option" />
+	<Separator class="my-2" children="Runtime token" />
 
 	<p class="text-neutral/60">
-		Set {@render ic('raised-with-border')} on the default theme plugin when light-mode raised surfaces
-		should include a border.
+		Set {@render ic('raisedWithBorder')} per theme through {@render ic('Theme.designTokens')}. The
+		value can change at runtime without rebuilding Tailwind.
 	</p>
-	<Code language="css" code={configCode} />
+	<Code language="svelte" code={configCode} />
 </article>

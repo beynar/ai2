@@ -2,7 +2,7 @@
 	import ComponentCard from '../../ComponentCard.svelte';
 	import DocPage from '../../DocPage.svelte';
 	import { Grid } from '$lib/components/Grid/index.js';
-	import { HStack, VStack } from '$lib/components/Stack/index.js';
+	import { Stack } from '$lib/components/Stack/index.js';
 	import { chartLineUpIcon } from '$lib/components/Icons/chartLineUp.js';
 	import { clockIcon } from '$lib/components/Icons/clock.js';
 	import { usersThreeIcon } from '$lib/components/Icons/usersThree.js';
@@ -59,8 +59,8 @@
 	>
 		<Grid columns={{ minWidth: 180, max: 3 }} gap={4} width="100%" maxWidth={900}>
 			{#each metrics as metric (metric.label)}
-				<VStack gap={4} padding={4} class="border-neutral-muted bg-surface rounded-lg border">
-					<HStack align="center" justify="between">
+				<Stack gap={4} padding={4} class="border-neutral-muted bg-surface rounded-lg border">
+					<Stack orientation="horizontal" align="center" justify="between">
 						<span class="text-neutral/60 text-xs font-medium">{metric.label}</span>
 						<span
 							class="{metricIconClasses[
@@ -69,12 +69,12 @@
 						>
 							{@render metric.icon({ class: 'size-4' })}
 						</span>
-					</HStack>
-					<VStack gap={1}>
+					</Stack>
+					<Stack gap={1}>
 						<strong class="text-neutral text-2xl">{metric.value}</strong>
 						<span class="text-success text-xs">{metric.change} this month</span>
-					</VStack>
-				</VStack>
+					</Stack>
+				</Stack>
 			{/each}
 		</Grid>
 	</ComponentCard>
@@ -126,8 +126,8 @@
 			code={`<Grid columns={{ minWidth: 150, repeat: 'fill' }} gap={3}>...</Grid>
 <Grid columns={{ minWidth: 150, repeat: 'fit' }} gap={3}>...</Grid>`}
 		>
-			<VStack gap={5} width="100%" maxWidth={780}>
-				<VStack gap={2}>
+			<Stack gap={5} width="100%" maxWidth={780}>
+				<Stack gap={2}>
 					<span class="text-neutral/60 font-mono text-[11px]">fill</span>
 					<Grid columns={{ minWidth: 150, repeat: 'fill' }} gap={3}>
 						<div class="bg-primary/12 text-primary rounded-md p-4 text-center text-sm">Alpha</div>
@@ -135,8 +135,8 @@
 							Beta
 						</div>
 					</Grid>
-				</VStack>
-				<VStack gap={2}>
+				</Stack>
+				<Stack gap={2}>
 					<span class="text-neutral/60 font-mono text-[11px]">fit</span>
 					<Grid columns={{ minWidth: 150, repeat: 'fit' }} gap={3}>
 						<div class="bg-primary/12 text-primary rounded-md p-4 text-center text-sm">Alpha</div>
@@ -144,8 +144,8 @@
 							Beta
 						</div>
 					</Grid>
-				</VStack>
-			</VStack>
+				</Stack>
+			</Stack>
 		</ComponentCard>
 	{/snippet}
 </DocPage>

@@ -21,24 +21,75 @@
 		SidebarVariant
 	} from '$lib/components/Sidebar/index.js';
 	import Theme from '$lib/components/Theme/Theme.svelte';
+	import type {
+		ThemeDesignTokenMap,
+		ThemeDesignTokens,
+		TypeScalePreset
+	} from '$lib/components/Theme/theme.designTokens.js';
 	import type { ThemeState } from '$lib/components/Theme/theme.state.svelte.js';
 	import { themeTransitions, type ThemeTransition } from '$lib/components/Theme/themeTransition.js';
 	import { tick } from 'svelte';
 	import { getSidebarGroups, headerLinks } from './appNavigation.js';
+	import { createRuntimeThemePlayground } from './runtimeThemePlayground.svelte.js';
 	import SidebarCommandPalette from './SidebarCommandPalette.svelte';
 
 	const { children: childrenSnippet } = $props();
+	const runtimeThemePlayground = createRuntimeThemePlayground();
 
 	type SidebarFooterState = 'expanded' | 'icon' | 'hidden';
 
 	const sidebarVariants: SidebarVariant[] = ['admin', 'floating', 'inset', 'split'];
 	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
+	const runtimeTokenPresets = {
+		compact: {
+			spacing: 'small',
+			radius: 'small',
+			typeScale: 'compact',
+			raisedWithBorder: false
+		},
+		default: {
+			spacing: 'normal',
+			radius: 'normal',
+			typeScale: 'default',
+			raisedWithBorder: true
+		},
+		comfortable: {
+			spacing: 'large',
+			radius: 'large',
+			typeScale: 'comfortable',
+			raisedWithBorder: true
+		},
+		large: {
+			spacing: 1.35,
+			radius: 'round',
+			typeScale: 'large',
+			raisedWithBorder: true
+		}
+	} satisfies Record<TypeScalePreset, ThemeDesignTokens>;
+	const defaultDesignTokens = {
+		spacing: 'normal',
+		radius: 'normal',
+		raisedWithBorder: true
+	} satisfies ThemeDesignTokens;
 	const docsPageShellTheme = {
 		contentInner: {
 			padding: { large: 'p-5 md:p-5' }
 		}
 	} satisfies PageShellThemeProps;
 	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
+	const activeDesignTokens = $derived(
+		page.route.id === '/fluid-scale'
+			? resolveRuntimeTokenPreset(page.url.searchParams.get('preset'))
+			: defaultDesignTokens
+	);
+	const designTokens = $derived(
+		page.route.id === '/playground'
+			? runtimeThemePlayground.designTokens
+			: ({
+					light: activeDesignTokens,
+					dark: activeDesignTokens
+				} satisfies ThemeDesignTokenMap<readonly ['light', 'dark']>)
+	);
 	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
 	let sidebarVariant = $state<SidebarVariant>('inset');
 	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('hidden');
@@ -61,6 +112,16 @@
 
 	function resolveThemeTransition(value: string | null): ThemeTransition {
 		return themeTransitions.find((transition) => transition === value) ?? 'radial-top-right';
+	}
+
+	function resolveRuntimeTokenPreset(value: string | null): ThemeDesignTokens {
+		return value && isRuntimeTokenPreset(value)
+			? runtimeTokenPresets[value]
+			: runtimeTokenPresets.default;
+	}
+
+	function isRuntimeTokenPreset(value: string): value is TypeScalePreset {
+		return Object.hasOwn(runtimeTokenPresets, value);
 	}
 
 	function setSidebarState(nextState: SidebarFooterState) {
@@ -208,7 +269,7 @@
 		collapsed={api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile}
 	/>
 {/snippet}
-<Theme transition={themeTransition}>
+<Theme transition={themeTransition} {designTokens}>
 	{#snippet children(theme: ThemeState)}
 		<Ask />
 		{#if isPreviewRoute}

@@ -333,11 +333,6 @@
 			"svelte": "./dist/components/Chart/index.js",
 			"default": "./dist/components/Chart/index.js"
 		},
-		"./calendar-primitive": {
-			"types": "./dist/components/Form/Calendar/index.d.ts",
-			"svelte": "./dist/components/Form/Calendar/index.js",
-			"default": "./dist/components/Form/Calendar/index.js"
-		},
 		"./select": {
 			"types": "./dist/components/Form/Select/index.d.ts",
 			"svelte": "./dist/components/Form/Select/index.js",
@@ -346,10 +341,6 @@
 		"./tailwind-plugin": {
 			"types": "./dist/tailwind/index.d.ts",
 			"default": "./dist/tailwind/index.js"
-		},
-		"./tailwind-theme": {
-			"types": "./dist/tailwind/theme.d.ts",
-			"default": "./dist/tailwind/theme.js"
 		},
 		"./stepper": {
 			"types": "./dist/components/Stepper/index.d.ts",
@@ -743,39 +734,196 @@
 			"types": "./dist/components/Collapsible/index.d.ts",
 			"svelte": "./dist/components/Collapsible/index.js",
 			"default": "./dist/components/Collapsible/index.js"
+		},
+		"./ai-file-preview": {
+			"types": "./dist/components/AIFilePreview/index.d.ts",
+			"svelte": "./dist/components/AIFilePreview/index.js",
+			"default": "./dist/components/AIFilePreview/index.js"
+		},
+		"./ask": {
+			"types": "./dist/components/Form/Ask/index.d.ts",
+			"svelte": "./dist/components/Form/Ask/index.js",
+			"default": "./dist/components/Form/Ask/index.js"
+		},
+		"./audio-player": {
+			"types": "./dist/components/AudioPlayer/index.d.ts",
+			"svelte": "./dist/components/AudioPlayer/index.js",
+			"default": "./dist/components/AudioPlayer/index.js"
+		},
+		"./checkbox": {
+			"types": "./dist/components/Form/Checkbox/index.d.ts",
+			"svelte": "./dist/components/Form/Checkbox/index.js",
+			"default": "./dist/components/Form/Checkbox/index.js"
+		},
+		"./kanban": {
+			"types": "./dist/components/Kanban/index.d.ts",
+			"svelte": "./dist/components/Kanban/index.js",
+			"default": "./dist/components/Kanban/index.js"
+		},
+		"./link-preview": {
+			"types": "./dist/components/LinkPreview/index.d.ts",
+			"svelte": "./dist/components/LinkPreview/index.js",
+			"default": "./dist/components/LinkPreview/index.js"
+		},
+		"./pin-input": {
+			"types": "./dist/components/Form/PinInput/index.d.ts",
+			"svelte": "./dist/components/Form/PinInput/index.js",
+			"default": "./dist/components/Form/PinInput/index.js"
+		},
+		"./progress-circle": {
+			"types": "./dist/components/ProgressCircle/index.d.ts",
+			"svelte": "./dist/components/ProgressCircle/index.js",
+			"default": "./dist/components/ProgressCircle/index.js"
+		},
+		"./resizable": {
+			"types": "./dist/components/Resizable/index.d.ts",
+			"svelte": "./dist/components/Resizable/index.js",
+			"default": "./dist/components/Resizable/index.js"
+		},
+		"./tabbar": {
+			"types": "./dist/components/Tabbar/index.d.ts",
+			"svelte": "./dist/components/Tabbar/index.js",
+			"default": "./dist/components/Tabbar/index.js"
+		},
+		"./video-player": {
+			"types": "./dist/components/VideoPlayer/index.d.ts",
+			"svelte": "./dist/components/VideoPlayer/index.js",
+			"default": "./dist/components/VideoPlayer/index.js"
 		}
 	},
 	"typesVersions": {
 		"*": {
-			"./icons/*": [
-				"./dist/components/Icons/*.d.ts"
+			"./confirmation": [
+				"./dist/components/Confirmation/index.d.ts"
+			],
+			"./toast": [
+				"./dist/components/Toast/index.d.ts"
+			],
+			"./combobox": [
+				"./dist/components/Form/Combobox/index.d.ts"
+			],
+			"./tags-input": [
+				"./dist/components/Form/TagsInput/index.d.ts"
+			],
+			"./key-value-input": [
+				"./dist/components/Form/KeyValueInput/index.d.ts"
+			],
+			"./tabs": [
+				"./dist/components/Tabs/index.d.ts"
+			],
+			"./network-indicator": [
+				"./dist/components/NetworkIndicator/index.d.ts"
 			],
 			"./form": [
 				"./dist/components/Form/Form/index.d.ts"
 			],
-			"./slider": [
-				"./dist/components/Form/Slider/index.d.ts"
+			"./time-input": [
+				"./dist/components/Form/TimeInput/index.d.ts"
+			],
+			"./avatar": [
+				"./dist/components/Avatar/index.d.ts"
+			],
+			"./qr-code": [
+				"./dist/components/QRCode/index.d.ts"
+			],
+			"./document-viewer": [
+				"./dist/components/DocumentViewer/index.d.ts"
+			],
+			"./number-input": [
+				"./dist/components/Form/NumberInput/index.d.ts"
+			],
+			"./rating-input": [
+				"./dist/components/Form/RatingInput/index.d.ts"
 			],
 			"./voice-input": [
 				"./dist/components/Form/VoiceInput/index.d.ts"
 			],
-			"./tailwind-plugin": [
-				"./dist/tailwind/index.d.ts"
+			"./rating": [
+				"./dist/components/Rating/index.d.ts"
 			],
-			"./tailwind-theme": [
-				"./dist/tailwind/theme.d.ts"
+			"./mini-calendar": [
+				"./dist/components/MiniCalendar/index.d.ts"
 			],
-			"./multi-step-form": [
-				"./dist/components/Form/MultiStepForm/index.d.ts"
-			],
-			"./stepper": [
-				"./dist/components/Stepper/index.d.ts"
+			"./metadata-list": [
+				"./dist/components/MetadataList/index.d.ts"
 			],
 			"./timeline": [
 				"./dist/components/Timeline/index.d.ts"
 			],
+			"./sortable-list": [
+				"./dist/components/SortableList/index.d.ts"
+			],
+			"./slider": [
+				"./dist/components/Form/Slider/index.d.ts"
+			],
+			"./text-input": [
+				"./dist/components/Form/TextInput/index.d.ts"
+			],
+			"./password-input": [
+				"./dist/components/Form/PasswordInput/index.d.ts"
+			],
+			"./toggle-button": [
+				"./dist/components/ToggleButton/index.d.ts"
+			],
+			"./toggle-button-group": [
+				"./dist/components/ToggleButtonGroup/index.d.ts"
+			],
+			"./toggle-menu": [
+				"./dist/components/ToggleMenu/index.d.ts"
+			],
 			"./selection-menu": [
 				"./dist/components/SelectionMenu/index.d.ts"
+			],
+			"./segmented-control": [
+				"./dist/components/SegmentedControl/index.d.ts"
+			],
+			"./switch": [
+				"./dist/components/Form/Switch/index.d.ts"
+			],
+			"./date-input": [
+				"./dist/components/Form/DateInput/index.d.ts"
+			],
+			"./date-selector": [
+				"./dist/components/Form/DateSelector/index.d.ts"
+			],
+			"./color-picker": [
+				"./dist/components/Form/ColorPicker/index.d.ts"
+			],
+			"./color-input": [
+				"./dist/components/Form/ColorInput/index.d.ts"
+			],
+			"./file-input": [
+				"./dist/components/Form/File/index.d.ts"
+			],
+			"./phone-input": [
+				"./dist/components/Form/PhoneInput/index.d.ts"
+			],
+			"./tag-group": [
+				"./dist/components/Form/TagGroup/index.d.ts"
+			],
+			"./calendar": [
+				"./dist/components/Form/Calendar/index.d.ts"
+			],
+			"./event-calendar": [
+				"./dist/components/EventCalendar/index.d.ts"
+			],
+			"./gantt-chart": [
+				"./dist/components/GanttChart/index.d.ts"
+			],
+			"./chart": [
+				"./dist/components/Chart/index.d.ts"
+			],
+			"./select": [
+				"./dist/components/Form/Select/index.d.ts"
+			],
+			"./tailwind-plugin": [
+				"./dist/tailwind/index.d.ts"
+			],
+			"./stepper": [
+				"./dist/components/Stepper/index.d.ts"
+			],
+			"./multi-step-form": [
+				"./dist/components/Form/MultiStepForm/index.d.ts"
 			],
 			"./text-area": [
 				"./dist/components/Form/TextArea/index.d.ts"
@@ -783,8 +931,17 @@
 			"./rich-text-input": [
 				"./dist/components/RichTextInput/index.d.ts"
 			],
+			"./radio-input": [
+				"./dist/components/Form/RadioInput/index.d.ts"
+			],
+			"./checkboxes-input": [
+				"./dist/components/Form/CheckboxesInput/index.d.ts"
+			],
 			"./theme": [
-				"./dist/components/Theme/Theme.svelte.d.ts"
+				"./dist/components/Theme/index.d.ts"
+			],
+			"./i18n": [
+				"./dist/i18n/index.d.ts"
 			],
 			"./button": [
 				"./dist/components/Button/index.d.ts"
@@ -795,12 +952,6 @@
 			"./hitbox": [
 				"./dist/components/Hitbox/index.d.ts"
 			],
-			"./segmented-control": [
-				"./dist/components/SegmentedControl/index.d.ts"
-			],
-			"./tag-group": [
-				"./dist/components/Form/TagGroup/index.d.ts"
-			],
 			"./hover-card": [
 				"./dist/components/HoverCard/index.d.ts"
 			],
@@ -810,6 +961,12 @@
 			"./floating-window": [
 				"./dist/components/FloatingWindow/index.d.ts"
 			],
+			"./image-zoom": [
+				"./dist/components/ImageZoom/index.d.ts"
+			],
+			"./image-gallery": [
+				"./dist/components/ImageGallery/index.d.ts"
+			],
 			"./empty": [
 				"./dist/components/Empty/index.d.ts"
 			],
@@ -818,6 +975,66 @@
 			],
 			"./command": [
 				"./dist/components/Command/index.d.ts"
+			],
+			"./globe": [
+				"./dist/components/Globe/index.d.ts"
+			],
+			"./stat": [
+				"./dist/components/Stat/index.d.ts"
+			],
+			"./meter": [
+				"./dist/components/Meter/index.d.ts"
+			],
+			"./media-volume": [
+				"./dist/components/MediaVolume/index.d.ts"
+			],
+			"./icons/*": [
+				"./dist/components/Icons/*.d.ts"
+			],
+			"./spinner-overlay": [
+				"./dist/attachments/spinnerOverlay.svelte.d.ts"
+			],
+			"./spinner": [
+				"./dist/components/Spinner/index.d.ts"
+			],
+			"./spinner-text": [
+				"./dist/components/SpinnerText/index.d.ts"
+			],
+			"./pagination": [
+				"./dist/components/Pagination/index.d.ts"
+			],
+			"./table-of-contents": [
+				"./dist/components/TableOfContents/index.d.ts"
+			],
+			"./dialog": [
+				"./dist/components/Dialog/index.d.ts"
+			],
+			"./scroll-area": [
+				"./dist/components/ScrollArea/index.d.ts"
+			],
+			"./popover": [
+				"./dist/components/Popover/index.d.ts"
+			],
+			"./tooltip": [
+				"./dist/components/Tooltip/index.d.ts"
+			],
+			"./accordion": [
+				"./dist/components/Accordion/index.d.ts"
+			],
+			"./alert": [
+				"./dist/components/Alert/index.d.ts"
+			],
+			"./aspect-ratio": [
+				"./dist/components/AspectRatio/index.d.ts"
+			],
+			"./stack": [
+				"./dist/components/Stack/index.d.ts"
+			],
+			"./grid": [
+				"./dist/components/Grid/index.d.ts"
+			],
+			"./code": [
+				"./dist/components/Code/index.d.ts"
 			],
 			"./diff": [
 				"./dist/components/Diff/index.d.ts"
@@ -843,77 +1060,50 @@
 			"./markdown": [
 				"./dist/components/Markdown/index.d.ts"
 			],
-			"./globe": [
-				"./dist/components/Globe/index.d.ts"
+			"./button-group": [
+				"./dist/components/ButtonGroup/index.d.ts"
 			],
-			"./stat": [
-				"./dist/components/Stat/index.d.ts"
+			"./card": [
+				"./dist/components/Card/index.d.ts"
 			],
-			"./meter": [
-				"./dist/components/Meter/index.d.ts"
-			],
-			"./media-volume": [
-				"./dist/components/MediaVolume/index.d.ts"
-			],
-			"./spinnerOverlay": [
-				"./dist/attachments/spinnerOverlay.svelte.d.ts"
-			],
-			"./spinner": [
-				"./dist/components/Spinner/index.d.ts"
-			],
-			"./spinner-text": [
-				"./dist/components/SpinnerText/index.d.ts"
-			],
-			"./pagination": [
-				"./dist/components/Pagination/index.d.ts"
-			],
-			"./data-table": [
-				"./dist/components/DataTable/index.d.ts"
-			],
-			"./table-of-contents": [
-				"./dist/components/TableOfContents/index.d.ts"
-			],
-			"./dialog": [
-				"./dist/components/Dialog/index.d.ts"
-			],
-			"./scroll-area": [
-				"./dist/components/ScrollArea/index.d.ts"
-			],
-			"./stack": [
-				"./dist/components/Stack/index.d.ts"
-			],
-			"./grid": [
-				"./dist/components/Grid/index.d.ts"
-			],
-			"./confirmation": [
-				"./dist/components/Confirmation/index.d.ts"
+			"./carousel": [
+				"./dist/components/Carousel/index.d.ts"
 			],
 			"./heading": [
 				"./dist/components/Heading/index.d.ts"
 			],
-			"./popover": [
-				"./dist/components/Popover/index.d.ts"
+			"./menu": [
+				"./dist/components/Menu/index.d.ts"
+			],
+			"./menu-bar": [
+				"./dist/components/MenuBar/index.d.ts"
 			],
 			"./menu-option": [
 				"./dist/components/MenuOption/index.d.ts"
 			],
+			"./marquee": [
+				"./dist/components/Marquee/index.d.ts"
+			],
+			"./context-menu": [
+				"./dist/components/ContextMenu/index.d.ts"
+			],
+			"./popup-menu": [
+				"./dist/components/PopupMenu/index.d.ts"
+			],
 			"./separator": [
 				"./dist/components/Separator/index.d.ts"
 			],
-			"./calendar": [
-				"./dist/components/Form/Calendar/index.d.ts"
+			"./breadcrumbs": [
+				"./dist/components/Breadcrumbs/index.d.ts"
 			],
-			"./event-calendar": [
-				"./dist/components/EventCalendar/index.d.ts"
+			"./table": [
+				"./dist/components/Table/index.d.ts"
 			],
-			"./gantt-chart": [
-				"./dist/components/GanttChart/index.d.ts"
+			"./data-table": [
+				"./dist/components/DataTable/index.d.ts"
 			],
-			"./chart": [
-				"./dist/components/Chart/index.d.ts"
-			],
-			"./date-selector": [
-				"./dist/components/Form/DateSelector/index.d.ts"
+			"./skeleton": [
+				"./dist/components/Skeleton/index.d.ts"
 			],
 			"./ai-conversation": [
 				"./dist/components/AIConversation/index.d.ts"
@@ -962,6 +1152,42 @@
 			],
 			"./ai-mcp-app/sandbox": [
 				"./dist/components/AIMcpApp/sandbox/index.d.ts"
+			],
+			"./collapsible": [
+				"./dist/components/Collapsible/index.d.ts"
+			],
+			"./ai-file-preview": [
+				"./dist/components/AIFilePreview/index.d.ts"
+			],
+			"./ask": [
+				"./dist/components/Form/Ask/index.d.ts"
+			],
+			"./audio-player": [
+				"./dist/components/AudioPlayer/index.d.ts"
+			],
+			"./checkbox": [
+				"./dist/components/Form/Checkbox/index.d.ts"
+			],
+			"./kanban": [
+				"./dist/components/Kanban/index.d.ts"
+			],
+			"./link-preview": [
+				"./dist/components/LinkPreview/index.d.ts"
+			],
+			"./pin-input": [
+				"./dist/components/Form/PinInput/index.d.ts"
+			],
+			"./progress-circle": [
+				"./dist/components/ProgressCircle/index.d.ts"
+			],
+			"./resizable": [
+				"./dist/components/Resizable/index.d.ts"
+			],
+			"./tabbar": [
+				"./dist/components/Tabbar/index.d.ts"
+			],
+			"./video-player": [
+				"./dist/components/VideoPlayer/index.d.ts"
 			]
 		}
 	}

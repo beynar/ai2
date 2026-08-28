@@ -5,23 +5,17 @@
 		type LayoutSpacing,
 		type LayoutSpacingKey
 	} from '../Layout/layoutSpacing.js';
-	import type { StackBase, StackCrossAlignment, StackMainAlignment } from './stack.types.js';
+	import type { StackProps } from './stack.props.js';
 	import { useStackTheme } from './stack.theme.js';
-
-	type StackRootProps = StackBase & {
-		direction: 'horizontal' | 'vertical';
-		mainAlign: StackMainAlignment;
-		crossAlign: StackCrossAlignment;
-	};
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		as = 'div',
 		style,
-		direction,
-		mainAlign,
-		crossAlign,
+		orientation = 'vertical',
+		align = 'stretch',
+		justify = 'start',
 		gap = 0,
 		padding,
 		paddingInline,
@@ -35,7 +29,7 @@
 		theme,
 		children,
 		...attributes
-	}: StackRootProps = $props();
+	}: StackProps = $props();
 
 	const classes = $derived(useStackTheme(theme));
 	const resolvedPaddingInline = $derived(paddingInline ?? padding);
@@ -50,8 +44,8 @@
 <svelte:element
 	this={as}
 	bind:this={ref}
-	data-slot={direction === 'horizontal' ? 'h-stack' : 'v-stack'}
-	data-direction={direction}
+	data-slot="stack"
+	data-orientation={orientation}
 	data-wrap={wrap}
 	{style}
 	style:width={cssSize(width)}
@@ -59,9 +53,9 @@
 	style:max-width={cssSize(maxWidth)}
 	style:min-height={cssSize(minHeight)}
 	class={classes.root({
-		direction,
-		mainAlign,
-		crossAlign,
+		direction: orientation,
+		mainAlign: justify,
+		crossAlign: align,
 		gap: spacingKey(gap),
 		paddingInline: spacingKey(resolvedPaddingInline),
 		paddingBlock: spacingKey(resolvedPaddingBlock),

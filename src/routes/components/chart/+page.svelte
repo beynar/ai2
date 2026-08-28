@@ -258,7 +258,7 @@
 		</p>
 		<p class="text-neutral/60 max-w-3xl text-sm leading-6">
 			Enable <code>tooltip</code> to compare every series at the pointer category or date. The tooltip
-			escapes clipped containers through its viewport portal without adding chart focus states.
+			stays inside the chart surface without adding chart focus states.
 		</p>
 		<p class="text-neutral/60 max-w-3xl text-sm leading-6">
 			Use one <code>distribution</code> mark with <code>group</code> and <code>value</code>

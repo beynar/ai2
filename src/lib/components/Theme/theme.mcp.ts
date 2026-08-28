@@ -1,205 +1,73 @@
 export const themeDescription = `
-# Theme Component
+# Theme
 
-The Theme component provides a global theming system and state management for UI components. It manages color schemes, component themes, and global UI state like tooltips.
+\`Theme\` owns global theme selection, runtime design tokens, shared overlay state, and theme
+transitions. Wrap the application once and use the \`ThemeState\` received by the children snippet.
 
-## Basic Usage
+## Runtime design tokens
 
 \`\`\`svelte
-<!-- +layout.svelte -->
-<script>
-	import { Theme } from 'svelai/theme';
+<script lang="ts">
+	import { Theme, type ThemeDesignTokenMap } from 'svelai/theme';
+
+	let spacing = $state<'small' | 'normal' | 'large'>('normal');
+	const designTokens = $derived({
+		light: {
+			spacing,
+			radius: 'normal',
+			typeScale: 'default',
+			raisedWithBorder: true
+		},
+		dark: {
+			spacing,
+			radius: 'small',
+			typeScale: 'compact',
+			raisedWithBorder: false
+		}
+	} satisfies ThemeDesignTokenMap<readonly ['light', 'dark']>);
 </script>
 
-<Theme spinnerVariant="pulse" transition="radial-top-right">
-	<slot />
-</Theme>
-\`\`\`
-
-## Theme State API
-
-Access theme state using the \`useTheme()\` hook:
-
-\`\`\`svelte
-<script>
-	import { useTheme } from 'svelai/theme';
-
-	const theme = useTheme();
-	// Also inherited by Button, Confirmation, and loading Toasts.
-	console.log(theme.spinnerVariant);
-</script>
-\`\`\`
-
-## Theme Methods
-
-### Tooltip Management
-- **showTooltip(config)** - Display a tooltip
-  - config: { ref, content, position?, size?, color?, offset?, class?, transition? }
-- **hideTooltip()** - Hide current tooltip
-- **tooltip** - Current tooltip state (reactive)
-
-### Theme Customization
-- **setComponentTheme(componentName, theme)** - Override component theme
-- **getComponentTheme(componentName)** - Get component theme
-
-## Props
-
-### Theme Component Props
-- **colorScheme**: 'light' | 'dark' | 'auto' (default: 'auto')
-  - Controls the color scheme of the application
-- **spinnerVariant**: 'default' | 'grid' | 'pulse' | 'puff' | 'lines' | 'circles' (default: 'default')
-  - Global default for Spinner, SpinnerText, spinnerOverlay, Button loading states, Confirmation actions, and loading Toasts
-- **transition**: ThemeTransition (optional)
-  - Applied whenever \`ThemeState.theme\` is assigned.
-  - Radial: 'radial-top-left' | 'radial-top-right' | 'radial-bottom-left' | 'radial-bottom-right'
-  - Line: 'line-top' | 'line-right' | 'line-bottom' | 'line-left'
-  - Shutter: 'shutter-top' | 'shutter-right' | 'shutter-bottom' | 'shutter-left'
-  - Grid: 'random-grid' | 'column-grid-left' | 'column-grid-right'
-  - Omit for an instant theme change. Unsupported browsers and reduced-motion preferences also change instantly.
-- **children**: Snippet - App content
-- **class**: string - Additional CSS classes
-
-## Examples
-
-### Basic Theme Setup
-\`\`\`svelte
-<!-- +layout.svelte -->
-<Theme>
-	<nav><!-- Navigation --></nav>
-	<main>
-		<slot />
-	</main>
-	<Tooltip />
-</Theme>
-\`\`\`
-
-### Dark Mode Toggle
-\`\`\`svelte
-<Theme transition="radial-top-right">
+<Theme {designTokens} transition="radial-top-right">
 	{#snippet children(theme)}
-		<Button onClick={() => theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark'}>
-			Toggle Theme
-		</Button>
-
-		<slot />
+		<button onclick={() => (spacing = spacing === 'small' ? 'large' : 'small')}>
+			Change density
+		</button>
+		<button onclick={() => (theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark')}>
+			Toggle color scheme
+		</button>
 	{/snippet}
 </Theme>
 \`\`\`
 
-### Using Theme State
-\`\`\`svelte
-<script>
-	const theme = useTheme();
-	
-	// Access current tooltip
-	$effect(() => {
-		console.log('Current tooltip:', theme.tooltip);
-	});
-</script>
-\`\`\`
+\`designTokens\` is keyed by logical theme name and respects the \`attribute\` and \`value\` props.
+Changing the controlled object updates already-rendered Tailwind utilities without rebuilding CSS.
 
-### Custom Component Themes
-\`\`\`svelte
-<script>
-	import { setButtonTheme } from 'svelai/button';
-	
-	// Override button theme globally
-	setButtonTheme({
-		button: {
-			base: 'custom-button-class',
-			variants: {
-				// ... custom variants
-			}
-		}
-	});
-</script>
-\`\`\`
+### ThemeDesignTokens
 
-### Tooltip Integration
-\`\`\`svelte
-<script>
-	const theme = useTheme();
-	let buttonRef;
-</script>
+- \`spacing\`: \`'small' | 'normal' | 'large' | number\`. Scales Tailwind spacing utilities,
+  including padding, margin, gap, width, and height.
+- \`radius\`: \`'none' | 'subtile' | 'small' | 'normal' | 'large' | 'round' | number\`.
+- \`typeScale\`: \`'compact' | 'default' | 'comfortable' | 'large' | TypeScaleOptions\`.
+- \`raisedWithBorder\`: toggles the border used by \`raised-*\` utilities.
 
-<Button 
-	bind:ref={buttonRef}
-	onEnter={() => theme.showTooltip({
-		ref: buttonRef,
-		content: 'Button tooltip'
-	})}
-	onLeave={() => theme.hideTooltip()}
->
-	Hover Me
-</Button>
-\`\`\`
+Component-level density remains a local variant. It selects utility classes whose values inherit
+the active global spacing token.
 
-### Per-Component Theme Override
-\`\`\`svelte
-<script>
-	const customButtonTheme = {
-		button: {
-			base: 'rounded-lg',
-			variants: {
-				color: {
-					custom: 'bg-purple-500 text-white'
-				}
-			}
-		}
-	};
-</script>
+## Theme selection
 
-<Button theme={customButtonTheme} color="custom">
-	Custom Themed Button
-</Button>
-\`\`\`
+The selection props come from \`svelte-themes\`: \`themes\`, \`defaultTheme\`, \`forcedTheme\`,
+\`enableSystem\`, \`enableColorScheme\`, \`storageKey\`, \`attribute\`, \`value\`, and
+\`colorScheme\`. The default themes are light and dark, with system selection enabled.
 
-### System Color Scheme Detection
-\`\`\`svelte
-<!-- Auto detects user's system preference -->
-<Theme colorScheme="auto">
-	<slot />
-</Theme>
-\`\`\`
+\`ThemeState\` exposes \`theme\`, \`resolvedTheme\`, \`themes\`, and \`systemTheme\`. Assign
+\`theme.theme\` to switch themes. The optional \`transition\` prop applies a named view transition;
+unsupported browsers and reduced-motion users switch instantly.
 
-## Color Scheme Values
+\`spinnerVariant\` sets the global default spinner animation. The children snippet is required.
 
-- **light** - Force light mode
-- **dark** - Force dark mode
-- **auto** - Detect from system preferences
+## Build-time boundary
 
-## Theme Architecture
-
-The theme system provides:
-1. **Global color schemes** - Light/dark mode management
-2. **Component themes** - Customizable styling for all components
-3. **Shared state** - Tooltip, dialog, and other global UI state
-4. **CSS variables** - Dynamic color tokens
-
-## Theming Components
-
-Each component can be themed using its dedicated theme setter:
-
-\`\`\`svelte
-import { setButtonTheme } from 'svelai/button';
-import { setDialogTheme } from 'svelai/dialog';
-
-setButtonTheme({ /* custom theme */ });
-setDialogTheme({ /* custom theme */ });
-\`\`\`
-
-Or override per-instance:
-
-\`\`\`svelte
-<Button theme={customTheme}>Themed Button</Button>
-\`\`\`
-
-## Notes
-
-- Theme component should wrap your entire app
-- Only one Theme component should exist
-- Color scheme preference is stored in localStorage
-- System preference is detected via media queries
-- Component themes cascade from global to local
-- Tooltip state is managed globally for single instance
+The Tailwind plugin still generates color palettes and registers utility names, variants,
+keyframes, and spinner CSS. Spacing, radius, typography scale, and raised borders belong to
+\`Theme.designTokens\`; colors remain CSS variables and can be overridden directly.
 `;

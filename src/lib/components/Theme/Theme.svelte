@@ -8,6 +8,7 @@
 	import type { ThemeProps } from './theme.props.js';
 	import { portal } from '$lib/attachments/portal.js';
 	import { FLOATING_WINDOW_LAYER_Z_INDEX } from './theme.layers.js';
+	import { compileThemeDesignTokens } from './theme.designTokens.js';
 
 	let {
 		children,
@@ -21,6 +22,7 @@
 		attribute = 'data-theme',
 		value = undefined,
 		spinnerVariant = 'default',
+		designTokens,
 		transition,
 		colorScheme
 	}: ThemeProps<T> = $props();
@@ -89,6 +91,14 @@
 	);
 
 	const attrs = !value ? ((themes || []) as string[]) : (Object.values(value || {}) as string[]);
+	const designTokenCss = $derived(
+		compileThemeDesignTokens({
+			designTokens,
+			attribute,
+			value,
+			colorScheme
+		})
+	);
 
 	let themeScript = `<script>
 		function svelteTheme(){		
@@ -138,7 +148,7 @@
 	})();
 `
 	]}
-	css={[]}
+	css={[designTokenCss]}
 />
 
 <svelte:head>
