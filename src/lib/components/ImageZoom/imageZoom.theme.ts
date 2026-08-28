@@ -1,0 +1,46 @@
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+
+const defaultImageZoomRoot = cva({
+	base: 'relative inline-block max-w-full'
+});
+
+const defaultImageZoomTrigger = cva({
+	base: 'group/image-zoom relative m-0 block max-w-full cursor-zoom-in border-0 bg-transparent p-0 text-left outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55'
+});
+
+const defaultImageZoomImage = cva({
+	base: 'block h-auto max-w-full'
+});
+
+const defaultImageZoomIndicator = cva({
+	base: 'bg-neutral/70 text-neutral-contrast pointer-events-none absolute inline-flex size-9 items-center justify-center rounded-full opacity-0 shadow-sm transition-opacity group-hover/image-zoom:opacity-100 group-focus-visible/image-zoom:opacity-100 [&_svg]:size-4',
+	variants: {
+		position: {
+			'top-left': 'top-2 left-2',
+			'top-right': 'top-2 right-2',
+			'bottom-left': 'bottom-2 left-2',
+			'bottom-right': 'right-2 bottom-2'
+		}
+	},
+	defaultVariants: {
+		position: 'top-right'
+	}
+});
+
+const defaultImageZoomCaption = cva({
+	base: 'text-neutral bg-surface-floating/85 fixed bottom-4 left-1/2 z-[1100] max-w-[min(44rem,calc(100vw-2rem))] -translate-x-1/2 rounded-full px-4 py-2 text-center text-sm shadow-sm backdrop-blur-md'
+});
+
+export const imageZoomTheme = {
+	root: defaultImageZoomRoot,
+	trigger: defaultImageZoomTrigger,
+	image: defaultImageZoomImage,
+	indicator: defaultImageZoomIndicator,
+	caption: defaultImageZoomCaption
+};
+
+export type ImageZoomTheme = typeof imageZoomTheme;
+export type ImageZoomThemeProps = InferComponentTheme<ImageZoomTheme>;
+export const setImageZoomTheme = setComponentTheme<ImageZoomTheme>('image-zoom');
+export const useImageZoomTheme = useComponentTheme<ImageZoomTheme>('image-zoom', imageZoomTheme);

@@ -1,35 +1,34 @@
-<script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
-	import { type Slot, type SnippetSlot } from './slot.js';
+<script lang="ts" generics="Payload extends any|undefined = undefined">
+	import { type Slot } from './slot.js';
 	import type { Snippet } from 'svelte';
-
+	import type { WithAttachments } from '$lib/types/props.js';
 	let {
 		render,
-		payload,
 		class: className = '',
 		children,
 		style = '',
 		attrs = {},
-		props = {},
 		as = 'div',
-		renderIf = true
-	}: {
+		renderIf = true,
+		payload,
+		...attachments
+	}: WithAttachments<{
 		class?: string;
 		as?: string;
 		attrs?: Record<string, any>;
-		payload?: Payload;
-		children?: Snippet;
+		children?: Snippet<[]>;
 		style?: string;
 		render?: Slot<Payload>;
-		props?: Record<string, any>;
 		renderIf?: boolean;
-	} = $props();
+		payload?: Payload;
+	}> = $props();
 </script>
 
 {#snippet slot()}
 	{#if typeof render === 'string'}
 		{render}
-	{:else}
-		{@render render!({ ...props, payload: payload as Payload })}
+	{:else if render}
+		{@render render?.(payload)}
 	{/if}
 {/snippet}
 
@@ -39,13 +38,13 @@
 		{#if !className && render}
 			{@render slot()}
 		{:else if render}
-			<svelte:element this={as} {style} {...attrs} class={className}>
+			<svelte:element this={as} {style} {...attrs} class={className} {...attachments}>
 				{@render slot()}
 			</svelte:element>
 		{/if}
 	{:else if children}
 		{#if className}
-			<svelte:element this={as} {style} {...attrs} class={className}>
+			<svelte:element this={as} {style} {...attrs} class={className} {...attachments}>
 				{@render children()}
 			</svelte:element>
 		{:else}

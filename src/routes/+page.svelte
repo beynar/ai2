@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Component from './Component.svelte';
-	import Button, { setButtonTheme } from '$lib/components/Button/Button.svelte';
-	import Chip from '$lib/components/Chip/Chip.svelte';
-	import Badge from '$lib/components/Badge/Badge.svelte';
+	import { Button, setButtonTheme } from '$lib/components/Button/index.js';
+	import { tooltip } from '$lib/components/Tooltip/tooltip.svelte.js';
 
 	// setButtonTheme({
 	// 	button: {
@@ -11,28 +10,26 @@
 	// });
 </script>
 
-<button data-color="danger" class="bg-color"> eaz </button>
+<button data-color="danger" class="border"> eaz </button>
 
 <div class="bg-primary/20 m-10 size-20 shadow"></div>
 
 <div class="bg-secondary/20 raised-xl m-10 size-20"></div>
 
-<p class="text-contrast-muted">hello</p>
+<p class="text-neutral/60">hello</p>
 
 {#snippet Test({ text }: { text: string })}
-	<button
-		onClick={() => {
-			console.log({ Test, Component });
-		}}
-		class="bg-primary text-color-light p-2">{text}</button
-	>
+	<button class="bg-primary text-color-light p-2">{text}</button>
 {/snippet}
 
-<div class="bg-primary/20 size-20 rounded p-1">hello</div>
+<div class="bg-primary/20 size-20 rounded p-1" {@attach tooltip({ content: 'hello' })}>hello</div>
 
 <!--  -->
 <Button color="secondary">Hello</Button>
 <Button color="secondary">Hello</Button>
+
+<div class="size-10 border">e</div>
+<div class="border-danger bg-primary-dark size-10 border">e</div>
 <!-- <Button color="danger">Hello</Button>
 <Button color="success">Hello</Button>
 <Button color="warning">Hello</Button>
@@ -51,8 +48,8 @@
 <Chip color="success">Hello</Chip>
 <Chip color="warning">Hello</Chip>
 <Chip color="info">Hello</Chip>
-<Chip color="contrast">Hello</Chip>
-<Chip color="surface">Helloeaz</Chip>
+<Chip color="neutral">Hello</Chip>
+<Chip color="neutral">Helloeaz</Chip>
 <br />
 <Chip color="primary" variant="outline">Hello</Chip>
 <Chip color="secondary" variant="outline">Hello</Chip>
@@ -60,8 +57,8 @@
 <Chip color="success" variant="outline">Hello</Chip>
 <Chip color="warning" variant="outline">Hello</Chip>
 <Chip color="info" variant="outline">Hello</Chip>
-<Chip color="contrast" variant="outline">Hello</Chip>
-<Chip color="surface" variant="outline">Helloeaz</Chip>
+<Chip color="neutral" variant="outline">Hello</Chip>
+<Chip color="neutral" variant="outline">Helloeaz</Chip>
 <br />
 <Chip color="primary" variant="soft">Hello</Chip>
 <Chip color="secondary" variant="soft">Hello</Chip>
@@ -69,49 +66,49 @@
 <Chip color="success" variant="soft">Hello</Chip>
 <Chip color="warning" variant="soft">Hello</Chip>
 <Chip color="info" variant="soft">Hello</Chip>
-<Chip color="contrast" variant="soft">Hello</Chip>
-<Chip color="surface" variant="soft">Helloeaz</Chip>
+<Chip color="neutral" variant="soft">Hello</Chip>
+<Chip color="neutral" variant="soft">Helloeaz</Chip>
 
 <div class="flex">
 	<div class="flex">
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary">1</Badge>
+			<Chip color="primary">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="large">1</Badge>
+			<Chip color="primary" size="large">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="small">1</Badge>
-		</div>
-	</div>
-	<div class="flex">
-		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" position="topLeft">1</Badge>
-		</div>
-		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="large" position="topRight">1</Badge>
-		</div>
-		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="small" position="topRight">1</Badge>
+			<Chip color="primary" size="small">1</Chip>
 		</div>
 	</div>
 	<div class="flex">
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" position="bottomLeft">1</Badge>
+			<Chip color="primary" position="topLeft">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="primary" size="large" position="bottomRight">1</Badge>
+			<Chip color="primary" size="large" position="topRight">1</Chip>
 		</div>
 		<div class="bg-primary/20 m-10 size-20 shadow">
-			<Badge color="danger" size="small" position="bottomRight">1</Badge>
+			<Chip color="primary" size="small" position="topRight">1</Chip>
+		</div>
+	</div>
+	<div class="flex">
+		<div class="bg-primary/20 m-10 size-20 shadow">
+			<Chip color="primary" position="bottomLeft">1</Chip>
+		</div>
+		<div class="bg-primary/20 m-10 size-20 shadow">
+			<Chip color="primary" size="large" position="bottomRight">1</Chip>
+		</div>
+		<div class="bg-primary/20 m-10 size-20 shadow">
+			<Chip color="danger" size="small" position="bottomRight">1</Chip>
 		</div>
 	</div>
 </div>
 
 <div class="bg-primary/20 m-10 size-20 shadow">
-	<Badge
+	<Chip
 		theme={{
-			badge: {
+			root: {
 				position: {
 					bottomRight: 'bottom-4 right-4'
 				}
@@ -121,9 +118,9 @@
 		size="small"
 		position="bottomRight"
 		>1
-		<Badge color="primary" size="small" position="bottomRight"
+		<Chip color="primary" size="small" position="bottomRight"
 			>1
-			<Badge color="success" size="small" position="bottomRight">1</Badge>
-		</Badge>
-	</Badge>
+			<Chip color="success" size="small" position="bottomRight">1</Chip>
+		</Chip>
+	</Chip>
 </div> -->

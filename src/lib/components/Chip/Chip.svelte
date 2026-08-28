@@ -1,35 +1,33 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { chipTheme, type ChipProps } from './chip.js';
-	export const setChipTheme = setComponentTheme<typeof chipTheme>('chip');
-	export const useChipTheme = useComponentTheme('chip', chipTheme);
-</script>
-
 <script lang="ts">
 	import Slot from '../Slot/Slot.svelte';
+	import type { ChipProps } from './chip.props.js';
+	import { useChipTheme } from './chip.theme.js';
 	const {
 		color = 'primary',
 		variant = 'solid',
 		children,
 		size = 'normal',
+		position,
 		class: className = '',
 		onClick,
-		onenter,
-		onleave,
+		onEnter,
+		onLeave,
 		suffix,
 		target,
 		rel,
 		prefix,
 		href,
+		type = 'button',
+		disabled,
+		'aria-pressed': ariaPressed,
+		'aria-disabled': ariaDisabled,
 		theme,
-		prefixProps,
-		suffixProps,
-		childrenProps,
 		...attachments
 	}: ChipProps = $props();
 
 	const classes = $derived(useChipTheme(theme));
-	const as = $derived(href ? 'a' : onClick || onenter || onleave ? 'button' : 'div');
+	const as = $derived(href ? 'a' : onClick || onEnter || onLeave ? 'button' : 'div');
+	const isEmpty = $derived(!children && !prefix && !suffix);
 </script>
 
 <svelte:element
@@ -38,14 +36,22 @@
 	data-variant={variant}
 	data-color={color}
 	data-size={size}
+	data-position={position}
+	data-chip-position={position}
 	{rel}
 	{target}
 	{href}
+	type={as === 'button' ? type : undefined}
+	disabled={as === 'button' ? disabled : undefined}
+	aria-pressed={ariaPressed}
+	aria-disabled={ariaDisabled}
 	onclick={onClick}
-	class={classes.chip({ color, variant, size, className })}
+	onpointerenter={onEnter}
+	onpointerleave={onLeave}
+	class={classes.root({ color, variant, size, position, className, isLink: as === 'a', isEmpty })}
 	{...attachments}
 >
-	<Slot render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot render={children} props={childrenProps} />
-	<Slot render={suffix} class={classes.suffix({ size })} props={suffixProps} />
+	<Slot render={prefix} class={classes.prefix({ size })} />
+	<Slot render={children} />
+	<Slot render={suffix} class={classes.suffix({ size })} />
 </svelte:element>

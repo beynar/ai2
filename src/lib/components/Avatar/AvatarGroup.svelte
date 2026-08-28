@@ -1,16 +1,10 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { avatarGroupTheme } from './avatar.js';
-	export const setAvatarGroupTheme = setComponentTheme<typeof avatarGroupTheme>('avatarGroup');
-	export const useAvatarGroupTheme = useComponentTheme('avatarGroup', avatarGroupTheme);
-</script>
-
 <script lang="ts" generics="Item extends object">
-	import type { AvatarGroupProps } from './avatar.js';
+	import type { AvatarGroupProps } from './avatarGroup.props.js';
+	import { useAvatarGroupTheme } from './avatarGroup.theme.js';
 	import Avatar from './Avatar.svelte';
 
 	let {
-		users,
+		items,
 		max,
 		class: className,
 		remainingCount,
@@ -25,10 +19,15 @@
 	}: AvatarGroupProps<Item> = $props();
 
 	const classes = $derived(useAvatarGroupTheme(theme));
+	const visibleCount = $derived(
+		max === undefined || !Number.isFinite(max) ? items.length : Math.max(0, Math.floor(max))
+	);
+	const visibleItems = $derived(items.slice(0, visibleCount));
+	const remaining = $derived(Math.max(0, items.length - visibleItems.length));
 </script>
 
-<div data-size={size || 'normal'} class={classes.avatarGroup({ size, className })} {...attachments}>
-	{#each users.slice(0, max) as user, index}
+<div data-size={size || 'normal'} class={classes.root({ size, className })} {...attachments}>
+	{#each visibleItems as user, index}
 		{#if avatar}
 			{@render avatar({
 				user,
@@ -46,12 +45,12 @@
 			<Avatar {delay} {size} {loadingState} {prefix} {suffix} {theme} {user} />
 		{/if}
 	{/each}
-	{#if max && users.length > max}
+	{#if remaining > 0}
 		<div class={classes.avatarGroupCount({ size })}>
 			{#if remainingCount}
-				{@render remainingCount({ users, remaining: users.length - max })}
+				{@render remainingCount({ items, remaining })}
 			{:else}
-				+{users.length - max}
+				+{remaining}
 			{/if}
 		</div>
 	{/if}

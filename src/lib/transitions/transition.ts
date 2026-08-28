@@ -131,7 +131,7 @@ export const bgFade = () => {
 		const rgba = getComputedStyle(node).backgroundColor;
 		const [r = 255, g = 255, b = 255, target_opacity = 1] = rgba.match(/\d+(\.\d+)?/g)!.map(Number);
 		node.style.removeProperty('background-color');
-		console.log({ r, g, b, target_opacity });
+
 		const od = target_opacity * (1 - 0);
 		return {
 			delay: options.delay,
@@ -146,69 +146,74 @@ export const bgFade = () => {
 	};
 };
 
-export const slide = (
-	node: HTMLElement,
-	{
-		delay = 0,
-		duration,
-		easing,
-		axis = 'y',
-		x = 0,
-		scale = 1,
-		y = 0,
-		opacity = 0.2
-	}: SlideTransitionParams = {}
-) => {
+// Factory like `fso`/`bgFade`: `useTheme()` reads context, which only exists
+// during component init — calling it inside the transition fn (which Svelte
+// invokes at animation time) throws lifecycle_outside_component.
+export const slide = () => {
 	const theme = useTheme();
-	const style = getComputedStyle(node);
-	const primary_property = axis === 'y' ? 'height' : 'width';
-	const primary_property_value = parseFloat(style[primary_property]);
-	const secondary_properties = axis === 'y' ? ['top', 'bottom'] : ['left', 'right'];
-	const capitalized_secondary_properties = secondary_properties.map(
-		(e) => `${e[0].toUpperCase()}${e.slice(1)}`
-	) as ('Left' | 'Right' | 'Top' | 'Bottom')[];
-	const padding_start_value = parseFloat(style[`padding${capitalized_secondary_properties[0]}`]);
-	const padding_end_value = parseFloat(style[`padding${capitalized_secondary_properties[1]}`]);
-	const margin_start_value = parseFloat(style[`margin${capitalized_secondary_properties[0]}`]);
-	const margin_end_value = parseFloat(style[`margin${capitalized_secondary_properties[1]}`]);
-	const border_width_start_value = parseFloat(
-		style[`border${capitalized_secondary_properties[0]}Width`]
-	);
-	const border_width_end_value = parseFloat(
-		style[`border${capitalized_secondary_properties[1]}Width`]
-	);
+	return (
+		node: HTMLElement,
+		{
+			delay = 0,
+			duration,
+			easing,
+			axis = 'y',
+			x = 0,
+			scale = 1,
+			y = 0,
+			opacity = 0.2
+		}: SlideTransitionParams = {}
+	): TransitionConfig => {
+		const style = getComputedStyle(node);
+		const primary_property = axis === 'y' ? 'height' : 'width';
+		const primary_property_value = parseFloat(style[primary_property]);
+		const secondary_properties = axis === 'y' ? ['top', 'bottom'] : ['left', 'right'];
+		const capitalized_secondary_properties = secondary_properties.map(
+			(e) => `${e[0].toUpperCase()}${e.slice(1)}`
+		) as ('Left' | 'Right' | 'Top' | 'Bottom')[];
+		const padding_start_value = parseFloat(style[`padding${capitalized_secondary_properties[0]}`]);
+		const padding_end_value = parseFloat(style[`padding${capitalized_secondary_properties[1]}`]);
+		const margin_start_value = parseFloat(style[`margin${capitalized_secondary_properties[0]}`]);
+		const margin_end_value = parseFloat(style[`margin${capitalized_secondary_properties[1]}`]);
+		const border_width_start_value = parseFloat(
+			style[`border${capitalized_secondary_properties[0]}Width`]
+		);
+		const border_width_end_value = parseFloat(
+			style[`border${capitalized_secondary_properties[1]}Width`]
+		);
 
-	const target_opacity = +style.opacity;
+		const target_opacity = +style.opacity;
 
-	const transform = style.transform === 'none' ? '' : style.transform;
-	const sd = 1 - scale;
-	const od = target_opacity * (1 - (opacity ?? 1));
+		const transform = style.transform === 'none' ? '' : style.transform;
+		const sd = 1 - scale;
+		const od = target_opacity * (1 - (opacity ?? 1));
 
-	const [x_value, x_unit] = split_css_unit(x);
-	const [y_value, y_unit] = split_css_unit(y);
+		const [x_value, x_unit] = split_css_unit(x);
+		const [y_value, y_unit] = split_css_unit(y);
 
-	return {
-		delay,
-		duration: resolveDuration(duration, theme),
-		easing: resolveEasing(easing, theme),
-		css: (t: number, u: number) => {
-			return (
-				// 'z-index: -1;' +
-				'overflow: hidden;' +
-				`${primary_property}: ${t * primary_property_value}px;` +
-				`padding-${secondary_properties[0]}: ${t * padding_start_value}px;` +
-				`padding-${secondary_properties[1]}: ${t * padding_end_value}px;` +
-				`margin-${secondary_properties[0]}: ${t * margin_start_value}px;` +
-				`margin-${secondary_properties[1]}: ${t * margin_end_value}px;` +
-				`border-${secondary_properties[0]}-width: ${t * border_width_start_value}px;` +
-				`border-${secondary_properties[1]}-width: ${t * border_width_end_value}px;` +
-				`transform: ${transform} scale(${1 - sd * u}) translate(${(1 - t) * x_value}${x_unit}, ${
-					(1 - t) * y_value
-				}${y_unit});` +
-				`opacity: ${target_opacity - od * u};` +
-				`border-${secondary_properties[1]}-width: ${t * border_width_end_value}px;`
-			);
-		}
+		return {
+			delay,
+			duration: resolveDuration(duration, theme),
+			easing: resolveEasing(easing, theme),
+			css: (t: number, u: number) => {
+				return (
+					// 'z-index: -1;' +
+					'overflow: hidden;' +
+					`${primary_property}: ${t * primary_property_value}px;` +
+					`padding-${secondary_properties[0]}: ${t * padding_start_value}px;` +
+					`padding-${secondary_properties[1]}: ${t * padding_end_value}px;` +
+					`margin-${secondary_properties[0]}: ${t * margin_start_value}px;` +
+					`margin-${secondary_properties[1]}: ${t * margin_end_value}px;` +
+					`border-${secondary_properties[0]}-width: ${t * border_width_start_value}px;` +
+					`border-${secondary_properties[1]}-width: ${t * border_width_end_value}px;` +
+					`transform: ${transform} scale(${1 - sd * u}) translate(${(1 - t) * x_value}${x_unit}, ${
+						(1 - t) * y_value
+					}${y_unit});` +
+					`opacity: ${target_opacity - od * u};` +
+					`border-${secondary_properties[1]}-width: ${t * border_width_end_value}px;`
+				);
+			}
+		};
 	};
 };
 

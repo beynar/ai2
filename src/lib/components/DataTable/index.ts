@@ -1,0 +1,54 @@
+export { default as DataTable } from './DataTable.svelte';
+export { createDataTableColumnHelper } from './dataTable.column-helper.js';
+export { createDataTableState } from './dataTable.model.svelte.js';
+export type {
+	DataTableAggregation,
+	DataTableAlignment,
+	DataTableApi,
+	DataTableBooleanFilter,
+	DataTableBuiltInEditor,
+	DataTableCellCommit,
+	DataTableCellPayload,
+	DataTableCellRenderPayload,
+	DataTableColumn,
+	DataTableColumnFilter,
+	DataTableCustomEditor,
+	DataTableCustomFilter,
+	DataTableDateEditor,
+	DataTableDateFilter,
+	DataTableEditor,
+	DataTableEditorPayload,
+	DataTableFilter,
+	DataTableFilterPayload,
+	DataTableHeaderPayload,
+	DataTableHeaderRenderPayload,
+	DataTableInteractionMode,
+	DataTableNumberEditor,
+	DataTableNumberFilter,
+	DataTableOption,
+	DataTablePaginationConfig,
+	DataTablePaginationState,
+	DataTablePinning,
+	DataTableProcessingMode,
+	DataTableProps,
+	DataTableRowPayload,
+	DataTableSearchConfig,
+	DataTableSelectionMode,
+	DataTableSelectEditor,
+	DataTableSelectFilter,
+	DataTableSorting,
+	DataTableState,
+	DataTableSwitchEditor,
+	DataTableTextEditor,
+	DataTableTextFilter,
+	DataTableToolbarPayload
+} from './dataTable.props.js';
+export {
+	dataTableTheme,
+	setDataTableTheme,
+	useDataTableTheme,
+	type DataTableClasses,
+	type DataTableTheme,
+	type DataTableThemeProps
+} from './dataTable.theme.js';
+export { dataTableDescription } from './dataTable.mcp.js';

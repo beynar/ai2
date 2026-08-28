@@ -1,121 +1,215 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { formTheme } from './form.js';
-	export const setFormTheme = setComponentTheme<typeof formTheme>('form');
-	export const useFormTheme = useComponentTheme('form', formTheme);
-</script>
-
 <script lang="ts" generics="I extends FormInputs">
-	import TextInput from '../TextInput/TextInput.svelte';
-	import NumberInput from '../NumberInput/NumberInput.svelte';
-	import type { FormInputs, FormProps, FormSubmitHandler, FormInput } from './form.js';
-	import { useForm } from './formState.svelte.js';
-	import TextArea from '../TextArea/TextArea.svelte';
-	import Select from '../Select/Select.svelte';
-	import RadioInput from '../RadioInput/RadioInput.svelte';
+	import { getContext } from 'svelte';
+	import Button from '$lib/components/Button/Button.svelte';
+	import { useCardTheme } from '$lib/components/Card/card.theme.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
-	import CheckBoxesInput from '../CheckboxesInput/CheckBoxesInput.svelte';
-	import Switch from '../Switch/Switch.svelte';
-	import PasswordInput from '../PasswordInput/Password.svelte';
-	import PhoneInput from '../PhoneInput/PhoneInput.svelte';
-	import CalendarInput from '../Calendar/CalendarInput.svelte';
-	import DateInput from '../DateInput/DateInput.svelte';
+	import { cx } from '$lib/utils/cva/index.js';
+	import type { FormInputs, FormInput, FormRenderableInput } from './form.js';
+	import FormActions from './FormActions.svelte';
+	import FormInputRenderer from './FormInputRenderer.svelte';
+	import type { FormProps } from './form.props.js';
+	import { useFormTheme } from './form.theme.js';
+	import { useForm } from './form.state.svelte.js';
+	import { formCardSurfaceContextKey, type FormCardSurfaceContext } from './form.context.js';
 	let {
 		inputs,
 		onSubmit,
 		value = $bindable(),
 		class: className,
 		header,
-		headerProps,
 		title,
-		titleProps,
 		description,
-		descriptionProps,
 		children,
-		form = $bindable()
+		footer,
+		form = $bindable(),
+		size = 'normal',
+		density = 'normal',
+		variant = 'plain',
+		layout = 'vertical',
+		actions,
+		submitButton,
+		theme
 	}: FormProps<I> = $props();
 
-	form = useForm({
-		inputs,
-		onSubmit,
-		value
+	const formState = useForm({
+		get inputs() {
+			return inputs;
+		},
+		get onSubmit() {
+			return onSubmit;
+		},
+		get value() {
+			return value;
+		},
+		set value(v) {
+			value = v;
+		}
 	});
+	if (form !== formState) form = formState;
 	const inputsEntries = $derived(Object.entries<FormInput>(inputs));
+	const visibleInputsEntries = $derived(
+		inputsEntries.filter(([, input]) =>
+			input.type === 'group' ? formState.isGroupVisible(input) : formState.isFieldVisible(input)
+		)
+	);
+	const labelPosition = $derived(layout === 'horizontal' ? 'left' : undefined);
+	const hasSectionBorders = $derived(variant !== 'plain');
+	const cardSurfaceContext = getContext<FormCardSurfaceContext>(formCardSurfaceContextKey);
+	const hasCardSurface = $derived(variant === 'card' && !cardSurfaceContext?.isOwned);
+	const cardTextVariant = $derived(hasCardSurface ? 'solid' : 'ghost');
 
-	const classes = $derived(useFormTheme());
+	const classes = $derived(useFormTheme(theme));
+	const cardClasses = $derived(useCardTheme());
+	const submitButtonState = $derived.by(() => {
+		if (!submitButton) return null;
+		const { onClick, loading, disabled, size: buttonSize, ...props } = submitButton;
+		return { onClick, loading, disabled, size: buttonSize, props };
+	});
 </script>
 
 {#snippet headerSnippet()}
-	<Slot render={title} payload={form} props={titleProps} class={classes.formTitle()} />
+	<Slot
+		render={title}
+		payload={form}
+		class={cx(
+			cardClasses.title({ size, variant: cardTextVariant }),
+			classes.formTitle({ size, variant })
+		)}
+	/>
 	<Slot
 		render={description}
-		payload={form}
-		props={descriptionProps}
-		class={classes.formDescription()}
+		payload={formState}
+		class={cx(
+			cardClasses.description({ size, variant: cardTextVariant }),
+			classes.formDescription({ size, variant })
+		)}
 	/>
 {/snippet}
-<div class={classes.form({ className })}>
+{#snippet inputSnippet(name: string, input: FormRenderableInput, itemClass?: string)}
+	{#if input.type === 'action'}
+		<FormActions
+			actions={input.actions}
+			form={formState}
+			{size}
+			label={input.label}
+			description={input.description}
+			labelPosition={input.labelPosition ?? labelPosition}
+			class={classes.formActions({
+				density,
+				alignment: (input.labelPosition ?? labelPosition) === 'left' ? 'end' : 'start'
+			})}
+			containerClass={classes.formAction({
+				className: [input.class, itemClass].filter(Boolean).join(' ')
+			})}
+		/>
+	{:else if input.type === 'custom'}
+		<Slot
+			render={input.snippet}
+			payload={formState}
+			class={classes.formCustom({
+				className: [input.class, itemClass].filter(Boolean).join(' ')
+			})}
+		/>
+	{:else}
+		<FormInputRenderer {name} {input} {size} {density} {labelPosition} {itemClass} />
+	{/if}
+{/snippet}
+<div
+	role="form"
+	{@attach formState.keyboardNavigation}
+	data-size={size}
+	data-density={density}
+	data-variant={variant}
+	data-color={hasCardSurface ? 'neutral' : undefined}
+	data-layout={layout}
+	class={cx(
+		hasCardSurface
+			? cardClasses.root({
+					color: 'neutral',
+					variant: 'solid',
+					size,
+					density,
+					clickable: false,
+					disabled: false
+				})
+			: undefined,
+		classes.root({ density, variant, layout, className })
+	)}
+>
 	<Slot
 		render={header ? header : title || description ? headerSnippet : undefined}
-		payload={form}
-		props={headerProps}
-		class={classes.formHeader()}
+		payload={formState}
+		class={cx(
+			cardClasses.header({
+				density,
+				hasAction: false,
+				hasBorder: hasSectionBorders,
+				variant: cardTextVariant
+			}),
+			classes.formHeader({ density, variant })
+		)}
 	/>
-	{#each inputsEntries as [name, input]}
-		{#if input.type === 'text'}
-			<TextInput {...input} {name} />
-		{:else if input.type === 'email'}
-			<TextInput {...input} {name} />
-		{:else if input.type === 'url'}
-			<TextInput {...input} {name} />
-		{:else if input.type === 'number'}
-			<NumberInput {...input} {name} />
-		{:else if input.type === 'textarea'}
-			<TextArea {...input} {name} />
-		{:else if input.type === 'select'}
-			<Select {...input} {name} />
-		{:else if input.type === 'radio'}
-			<RadioInput {...input} {name} />
-		{:else if input.type === 'checkboxes'}
-			<CheckBoxesInput {...input} {name} />
-		{:else if input.type === 'switch'}
-			<Switch {...input} {name} />
-		{:else if input.type === 'password'}
-			<PasswordInput {...input} {name} />
-		{:else if input.type === 'phone'}
-			<PhoneInput {...input} {name} />
-		{:else if input.type === 'calendar' || input.type === 'calendar-range'}
-			<CalendarInput {...input} {name} />
-		{:else if input.type === 'date' || input.type === 'datetime'}
-			<DateInput {...input} {name} />
+	{#each visibleInputsEntries as [name, input], index (name)}
+		{@const itemClass =
+			variant !== 'plain' && index > 0 ? classes.formItem({ density, variant }) : undefined}
+		{#if input.type === 'group'}
+			<fieldset
+				class={classes.formGroup({
+					density,
+					className: [input.class, itemClass].filter(Boolean).join(' ')
+				})}
+			>
+				<Slot as="legend" render={input.label} class={classes.formGroupLabel({ size })} />
+				<Slot as="p" render={input.description} class={classes.formGroupDescription({ size })} />
+				<div
+					class={classes.formGroupFields({
+						density,
+						layout,
+						columns: layout === 'horizontal' ? 1 : (input.columns ?? 2)
+					})}
+				>
+					{#each Object.entries<FormRenderableInput>(input.inputs) as [childName, childInput] (childName)}
+						{#if formState.isFieldVisible(childInput, input)}
+							{@render inputSnippet(childName, childInput)}
+						{/if}
+					{/each}
+				</div>
+			</fieldset>
 		{:else}
-			<p>Input type not supported: {input.type}</p>
+			{@render inputSnippet(name, input, itemClass)}
 		{/if}
-		<!-- {#if input.type === 'switch'}
-			<Switch {...input} {name} />
-		{:else if input.type === 'email' || input.type === 'text'}
-			<TextInput {...input} {name} />
-		{:else if input.type === 'textarea'}
-			<TextAreaInput {...input} {name} />
-		{:else if input.type === 'select'}
-			<Select {...input} {name} />
-		{:else if input.type === 'number'}
-			<NumberInput {...input} {name} />
-		{:else if input.type === 'color'}
-			<ColorInput {...input} {name} />
-		{:else if input.type === 'tag'}
-			<TagInput {...input} {name} />
-		{:else if input.type === 'date' || input.type === 'datetime'}
-			<DateInput {...input} {name} />
-		{:else if input.type === 'calendar' || input.type === 'calendar-range'}
-			<CalendarInput {...input} {name} />
-		{:else if input.type === 'radios'}
-			<RadioInput {...input} {name} />
-		{:else if input.type === 'checkboxes'}
-			<CheckBoxesInput {...input} {name} />
-		{:else}
-			<p>Input type not supported</p>
-		{/if} -->
 	{/each}
-	{@render children?.(form)}
+	{@render children?.(formState)}
+	{#if footer || actions?.length || submitButtonState}
+		<div
+			class={cx(
+				cardClasses.footer({ density, hasBorder: hasSectionBorders }),
+				classes.formFooter({ density, variant })
+			)}
+		>
+			<Slot render={footer} payload={formState} />
+			{#if actions?.length || submitButtonState}
+				<FormActions
+					actions={actions ?? []}
+					form={formState}
+					{size}
+					class={classes.formActions({ density })}
+				>
+					{#if submitButtonState}
+						<Button
+							{...submitButtonState.props}
+							size={submitButtonState.size ?? size}
+							loading={formState.loading || submitButtonState.loading}
+							disabled={formState.loading || submitButtonState.disabled}
+							onClick={(payload) => {
+								const submission = formState.submit();
+								submitButtonState.onClick?.(payload);
+								return submission;
+							}}
+						/>
+					{/if}
+				</FormActions>
+			{/if}
+		</div>
+	{/if}
 </div>

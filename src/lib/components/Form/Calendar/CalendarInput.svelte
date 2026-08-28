@@ -1,64 +1,56 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { calendarInputTheme } from '$lib/components/Form/Calendar/calendarInput.js';
-	export const setCalendarInputTheme =
-		setComponentTheme<typeof calendarInputTheme>('calendarInput');
-	export const useCalendarInputTheme = useComponentTheme('calendarInput', calendarInputTheme);
-</script>
-
-<script lang="ts">
-	import type { CalendarInputProps, CalendarType } from './calendarInput.js';
+<script lang="ts" generics="T extends 'calendar' | 'calendar-range'">
+	import type { CalendarInputProps } from './calendarInput.props.js';
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
+	import type { FieldValue } from '../Field/field.js';
 	import CalendarPrimitive from './CalendarPrimitive.svelte';
-
-	type T = $$Generic<CalendarType>;
+	import type { CalendarValue } from './useCalendar.svelte.js';
 
 	let {
-		value = $bindable(null),
+		value = $bindable(null as CalendarInputProps<T>['value']),
 		errors = $bindable([]),
 		focused = $bindable(false),
-		type = 'calendar',
+		type = 'calendar' as T,
 		required = false,
 		disabled,
 		name,
 		onValidate,
 		onChange,
-		readonly,
 		visible,
 		theme,
-		disabledDates,
+		disabledDates = [],
 		view,
 		weekStartsOnMonday,
+		weekStartsOn,
+		today,
 		weekdayLength,
-		containerClass,
-		headerClass,
-		dayClass,
-		weekdayClass,
-		gridClass,
+		locale,
+		ariaLabel,
 		minDate,
 		maxDate,
 		cell,
 		buttons,
 		header,
-		headerProps,
+		todayBadge,
+		onViewChange,
 		...rest
 	}: CalendarInputProps<T> = $props();
 
 	const id = $props.id();
+	type CalendarFieldValue = FieldValue<T>;
 
-	const field = createFieldState({
+	const field = createFieldState<T>({
 		id,
 		get value() {
-			return value;
+			return value as CalendarFieldValue | null;
 		},
-		set value(v: any) {
-			value = v;
+		set value(nextValue: CalendarFieldValue | null | undefined) {
+			value = nextValue as typeof value;
 		},
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -68,7 +60,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			onChange?.(v as any);
+			onChange?.(v as unknown as CalendarValue<T>);
 		},
 		get disabled() {
 			return disabled;
@@ -76,48 +68,62 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		readonly,
-		visible,
-		type: (type || 'calendar') as T
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
+		get type() {
+			return (type || 'calendar') as T;
+		}
 	});
-
-	const classes = $derived(useCalendarInputTheme(theme));
 </script>
 
-<Field
-	{field}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.container({ class: theme?.inputContainer?.base })
-		}
-	}}
-	{...rest}
->
-	<CalendarPrimitive
-		onChange={(v: any) => {
-			field.value = v;
+<Field as="fieldset" {field} theme={theme?.field} {...rest}>
+	<!-- display:contents wrapper: zero layout impact, catches bubbled focus so
+	     bind:focused works like on the text inputs. -->
+	<div
+		class="contents"
+		onfocusin={() => (field.focused = true)}
+		onfocusout={(e) => {
+			if (!(e.relatedTarget instanceof Node) || !e.currentTarget.contains(e.relatedTarget)) {
+				field.focused = false;
+			}
 		}}
-		value={field.value as any}
-		type={type || 'calendar'}
-		{disabledDates}
-		{minDate}
-		{maxDate}
-		{view}
-		{weekStartsOnMonday}
-		{weekdayLength}
-		containerClass={classes.container({ class: containerClass })}
-		headerClass={classes.header({ class: headerClass })}
-		dayClass={classes.day({ class: dayClass })}
-		weekdayClass={classes.weekday({ class: weekdayClass })}
-		gridClass={classes.grid({ class: gridClass })}
-		{cell}
-		{buttons}
-		{header}
-		{headerProps}
-	/>
+	>
+		<CalendarPrimitive
+			onChange={(nextValue: CalendarValue<T>) => {
+				field.value = nextValue as unknown as CalendarFieldValue;
+			}}
+			theme={theme?.calendar}
+			value={field.value as unknown as CalendarValue<T>}
+			type={type || 'calendar'}
+			{disabledDates}
+			{minDate}
+			{maxDate}
+			{view}
+			{weekStartsOnMonday}
+			{weekStartsOn}
+			{today}
+			{weekdayLength}
+			{locale}
+			{ariaLabel}
+			disabled={field.disabled}
+			{cell}
+			{buttons}
+			{header}
+			{todayBadge}
+			{onViewChange}
+		/>
+	</div>
 </Field>

@@ -1,18 +1,18 @@
 <script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { StepperState } from './stepperState.svelte.js';
-	export type { StepperState };
-	import { stepperTheme } from './stepper.js';
-	export const setStepperTheme = setComponentTheme<typeof stepperTheme>('stepper');
-	export const useStepperTheme = useComponentTheme('stepper', stepperTheme);
+	export type { StepperState } from './stepper.state.svelte.js';
 </script>
 
 <script lang="ts" generics="Item">
-	import { type StepperProps } from './stepper.js';
+	/* eslint-disable no-useless-assignment -- bindableStepper is an output binding. */
+	import { onMount, tick, untrack } from 'svelte';
+	import BeforeHydratation from '../Utils/BeforeHydratation.svelte';
+	import { type StepperProps } from './stepper.props.js';
+	import { useStepperTheme } from './stepper.theme.js';
+	import { StepperState as StepperStateClass } from './stepper.state.svelte.js';
 	let {
 		items = [],
 		activeStep = $bindable(0),
-		stepper = $bindable<StepperState<Item>>(),
+		stepper: bindableStepper = $bindable<StepperStateClass<Item>>(),
 		class: className,
 		children,
 		onChange,
@@ -22,54 +22,128 @@
 			fill: 'both'
 		},
 		mode = 'classic',
-		...snippets
+		panelRole = 'tabpanel',
+		panelAriaLabelledby,
+		panelAriaLabel
 	}: StepperProps<Item> = $props();
 
-	stepper = new StepperState({
+	const id = $props.id();
+
+	const stepper = new StepperStateClass({
 		get activeStep() {
 			return activeStep;
 		},
 		set activeStep(value) {
 			activeStep = value;
 		},
-		items,
-		onChange: (item) => {
-			onChange?.(item);
+		get items() {
+			return items;
 		},
-		keyFramesOptions
+		get onChange() {
+			return onChange;
+		},
+		get keyFramesOptions() {
+			return keyFramesOptions;
+		}
 	});
+
+	bindableStepper = stepper;
 	const classes = $derived(useStepperTheme());
+	const stepCount = $derived(Math.max(items.length, 1));
+	const trackWidth = $derived(`${stepCount * 100}%`);
+	const activeHeight = $derived(stepper.activeHeight);
+
+	onMount(() => {
+		void tick().then(() => stepper.measureStepHeights());
+	});
+
+	$effect(() => {
+		const targetStep = activeStep;
+		if (items.length === 0) return;
+		untrack(() => stepper.syncActiveStep(targetStep));
+	});
+
+	const getPanelAriaLabelledby = (item: Item, index: number) => {
+		if (panelAriaLabelledby === false) return undefined;
+		if (typeof panelAriaLabelledby === 'function') {
+			return panelAriaLabelledby({ stepper, item, index });
+		}
+		if (typeof panelAriaLabelledby === 'string') return panelAriaLabelledby;
+		if (panelRole === 'tabpanel') return `stepper-${index}`;
+		return undefined;
+	};
+
+	const getPanelAriaLabel = (item: Item, index: number) => {
+		if (typeof panelAriaLabel === 'function') {
+			return panelAriaLabel({ stepper, item, index });
+		}
+		return panelAriaLabel;
+	};
 </script>
 
+<BeforeHydratation
+	once
+	scripts={[
+		`const setStepperHeight_${id} = () => {	
+const container = document.getElementById('stepper-${id}');
+if(!container) return;
+const firstSlide = container.querySelector('[data-step-active="true"]');
+if(!firstSlide) return;		
+container.style.height = firstSlide.clientHeight + 'px';			
+	};
+	setStepperHeight_${id}();
+`
+	]}
+/>
+
 <div
-	use:stepper.scroller
-	class={classes.stepper({
+	{@attach stepper.scroller}
+	class={classes.root({
 		mode,
 		className
 	})}
-	style:height="{stepper.stepHeights[activeStep]}px"
+	id="stepper-{id}"
+	style:will-change="height"
+	style:height={activeHeight == null ? undefined : `${activeHeight}px`}
 	style:transition-duration={`${keyFramesOptions.duration}ms`}
+	style:transition-timing-function={keyFramesOptions.easing}
 >
 	<div
 		bind:this={stepper.stepContainer}
 		class={classes.container({
 			mode
 		})}
-		style:grid-template-columns="repeat({items.length}, 100%)"
+		style:width={trackWidth}
+		style:grid-template-columns="repeat({stepCount}, minmax(0, 1fr))"
 	>
-		{#each items as item, index}
+		{#each items as item, index (index)}
+			{@const isActiveStep = stepper.activeStep === index}
+			{@const ariaLabelledby = getPanelAriaLabelledby(item, index)}
+			{@const ariaLabel = getPanelAriaLabel(item, index)}
+			{@const panelTabindex = panelRole === 'tabpanel' ? (isActiveStep ? 0 : -1) : undefined}
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<div
-				bind:clientHeight={stepper.stepHeights[index]}
+				bind:clientHeight={
+					() => stepper?.stepHeights?.[index] ?? undefined,
+					(value) => {
+						stepper.setStepHeight(index, value || 0);
+					}
+				}
+				data-step-active={isActiveStep ? 'true' : undefined}
 				data-step={index}
-				tabindex={stepper.activeStep === index ? 0 : -1}
-				inert={stepper.activeStep !== index}
-				role="tabpanel"
-				aria-labelledby={`stepper-${index}`}
+				tabindex={panelTabindex}
+				inert={!isActiveStep}
+				role={panelRole ?? undefined}
+				aria-label={ariaLabel}
+				aria-labelledby={ariaLabelledby}
+				aria-hidden={!isActiveStep ? 'true' : undefined}
+				style:transition-duration={`${keyFramesOptions.duration}ms`}
+				style:transition-timing-function={keyFramesOptions.easing}
 				class={classes.step({
 					mode
 				})}
 			>
-				{@render snippets[`step${index + 1}`]?.({ stepper, item, index })}
+				{@render children?.({ stepper, item, index })}
 			</div>
 		{/each}
 	</div>

@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { textInputTheme } from '$lib/components/Form/TextInput/textInput.js';
-	export const setTextInputTheme = setComponentTheme<typeof textInputTheme>('textInput');
-	export const useTextInputTheme = useComponentTheme('textInput', textInputTheme);
-</script>
-
 <script lang="ts">
 	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { TextInputProps } from '$lib/components/Form/TextInput/textInput.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
+	import type { TextInputProps } from './textInput.props.js';
+	import { useTextInputTheme } from './textInput.theme.js';
 
 	let {
 		value = $bindable(null),
@@ -20,8 +14,10 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
+		onChange,
+		type = 'text',
+
 		...rest
 	}: TextInputProps = $props();
 
@@ -48,7 +44,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			// console.log('onChange', v);
+			onChange?.(v);
 		},
 		get disabled() {
 			return disabled;
@@ -56,12 +52,24 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		readonly,
-		visible,
-		type: 'text'
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
+		get type() {
+			return type;
+		}
 	});
 
 	const classes = $derived(useTextInputTheme(theme));
@@ -69,23 +77,38 @@
 
 <Field
 	{field}
+	size={rest.size}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
+			base: classes.inputContainer({
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled,
+				size: rest.size
+			})
 		}
 	}}
 	{...rest}
 >
 	<input
+		disabled={field.disabled}
 		data-1p-ignore
-		type="text"
+		{type}
 		{id}
 		name={field.name}
-		bind:value={field.value}
+		value={field.value ?? ''}
+		oninput={(event) => {
+			field.value = event.currentTarget.value;
+		}}
 		bind:this={field.node}
+		onfocus={() => {
+			field.focused = true;
+		}}
+		onblur={() => {
+			field.focused = false;
+		}}
 		{placeholder}
-		class={classes.input()}
+		class={classes.input({ disabled: field.disabled, size: rest.size })}
 	/>
 </Field>

@@ -1,148 +1,324 @@
 <script lang="ts">
 	import '../app.css';
-	import Button from '$lib/components/Button/Button.svelte';
-	import Chip from '$lib/components/Chip/Chip.svelte';
-	import { ThemeState, useTheme } from '$lib/components/Theme/theme.state.svelte.js';
-	import Theme from '$lib/components/Theme/Theme.svelte';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import {
+		AppShell,
+		type AppShellApi,
+		type AppShellSidebarProps
+	} from '$lib/components/AppShell/index.js';
+	import { Button } from '$lib/components/Button/index.js';
+	import Confirmation from '$lib/components/Confirmation/Confirmation.svelte';
+	import Ask from '$lib/components/Form/Ask/Ask.svelte';
+	import { commandIcon } from '$lib/components/Icons/command.js';
+	import { sidebarSimpleIcon } from '$lib/components/Icons/sidebarSimple.js';
+	import { NetworkIndicator } from '$lib/components/NetworkIndicator/index.js';
+	import type { PageShellThemeProps } from '$lib/components/PageShell/index.js';
+	import type {
+		SidebarApi,
+		SidebarCollapsible,
+		SidebarDisplayState,
+		SidebarVariant
+	} from '$lib/components/Sidebar/index.js';
+	import Theme from '$lib/components/Theme/Theme.svelte';
+	import type {
+		ThemeDesignTokenMap,
+		ThemeDesignTokens,
+		TypeScalePreset
+	} from '$lib/components/Theme/theme.designTokens.js';
+	import type { ThemeState } from '$lib/components/Theme/theme.state.svelte.js';
+	import { themeTransitions, type ThemeTransition } from '$lib/components/Theme/themeTransition.js';
+	import { tick } from 'svelte';
+	import { getSidebarGroups, headerLinks } from './appNavigation.js';
+	import { createRuntimeThemePlayground } from './runtimeThemePlayground.svelte.js';
+	import SidebarCommandPalette from './SidebarCommandPalette.svelte';
+
 	const { children: childrenSnippet } = $props();
+	const runtimeThemePlayground = createRuntimeThemePlayground();
+
+	type SidebarFooterState = 'expanded' | 'icon' | 'hidden';
+
+	const sidebarVariants: SidebarVariant[] = ['admin', 'floating', 'inset', 'split'];
+	const sidebarStates: SidebarFooterState[] = ['expanded', 'icon', 'hidden'];
+	const runtimeTokenPresets = {
+		compact: {
+			spacing: 'small',
+			radius: 'small',
+			typeScale: 'compact',
+			raisedWithBorder: false
+		},
+		default: {
+			spacing: 'normal',
+			radius: 'normal',
+			typeScale: 'default',
+			raisedWithBorder: true
+		},
+		comfortable: {
+			spacing: 'large',
+			radius: 'large',
+			typeScale: 'comfortable',
+			raisedWithBorder: true
+		},
+		large: {
+			spacing: 1.35,
+			radius: 'round',
+			typeScale: 'large',
+			raisedWithBorder: true
+		}
+	} satisfies Record<TypeScalePreset, ThemeDesignTokens>;
+	const defaultDesignTokens = {
+		spacing: 'normal',
+		radius: 'normal',
+		raisedWithBorder: true
+	} satisfies ThemeDesignTokens;
+	const docsPageShellTheme = {
+		contentInner: {
+			padding: { large: 'p-5 md:p-5' }
+		}
+	} satisfies PageShellThemeProps;
+	const isPreviewRoute = $derived(page.route.id?.startsWith('/previews/') ?? false);
+	const activeDesignTokens = $derived(
+		page.route.id === '/fluid-scale'
+			? resolveRuntimeTokenPreset(page.url.searchParams.get('preset'))
+			: defaultDesignTokens
+	);
+	const designTokens = $derived(
+		page.route.id === '/playground'
+			? runtimeThemePlayground.designTokens
+			: ({
+					light: activeDesignTokens,
+					dark: activeDesignTokens
+				} satisfies ThemeDesignTokenMap<readonly ['light', 'dark']>)
+	);
+	let sidebarDisplayState = $state<SidebarDisplayState>('expanded');
+	let sidebarVariant = $state<SidebarVariant>('inset');
+	let sidebarCollapsedDisplayState = $state<Exclude<SidebarDisplayState, 'expanded'>>('hidden');
+	let sidebarWidth = $state('16rem');
+	let appShellRef = $state<HTMLElement | null>(null);
+	const pageScrollPositions = new Map<string, number>();
+
+	const sidebarGroups = $derived(getSidebarGroups(page.route.id));
+	const sidebarState = $derived<SidebarFooterState>(
+		sidebarDisplayState === 'collapsed' ? 'icon' : sidebarDisplayState
+	);
+	const sidebarCollapsible = $derived<SidebarCollapsible>(
+		sidebarCollapsedDisplayState === 'hidden' ? 'offcanvas' : 'icon'
+	);
+	const themeTransition = $derived(
+		page.route.id === '/docs/theme-transitions'
+			? resolveThemeTransition(page.url.searchParams.get('transition'))
+			: 'radial-top-right'
+	);
+
+	function resolveThemeTransition(value: string | null): ThemeTransition {
+		return themeTransitions.find((transition) => transition === value) ?? 'radial-top-right';
+	}
+
+	function resolveRuntimeTokenPreset(value: string | null): ThemeDesignTokens {
+		return value && isRuntimeTokenPreset(value)
+			? runtimeTokenPresets[value]
+			: runtimeTokenPresets.default;
+	}
+
+	function isRuntimeTokenPreset(value: string): value is TypeScalePreset {
+		return Object.hasOwn(runtimeTokenPresets, value);
+	}
+
+	function setSidebarState(nextState: SidebarFooterState) {
+		if (nextState === 'expanded') {
+			sidebarDisplayState = 'expanded';
+			return;
+		}
+
+		const nextDisplayState = nextState === 'icon' ? 'collapsed' : 'hidden';
+		sidebarCollapsedDisplayState = nextDisplayState;
+		sidebarDisplayState = nextDisplayState;
+	}
+
+	function handleSidebarDisplayStateChange(nextDisplayState: SidebarDisplayState) {
+		sidebarDisplayState = nextDisplayState;
+		if (nextDisplayState !== 'expanded') {
+			sidebarCollapsedDisplayState = nextDisplayState;
+		}
+	}
+
+	function getPageScroller() {
+		return appShellRef?.querySelector<HTMLElement>('[data-slot="page-shell-content"]') ?? null;
+	}
+
+	function getScrollKey(url: URL) {
+		return `${url.pathname}${url.search}${url.hash}`;
+	}
+
+	function getHashTarget(hash: string) {
+		const encodedId = hash.slice(1);
+		if (!encodedId) return null;
+
+		try {
+			return document.getElementById(decodeURIComponent(encodedId));
+		} catch {
+			return document.getElementById(encodedId);
+		}
+	}
+
+	beforeNavigate(({ from }) => {
+		const scroller = getPageScroller();
+		if (!from || !scroller) return;
+
+		pageScrollPositions.set(getScrollKey(from.url), scroller.scrollTop);
+	});
+
+	afterNavigate(async ({ type, to }) => {
+		if (!to) return;
+
+		await tick();
+		const scroller = getPageScroller();
+		if (!scroller) return;
+
+		if (type === 'popstate') {
+			scroller.scrollTop = pageScrollPositions.get(getScrollKey(to.url)) ?? 0;
+			return;
+		}
+
+		const hashTarget = getHashTarget(to.url.hash);
+		if (hashTarget) {
+			hashTarget.scrollIntoView({ block: 'start' });
+			return;
+		}
+
+		scroller.scrollTop = 0;
+	});
+
+	const sidebar = $derived<AppShellSidebarProps>({
+		displayState: sidebarDisplayState,
+		onDisplayStateChange: handleSidebarDisplayStateChange,
+		collapsible: sidebarCollapsible,
+		rail: true,
+		edgeReveal: true,
+		width: sidebarWidth,
+		density: 'small',
+		size: 'small',
+		widthMobile: '18rem',
+		resizable: {
+			minWidth: '12rem',
+			maxWidth: '24rem',
+			storageKey: 'svelai-docs-sidebar-width',
+			onWidthChange: (nextWidth) => {
+				sidebarWidth = nextWidth;
+			}
+		},
+		items: sidebarGroups,
+		headerButton: {
+			icon: commandIcon,
+			title: 'Svelai',
+			subtitle: 'Components'
+		},
+		footer: sidebarFooter
+	});
 </script>
 
-{#snippet navigationButton({ href, text }: { href: string; text: string })}
+{#snippet headerLink({ href, text }: { href: string; text: string })}
 	{@const isActive = page.route.id === href}
 	<a
 		{href}
-		class="text-contrast {isActive
-			? 'bg-primary/20 text-primary'
-			: ''} rounded-md px-2 py-1 text-sm"
+		class="state-layer rounded-md px-2 py-1 text-sm font-medium text-neutral transition-colors hover:text-neutral {isActive
+			? 'bg-primary/15 text-primary'
+			: ''}"
 	>
 		{text}
 	</a>
 {/snippet}
 
-{#snippet sideNavigationButton({ href, text }: { href: string; text: string })}
-	{@const isActive = page.route.id === href}
-	<a
-		{href}
-		class="text-contrast {isActive
-			? 'bg-primary/20 text-primary'
-			: ''} rounded-md px-2 py-1 text-sm"
-	>
-		{text}
-	</a>
-{/snippet}
-
-<Theme>
-	{#snippet children(theme: ThemeState)}
-		<div class="relative grid grid-cols-12">
-			<div
-				class=" bg-surface border-surface-muted sticky top-0 z-10 col-span-12 flex items-center justify-between gap-4 border-b border-dashed px-10 py-2"
-			>
-				<div class="flex items-center gap-4">
-					{@render navigationButton({ href: '/docs', text: 'Docs' })}
-					{@render navigationButton({ href: '/components/accordion', text: 'Components' })}
-					{@render navigationButton({ href: '/', text: 'Sections' })}
-					{@render navigationButton({ href: '/', text: 'Examples' })}
-					{@render navigationButton({ href: '/playground', text: 'Playground' })}
-					{@render navigationButton({ href: '/colors', text: 'Colors' })}
-				</div>
-				<div class="flex items-center gap-2">
-					<!-- <Button suffix={githubLogo} suffixProps={{ size: '100%' }} variant="ghost" size="small" /> -->
-					<button
-						class="border-border bg-background text-foreground hover:bg-muted hover:text-foreground inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50"
-						onclick={() => (theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark')}
+{#snippet shellFooter()}
+	<div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+		<div class="flex min-w-0 flex-wrap items-center gap-1.5">
+			<span class="mr-1 text-xs font-medium text-neutral/60">Variant</span>
+			<div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sidebar variant">
+				{#each sidebarVariants as variant}
+					<Button
+						variant={sidebarVariant === variant ? 'solid' : 'ghost'}
+						size="small"
+						onClick={() => (sidebarVariant = variant)}
 					>
-						{theme?.resolvedTheme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-					</button>
-				</div>
+						{variant}
+					</Button>
+				{/each}
 			</div>
-			<div
-				class="  border-surface-muted scrollbar scrollbar-none bg-surface sticky top-[45px] left-0 col-span-2 grid max-h-[calc(100vh-45px)] overflow-auto border-r border-dashed px-2 py-10"
-			>
-				<!-- {@render sideNavigationButton({ href: '/', text: 'Introduction' })}
-				{@render sideNavigationButton({ href: '/', text: 'Introduction' })}
-				{@render sideNavigationButton({ href: '/', text: 'Installation' })}
-				{@render sideNavigationButton({ href: '/', text: 'Theming' })}
-				{@render sideNavigationButton({ href: '/', text: 'Switching theme' })}
-				{@render sideNavigationButton({ href: '/', text: 'Heading' })}
-				{@render sideNavigationButton({ href: '/', text: 'Text' })}
-				{@render sideNavigationButton({ href: '/', text: 'Callout' })}
-				{@render sideNavigationButton({ href: '/', text: 'Blockquote' })}
-				{@render sideNavigationButton({ href: '/', text: 'Components' })}
-				{@render sideNavigationButton({ href: '/', text: 'Theme' })} -->
-				{@render sideNavigationButton({ href: '/components/button', text: 'Button' })}
-				{@render sideNavigationButton({ href: '/components/button-group', text: 'Button group' })}
-				{@render sideNavigationButton({ href: '/components/menu-button', text: 'Menu button' })}
-				{@render sideNavigationButton({ href: '/components/toggle-button', text: 'Toggle button' })}
-				{@render sideNavigationButton({ href: '/components/toggle-group', text: 'Toggle group' })}
-				{@render sideNavigationButton({ href: '/components/code', text: 'Code' })}
-				{@render sideNavigationButton({ href: '/components/chip', text: 'Chip' })}
-				<!-- {@render sideNavigationButton({ href: '/components/pattern', text: 'Pattern' })} -->
-				{@render sideNavigationButton({ href: '/components/badge', text: 'Badge' })}
-				{@render sideNavigationButton({ href: '/components/breadcrumbs', text: 'Breadcrumbs' })}
-				<!-- {@render sideNavigationButton({ href: '/components/thumb', text: 'Thumb' })} -->
-				<!-- {@render sideNavigationButton({ href: '/components/toast', text: 'Toast' })} -->
-				{@render sideNavigationButton({ href: '/components/avatar', text: 'Avatar' })}
-				<!-- <Button size="small" variant="link" href="/components/separator">Separator</Button> -->
-
-				{@render sideNavigationButton({ href: '/components/meter', text: 'Meter' })}
-				{@render sideNavigationButton({ href: '/components/marquee', text: 'Marquee' })}
-				{@render sideNavigationButton({ href: '/components/slideshow', text: 'Slideshow' })}
-				{@render sideNavigationButton({ href: '/components/tabs', text: 'Tabs' })}
-				{@render sideNavigationButton({ href: '/components/tree', text: 'Tree' })}
-				<!-- <Button size="small" variant="link" href="/components/navlinks">Navigation links</Button> -->
-				<!-- <Button size="small" variant="link" href="/components/networkIndicator"
-					>Network indicator</Button
-				> -->
-				{@render sideNavigationButton({ href: '/components/loader', text: 'Loader' })}
-				{@render sideNavigationButton({ href: '/components/dialog', text: 'Dialog' })}
-				<!-- {@render sideNavigationButton({ href: '/components/megamenu', text: 'Megamenu' })} -->
-				<!-- {@render sideNavigationButton({ href: '/components/contextmenu', text: 'Context menu' })} -->
-				{@render sideNavigationButton({ href: '/components/dropdown-menu', text: 'Dropdown menu' })}
-				{@render sideNavigationButton({ href: '/components/card', text: 'Card' })}
-				{@render sideNavigationButton({ href: '/components/hovercard', text: 'Hover Card' })}
-
-				{@render sideNavigationButton({ href: '/components/menu', text: 'Menu' })}
-				{@render sideNavigationButton({ href: '/components/menubar', text: 'Menubar' })}
-				{@render sideNavigationButton({ href: '/components/split-layout', text: 'Split layout' })}
-
-				{@render sideNavigationButton({ href: '/components/popover', text: 'Popover' })}
-				{@render sideNavigationButton({ href: '/components/tooltip', text: 'Tooltip' })}
-
-				{@render sideNavigationButton({ href: '/components/kbd', text: 'KBD' })}
-				{@render sideNavigationButton({ href: '/components/accordion', text: 'Accordion' })}
-
-				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">Form</Separator> -->
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'Textarea' })}
-				{@render sideNavigationButton({ href: '/components/number-input', text: 'Number input' })}
-				{@render sideNavigationButton({ href: '/components/color-input', text: 'Color' })}
-				{@render sideNavigationButton({ href: '/components/select', text: 'Select' })}
-				{@render sideNavigationButton({ href: '/components/date-input', text: 'DateInput' })}
-				{@render sideNavigationButton({ href: '/components/radios', text: 'Radios' })}
-				{@render sideNavigationButton({ href: '/components/tag-input', text: 'Tag input' })}
-				{@render sideNavigationButton({ href: '/components/switch', text: 'Switch' })}
-				{@render sideNavigationButton({ href: '/components/form', text: 'Form' })}
-				{@render sideNavigationButton({ href: '/components/text-input', text: 'Text input' })}
-				{@render sideNavigationButton({ href: '/components/time-input', text: 'Time input' })}
-				{@render sideNavigationButton({ href: '/components/slider', text: 'Slider' })}
-				{@render sideNavigationButton({ href: '/components/pininput', text: 'PIN input' })}
-				{@render sideNavigationButton({ href: '/components/file-input', text: 'File input' })}
-				{@render sideNavigationButton({ href: '/components/calendar-input', text: 'Calendar' })}
-
-				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">actions & utilities</Separator> -->
-
-				<!-- {@render sideNavigationButton({ href: '/components/textarea', text: 'autosize' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'usePrevious' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'trapFocus' })}
-				{@render sideNavigationButton({ href: '/components/textarea', text: 'clickOutside' })} -->
-
-				<!-- <Separator orientation="horizontal" class="mt-4 mb-2">Tailwind utilities</Separator> -->
-
-				<!-- {@render sideNavigationButton({ href: '/utilities/raised', text: '.raised' })} -->
-			</div>
-			<main class="bg-surface-dark col-span-10 p-4 md:p-10">
-				{@render childrenSnippet()}
-			</main>
 		</div>
+
+		<div class="flex min-w-0 flex-wrap items-center gap-1.5">
+			<span class="mr-1 text-xs font-medium text-neutral/60">State</span>
+			<div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sidebar state">
+				{#each sidebarStates as state}
+					<Button
+						variant={sidebarState === state ? 'solid' : 'ghost'}
+						size="small"
+						onClick={() => setSidebarState(state)}
+					>
+						{state}
+					</Button>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/snippet}
+
+{#snippet sidebarFooter(api: SidebarApi)}
+	<SidebarCommandPalette
+		groups={sidebarGroups}
+		collapsed={api.collapsible === 'icon' && api.state === 'collapsed' && !api.isMobile}
+	/>
+{/snippet}
+<Theme transition={themeTransition} {designTokens}>
+	{#snippet children(theme: ThemeState)}
+		<Ask />
+		{#if isPreviewRoute}
+			{@render childrenSnippet()}
+		{:else}
+			{#snippet shellHeader({ sidebar }: AppShellApi)}
+				<div class="flex min-h-12 items-center justify-between gap-3 px-3 py-2 sm:px-4">
+					<div class="flex min-w-0 items-center gap-2">
+						<Button
+							prefix={sidebarSimpleIcon}
+							label="Toggle sidebar"
+							variant="ghost"
+							size="small"
+							squared
+							class="md:hidden"
+							onClick={() => sidebar.toggle()}
+						/>
+						<nav aria-label="Primary" class="flex min-w-0 flex-wrap items-center gap-1">
+							{#each headerLinks as link}
+								{@render headerLink(link)}
+							{/each}
+						</nav>
+					</div>
+					<Button
+						variant="outline"
+						size="small"
+						onClick={() => (theme.theme = theme.resolvedTheme === 'dark' ? 'light' : 'dark')}
+					>
+						{theme.resolvedTheme === 'dark' ? 'Light' : 'Dark'}
+					</Button>
+				</div>
+			{/snippet}
+
+			<NetworkIndicator color="danger" />
+			<Confirmation />
+			<AppShell
+				bind:ref={appShellRef}
+				{sidebar}
+				variant={sidebarVariant}
+				header={shellHeader}
+				footer={shellFooter}
+				contentPadding="large"
+				contentWidth="wide"
+				pageShellTheme={docsPageShellTheme}
+			>
+				{#snippet children()}
+					{@render childrenSnippet()}
+				{/snippet}
+			</AppShell>
+		{/if}
 	{/snippet}
 </Theme>

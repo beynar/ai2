@@ -2,35 +2,14 @@
 
 import type { Breakpoint } from '$lib/components/Theme/theme.js';
 
-// import type { Spinner } from '$lib/plugin/spinnner.js';
+// import type { Spinner } from '$lib/plugin/spinner.js';
 export type Colors =
-	| 'primary'
-	| 'secondary'
-	| 'danger'
-	| 'success'
-	| 'warning'
-	| 'info'
-	| 'contrast'
-	| 'surface';
+	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral';
 export type FontSize = `fontSize.${
-	| 'xs'
-	| 'sm'
-	| 'md'
-	| 'lg'
-	| 'xl'
-	| '2xl'
-	| '3xl'
-	| '4xl'
-	| 'DEFAULT'}`;
+	'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'DEFAULT'}`;
 export type ColorKeys = `${
-	| 'primary'
-	| 'secondary'
-	| 'danger'
-	| 'success'
-	| 'warning'
-	| 'info'
-	| 'contrast'
-	| 'surface'}.${'light' | 'lighter' | 'DEFAULT' | 'fg' | 'dark'}`;
+	'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral'}.${
+	'light' | 'lighter' | 'DEFAULT' | 'contrast' | 'dark' | 'muted' | 'readable' | 'muted-readable'}`;
 
 export type ColorPath = `colors.${ColorKeys}`;
 
@@ -67,5 +46,12 @@ export type DesignSystem = {
 };
 
 export type Sizes = 'small' | 'normal' | 'large';
+
+/**
+ * Spacing density of a component: paddings and gaps, independent of the
+ * typography scale (`Sizes`) but sharing its vocabulary. 'small' for dense
+ * dashboards, 'normal' for everyday UI, 'large' for roomy detail surfaces.
+ */
+export type Density = 'small' | 'normal' | 'large';
 
 export type Easing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';

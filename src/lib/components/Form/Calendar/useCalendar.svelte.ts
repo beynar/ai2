@@ -1,7 +1,16 @@
 import { untrack } from 'svelte';
 import { on } from 'svelte/events';
 
-export type CalendarType = 'calendar' | 'calendar-range';
+export type CalendarType = 'calendar' | 'calendar-range' | 'calendar-multiple';
+export type CalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type CalendarValue<T extends CalendarType> = T extends 'calendar'
+	? Date | null
+	: T extends 'calendar-range'
+		? [Date | null, Date | null] | null
+		: Date[];
+
+export type CalendarChangeHandler<T extends CalendarType> = (value: CalendarValue<T>) => void;
 
 export interface Event {
 	start: Date;
@@ -10,24 +19,26 @@ export interface Event {
 	description?: string;
 }
 
-export interface Cell {
+export interface Cell<E extends Event = Event> {
 	isStartOfRange: boolean;
 	isEndOfRange: boolean;
 	visible: boolean;
 	isInNextMonth: boolean;
 	isInRange: boolean;
 	isInPreviousMonth: boolean;
+	selected: boolean;
 	inMonth: boolean;
 	day: number;
 	date: Date;
 	isToday: boolean;
-	events: Event[];
+	events: E[];
 	corner: string | null;
-	attributes: Record<string, any>;
+	attributes: Record<string, string | number | boolean | undefined>;
+	disabled: boolean;
 }
 
-export interface Row<E extends Event> {
-	cells: Cell[];
+export interface Row<E extends Event = Event> {
+	cells: Cell<E>[];
 	events: E[];
 }
 
@@ -37,293 +48,526 @@ export interface CalendarStateOptions<E extends Event, T extends CalendarType> {
 	maxDate?: Date | null;
 	type?: T;
 	weekStartsOnMonday?: boolean;
+	weekStartsOn?: CalendarWeekday;
+	today?: Date;
 	view?: 'single' | 'double';
 	disabledDates?: (Date | [Date, Date])[];
-	onChange?: T extends 'calendar'
-		? (value: Date | null) => void
-		: (value: [Date | null, Date | null] | null) => void;
-	value?: T extends 'calendar' ? Date | null : [Date | null, Date | null] | null;
+	disabled?: boolean;
+	locale?: string;
+	onChange?: CalendarChangeHandler<T>;
+	value?: CalendarValue<T>;
 }
 
-const getMonthName = (date: Date, locale?: string): string => {
-	return date.toLocaleString(locale || undefined, { month: 'long' });
+export const createCalendarDate = (year: number, month: number, day: number) => {
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- Calendar dates are host-local-noon value snapshots; setFullYear preserves years 0-99.
+	const date = new Date(0);
+	date.setFullYear(year, month, day);
+	date.setHours(12, 0, 0, 0);
+	return date;
 };
 
+export const normalizeCalendarDate = (date: Date) =>
+	createCalendarDate(date.getFullYear(), date.getMonth(), date.getDate());
+
+export const isSameCalendarDay = (first: Date, second: Date) =>
+	first.getFullYear() === second.getFullYear() &&
+	first.getMonth() === second.getMonth() &&
+	first.getDate() === second.getDate();
+
+export const getCalendarDateKey = (date: Date) =>
+	`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+		date.getDate()
+	).padStart(2, '0')}`;
+
+const parseCalendarDateKey = (dateKey: string) => {
+	const [year, month, day] = dateKey.split('-').map(Number);
+	return createCalendarDate(year, month - 1, day);
+};
+
+const addDays = (date: Date, amount: number) =>
+	createCalendarDate(date.getFullYear(), date.getMonth(), date.getDate() + amount);
+
+const addMonths = (date: Date, amount: number) => {
+	const targetMonth = date.getMonth() + amount;
+	const lastDay = new Date(date.getFullYear(), targetMonth + 1, 0).getDate();
+	return createCalendarDate(date.getFullYear(), targetMonth, Math.min(date.getDate(), lastDay));
+};
+
+const addYears = (date: Date, amount: number) => {
+	const year = date.getFullYear() + amount;
+	const lastDay = new Date(year, date.getMonth() + 1, 0).getDate();
+	return createCalendarDate(year, date.getMonth(), Math.min(date.getDate(), lastDay));
+};
+
+const getFirstValueDate = <T extends CalendarType>(type: T, value?: CalendarValue<T>) => {
+	if (!value) return null;
+	if (type === 'calendar') return value as Date;
+	if (type === 'calendar-range') return (value as [Date | null, Date | null])[0] ?? null;
+	return (value as Date[])[0] ?? null;
+};
+
+const getElementWithDate = (event: globalThis.Event) =>
+	event
+		.composedPath()
+		.find(
+			(target): target is HTMLElement =>
+				target instanceof HTMLElement && target.hasAttribute('data-date')
+		);
+
+export interface CalendarState<
+	E extends Event = Event,
+	T extends CalendarType = 'calendar'
+> extends CalendarStateOptions<E, T> {}
+
 export class CalendarState<E extends Event = Event, T extends CalendarType = 'calendar'> {
-	type: T;
 	view: 'single' | 'double' = 'single';
-	today: Date = new Date();
 	events: E[] = [];
-	onChange: T extends 'calendar'
-		? (value: Date | null) => void
-		: (value: [Date | null, Date | null] | null) => void;
-	date = $state(this.today);
-	selected = $state(this.today);
-	currentMonth = $derived(this.date.getMonth());
-	currentMonthName = $derived(getMonthName(this.date));
-	minDate = $state<Date | null>(null);
-	maxDate = $state<Date | null>(null);
-	nextMonthName = $derived(
-		getMonthName(new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1))
-	);
-	currentYear = $derived(this.date.getFullYear());
-	nextYear = $derived(new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1).getFullYear());
-	weekStartsOnMonday = $state(false);
-	rangeStart = $state<Date | null>(null);
-	rangeEnd = $state<Date | null>(null);
-	displayedMonthLabel = $derived.by((): string => {
-		if (this.view === 'single') {
-			return `${this.currentMonthName} ${this.currentYear}`;
-		} else if (this.currentYear === this.nextYear) {
-			return `${this.currentMonthName} - ${this.nextMonthName} ${this.currentYear}`;
-		} else {
-			return `${this.currentMonthName} ${this.currentYear} - ${this.nextMonthName} ${this.nextYear}`;
-		}
-	});
-	eventsMap = $derived.by(() =>
-		this.events.reduce((acc: Record<string, E[]>, event: E) => {
-			const date = event.start.toDateString();
-			if (!acc[date]) {
-				acc[date] = [];
-			}
-			acc[date].push(event);
-			return acc;
-		}, {})
-	);
+	minDate: Date | null = null;
+	maxDate: Date | null = null;
+	weekStartsOnMonday = true;
+	weekStartsOn: CalendarWeekday | undefined = undefined;
 	disabledDates: (Date | [Date, Date])[] = [];
-	disabledDatesMap = $derived.by(() =>
-		this.disabledDates.reduce((acc: Map<string, boolean>, date) => {
-			const range: Date[] = [];
-			if (Array.isArray(date)) {
-				// the array is a range. Iterate over the range and add the dates to the map
-				const [start, end] = date;
-				for (let i = start.getTime(); i <= end.getTime(); i += 1000 * 60 * 60 * 24) {
-					range.push(new Date(i));
-				}
-			} else {
-				range.push(date);
-			}
-			range.forEach((d) => {
-				acc.set(d.toDateString(), true);
-			});
-			return acc;
-		}, new Map<string, boolean>())
+	disabled = false;
+	locale: string | undefined;
+
+	today = $state(createCalendarDate(1970, 0, 1));
+	date = $state(createCalendarDate(1970, 0, 1));
+	focusedDate = $state(createCalendarDate(1970, 0, 1));
+	private fallbackToday: Date | null = null;
+
+	resolvedWeekStartsOn = $derived(
+		this.weekStartsOn ?? ((this.weekStartsOnMonday ? 1 : 0) satisfies CalendarWeekday)
 	);
 
-	getCalendarRows = (
-		date: Date = this.date,
-		weekStartsOnMonday: boolean = this.weekStartsOnMonday,
-		isNextMonth: boolean = false
-	): Row<E>[] => {
-		const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-		const weeks = Math.ceil(daysInMonth / 7) + 1;
-		const daysInPreviousMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
-		let firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-		const rows: Row<E>[] = [];
+	currentMonth = $derived(this.date.getMonth());
+	currentYear = $derived(this.date.getFullYear());
+	nextMonthDate = $derived(createCalendarDate(this.currentYear, this.currentMonth + 1, 1));
+	viewKey = $derived(`${this.currentYear}-${this.currentMonth}-${this.view}`);
 
-		if (weekStartsOnMonday) {
-			firstDay = firstDay === 0 ? 6 : firstDay - 1;
+	rangeStart = $derived.by(() => {
+		if (this.type === 'calendar') return (this.value as Date | null | undefined) ?? null;
+		if (this.type === 'calendar-range') {
+			return (this.value as [Date | null, Date | null] | null | undefined)?.[0] ?? null;
 		}
+		return null;
+	});
 
-		let day = 1;
-		let daysAfter = 1;
+	rangeEnd = $derived.by(() => {
+		if (this.type !== 'calendar-range') return null;
+		return (this.value as [Date | null, Date | null] | null | undefined)?.[1] ?? null;
+	});
 
-		for (let i = 0; i < weeks; i++) {
-			const row: Row<E> = {
-				cells: [],
-				events: []
-			};
+	multipleValues = $derived.by(() =>
+		this.type === 'calendar-multiple' ? ((this.value as Date[] | undefined) ?? []) : []
+	);
 
-			for (let j = 0; j < 7; j++) {
-				const events: E[] = [];
-				let inMonth = false;
-				let isInNextMonth = false;
-				let isInPreviousMonth = false;
-				const corner =
-					(i === 0 && j === 0 && 't-l') ||
-					(i === 0 && j === 6 && 't-r') ||
-					(i === weeks - 1 && j === 0 && 'b-l') ||
-					(i === weeks - 1 && j === 6 && 'b-r') ||
-					null;
-
-				let cellDate = new Date(date.getFullYear(), date.getMonth(), day);
-				let cellDay = Number(String(day));
-
-				if (i === 0 && j < firstDay) {
-					cellDay = daysInPreviousMonth - firstDay + j + 1;
-					cellDate = new Date(
-						date.getFullYear(),
-						date.getMonth() - 1,
-						daysInPreviousMonth - firstDay + j + 1
-					);
-					isInPreviousMonth = true;
-				} else if (day > daysInMonth) {
-					cellDay = daysAfter;
-					cellDate = new Date(date.getFullYear(), date.getMonth() + 1, daysAfter);
-					daysAfter++;
-					isInNextMonth = true;
-				} else {
-					inMonth = true;
-					cellDay = day;
-					day++;
-				}
-
-				const dateString = cellDate.toDateString();
-				const isStartOfRange = this.rangeStart
-					? dateString === this.rangeStart.toDateString()
-					: false;
-				const isEndOfRange = this.rangeEnd ? dateString === this.rangeEnd.toDateString() : false;
-				const isInRange =
-					(this.type === 'calendar-range' &&
-						this.rangeEnd &&
-						this.rangeStart &&
-						!isStartOfRange &&
-						!isEndOfRange &&
-						cellDate < this.rangeEnd &&
-						cellDate > this.rangeStart) ||
-					false;
-				const isToday = dateString === new Date().toDateString();
-				const isBeforeMinDate = this.minDate && cellDate.getTime() < this.minDate.getTime();
-				const isAfterMaxDate = this.maxDate && cellDate.getTime() > this.maxDate.getTime();
-				const isDisabled =
-					this.disabledDatesMap.get(dateString) || isBeforeMinDate || isAfterMaxDate;
-
-				row.cells.push({
-					isStartOfRange,
-					isEndOfRange,
-					visible:
-						this.view === 'single' ? true : isNextMonth ? !isInPreviousMonth : !isInNextMonth,
-					isInNextMonth,
-					isInRange,
-					isInPreviousMonth,
-					inMonth,
-					day: cellDay,
-					date: cellDate,
-					isToday,
-					events,
-					corner,
-					attributes: {
-						style: `grid-row-start:${2 + i}; grid-column-start:${j + 1};`,
-						'data-in-range': isInRange,
-						'data-in-month': inMonth,
-						'data-disabled': isDisabled ? true : undefined,
-						disabled: isDisabled ? true : undefined,
-						'data-is-today': isToday,
-						'data-selected':
-							this.type === 'calendar' ? isStartOfRange : isStartOfRange || isEndOfRange,
-						'data-start-of-range':
-							this.type === 'calendar' ? false : this.rangeComplete && isStartOfRange,
-						'data-end-of-range':
-							this.type === 'calendar' ? false : this.rangeComplete && isEndOfRange,
-						'data-date': cellDate.toISOString(),
-						'data-is-past': !isToday && cellDate.getTime() < new Date().getTime()
-					}
-				});
-			}
-
-			if (!row.cells.every((cell) => !cell.inMonth)) {
-				rows.push(row);
-			}
-		}
-		return rows;
-	};
-
-	setRange = (start: Date | null, end?: Date | null): void => {
-		this.rangeStart = start;
-		this.rangeEnd = end || null;
-	};
-
-	rows = $derived.by(this.getCalendarRows);
-	nextMonthRows = $derived.by(() =>
-		this.getCalendarRows(
-			new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1),
-			this.weekStartsOnMonday,
-			true
-		)
+	firstSelectedDate = $derived.by(() =>
+		getFirstValueDate(this.type ?? ('calendar' as T), this.value)
 	);
 	rangeComplete = $derived(!!(this.rangeStart && this.rangeEnd));
 
-	constructor(options: CalendarStateOptions<E, T>) {
-		this.events = options.events || [];
-		this.minDate = options.minDate || null;
-		this.maxDate = options.maxDate || null;
-		this.type = (options.type || 'calendar') as T;
-		this.weekStartsOnMonday = options.weekStartsOnMonday || false;
-		this.view = options.view || 'single';
-		this.disabledDates = options.disabledDates || [];
-		this.onChange = options.onChange as any;
+	displayedMonthLabel = $derived.by(() => {
+		const startLabel = this.date.toLocaleDateString(this.locale, {
+			month: 'long',
+			year: 'numeric'
+		});
+		if (this.view === 'single') return startLabel;
 
-		if (options.type === 'calendar-range') {
-			const value = options.value as [Date | null, Date | null] | null;
-			this.rangeStart = value?.[0] || null;
-			this.rangeEnd = value?.[1] || null;
-		} else {
-			this.rangeStart = options.value as Date | null;
+		const endLabel = this.nextMonthDate.toLocaleDateString(this.locale, {
+			month: 'long',
+			year: this.currentYear === this.nextMonthDate.getFullYear() ? undefined : 'numeric'
+		});
+		return `${startLabel} - ${endLabel}`;
+	});
+
+	eventsMap = $derived.by(() => {
+		const eventsByDate = new Map<string, E[]>();
+		for (const calendarEvent of this.events) {
+			let date = normalizeCalendarDate(calendarEvent.start);
+			const end = normalizeCalendarDate(calendarEvent.end);
+			while (date <= end) {
+				const dateKey = getCalendarDateKey(date);
+				const events = eventsByDate.get(dateKey) ?? [];
+				events.push(calendarEvent);
+				eventsByDate.set(dateKey, events);
+				date = addDays(date, 1);
+			}
 		}
+		return eventsByDate;
+	});
+
+	disabledDateKeys = $derived.by(() => {
+		const disabledDateKeys = new Set<string>();
+		for (const disabledDate of this.disabledDates) {
+			if (!Array.isArray(disabledDate)) {
+				disabledDateKeys.add(getCalendarDateKey(disabledDate));
+				continue;
+			}
+
+			let date = normalizeCalendarDate(disabledDate[0]);
+			const end = normalizeCalendarDate(disabledDate[1]);
+			while (date <= end) {
+				disabledDateKeys.add(getCalendarDateKey(date));
+				date = addDays(date, 1);
+			}
+		}
+		return disabledDateKeys;
+	});
+
+	rows = $derived.by(() => this.getCalendarRows(this.date));
+	nextMonthRows = $derived.by(() => this.getCalendarRows(this.nextMonthDate, true));
+
+	constructor(options: CalendarStateOptions<E, T>) {
+		const descriptors = Object.getOwnPropertyDescriptors(options);
+		delete descriptors.today;
+		Object.defineProperties(this, descriptors);
+		const initialToday = this.resolveToday(options.today);
+		this.today = initialToday;
+		this.date = initialToday;
+		this.focusedDate = initialToday;
+		const initialDate = getFirstValueDate(options.type ?? ('calendar' as T), options.value);
+		if (initialDate) {
+			this.date = createCalendarDate(initialDate.getFullYear(), initialDate.getMonth(), 1);
+			this.focusedDate = normalizeCalendarDate(initialDate);
+		}
+
+		$effect.pre(() => {
+			const nextToday = this.resolveToday(options.today);
+			if (isSameCalendarDay(nextToday, this.today)) return;
+			const shouldMoveFocus = isSameCalendarDay(this.focusedDate, this.today);
+			this.today = nextToday;
+			if (shouldMoveFocus) this.focusedDate = nextToday;
+		});
 	}
 
-	goNextMonth = (): void => {
-		this.date = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 1);
+	private resolveToday(today: Date | undefined): Date {
+		if (today) return normalizeCalendarDate(today);
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- This captures the legacy current-day fallback once and never mutates it.
+		this.fallbackToday ??= normalizeCalendarDate(new Date());
+		return this.fallbackToday;
+	}
+
+	private isInVisibleMonths(date: Date) {
+		const firstMonth = this.currentYear * 12 + this.currentMonth;
+		const targetMonth = date.getFullYear() * 12 + date.getMonth();
+		return (
+			targetMonth >= firstMonth && targetMonth <= firstMonth + (this.view === 'double' ? 1 : 0)
+		);
+	}
+
+	private getTabStopDate() {
+		if (this.isInVisibleMonths(this.focusedDate) && !this.isDateDisabled(this.focusedDate)) {
+			return this.focusedDate;
+		}
+		if (
+			this.firstSelectedDate &&
+			this.isInVisibleMonths(this.firstSelectedDate) &&
+			!this.isDateDisabled(this.firstSelectedDate)
+		) {
+			return this.firstSelectedDate;
+		}
+		if (this.isInVisibleMonths(this.today) && !this.isDateDisabled(this.today)) return this.today;
+
+		let candidateDate = createCalendarDate(this.currentYear, this.currentMonth, 1);
+		const endDate = createCalendarDate(
+			this.currentYear,
+			this.currentMonth + (this.view === 'double' ? 2 : 1),
+			0
+		);
+		while (candidateDate <= endDate) {
+			if (!this.isDateDisabled(candidateDate)) return candidateDate;
+			candidateDate = addDays(candidateDate, 1);
+		}
+
+		return null;
+	}
+
+	private isDateSelected(date: Date) {
+		if (this.type === 'calendar')
+			return !!this.rangeStart && isSameCalendarDay(date, this.rangeStart);
+		if (this.type === 'calendar-range') {
+			return (
+				(!!this.rangeStart && isSameCalendarDay(date, this.rangeStart)) ||
+				(!!this.rangeEnd && isSameCalendarDay(date, this.rangeEnd))
+			);
+		}
+		return this.multipleValues.some((selectedDate) => isSameCalendarDay(date, selectedDate));
+	}
+
+	private isDateInRange(date: Date) {
+		if (!this.rangeStart || !this.rangeEnd) return false;
+		const normalizedDate = normalizeCalendarDate(date);
+		return (
+			normalizedDate > normalizeCalendarDate(this.rangeStart) &&
+			normalizedDate < normalizeCalendarDate(this.rangeEnd)
+		);
+	}
+
+	isDateDisabled = (date: Date) => {
+		if (this.disabled) return true;
+		const normalizedDate = normalizeCalendarDate(date);
+		if (this.minDate && normalizedDate < normalizeCalendarDate(this.minDate)) return true;
+		if (this.maxDate && normalizedDate > normalizeCalendarDate(this.maxDate)) return true;
+		return this.disabledDateKeys.has(getCalendarDateKey(normalizedDate));
 	};
 
-	goPrevMonth = (): void => {
-		this.date = new Date(this.date.getFullYear(), this.date.getMonth() - 1, 1);
-	};
+	getCalendarRows = (date: Date = this.date, isNextMonth = false): Row<E>[] => {
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const daysInPreviousMonth = new Date(year, month, 0).getDate();
+		const nativeFirstDay = new Date(year, month, 1).getDay();
+		const firstDay = (nativeFirstDay - this.resolvedWeekStartsOn + 7) % 7;
+		const weekCount = Math.ceil((firstDay + daysInMonth) / 7);
+		const tabStopDate = this.getTabStopDate();
+		const rows: Row<E>[] = [];
 
-	goToToday = (): void => {
-		this.date = this.today;
-	};
+		for (let rowIndex = 0; rowIndex < weekCount; rowIndex += 1) {
+			const row: Row<E> = { cells: [], events: [] };
+			for (let columnIndex = 0; columnIndex < 7; columnIndex += 1) {
+				const calendarIndex = rowIndex * 7 + columnIndex;
+				const monthDay = calendarIndex - firstDay + 1;
+				const isInPreviousMonth = monthDay < 1;
+				const isInNextMonth = monthDay > daysInMonth;
+				const cellDate = isInPreviousMonth
+					? createCalendarDate(year, month - 1, daysInPreviousMonth + monthDay)
+					: isInNextMonth
+						? createCalendarDate(year, month + 1, monthDay - daysInMonth)
+						: createCalendarDate(year, month, monthDay);
+				const dateKey = getCalendarDateKey(cellDate);
+				const selected = this.isDateSelected(cellDate);
+				const isStartOfRange =
+					this.type === 'calendar-range' &&
+					!!this.rangeStart &&
+					isSameCalendarDay(cellDate, this.rangeStart);
+				const isEndOfRange =
+					this.type === 'calendar-range' &&
+					!!this.rangeEnd &&
+					isSameCalendarDay(cellDate, this.rangeEnd);
+				const disabled = this.isDateDisabled(cellDate);
+				const events = this.eventsMap.get(dateKey) ?? [];
+				const visible =
+					this.view === 'single' || (isNextMonth ? !isInPreviousMonth : !isInNextMonth);
 
-	cleanDate = (date: Date): Date => {
-		const cleaned = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-		cleaned.setUTCHours(0, 0, 0, 0);
-		return cleaned;
-	};
-
-	calendar = (node: HTMLElement) => {
-		untrack(() => {
-			const onClick = (e: PointerEvent) => {
-				const maybeCell = e
-					.composedPath()
-					.find(
-						(node: EventTarget) => node instanceof HTMLElement && node.getAttribute('data-date')
-					);
-
-				if (!maybeCell || !(maybeCell instanceof HTMLElement)) {
-					return;
-				}
-
-				if (maybeCell.getAttribute('data-disabled')) {
-					return;
-				}
-
-				const date = new Date(maybeCell.getAttribute('data-date')!);
-
-				if (this.type === 'calendar') {
-					this.rangeStart = date;
-					(this.onChange as (value: Date | null) => void)?.(date);
-				} else if (this.type === 'calendar-range') {
-					if (this.rangeStart && this.rangeEnd) {
-						this.rangeStart = date;
-						this.rangeEnd = null;
-					} else if (this.rangeStart) {
-						if (date < this.rangeStart) {
-							this.rangeEnd = this.rangeStart;
-							this.rangeStart = date;
-						} else {
-							this.rangeEnd = date;
-						}
-					} else {
-						this.rangeStart = date;
+				row.events.push(...events);
+				row.cells.push({
+					isStartOfRange,
+					isEndOfRange,
+					visible,
+					isInNextMonth,
+					isInRange: this.isDateInRange(cellDate),
+					isInPreviousMonth,
+					selected,
+					inMonth: !isInPreviousMonth && !isInNextMonth,
+					day: cellDate.getDate(),
+					date: cellDate,
+					isToday: isSameCalendarDay(cellDate, this.today),
+					events,
+					corner: null,
+					disabled,
+					attributes: {
+						'data-date': dateKey,
+						'data-in-range': this.isDateInRange(cellDate) || undefined,
+						'data-in-month': !isInPreviousMonth && !isInNextMonth,
+						'data-disabled': disabled || undefined,
+						'data-is-today': isSameCalendarDay(cellDate, this.today) || undefined,
+						'data-selected': selected || undefined,
+						'data-start-of-range': isStartOfRange || undefined,
+						'data-end-of-range': isEndOfRange || undefined,
+						'data-is-past': cellDate < this.today || undefined,
+						'aria-selected': selected,
+						'aria-current': isSameCalendarDay(cellDate, this.today) ? 'date' : undefined,
+						tabindex:
+							!disabled && visible && !!tabStopDate && isSameCalendarDay(cellDate, tabStopDate)
+								? 0
+								: -1,
+						disabled: disabled || undefined
 					}
-					(this.onChange as (value: [Date | null, Date | null] | null) => void)?.([
-						this.rangeStart || null,
-						this.rangeEnd || null
-					]);
-				}
+				});
+			}
+			rows.push(row);
+		}
+
+		return rows;
+	};
+
+	private commitValue(value: CalendarValue<T>) {
+		this.value = value;
+		this.onChange?.(value);
+	}
+
+	selectDate = (date: Date) => {
+		if (this.isDateDisabled(date)) return;
+		const selectedDate = normalizeCalendarDate(date);
+		this.focusedDate = selectedDate;
+
+		if (this.type === 'calendar') {
+			this.commitValue(selectedDate as CalendarValue<T>);
+			return;
+		}
+
+		if (this.type === 'calendar-multiple') {
+			const currentValues = this.multipleValues;
+			const isSelected = currentValues.some((value) => isSameCalendarDay(value, selectedDate));
+			const nextValues = isSelected
+				? currentValues.filter((value) => !isSameCalendarDay(value, selectedDate))
+				: [...currentValues, selectedDate].sort(
+						(first, second) => first.getTime() - second.getTime()
+					);
+			this.commitValue(nextValues as CalendarValue<T>);
+			return;
+		}
+
+		let nextRange: [Date | null, Date | null];
+		if (!this.rangeStart || this.rangeEnd) {
+			nextRange = [selectedDate, null];
+		} else if (selectedDate < normalizeCalendarDate(this.rangeStart)) {
+			nextRange = [selectedDate, this.rangeStart];
+		} else {
+			nextRange = [this.rangeStart, selectedDate];
+		}
+		this.commitValue(nextRange as CalendarValue<T>);
+	};
+
+	goNextMonth = () => {
+		this.goToMonth(this.currentYear, this.currentMonth + 1);
+	};
+
+	goPrevMonth = () => {
+		this.goToMonth(this.currentYear, this.currentMonth - 1);
+	};
+
+	canGoToMonth = (year: number, month: number) => {
+		const targetMonthIndex = year * 12 + month;
+		if (this.minDate) {
+			const minMonthIndex = this.minDate.getFullYear() * 12 + this.minDate.getMonth();
+			if (targetMonthIndex < minMonthIndex) return false;
+		}
+		if (this.maxDate) {
+			const maxMonthIndex = this.maxDate.getFullYear() * 12 + this.maxDate.getMonth();
+			if (targetMonthIndex > maxMonthIndex) return false;
+		}
+		return true;
+	};
+
+	goToMonth = (year: number, month: number) => {
+		if (!this.canGoToMonth(year, month)) return;
+		this.date = createCalendarDate(year, month, 1);
+	};
+
+	goToToday = () => {
+		this.date = createCalendarDate(this.today.getFullYear(), this.today.getMonth(), 1);
+		this.focusedDate = this.today;
+	};
+
+	goToDate = (date: Date) => {
+		const normalizedDate = normalizeCalendarDate(date);
+		this.date = createCalendarDate(normalizedDate.getFullYear(), normalizedDate.getMonth(), 1);
+		this.focusedDate = normalizedDate;
+	};
+
+	cleanDate = normalizeCalendarDate;
+
+	private getEnabledDate(targetDate: Date, direction: number) {
+		let date = normalizeCalendarDate(targetDate);
+		for (let attempts = 0; attempts < 3660; attempts += 1) {
+			if (!this.isDateDisabled(date)) return date;
+			date = addDays(date, direction);
+			if (this.minDate && date < normalizeCalendarDate(this.minDate)) return null;
+			if (this.maxDate && date > normalizeCalendarDate(this.maxDate)) return null;
+		}
+		return null;
+	}
+
+	private moveFocus(node: HTMLElement, targetDate: Date, direction: number) {
+		const enabledDate = this.getEnabledDate(targetDate, direction);
+		if (!enabledDate) return;
+
+		this.focusedDate = enabledDate;
+		if (!this.isInVisibleMonths(enabledDate)) {
+			this.date = createCalendarDate(enabledDate.getFullYear(), enabledDate.getMonth(), 1);
+		}
+
+		requestAnimationFrame(() => {
+			node
+				.querySelector<HTMLButtonElement>(`[data-date="${getCalendarDateKey(enabledDate)}"]`)
+				?.focus();
+		});
+	}
+
+	calendar = (node: HTMLElement) =>
+		untrack(() => {
+			const handleClick = (event: MouseEvent) => {
+				const cell = getElementWithDate(event);
+				if (!cell || cell.hasAttribute('disabled')) return;
+				this.selectDate(parseCalendarDateKey(cell.dataset.date!));
 			};
 
-			return on(node, 'click', onClick);
+			const handleFocus = (event: FocusEvent) => {
+				const cell = getElementWithDate(event);
+				if (!cell?.dataset.date) return;
+				this.focusedDate = parseCalendarDateKey(cell.dataset.date);
+			};
+
+			const handleKeydown = (event: KeyboardEvent) => {
+				const cell = getElementWithDate(event);
+				if (!cell?.dataset.date) return;
+				const currentDate = parseCalendarDateKey(cell.dataset.date);
+				const isRtl = getComputedStyle(node).direction === 'rtl';
+				let targetDate: Date | null = null;
+				let direction = 1;
+
+				switch (event.key) {
+					case 'ArrowLeft':
+						direction = isRtl ? 1 : -1;
+						targetDate = addDays(currentDate, direction);
+						break;
+					case 'ArrowRight':
+						direction = isRtl ? -1 : 1;
+						targetDate = addDays(currentDate, direction);
+						break;
+					case 'ArrowUp':
+						direction = -1;
+						targetDate = addDays(currentDate, -7);
+						break;
+					case 'ArrowDown':
+						targetDate = addDays(currentDate, 7);
+						break;
+					case 'Home': {
+						direction = -1;
+						const weekStart = this.resolvedWeekStartsOn;
+						const offset = (currentDate.getDay() - weekStart + 7) % 7;
+						targetDate = addDays(currentDate, -offset);
+						break;
+					}
+					case 'End': {
+						const weekStart = this.resolvedWeekStartsOn;
+						const offset = (currentDate.getDay() - weekStart + 7) % 7;
+						targetDate = addDays(currentDate, 6 - offset);
+						break;
+					}
+					case 'PageUp':
+						direction = -1;
+						targetDate = event.shiftKey ? addYears(currentDate, -1) : addMonths(currentDate, -1);
+						break;
+					case 'PageDown':
+						targetDate = event.shiftKey ? addYears(currentDate, 1) : addMonths(currentDate, 1);
+						break;
+				}
+
+				if (!targetDate) return;
+				event.preventDefault();
+				this.moveFocus(node, targetDate, direction);
+			};
+
+			const removeClick = on(node, 'click', handleClick);
+			const removeFocus = on(node, 'focusin', handleFocus);
+			const removeKeydown = on(node, 'keydown', handleKeydown);
+
+			return () => {
+				removeClick();
+				removeFocus();
+				removeKeydown();
+			};
 		});
-	};
 }

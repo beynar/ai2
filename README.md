@@ -124,8 +124,8 @@ SvelAI provides two distinct Tailwind plugins that work together to create a com
 | `success`   | `string` | `#0070f3`       | `#0070f3`      | Success states                |
 | `warning`   | `string` | `#f5a623`       | `#f5a623`      | Warning states                |
 | `info`      | `string` | `#50e3c2`       | `#50e3c2`      | Informational content         |
-| `surface`   | `string` | `#fafafa`       | `#242524`      | Background surfaces           |
-| `contrast`  | `string` | `#242524`       | `#fafafa`      | High contrast text            |
+| `background` | `string` | `#fafafa`       | `#242524`      | Page and surface backgrounds  |
+| `foreground` | `string` | `#242524`       | `#fafafa`      | Default text color            |
 
 #### Color Variants (for each semantic color)
 
@@ -134,15 +134,15 @@ SvelAI provides two distinct Tailwind plugins that work together to create a com
 | `{color}-light`   | `string` | 15% lighter than base color                   | `primary-light`   |
 | `{color}-lighter` | `string` | 25% lighter than base color                   | `primary-lighter` |
 | `{color}-dark`    | `string` | 15% darker than base color                    | `primary-dark`    |
-| `{color}-muted`   | `string` | 95% mixed with surface color                  | `primary-muted`   |
-| `{color}-fg`      | `string` | Accessible foreground color (auto-calculated) | `primary-fg`      |
+| `{color}-muted`   | `string` | 95% mixed with background color                  | `primary-muted`   |
+| `{color}-contrast`      | `string` | Accessible foreground color (auto-calculated) | `primary-contrast`      |
 
 #### Layout & Spacing
 
 | Token                         | Type                                                                         | Default     | Description                         |
 | ----------------------------- | ---------------------------------------------------------------------------- | ----------- | ----------------------------------- |
 | `radius`                      | `'normal' \| 'small' \| 'large' \| 'subtile' \| 'none' \| 'round' \| number` | `'normal'`  | Border radius for components        |
-| `spacing`                     | `'normal' \| 'small' \| 'large' \| number`                                   | `'normal'`  | Base spacing unit                   |
+| `spacing`                     | `'normal' \| 'small' \| 'large' \| number`                                   | `'normal'`  | Multiplier over native spacing scale |
 | `radius-inert-elements`       | `number`                                                                     | `undefined` | Radius for non-interactive elements |
 | `radius-interactive-elements` | `number`                                                                     | `undefined` | Radius for interactive elements     |
 | `border-width`                | `number`                                                                     | `undefined` | Default border width in pixels      |
@@ -165,20 +165,29 @@ SvelAI provides two distinct Tailwind plugins that work together to create a com
 
 #### Radius Values
 
-- `'normal'` → 0.25rem (4px)
-- `'small'` → 0.125rem (2px)
-- `'large'` → 0.5rem (8px)
-- `'subtile'` → 0.09rem (~1.5px)
-- `'none'` → 0rem (0px)
-- `'round'` → 1rem (16px)
-- `number` → Custom rem value
+The `radius` knob is a multiplier applied to the native Tailwind radius scale
+(`rounded-sm` … `rounded-4xl` and bare `rounded`), so a single value rounds the
+whole UI proportionally. `'normal'` keeps Tailwind's native defaults.
+
+- `'none'` → 0× (sharp corners)
+- `'subtile'` → 0.5×
+- `'small'` → 0.75×
+- `'normal'` → 1× (native defaults)
+- `'large'` → 1.5×
+- `'round'` → 2.5×
+- `number` → custom multiplier (e.g. `1.25`)
 
 #### Spacing Values
 
-- `'normal'` → 0.25rem (4px)
-- `'small'` → 0.2rem (~3px)
-- `'large'` → 0.3rem (~5px)
-- `number` → Custom rem value
+The `spacing` knob is a multiplier applied to the native Tailwind spacing scale
+(`p-*`, `gap-*`, `m-*`, `size-*`, `w-*`, `h-*` …), so a single value tightens or
+loosens the whole UI proportionally. `'normal'` keeps Tailwind's native defaults.
+It is emitted per theme, so light and dark can breathe differently.
+
+- `'small'` → 0.8× (denser)
+- `'normal'` → 1× (native defaults)
+- `'large'` → 1.2× (roomier)
+- `number` → custom multiplier (e.g. `1.1`)
 
 #### Color Values
 
@@ -210,7 +219,7 @@ You can override specific color variants:
 	primary-lighter: '#a5a6fa';
 	primary-dark: '#4f46e5';
 	primary-muted: '#f1f1ff';
-	primary-fg: '#ffffff';
+	primary-contrast: '#ffffff';
 }
 ```
 
@@ -238,11 +247,11 @@ SvelAI extends Tailwind with semantic color utilities:
 <!-- Background colors -->
 <div class="bg-color-primary">Primary background</div>
 <div class="bg-color-primary-light">Light primary background</div>
-<div class="bg-color-surface-muted">Muted surface</div>
+<div class="bg-color-background-muted">Muted background</div>
 
 <!-- Text colors -->
 <p class="text-color-contrast">High contrast text</p>
-<p class="text-color-primary-fg">Primary foreground</p>
+<p class="text-color-primary-contrast">Primary foreground</p>
 
 <!-- Borders -->
 <div class="border-color-primary">Primary border</div>
@@ -294,7 +303,7 @@ You can define multiple themes and switch between them in your `app.css`:
 	name: 'dark';
 	colorscheme: 'dark';
 	primary: '#8b5cf6';
-	surface: '#1a1a1a';
+	background: '#1a1a1a';
 }
 
 /* Custom theme */
@@ -355,8 +364,8 @@ export default {
 	colorscheme: 'dark';
 	prefersdark: true;
 	primary: '#8b5cf6';
-	surface: '#1a1a1a';
-	contrast: '#ffffff';
+	background: '#1a1a1a';
+	foreground: '#ffffff';
 	radius: large;
 	spacing: normal;
 }

@@ -1,0 +1,10 @@
+export { default as Carousel } from './Carousel.svelte';
+export type { CarouselProps, CarouselRenderPayload } from './carousel.props.js';
+export { CarouselState } from './carousel.state.svelte.js';
+export {
+	carouselTheme,
+	setCarouselTheme,
+	useCarouselTheme,
+	type CarouselTheme,
+	type CarouselThemeProps
+} from './carousel.theme.js';

@@ -1,20 +1,35 @@
-import type { Colors } from '$lib/types/theme.js';
-import { cva, setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
+import SpinnerIndicator from '$lib/components/Spinner/SpinnerIndicator.svelte';
+import { resolveSpinnerVariant } from '$lib/components/Spinner/resolveSpinnerVariant.js';
+import type { SpinnerVariant } from '$lib/components/Spinner/spinner.props.js';
+import { useSpinnerTheme } from '$lib/components/Spinner/spinner.theme.js';
+import { useTheme } from '$lib/components/Theme/theme.state.svelte.js';
+import type { Colors, Sizes } from '$lib/types/theme.js';
+import { cva, cx, setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { mount, unmount, untrack } from 'svelte';
 
 export type SpinnerOverlayOptions = {
 	text?: string;
 	loading?: boolean;
 	class?: string;
 	color?: Colors;
-	size?: 'small' | 'normal' | 'large';
+	size?: Sizes;
+	variant?: SpinnerVariant;
 };
+
+type MountedSpinnerIndicator = {
+	component: Record<string, unknown>;
+	className: string;
+	variant: SpinnerVariant;
+};
+
+const mountedSpinnerIndicators = new WeakMap<HTMLElement, MountedSpinnerIndicator>();
 
 const defaultSpinnerOverlay = cva({
 	base: 'absolute overflow-hidden flex gap-2 flex-col items-center justify-center backdrop-blur-[10px] z-10 w-full h-full rounded-inherit inset-0 bg-color/20 '
 });
 
 const defaultSpinnerOverlaySpinner = cva({
-	base: 'ui-spinner order-2 text-color-fg',
+	base: 'order-2',
 	variants: {
 		size: {
 			small: 'w-4 h-4',
@@ -22,23 +37,23 @@ const defaultSpinnerOverlaySpinner = cva({
 			large: 'w-6 h-6'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			contrast: 'text-contrast',
-			surface: 'text-surface',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		color: 'neutral'
 	}
 });
 
 const defaultSpinnerOverlayText = cva({
-	base: 'text-sm order-1 text-color-fg',
+	base: 'text-sm order-1',
 	variants: {
 		size: {
 			small: 'text-sm',
@@ -46,18 +61,18 @@ const defaultSpinnerOverlayText = cva({
 			large: 'text-lg'
 		},
 		color: {
-			primary: 'text-primary',
-			secondary: 'text-secondary',
-			contrast: 'text-contrast',
-			surface: 'text-surface',
-			danger: 'text-danger',
-			success: 'text-success',
-			warning: 'text-warning',
-			info: 'text-info'
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
 		}
 	},
 	defaultVariants: {
-		size: 'normal'
+		size: 'normal',
+		color: 'neutral'
 	}
 });
 
@@ -72,39 +87,56 @@ export const setSpinnerOverlayTheme =
 export const useSpinnerOverlayTheme = useComponentTheme('spinnerOverlay', spinnerOverlayTheme);
 
 export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
+	const themeState = useTheme();
 	const classes = $derived(useSpinnerOverlayTheme());
+	const spinnerClasses = $derived(useSpinnerTheme());
 	let parentAnimation: Animation | undefined = undefined;
 	let textAnimation: Animation | undefined = undefined;
 
 	const getSpinnerOverlay = (node: HTMLElement) => {
-		return node.querySelector('div:has(.ui-spinner)');
+		return node.querySelector<HTMLElement>(':scope > [data-spinner-overlay]');
 	};
 
-	const getSpinner = (node: HTMLElement) => {
-		return node.querySelector('.ui-spinner');
+	const getTextElement = (overlay: HTMLElement) => {
+		return overlay.querySelector<HTMLElement>(':scope > [data-spinner-text]');
 	};
 
-	const getTextElement = (node: HTMLElement) => {
-		return node.querySelector('[data-spinner-text]');
+	const removeSpinner = (overlay: HTMLElement) => {
+		const mountedSpinner = mountedSpinnerIndicators.get(overlay);
+		if (mountedSpinner) {
+			void unmount(mountedSpinner.component);
+			mountedSpinnerIndicators.delete(overlay);
+		}
+		overlay.querySelector(':scope > [data-slot="spinner-indicator"]')?.remove();
 	};
 
 	const destroy = (node: HTMLElement) => {
 		if (!opts.loading) {
-			getSpinnerOverlay(node)?.remove();
+			const overlay = getSpinnerOverlay(node);
+			if (overlay) {
+				removeSpinner(overlay);
+				overlay.remove();
+			}
 			textAnimation && textAnimation.cancel();
 			parentAnimation && parentAnimation.cancel();
 		}
 	};
 
-	const setSpinner = (node: HTMLElement, overlay: Element) => {
-		let spinner = getSpinner(node);
-		if (!spinner) {
-			spinner = document.createElement('span');
-			overlay.appendChild(spinner);
-		}
+	const setSpinner = (overlay: HTMLElement) => {
+		const variant = resolveSpinnerVariant(opts.variant, themeState?.spinnerVariant);
+		const className = cx(
+			spinnerClasses.indicator({ size: opts.size, variant }),
+			classes.spinner({ size: opts.size, color: opts.color })
+		);
+		const mountedSpinner = mountedSpinnerIndicators.get(overlay);
+		if (mountedSpinner?.variant === variant && mountedSpinner.className === className) return;
 
-		spinner.classList.add(...classes.spinner({ size: opts.size, color: opts.color }).split(' '));
-		return spinner;
+		removeSpinner(overlay);
+		const component = mount(SpinnerIndicator, {
+			target: overlay,
+			props: { variant, class: className }
+		});
+		mountedSpinnerIndicators.set(overlay, { component, className, variant });
 	};
 
 	const setOverlay = (node: HTMLElement) => {
@@ -112,22 +144,26 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 		let overlay = getSpinnerOverlay(node);
 		if (!overlay) {
 			overlay = document.createElement('div');
+			overlay.setAttribute('data-spinner-overlay', '');
 			node.appendChild(overlay);
 		} else {
 			mounted = true;
 		}
-		overlay.classList.add(...classes.overlay({ class: opts.class }).split(' '));
+		overlay.dataset.color = opts.color ?? 'neutral';
+		overlay.className = classes.overlay({ class: opts.class });
 
 		return [overlay, mounted] as const;
 	};
 
-	const setText = (node: HTMLElement, overlay: Element) => {
-		let textElement = getTextElement(node);
+	const setText = (overlay: HTMLElement) => {
+		let textElement = getTextElement(overlay);
 		if (!opts.text) {
 			textElement?.remove();
 			return;
 		}
 		if (textElement) {
+			textElement.className = classes.text({ size: opts.size, color: opts.color });
+			if (textElement.textContent === opts.text) return;
 			textAnimation?.cancel();
 			textElement.animate(
 				[
@@ -135,7 +171,8 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 					{ opacity: 0, transform: 'translateY(-10px)' }
 				],
 				{
-					duration: 200
+					duration: 200,
+					direction: 'alternate'
 				}
 			).onfinish = () => {
 				textElement!.textContent = opts.text || '';
@@ -145,7 +182,8 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 						{ opacity: 1, transform: 'translateY(0)' }
 					],
 					{
-						duration: 200
+						duration: 200,
+						direction: 'alternate'
 					}
 				);
 				textAnimation!.onfinish = () => {
@@ -156,7 +194,7 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 			textElement = document.createElement('p');
 			textElement.setAttribute('data-spinner-text', 'true');
 			textElement.textContent = opts.text || '';
-			textElement.classList.add(...classes.text({ size: opts.size, color: opts.color }).split(' '));
+			textElement.className = classes.text({ size: opts.size, color: opts.color });
 			overlay.appendChild(textElement);
 		}
 	};
@@ -173,12 +211,13 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 		if (opts.loading) {
 			ensureParentIsPositioned(node);
 			const [overlay, mounted] = setOverlay(node);
-			setText(node, overlay);
-			setSpinner(node, overlay);
+			setText(overlay);
+			setSpinner(overlay);
 
 			if (!parentAnimation && !mounted) {
 				parentAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
-					duration: 200
+					duration: 200,
+					direction: 'alternate'
 				});
 			} else if (parentAnimation) {
 				parentAnimation.reverse();
@@ -193,7 +232,7 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 			} else {
 				const overlay = getSpinnerOverlay(node);
 				if (overlay) {
-					parentAnimation = node.animate([{ opacity: 1 }, { opacity: 0 }], {
+					parentAnimation = overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
 						duration: 200
 					});
 					parentAnimation.onfinish = () => {
@@ -205,10 +244,17 @@ export const spinnerOverlay = (opts: SpinnerOverlayOptions) => {
 	};
 
 	return (node: HTMLElement) => {
-		setup(node);
-
-		return () => {
-			destroy(node);
-		};
+		opts.loading;
+		opts.text;
+		opts.variant;
+		opts.size;
+		opts.color;
+		themeState?.spinnerVariant;
+		return untrack(() => {
+			setup(node);
+			return () => {
+				destroy(node);
+			};
+		});
 	};
 };

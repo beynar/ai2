@@ -1,0 +1,168 @@
+export const networkIndicatorDescription = `
+# NetworkIndicator Component
+
+NetworkIndicator is a fixed top loading bar for SvelteKit navigation and explicit async work. Mount one instance near the root layout. It shows automatically during SvelteKit route transitions, can be driven by a controlled \`loading\` prop, and exposes imperative helpers for request lifecycles.
+
+## Import
+
+\`\`\`svelte
+<script lang="ts">
+	import { NetworkIndicator } from 'svelai/network-indicator';
+</script>
+\`\`\`
+
+## Basic Usage
+
+\`\`\`svelte
+<!-- +layout.svelte -->
+<script lang="ts">
+	import { NetworkIndicator } from 'svelai/network-indicator';
+</script>
+
+<NetworkIndicator />
+
+{@render children()}
+\`\`\`
+
+## Props
+
+- **loading**: boolean = false
+  - Controlled visibility. Use this when the owner already has request state or when rendering examples/previews.
+- **variant**: 'bar' | 'trail' | 'trail-bounce' = 'bar'
+  - \`bar\` progressively grows one indicator. \`trail\` renders one randomly sized moving segment at a time. \`trail-bounce\` sends that random trail fully off one edge, then returns from the opposite edge.
+- **trailGap**: number = 0
+  - Pause between trail passes in milliseconds. Only applies to \`variant="trail"\`.
+- **trailDuration**: number = 650
+  - Duration of one trail pass in milliseconds. Only applies to \`variant="trail"\`. Lower values make the trail move faster.
+- **color**: 'primary' | 'secondary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info' = 'neutral'
+  - Applies the semantic color token to the bar.
+- **size**: number = 3
+  - Height in pixels. Keep most navigation indicators between 2 and 6.
+- **delay**: number = 300
+  - Duration of each indeterminate animation segment in milliseconds.
+- **easing**: Easing = 'cubicInOut'
+  - Any easing key from the Svelai transition easing map, such as 'linear', 'quadOut', 'cubicInOut', 'expoOut', 'backOut', or 'bounceOut'.
+- **label**: string = 'Loading'
+  - Accessible label for the indeterminate \`role="progressbar"\`.
+- **ref**: HTMLDivElement | null
+  - Bindable root element reference while the indicator is visible.
+- **class**: string
+  - Additional classes for the root bar.
+- **theme**: NetworkIndicatorThemeProps
+  - Theme override for the root bar.
+
+## Helper API
+
+\`\`\`ts
+import {
+	hideNetworkIndicator,
+	showNetworkIndicator,
+	toggleNetworkIndicator
+} from 'svelai/network-indicator';
+\`\`\`
+
+Prefer \`showNetworkIndicator()\` and \`hideNetworkIndicator()\` for async work. \`toggleNetworkIndicator()\` is available for simple demos or manual toggles, but it is easier to desynchronize in request lifecycles.
+
+## Patterns
+
+### Controlled Loading
+
+\`\`\`svelte
+<script lang="ts">
+	import { NetworkIndicator } from 'svelai/network-indicator';
+
+	let loading = $state(false);
+</script>
+
+<NetworkIndicator {loading} color="primary" label="Saving changes" />
+\`\`\`
+
+### Async Request
+
+\`\`\`svelte
+<script lang="ts">
+	import { Button } from 'svelai/button';
+	import {
+		hideNetworkIndicator,
+		showNetworkIndicator
+	} from 'svelai/network-indicator';
+
+	async function save() {
+		showNetworkIndicator();
+		try {
+			await fetch('/api/save', { method: 'POST' });
+		} finally {
+			hideNetworkIndicator();
+		}
+	}
+</script>
+
+<Button onClick={save}>Save</Button>
+\`\`\`
+
+### Color Variations
+
+\`\`\`svelte
+<NetworkIndicator loading color="primary" />
+<NetworkIndicator loading color="success" />
+<NetworkIndicator loading color="warning" />
+<NetworkIndicator loading color="danger" />
+\`\`\`
+
+### Trail Variant
+
+\`\`\`svelte
+<NetworkIndicator loading variant="trail" color="primary" trailDuration={650} trailGap={0} />
+<NetworkIndicator loading variant="trail" color="success" size={5} trailDuration={450} trailGap={120} />
+<NetworkIndicator loading variant="trail-bounce" color="info" trailDuration={700} trailGap={80} />
+\`\`\`
+
+### Size Variations
+
+\`\`\`svelte
+<NetworkIndicator loading size={2} />
+<NetworkIndicator loading size={4} color="primary" />
+<NetworkIndicator loading size={6} color="info" />
+\`\`\`
+
+### Motion Variations
+
+\`\`\`svelte
+<NetworkIndicator loading delay={300} easing="cubicInOut" />
+<NetworkIndicator loading delay={450} easing="expoOut" />
+<NetworkIndicator loading delay={500} easing="backOut" />
+\`\`\`
+
+### Theme Override
+
+\`\`\`svelte
+<NetworkIndicator
+	loading
+	color="success"
+	size={5}
+	theme={{
+		root: {
+			base: 'ui-network-indicator fixed top-0 left-0 w-full z-[9999] origin-left rounded-none shadow-lg'
+		}
+	}}
+/>
+\`\`\`
+
+## Theme
+
+The theme has two parts:
+
+- **root**: the fixed top bar.
+  - \`base\`: positioning, origin, radius, z-index, and shared bar classes.
+  - \`variant\`: \`bar\`, \`trail\`, or \`trail-bounce\` container styling.
+  - \`color\`: semantic color variants.
+- **segment**: trail segment styling.
+  - \`base\`: segment positioning, radius, opacity, shadow, and transform hints.
+  - \`color\`: semantic color variants for each trail segment.
+
+The default root base includes \`ui-network-indicator\`; keep that class if overriding the base because \`toggleNetworkIndicator()\` uses it to read current state.
+
+## Accessibility
+
+The visible bar renders \`role="progressbar"\` without a value because progress is indeterminate. Use a specific \`label\` when the loading context matters, such as "Uploading files" or "Saving changes". If screen readers need richer lifecycle announcements, pair the indicator with app-level live region text.
+`;

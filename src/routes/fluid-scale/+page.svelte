@@ -1,76 +1,77 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { Button } from '$lib/components/Button/index.js';
 	import {
-		getTypeScale,
-		getTypeScaleFromPreset,
-		typeScalePresets
-	} from '$lib/tailwind/typeScale.js';
+		typeScalePresets,
+		type TypeScalePreset
+	} from '$lib/components/Theme/theme.designTokens.js';
 
-	// Example of custom type scale
-	const customScale = getTypeScale({
-		baseMinPx: 14,
-		baseMaxPx: 20,
-		scale: 'perfectFourth'
-	});
+	const presetNames = ['compact', 'default', 'comfortable', 'large'] as const;
+	const selectedPreset = $derived(
+		presetNames.find((preset) => preset === page.url.searchParams.get('preset')) ?? 'default'
+	);
 
-	const presetScale = getTypeScaleFromPreset('comfortable');
+	function selectPreset(preset: TypeScalePreset) {
+		void goto(resolve(`/fluid-scale?preset=${preset}`), { keepFocus: true, noScroll: true });
+	}
 </script>
 
-<div class="space-y-8 p-8">
-	<div>
-		<h1 class="mb-4 text-2xl font-bold">Fluid Type Scale Demo</h1>
-		<p class="mb-8 text-gray-600">
-			Resize your browser to see how the text scales fluidly between mobile and desktop sizes.
+<article class="mx-auto grid max-w-5xl gap-8 p-6">
+	<header class="grid gap-3">
+		<h1 class="text-3xl font-semibold">Runtime design tokens</h1>
+		<p class="text-neutral/60 max-w-2xl text-balance">
+			Change a preset to update spacing, radius, typography, and raised borders across the
+			already-rendered page. No Tailwind rebuild or new utility class is involved.
 		</p>
-	</div>
-
-	<div>
-		<h2 class="mb-4 text-xl font-semibold">Current Scale (default preset)</h2>
-		<div class="space-y-2">
-			<div class="text-xs">XS: je suis un texte en XS (≥12px)</div>
-			<div class="text-s">S: je suis un texte en S (≥12px)</div>
-			<div class="text-base">BASE: je suis un texte en BASE (16px-18px)</div>
-			<div class="text-md">MD: je suis un texte en MD</div>
-			<div class="text-lg">LG: je suis un texte en LG</div>
-			<div class="text-xl">XL: je suis un texte en XL</div>
-			<div class="text-2xl">2XL: je suis un texte en 2XL</div>
-			<div class="text-3xl">3XL: je suis un texte en 3XL</div>
-			<div class="text-4xl">4XL: je suis un texte en 4XL</div>
+		<div class="flex flex-wrap gap-2">
+			{#each presetNames as preset (preset)}
+				<Button
+					variant={selectedPreset === preset ? 'solid' : 'outline'}
+					onClick={() => selectPreset(preset)}
+				>
+					{preset}
+				</Button>
+			{/each}
 		</div>
-	</div>
+	</header>
 
-	<div>
-		<h2 class="mb-4 text-xl font-semibold">Available Presets</h2>
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			{#each Object.entries(typeScalePresets) as [name, config]}
-				<div class="rounded-lg border p-4">
-					<h3 class="font-medium capitalize">{name}</h3>
-					<p class="text-sm text-gray-600">
-						Base: {config.baseMinPx}px - {config.baseMaxPx}px
-						<br />Scale: {config.scale}
-					</p>
+	<section class="grid gap-4">
+		<div>
+			<h2 class="text-xl font-semibold capitalize">{selectedPreset}</h2>
+			<p class="text-neutral/60 text-sm">
+				Base: {typeScalePresets[selectedPreset].baseMinPx}px–{typeScalePresets[selectedPreset]
+					.baseMaxPx}px · Ratio: {typeScalePresets[selectedPreset].scale}
+			</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-3">
+			{#each ['Spacing', 'Radius', 'Raised border'] as token (token)}
+				<div class="raised-md grid gap-3 rounded-xl bg-surface-raised p-4">
+					<div class="bg-primary/15 h-10 rounded-lg"></div>
+					<div class="grid gap-2">
+						<strong>{token}</strong>
+						<span class="text-neutral/60 text-sm"
+							>This card uses gap-3, gap-2, p-4, and rounded-*.</span
+						>
+					</div>
 				</div>
 			{/each}
 		</div>
-	</div>
+	</section>
 
-	<div>
-		<h2 class="mb-4 text-xl font-semibold">Usage Examples</h2>
-		<pre class="overflow-x-auto rounded bg-gray-100 p-4 text-sm"><code
-				>{`// Simple preset usage
-fontSize: getTypeScaleFromPreset('default')
-
-// Custom configuration
-fontSize: getTypeScale({
-  baseMinPx: 16,    // Base size on mobile
-  baseMaxPx: 18,    // Base size on desktop
-  scale: 'majorThird'
-})
-
-// Override preset
-fontSize: getTypeScaleFromPreset('comfortable', {
-  baseMinPx: 14,    // Override just the mobile size
-  scale: 'perfectFourth'  // Override the scale
-})`}</code
-			></pre>
-	</div>
-</div>
+	<section class="grid gap-4">
+		<h2 class="text-xl font-semibold">Fluid typography</h2>
+		<div class="border-neutral-muted grid gap-3 rounded-xl border p-4">
+			<p class="text-xs">Extra small interface text</p>
+			<p class="text-sm">Small supporting text</p>
+			<p class="text-base">Base body text</p>
+			<p class="text-lg">Large body text</p>
+			<p class="text-xl">Section heading</p>
+			<p class="text-2xl">Page heading</p>
+			<p class="text-3xl">Display heading</p>
+			<p class="text-4xl">Large display heading</p>
+		</div>
+	</section>
+</article>

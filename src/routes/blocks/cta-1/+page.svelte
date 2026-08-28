@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button, { setButtonTheme } from '$lib/components/Button/Button.svelte';
+	import { Button } from '$lib/components/Button/index.js';
 
 	let {
 		title = 'Boost your productivity. Start using our app today.',
@@ -60,7 +60,7 @@
 					<Button
 						href={secondaryButtonHref}
 						variant="link"
-						color="contrast"
+						color="neutral"
 						class="text-sm/6 font-semibold text-white"
 					>
 						{secondaryButtonText}

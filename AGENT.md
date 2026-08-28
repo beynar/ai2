@@ -14,8 +14,8 @@ Uy defines a semantic color palette with 8 main color categories, each with 6 sh
 - **success** - Success states (default: green/blue)
 - **warning** - Warning states (default: amber)
 - **info** - Informational states (default: cyan)
-- **surface** - Background/surface colors (adapts to color scheme)
-- **contrast** - High contrast text/elements for text displayed on surface backgrounds, provides text color hierarchy
+- **background** - Page and surface backgrounds (adapts to color scheme)
+- **foreground** - Default text color for content on background surfaces, provides text color hierarchy
 
 ### Color Shades
 
@@ -26,7 +26,7 @@ Each color has 6 variations:
 - **lighter** - 25% lighter
 - **dark** - 10% darker
 - **muted** - Heavily mixed with background (90% opacity)
-- **fg** - Foreground color that provides readable contrast
+- **contrast** - Accessible text color that provides readable contrast on a colored background
 
 ## Custom Tailwind Classes
 
@@ -36,34 +36,34 @@ Each color has 6 variations:
 
 ```css
 /* Backgrounds */
-bg-primary, bg-primary-light, bg-primary-dark, bg-primary-muted, bg-primary-fg
-bg-secondary, bg-secondary-light, bg-secondary-dark, bg-secondary-muted, bg-secondary-fg
-bg-danger, bg-danger-light, bg-danger-dark, bg-danger-muted, bg-danger-fg
-bg-success, bg-success-light, bg-success-dark, bg-success-muted, bg-success-fg
-bg-warning, bg-warning-light, bg-warning-dark, bg-warning-muted, bg-warning-fg
-bg-info, bg-info-light, bg-info-dark, bg-info-muted, bg-info-fg
-bg-surface, bg-surface-light, bg-surface-dark, bg-surface-muted, bg-surface-fg
-bg-contrast, bg-contrast-light, bg-contrast-dark, bg-contrast-muted, bg-contrast-fg
+bg-primary, bg-primary-light, bg-primary-dark, bg-primary-muted, bg-primary-contrast
+bg-secondary, bg-secondary-light, bg-secondary-dark, bg-secondary-muted, bg-secondary-contrast
+bg-danger, bg-danger-light, bg-danger-dark, bg-danger-muted, bg-danger-contrast
+bg-success, bg-success-light, bg-success-dark, bg-success-muted, bg-success-contrast
+bg-warning, bg-warning-light, bg-warning-dark, bg-warning-muted, bg-warning-contrast
+bg-info, bg-info-light, bg-info-dark, bg-info-muted, bg-info-contrast
+bg-background, bg-background-light, bg-background-dark, bg-background-muted, bg-background-contrast
+bg-foreground, bg-foreground-light, bg-foreground-dark, bg-foreground-muted, bg-foreground-contrast
 
-/* Text colors - Use contrast colors for text on surface backgrounds */
-text-primary, text-primary-light, text-primary-dark, text-primary-muted, text-primary-fg
-text-secondary, text-secondary-light, text-secondary-dark, text-secondary-muted, text-secondary-fg
-text-danger, text-danger-light, text-danger-dark, text-danger-muted, text-danger-fg
-text-success, text-success-light, text-success-dark, text-success-muted, text-success-fg
-text-warning, text-warning-light, text-warning-dark, text-warning-muted, text-warning-fg
-text-info, text-info-light, text-info-dark, text-info-muted, text-info-fg
-text-surface, text-surface-light, text-surface-dark, text-surface-muted, text-surface-fg
-text-contrast, text-contrast-light, text-contrast-dark, text-contrast-muted, text-contrast-fg
+/* Text colors - Use foreground colors for text on background surfaces */
+text-primary, text-primary-light, text-primary-dark, text-primary-muted, text-primary-contrast
+text-secondary, text-secondary-light, text-secondary-dark, text-secondary-muted, text-secondary-contrast
+text-danger, text-danger-light, text-danger-dark, text-danger-muted, text-danger-contrast
+text-success, text-success-light, text-success-dark, text-success-muted, text-success-contrast
+text-warning, text-warning-light, text-warning-dark, text-warning-muted, text-warning-contrast
+text-info, text-info-light, text-info-dark, text-info-muted, text-info-contrast
+text-background, text-background-light, text-background-dark, text-background-muted, text-background-contrast
+text-foreground, text-foreground-light, text-foreground-dark, text-foreground-muted, text-foreground-contrast
 
 /* Border colors follow same pattern */
-border-primary, border-primary-light, border-primary-dark, border-primary-muted, border-primary-fg
-border-secondary, border-secondary-light, border-secondary-dark, border-secondary-muted, border-secondary-fg
-border-danger, border-danger-light, border-danger-dark, border-danger-muted, border-danger-fg
-border-success, border-success-light, border-success-dark, border-success-muted, border-success-fg
-border-warning, border-warning-light, border-warning-dark, border-warning-muted, border-warning-fg
-border-info, border-info-light, border-info-dark, border-info-muted, border-info-fg
-border-surface, border-surface-light, border-surface-dark, border-surface-muted, border-surface-fg
-border-contrast, border-contrast-light, border-contrast-dark, border-surface-muted, border-contrast-fg
+border-primary, border-primary-light, border-primary-dark, border-primary-muted, border-primary-contrast
+border-secondary, border-secondary-light, border-secondary-dark, border-secondary-muted, border-secondary-contrast
+border-danger, border-danger-light, border-danger-dark, border-danger-muted, border-danger-contrast
+border-success, border-success-light, border-success-dark, border-success-muted, border-success-contrast
+border-warning, border-warning-light, border-warning-dark, border-warning-muted, border-warning-contrast
+border-info, border-info-light, border-info-dark, border-info-muted, border-info-contrast
+border-background, border-background-light, border-background-dark, border-background-muted, border-background-contrast
+border-foreground, border-foreground-light, border-foreground-dark, border-background-muted, border-foreground-contrast
 ```
 
 ### **Advanced: Color Utilities with Data Attributes**
@@ -78,36 +78,36 @@ bg-color-light    /* Uses --color-light CSS variable */
 bg-color-lighter  /* Uses --color-lighter CSS variable */
 bg-color-dark     /* Uses --color-dark CSS variable */
 bg-color-muted    /* Uses --color-muted CSS variable */
-bg-color-fg       /* Uses --color-fg CSS variable */
+bg-color-contrast       /* Uses --color-contrast CSS variable */
 
 text-color        /* Uses --color CSS variable */
 text-color-light  /* Uses --color-light CSS variable */
 text-color-lighter /* Uses --color-lighter CSS variable */
 text-color-dark   /* Uses --color-dark CSS variable */
-text-color-muted  /* Uses --color-muted CSS variable */
-text-color-fg     /* Uses --color-fg CSS variable */
+text-foreground-muted  /* Uses --color-muted CSS variable */
+text-color-contrast     /* Uses --color-contrast CSS variable */
 
 border-color      /* Uses --color CSS variable */
 border-color-light /* Uses --color-light CSS variable */
 border-color-lighter /* Uses --color-lighter CSS variable */
 border-color-dark /* Uses --color-dark CSS variable */
 border-color-muted /* Uses --color-muted CSS variable */
-border-color-fg   /* Uses --color-fg CSS variable */
+border-color-contrast   /* Uses --color-contrast CSS variable */
 ```
 
 #### Data Attributes for Color Context
 
 ```html
 <div data-color="primary">
-	<button class="bg-color text-color-fg">Primary Button</button>
+	<button class="bg-color text-color-contrast">Primary Button</button>
 </div>
 
 <div data-color="danger">
-	<button class="bg-color text-color-fg">Danger Button</button>
+	<button class="bg-color text-color-contrast">Danger Button</button>
 </div>
 
-<div data-color="surface">
-	<div class="bg-color border-color-lighter">Surface Card</div>
+<div data-color="background">
+	<div class="bg-color border-color-lighter">Background Card</div>
 </div>
 ```
 
@@ -140,16 +140,16 @@ dc:; /* Targets direct children (& > *) */
 
 ### Primary Component Styling
 
-### Surface/Background with Contrast Text
+### Backgrounds with Foreground Text
 
 ```html
-<div class="bg-surface min-h-screen">
-	<div class="bg-surface-light p-6 rounded-lg raised-md border border-surface-muted">
-		<!-- Use contrast colors for text hierarchy on surface backgrounds -->
-		<h1 class="text-contrast font-bold text-2xl">Main Heading</h1>
-		<h2 class="text-contrast-dark font-semibold text-lg">Subheading</h2>
-		<p class="text-contrast-muted">Body text with reduced contrast</p>
-		<small class="text-contrast-lighter">Secondary information</small>
+<div class="bg-background min-h-screen">
+	<div class="bg-background-light p-6 rounded-lg raised-md border border-background-muted">
+		<!-- Use foreground colors for text hierarchy on background surfaces -->
+		<h1 class="text-foreground font-bold text-2xl">Main Heading</h1>
+		<h2 class="text-foreground-dark font-semibold text-lg">Subheading</h2>
+		<p class="text-foreground-muted">Body text with reduced contrast</p>
+		<small class="text-foreground-lighter">Secondary information</small>
 	</div>
 </div>
 ```
@@ -157,9 +157,9 @@ dc:; /* Targets direct children (& > *) */
 ## Best Practices
 
 1. **Use direct semantic color classes**: Prefer `bg-primary`, `text-danger`, etc. as the primary approach
-2. **Use contrast colors for text hierarchy**: On surface backgrounds, use `text-contrast` and its shades for proper text hierarchy
-3. **Leverage automatic contrast**: The `fg` shade provides automatic readable contrast (e.g., `text-primary-fg` on `bg-primary`)
-4. **Surface for backgrounds**: Use `bg-surface` for main layout backgrounds and `text-contrast` for text content
+2. **Use foreground colors for text hierarchy**: On background surfaces, use `text-foreground` and its shades for proper text hierarchy
+3. **Leverage automatic contrast**: The `contrast` shade provides automatic readable contrast (e.g., `text-primary-contrast` on `bg-primary`)
+4. **Background for layouts**: Use `bg-background` for main layout backgrounds and `text-foreground` for text content
 5. **Data attributes for advanced cases**: Only use `data-color` attributes and context-aware classes (`bg-color`, `text-color`) for internal library use or complex dynamic scenarios
 6. **Color shades for states**: Use `muted` for subtle backgrounds, `light`/`lighter` for borders, `dark` for emphasis
 
@@ -187,7 +187,7 @@ The Button component is a flexible and customizable button element that supports
   - ghost: Transparent background, shows background on hover
   - link: Text-only styling with underline on hover
 
-- **color**: 'surface' | 'primary' | 'secondary' | 'contrast' | 'danger' | 'success' | 'warning' | 'info' (default: 'contrast')
+- **color**: 'background' | 'primary' | 'secondary' | 'foreground' | 'danger' | 'success' | 'warning' | 'info' (default: 'foreground')
 
   - Determines the color scheme of the button
 
@@ -212,21 +212,18 @@ The Button component is a flexible and customizable button element that supports
 ### Event Props
 
 - **onClick**: (payload?: Payload) => void - Click event handler
-- **onenter**: (payload?: Payload) => void - Pointer enter event handler
-- **onleave**: (payload?: Payload) => void - Pointer leave event handler
+- **onEnter**: (payload?: Payload) => void - Pointer enter event handler
+- **onLeave**: (payload?: Payload) => void - Pointer leave event handler
 
 ### Content Props (Slots)
 
 - **children**: Snippet - Main button content
 - **prefix**: Snippet - Content before main text (typically icons)
 - **suffix**: Snippet - Content after main text (typically icons)
-- **prefixProps**: object - Props passed to prefix slot
-- **suffixProps**: object - Props passed to suffix slot
-- **childrenProps**: object - Props passed to children slot
 
 ### Advanced Props
 
-- **payload**: any - Data passed to event handlers and slots
+- **payload**: any - Data passed to event handlers
 - **ref**: HTMLElement - Reference to the button element
 - **class**: string - Additional CSS classes
 - **theme**: ComponentTheme - Custom theme overrides
@@ -323,3 +320,29 @@ Custom Styled
 - \`squared\` is automatically determined when only prefix or suffix is provided without children
 - All event handlers respect disabled state
 - Icon sizing is automatically adjusted based on button size
+
+
+# Svelte MCP Server
+You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+
+## Available MCP Tools of the svelte-mcp-server:
+
+### 1. list-sections
+
+Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
+When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+
+### 2. get-documentation
+
+Retrieves full documentation content for specific sections. Accepts single or multiple sections.
+After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+
+### 3. svelte-autofixer
+
+Analyzes Svelte code and returns issues and suggestions.
+You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
+
+### 4. playground-link
+
+Generates a Svelte Playground link with the provided code.
+After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.

@@ -1,38 +1,48 @@
 import type { WithSlot } from '$lib/components/Slot/slot.js';
-import type { InferComponentTheme } from '$lib/utils/cva.js';
-import { cva } from 'cva';
+import { type InferComponentTheme, cva } from '$lib/utils/cva/index.js';
 import type { Snippet } from 'svelte';
-import type { FieldState } from './fieldState.svelte.js';
+import type { FieldState } from './field.state.svelte.js';
 import type { Sizes } from '$lib/types/theme.js';
 
-export type TextInputType =
-	| 'text'
-	| 'password'
-	| 'email'
-	| 'url'
-	| 'color'
-	| 'textarea'
-	| 'color'
-	| 'phone';
+export type KeyValuePair = { key: string; value: string };
+
+export type TextInputType = 'text' | 'password' | 'email' | 'url' | 'textarea' | 'phone';
+export type RichTextInputType = 'rich-text';
 export type NumberInputType = 'number' | 'slider';
+export type RatingInputType = 'rating';
+export type VoiceInputType = 'voice';
+export type SliderRangeInputType = 'slider-range';
 export type TagInputType = 'tag';
+export type TagGroupInputType = 'tag-group';
+export type KeyValueInputType = 'keyvalue';
+export type PinInputType = 'pin';
 export type DateInputType = 'datetime' | 'date';
 export type TimeInputType = 'time';
 export type BooleanInputType = 'switch' | 'checkbox';
-export type SingleOptionInputType = 'select' | 'radio';
+export type SingleOptionInputType = 'select' | 'radio' | 'combobox';
 export type MultipleChoiceInputType = 'checkboxes';
 export type FileInputType = 'file' | 'files';
 export type CalendarInputType = 'calendar' | 'calendar-range';
+export type ColorInputType = 'color';
+export type FieldLabelPosition = 'top' | 'left';
 
 export type InputType =
 	| FileInputType
+	| SliderRangeInputType
 	| DateInputType
+	| ColorInputType
 	| NumberInputType
+	| RatingInputType
+	| VoiceInputType
 	| TimeInputType
 	| TextInputType
+	| RichTextInputType
 	| BooleanInputType
 	| MultipleChoiceInputType
 	| TagInputType
+	| TagGroupInputType
+	| KeyValueInputType
+	| PinInputType
 	| SingleOptionInputType
 	| CalendarInputType;
 
@@ -42,42 +52,72 @@ export type FieldValue<T extends InputType> = T extends 'file'
 		? File[]
 		: T extends DateInputType
 			? Date
-			: T extends NumberInputType
-				? number
-				: T extends TimeInputType
-					? string
-					: T extends TextInputType
-						? string
-						: T extends BooleanInputType
-							? boolean
-							: T extends MultipleChoiceInputType
-								? string[]
-								: T extends TagInputType
-									? string[]
-									: T extends SingleOptionInputType
+			: T extends SliderRangeInputType
+				? number[]
+				: T extends NumberInputType
+					? number
+					: T extends RatingInputType
+						? number
+						: T extends VoiceInputType
+							? Blob
+							: T extends TimeInputType
+								? number
+								: T extends TextInputType
+									? string
+									: T extends RichTextInputType
 										? string
-										: T extends 'calendar'
-											? Date
-											: T extends 'calendar-range'
-												? [Date, Date]
-												: never;
+										: T extends PinInputType
+											? string
+											: T extends BooleanInputType
+												? boolean
+												: T extends MultipleChoiceInputType
+													? string[]
+													: T extends TagInputType
+														? string[]
+														: T extends TagGroupInputType
+															? string | string[] | null
+															: T extends KeyValueInputType
+																? KeyValuePair[]
+																: T extends SingleOptionInputType
+																	? string
+																	: T extends 'calendar'
+																		? Date
+																		: T extends 'calendar-range'
+																			? [Date | null, Date | null]
+																			: T extends ColorInputType
+																				? string
+																				: never;
 
 export type InputProps<T extends InputType> = WithSlot<
 	{
+		/** Form field name, used as the key when the input is part of a Form. */
 		name?: string;
+		/** Marks the field as required for validation and shows the required indicator. */
 		required?: boolean;
+		/** Disables the input, preventing interaction and focus. */
 		disabled?: boolean;
+		/** Visual size of the field (label, spacing, and control). */
 		size?: Sizes;
-		readonly?: boolean;
+		/** Places the field label above the control or to its left from the desktop breakpoint. */
+		labelPosition?: FieldLabelPosition;
+		/** Whether the field is rendered; when false the field is hidden from the form. */
 		visible?: boolean;
 		// schema?: any;
-		onValidate?: (value: FieldValue<T>) => string[] | boolean;
+		/** Validates the current value, returning error messages (or false) when invalid. */
+		onValidate?: (value: FieldValue<T>) => string | string[] | boolean | null | undefined;
+		/** Called whenever the field value changes. */
 		onChange?: (value: FieldValue<T>) => void;
+		/** Extra HTML attributes spread onto the underlying input element. */
 		attrs?: Record<string, string | boolean>;
+		/** CSS classes applied to the field's root element. */
 		class?: string;
-		theme?: InferComponentTheme<typeof fieldTheme>;
+		/** Theme overrides for the field's structural parts (label, input, error, ...). */
+		theme?: FieldThemeProps;
+		/** The field's value, bindable with `bind:value`. */
 		value?: FieldValue<T> | null;
+		/** Validation errors to display; `true` marks the field as errored without a message. */
 		errors?: string[] | boolean;
+		/** Whether the field currently holds focus, bindable with `bind:focused`. */
 		focused?: boolean;
 	},
 	| 'header'
@@ -88,33 +128,44 @@ export type InputProps<T extends InputType> = WithSlot<
 	| 'description'
 	| 'helper'
 	| 'footer'
-	| 'header'
 	| 'error'
 	| 'errorsContainer'
 >;
 
 export type FieldProps<T extends InputType> = Omit<
 	InputProps<T>,
-	'type' | 'name' | 'required' | 'disabled' | 'readonly' | 'visible' | 'onValidate' | 'onChange'
+	'type' | 'name' | 'required' | 'disabled' | 'visible' | 'onValidate' | 'onChange'
 > & {
 	as?: string;
+	labelFor?: string | false;
 	children: Snippet;
 	field: FieldState<T>;
 };
 
 const defaultField = cva({
-	base: 'flex flex-col gap-2',
+	base: 'grid min-w-0 gap-2',
 	variants: {
+		labelPosition: {
+			top: 'grid-cols-1',
+			left: 'grid-cols-1 md:grid-cols-[minmax(8rem,0.4fr)_minmax(0,1fr)] md:gap-x-6'
+		},
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		}
+	},
+	defaultVariants: {
+		labelPosition: 'top'
 	}
 });
 
 const defaultFieldHeader = cva({
 	base: 'flex items-center gap-2 relative',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-1 md:row-start-1 md:self-start md:pt-2'
+		},
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
@@ -125,14 +176,14 @@ const defaultFieldHeader = cva({
 			false: ''
 		},
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		}
 	}
 });
 
 const defaultFieldLabel = cva({
-	base: 'text-contrast-light text-sm',
+	base: 'text-neutral text-sm',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -140,11 +191,11 @@ const defaultFieldLabel = cva({
 			large: 'text-base'
 		},
 		hasError: {
-			true: 'text-danger',
+			true: 'text-danger-readable',
 			false: ''
 		},
 		required: {
-			true: 'relative before:content-["*"] before:text-danger before:text-sm  before:font-bold before:absolute before:-right-2 before:top-0',
+			true: 'relative before:content-["*"] before:text-danger-readable before:text-sm  before:font-bold before:absolute before:-right-2 before:top-0',
 			false: ''
 		}
 	}
@@ -164,6 +215,10 @@ const defaultFieldActions = cva({
 const defaultFieldErrorsContainer = cva({
 	base: 'grid gap-1',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-2'
+		},
 		size: {
 			small: 'text-xs',
 			normal: 'text-sm',
@@ -173,7 +228,7 @@ const defaultFieldErrorsContainer = cva({
 });
 
 const defaultFieldError = cva({
-	base: 'text-danger text-xs leading-3',
+	base: 'text-danger-readable text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -186,6 +241,10 @@ const defaultFieldError = cva({
 const defaultFieldInputContainer = cva({
 	base: 'flex-1 gap-2 flex justify-between w-full items-center',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-2 md:row-start-1 md:self-center'
+		},
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
@@ -219,9 +278,38 @@ const defaultFieldSuffix = cva({
 	}
 });
 
+const defaultFieldActionButton = cva({
+	base: 'h-auto min-h-0 self-stretch rounded-none border-0 bg-clip-border !px-0 active:translate-y-0',
+	variants: {
+		size: {
+			small: '-my-1.5 min-w-8',
+			normal: '-my-1.5 min-w-9',
+			large: '-my-2 min-w-10'
+		},
+		edge: {
+			start: '-ml-3 mr-1',
+			end: 'ml-1 -mr-3',
+			none: 'mx-0'
+		},
+		active: {
+			true: 'text-primary-readable',
+			false: ''
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		edge: 'end',
+		active: false
+	}
+});
+
 const defaultFieldFooter = cva({
 	base: 'flex items-start gap-2 justify-between',
 	variants: {
+		labelPosition: {
+			top: '',
+			left: 'md:col-start-2'
+		},
 		size: {
 			small: 'gap-1',
 			normal: 'gap-2',
@@ -230,7 +318,7 @@ const defaultFieldFooter = cva({
 	}
 });
 const defaultFieldDescription = cva({
-	base: 'text-contrast-muted text-xs leading-3 flex-1',
+	base: 'text-neutral/60 text-xs leading-3 flex-1',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -240,7 +328,7 @@ const defaultFieldDescription = cva({
 	}
 });
 const defaultFieldHelper = cva({
-	base: 'text-contrast-muted text-xs leading-3',
+	base: 'text-neutral/60 text-xs leading-3',
 	variants: {
 		size: {
 			small: 'text-xs',
@@ -303,7 +391,7 @@ These snippets will receive the fieldState as argument.
 `;
 
 export const fieldTheme = {
-	field: defaultField,
+	root: defaultField,
 	header: defaultFieldHeader,
 	label: defaultFieldLabel,
 	actions: defaultFieldActions,
@@ -312,7 +400,11 @@ export const fieldTheme = {
 	inputContainer: defaultFieldInputContainer,
 	prefix: defaultFieldPrefix,
 	suffix: defaultFieldSuffix,
+	actionButton: defaultFieldActionButton,
 	footer: defaultFieldFooter,
 	description: defaultFieldDescription,
 	helper: defaultFieldHelper
 };
+
+export type FieldTheme = typeof fieldTheme;
+export type FieldThemeProps = InferComponentTheme<FieldTheme>;

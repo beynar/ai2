@@ -1,64 +1,47 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import {
-		toggleButtonGroupTheme,
-		type ToggleButtonGroupProps
-	} from '$lib/components/ToggleButtonGroup/toggleButtonGroup.js';
-	export const setButtonTheme = setComponentTheme<typeof toggleButtonGroupTheme>('buttonGroup');
-	export const useButtonTheme = useComponentTheme('buttonGroup', toggleButtonGroupTheme);
-</script>
-
-<script
-	lang="ts"
-	generics="Buttons extends Record<string, Omit<ToggleButtonProps, 'variant' | 'color' | 'size'>>"
->
+<script lang="ts" generics="Items extends ToggleButtonGroupItems = ToggleButtonGroupItems">
 	import ToggleButton from '../ToggleButton/ToggleButton.svelte';
-	import { type ToggleButtonProps } from '../ToggleButton/toggleButton.js';
+	import type {
+		ToggleButtonGroupItems,
+		ToggleButtonGroupProps
+	} from './toggleButtonGroup.props.js';
+	import { useToggleButtonGroupTheme } from './toggleButtonGroup.theme.js';
 
 	let {
-		buttons = $bindable(),
+		items,
+		ariaLabel,
 		size,
-		value = $bindable(
-			Object.keys(buttons).reduce(
-				(acc, key) => {
-					Object.assign(acc, {
-						[key]: buttons[key].checked || false
-					});
-					return acc;
-				},
-				{} as { [key in keyof Buttons]: boolean }
-			)
-		),
+		value = $bindable({}),
 		color,
 		variant,
 		disabled,
+		joined = false,
 		theme,
 		class: className,
 		onChange,
 		...attachments
-	}: ToggleButtonGroupProps<Buttons> = $props();
+	}: ToggleButtonGroupProps<Items> = $props();
 
-	const classes = $derived(useButtonTheme(theme));
+	const classes = $derived(useToggleButtonGroupTheme(theme));
 </script>
 
-<div data-color={color} class={classes.buttonGroup({ className })} {...attachments}>
-	{#each Object.entries(buttons) as [key, button]}
+<div
+	role="group"
+	aria-label={ariaLabel}
+	data-color={color}
+	class={classes.root({ className, joined })}
+	{...attachments}
+>
+	{#each Object.entries(items) as [key, button]}
 		<ToggleButton
 			{size}
 			{color}
 			{variant}
-			{disabled}
 			{...button}
-			checked={value[key]}
+			disabled={disabled || button.disabled}
+			checked={value[key] ?? false}
 			onChange={(checked) => {
-				button.checked = checked;
 				button.onChange?.(checked);
-				value =Object.entries(buttons).reduce((acc, [key, button]) => {
-					Object.assign(acc, {
-						[key]: button.checked||false
-					});
-					return acc;
-				}, {} as { [key in keyof Buttons]: boolean })
+				value = { ...value, [key]: checked };
 				onChange?.(value);
 			}}
 		/>

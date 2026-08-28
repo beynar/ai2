@@ -1,48 +1,49 @@
-import plugin, { type ThemeConfig } from 'tailwindcss/plugin.js';
-import { getTypeScale, type TypeScale } from './typeScale.js';
+import plugin from 'tailwindcss/plugin.js';
 import { generateColorPalette, toTailwindCssTheme, type ColorTheme } from './colors.js';
-import { radius } from './radius.js';
-import { spacing } from './spacing.js';
-import type { Spinner } from './spinnner.js';
+import type { Spinner } from './spinner.js';
+import { applyGlobalEngine, globalKeyframes } from './global.js';
 
 export type ThemeOptions = Partial<{
 	name: string;
 	default: boolean;
 	luminance?: number;
 	saturation?: number;
-	colorScheme?: 'light' | 'dark';
-	'primary-tint-intensity'?: number;
-	'radius-inert-elements'?: number;
-	'radius-interactive-elements'?: number;
-	spacing?: number;
-	'border-width'?: number;
-	'raised-with-border'?: boolean;
-	scale?: TypeScale;
+	colorscheme?: 'light' | 'dark';
+	'state-hover-opacity'?: number;
+	'state-pressed-opacity'?: number;
 	prefersDark?: boolean;
-	radius?: number;
 	spinner?: Spinner;
 }> &
 	ColorTheme;
 
 export default plugin.withOptions<ThemeOptions>(
 	(theme = {}) => {
-		return ({ addBase, addComponents, addUtilities }) => {
+		return (api) => {
+			const { addBase } = api;
 			const { cssVariables } = generateColorPalette(theme);
 			const root = theme.name && !theme.default ? `html[data-theme="${theme.name}"]` : 'html';
-			addBase({
-				[root]: {
-					...cssVariables
-				}
-			});
+			const roots = [root, theme.name ? `.${theme.name}` : ''].filter(Boolean);
+			const rootBase = Object.fromEntries(roots.map((root) => [root, cssVariables]));
+			addBase(rootBase);
 
 			if (theme.prefersDark) {
 				addBase({
 					'@media (prefers-color-scheme: dark)': {
-						[root]: {
-							...cssVariables
-						}
+						rootBase
 					}
 				});
+			}
+
+			addBase({
+				'*': {
+					'-webkit-font-smoothing': 'subpixel-antialiased'
+				}
+			});
+
+			// The default theme bootstraps the palette-agnostic engine (utilities,
+			// variants, spinner, raised-*) so a single @plugin declaration is enough.
+			if (theme.default) {
+				applyGlobalEngine(api, theme);
 			}
 		};
 	},
@@ -50,13 +51,8 @@ export default plugin.withOptions<ThemeOptions>(
 		theme: {
 			extend: {
 				colors: toTailwindCssTheme(),
-				radius: radius(options?.radius),
-				spacing: spacing(options?.spacing),
-				fontSize: getTypeScale({
-					baseMinPx: 14,
-					baseMaxPx: 16,
-					scale: 'majorThird'
-				})
+				// Keyframes belong to the engine — register them once, from the default theme.
+				...(options?.default ? { keyframes: globalKeyframes(options) } : {})
 			}
 		}
 	})

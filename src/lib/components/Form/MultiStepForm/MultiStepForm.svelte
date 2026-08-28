@@ -1,30 +1,22 @@
-<script lang="ts" module>
-	import { StepperState } from '$lib/components/Stepper/stepperState.svelte.js';
-	export { step };
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { multiStepFormTheme } from './multiStepForm.js';
-	export const setMultiStepFormTheme =
-		setComponentTheme<typeof multiStepFormTheme>('multiStepForm');
-	export const useMultiStepFormTheme = useComponentTheme('multiStepForm', multiStepFormTheme);
-</script>
-
-<script lang="ts" generics="I extends FormStep[]">
+<script lang="ts" generics="I extends MultiStepFormItems">
 	import Stepper from '$lib/components/Stepper/Stepper.svelte';
-
-	import { getContext, setContext, tick, type Snippet } from 'svelte';
-	import type { MultiStepFormProps } from './multiStepForm.js';
-	import type { FormStep } from './multiStepForm.js';
+	import { useCardTheme } from '$lib/components/Card/card.theme.js';
+	import type { MultiStepFormItems, MultiStepFormProps } from './multiStepForm.props.js';
+	import { useMultiStepFormTheme } from './multiStepForm.theme.js';
 	import Form from '../Form/Form.svelte';
 	import Meter from '$lib/components/Meter/Meter.svelte';
-	import { MultiStepFormState } from './multiStepFormState.svelte.js';
+	import { MultiStepFormState } from './multiStepForm.state.svelte.js';
 	import Button from '$lib/components/Button/Button.svelte';
 	import { arrowLeftIcon } from '$lib/components/Icons/arrowLeft.js';
 	import { arrowRightIcon } from '$lib/components/Icons/arrowRight.js';
 	import { arrowCircleUpIcon } from '$lib/components/Icons/arrowCircleUp.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
+	import type { ButtonProps } from '$lib/components/Button/button.props.js';
+	import { cx } from '$lib/utils/cva/index.js';
+	import FormCardSurfaceBoundary from '../Form/FormCardSurfaceBoundary.svelte';
 
 	let {
-		steps,
+		items,
 		onSubmitForm,
 		onSubmitStep,
 		children,
@@ -34,72 +26,170 @@
 		previousText = 'Previous',
 		submitText = 'Submit',
 		class: className,
+		variant = 'plain',
 		theme,
 		footer,
-		footerProps,
 		header,
-		headerProps,
 		nextButtonProps = {},
 		previousButtonProps = {},
-		submitButtonProps = {}
+		submitButtonProps = {},
+		value = $bindable({})
 	}: MultiStepFormProps<I> = $props();
 
 	let form = new MultiStepFormState({
 		get steps() {
-			return steps;
+			return items;
 		},
-		onSubmitForm,
-		onSubmitStep,
+		get onSubmitForm() {
+			return onSubmitForm;
+		},
+		get onSubmitStep() {
+			return onSubmitStep;
+		},
 		get meterColor() {
 			return meterColor;
+		},
+		get value() {
+			return value;
+		},
+		set value(nextValue) {
+			value = nextValue;
 		}
 	});
 
-	const { form: formTheme, ...baseTheme } = theme || {};
+	const getButtonConfig = (props: ButtonProps) => {
+		const { onClick, disabled, loading, ...forwardedProps } = props;
+		return { onClick, disabled, loading, forwardedProps };
+	};
+
+	const previousButton = $derived(getButtonConfig(previousButtonProps));
+	const nextButton = $derived(getButtonConfig(nextButtonProps));
+	const submitButton = $derived(getButtonConfig(submitButtonProps));
+	const activeButton = $derived(form.isLastStep ? submitButton : nextButton);
+
+	const goToPreviousStep = () => {
+		form.stepper?.previous();
+		previousButton.onClick?.(undefined);
+	};
+
+	const submitCurrentStep = () => {
+		void form.submit();
+		activeButton.onClick?.(undefined);
+	};
+
+	const formTheme = $derived(theme?.form);
+	const isCard = $derived(variant === 'card');
+	const baseTheme = $derived.by(() => {
+		if (!theme) return undefined;
+		const base = { ...theme };
+		delete base.form;
+		return base;
+	});
 	const classes = $derived(useMultiStepFormTheme(baseTheme));
+	const cardClasses = $derived(useCardTheme());
 </script>
 
-{#snippet step({ item }: { stepper: StepperState<FormStep>; item: FormStep; index: number })}
-	<Form class="p-4" inputs={item.inputs} title={item.title} description={item.description} />
-{/snippet}
-
-<div class={classes.multiStepForm({ className })}>
-	<Slot render={header} payload={form} props={headerProps}>
+<div
+	data-slot="multi-step-form"
+	data-variant={variant}
+	data-color={isCard ? 'neutral' : undefined}
+	class={cx(
+		isCard
+			? cardClasses.root({
+					color: 'neutral',
+					variant: 'solid',
+					size: 'normal',
+					density: 'normal',
+					clickable: false,
+					disabled: false
+				})
+			: undefined,
+		classes.root({ variant, className })
+	)}
+>
+	<Slot
+		render={header}
+		payload={form}
+		renderIf={showMeter || !!header}
+		class={cx(
+			isCard
+				? cardClasses.header({
+						density: 'normal',
+						hasAction: false,
+						hasBorder: true,
+						variant: 'solid'
+					})
+				: undefined,
+			classes.multiStepFormHeader()
+		)}
+	>
 		{#if showMeter}
 			<Meter value={[form.progress]} steps={form.meterSteps} />
 		{/if}
 	</Slot>
-	<Stepper
-		onChange={() => {
-			tick().then(() => {
-				const firstInput = form.stepper?.stepContainer?.querySelector(
-					`[data-step="${form.stepper?.activeStep}"]`
-				);
-
-				if (firstInput) {
-					(firstInput as HTMLElement).focus();
-				}
-			});
-		}}
-		bind:stepper={form.stepper}
-		items={form.steps}
-		{...form.stepsSnippets}
-	/>
-	{@render children?.(form)}
-	<Slot render={footer} payload={form} props={footerProps} class={classes.multiStepFormFooter()}>
+	<div
+		class={cx(
+			isCard
+				? cardClasses.content({
+						density: 'normal',
+						hasBorderTop: false,
+						hasBorderBottom: false
+					})
+				: undefined,
+			classes.multiStepFormContent()
+		)}
+	>
+		<Stepper
+			bind:stepper={form.stepper}
+			{items}
+			class={isCard ? '-mx-4 w-auto max-w-none' : undefined}
+		>
+			{#snippet children({ item, index })}
+				<div class={isCard ? 'min-w-0 pb-1' : 'min-w-0'}>
+					<FormCardSurfaceBoundary isOwned={isCard}>
+						<Form
+							class={isCard ? undefined : 'p-4'}
+							inputs={item.inputs}
+							onSubmit={() => form.submit()}
+							bind:form={() => form.getForm(index), (nextForm) => form.setForm(index, nextForm)}
+							bind:value={
+								() => form.getStepValue(index), (nextValue) => form.setStepValue(index, nextValue)
+							}
+							title={item.title}
+							description={item.description}
+							{variant}
+							theme={formTheme}
+							submitButton={null}
+						/>
+					</FormCardSurfaceBoundary>
+				</div>
+			{/snippet}
+		</Stepper>
+		{@render children?.(form)}
+	</div>
+	<Slot
+		render={footer}
+		payload={form}
+		class={cx(
+			isCard ? cardClasses.footer({ density: 'normal', hasBorder: true }) : undefined,
+			classes.multiStepFormFooter()
+		)}
+	>
 		<Button
+			{...previousButton.forwardedProps}
 			prefix={arrowLeftIcon}
-			disabled={form.stepper?.activeStep === 0}
-			onClick={() => form.stepper?.previous()}
-			{...previousButtonProps}
+			disabled={form.stepper?.activeStep === 0 || form.loading || previousButton.disabled}
+			loading={form.loading || previousButton.loading}
+			onClick={goToPreviousStep}
 		>
 			{previousText}
 		</Button>
 		<Button
+			{...activeButton.forwardedProps}
 			suffix={form.isLastStep ? arrowCircleUpIcon : arrowRightIcon}
-			disabled={form.loading}
-			onClick={() => form.submit()}
-			{...form.isLastStep ? submitButtonProps : nextButtonProps}
+			disabled={form.loading || activeButton.disabled}
+			loading={form.loading || activeButton.loading}
+			onClick={submitCurrentStep}
 		>
 			{form.isLastStep ? submitText : nextText}
 		</Button>

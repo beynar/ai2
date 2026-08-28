@@ -1,64 +1,129 @@
 <script lang="ts">
 	import ToggleButtonGroup from '$lib/components/ToggleButtonGroup/ToggleButtonGroup.svelte';
+	import { textBIcon } from '$lib/components/Icons/textB.js';
+	import { textItalicIcon } from '$lib/components/Icons/textItalic.js';
+	import { textUnderlineIcon } from '$lib/components/Icons/textUnderline.js';
 	import { colors, sizes } from '$lib/utils/tokens.js';
+	import ComponentCard from '../../ComponentCard.svelte';
+	import DocPage from '../../DocPage.svelte';
 
-	const variants = ['outline', 'soft', 'ghost'] as const;
-	let disabled = $state(false);
-	let value = $state({});
+	const variants = ['ghost', 'outline'] as const;
+	const formattingItems = {
+		bold: { prefix: textBIcon, ariaLabel: 'Bold' },
+		italic: { prefix: textItalicIcon, ariaLabel: 'Italic' },
+		underline: { prefix: textUnderlineIcon, ariaLabel: 'Underline' }
+	};
+
+	let formatting = $state({ bold: true, italic: false, underline: false });
 </script>
 
-<div class="grid gap-10">
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
+<DocPage
+	title="Toggle group"
+	subtitle="A labeled group of independent pressed buttons."
+	component="ToggleButtonGroup"
+	features={[
+		'Value is the single checked-state source',
+		'Optional joined button layout',
+		'onChange emits the checked map',
+		'Composes ToggleButton primitives'
+	]}
+>
+	<ComponentCard
+		code={`let formatting = $state({ bold: true });
+
+<ToggleButtonGroup
+\tbind:value={formatting}
+\tariaLabel="Text formatting"
+\titems={{
+\t\tbold: { prefix: textBIcon, ariaLabel: 'Bold' },
+\t\titalic: { prefix: textItalicIcon, ariaLabel: 'Italic' },
+\t\tunderline: { prefix: textUnderlineIcon, ariaLabel: 'Underline' }
+\t}}
+/>`}
 	>
-		{JSON.stringify(value || {})}
-		<ToggleButtonGroup
-			bind:value
-			{disabled}
-			onChange={(value) => {
-				console.log(value);
-			}}
-			buttons={{
-				button1: {
-					children: 'Button 1'
-				},
-				button2: {
-					children: 'Button 2'
-				},
-				button3: {
-					children: 'Button 3'
-				}
-			}}
-		/>
-		<!-- {#each variants as variant}
-			<div class="grid gap-4">
-				{#each colors as color}
-					<div class="flex items-center justify-center gap-4">
-						{#each sizes as size}
-							<ToggleButtonGroup
-								{size}
-								{color}
-								{variant}
-								{disabled}
-								onChange={(value) => {
-									console.log(value);
-								}}
-								buttons={{
-									button1: {
-										children: 'Button 1'
-									},
-									button2: {
-										children: 'Button 2'
-									},
-									button3: {
-										children: 'Button 3'
-									}
-								}}
-							/>
-						{/each}
-					</div>
+		<div class="flex flex-col items-center gap-3">
+			<ToggleButtonGroup
+				bind:value={formatting}
+				ariaLabel="Text formatting"
+				color="neutral"
+				items={formattingItems}
+			/>
+			<code class="text-neutral/60 text-xs">{JSON.stringify(formatting)}</code>
+		</div>
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard
+			title="Joined"
+			description="Joined is visual only. Ghost stays borderless; outline forms one continuous segmented border."
+			class="!min-h-fit"
+			code={`<ToggleButtonGroup
+\tjoined
+\tariaLabel="Text formatting"
+\titems={formattingItems}
+/>`}
+		>
+			<div class="flex flex-wrap items-center justify-center gap-6">
+				{#each variants as variant (variant)}
+					<ToggleButtonGroup
+						{variant}
+						joined
+						ariaLabel={`${variant} text formatting`}
+						color="neutral"
+						items={formattingItems}
+						value={{ bold: true }}
+					/>
 				{/each}
 			</div>
-		{/each} -->
-	</div>
-</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Colors"
+			description="Pressed state remains visible across every semantic color."
+		>
+			<div class="flex flex-wrap items-center justify-center gap-4">
+				{#each colors as color (color)}
+					<ToggleButtonGroup
+						{color}
+						ariaLabel={`${color} options`}
+						items={{ one: { children: 'One' }, two: { children: 'Two' } }}
+						value={{ one: true }}
+					/>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Sizes"
+			description="Icons and labels scale with the same size tokens as Button."
+		>
+			<div class="flex flex-wrap items-center justify-center gap-4">
+				{#each sizes as size (size)}
+					<ToggleButtonGroup
+						{size}
+						ariaLabel={`${size} text formatting`}
+						color="neutral"
+						items={{
+							bold: { prefix: textBIcon, children: 'Bold' },
+							italic: { prefix: textItalicIcon, children: 'Italic' }
+						}}
+						value={{ bold: true }}
+					/>
+				{/each}
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			title="Selection Semantics"
+			description="ToggleButtonGroup represents independent pressed states. Use SegmentedControl for mutually exclusive choices such as text alignment."
+			class="!min-h-fit"
+		>
+			<ToggleButtonGroup
+				ariaLabel="Disabled text formatting"
+				disabled
+				items={formattingItems}
+				value={{ bold: true }}
+			/>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

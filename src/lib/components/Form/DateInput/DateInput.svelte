@@ -1,17 +1,14 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { dateInputTheme } from '$lib/components/Form/DateInput/dateInput.js';
-	export const setDateInputTheme = setComponentTheme<typeof dateInputTheme>('dateInput');
-	export const useDateInputTheme = useComponentTheme('dateInput', dateInputTheme);
-</script>
-
 <script lang="ts">
-	import Field from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { DateInputProps } from '$lib/components/Form/DateInput/dateInput.js';
 	import { Maskito } from '@maskito/core';
 	import { maskitoDateOptionsGenerator } from '@maskito/kit';
-	import { untrack } from 'svelte';
+	import DateSelector from '../DateSelector/DateSelector.svelte';
+	import Field from '../Field/Field.svelte';
+	import FieldActionButton from '../Field/FieldActionButton.svelte';
+	import { createFieldState } from '../Field/field.state.svelte.js';
+	import { calendarBlankIcon } from '../../Icons/calendarBlank.js';
+	import type { PopoverState } from '../../Popover/popover.state.svelte.js';
+	import type { DateInputProps } from './dateInput.props.js';
+	import { useDateInputTheme } from './dateInput.theme.js';
 
 	let {
 		value = $bindable(null),
@@ -21,17 +18,28 @@
 		placeholder = format,
 		locale,
 		separator,
+		presets = [],
+		disabledDates = [],
+		minDate,
+		maxDate,
+		calendarView = 'single',
+		mobileSheet = false,
+		closeOnSelect = false,
 		required = false,
 		theme,
 		disabled,
 		name,
 		onValidate,
-		readonly,
+		onChange,
+		onCalendarSelect,
 		visible,
+		type = 'date',
 		...rest
 	}: DateInputProps = $props();
 
 	const id = $props.id();
+	const dateSeparator = $derived(separator || '/');
+	let isCalendarOpen = $state(false);
 
 	const field = createFieldState({
 		id,
@@ -54,7 +62,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			// Date value changed
+			onChange?.(v);
 		},
 		get disabled() {
 			return disabled;
@@ -62,38 +70,46 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		readonly,
-		visible,
-		type: 'date'
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
+		get type() {
+			return type;
+		}
 	});
 
 	const classes = $derived(useDateInputTheme(theme));
 
-	$effect(() => {
-		const currentValue = value;
-		untrack(() => {
-			if (field.node) {
-				(field.node as HTMLInputElement).value = formatDate(currentValue);
-			}
-		});
-	});
-
 	const formatDate = (date: Date | null) => {
 		if (!date) return '';
-		const day = String(date.getDate()).padStart(2, '0');
-		const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-		const year = date.getFullYear();
+		const segments = {
+			dd: String(date.getDate()).padStart(2, '0'),
+			mm: String(date.getMonth() + 1).padStart(2, '0'),
+			yy: String(date.getFullYear()).slice(-2),
+			yyyy: String(date.getFullYear())
+		};
 
-		return `${day}/${month}/${year}`;
+		return format
+			.split('/')
+			.map((part) => segments[part as keyof typeof segments])
+			.join(dateSeparator);
 	};
 
-	const extractDate = (
-		value: string,
-		mask: 'dd/mm/yyyy' | 'mm/dd/yyyy' | 'mm/yy' | 'mm/yyyy' | 'yyyy' | 'yyyy/mm' | 'yyyy/mm/dd'
-	) => {
+	const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+	const extractDate = (inputValue: string) => {
 		const buildRegex = (mask: string) => {
 			const parts = mask.split('/');
 			const regexParts = parts.map((part) => {
@@ -109,84 +125,173 @@
 						return '\\' + part;
 				}
 			});
-			return new RegExp('^' + regexParts.join('\\/') + '$');
+			return new RegExp('^' + regexParts.join(escapeRegex(dateSeparator)) + '$');
 		};
-		const match = value.match(buildRegex(mask));
+		const match = inputValue.match(buildRegex(format));
 
 		if (!match) return null;
 
-		const parts = mask.split('/');
-		let year, month, day;
+		const parts = format.split('/');
+		let year: string | undefined;
+		let month: string | undefined;
+		let day: string | undefined;
 		parts.forEach((part, index) => {
-			const value = match[index + 1];
+			const segmentValue = match[index + 1];
 			switch (part) {
 				case 'dd':
-					day = value;
+					day = segmentValue;
 					break;
 				case 'mm':
-					month = value;
+					month = segmentValue;
 					break;
 				case 'yyyy':
-					year = value;
+					year = segmentValue;
 					break;
 				case 'yy':
-					year = '20' + value;
+					year = '20' + segmentValue;
 					break;
 			}
 		});
 
-		// Set default values for missing components
 		year = year || new Date().getFullYear().toString();
 		month = month || '01';
 		day = day || '01';
 
-		return new Date(Number(year), Number(month) - 1, Number(day));
+		const yearNumber = Number(year);
+		const monthNumber = Number(month);
+		const dayNumber = Number(day);
+		const date = new Date(yearNumber, monthNumber - 1, dayNumber);
+
+		if (
+			date.getFullYear() !== yearNumber ||
+			date.getMonth() !== monthNumber - 1 ||
+			date.getDate() !== dayNumber
+		) {
+			return null;
+		}
+
+		return date;
+	};
+
+	const syncInputValue = (date: Date | null) => {
+		if (field.node instanceof HTMLInputElement) {
+			field.node.value = formatDate(date);
+		}
 	};
 
 	const maskAction = (input: HTMLInputElement) => {
-		const mask = maskitoDateOptionsGenerator({ mode: format, separator: '/' });
+		const mask = maskitoDateOptionsGenerator({ mode: format, separator: dateSeparator });
 		const maskedElement = new Maskito(input, mask);
 
 		if (value) {
 			input.value = formatDate(value);
 		}
-		return {
-			destroy: () => {
-				maskedElement.destroy();
-			}
+		return () => {
+			maskedElement.destroy();
 		};
 	};
 
 	const handleInput = (e: Event) => {
 		const currentValue = (e.currentTarget as HTMLInputElement).value;
-		if (currentValue) {
-			const date = extractDate(currentValue, format);
+		if (!currentValue) {
+			field.value = null;
+			return;
+		}
+
+		const date = extractDate(currentValue);
+		if (date) {
 			field.value = date;
 		}
 	};
+
+	const handleCalendarChange = (date: Date | null) => {
+		field.value = date;
+		onCalendarSelect?.(date);
+		field.focused = false;
+		syncInputValue(date);
+	};
+
+	$effect(() => {
+		if (!field.focused) {
+			syncInputValue(value);
+		}
+	});
 </script>
 
-<Field
-	{field}
-	theme={{
-		...(theme || {}),
-		inputContainer: {
-			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ class: theme?.inputContainer?.base })
-		}
-	}}
-	{...rest}
+<DateSelector
+	id={`${id}-calendar-popover`}
+	bind:open={isCalendarOpen}
+	position="bottom-start"
+	mode="date"
+	value={field.value}
+	{presets}
+	{disabledDates}
+	{minDate}
+	{maxDate}
+	view={calendarView}
+	{mobileSheet}
+	{closeOnSelect}
+	{locale}
+	disabled={field.disabled}
+	calendarLabel="Choose date"
+	onChange={handleCalendarChange}
+	class={classes.popover({ class: theme?.popover?.base })}
 >
-	<input
-		data-1p-ignore
-		type="text"
-		inputmode="decimal"
-		{id}
-		name={field.name}
-		bind:this={field.node}
-		{placeholder}
-		class={classes.input()}
-		use:maskAction
-		oninput={handleInput}
-	/>
-</Field>
+	{#snippet trigger(popover: PopoverState)}
+		<Field
+			{field}
+			size={rest.size}
+			theme={{
+				...(theme || {}),
+				inputContainer: {
+					...(theme?.inputContainer || {}),
+					base: classes.inputContainer({
+						class: theme?.inputContainer?.base,
+						disabled: field.disabled,
+						size: rest.size
+					})
+				}
+			}}
+			{...rest}
+			{@attach popover.reference}
+		>
+			<input
+				data-1p-ignore
+				type="text"
+				inputmode="decimal"
+				{id}
+				name={field.name}
+				bind:this={field.node}
+				{placeholder}
+				disabled={field.disabled}
+				class={classes.input({ disabled: field.disabled, size: rest.size })}
+				{@attach maskAction}
+				oninput={handleInput}
+				onfocus={() => {
+					field.focused = true;
+					if (!field.disabled) {
+						isCalendarOpen = true;
+					}
+				}}
+				onblur={() => {
+					field.focused = false;
+				}}
+			/>
+			<FieldActionButton
+				active={isCalendarOpen}
+				size={rest.size}
+				label="Choose date"
+				aria-haspopup="dialog"
+				aria-expanded={isCalendarOpen}
+				aria-controls={isCalendarOpen ? `${id}-calendar-popover` : undefined}
+				disabled={field.disabled}
+				prefix={calendarBlankIcon}
+				onClick={() => {
+					if (!field.disabled) {
+						popover.toggle();
+					}
+				}}
+			/>
+		</Field>
+	{/snippet}
+</DateSelector>

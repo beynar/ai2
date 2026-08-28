@@ -1,6 +1,4 @@
-import type { ReferenceElement } from '@floating-ui/dom';
 import { onDestroy, untrack } from 'svelte';
-import { useThrottle } from './useThrottle.svelte.js';
 import { on } from 'svelte/events';
 import { BROWSER } from 'esm-env';
 
@@ -9,19 +7,32 @@ type Point = {
 	y: number;
 };
 
+type SafeAreaRole = 'rect' | 'anchor' | 'floating';
+type SafeRect = {
+	left: number;
+	top: number;
+	right: number;
+	bottom: number;
+};
+type SafeAreaDebugOption = boolean | (() => boolean);
+type DebugAreaStyle = {
+	kind: 'rectangle' | 'prediction-cone';
+	stroke: string;
+	fill: string;
+	strokeDasharray?: string;
+};
+
+let debugAreaId = 0;
+
 const isPointInArea = (point: Point, polygon: Point[]): boolean => {
 	let isInside = false;
 	const n = polygon.length;
 
-	// Parcours chaque arête du polygon
 	for (let i = 0, j = n - 1; i < n; j = i++) {
-		// Vérifie si le point est sur la même hauteur que l'arête
 		if (polygon[i].y > point.y !== polygon[j].y > point.y) {
-			// Calcule l'abscisse où la hauteur du point croise l'arête
 			const x =
 				((polygon[j].x - polygon[i].x) * (point.y - polygon[i].y)) / (polygon[j].y - polygon[i].y) +
 				polygon[i].x;
-			// Si le point est à gauche de l'arête, on a une intersection
 			if (point.x < x) {
 				isInside = !isInside;
 			}
@@ -31,12 +42,59 @@ const isPointInArea = (point: Point, polygon: Point[]): boolean => {
 	return isInside;
 };
 
-function drawAreaInDOM(points: Point[]): SVGSVGElement {
-	// Create the SVG element
+const getExpandedRect = (ref: HTMLElement, offset: number): SafeRect => {
+	const rect = ref.getBoundingClientRect();
+	return {
+		left: rect.left - offset,
+		top: rect.top - offset,
+		right: rect.right + offset,
+		bottom: rect.bottom + offset
+	};
+};
+
+const getRectPolygon = (rect: SafeRect): Point[] => [
+	{ x: rect.left, y: rect.top },
+	{ x: rect.right, y: rect.top },
+	{ x: rect.right, y: rect.bottom },
+	{ x: rect.left, y: rect.bottom }
+];
+
+const getRectCenter = (rect: SafeRect): Point => ({
+	x: rect.left + (rect.right - rect.left) / 2,
+	y: rect.top + (rect.bottom - rect.top) / 2
+});
+
+const isPointInRect = (point: Point, rect: SafeRect) =>
+	point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+
+// The prediction cone: a triangle from where the pointer last was (its exit
+// point off the trigger) to the two corners of the target's FACING edge — the
+// edge the pointer is travelling toward. It's a narrow, dynamic sliver, so it
+// covers the diagonal path to the submenu WITHOUT blanketing the sibling rows
+// above/below (which stay hoverable). The facing edge is chosen by which axis
+// the point overflows, not by raw distance — otherwise a point that's vertically
+// nearer a corner than it is horizontally far from the side picks the wrong edge.
+const getFacingEdgeTriangle = (fromPoint: Point, targetRect: SafeRect): Point[] => {
+	const outLeft = targetRect.left - fromPoint.x;
+	const outRight = fromPoint.x - targetRect.right;
+	const outTop = targetRect.top - fromPoint.y;
+	const outBottom = fromPoint.y - targetRect.bottom;
+
+	const horizontal = Math.max(outLeft, outRight, 0);
+	const vertical = Math.max(outTop, outBottom, 0);
+
+	if (horizontal >= vertical) {
+		const edgeX = outLeft >= outRight ? targetRect.left : targetRect.right;
+		return [fromPoint, { x: edgeX, y: targetRect.top }, { x: edgeX, y: targetRect.bottom }];
+	}
+	const edgeY = outTop >= outBottom ? targetRect.top : targetRect.bottom;
+	return [fromPoint, { x: targetRect.left, y: edgeY }, { x: targetRect.right, y: edgeY }];
+};
+
+function drawAreaInDOM(points: Point[], style: DebugAreaStyle): SVGSVGElement {
 	const svgNS = 'http://www.w3.org/2000/svg';
 	const svg = document.createElementNS(svgNS, 'svg');
 
-	// Set the width and height of the SVG element
 	let minX = Infinity;
 	let minY = Infinity;
 	let maxX = -Infinity;
@@ -49,8 +107,8 @@ function drawAreaInDOM(points: Point[]): SVGSVGElement {
 		if (point.y > maxY) maxY = point.y;
 	}
 
-	const width = maxX - minX;
-	const height = maxY - minY;
+	const width = Math.max(maxX - minX, 1);
+	const height = Math.max(maxY - minY, 1);
 	svg.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
 	svg.setAttribute('width', width.toString());
 	svg.setAttribute('height', height.toString());
@@ -58,97 +116,260 @@ function drawAreaInDOM(points: Point[]): SVGSVGElement {
 	svg.style.top = Math.min(...points.map((p) => p.y)).toString() + 'px';
 	svg.style.left = Math.min(...points.map((p) => p.x)).toString() + 'px';
 	svg.style.zIndex = '900000';
-	svg.id = 'polygon';
+	svg.id = `safe-area-${style.kind}-${debugAreaId++}`;
+	svg.dataset.safeAreaDebug = 'true';
+	svg.dataset.safeAreaDebugKind = style.kind;
 	svg.style.pointerEvents = 'none';
 
-	// Create the polygon element
 	const polygon = document.createElementNS(svgNS, 'polygon');
-	// Convert the points to a space-separated string of coordinates
 	const pointsAttr = points.map((p) => `${p.x},${p.y}`).join(' ');
 	polygon.setAttribute('points', pointsAttr);
 
-	// Optional: set the style of the polygon
-	polygon.style.fill = 'none';
-	polygon.style.stroke = 'red';
+	polygon.style.fill = style.fill;
+	polygon.style.stroke = style.stroke;
 	polygon.style.strokeWidth = '2';
+	if (style.strokeDasharray) polygon.style.strokeDasharray = style.strokeDasharray;
 
-	// Append the polygon to the SVG element
 	svg.appendChild(polygon);
-
-	// Append the SVG to the document body (or any other container element)
 	document.body.appendChild(svg);
 
 	return svg;
 }
 
 export const useSafeArea = (opts: {
-	isActive: boolean;
+	isActive: () => boolean;
 	callback?: () => void;
 	offset?: number;
-	debug?: boolean;
+	debug?: SafeAreaDebugOption;
+	trackPosition?: boolean;
 }) => {
-	let refs = new Set<HTMLElement>();
-	let offs = new Set<() => void>();
-	let areas = new Map<HTMLElement, Point[]>();
-	const debugs = new Map<HTMLElement, SVGSVGElement>();
+	let refs = new Map<HTMLElement, SafeAreaRole>();
+	let observerOffs = new Map<HTMLElement, () => void>();
+	let pointerOff: (() => void) | null = null;
+	let rects = new Map<HTMLElement, SafeRect>();
+	const rectDebugs = new Map<HTMLElement, SVGSVGElement>();
+	let coneDebug: SVGSVGElement | null = null;
+	let lastSafePoint: Point | null = null;
+	let lastSafeRole: 'anchor' | 'floating' | null = null;
+	let isListening = false;
+	let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-	const callback = useThrottle(opts.callback, 300);
+	// ponytail: a short grace delay is a sampling safety net — pointermove fires
+	// on discrete points, so a fast flick can skip past the cone in one event; the
+	// delay lets it re-enter a safe region before the close actually fires.
+	const CLOSE_DELAY = 120;
 
 	const { offset = 10 } = opts;
+	const getDebug = () => (typeof opts.debug === 'function' ? opts.debug() : !!opts.debug);
+
+	// The anchor (trigger) is measured tight — expanding it would push the cone's
+	// apex and the "in trigger" region into the sibling rows, protecting them.
+	const getOffset = (role: SafeAreaRole) => (role === 'anchor' ? 0 : offset);
 
 	const setArea = (ref: HTMLElement) => {
-		const debug = debugs.get(ref);
+		const debug = rectDebugs.get(ref);
 		if (debug) {
 			debug.remove();
-			debugs.delete(ref);
+			rectDebugs.delete(ref);
 		}
 
-		const rect = ref.getBoundingClientRect();
-		const area = [
-			{ x: rect.left - offset, y: rect.top - offset },
-			{ x: rect.right + offset, y: rect.top - offset },
-			{ x: rect.right + offset, y: rect.bottom + offset },
-			{ x: rect.left - offset, y: rect.bottom + offset }
-		];
+		const role = refs.get(ref) ?? 'rect';
+		const rect = getExpandedRect(ref, getOffset(role));
+		rects.set(ref, rect);
 
-		areas.set(ref, area);
-
-		if (opts.debug) {
-			debugs.set(ref, drawAreaInDOM(area));
+		if (getDebug() && BROWSER) {
+			rectDebugs.set(
+				ref,
+				drawAreaInDOM(getRectPolygon(rect), {
+					kind: 'rectangle',
+					stroke: '#2563eb',
+					fill: 'rgba(37, 99, 235, 0.08)'
+				})
+			);
 		}
+	};
+
+	const getRoleRect = (role: 'anchor' | 'floating') => {
+		for (const [ref, refRole] of refs) {
+			if (refRole !== role) continue;
+			const rect = rects.get(ref);
+			if (rect) return rect;
+		}
+		return null;
+	};
+
+	const getContainingRole = (point: Point): SafeAreaRole | null => {
+		let matchedRole: SafeAreaRole | null = null;
+		for (const [ref, rect] of rects) {
+			if (!isPointInRect(point, rect)) continue;
+			const role = refs.get(ref) ?? 'rect';
+			if (role === 'anchor' || role === 'floating') return role;
+			matchedRole = role;
+		}
+		return matchedRole;
+	};
+
+	// The cone from the last safe point toward whichever rect the pointer is
+	// heading to (leaving the trigger → the panel; leaving the panel → the trigger).
+	const getConeTriangle = (): Point[] | null => {
+		const anchorRect = getRoleRect('anchor');
+		const floatingRect = getRoleRect('floating');
+		if (!anchorRect || !floatingRect) return null;
+		const from = lastSafePoint ?? getRectCenter(anchorRect);
+		const role = lastSafeRole ?? 'anchor';
+		const targetRect = role === 'anchor' ? floatingRect : anchorRect;
+		return getFacingEdgeTriangle(from, targetRect);
+	};
+
+	const isPointInCone = (point: Point): boolean => {
+		const triangle = getConeTriangle();
+		return triangle ? isPointInArea(point, triangle) : false;
+	};
+
+	const isPointSafe = (point: Point): boolean =>
+		getContainingRole(point) !== null || isPointInCone(point);
+
+	const updateConeDebug = () => {
+		coneDebug?.remove();
+		coneDebug = null;
+		if (!getDebug() || !BROWSER) return;
+		const triangle = getConeTriangle();
+		if (!triangle) return;
+		coneDebug = drawAreaInDOM(triangle, {
+			kind: 'prediction-cone',
+			stroke: '#f97316',
+			fill: 'rgba(249, 115, 22, 0.14)',
+			strokeDasharray: '6 4'
+		});
+	};
+
+	const cancelClose = () => {
+		if (closeTimer === null) return;
+		clearTimeout(closeTimer);
+		closeTimer = null;
+	};
+
+	const scheduleClose = () => {
+		if (closeTimer !== null) return;
+		closeTimer = setTimeout(() => {
+			closeTimer = null;
+			opts.callback?.();
+			destroy();
+		}, CLOSE_DELAY);
 	};
 
 	const onPointerMove = (e: PointerEvent) => {
-		if (
-			Array.from(areas.values())?.every((poly) => {
-				return !isPointInArea({ x: e.clientX, y: e.clientY }, poly);
-			})
-		) {
-			callback?.();
-			destroy();
+		if (rects.size === 0) return;
+		if (opts.trackPosition) {
+			refs.forEach((_role, ref) => setArea(ref));
+			updateConeDebug();
 		}
+
+		const point = { x: e.clientX, y: e.clientY };
+		const containingRole = getContainingRole(point);
+		if (containingRole) {
+			if (containingRole === 'anchor' || containingRole === 'floating') {
+				lastSafePoint = point;
+				lastSafeRole = containingRole;
+				updateConeDebug();
+			}
+			cancelClose();
+			return;
+		}
+
+		if (isPointInCone(point)) {
+			cancelClose();
+			return;
+		}
+
+		scheduleClose();
 	};
 
 	const removeDebug = () => {
-		opts.debug &&
-			BROWSER &&
-			document.querySelectorAll('#polygon')?.forEach((node) => node.remove());
+		rectDebugs.forEach((debug) => debug.remove());
+		rectDebugs.clear();
+		coneDebug?.remove();
+		coneDebug = null;
 	};
 	const destroy = () => {
-		offs.forEach((off) => off());
+		cancelClose();
+		pointerOff?.();
+		pointerOff = null;
+		observerOffs.forEach((off) => off());
+		observerOffs.clear();
+		rects.clear();
+		lastSafePoint = null;
+		lastSafeRole = null;
+		isListening = false;
 		removeDebug();
 	};
+
+	const addReference = (ref: HTMLElement) => {
+		if (observerOffs.has(ref)) return;
+
+		const resizeObserver = new ResizeObserver(() => {
+			setArea(ref);
+			updateConeDebug();
+		});
+		const mutationObserver = new MutationObserver(() => {
+			setArea(ref);
+			updateConeDebug();
+		});
+		mutationObserver.observe(ref, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ['class', 'data-placement', 'style']
+		});
+
+		resizeObserver.observe(ref);
+		const off = () => {
+			resizeObserver.unobserve(ref);
+			mutationObserver.disconnect();
+			observerOffs.delete(ref);
+			rects.delete(ref);
+			const debug = rectDebugs.get(ref);
+			debug?.remove();
+			rectDebugs.delete(ref);
+		};
+		observerOffs.set(ref, off);
+		setArea(ref);
+	};
+
+	const start = () => {
+		if (isListening) return;
+		isListening = true;
+		refs.forEach((_role, ref) => {
+			addReference(ref);
+		});
+		updateConeDebug();
+		pointerOff = on(window, 'pointermove', onPointerMove);
+	};
+
 	$effect(() => {
-		const isActive = opts.isActive;
+		const isActive = opts.isActive();
 		untrack(() => {
 			if (isActive) {
-				refs.forEach((ref) => {
-					addReference(ref);
-				});
-				offs.add(on(window, 'pointermove', onPointerMove));
+				start();
 			} else {
 				destroy();
 			}
+		});
+	});
+
+	$effect(() => {
+		const isActive = opts.isActive();
+		const debug = getDebug();
+		untrack(() => {
+			if (!isActive) return;
+			if (!debug) {
+				removeDebug();
+				return;
+			}
+			refs.forEach((_role, ref) => {
+				setArea(ref);
+			});
+			updateConeDebug();
 		});
 	});
 
@@ -156,82 +377,34 @@ export const useSafeArea = (opts: {
 		destroy();
 	});
 
-	const addReference = (ref: HTMLElement) => {
-		const resizeObserver = new ResizeObserver(() => {
-			setArea(ref);
-		});
-		const mutationObserver = new MutationObserver(() => {
-			setArea(ref);
-		});
-		mutationObserver.observe(ref, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: ['data-placement']
-		});
-
-		resizeObserver.observe(ref);
-		const off = () => {
-			resizeObserver.unobserve(ref);
-			mutationObserver.disconnect();
-			offs.delete(off);
+	const registerReference = (ref: HTMLElement, role: SafeAreaRole) => {
+		refs.set(ref, role);
+		if (isListening) addReference(ref);
+		return () => {
+			refs.delete(ref);
+			observerOffs.get(ref)?.();
 		};
-		offs.add(off);
-		setArea(ref);
-		return off;
 	};
 
 	return {
 		reference: (ref: HTMLElement) => {
-			refs.add(ref);
-			const off = addReference(ref);
-			return () => {
-				refs.delete(ref);
-				off();
-			};
+			return registerReference(ref, 'rect');
+		},
+		anchorReference: (ref: HTMLElement) => {
+			return registerReference(ref, 'anchor');
+		},
+		floatingReference: (ref: HTMLElement) => {
+			return registerReference(ref, 'floating');
 		},
 		updateAreas: () => {
-			refs.forEach((ref) => {
+			refs.forEach((_role, ref) => {
 				setArea(ref);
 			});
-		}
+			updateConeDebug();
+		},
+		// Whether a point is inside the live safe area (trigger, panel, or the cone
+		// between them). Lets a parent menu give the safe area authority: a sibling
+		// hover must NOT close a submenu the pointer is travelling toward.
+		containsPoint: (x: number, y: number) => rects.size > 0 && isPointSafe({ x, y })
 	};
 };
-export class SafePolygon {
-	polygon = $state<[number, number, number, number]>([0, 0, 0, 0]);
-	refs: (HTMLElement | ReferenceElement | null)[];
-	callback?: () => void;
-	constructor(refs: (HTMLElement | null | ReferenceElement)[], callback?: () => void) {
-		this.refs = refs;
-
-		this.callback = callback;
-		this.setPolygon();
-		window.addEventListener('pointermove', this.onPointerMove);
-	}
-
-	setPolygon = () => {
-		document.getElementById('polygon')?.remove();
-		const bounds = this.refs.filter((ref) => !!ref).map((ref) => ref!.getBoundingClientRect());
-
-		const a = (o: 'min' | 'max', k: 'left' | 'right' | 'top' | 'bottom') =>
-			Math[o].apply(
-				null,
-				bounds.map((b) => b[k])
-			);
-
-		this.polygon = [a('min', 'left'), a('min', 'top'), a('max', 'right'), a('max', 'bottom')];
-	};
-
-	destroy = () => {
-		window.removeEventListener('pointermove', this.onPointerMove);
-	};
-	onPointerMove = (e: PointerEvent) => {
-		const inVerticalStack = e.clientX >= this.polygon[0] && e.clientX <= this.polygon[2];
-		const inHorizontalStack = e.clientY >= this.polygon[1] && e.clientY <= this.polygon[3];
-
-		if ((!inVerticalStack && inHorizontalStack) || (!inHorizontalStack && inVerticalStack)) {
-			this.destroy();
-			this.callback?.();
-		}
-	};
-}

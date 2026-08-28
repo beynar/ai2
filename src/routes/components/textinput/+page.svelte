@@ -1,52 +1,104 @@
 <script lang="ts">
+	import DocPage from '../../DocPage.svelte';
+	import ComponentCard from '../../ComponentCard.svelte';
 	import Form from '$lib/components/Form/Form/Form.svelte';
 	import TextInput from '$lib/components/Form/TextInput/TextInput.svelte';
+
+	let email = $state('');
 </script>
 
-<div class="grid gap-10">
-	<div
-		class="border-surface-muted relative grid min-h-[400px] w-full max-w-[90vw] items-center gap-4 rounded border p-10"
+<DocPage
+	title="Text input"
+	subtitle="Single-line text entry with labels and validation."
+	component="TextInput"
+	features={[
+		'Label linked via htmlFor/id',
+		'Bindable value, errors & focus',
+		'Custom onValidate hook',
+		'Helper text & error display'
+	]}
+>
+	<ComponentCard
+		description="Single-line text entry with a label"
+		code={`<TextInput
+	label="Email"
+	description="We'll only use this for receipts"
+	placeholder="you@example.com"
+	bind:value={email}
+/>`}
 	>
-		<div class="flex items-center justify-center gap-4">
-			<Form
-				inputs={{
-					name: {
-						type: 'text',
-						label: 'name',
-						required: true,
-						class: 'col-span-1'
-					},
-					email: {
-						type: 'email',
-						label: 'email',
-						required: true,
-						class: 'col-span-1'
-					},
-					password: {
-						type: 'password',
-						label: 'password',
-						required: true
-					},
-					textarea: {
-						type: 'textarea',
-						label: 'textarea',
-						required: true
-					},
-					select: {
-						type: 'select',
-						label: 'select',
-						required: true,
-						options: [
-							{ value: '1', label: '1' },
-							{ value: '2', label: '2' }
-						]
-					}
-				}}
-				onSubmit={() => {
-					console.log('submit');
-				}}
+		<div class="w-full max-w-md">
+			<TextInput
+				label="Email"
+				description="We'll only use this for receipts"
+				placeholder="you@example.com"
+				bind:value={email}
 			/>
-			<TextInput label="Text Input" helper="Helper" errors={['Error']} />
 		</div>
-	</div>
-</div>
+	</ComponentCard>
+
+	{#snippet examples()}
+		<ComponentCard
+			title="Sizes"
+			description="Small, normal, and large text inputs."
+			code={`<div class="grid w-full max-w-md gap-6">
+	<TextInput size="small" label="Small" placeholder="Small input" />
+	<TextInput size="normal" label="Normal" placeholder="Normal input" />
+	<TextInput size="large" label="Large" placeholder="Large input" />
+</div>`}
+		>
+			<div class="grid w-full max-w-md gap-6">
+				<TextInput size="small" label="Small" placeholder="Small input" />
+				<TextInput size="normal" label="Normal" placeholder="Normal input" />
+				<TextInput size="large" label="Large" placeholder="Large input" />
+			</div>
+		</ComponentCard>
+
+		<ComponentCard
+			description="Form integration plus helper and error states."
+			class="flex !items-start"
+		>
+			<div class="flex items-center justify-center gap-4">
+				<Form
+					inputs={{
+						name: {
+							type: 'text',
+							label: 'name',
+							required: true,
+							class: 'col-span-1'
+						},
+						email: {
+							type: 'email',
+							label: 'email',
+							required: true,
+							class: 'col-span-1'
+						},
+						password: {
+							type: 'password',
+							label: 'password',
+							required: true
+						},
+						textarea: {
+							type: 'textarea',
+							label: 'textarea',
+							required: true
+						},
+						select: {
+							type: 'select',
+							label: 'select',
+							required: true,
+							options: [
+								{ value: '1', label: '1' },
+								{ value: '2', label: '2' }
+							]
+						}
+					}}
+					onSubmit={() => {
+						console.log('submit');
+					}}
+				/>
+				<TextInput label="Text Input" helper="Helper" errors={['Error']} />
+			</div>
+		</ComponentCard>
+	{/snippet}
+</DocPage>

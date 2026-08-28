@@ -1,0 +1,103 @@
+export const viewsCode = [
+	'<script lang="ts">',
+	"  import { EventCalendar, type EventCalendarItem } from 'svelai/event-calendar';",
+	"  let date = $state(new Date('2026-07-15T10:00:00.000Z'));",
+	'  let items = $state<EventCalendarItem[]>([]);',
+	'</script>',
+	'',
+	'<EventCalendar',
+	'  bind:date bind:items',
+	'  timeZone="Europe/Paris"',
+	'  class="h-[42rem]"',
+	'/>'
+].join('\n');
+
+export const interactionCode = [
+	'<script lang="ts">',
+	"  import { EventCalendar, externalEvent, type EventCalendarItem } from 'svelai/event-calendar';",
+	'  let externalId = 0;',
+	'  const createExternalItem = (): EventCalendarItem => ({',
+	"    id: `external-${++externalId}`, title: 'Focus block',",
+	"    start: new Date('2026-07-15T08:00:00.000Z'),",
+	"    end: new Date('2026-07-15T09:00:00.000Z'), color: 'info'",
+	'  });',
+	'</script>',
+	'',
+	'<div {@attach externalEvent(createExternalItem)}>Focus block</div>',
+	'',
+	'<EventCalendar',
+	'  bind:items bind:date view="week"',
+	'  timeZone="Europe/Paris"',
+	'  allowOverlap={false}',
+	'  interactions={{ clipboard: true }} historyLimit={50}',
+	'  availability={{',
+	"    businessHours: [{ daysOfWeek: [1, 2, 3, 4, 5], start: '08:00', end: '18:00' }],",
+	'    constrainMutations: true',
+	'  }}',
+	'  onItemsChange={(nextItems, change) => persist(nextItems).catch((error) => {',
+	'    change.revert();',
+	'    throw error;',
+	'  })}',
+	'  onSlotSelect={(slot, { source }) => openCreateDialog(slot, source)}',
+	'  class="h-[42rem]"',
+	'/>'
+].join('\n');
+
+export const compositionCode = [
+	'<EventCalendar bind:items bind:date timeZone="Europe/Paris">',
+	'  {#snippet header({ previous, title, next, viewSwitcher })}',
+	'    {@render previous()}',
+	'    {@render title()}',
+	'    {@render next()}',
+	'    {@render viewSwitcher()}',
+	'  {/snippet}',
+	'',
+	'  {#snippet item({ occurrence, defaultContent, markerContent, titleContent, timeContent })}',
+	'    {#if occurrence.item.kind === "milestone"}',
+	'      <span class="flex items-center gap-1">',
+	'        {@render markerContent()}',
+	'        <strong>{@render titleContent()}</strong>',
+	'        {@render timeContent()}',
+	'      </span>',
+	'    {:else}',
+	'      {@render defaultContent()}',
+	'    {/if}',
+	'  {/snippet}',
+	'',
+	'  {#snippet overflowContent({ day, defaultContent })}',
+	'    <div data-day={day}>',
+	'      {@render defaultContent()}',
+	'    </div>',
+	'  {/snippet}',
+	'</EventCalendar>'
+].join('\n');
+
+export const resourcesCode = [
+	'type RoomFields = { floor: string; capacity?: number };',
+	'let resources = $state<EventCalendarResource<RoomFields>[]>(rooms);',
+	"let items = $state([{ ...meeting, resourceIds: ['studio', 'boardroom'] }]);",
+	'',
+	'<EventCalendar',
+	'  {resources} bind:items bind:date',
+	'  view="resource"',
+	'  availability={{ constrainMutations: true }}',
+	'  timeZone="Europe/Paris"',
+	'  class="h-[42rem]"',
+	'>',
+	'  {#snippet resourceHeader({ resource, defaultContent })}',
+	'    {@render defaultContent()}',
+	'    {#if resource?.capacity}{resource.capacity} seats{/if}',
+	'  {/snippet}',
+	'</EventCalendar>'
+].join('\n');
+
+export const loadingRtlCode = [
+	'<EventCalendar',
+	'  bind:date {items} {loading}',
+	'  view="days" dayCount={2}',
+	'  dir="rtl" locale="ar"',
+	'  timeZone="Asia/Kathmandu"',
+	'  onRangeChange={({ fetchRange }) => loadOverlappingItems(fetchRange)}',
+	'  class="h-[42rem]"',
+	'/>'
+].join('\n');

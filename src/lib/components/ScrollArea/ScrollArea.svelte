@@ -1,58 +1,90 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { scrollAreaTheme } from '$lib/components/ScrollArea/scrollArea.js';
-	export const setScrollAreaTheme = setComponentTheme<typeof scrollAreaTheme>('scrollArea');
-	export const useScrollAreaTheme = useComponentTheme('scrollArea', scrollAreaTheme);
-</script>
-
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { ScrollArea } from './scrollArea.svelte.js';
-	import type { ScrollAreaProps } from './scrollArea.ts';
+	import type { ScrollAreaProps } from './scrollArea.props.js';
+	import { useScrollAreaTheme } from './scrollArea.theme.js';
+	import { caretUpIcon } from '../Icons/caretUp.js';
+	import { caretDownIcon } from '../Icons/caretDown.js';
 
 	let {
+		ref = $bindable(null),
+		viewportRef = $bindable(null),
+		ariaLabel = 'Scrollable content',
 		class: className = '',
 		children,
 		delay = 0,
 		type = 'hover',
-		theme
+		scrollOnEdges = false,
+		scrollFade = false,
+		onScroll,
+		theme,
+		...attachments
 	}: ScrollAreaProps = $props();
 
+	const componentId = $props.id();
+	const viewportId = `${componentId}-viewport`;
+
 	const scrollArea = new ScrollArea({
-		type,
-		delay
+		get type() {
+			return type;
+		},
+		get delay() {
+			return delay;
+		},
+		get scrollOnEdges() {
+			return scrollOnEdges;
+		}
+	});
+
+	const scrollFadeAxis = $derived.by(() => {
+		if (!scrollFade) return 'none';
+		if (scrollArea.visibleX) return 'x';
+		if (scrollArea.visible) return 'y';
+		return 'none';
 	});
 
 	const classes = $derived(useScrollAreaTheme(theme));
 </script>
 
-<button
-	onclick={() => {
-		const element = document.getElementById('test');
-		if (element) {
-			element.scrollIntoView({ behavior: 'smooth' });
-		}
-	}}>Scroll to</button
->
 <div
 	data-scroll-area
-	class={classes.base({ className })}
+	data-slot="scroll-area"
+	bind:this={ref}
+	class={classes.root({ className })}
 	style:position="relative"
-	aria-label="Scrollable content area"
-	{@attach scrollArea.keydown.reference}
 	{@attach scrollArea.hoover.reference}
+	{@attach scrollArea.scrollOnEdgesAttachment}
+	{...attachments}
 >
+	<!-- The viewport is the native scroll container and the keyboard scroll region: focusable
+	     only when it overflows (WCAG SCR34 scrollable-region pattern), so it never becomes a
+	     dead tab stop. -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
-		id="scroll-area-viewport"
+		id={viewportId}
 		data-scroll-area-viewport
-		class={classes.viewport()}
+		data-slot="scroll-area-viewport"
+		data-scroll-fade-axis={scrollFadeAxis === 'none' ? undefined : scrollFadeAxis}
+		bind:this={viewportRef}
+		class={classes.viewport({ scrollFade: scrollFadeAxis })}
+		tabindex={scrollArea.viewportTabindex}
+		role="group"
+		aria-label={ariaLabel}
+		onscroll={onScroll}
 		{@attach scrollArea.viewportAttachment}
 		style:position="relative"
-		style:overflow="hidden"
+		style:overflow="scroll"
 		style:width="100%"
 		style:height="100%"
 	>
+		<!-- display:table + min-width:100% shrink-wraps to the true content width (so a wider child
+		     like Code's w-max <pre> makes this box wider → real horizontal overflow) while filling
+		     the viewport for narrow content. Its border-box tracks content width, so the content
+		     ResizeObserver fires on horizontal content changes and keeps maxScrollX fresh. -->
 		<div
+			data-scroll-area-content
+			data-slot="scroll-area-content"
+			class={classes.content()}
 			{@attach scrollArea.contentAttachment}
 			style:min-width="100%"
 			style:display="table"
@@ -62,10 +94,9 @@
 		</div>
 	</div>
 
-	{scrollArea.hoover.isHovered}
-
-	{#if (type === 'hover' && scrollArea.visible && scrollArea.hoover.isHovered) || scrollArea.isDraggingY || type === 'always' || (type === 'scroll' && scrollArea.isScrolling)}
+	{#if (type === 'hover' && scrollArea.visible && scrollArea.hoover.isHovered) || scrollArea.isDraggingY || (type === 'always' && scrollArea.visible) || (type === 'auto' && scrollArea.visible) || (type === 'scroll' && scrollArea.isScrolling)}
 		<div
+			data-slot="scroll-area-scrollbar"
 			transition:fade={{ duration: 200 }}
 			bind:this={scrollArea.scrollbarYElement}
 			class={classes.scrollbar()}
@@ -75,7 +106,7 @@
 			style:opacity={scrollArea.visible ? 1 : 0}
 			style:transition="opacity 0.2s ease"
 			role="scrollbar"
-			aria-controls="scroll-area-viewport"
+			aria-controls={viewportId}
 			aria-valuenow={scrollArea.scrollY}
 			aria-valuemin="0"
 			aria-valuemax={scrollArea.maxScrollY}
@@ -84,6 +115,7 @@
 		>
 			<div
 				data-thumb
+				data-slot="scroll-area-thumb"
 				class={classes.scrollbarThumb()}
 				style:height={scrollArea.thumbYSize + 'px'}
 				style:width="100%"
@@ -93,11 +125,68 @@
 			></div>
 		</div>
 	{/if}
+
+	{#if (type === 'hover' && scrollArea.visibleX && scrollArea.hoover.isHovered) || scrollArea.isDraggingX || (type === 'always' && scrollArea.visibleX) || (type === 'auto' && scrollArea.visibleX) || (type === 'scroll' && scrollArea.isScrolling)}
+		<div
+			data-slot="scroll-area-scrollbar"
+			transition:fade={{ duration: 200 }}
+			bind:this={scrollArea.scrollbarXElement}
+			class={classes.scrollbarX()}
+			style="right: 0px"
+			style:display="flex"
+			style:user-select="none"
+			style:opacity={scrollArea.visibleX ? 1 : 0}
+			style:transition="opacity 0.2s ease"
+			role="scrollbar"
+			aria-orientation="horizontal"
+			aria-controls={viewportId}
+			aria-valuenow={scrollArea.scrollX}
+			aria-valuemin="0"
+			aria-valuemax={scrollArea.maxScrollX}
+			{@attach scrollArea.trackAttachmentX}
+		>
+			<div
+				data-thumb
+				data-slot="scroll-area-thumb"
+				class={classes.scrollbarThumb()}
+				style:width={scrollArea.thumbXSize + 'px'}
+				style:height="100%"
+				style:transform={`translateX(${scrollArea.thumbXPosition}px)`}
+				{@attach scrollArea.dragX.reference}
+			></div>
+		</div>
+	{/if}
+	{#if scrollArea.scrollOnEdgesAttachment}
+		{#if scrollArea.canScrollUp}
+			<div
+				class="absolute top-0 left-0 flex w-full items-center justify-center"
+				style:pointer-events="none"
+			>
+				{@render caretUpIcon({ size: 10 })}
+			</div>
+		{/if}
+
+		{#if scrollArea.canScrollDown}
+			<div
+				class="absolute bottom-0 left-0 flex w-full items-center justify-center"
+				style:pointer-events="none"
+			>
+				{@render caretDownIcon({ size: 10 })}
+			</div>
+		{/if}
+	{/if}
 </div>
 
 <style>
+	/* Hide native scrollbars cross-browser; custom thumbs overlay the real scroll container.
+	   Firefox/standard + old Edge are also set inline in viewportAttachment as a backstop. */
+	[data-scroll-area-viewport] {
+		scrollbar-width: none; /* Firefox + standard */
+		-ms-overflow-style: none; /* old Edge/IE */
+	}
+
 	[data-scroll-area-viewport]::-webkit-scrollbar {
-		display: none;
+		display: none; /* Chrome/Safari */
 	}
 
 	[data-scroll-area-viewport]::-webkit-scrollbar-track {

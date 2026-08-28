@@ -1,136 +1,182 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { accordionTheme } from './accordion.js';
-	export const setAccordionTheme = setComponentTheme<typeof accordionTheme>('accordion');
-	export const useAccordionTheme = useComponentTheme('accordion', accordionTheme);
-</script>
-
 <script lang="ts" generics="Item extends Record<string, any>">
 	import { getters } from 'melt';
 	import { Accordion } from 'melt/builders';
-	import type { AccordionProps } from './accordion.js';
+	import { SvelteSet } from 'svelte/reactivity';
+	import type { AccordionProps } from './accordion.props.js';
+	import { useAccordionTheme } from './accordion.theme.js';
 	import Slot from '../Slot/Slot.svelte';
-	import { slide } from 'svelte/transition';
+	import { slide, type SlideTransitionParams } from '$lib/transitions/transition.js';
+	import { useTheme } from '../Theme/theme.state.svelte.js';
+	import { caretDownIcon } from '../Icons/caretDown.js';
+	import { plusIcon } from '../Icons/plus.js';
+	import { minusIcon } from '../Icons/minus.js';
 
 	let {
-		items = $bindable([]),
+		items: itemsWithoutIds = $bindable([]),
+		value = $bindable([]),
 		titleKey,
 		contentKey,
 		descriptionKey,
 		oneAtATime = true,
 		onToggle: ot,
+		onValueChange,
+		icon = 'chevron',
 		variant = 'classic',
-		icon = 'math',
-		splitted,
-		size,
+		splitted = false,
+		size = 'normal',
+		density = 'normal',
 		class: className,
 		theme,
-		actionsProps,
-		iconProps,
-		titleProps,
-		descriptionProps,
-		contentProps,
 		actions,
 		title,
 		description,
 		content,
 		transitions,
+		accessible = true,
 		...attachments
 	}: AccordionProps<Item> = $props();
 
 	const id = $props.id();
 	const classes = $derived(useAccordionTheme(theme));
 
+	const themeState = useTheme();
+	const split = $derived(themeState.splitTransition<SlideTransitionParams>(transitions));
+	// slide is a factory: it captures the theme context at init because Svelte
+	// runs transition functions outside component initialisation.
+	const slideTransition = slide();
+
 	const resolve = (item: Item, key: keyof Item) => {
 		return item[key] as any;
 	};
 
-	const accordion = new Accordion(
-		getters({
+	// Prefer the item's own id (stable across reorder/filter), but disambiguate
+	// duplicates — melt keys by id, so collisions would toggle items together.
+	const items = $derived.by(() => {
+		const seen = new Map<string, number>();
+		return itemsWithoutIds.map((item, index) => {
+			const base = 'id' in item ? String(item.id) : id + '-' + index;
+			const n = seen.get(base) ?? 0;
+			seen.set(base, n + 1);
+			return Object.assign({}, item, { id: n ? `${base}-${n}` : base });
+		}) as (Item & { id: string })[];
+	});
+
+	let prevOpen: string[] = [...value];
+	const accordion = new Accordion({
+		...getters({
 			get multiple() {
 				return !oneAtATime;
 			}
-		})
-	);
+		}),
+		onValueChange(nextValue) {
+			const next = normalizeValue(nextValue);
+			const changed = [...next, ...prevOpen].find(
+				(id) => next.includes(id) !== prevOpen.includes(id)
+			);
+			prevOpen = next;
+			value = next;
+			onValueChange?.(next);
+			if (changed === undefined) return;
+			const index = items.findIndex((i) => i.id === changed);
+			if (index === -1) return;
+			ot?.({ item: itemsWithoutIds[index], index, open: next.includes(changed) });
+		}
+	});
 
-	const itemsWithId = $derived(
-		items.map((item, index) =>
-			'id' in item ? item : Object.assign({ id: id + '-' + index }, item)
-		) as (Item & { id: string })[]
-	);
+	$effect(() => {
+		const requested = oneAtATime ? value.slice(0, 1) : [...value];
+		const current = normalizeValue(accordion.value);
+		if (
+			current.length === requested.length &&
+			current.every((id, index) => id === requested[index])
+		) {
+			return;
+		}
+		prevOpen = requested;
+		accordion.value = oneAtATime ? requested[0] : new SvelteSet(requested);
+	});
+
+	function normalizeValue(current: string | Iterable<string> | null | undefined): string[] {
+		if (current == null) return [];
+		return typeof current === 'string' ? [current] : [...current];
+	}
 </script>
 
 {#snippet renderIcon(isOpen: boolean)}
 	{#if icon && icon === 'chevron'}
-		<svg
-			style:transform="rotate({isOpen ? '180' : '0'}deg)"
-			class={classes.icon({ variant, size })}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="1.5"
-			stroke="currentColor"
-		>
-			<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-		</svg>
+		{@render caretDownIcon({ class: classes.icon({ size }) })}
 	{:else if icon && icon === 'math'}
-		<svg
-			class={classes.icon({ variant, size })}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="1.5"
-			stroke="currentColor"
-		>
-			<path
-				style="transform-origin: center; transition: scale 200ms ease-in-out; transform: scale({!isOpen
-					? '1'
-					: '0'})"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				d={'M12 4.5v15m7.5-7.5h-15'}
-			/>
-			<path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-		</svg>
+		{@render (isOpen ? minusIcon : plusIcon)({ class: classes.icon({ size }) })}
 	{:else if icon}
-		<Slot class={classes.icon({ variant, size })} render={icon} />
+		<Slot class={classes.icon({ size })} render={icon} />
 	{/if}
 {/snippet}
 
 <div
 	{...accordion.root}
-	data-splitted={splitted}
-	data-variant={variant}
 	data-size={size}
-	class={classes.accordion({ variant, size, splitted, className })}
+	data-density={density}
+	data-variant={variant}
+	data-splitted={splitted}
+	class={classes.root({ size, density, variant, splitted, className })}
 	{...attachments}
 >
-	{#each itemsWithId as accordionItem}
-		{@const item = accordion.getItem(accordionItem)}
-		<div class={classes.item({ variant, size, splitted })}>
-			<button {...item.trigger} class={classes.trigger({ variant, size, splitted })}>
-				<div {...item.heading} class={classes.header({ variant, size })}>
+	{#each items as accordionItem}
+		{@const accordionControl = accordion.getItem(accordionItem)}
+		<div
+			class={classes.item({
+				size,
+				density,
+				variant,
+				splitted,
+				expanded: accordionControl.isExpanded
+			})}
+		>
+			<button {...accordionControl.trigger} class={classes.trigger({ size, density, variant })}>
+				<div {...accordionControl.heading} class={classes.header({ size, density })}>
 					<Slot
-						render={resolve(accordionItem, titleKey || 'title')}
-						class={classes.title({ variant, size })}
+						render={title || resolve(accordionItem, titleKey || 'title')}
+						class={classes.title({ size })}
+						payload={{ item: accordionItem }}
 					/>
 					<Slot
-						render={resolve(accordionItem, descriptionKey || 'description')}
-						class={classes.description({ variant, size })}
+						render={description || resolve(accordionItem, descriptionKey || 'description')}
+						class={classes.description({ size })}
+						payload={{ item: accordionItem }}
 					/>
 				</div>
 				{#if icon}
-					{@render renderIcon(item.isExpanded)}
+					<span
+						data-slot="accordion-icon-wrapper"
+						aria-hidden="true"
+						class={classes.iconWrapper({
+							expanded: icon === 'chevron' && accordionControl.isExpanded
+						})}
+					>
+						{@render renderIcon(accordionControl.isExpanded)}
+					</span>
 				{/if}
 			</button>
 
-			{#if item.isExpanded}
-				<div transition:slide {...item.content}>
+			{#if accordionControl.isExpanded}
+				<div
+					in:slideTransition={split.in}
+					out:slideTransition={split.out}
+					{...accordionControl.content}
+					class={classes.content({ size, density, variant })}
+				>
 					<Slot
-						render={resolve(accordionItem, contentKey || 'content')}
-						class={classes.content({ variant, size })}
+						render={content || resolve(accordionItem, contentKey || 'content')}
+						payload={{ item: accordionItem }}
 					/>
 				</div>
+			{:else if accessible}
+				<span class="sr-only">
+					<Slot
+						render={content || resolve(accordionItem, contentKey || 'content')}
+						payload={{ item: accordionItem }}
+					/>
+				</span>
 			{/if}
 		</div>
 	{/each}

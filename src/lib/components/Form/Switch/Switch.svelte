@@ -1,14 +1,8 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { switchInputTheme } from '$lib/components/Form/Switch/switch.js';
-	export const setSwitchInputTheme = setComponentTheme<typeof switchInputTheme>('switchInput');
-	export const useSwitchInputTheme = useComponentTheme('switchInput', switchInputTheme);
-</script>
-
 <script lang="ts">
 	import Field, { useFieldTheme } from '../Field/Field.svelte';
-	import { createFieldState } from '../Field/fieldState.svelte.js';
-	import type { SwitchInputProps } from '$lib/components/Form/Switch/switch.js';
+	import { createFieldState } from '../Field/field.state.svelte.js';
+	import type { SwitchProps } from './switch.props.js';
+	import { useSwitchTheme } from './switch.theme.js';
 	import Slot from '$lib/components/Slot/Slot.svelte';
 
 	let {
@@ -20,13 +14,14 @@
 		disabled,
 		name,
 		onValidate,
-		readonly,
 		visible,
 		size = 'normal',
 		label,
-		labelProps,
+		labelPosition,
+		ariaLabel,
+		onChange,
 		...rest
-	}: SwitchInputProps = $props();
+	}: SwitchProps = $props();
 
 	const id = $props.id();
 
@@ -41,7 +36,7 @@
 		get errors() {
 			return errors;
 		},
-		set errors(v: any) {
+		set errors(v: string[] | boolean) {
 			errors = v;
 		},
 		get focused() {
@@ -51,7 +46,7 @@
 			focused = v;
 		},
 		onChange: (v) => {
-			// console.log('onChange', v);
+			onChange?.(v);
 		},
 		get disabled() {
 			return disabled;
@@ -59,62 +54,88 @@
 		set disabled(v: boolean | undefined) {
 			disabled = v;
 		},
-		required,
-		name,
-		onValidate,
-		readonly,
-		visible,
+		get required() {
+			return required;
+		},
+		get name() {
+			return name;
+		},
+		set name(v: string | undefined) {
+			name = v;
+		},
+		get onValidate() {
+			return onValidate;
+		},
+		get visible() {
+			return visible;
+		},
 		type: 'switch'
 	});
 
-	const classes = $derived(useSwitchInputTheme(theme));
+	const classes = $derived(useSwitchTheme(theme));
 	const fieldClasses = $derived(useFieldTheme(theme));
 	const onclick = () => {
-		if (disabled || readonly) return;
-		value = !value;
+		if (disabled) return;
+		field.value = !field.value;
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
-		if (disabled || readonly) return;
+		if (disabled) return;
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
-			value = !value;
+			field.value = !field.value;
 		}
 	};
 </script>
 
 <Field
 	{field}
+	{labelPosition}
+	labelFor={false}
+	label={labelPosition ? label : undefined}
 	theme={{
 		...(theme || {}),
 		inputContainer: {
 			...(theme?.inputContainer || {}),
-			base: classes.inputContainer({ size, class: theme?.inputContainer?.base })
+			base: classes.inputContainer({
+				size,
+				class: theme?.inputContainer?.base,
+				disabled: field.disabled
+			})
 		}
 	}}
 	{...rest}
 >
+	<input
+		onchange={onclick}
+		name={field.name}
+		id={'input-' + field.id}
+		{value}
+		hidden
+		disabled={field.disabled}
+		type="checkbox"
+	/>
 	<div
 		bind:this={field.node}
+		id={field.id}
 		data-checked={!!value}
 		aria-checked={!!value}
+		aria-label={ariaLabel}
+		aria-labelledby={!ariaLabel && label ? field.labelId : undefined}
+		aria-disabled={field.disabled || undefined}
 		role="switch"
-		tabindex="0"
+		tabindex={field.disabled ? -1 : 0}
 		class={classes.toggle({ checked: !!value, size, disabled })}
 		{onclick}
 		onkeydown={onKeydown}
+		onfocus={() => (field.focused = true)}
+		onblur={() => (field.focused = false)}
 	>
 		<span class={classes.thumb({ checked: !!value, size })} data-checked={!!value}></span>
 	</div>
 	{#snippet suffix()}
-		<Slot
-			as="label"
-			attrs={{
-				for: field.id
-			}}
-			render={label}
-			props={labelProps}
-			class={fieldClasses.label()}
-		/>
+		{#if !labelPosition}
+			<Slot as="span" attrs={{ id: field.labelId }} render={label} class={fieldClasses.label()} />
+		{/if}
 	{/snippet}
 </Field>

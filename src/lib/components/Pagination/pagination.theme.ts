@@ -1,0 +1,192 @@
+import { setComponentTheme, useComponentTheme } from '$lib/utils/cva/index.js';
+import { cva, type InferComponentTheme } from '$lib/utils/cva/index.js';
+
+const defaultPagination = cva({
+	base: 'flex w-fit max-w-full flex-wrap items-center gap-3'
+});
+
+const defaultPaginationList = cva({
+	base: 'flex flex-wrap items-center',
+	variants: {
+		size: {
+			small: 'gap-1',
+			normal: 'gap-1.5',
+			large: 'gap-2'
+		},
+		variant: {
+			pages: null,
+			count: 'gap-2',
+			compact: 'gap-2',
+			dots: 'gap-0',
+			none: 'gap-2'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		variant: 'pages'
+	}
+});
+
+const defaultPaginationItem = cva({
+	base: 'flex shrink-0 items-center',
+	variants: {
+		size: {
+			small: '',
+			normal: '',
+			large: ''
+		},
+		display: {
+			page: '',
+			dot: 'justify-center'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		display: 'page'
+	},
+	compoundVariants: [
+		{ size: 'small', display: 'dot', class: 'size-5' },
+		{ size: 'normal', display: 'dot', class: 'size-6' },
+		{ size: 'large', display: 'dot', class: 'size-7' }
+	]
+});
+
+const defaultPaginationControl = cva({
+	base: 'inline-flex shrink-0 select-none items-center justify-center rounded-lg border font-medium outline-none transition-all duration-100 ease-in-out focus-visible:ring-2 focus-visible:ring-color/50 [&:active]:translate-y-px [&_svg:not([class*=size-])]:size-4',
+	variants: {
+		size: {
+			small: 'h-7 min-w-7 px-2 text-xs',
+			normal: 'h-8 min-w-8 px-2.5 text-sm',
+			large: 'h-9 min-w-9 px-3 text-sm'
+		},
+		color: {
+			primary: 'text-primary-readable',
+			secondary: 'text-secondary-readable',
+			neutral: 'text-neutral-readable',
+			danger: 'text-danger-readable',
+			success: 'text-success-readable',
+			warning: 'text-warning-readable',
+			info: 'text-info-readable'
+		},
+		controlVariant: {
+			solid: 'state-layer border-transparent bg-color text-color-contrast',
+			outline: 'state-layer border-neutral-muted bg-surface text-color-readable',
+			soft: 'state-layer border-transparent bg-color-muted text-color-muted-readable',
+			ghost: 'state-layer border-transparent bg-transparent text-color-readable'
+		},
+		active: {
+			true: 'border-color bg-color text-color-contrast hover:text-color-contrast',
+			false: null
+		},
+		disabled: {
+			true: 'pointer-events-none cursor-not-allowed opacity-45',
+			false: 'cursor-pointer'
+		},
+		control: {
+			page: '',
+			icon: 'aspect-square px-0'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		color: 'primary',
+		controlVariant: 'ghost',
+		active: false,
+		disabled: false,
+		control: 'page'
+	},
+	compoundVariants: []
+});
+
+const defaultPaginationDot = cva({
+	base: "relative inline-flex shrink-0 items-center justify-center rounded-full outline-none transition-colors before:block before:rounded-full before:content-[''] before:transition-colors focus-visible:ring-2 focus-visible:ring-color/50",
+	variants: {
+		size: {
+			small: 'size-3 before:size-1.5',
+			normal: 'size-4 before:size-2',
+			large: 'size-5 before:size-2.5'
+		},
+		color: {
+			primary: null,
+			secondary: null,
+			neutral: null,
+			danger: null,
+			success: null,
+			warning: null,
+			info: null
+		},
+		active: {
+			true: 'before:bg-color',
+			false: 'before:bg-neutral/30 hover:before:bg-color/50'
+		},
+		disabled: {
+			true: 'pointer-events-none cursor-not-allowed opacity-45',
+			false: 'cursor-pointer'
+		}
+	},
+	defaultVariants: {
+		size: 'normal',
+		color: 'primary',
+		active: false,
+		disabled: false
+	},
+	compoundVariants: []
+});
+
+const defaultPaginationIcon = cva({
+	base: 'flex shrink-0 items-center justify-center',
+	variants: {
+		size: {
+			small: 'size-3.5',
+			normal: 'size-4',
+			large: 'size-4.5'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultPaginationEllipsis = cva({
+	base: 'text-neutral/60 inline-flex shrink-0 items-center justify-center',
+	variants: {
+		size: {
+			small: 'h-7 min-w-7',
+			normal: 'h-8 min-w-8',
+			large: 'h-9 min-w-9'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+const defaultPaginationSummary = cva({
+	base: 'text-neutral/60 shrink-0 whitespace-nowrap font-medium',
+	variants: {
+		size: {
+			small: 'text-xs',
+			normal: 'text-sm',
+			large: 'text-sm'
+		}
+	},
+	defaultVariants: {
+		size: 'normal'
+	}
+});
+
+export const paginationTheme = {
+	root: defaultPagination,
+	list: defaultPaginationList,
+	item: defaultPaginationItem,
+	control: defaultPaginationControl,
+	dot: defaultPaginationDot,
+	icon: defaultPaginationIcon,
+	ellipsis: defaultPaginationEllipsis,
+	summary: defaultPaginationSummary
+};
+
+export type PaginationTheme = typeof paginationTheme;
+export type PaginationThemeProps = InferComponentTheme<PaginationTheme>;
+export const setPaginationTheme = setComponentTheme<PaginationTheme>('pagination');
+export const usePaginationTheme = useComponentTheme<PaginationTheme>('pagination', paginationTheme);

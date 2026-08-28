@@ -1,31 +1,25 @@
-<script lang="ts" module>
-	import { setComponentTheme, useComponentTheme } from '$lib/utils/cva.js';
-	import { buttonTheme, type ButtonPrimitiveProps } from '$lib/components/Button/button.js';
-	export const setButtonTheme = setComponentTheme<typeof buttonTheme>('button');
-	export const useButtonTheme = useComponentTheme('button', buttonTheme);
-</script>
-
-<script lang="ts" generics="Payload extends Record<string, any>| undefined = undefined">
+<script lang="ts">
 	import { spinnerOverlay } from '$lib/attachments/spinnerOverlay.svelte.js';
 	import Slot from '../Slot/Slot.svelte';
+	import type { ButtonPrimitiveProps } from './button.props.js';
+	import { useButtonTheme } from './button.theme.js';
 
 	let {
 		as,
 		payload,
 		loading = false,
 		onClick = null,
-		prefixProps,
-		onenter = null,
-		onleave = null,
-		suffixProps,
+		onEnter = null,
+		onLeave = null,
 		href,
 		squared,
 		class: className,
-		color = 'contrast',
+		color = 'primary',
 		prefix,
 		suffix,
 		children,
 		variant = 'solid',
+		type,
 		size = 'normal',
 		ref = $bindable(),
 		fullWidth = false,
@@ -33,9 +27,19 @@
 		theme,
 		rel,
 		target,
-		childrenProps,
+		download,
+		label,
+		role,
+		'aria-haspopup': ariaHaspopup,
+		'aria-expanded': ariaExpanded,
+		'aria-controls': ariaControls,
+		'aria-selected': ariaSelected,
+		'aria-pressed': ariaPressed,
+		'data-active': dataActive,
+		'data-highlighted': dataHighlighted,
+		'data-slot': dataSlot,
 		...attachments
-	}: ButtonPrimitiveProps<Payload> = $props();
+	}: ButtonPrimitiveProps = $props();
 
 	const isSquared = $derived(
 		squared ?? !!((!children && prefix && !suffix) || (!children && !prefix && suffix))
@@ -46,14 +50,25 @@
 
 <svelte:element
 	this={as || href ? 'a' : 'button'}
-	role={as || href ? 'link' : 'button'}
+	aria-label={label}
+	aria-haspopup={ariaHaspopup}
+	aria-expanded={ariaExpanded}
+	aria-controls={ariaControls}
+	aria-selected={ariaSelected}
+	aria-pressed={ariaPressed}
+	role={role ?? (as || href ? 'link' : 'button')}
 	{href}
 	{rel}
 	{target}
+	{download}
+	{type}
 	bind:this={ref}
+	data-active={dataActive}
+	data-highlighted={dataHighlighted}
+	data-slot={dataSlot}
 	data-color={color}
 	{disabled}
-	class={classes.button({
+	class={classes.root({
 		color,
 		squared: isSquared,
 		variant,
@@ -63,28 +78,28 @@
 		className,
 		fullWidth
 	})}
-	{@attach spinnerOverlay({ loading })}
+	{@attach spinnerOverlay({ loading, size })}
 	onclick={onClick &&
 		(() => {
 			if (!disabled) {
 				onClick(payload);
 			}
 		})}
-	onpointerenter={onenter &&
+	onpointerenter={onEnter &&
 		(() => {
 			if (!disabled) {
-				onenter(payload);
+				onEnter(payload);
 			}
 		})}
-	onpointerleave={onleave &&
+	onpointerleave={onLeave &&
 		(() => {
 			if (!disabled) {
-				onleave(payload);
+				onLeave(payload);
 			}
 		})}
 	{...attachments}
 >
-	<Slot {payload} render={prefix} class={classes.prefix({ size })} props={prefixProps} />
-	<Slot {payload} render={children} props={childrenProps} />
-	<Slot {payload} render={suffix} class={classes.suffix({ size })} props={suffixProps} />
+	<Slot render={prefix} as="span" class={classes.prefix({ size })} />
+	<Slot render={children} />
+	<Slot render={suffix} as="span" class={classes.suffix({ size })} />
 </svelte:element>

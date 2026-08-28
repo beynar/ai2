@@ -1,0 +1,162 @@
+export const overviewCode = [
+	'<script lang="ts">',
+	"  import { GanttChart, type GanttDependency, type GanttTask } from 'svelai/gantt-chart';",
+	'  let tasks = $state<GanttTask[]>([',
+	"    { id: 'plan', title: 'Plan', type: 'summary' },",
+	"    { id: 'design', parentId: 'plan', title: 'Design', start, end, progress: 0.4 }",
+	'  ]);',
+	'  let dependencies = $state<GanttDependency[]>([]);',
+	"  let size = $state<'small' | 'normal' | 'large'>('normal');",
+	"  let density = $state<'small' | 'normal' | 'large'>('normal');",
+	'  let height = $state(544);',
+	"  let demoState = $state<'ready' | 'loading' | 'disabled'>('ready');",
+	'  let showGrid = $state(true);',
+	'  let showTodayIndicator = $state(true);',
+	'  let showWeekends = $state(true);',
+	'  let showCriticalPath = $state(false);',
+	'</script>',
+	'',
+	'<GanttChart',
+	'  bind:tasks bind:dependencies',
+	'  timeZone="Europe/Paris"',
+	'  {size}',
+	'  {density}',
+	"  loading={demoState === 'loading'} disabled={demoState === 'disabled'}",
+	'  layout={{ grid: showGrid ? {} : false }}',
+	'  timeline={{',
+	'    todayIndicator: showTodayIndicator,',
+	'    weekends: showWeekends,',
+	'    display: { criticalPath: showCriticalPath, nonWorkingTime: false }',
+	'  }}',
+	'  style={`height: ${height}px`}',
+	'  class="w-full"',
+	'/>'
+].join('\n');
+
+export const hierarchyCode = [
+	"type TaskFields = { owner: string; risk: 'low' | 'medium' | 'high' };",
+	"const isRisk = (value: unknown): value is TaskFields['risk'] =>",
+	"  value === 'low' || value === 'medium' || value === 'high';",
+	"let expandedTaskIds = $state(['planning']);",
+	'let columns: GanttColumnDefinition<TaskFields>[] = [',
+	"  { id: 'wbs' },",
+	"  { id: 'title', editable: true },",
+	"  { id: 'owner', value: ({ node }) => node.task.owner },",
+	"  { id: 'risk', sortable: true, editable: true,",
+	'    value: ({ node }) => node.task.risk,',
+	'    applyEdit: ({ node }, value) => {',
+	"      if (!isRisk(value)) throw new Error('Invalid risk value');",
+	'      return { ...node.task, risk: value };',
+	'    } },',
+	"  { id: 'progress' }",
+	'];',
+	'',
+	'<GanttChart',
+	'  bind:tasks bind:expandedTaskIds',
+	'  layout={{ grid: { columns } }}',
+	'  timeZone="Europe/Paris"',
+	'/>'
+].join('\n');
+
+export const interactionsCode = [
+	'<GanttChart',
+	'  bind:this={chart} bind:tasks bind:dependencies',
+	'  timeZone="Europe/Paris"',
+	'  interactions={{',
+	'    history: { limit: 20 },',
+	'    clipboard: { getId: createPasteId }',
+	'  }}',
+	'  mutations={{ task: { onChange: persistTasks } }}',
+	'  events={{ emptyRangeSelect: openCreateDialog }}',
+	'  class="h-[36rem]"',
+	'/>'
+].join('\n');
+
+export const dependenciesCode = [
+	'<GanttChart',
+	'  bind:tasks bind:dependencies',
+	'  interactions={{ dependencyCreation: { create: createDependency } }}',
+	"  schedule={{ calendarId: 'project', propagation: 'auto' }}",
+	'  timeline={{',
+	'    display: { criticalPath: true, constraints: true, baselines: true, deadlines: true }',
+	'  }}',
+	'  calendars={calendars}',
+	'  timeZone="Europe/Paris"',
+	'  events={{ scheduleViolations: showViolations }}',
+	'/>'
+].join('\n');
+
+export const resourcesCode = [
+	'type ResourceFields = { role: string };',
+	"type AssignmentFields = { booking: 'confirmed' | 'tentative' };",
+	'',
+	'{#snippet assignmentsContent({ assignments, defaultContent })}',
+	'  {@render defaultContent()}',
+	"  {#if assignments.some((assignment) => assignment.booking === 'tentative')}",
+	'    <span>tentative</span>',
+	'  {/if}',
+	'{/snippet}',
+	'',
+	'<GanttChart',
+	'  bind:tasks bind:assignments {resources}',
+	'  timeline={{',
+	'    display: { workload: true },',
+	'    resourceView: { filterResourceIds, groupByResource: true, workloadHeight: 120 }',
+	'  }}',
+	'  calendars={calendars}',
+	"  schedule={{ calendarId: 'project' }}",
+	'  timeZone="Europe/Paris"',
+	'  render={{ resourceAssignments: assignmentsContent }}',
+	'/>'
+].join('\n');
+
+export const customizationCode = [
+	'{#snippet taskContent({ node })}',
+	'  <span>{node.task.owner}</span>',
+	'{/snippet}',
+	'',
+	'<GanttChart',
+	'  bind:tasks',
+	'  timeZone="Europe/Paris"',
+	'  events={{ taskDoubleClick: openEditor }}',
+	'  render={{ task: taskContent }}',
+	'/>',
+	'',
+	'<Dialog bind:open={editorOpen} title="Edit task">',
+	'  <TextInput bind:value={draftTitle} label="Task title" />',
+	'  {#snippet footer()}',
+	'    <Button onClick={saveTask}>Save task</Button>',
+	'  {/snippet}',
+	'</Dialog>'
+].join('\n');
+
+export const loadingRtlCode = [
+	'<I18n locale="ar" manageDocument={false}>',
+	'  <div dir="rtl">',
+	'    <GanttChart',
+	'      bind:tasks {loading}',
+	'      calendars={newYorkCalendars}',
+	"      schedule={{ calendarId: 'new-york-project' }}",
+	'      timeZone="America/New_York"',
+	'      zoom="day"',
+	'      class="h-[34rem]"',
+	'    />',
+	'  </div>',
+	'</I18n>'
+].join('\n');
+
+export const largeDataCode = [
+	'const tasks: GanttTask[] = Array.from({ length: 5_000 }, (_, index) => ({',
+	'  id: `task-${index}`,',
+	'  title: `Work package ${index + 1}`,',
+	'  start: getStart(index),',
+	'  end: getEnd(index)',
+	'}));',
+	'',
+	'<GanttChart',
+	'  {tasks}',
+	'  timeZone="UTC"',
+	'  density="small"',
+	'  class="h-[34rem]"',
+	'/>'
+].join('\n');
